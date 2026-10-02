@@ -90,10 +90,12 @@ const collapse = (text: string): string => {
 };
 
 export const replaced = (state: State, from: number, to: number, text: string): Candidate => {
-  return {
+  const candidate = {
     source: state.source.slice(0, from) + text + state.source.slice(to),
     offset: from,
   };
+
+  return candidate;
 };
 
 export const joinRange = (state: State, from: number, to: number): Candidate | undefined => {
@@ -105,7 +107,10 @@ export const joinRange = (state: State, from: number, to: number): Candidate | u
     return undefined;
   }
 
-  return replaced(state, from, to, collapse(state.source.slice(from, to)));
+  const range = state.source.slice(from, to);
+  const joined = collapse(range);
+
+  return replaced(state, from, to, joined);
 };
 
 export const spansLines = (first: AstNode, last: AstNode): boolean => {
@@ -174,7 +179,9 @@ export const separatedByPunctuation = (state: State, members: AstNode[]): boolea
         .slice(member.range[1], next.range[0])
         .trim();
 
-      return /[;,]$/.test(textOf(state, member)) || gap.startsWith(';') || gap.startsWith(',');
+      const memberText = textOf(state, member);
+
+      return /[;,]$/.test(memberText) || gap.startsWith(';') || gap.startsWith(',');
     });
 };
 

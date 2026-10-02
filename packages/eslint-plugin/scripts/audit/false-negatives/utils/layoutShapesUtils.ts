@@ -33,8 +33,12 @@ const oneLine = (node: AstNode): boolean => {
 
 const importCase = (build: (node: AstNode, named: AstNode[], state: State) => Candidate | undefined): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, 'ImportDeclaration'), (node) => {
-      return build(node, namedImports(node), state);
+    const imports = nodesOf(state, 'ImportDeclaration');
+
+    return pickFirst(imports, (node) => {
+      const specifiers = namedImports(node);
+
+      return build(node, specifiers, state);
     });
   };
 };
@@ -62,7 +66,9 @@ export const importBlankLineCase = importCase((_, named, state) => {
 });
 
 export const patternJoinedCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
+  const patterns = nodesOf(state, 'ObjectPattern');
+
+  return pickFirst(patterns, (node) => {
     const properties = node.properties ?? [];
     const [first] = properties;
     const last = properties.at(-1);
@@ -77,7 +83,9 @@ export const patternJoinedCase: Build = (state) => {
 };
 
 export const patternBlankLineCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
+  const patterns = nodesOf(state, 'ObjectPattern');
+
+  return pickFirst(patterns, (node) => {
     const properties = node.properties ?? [];
     const [first, second] = properties;
 
@@ -89,7 +97,9 @@ export const patternBlankLineCase: Build = (state) => {
 
 export const typeMembersJoinedCase = (type: string, read: (node: AstNode) => AstNode[]): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, type), (node) => {
+    const bodies = nodesOf(state, type);
+
+    return pickFirst(bodies, (node) => {
       const members = read(node);
       const [first] = members;
       const last = members.at(-1);
@@ -120,7 +130,9 @@ export const literalMembers = (node: AstNode): AstNode[] => {
 // Array holes are out: a hole has no tokens to measure.
 export const patternGapCase = (type: string, fromStart: boolean): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, type), (node) => {
+    const patterns = nodesOf(state, type);
+
+    return pickFirst(patterns, (node) => {
       const raw = node.properties ?? node.elements ?? [];
       const members = raw
         .filter((member) => {
@@ -139,7 +151,9 @@ export const patternGapCase = (type: string, fromStart: boolean): Build => {
 };
 
 export const exportJoinedCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ExportNamedDeclaration'), (node) => {
+  const namedExports = nodesOf(state, 'ExportNamedDeclaration');
+
+  return pickFirst(namedExports, (node) => {
     const specifiers = node.specifiers ?? [];
     const [first] = specifiers;
     const last = specifiers.at(-1);
@@ -165,7 +179,9 @@ export const exportTripleCase = (kind: string): Build => {
       return undefined;
     }
 
-    return pickFirst(nodesOf(state, 'ExportNamedDeclaration'), (node) => {
+    const namedExports = nodesOf(state, 'ExportNamedDeclaration');
+
+    return pickFirst(namedExports, (node) => {
       const [only] = node.specifiers ?? [];
       const local = only?.local;
 
@@ -214,7 +230,9 @@ export const unionWithMemberCase = (member: string): Build => {
 };
 
 export const unionGenericCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'TSTypeParameterInstantiation'), (node) => {
+  const typeArguments = nodesOf(state, 'TSTypeParameterInstantiation');
+
+  return pickFirst(typeArguments, (node) => {
     const [first] = node.params ?? [];
 
     if (!first || !PLAIN_TYPES.has(first.type) || spansLines(first, first)) {
@@ -264,10 +282,12 @@ const relocateType = (state: State, node: AstNode): Candidate | undefined => {
     .trimEnd();
   const kept = `${state.source.slice(0, from)}${state.source.slice(to)}`.trimEnd();
 
-  return {
+  const relocated = {
     source: `${kept}\n\n${text}\n`,
     offset: kept.length + 2,
   };
+
+  return relocated;
 };
 
 const headerKindOf = (body: AstNode[]): string => {
@@ -300,11 +320,15 @@ export const typeBelowRuntimeCase = (header: string): Build => {
       return relocateType(state, node);
     });
 
-    return moved === undefined || header !== 'directive'
-      ? moved
-      : {
-          offset: moved.offset + DIRECTIVE.length,
-          source: DIRECTIVE + moved.source,
-        };
+    if (moved === undefined || header !== 'directive') {
+      return moved;
+    }
+
+    const underDirective = {
+      offset: moved.offset + DIRECTIVE.length,
+      source: DIRECTIVE + moved.source,
+    };
+
+    return underDirective;
   };
 };

@@ -45,90 +45,213 @@ export interface Shape {
 // Both visit TypeScript nodes only, so a JavaScript file can never exercise them.
 export const TS_ONLY_RULES = new Set(['interface-order', 'union-newline']);
 
-const shape = (build: Build, name: string, options?: Record<string, OptionValue>): Shape => {
-  return {
-    build,
-    shape: name,
-    ...(options === undefined ? {} : { options }),
-  };
-};
-
 // A rule can be awake on the shape someone tested and asleep on the next.
 export const SHAPES: Record<string, Shape[]> = {
   'array-newline': [
-    shape(patternGapCase('ArrayExpression', false), 'array, last gap closed'),
-    shape(patternGapCase('ArrayPattern', false), 'array pattern, last gap closed'),
+    {
+      build: patternGapCase('ArrayExpression', false),
+      shape: 'array, last gap closed',
+    },
+    {
+      build: patternGapCase('ArrayPattern', false),
+      shape: 'array pattern, last gap closed',
+    },
   ],
   'export-specifier-newline': [
-    shape(exportJoinedCase, 'specifiers joined onto one line'),
-    shape(exportTripleCase('local'), 'two specifiers added to a local export'),
-    shape(exportTripleCase('from'), 'two specifiers added to a re-export'),
-    shape(exportTripleCase('type'), 'two specifiers added to a type-only export'),
+    {
+      build: exportJoinedCase,
+      shape: 'specifiers joined onto one line',
+    },
+    {
+      build: exportTripleCase('local'),
+      shape: 'two specifiers added to a local export',
+    },
+    {
+      build: exportTripleCase('from'),
+      shape: 'two specifiers added to a re-export',
+    },
+    {
+      build: exportTripleCase('type'),
+      shape: 'two specifiers added to a type-only export',
+    },
   ],
   'import-newlines': [
-    shape(importJoinedCase, 'joined onto one line, over the item limit'),
-    shape(importTailJoinedCase, 'two members left sharing a line'),
-    shape(importBlankLineCase, 'blank line between two members'),
+    {
+      build: importJoinedCase,
+      shape: 'joined onto one line, over the item limit',
+    },
+    {
+      build: importTailJoinedCase,
+      shape: 'two members left sharing a line',
+    },
+    {
+      build: importBlankLineCase,
+      shape: 'blank line between two members',
+    },
   ],
   'interface-order': [
-    shape(typeBelowRuntimeCase('imports'), 'type moved below runtime code, under imports'),
-    shape(typeBelowRuntimeCase('directive'), 'type moved below runtime code, under a directive'),
-    shape(typeBelowRuntimeCase('none'), 'type moved below runtime code, no header'),
+    {
+      build: typeBelowRuntimeCase('imports'),
+      shape: 'type moved below runtime code, under imports',
+    },
+    {
+      build: typeBelowRuntimeCase('directive'),
+      shape: 'type moved below runtime code, under a directive',
+    },
+    {
+      build: typeBelowRuntimeCase('none'),
+      shape: 'type moved below runtime code, no header',
+    },
   ],
   'member-newline': [
-    shape(patternJoinedCase, 'pattern joined onto one line, over maxProperties'),
-    shape(patternBlankLineCase, 'blank line between two properties'),
-    shape(patternGapCase('ObjectPattern', false), 'object pattern, last gap closed'),
-    shape(patternGapCase('ObjectPattern', true), 'object pattern, first gap closed'),
-    shape(typeMembersJoinedCase('TSInterfaceBody', interfaceMembers), 'interface body joined onto one line'),
-    shape(typeMembersJoinedCase('TSTypeLiteral', literalMembers), 'type literal joined onto one line'),
+    {
+      build: patternJoinedCase,
+      shape: 'pattern joined onto one line, over maxProperties',
+    },
+    {
+      build: patternBlankLineCase,
+      shape: 'blank line between two properties',
+    },
+    {
+      build: patternGapCase('ObjectPattern', false),
+      shape: 'object pattern, last gap closed',
+    },
+    {
+      build: patternGapCase('ObjectPattern', true),
+      shape: 'object pattern, first gap closed',
+    },
+    {
+      build: typeMembersJoinedCase('TSInterfaceBody', interfaceMembers),
+      shape: 'interface body joined onto one line',
+    },
+    {
+      build: typeMembersJoinedCase('TSTypeLiteral', literalMembers),
+      shape: 'type literal joined onto one line',
+    },
   ],
   'no-import-namespace-destructure': [
-    shape(namespaceDestructureCase('module'), 'destructured at module scope'),
-    shape(namespaceDestructureCase('function'), 'destructured inside a function body'),
-    shape(namespaceDestructureCase('block'), 'destructured inside a nested block'),
+    {
+      build: namespaceDestructureCase('module'),
+      shape: 'destructured at module scope',
+    },
+    {
+      build: namespaceDestructureCase('function'),
+      shape: 'destructured inside a function body',
+    },
+    {
+      build: namespaceDestructureCase('block'),
+      shape: 'destructured inside a nested block',
+    },
   ],
   'prefer-arrow-functions': [
-    shape(functionDeclarationCase, 'rewritten as a function declaration'),
-    shape(functionExpressionCase, 'rewritten as a function expression'),
-    shape(propertyFunctionCase(false), 'rewritten as a long-form property value'),
-    shape(propertyFunctionCase(true), 'rewritten as a shorthand method'),
-    shape(defaultExportFunctionCase, 'rewritten as an anonymous default export'),
-    shape(expressionBodyCase, 'block body collapsed to an expression body'),
+    {
+      build: functionDeclarationCase,
+      shape: 'rewritten as a function declaration',
+    },
+    {
+      build: functionExpressionCase,
+      shape: 'rewritten as a function expression',
+    },
+    {
+      build: propertyFunctionCase(false),
+      shape: 'rewritten as a long-form property value',
+    },
+    {
+      build: propertyFunctionCase(true),
+      shape: 'rewritten as a shorthand method',
+    },
+    {
+      build: defaultExportFunctionCase,
+      shape: 'rewritten as an anonymous default export',
+    },
+    {
+      build: expressionBodyCase,
+      shape: 'block body collapsed to an expression body',
+    },
   ],
   'prefer-await-to-then': [
-    shape(detachedHandlerCase('then'), 'detached .then() in statement position'),
-    shape(detachedHandlerCase('catch'), 'detached .catch() in statement position'),
-    shape(detachedHandlerCase('finally'), 'detached .finally() in statement position'),
-    shape(strictAwaitedHandlerCase, 'awaited .then() under strict', { strict: true }),
+    {
+      build: detachedHandlerCase('then'),
+      shape: 'detached .then() in statement position',
+    },
+    {
+      build: detachedHandlerCase('catch'),
+      shape: 'detached .catch() in statement position',
+    },
+    {
+      build: detachedHandlerCase('finally'),
+      shape: 'detached .finally() in statement position',
+    },
+    {
+      build: strictAwaitedHandlerCase,
+      options: { strict: true },
+      shape: 'awaited .then() under strict',
+    },
   ],
   'prefer-destructured-props': [
-    shape(arrowComponentCase, 'arrow assigned to an uppercase const, rewritten to a props parameter'),
-    shape(functionDeclarationComponentCase, 'function declaration, rewritten to a props parameter'),
+    {
+      build: arrowComponentCase,
+      shape: 'arrow assigned to an uppercase const, rewritten to a props parameter',
+    },
+    {
+      build: functionDeclarationComponentCase,
+      shape: 'function declaration, rewritten to a props parameter',
+    },
   ],
   'prefer-try-catch': [
-    shape(awaitedHandlerCase(`.catch(${PROBE_HANDLER})`), 'rejection handler on an await'),
-    shape(awaitedHandlerCase(`.then(linteljsFulfilProbe, ${PROBE_HANDLER})`), 'two-argument .then() on an await'),
-    shape(
-      awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(linteljsParseProbe)`),
-      'rejection handler buried mid-chain',
-    ),
-    shape(asyncReturnHandlerCase, 'rejection handler on an async return'),
+    {
+      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER})`),
+      shape: 'rejection handler on an await',
+    },
+    {
+      build: awaitedHandlerCase(`.then(linteljsFulfilProbe, ${PROBE_HANDLER})`),
+      shape: 'two-argument .then() on an await',
+    },
+    {
+      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(linteljsParseProbe)`),
+      shape: 'rejection handler buried mid-chain',
+    },
+    {
+      build: asyncReturnHandlerCase,
+      shape: 'rejection handler on an async return',
+    },
   ],
   'sort-hook-dependencies': [
-    shape(hookOrderCase(DEFAULT_HOOKS, 'desc'), 'dependencies sorted the wrong way'),
-    shape(hookOrderCase(DEFAULT_HOOKS, 'asc'), 'dependencies sorted ascending under order: desc', { order: 'desc' }),
-    shape(
-      hookOrderCase(EXTRA_HOOKS, 'desc'),
-      'dependencies of a hook named by the hooks option',
-      { hooks: EXTRA_HOOKS },
-    ),
+    {
+      build: hookOrderCase(DEFAULT_HOOKS, 'desc'),
+      shape: 'dependencies sorted the wrong way',
+    },
+    {
+      build: hookOrderCase(DEFAULT_HOOKS, 'asc'),
+      options: { order: 'desc' },
+      shape: 'dependencies sorted ascending under order: desc',
+    },
+    {
+      build: hookOrderCase(EXTRA_HOOKS, 'desc'),
+      options: { hooks: EXTRA_HOOKS },
+      shape: 'dependencies of a hook named by the hooks option',
+    },
   ],
   'union-newline': [
-    shape(unionWithMemberCase('({ linteljsProbeMember: string })'), 'union with an object member'),
-    shape(unionWithMemberCase('(() => void)'), 'union with a function member'),
-    shape(unionWithMemberCase('(new () => LintelProbe)'), 'union with a constructor member'),
-    shape(unionWithMemberCase('({ [K in LintelProbeKeys]: string })'), 'union with a mapped member'),
-    shape(unionGenericCase, 'four plain members inside a generic argument'),
+    {
+      build: unionWithMemberCase('({ linteljsProbeMember: string })'),
+      shape: 'union with an object member',
+    },
+    {
+      build: unionWithMemberCase('(() => void)'),
+      shape: 'union with a function member',
+    },
+    {
+      build: unionWithMemberCase('(new () => LintelProbe)'),
+      shape: 'union with a constructor member',
+    },
+    {
+      build: unionWithMemberCase('({ [K in LintelProbeKeys]: string })'),
+      shape: 'union with a mapped member',
+    },
+    {
+      build: unionGenericCase,
+      shape: 'four plain members inside a generic argument',
+    },
   ],
 };

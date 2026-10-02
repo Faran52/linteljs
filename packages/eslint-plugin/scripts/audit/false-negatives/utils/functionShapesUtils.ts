@@ -66,9 +66,10 @@ const isBlockArrow = (node: AstNode | null | undefined): node is AstNode => {
 // The rule stays silent on `new f()`, `f.prototype` and reassignment.
 const arrowNameIsFunctionOnly = (state: State, name: string): boolean => {
   const escaped = escapeName(name);
+  const assignment = new RegExp(String.raw`\b${escaped}\s*=(?!=)`, 'g');
 
   return new RegExp(String.raw`new\s+${escaped}\b|\b${escaped}\s*\.\s*prototype\b`).test(state.source)
-    || countMatches(state.source, new RegExp(String.raw`\b${escaped}\s*=(?!=)`, 'g')) > 1;
+    || countMatches(state.source, assignment) > 1;
 };
 
 const writeFunction = (state: State, arrow: AstNode, head: string): string => {
@@ -94,7 +95,9 @@ const arrowBodySkipReason = (state: State, arrow: AstNode, from: number): string
     return 'arrow carries type parameters, which the rebuild does not reproduce';
   }
 
-  if (ARROW_HAZARDS.test(textOf(state, arrow))) {
+  const arrowText = textOf(state, arrow);
+
+  if (ARROW_HAZARDS.test(arrowText)) {
     return 'body uses this/arguments/super/new.target, which the rule declines';
   }
 
@@ -113,10 +116,12 @@ const arrowDeclarationOf = (node: AstNode): ArrowDeclaration | undefined => {
     return undefined;
   }
 
-  return {
+  const declaration = {
     arrow,
     name: id.name,
   };
+
+  return declaration;
 };
 
 const skipped = (state: State, reason: string | undefined): boolean => {
@@ -143,22 +148,46 @@ const declarationSkipReason = (state: State, node: AstNode, found: ArrowDeclarat
 };
 
 export const functionDeclarationCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'VariableDeclaration'), (node) => {
+  const declarations = nodesOf(state, 'VariableDeclaration');
+
+  return pickFirst(declarations, (node) => {
     const found = arrowDeclarationOf(node);
 
-    return !found || skipped(state, declarationSkipReason(state, node, found))
-      ? undefined
-      : replaced(state, node.range[0], node.range[1], writeFunction(state, found.arrow, `function ${found.name}`));
+    if (!found) {
+      return undefined;
+    }
+
+    const reason = declarationSkipReason(state, node, found);
+
+    if (skipped(state, reason)) {
+      return undefined;
+    }
+
+    const declaration = writeFunction(state, found.arrow, `function ${found.name}`);
+
+    return replaced(state, node.range[0], node.range[1], declaration);
   });
 };
 
 export const functionExpressionCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'VariableDeclaration'), (node) => {
+  const declarations = nodesOf(state, 'VariableDeclaration');
+
+  return pickFirst(declarations, (node) => {
     const found = arrowDeclarationOf(node);
 
-    return !found || skipped(state, arrowBodySkipReason(state, found.arrow, found.arrow.range[0]))
-      ? undefined
-      : replaced(state, found.arrow.range[0], found.arrow.range[1], writeFunction(state, found.arrow, 'function '));
+    if (!found) {
+      return undefined;
+    }
+
+    const reason = arrowBodySkipReason(state, found.arrow, found.arrow.range[0]);
+
+    if (skipped(state, reason)) {
+      return undefined;
+    }
+
+    const expression = writeFunction(state, found.arrow, 'function ');
+
+    return replaced(state, found.arrow.range[0], found.arrow.range[1], expression);
   });
 };
 
@@ -174,33 +203,61 @@ const objectArrowProperty = (node: AstNode): AstNode | undefined => {
 // The key sits outside the function's range, so shorthand replaces the whole property.
 export const propertyFunctionCase = (asMethod: boolean): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, 'Property'), (node) => {
+    const properties = nodesOf(state, 'Property');
+
+    return pickFirst(properties, (node) => {
       const arrow = objectArrowProperty(node);
 
-      if (!arrow || !node.key || skipped(state, arrowBodySkipReason(state, arrow, node.range[0]))) {
+      if (!arrow || !node.key) {
         return undefined;
       }
 
-      return asMethod
-        ? replaced(state, node.range[0], node.range[1], writeFunction(state, arrow, textOf(state, node.key)))
-        : replaced(state, arrow.range[0], arrow.range[1], writeFunction(state, arrow, 'function '));
+      const reason = arrowBodySkipReason(state, arrow, node.range[0]);
+
+      if (skipped(state, reason)) {
+        return undefined;
+      }
+
+      if (asMethod) {
+        const method = writeFunction(state, arrow, textOf(state, node.key));
+
+        return replaced(state, node.range[0], node.range[1], method);
+      }
+
+      const expression = writeFunction(state, arrow, 'function ');
+
+      return replaced(state, arrow.range[0], arrow.range[1], expression);
     });
   };
 };
 
 export const defaultExportFunctionCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ExportDefaultDeclaration'), (node) => {
+  const defaultExports = nodesOf(state, 'ExportDefaultDeclaration');
+
+  return pickFirst(defaultExports, (node) => {
     const arrow = node.declaration;
 
-    return !isBlockArrow(arrow) || skipped(state, arrowBodySkipReason(state, arrow, arrow.range[0]))
-      ? undefined
-      : replaced(state, arrow.range[0], arrow.range[1], writeFunction(state, arrow, 'function '));
+    if (!isBlockArrow(arrow)) {
+      return undefined;
+    }
+
+    const reason = arrowBodySkipReason(state, arrow, arrow.range[0]);
+
+    if (skipped(state, reason)) {
+      return undefined;
+    }
+
+    const expression = writeFunction(state, arrow, 'function ');
+
+    return replaced(state, arrow.range[0], arrow.range[1], expression);
   });
 };
 
 // Parenthesised so an object literal keeps its meaning.
 export const expressionBodyCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ArrowFunctionExpression'), (node) => {
+  const arrows = nodesOf(state, 'ArrowFunctionExpression');
+
+  return pickFirst(arrows, (node) => {
     const body = nodeOf(node.body);
     const statements = listOf(body?.body);
     const argument = statements[0]?.type === 'ReturnStatement' ? statements[0].argument : undefined;
@@ -209,7 +266,9 @@ export const expressionBodyCase: Build = (state) => {
       return undefined;
     }
 
-    if (ARROW_HAZARDS.test(textOf(state, node))) {
+    const arrowText = textOf(state, node);
+
+    if (ARROW_HAZARDS.test(arrowText)) {
       state.skip('body uses this/arguments/super, which the rule declines');
 
       return undefined;
@@ -246,7 +305,9 @@ const awaitGapIsClean = (state: State, node: AstNode, argument: AstNode): boolea
 // Nothing awaits or returns it, so this rule rather than `prefer-try-catch` is on the hook.
 export const detachedHandlerCase = (method: string): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, 'ExpressionStatement'), (node) => {
+    const expressionStatements = nodesOf(state, 'ExpressionStatement');
+
+    return pickFirst(expressionStatements, (node) => {
       const awaited = nodeOf(node.expression);
       const argument = awaited?.argument;
 
@@ -276,7 +337,9 @@ export const detachedHandlerCase = (method: string): Build => {
 };
 
 export const strictAwaitedHandlerCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'AwaitExpression'), (node) => {
+  const awaits = nodesOf(state, 'AwaitExpression');
+
+  return pickFirst(awaits, (node) => {
     const { argument } = node;
 
     if (!argument) {
@@ -298,7 +361,9 @@ export const strictAwaitedHandlerCase: Build = (state) => {
 // Unpicking a real `try`/`catch` would mean choosing the handler's statements, so the edit goes this way only.
 export const awaitedHandlerCase = (suffix: string): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, 'AwaitExpression'), (node) => {
+    const awaits = nodesOf(state, 'AwaitExpression');
+
+    return pickFirst(awaits, (node) => {
       const { argument } = node;
 
       return argument && awaitGapIsClean(state, node, argument)
@@ -309,7 +374,9 @@ export const awaitedHandlerCase = (suffix: string): Build => {
 };
 
 export const asyncReturnHandlerCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'ReturnStatement'), (node) => {
+  const returns = nodesOf(state, 'ReturnStatement');
+
+  return pickFirst(returns, (node) => {
     const { argument } = node;
 
     if (!argument || inFunction(node)?.async !== true) {
@@ -338,9 +405,13 @@ const shadowsName = (state: State, node: AstNode, name: string): boolean => {
   const named = new RegExp(String.raw`\b${escaped}\b`);
 
   for (let current: AstNode | undefined = node; current && current.type !== 'Program'; current = current.parent) {
-    if (declares.test(textOf(state, current)) || (current.params ?? [])
+    const currentText = textOf(state, current);
+
+    if (declares.test(currentText) || (current.params ?? [])
       .some((param) => {
-        return named.test(textOf(state, param));
+        const paramText = textOf(state, param);
+
+        return named.test(paramText);
       })) {
       return true;
     }
@@ -405,7 +476,9 @@ const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefin
   const elements = last?.elements ?? [];
   const names = elements
     .flatMap((element) => {
-      return element?.type === 'Identifier' && element.name !== undefined ? [element.name] : [];
+      const elementNames = element?.type === 'Identifier' && element.name !== undefined ? [element.name] : [];
+
+      return elementNames;
     });
 
   if (node.callee?.type !== 'Identifier' || !hooks.includes(node.callee.name ?? '') || last?.type !== 'ArrayExpression'
@@ -413,16 +486,20 @@ const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefin
     return undefined;
   }
 
-  return {
+  const dependencies = {
     array: last,
     names,
   };
+
+  return dependencies;
 };
 
 // Not reversed: a reversed array can land sorted by accident.
 export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build => {
   return (state) => {
-    return pickFirst(nodesOf(state, 'CallExpression'), (node) => {
+    const calls = nodesOf(state, 'CallExpression');
+
+    return pickFirst(calls, (node) => {
       const found = dependencyNames(node, hooks);
 
       if (!found) {
@@ -438,7 +515,9 @@ export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build =>
         return undefined;
       }
 
-      return skipped(state, unsafeToReflow(state, found.array.range[0], found.array.range[1]))
+      const unsafe = unsafeToReflow(state, found.array.range[0], found.array.range[1]);
+
+      return skipped(state, unsafe)
         ? undefined
         : replaced(state, found.array.range[0], found.array.range[1], `[${target.join(', ')}]`);
     });
@@ -451,10 +530,12 @@ const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined =
     .flatMap((property) => {
       const value = nodeOf(property.value);
 
-      return property.type === 'Property' && property.computed !== true && property.shorthand === true
+      const propertyNames = property.type === 'Property' && property.computed !== true && property.shorthand === true
         && value?.type === 'Identifier' && value.name !== undefined
         ? [value.name]
         : [];
+
+      return propertyNames;
     });
 
   return properties.length > 0 && names.length === properties.length ? names : undefined;
@@ -527,6 +608,12 @@ const KEYED = new Set([
   'TSMethodSignature',
 ]);
 
+const LABELLED = new Set([
+  'LabeledStatement',
+  'BreakStatement',
+  'ContinueStatement',
+]);
+
 const isNonReference = (node: AstNode): boolean => {
   const { parent } = node;
 
@@ -536,11 +623,7 @@ const isNonReference = (node: AstNode): boolean => {
 
   return (KEYED.has(parent.type) && parent.key === node && parent.computed !== true)
     || (parent.type === 'MemberExpression' && parent.property === node && parent.computed !== true)
-    || ([
-      'LabeledStatement',
-      'BreakStatement',
-      'ContinueStatement',
-    ].includes(parent.type) && parent.label === node);
+    || (LABELLED.has(parent.type) && parent.label === node);
 };
 
 // The destructured names are the ground truth, so no scope analysis is needed.
@@ -597,11 +680,13 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
     },
     ...references
       .map((node) => {
-        return {
+        const edit = {
           from: node.range[0] - base,
           to: node.range[1] - base,
           text: `${PROBE_PROPS}.${node.name ?? ''}`,
         };
+
+        return edit;
       }),
   ]
     .sort((left, right) => {
@@ -617,7 +702,9 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
 };
 
 export const arrowComponentCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'VariableDeclarator'), (node) => {
+  const declarators = nodesOf(state, 'VariableDeclarator');
+
+  return pickFirst(declarators, (node) => {
     const { id, init } = node;
     const names = init?.type === 'ArrowFunctionExpression' ? propsPatternNames(init.params?.[0]) : undefined;
 
@@ -628,7 +715,9 @@ export const arrowComponentCase: Build = (state) => {
 };
 
 export const functionDeclarationComponentCase: Build = (state) => {
-  return pickFirst(nodesOf(state, 'FunctionDeclaration'), (node) => {
+  const functionDeclarations = nodesOf(state, 'FunctionDeclaration');
+
+  return pickFirst(functionDeclarations, (node) => {
     const names = propsPatternNames(node.params?.[0]);
 
     return /^[A-Z]/.test(node.id?.name ?? '') && names ? componentPropsRewrite(state, node, names) : undefined;

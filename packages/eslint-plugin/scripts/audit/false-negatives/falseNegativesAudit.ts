@@ -71,7 +71,9 @@ const { values: flags, positionals } = parseArgs({
   },
 });
 
-for (const name of [flags.rule, flags.neuter]) {
+const ruleFlags = [flags.rule, flags.neuter];
+
+for (const name of ruleFlags) {
   if (name !== undefined && !RULE_IDS.includes(name)) {
     logError(`unknown rule: ${name}\nknown: ${RULE_IDS.join(', ')}`);
     process.exit(2);
@@ -110,11 +112,13 @@ const activeShapes: ActiveShape[] = selectedRules
 
     return shapes
       .map((entry) => {
-        return {
+        const active = {
           ...entry,
           key: `${rule} :: ${entry.shape}`,
           rule,
         };
+
+        return active;
       });
   })
   .filter((entry) => {
@@ -166,7 +170,7 @@ const ruleConfig = (rule: string, options: Record<string, OptionValue> | undefin
 const reportsFor = (source: string, name: string, entry: ActiveShape): Reports => {
   const messages = linter.verify(source, ruleConfig(entry.rule, entry.options), name);
 
-  return {
+  const reports = {
     fatal: messages
       .some((message) => {
         return message.fatal === true;
@@ -176,17 +180,21 @@ const reportsFor = (source: string, name: string, entry: ActiveShape): Reports =
         return message.ruleId === `@linteljs/${entry.rule}`;
       }).length,
   };
+
+  return reports;
 };
 
 const statsEntries = activeShapes
-  .map((entry): [string, Stats] => {
-    return [entry.key, {
+  .map((entry) => {
+    const statsEntry: [string, Stats] = [entry.key, {
       attempts: 0,
       cases: 0,
       misses: 0,
       seen: 0,
       skips: new Map(),
     }];
+
+    return statsEntry;
   });
 
 const stats = new Map(statsEntries);
@@ -212,11 +220,13 @@ const describeShape = (entry: ActiveShape): string => {
 };
 
 const snippetAt = (source: string, offset: number): string => {
-  const line = countMatches(source.slice(0, offset), /\n/g) + 1;
+  const preceding = source.slice(0, offset);
+  const line = countMatches(preceding, /\n/g) + 1;
+  const firstShown = Math.max(0, line - 2);
 
   return source
     .split('\n')
-    .slice(Math.max(0, line - 2), line + 3)
+    .slice(firstShown, line + 3)
     .join('\n');
 };
 
@@ -265,7 +275,7 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
 
   bucket.misses += 1;
 
-  logError([
+  const missReport = [
     `false negative: @linteljs/${entry.rule}`,
     `  shape: ${describeShape(entry)}`,
     `  ${file}`,
@@ -276,7 +286,9 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
       .map((line) => {
         return `    ${line}`;
       }),
-  ].join('\n'));
+  ].join('\n');
+
+  logError(missReport);
 };
 
 const counts = {
@@ -318,11 +330,13 @@ const load = (file: string): [string, string, Program] | undefined => {
     return undefined;
   }
 
-  return [
+  const loaded: [string, string, Program] = [
     source,
     name,
     ast,
   ];
+
+  return loaded;
 };
 
 const check = (file: string, hungry: ActiveShape[]): void => {
@@ -356,7 +370,7 @@ const check = (file: string, hungry: ActiveShape[]): void => {
   }
 };
 
-log([
+const plan = [
   `up to ${String(maxFiles)} files, one from each source in turn, under:`,
   ...sources
     .map((dir) => {
@@ -365,7 +379,9 @@ log([
   `rules: ${selectedRules.join(', ')}`,
   `shapes: ${String(activeShapes.length)} distinct ways of breaking them`,
   `target: ${String(casesWanted)} transformed cases per shape`,
-].join('\n'));
+].join('\n');
+
+log(plan);
 
 if (flags.neuter !== undefined) {
   logWarn(`NEUTERED: @linteljs/${flags.neuter} is stubbed to report nothing, every case must miss`);
@@ -412,25 +428,34 @@ const report = selectedRules
         return entry.rule === rule;
       });
 
-    return shapes.length === 0
-      ? []
-      : [`@linteljs/${rule}`, ...shapes
-          .flatMap((entry) => {
-            const bucket = statsOf(entry);
+    if (shapes.length === 0) {
+      return [];
+    }
 
-            return [
-              `  ${describeShape(entry)}`,
-              `    ${String(bucket.attempts)} attempted, ${String(sum([...bucket.skips.values()]))} skipped, `
-              + `${String(bucket.cases)} expected, ${String(bucket.seen)} seen, ${String(bucket.misses)} missed`,
-              ...orderBy([...bucket.skips], [1], ['desc'])
-                .map(([reason, count]) => {
-                  return `    skipped ${String(count)}: ${reason}`;
-                }),
-            ];
-          })];
+    const shapeLines = shapes
+      .flatMap((entry) => {
+        const bucket = statsOf(entry);
+        const skipped = sum([...bucket.skips.values()]);
+        const entryLines = [
+          `  ${describeShape(entry)}`,
+          `    ${String(bucket.attempts)} attempted, ${String(skipped)} skipped, `
+          + `${String(bucket.cases)} expected, ${String(bucket.seen)} seen, ${String(bucket.misses)} missed`,
+          ...orderBy([...bucket.skips], [1], ['desc'])
+            .map(([reason, count]) => {
+              return `    skipped ${String(count)}: ${reason}`;
+            }),
+        ];
+
+        return entryLines;
+      });
+    const ruleLines = [`@linteljs/${rule}`, ...shapeLines];
+
+    return ruleLines;
   });
 
-log(['per shape: attempted, skipped, expected, seen, missed', ...report].join('\n'));
+const perShape = ['per shape: attempted, skipped, expected, seen, missed', ...report].join('\n');
+
+log(perShape);
 
 const misses = activeShapes
   .map((entry) => {
