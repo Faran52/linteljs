@@ -47,13 +47,15 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
   const astroRules = baseOptions.astro === true ? await loadAstro() : [];
 
+  const baseLayerOptions = parts === undefined
+    ? baseOptions
+    : {
+        ...baseOptions,
+        frameworkGroup: parts.group,
+      };
+
   const configs: Layer = [
-    ...base(parts === undefined
-      ? baseOptions
-      : {
-          ...baseOptions,
-          frameworkGroup: parts.group,
-        }),
+    ...base(baseLayerOptions),
     ...(withTypescript === true ? typescript(options) : []),
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),

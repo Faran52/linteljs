@@ -80,9 +80,9 @@ const unknownAliasesIn = (aliases: string[]): string[] => {
     })
     .map(patternFor);
 
-  const patterns = new Set(unknownPatterns);
+  const patterns = [...new Set(unknownPatterns)];
 
-  return [...patterns]
+  return patterns
     .sort((left, right) => {
       return left.localeCompare(right);
     });

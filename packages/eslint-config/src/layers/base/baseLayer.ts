@@ -42,7 +42,13 @@ const SIZE_EXEMPT_FILES = [
 const gitignored = (): Layer => {
   const path = join(process.cwd(), '.gitignore');
 
-  return existsSync(path) ? [includeIgnoreFile(path, '@linteljs/base/gitignore')] : [];
+  if (!existsSync(path)) {
+    return [];
+  }
+
+  const gitignoreLayer = [includeIgnoreFile(path, '@linteljs/base/gitignore')];
+
+  return gitignoreLayer;
 };
 
 // Nothing here is type-aware, so `base` alone works on plain JavaScript.
@@ -58,7 +64,13 @@ export const base = (options: BaseOptions = {}): Layer => {
   } = options;
 
   const reaching = (files: string[]): string[] => {
-    return astro ? [...files, ...ASTRO_FILES] : files;
+    if (!astro) {
+      return files;
+    }
+
+    const withAstro = [...files, ...ASTRO_FILES];
+
+    return withAstro;
   };
 
   const scriptFiles = reaching(SCRIPT_AND_SFC_FILES);
