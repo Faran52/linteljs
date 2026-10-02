@@ -15,7 +15,7 @@ import {
 } from './constants';
 import { type Copied, copiedOf } from './utils/copiedUtils';
 
-import type { Answers } from '@config/types';
+import type { Answers, Artifact } from '@config/types';
 
 export interface StarterCover {
   // Distinct texts a starter template can be written as, per target and destination.
@@ -40,21 +40,25 @@ interface Sweep {
   placed: Set<string>;
 }
 
-// A starter test is written only beside the file it covers.
-const writtenFor = (answers: Answers): Copied[] => {
-  const artifacts = [...starterSourceEmitter(answers), ...testSetupEmitter(answers, NEW_PROJECT)];
+// A starter test is written only beside the file it covers, as `artifactWriter` skips it otherwise.
+export const writtenOf = (artifacts: Artifact[]): Artifact[] => {
   const paths = artifacts
     .map(({ target }) => {
       return target;
     });
   const targets = new Set(paths);
-  const written = artifacts
+
+  return artifacts
     .filter(({ requires = [] }) => {
       return requires
         .every((path) => {
           return targets.has(path);
         });
     });
+};
+
+const writtenFor = (answers: Answers): Copied[] => {
+  const written = writtenOf([...starterSourceEmitter(answers), ...testSetupEmitter(answers, NEW_PROJECT)]);
 
   return written
     .flatMap(copiedOf)

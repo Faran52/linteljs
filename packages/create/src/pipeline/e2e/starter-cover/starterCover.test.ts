@@ -4,8 +4,17 @@ import {
   it,
 } from 'vitest';
 
+import { DEFAULT_ANSWERS } from '@answers';
+import { starterSourceEmitter } from '@emitters';
+
 import { STARTER_CASES } from './constants';
-import { starterCases, starterCover } from './starterCover';
+import {
+  starterCases,
+  starterCover,
+  writtenOf,
+} from './starterCover';
+
+import type { Answers } from '@config/types';
 
 const NOT_A_CASE = 'react pnpm vitest no-such-answer';
 
@@ -47,5 +56,24 @@ describe('starterCases', () => {
       });
 
     expect(caseLabels).toStrictEqual(STARTER_CASES);
+  });
+});
+
+describe('writtenOf', () => {
+  it('drops a starter test whose covered file is not written', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+      testing: 'vitest',
+      router: 'react-router-framework',
+    };
+    const artifacts = starterSourceEmitter(answers);
+    const targets = writtenOf(artifacts)
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(targets).not.toContain('src/components/features/error-boundary/ErrorBoundary.test.tsx');
+    expect(targets).toContain('src/components/features/route-error/RouteError.test.tsx');
   });
 });

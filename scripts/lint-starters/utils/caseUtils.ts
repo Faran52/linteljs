@@ -23,6 +23,7 @@ import { promisify } from 'node:util';
 import { TEMPLATES_ROOT } from '@disk';
 import { starterSourceEmitter } from '@emitters';
 import { pipelineRun } from '@pipeline';
+import { writtenOf } from '@pipeline/e2e/starter-cover/starterCover';
 
 import { packTarball, run } from '../../utils/processUtils.ts';
 import {
@@ -211,7 +212,7 @@ export const spawnIn = async (dir: string, args: string[]): Promise<Spawned> => 
 
 // Only a file copied whole from one template has a template to hand a fix back to.
 export const fixedCopies = (item: E2eCase, dir: string): Map<string, string> => {
-  const whole = starterSourceEmitter(item.answers)
+  const whole = writtenOf(starterSourceEmitter(item.answers))
     .flatMap(({ target, content }) => {
       const isWhole = 'sources' in content && content.sources.length === 1 && content.transform === undefined;
       const [source] = isWhole ? content.sources : [];
