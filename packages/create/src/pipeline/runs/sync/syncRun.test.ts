@@ -17,13 +17,13 @@ import {
   describe,
   expect,
   it,
-  vi,
 } from 'vitest';
 
 import { MANAGED_PATH } from '@config/constants';
 
 import { CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
+import { parsePackageJson } from '@emitters';
 
 import {
   applySync,
@@ -93,7 +93,7 @@ describe('planSync', () => {
 
     const allMissing = plan.entries
       .every((entry) => {
-        return entry.status === 'missing' && entry.diff === '';
+        return entry.status === 'missing';
       });
 
     expect(allMissing).toBe(true);
@@ -121,7 +121,6 @@ describe('planSync', () => {
       });
 
     expect(entry?.status).toBe('unchanged');
-    expect(entry?.diff).toBe('');
 
     const pendsConfig = plan.pending
       .some((candidate) => {
@@ -131,7 +130,7 @@ describe('planSync', () => {
     expect(pendsConfig).toBe(false);
   });
 
-  it('reports a locally edited rule alone, with its diff, and leaves the edit on disk', async () => {
+  it('reports a locally edited rule alone, and leaves the edit on disk', async () => {
     await applyPending(HOSTED_DEFAULTS);
     await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
 
@@ -143,43 +142,10 @@ describe('planSync', () => {
       });
 
     expect(statuses).toEqual([[TYPE_STANDARDS, 'changed']]);
-    expect(pending[0]?.diff).toContain('local edit');
     expect(await readFile(join(cwd, TYPE_STANDARDS), 'utf8')).toBe('# local edit\n');
   });
 
-  it('reports a changed file without a diff when git cannot be spawned', async () => {
-    await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
-    await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
-    vi.stubEnv('PATH', '');
-
-    try {
-      const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries
-        .find(({ target }) => {
-          return target === TYPE_STANDARDS;
-        });
-
-      expect(entry?.status).toBe('changed');
-      expect(entry?.diff).toBe('');
-    }
-    finally {
-      vi.unstubAllEnvs();
-    }
-  });
-
-  it('reports a changed file without a diff when the diff outgrows what git can hand back', async () => {
-    await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
-    await writeFile(join(cwd, TYPE_STANDARDS), 'local edit\n'.repeat(200_000), 'utf8');
-
-    const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries
-      .find(({ target }) => {
-        return target === TYPE_STANDARDS;
-      });
-
-    expect(entry?.status).toBe('changed');
-    expect(entry?.diff).toBe('');
-  });
-
-  it('marks a locally edited artifact changed and carries a diff of the edit', async () => {
+  it('marks a locally edited artifact changed and pending', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
     await writeFile(join(cwd, 'eslint.config.js'), '// edited locally\n', 'utf8');
 
@@ -190,7 +156,6 @@ describe('planSync', () => {
       });
 
     expect(entry?.status).toBe('changed');
-    expect(entry?.diff).toContain('edited locally');
     expect(plan.pending).toContainEqual(entry);
   });
 
@@ -201,7 +166,6 @@ describe('planSync', () => {
     expect(await entryOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toEqual({
       target: 'CLAUDE.md',
       status: 'unchanged',
-      diff: '',
     });
 
     await rm(join(cwd, 'CLAUDE.md'));
@@ -230,13 +194,6 @@ describe('planSync', () => {
       });
 
     expect(obsoleteTargets).toEqual(CLAUDE_ONLY);
-
-    const allEmpty = obsolete
-      .every((entry) => {
-        return entry.diff === '';
-      });
-
-    expect(allEmpty).toBe(true);
     expect(pending).toEqual(expect.arrayContaining(obsolete));
   });
 
@@ -508,5 +465,112 @@ describe('applySync', () => {
 
     expect(await exists(join(cwd, '.claude/settings.json'))).toBe(false);
     expect(await readFile(join(cwd, '.claude/notes.md'), 'utf8')).toBe('# ours\n');
+  });
+});
+
+describe('sync limits itself to what linteljs owns', () => {
+  const CI = '.github/workflows/ci.yml';
+
+  const plantPackageJson = async (devDependencies: Record<string, string>): Promise<void> => {
+    const manifest = {
+      name: 'kept',
+      scripts: { check: 'our own gate' },
+      dependencies: { react: '^99.0.0' },
+      devDependencies,
+    };
+
+    await writeFile(join(cwd, 'package.json'), `${JSON.stringify(manifest)}\n`, 'utf8');
+  };
+
+  const syncedPackageJson = async (): Promise<ReturnType<typeof parsePackageJson>> => {
+    await applyPending(HOSTED_DEFAULTS);
+
+    return parsePackageJson(await readFile(join(cwd, 'package.json'), 'utf8'));
+  };
+
+  it('keeps a bumped framework, its scripts and every other version, and upgrades an old @linteljs/* one', async () => {
+    await plantPackageJson({
+      '@linteljs/eslint-config': '^1.5.0',
+      'typescript': '^99.0.0',
+    });
+
+    const { upgrades } = await planSync(cwd, HOSTED_DEFAULTS);
+    const synced = await syncedPackageJson();
+
+    expect(upgrades).toEqual([{
+      name: '@linteljs/eslint-config',
+      from: '^1.5.0',
+      to: '^2.0.0',
+    }]);
+
+    expect(synced.dependencies).toEqual({ react: '^99.0.0' });
+
+    expect(synced.devDependencies).toEqual({
+      '@linteljs/eslint-config': '^2.0.0',
+      'typescript': '^99.0.0',
+    });
+
+    expect(synced.scripts).toEqual({ check: 'our own gate' });
+  });
+
+  it('reports a dependency linteljs needs and the project lacks, and never writes it', async () => {
+    await plantPackageJson({ '@linteljs/eslint-config': '^2.0.0' });
+
+    const { missing, upgrades } = await planSync(cwd, HOSTED_DEFAULTS);
+    const synced = await syncedPackageJson();
+
+    expect(upgrades).toEqual([]);
+    expect(missing.devDependencies).toHaveProperty('husky');
+    expect(synced.devDependencies).toEqual({ '@linteljs/eslint-config': '^2.0.0' });
+  });
+
+  it('plans package.json unchanged, byte for byte, when no @linteljs/* version is behind', async () => {
+    await plantPackageJson({ '@linteljs/eslint-config': '^2.1.0' });
+
+    expect(await statusOf(HOSTED_DEFAULTS, 'package.json')).toBe('unchanged');
+  });
+
+  it('never moves a @linteljs/* range that is not a version', async () => {
+    await plantPackageJson({ '@linteljs/eslint-config': 'workspace:*' });
+
+    const { upgrades } = await planSync(cwd, HOSTED_DEFAULTS);
+
+    expect(upgrades).toEqual([]);
+  });
+
+  it('upgrades a @linteljs/* package where the project keeps it, even under dependencies', async () => {
+    const manifest = { dependencies: { '@linteljs/eslint-config': '^1.0.0' } };
+
+    await writeFile(join(cwd, 'package.json'), `${JSON.stringify(manifest)}\n`, 'utf8');
+
+    const synced = await syncedPackageJson();
+
+    expect(synced.dependencies).toEqual({ '@linteljs/eslint-config': '^2.0.0' });
+    expect(synced.devDependencies).toEqual({});
+  });
+
+  it('leaves a ci.yml the project has untouched, and writes one that is missing', async () => {
+    await mkdir(join(cwd, '.github/workflows'), { recursive: true });
+    await writeFile(join(cwd, CI), 'name: ours\n', 'utf8');
+
+    const status = await statusOf(HOSTED_DEFAULTS, CI);
+
+    await applyPending(HOSTED_DEFAULTS);
+
+    expect(status).toBe('unchanged');
+    expect(await readFile(join(cwd, CI), 'utf8')).toBe('name: ours\n');
+
+    await rm(join(cwd, CI));
+
+    expect(await statusOf(HOSTED_DEFAULTS, CI)).toBe('missing');
+  });
+
+  it('keeps the build opt-outs a project wrote into pnpm-workspace.yaml', async () => {
+    const workspace = 'ignoredBuiltDependencies:\n  - esbuild\n';
+
+    await writeFile(join(cwd, 'pnpm-workspace.yaml'), workspace, 'utf8');
+    await applyPending(HOSTED_DEFAULTS);
+
+    expect(await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8')).toContain(workspace);
   });
 });

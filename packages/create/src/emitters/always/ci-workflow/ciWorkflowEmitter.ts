@@ -9,7 +9,7 @@ import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 
-// Emitted, not preserved: it is the gate, and a stale copy would go on calling a renamed script.
+// Birth-only: a project's CI grows its own jobs, and `sync` never rewrites them.
 
 interface ManagerSetup {
   before?: string;
@@ -81,5 +81,8 @@ ${before}      - uses: actions/setup-node@v7
 };
 
 export const ciWorkflowEmitter = (answers: HostedAnswers): Artifact[] => {
-  return [emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers))];
+  return [{
+    ...emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers)),
+    preserve: true,
+  }];
 };

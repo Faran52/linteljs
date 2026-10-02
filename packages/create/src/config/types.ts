@@ -110,6 +110,8 @@ interface CopiedAssets {
 
 interface MergedText {
   merge: (current: string | null) => string;
+  // What `sync` writes over a file the project already has, where the project owns more of it than `merge` leaves.
+  resync?: (current: string) => string;
 }
 
 export type ArtifactContent = CopiedAssets | EmittedText | MergedText;
@@ -119,7 +121,7 @@ export interface Artifact {
   target: string;
   content: ArtifactContent;
   executable?: boolean;
-  // Installed when missing, never overwritten, not even under --force.
+  // Installed when missing, never overwritten.
   preserve?: true;
   // Planted only when a project is born; the project owns it from then on.
   seed?: true;

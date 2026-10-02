@@ -70,3 +70,20 @@ describe('merged', () => {
     });
   });
 });
+
+describe('merged with a resync', () => {
+  it('carries the resync beside the merge', () => {
+    const merge = (current: string | null): string => {
+      return current ?? '';
+    };
+
+    const resync = (current: string): string => {
+      return current;
+    };
+
+    expect(merged('package', 'package.json', merge, resync).content).toEqual({
+      merge,
+      resync,
+    });
+  });
+});

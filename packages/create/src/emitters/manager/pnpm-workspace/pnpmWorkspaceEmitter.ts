@@ -12,13 +12,11 @@ import {
 // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
 const SUPERSEDED_KEY = 'ignoredBuiltDependencies:';
 
-// Line-based: a YAML round-trip would reformat every line the user wrote.
-export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
-  const lines = (existing ?? '').split('\n');
+const withoutSuperseded = (existing: string): string => {
   const kept: string[] = [];
   let dropping = false;
 
-  for (const line of lines) {
+  for (const line of existing.split('\n')) {
     const isTopLevel = line !== '' && !/^[\s-]/.test(line);
 
     if (isTopLevel) {
@@ -30,9 +28,12 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
     }
   }
 
-  const remainder = kept
-    .join('\n')
-    .replace(/^\n+/, '');
+  return kept.join('\n');
+};
+
+// Line-based: a YAML round-trip would reformat every line the user wrote. Only adds a block that is absent.
+export const resyncPnpmWorkspace = (existing: string, answers: Answers): string => {
+  const remainder = existing.replace(/^\n+/, '');
 
   const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
@@ -45,11 +46,18 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
   return `${withOverrides.trimEnd()}\n`;
 };
 
+// At birth the scaffolder's opt-out goes too; on `sync` it is the project's own.
+export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
+  return resyncPnpmWorkspace(withoutSuperseded(existing ?? ''), answers);
+};
+
 // Discarding it breaks an install that already wrote into it.
 export const pnpmWorkspaceEmitter = (answers: Answers): Artifact[] => {
   return answers.packageManager === 'pnpm'
     ? [merged('package', 'pnpm-workspace.yaml', (current) => {
         return mergePnpmWorkspace(current, answers);
+      }, (current) => {
+        return resyncPnpmWorkspace(current, answers);
       })]
     : [];
 };

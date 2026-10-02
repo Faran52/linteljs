@@ -1,7 +1,6 @@
 import {
   mkdir,
   mkdtemp,
-  readdir,
   readFile,
   rm,
   writeFile,
@@ -46,6 +45,7 @@ import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
+import { SYNC_NEEDS_YES } from './constants';
 import { parseCliArgs } from './utils/argvUtils';
 
 import type { Answers } from '@config/types';
@@ -388,60 +388,82 @@ describe('main: sync', () => {
     expect(printed).toContain('Everything is already up to date.');
   });
 
-  it('shows the diff and writes nothing without --force', async () => {
+  it('lists the files in one table, asks once, and writes nothing when declined', async () => {
     await generated();
     await writeFile(join(project, RULE), '# local edit\n', 'utf8');
 
-    const { printed } = await runMain(['sync', '--yes']);
+    const asked = scripted(['no']);
+    const { code, printed } = await runMain(['sync'], asked);
 
-    expect(printed).toContain(`${RULE}: changed`);
-    expect(printed).toContain('local edit');
-    expect(printed).toContain('Re-run with --force');
-    expect(printed).not.toContain('Steps:');
+    expect(code).toBe(0);
+    expect(asked.calls).toEqual(['Apply these changes?']);
+    expect(printed).toContain(`sync would change:\n  update  ${RULE}\n`);
+    expect(printed).toContain('Nothing was written.');
+    expect(printed).not.toContain('local edit');
     expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
   });
 
-  it('counts the files it would change, in the singular for one', async () => {
-    await generated();
-
-    const references = join(project, 'plugins/linteljs/skills/linteljs/references');
-    const [first = '', second = ''] = (await readdir(references))
-      .toSorted((left, right) => {
-        return left.localeCompare(right, 'en');
-      });
-
-    await writeFile(join(references, first), '# local edit\n', 'utf8');
-
-    expect((await runMain(['sync', '--yes'])).printed).toMatch(/\b1 file\b/u);
-
-    await writeFile(join(references, second), '# local edit\n', 'utf8');
-
-    expect((await runMain(['sync', '--yes'])).printed).toMatch(/\b2 files\b/u);
-  });
-
-  it('prints no empty diff where git could not make one', async () => {
-    await generated();
-    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
-    vi.stubEnv('PATH', '');
-
-    const { printed } = await runMain(['sync', '--yes']);
-
-    expect(printed).toContain(`${RULE}: changed\n`);
-    expect(printed).not.toContain(`${RULE}: changed\n\n\n`);
-  });
-
-  it('overwrites with --force and says so', async () => {
+  it('writes once the question is answered yes', async () => {
     await generated();
     await writeFile(join(project, RULE), '# local edit\n', 'utf8');
 
-    const { printed } = await runMain([
-      'sync',
-      '--yes',
-      '--force',
-    ]);
+    const { printed } = await runMain(['sync'], scripted(['yes']));
 
     expect(printed).toContain(`wrote ${RULE}`);
     expect(await readFile(join(project, RULE), 'utf8')).not.toBe('# local edit\n');
+  });
+
+  it('writes under --yes without asking', async () => {
+    await generated();
+    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+
+    const asked = scripted([]);
+    const { printed } = await runMain(['sync', '--yes'], asked);
+
+    expect(asked.calls).toEqual([]);
+    expect(printed).toContain(`wrote ${RULE}`);
+  });
+
+  it('refuses without a terminal or --yes, and writes nothing', async () => {
+    await generated();
+    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+
+    const { code, errors } = await runMain(['sync']);
+
+    expect(code).toBe(1);
+    expect(errors).toEqual([SYNC_NEEDS_YES]);
+    expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
+  });
+
+  it('prints the install command for a dependency the project lacks, and leaves package.json without it', async () => {
+    await generated();
+
+    const manifest = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
+    const devDependencies = { ...manifest.devDependencies };
+
+    Reflect.deleteProperty(devDependencies, 'husky');
+    const trimmed = {
+      ...manifest,
+      devDependencies,
+    };
+
+    await writeFile(join(project, 'package.json'), `${JSON.stringify(trimmed, null, 2)}\n`, 'utf8');
+
+    const { code, printed } = await runMain(['sync', '--yes']);
+    const synced = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
+
+    expect(code).toBe(0);
+    expect(printed).toMatch(/ {2}pnpm add -D "husky@[^"]+"\n/u);
+    expect(synced.devDependencies).not.toHaveProperty('husky');
+  });
+
+  it('refuses --force as an unknown flag', async () => {
+    await generated();
+
+    const { code, errors } = await runMain(['sync', '--force']);
+
+    expect(code).toBe(1);
+    expect(errors.join('\n')).toContain("Unknown option '--force'");
   });
 
   it('says what it removed once the config stops selecting a host', async () => {
@@ -452,9 +474,9 @@ describe('main: sync', () => {
       agents: ['codex'],
     });
 
-    const { printed } = await runMain(['sync', '--force'], scripted([]));
+    const { printed } = await runMain(['sync', '--yes'], scripted([]));
 
-    expect(printed).toContain('.claude/settings.json: obsolete');
+    expect(printed).toMatch(/delete +\.claude\/settings\.json\n/u);
     expect(printed).toContain('removed .claude/settings.json');
     expect(printed).toContain('wrote AGENTS.md');
   });
@@ -468,7 +490,7 @@ describe('main: sync', () => {
       code,
       errors,
       printed,
-    } = await runMain(['sync', '--force'], asked);
+    } = await runMain(['sync', '--yes'], asked);
 
     expect(code).toBe(1);
     expect(errors.join('\n')).toContain('linteljs.config.json was not found; this is not a LintelJS-managed project');
@@ -486,11 +508,11 @@ describe('main: sync', () => {
       hostedFramework: 'solid',
     });
 
-    const asked = scripted([]);
+    const asked = scripted(['no']);
     const { printed } = await runMain(['sync'], asked);
 
-    expect(asked.calls).toEqual([]);
-    expect(printed).toContain('plugins/linteljs/skills/linteljs/references/solid-reactivity.md: missing');
+    expect(asked.calls).toEqual(['Apply these changes?']);
+    expect(printed).toMatch(/add +plugins\/linteljs\/skills\/linteljs\/references\/solid-reactivity\.md\n/u);
   });
 });
 

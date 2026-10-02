@@ -22,11 +22,35 @@ describe('parseCliArgs', () => {
   });
 
   it('reads sync as a command rather than a project name', () => {
-    const options = parseCliArgs(['sync', '--force']);
+    const options = parseCliArgs(['sync', '--yes']);
 
     expect(options.command).toBe('sync');
     expect(options.name).toBe('');
-    expect(options.force).toBe(true);
+    expect(options.yes).toBe(true);
+  });
+
+  it('no longer knows --force', () => {
+    const parsing = (): ReturnType<typeof parseCliArgs> => {
+      return parseCliArgs(['sync', '--force']);
+    };
+
+    expect(parsing).toThrow("Unknown option '--force'");
+  });
+
+  it('lets an answer flag stand in for --yes on create, never on sync', () => {
+    const created = parseCliArgs([
+      'demo-app',
+      '--target',
+      'react',
+    ]);
+    const synced = parseCliArgs([
+      'sync',
+      '--target',
+      'react',
+    ]);
+
+    expect(created.yes).toBe(true);
+    expect(synced.yes).toBe(false);
   });
 
   it('keeps a stage name it does not know, rather than dropping it', () => {

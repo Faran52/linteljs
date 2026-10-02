@@ -14,8 +14,13 @@ import {
   safeProjectPath,
   shippedAssetsReader,
 } from '@disk';
-import { buildArtifacts } from '@emitters';
-import { gitSpawn } from '@spawns';
+import {
+  type Artifact,
+  buildArtifacts,
+  type DependencyDrift,
+  dependencyDrift,
+  parsePackageJson,
+} from '@emitters';
 
 import type { HostedAnswers } from '@config/types';
 
@@ -24,10 +29,9 @@ export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 export interface SyncEntry {
   target: string;
   status: SyncStatus;
-  diff: string;
 }
 
-export interface SyncPlan {
+export interface SyncPlan extends DependencyDrift {
   entries: SyncEntry[];
   pending: SyncEntry[];
 }
@@ -37,11 +41,10 @@ export interface SyncResult {
   removed: string[];
 }
 
-const entryOf = (target: string, status: SyncStatus, diff = ''): SyncEntry => {
+const entryOf = (target: string, status: SyncStatus): SyncEntry => {
   return {
     target,
     status,
-    diff,
   };
 };
 
@@ -50,25 +53,46 @@ const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
   return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
 };
 
-// `git diff --no-index` rather than a diff dependency.
-const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
-  const result = gitSpawn(
-    [
-      'diff',
-      '--no-index',
-      '--no-color',
-      '--',
-      currentPath,
-      '-',
-    ],
-    {
-      cwd,
-      input: shipped,
-    },
-  );
+// Over a file the project has, a merge with a `resync` keeps what the project owns.
+const forSync = (artifact: Artifact): Artifact => {
+  const { content } = artifact;
 
-  // Without git, or past spawnSync's buffer, the status is reported with no diff.
-  return 'stdout' in result && result.error === undefined ? result.stdout : '';
+  if (!('resync' in content)) {
+    return artifact;
+  }
+
+  const { merge, resync = merge } = content;
+
+  return {
+    ...artifact,
+    content: {
+      merge: (current) => {
+        return current === null ? merge(null) : resync(current);
+      },
+    },
+  };
+};
+
+const syncArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
+  const project = await projectShapeReader(cwd);
+
+  return buildArtifacts(answers, project, basename(cwd))
+    .map(forSync);
+};
+
+// A package.json `sync` would write from nothing carries every dependency already.
+const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
+  const manifest = await readIfPresent(join(cwd, 'package.json'));
+
+  return manifest === null
+    ? {
+        upgrades: [],
+        missing: {
+          dependencies: {},
+          devDependencies: {},
+        },
+      }
+    : dependencyDrift(parsePackageJson(manifest), answers);
 };
 
 // Exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
@@ -88,9 +112,7 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
   const entries: SyncEntry[] = [];
   const expected = new Set<string>();
 
-  const project = await projectShapeReader(cwd);
-
-  for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
+  for (const artifact of await syncArtifacts(cwd, answers)) {
     expected.add(artifact.target);
 
     // This run's own bookkeeping, not a file to report.
@@ -106,7 +128,7 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
       continue;
     }
 
-    // Reporting an edit here would invite a `--force` that undoes it.
+    // Reporting an edit here would invite a sync that undoes it.
     if (artifact.preserve === true) {
       entries.push(entryOf(artifact.target, 'unchanged'));
       continue;
@@ -114,14 +136,13 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
 
     const shipped = await shippedAssetsReader(artifact.content, current);
 
-    entries.push(current === shipped
-      ? entryOf(artifact.target, 'unchanged')
-      : entryOf(artifact.target, 'changed', diffOf(artifact.target, shipped, cwd)));
+    entries.push(entryOf(artifact.target, current === shipped ? 'unchanged' : 'changed'));
   }
 
   entries.push(...await obsoleteIn(cwd, expected));
 
   return {
+    ...await driftOf(cwd, answers),
     entries,
     pending: entries
       .filter((entry) => {
@@ -166,11 +187,10 @@ export const applySync = async (
   const removed: string[] = [];
   const expected = new Set<string>();
 
-  const project = await projectShapeReader(cwd);
   // Read first: the loop below rewrites the record.
   const candidates = await obsoleteCandidates(cwd);
 
-  for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
+  for (const artifact of await syncArtifacts(cwd, answers)) {
     expected.add(artifact.target);
 
     // A partial sync that left it stale would forget what it may remove next time.

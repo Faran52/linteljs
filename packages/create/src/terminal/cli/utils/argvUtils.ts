@@ -25,7 +25,6 @@ export interface CliOptions {
   unexpectedArguments: string[];
   yes: boolean;
   seed: boolean;
-  force: boolean;
   help: boolean;
   version: boolean;
 }
@@ -94,9 +93,9 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
     existing: values.existing,
-    yes: values.yes || answered,
+    // On `sync` an answer flag answers nothing, so it must not stand in for the confirmation.
+    yes: values.yes || (answered && command === 'create'),
     seed: values.seed,
-    force: values.force,
     help: values.help,
     version: values.version,
   };

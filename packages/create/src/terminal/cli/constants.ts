@@ -1,7 +1,9 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
 import { STAGES } from '@config/constants';
-import { type Stage } from '@config/types';
+import { type PackageManager, type Stage } from '@config/types';
+
+import { type SyncStatus } from '@pipeline';
 
 import {
   answerOptions,
@@ -21,8 +23,7 @@ export const USAGE = `@linteljs/create [name] [options]
   --no-install      skip the install and the eslint --fix pass that needs it
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
-  --yes, -y         accept the defaults, ask nothing
-  --force           sync: overwrite without asking
+  --yes, -y         accept the defaults, ask nothing; sync: apply without asking
   --version, -v
   --help, -h
 
@@ -31,7 +32,27 @@ ${answerUsage(FLAGGED_ANSWERS)}
 A list is comma-separated or the flag repeated.
 
 A non-interactive create needs a project name, or --yes to take the directory's.
+
+sync updates only what linteljs owns: its hooks, scripts and configs, and the
+@linteljs/* versions in package.json. It lists them and asks once; without a
+terminal it needs --yes. A missing dependency is printed as a command, never written.
 `;
+
+export const SYNC_NEEDS_YES = 'Nothing was written: sync asks before it writes. Run it in a terminal, or pass --yes.';
+
+export const SYNC_ACTIONS: Record<SyncStatus, string> = {
+  changed: 'update',
+  missing: 'add',
+  obsolete: 'delete',
+  unchanged: 'keep',
+};
+
+export const ADD_PREFIX: Record<PackageManager, string> = {
+  pnpm: 'pnpm add',
+  npm: 'npm install',
+  yarn: 'yarn add',
+  bun: 'bun add',
+};
 
 export const CLI_OPTIONS = {
   'existing': {
@@ -54,10 +75,6 @@ export const CLI_OPTIONS = {
   'yes': {
     type: 'boolean',
     short: 'y',
-    default: false,
-  },
-  'force': {
-    type: 'boolean',
     default: false,
   },
   'help': {

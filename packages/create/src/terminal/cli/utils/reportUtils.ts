@@ -11,13 +11,16 @@ import {
 } from '@config/types';
 
 import {
+  ADD_PREFIX,
   SPINNER_FRAMES,
   SPINNER_INTERVAL,
   STAGE_LABELS,
   STAGE_WIDTH,
+  SYNC_ACTIONS,
 } from '../constants';
 
-import type { PipelineOptions } from '@pipeline';
+import type { MissingDependencies } from '@emitters';
+import type { PipelineOptions, SyncPlan } from '@pipeline';
 import type { CliOptions } from './argvUtils';
 
 export interface StageReport extends Required<Pick<PipelineOptions,
@@ -150,4 +153,55 @@ const liveReport = (): StageReport => {
 // A redirected run has a terminal on stdin without one on stdout.
 export const stageReport = (options: CliOptions): StageReport => {
   return stdout.isTTY ? liveReport() : pipedReport(options);
+};
+
+// One row per file, then one per `@linteljs/*` version: what the single question covers.
+export const syncTable = (plan: SyncPlan): string => {
+  const files = plan.pending
+    .map(({ target, status }) => {
+      return [SYNC_ACTIONS[status], target] as const;
+    });
+  const versions = plan.upgrades
+    .map(({
+      name,
+      from,
+      to,
+    }) => {
+      return ['upgrade', `${name} ${from ?? 'none'} -> ${to}`] as const;
+    });
+  const rows = [...files, ...versions];
+  const width = Math.max(...rows
+    .map(([action]) => {
+      return action.length;
+    }));
+
+  return rows
+    .map(([action, subject]) => {
+      return `  ${action.padEnd(width)}  ${subject}`;
+    })
+    .join('\n');
+};
+
+// Quoted: `cmd.exe` reads a bare `^` as an escape.
+const specsOf = (dependencies: Record<string, string>): string => {
+  return Object.entries(dependencies)
+    .map(([name, version]) => {
+      return `"${name}@${version}"`;
+    })
+    .join(' ');
+};
+
+export const installCommands = (packageManager: PackageManager, missing: MissingDependencies): string[] => {
+  const add = ADD_PREFIX[packageManager];
+  const commands: string[] = [];
+
+  if (Object.keys(missing.dependencies).length > 0) {
+    commands.push(`  ${add} ${specsOf(missing.dependencies)}`);
+  }
+
+  if (Object.keys(missing.devDependencies).length > 0) {
+    commands.push(`  ${add} -D ${specsOf(missing.devDependencies)}`);
+  }
+
+  return commands;
 };

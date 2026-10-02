@@ -23,6 +23,7 @@ import {
   ask,
   type Asked,
   type AskInput,
+  confirm,
   inquirerPrompter,
   type Prompter,
   RunCancelled,
@@ -812,6 +813,34 @@ describe('the form library and router questions', () => {
     expect(react.result.answers.router).toBe('tanstack-router');
     expect(next.recorded.calls).not.toContain('Router');
     expect(next.result.answers).not.toHaveProperty('router');
+  });
+});
+
+describe('confirm', () => {
+  it('answers true only for yes, defaulting to no, and throws on a cancel', async () => {
+    const recorded = scripted([
+      'yes',
+      'no',
+      undefined,
+      CANCEL,
+    ]);
+
+    const yes = await confirm(recorded.prompter, 'Apply?');
+    const no = await confirm(recorded.prompter, 'Apply?');
+    const defaulted = await confirm(recorded.prompter, 'Apply?');
+
+    expect([
+      yes,
+      no,
+      defaulted,
+    ]).toEqual([
+      true,
+      false,
+      false,
+    ]);
+
+    expect(recorded.labels['Apply?']).toEqual(['Yes', 'No']);
+    await expect(confirm(recorded.prompter, 'Apply?')).rejects.toBeInstanceOf(RunCancelled);
   });
 });
 

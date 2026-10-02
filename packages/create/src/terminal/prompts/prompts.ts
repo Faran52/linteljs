@@ -343,6 +343,25 @@ const writeIfPresent = (
 };
 
 // Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
+export const confirm = async (prompter: Prompter, message: string): Promise<boolean> => {
+  const answer = unwrap(prompter, await prompter.select({
+    message,
+    initialValue: 'no',
+    options: [
+      {
+        value: 'yes',
+        label: 'Yes',
+      },
+      {
+        value: 'no',
+        label: 'No',
+      },
+    ],
+  }));
+
+  return answer === 'yes';
+};
+
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
   const answered: Partial<Record<AnswerKey, JsonValue>> = {};

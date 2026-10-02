@@ -29,12 +29,13 @@ import {
 import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
+  confirm,
   inquirerPrompter,
   type Prompter,
   RunCancelled,
 } from '../prompts/prompts';
 
-import { USAGE } from './constants';
+import { SYNC_NEEDS_YES, USAGE } from './constants';
 import {
   type AnswerFlags,
   argumentError,
@@ -42,9 +43,11 @@ import {
   parseCliArgs,
 } from './utils/argvUtils';
 import {
+  installCommands,
   nextSteps,
   say,
   stageReport,
+  syncTable,
 } from './utils/reportUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -110,30 +113,41 @@ const askedFrom = async (
   };
 };
 
-const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<void> => {
-  const { pending } = await planSync(options.cwd, answers);
+const runSync = async (
+  options: CliOptions,
+  answers: HostedAnswers,
+  prompter: Prompter,
+  hasTerminal: boolean,
+): Promise<number> => {
+  const plan = await planSync(options.cwd, answers);
+  const install = installCommands(answers.packageManager, plan.missing);
 
-  if (pending.length === 0) {
-    say('Everything is already up to date.');
-    return;
+  if (install.length > 0) {
+    const heading = 'linteljs needs packages this project does not have. sync leaves dependencies to you:';
+
+    say([heading, ...install].join('\n'));
   }
 
-  say(`${String(pending.length)} file${pending.length === 1 ? '' : 's'} would change:`);
+  if (plan.pending.length === 0) {
+    say('Everything is already up to date.');
+    return 0;
+  }
 
-  for (const entry of pending) {
-    say(`\n${entry.target}: ${entry.status}`);
+  say(`sync would change:\n${syncTable(plan)}`);
 
-    if (entry.diff !== '') {
-      say(entry.diff);
+  if (!options.yes) {
+    if (!hasTerminal) {
+      console.error(SYNC_NEEDS_YES);
+      return 1;
+    }
+
+    if (!await confirm(prompter, 'Apply these changes?')) {
+      say('Nothing was written.');
+      return 0;
     }
   }
 
-  if (!options.force) {
-    say('\nNothing written. Re-run with --force to overwrite the files listed above.');
-    return;
-  }
-
-  const targets = pending
+  const targets = plan.pending
     .map((entry) => {
       return entry.target;
     });
@@ -151,6 +165,8 @@ const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<voi
   for (const target of removed) {
     say(`removed ${target}`);
   }
+
+  return 0;
 };
 
 // Not `process.exit`, which drops queued stderr writes.
@@ -208,9 +224,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     const { name, answers } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
     if (options.command === 'sync') {
-      await runSync(options, answers);
-
-      return 0;
+      return await runSync(options, answers, prompter ?? inquirerPrompter, hasTerminal);
     }
 
     await pipelineRun({

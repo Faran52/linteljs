@@ -11,11 +11,13 @@ import {
 import { SPINNER_FRAMES, SPINNER_INTERVAL } from '../constants';
 
 import {
+  installCommands,
   nextSteps,
   say,
   stageLine,
   stageReport,
   stepsPlan,
+  syncTable,
 } from './reportUtils';
 
 import type { CliOptions } from './argvUtils';
@@ -30,7 +32,6 @@ const OPTIONS: CliOptions = {
   unexpectedArguments: [],
   yes: true,
   seed: false,
-  force: false,
   help: false,
   version: false,
 };
@@ -321,5 +322,76 @@ describe('stageReport on a terminal', () => {
     });
 
     expect(output).toBe('inherit');
+  });
+});
+
+describe('syncTable', () => {
+  it('lists each file under what sync does to it, then each @linteljs/* version from and to', () => {
+    const table = syncTable({
+      entries: [],
+      pending: [
+        {
+          target: '.husky/pre-commit',
+          status: 'changed',
+        },
+        {
+          target: 'scripts/new.ts',
+          status: 'missing',
+        },
+        {
+          target: '.claude/settings.json',
+          status: 'obsolete',
+        },
+      ],
+      upgrades: [
+        {
+          name: '@linteljs/eslint-config',
+          from: '^1.5.0',
+          to: '^2.0.0',
+        },
+        {
+          name: '@linteljs/eslint-plugin',
+          to: '^2.0.0',
+        },
+      ],
+      missing: {
+        dependencies: {},
+        devDependencies: {},
+      },
+    });
+
+    expect(table.split('\n')).toEqual([
+      '  update   .husky/pre-commit',
+      '  add      scripts/new.ts',
+      '  delete   .claude/settings.json',
+      '  upgrade  @linteljs/eslint-config ^1.5.0 -> ^2.0.0',
+      '  upgrade  @linteljs/eslint-plugin none -> ^2.0.0',
+    ]);
+  });
+});
+
+describe('installCommands', () => {
+  it('prints one quoted add per field, in the project\'s package manager', () => {
+    const commands = installCommands('npm', {
+      dependencies: { qs: '^6.0.0' },
+      devDependencies: {
+        'husky': '^9.0.0',
+        'lint-staged': '^16.0.0',
+      },
+    });
+
+    expect(commands).toEqual([
+      '  npm install "qs@^6.0.0"',
+      '  npm install -D "husky@^9.0.0" "lint-staged@^16.0.0"',
+    ]);
+  });
+
+  it('prints nothing when nothing is missing', () => {
+    const commands = installCommands('pnpm', {
+      dependencies: {},
+      devDependencies: {},
+    });
+
+    expect(commands).toEqual([]);
   });
 });

@@ -16,6 +16,7 @@ import {
   localesOf,
 } from '@utils/answerUtils';
 import { isJsonObject } from '@utils/objectUtils';
+import { rankOf } from '@utils/versionUtils';
 
 import {
   type ScopedOverride,
@@ -68,6 +69,24 @@ interface Pin {
   name: string;
   version: string;
 }
+
+export interface Upgrade {
+  name: string;
+  from?: string;
+  to: string;
+}
+
+export interface MissingDependencies {
+  dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
+}
+
+export interface DependencyDrift {
+  upgrades: Upgrade[];
+  missing: MissingDependencies;
+}
+
+const LINTELJS_SCOPE = '@linteljs/';
 
 // Nuxt takes the Vite plugin: its `postcss-import` reads `@import "tailwindcss"` off disk and fails.
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
@@ -308,4 +327,75 @@ export const allowedBuildNames = (answers: Answers): string[] => {
     .sort((left, right) => {
       return left.localeCompare(right, 'en');
     });
+};
+
+const rankOfRange = (range: string): number => {
+  return rankOf(range.replace(/^\D+/, ''));
+};
+
+// A range that is not a version (`workspace:*`, `link:`) ranks NaN and is never moved.
+const isBehind = (from: string | undefined, to: string): boolean => {
+  return from === undefined || rankOfRange(from) < rankOfRange(to);
+};
+
+// What `sync` may change in a project's dependencies: its own packages, and nothing the project chose.
+export const dependencyDrift = (existing: PackageJson, answers: Answers): DependencyDrift => {
+  const installed = {
+    ...existing.devDependencies,
+    ...existing.dependencies,
+  };
+  const wanted = {
+    dependencies: buildDependencies(answers),
+    devDependencies: buildDevDependencies(answers),
+  };
+  const upgrades: Upgrade[] = [];
+  const missing: MissingDependencies = {
+    dependencies: {},
+    devDependencies: {},
+  };
+
+  for (const field of ['dependencies', 'devDependencies'] as const) {
+    for (const [name, to] of Object.entries(wanted[field])) {
+      const from = installed[name];
+      const isOwn = name.startsWith(LINTELJS_SCOPE);
+
+      if (isOwn && isBehind(from, to)) {
+        upgrades.push({
+          name,
+          ...(from === undefined ? {} : { from }),
+          to,
+        });
+      }
+
+      if (!isOwn && from === undefined) {
+        missing[field][name] = to;
+      }
+    }
+  }
+
+  return {
+    upgrades,
+    missing,
+  };
+};
+
+// Only the `@linteljs/*` entries move, each in the field the project keeps it in.
+export const upgradedPackageJson = (existing: PackageJson, upgrades: Upgrade[]): PackageJson => {
+  const dependencies = { ...existing.dependencies };
+  const devDependencies = { ...existing.devDependencies };
+
+  for (const { name, to } of upgrades) {
+    if (name in dependencies) {
+      dependencies[name] = to;
+    }
+    else {
+      devDependencies[name] = to;
+    }
+  }
+
+  return {
+    ...existing,
+    ...(existing.dependencies === undefined ? {} : { dependencies }),
+    devDependencies,
+  };
 };

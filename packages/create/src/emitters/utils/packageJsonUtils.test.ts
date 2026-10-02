@@ -22,8 +22,10 @@ import {
   buildDependencies,
   buildDevDependencies,
   buildOverrides,
+  dependencyDrift,
   parsePackageJson,
   pinned,
+  upgradedPackageJson,
   versioned,
 } from './packageJsonUtils';
 
@@ -982,5 +984,70 @@ describe('buildDependencies with languages', () => {
     expect(english).not.toHaveProperty('@inlang/paraglide-js');
     expect(react).not.toHaveProperty('@inlang/paraglide-js');
     expect(webextension).not.toHaveProperty('@inlang/paraglide-js');
+  });
+});
+
+describe('dependencyDrift', () => {
+  it('names an old or absent @linteljs/* package an upgrade and anything else absent missing, by field', () => {
+    const drift = dependencyDrift({
+      dependencies: { react: '^99.0.0' },
+      devDependencies: {
+        '@linteljs/eslint-config': '^1.5.0',
+        'typescript': '^99.0.0',
+      },
+    }, DEFAULT_ANSWERS);
+    const fresh = dependencyDrift({}, DEFAULT_ANSWERS);
+
+    expect(drift.upgrades).toEqual([{
+      name: '@linteljs/eslint-config',
+      from: '^1.5.0',
+      to: VERSIONS['@linteljs/eslint-config'],
+    }]);
+
+    expect(drift.missing.devDependencies).not.toHaveProperty('typescript');
+    expect(drift.missing.devDependencies).toHaveProperty('husky');
+    expect(drift.missing.dependencies).toHaveProperty('qs');
+
+    expect(fresh.upgrades).toEqual([{
+      name: '@linteljs/eslint-config',
+      to: VERSIONS['@linteljs/eslint-config'],
+    }]);
+  });
+
+  it('never moves a newer range, or one that is not a version', () => {
+    const newer = dependencyDrift({ devDependencies: { '@linteljs/eslint-config': '^9.0.0' } }, DEFAULT_ANSWERS);
+    const linkedConfig = { devDependencies: { '@linteljs/eslint-config': 'link:../config' } };
+    const linked = dependencyDrift(linkedConfig, DEFAULT_ANSWERS);
+
+    expect(newer.upgrades).toEqual([]);
+    expect(linked.upgrades).toEqual([]);
+  });
+});
+
+describe('upgradedPackageJson', () => {
+  it('moves each version in the field the project keeps it in, and adds an absent one as a dev dependency', () => {
+    const upgraded = upgradedPackageJson({
+      name: 'kept',
+      dependencies: { '@linteljs/eslint-config': '^1.0.0' },
+    }, [
+      {
+        name: '@linteljs/eslint-config',
+        from: '^1.0.0',
+        to: '^2.0.0',
+      },
+      {
+        name: '@linteljs/eslint-plugin',
+        to: '^2.0.0',
+      },
+    ]);
+    const bare = upgradedPackageJson({}, []);
+
+    expect(upgraded).toEqual({
+      name: 'kept',
+      dependencies: { '@linteljs/eslint-config': '^2.0.0' },
+      devDependencies: { '@linteljs/eslint-plugin': '^2.0.0' },
+    });
+
+    expect(bare).toEqual({ devDependencies: {} });
   });
 });

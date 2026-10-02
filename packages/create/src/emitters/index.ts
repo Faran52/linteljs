@@ -7,6 +7,9 @@ export { starterSourceEmitter } from './target/starter-source/starterSourceEmitt
 export { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 export {
   buildDevDependencies,
+  type DependencyDrift,
+  dependencyDrift,
+  type MissingDependencies,
   parsePackageJson,
 } from './utils/packageJsonUtils';
 export {

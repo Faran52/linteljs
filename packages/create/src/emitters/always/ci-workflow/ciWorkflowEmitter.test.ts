@@ -128,11 +128,12 @@ describe('emitCiWorkflow', () => {
 });
 
 describe('ciWorkflowEmitter', () => {
-  it('writes the emitted text to .github/workflows/ci.yml at the standard stage', () => {
+  it('writes the emitted text to .github/workflows/ci.yml at the standard stage, once, at birth', () => {
     expect(ciWorkflowEmitter(hostedAnswersFor({}))).toEqual([{
       stage: 'standard',
       target: '.github/workflows/ci.yml',
       content: { text: emitCiWorkflow(hostedAnswersFor({})) },
+      preserve: true,
     }]);
   });
 });
