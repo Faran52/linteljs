@@ -40,7 +40,13 @@ export const LEAKED_RENDER_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Cou
 export const ownBlockNames = (layer: Layer): string[] => {
   return layer
     .flatMap(({ name }) => {
-      return name?.startsWith('@linteljs/') ? [name] : [];
+      if (!name?.startsWith('@linteljs/')) {
+        return [];
+      }
+
+      const own = [name];
+
+      return own;
     });
 };
 
@@ -181,7 +187,9 @@ export const ruleIdsForFile = async (config: Layer, filePath: string): Promise<(
 
 // On disk beside a tsconfig because `projectService` reads the file; outside `__mocks__/` so no glob exempts it.
 export const ruleIdsForSfc = async (config: Layer, code: string, fileName: string): Promise<(string | null)[]> => {
-  const root = await realpath(await mkdtemp(join(tmpdir(), 'linteljs-sfc-')));
+  const prefix = join(tmpdir(), 'linteljs-sfc-');
+  const directory = await mkdtemp(prefix);
+  const root = await realpath(directory);
 
   try {
     await copyFile(join(SFC_FIXTURES, 'tsconfig.json'), join(root, 'tsconfig.json'));

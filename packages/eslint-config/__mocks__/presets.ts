@@ -21,10 +21,12 @@ export const layerWithout = async <P>(
   vi.doMock(specifier, async (importOriginal) => {
     const original = await importOriginal<PluginModule<P>>();
 
-    return {
+    const stripped = {
       ...original,
       default: strip(original.default),
     };
+
+    return stripped;
   });
 
   try {
@@ -42,12 +44,14 @@ export const layerWithoutConfig = (
   load: () => Promise<() => Layer>,
 ): Promise<() => Layer> => {
   return layerWithout(specifier, (plugin: ConfigBearing) => {
-    return {
+    const withoutConfig = {
       ...plugin,
       configs: {
         ...plugin.configs,
         [key]: undefined,
       },
     };
+
+    return withoutConfig;
   }, load);
 };
