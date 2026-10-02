@@ -45,6 +45,8 @@ export const LanguageSelect = (): ReactNode => {
     .find(({ id }) => {
       return id === i18n.language;
     });
+  const currentLabelStyle = { color: colors.foreground };
+  const menuStyle = [styles.menu, { backgroundColor: colors.card }];
 
   return (
     <>
@@ -56,7 +58,7 @@ export const LanguageSelect = (): ReactNode => {
           setOpen(true);
         }}
       >
-        <Text style={{ color: colors.foreground }}>{current?.label}</Text>
+        <Text style={currentLabelStyle}>{current?.label}</Text>
       </Pressable>
       <Modal
         transparent
@@ -73,24 +75,28 @@ export const LanguageSelect = (): ReactNode => {
           }}
         >
           <View
-            style={[styles.menu, { backgroundColor: colors.card }]}
+            style={menuStyle}
             accessibilityRole="radiogroup"
             accessibilityLabel={t('language')}
           >
             {languages
               .map(({ id, label }) => {
+                const isChosen = id === i18n.language;
+                const optionState = { checked: isChosen };
+                const optionLabelStyle = { color: isChosen ? colors.primary : colors.foreground };
+
                 return (
                   <Pressable
                     key={id}
                     style={styles.option}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: id === i18n.language }}
+                    accessibilityState={optionState}
                     onPress={() => {
                       setOpen(false);
                       void chooseLanguage(id);
                     }}
                   >
-                    <Text style={{ color: id === i18n.language ? colors.primary : colors.foreground }}>{label}</Text>
+                    <Text style={optionLabelStyle}>{label}</Text>
                   </Pressable>
                 );
               })}

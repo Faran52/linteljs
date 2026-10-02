@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import Animated, {
   type CSSAnimationKeyframes,
+  type CSSAnimationProperties,
   cubicBezier,
   useReducedMotion,
 } from 'react-native-reanimated';
@@ -29,7 +30,7 @@ const LINES = [
 ] as const;
 
 const cascade = (drift: number): CSSAnimationKeyframes => {
-  return {
+  const keyframes: CSSAnimationKeyframes = {
     '0%': {
       transform: [{ translateX: 0 }],
       animationTimingFunction: 'ease-in-out',
@@ -46,6 +47,8 @@ const cascade = (drift: number): CSSAnimationKeyframes => {
     '82%': { transform: [{ translateX: 0 }] },
     '100%': { transform: [{ translateX: 0 }] },
   };
+
+  return keyframes;
 };
 
 export const Mark = (): ReactNode => {
@@ -65,21 +68,24 @@ export const Mark = (): ReactNode => {
           drift,
           delay,
         }) => {
+          const animation: CSSAnimationProperties = still
+            ? {}
+            : {
+                animationName: cascade(drift),
+                animationDuration: '5s',
+                animationDelay: delay,
+                animationIterationCount: 'infinite',
+              };
+          const lineStyle = [
+            layout.line,
+            { width },
+            animation,
+          ];
+
           return (
             <Animated.View
               key={width}
-              style={[
-                layout.line,
-                { width },
-                still
-                  ? {}
-                  : {
-                      animationName: cascade(drift),
-                      animationDuration: '5s',
-                      animationDelay: delay,
-                      animationIterationCount: 'infinite',
-                    },
-              ]}
+              style={lineStyle}
             />
           );
         })}

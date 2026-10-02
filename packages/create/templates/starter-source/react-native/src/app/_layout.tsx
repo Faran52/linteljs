@@ -5,10 +5,28 @@ import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
 import { useStarterStyles } from '@styles/starter';
 
+import type { BottomTabNavigationOptions } from 'expo-router/tabs';
 import type { ReactNode } from 'react';
+
+const UNLISTED = { href: null };
 
 const RootLayout = (): ReactNode => {
   const { colors, layout } = useStarterStyles();
+
+  const screenOptions: BottomTabNavigationOptions = {
+    headerTitle: 'LintelJS Starter',
+    headerTitleAlign: 'left',
+    headerStyle: layout.header,
+    headerTintColor: colors.foreground,
+    headerShadowVisible: false,
+    tabBarActiveTintColor: colors.primary,
+    tabBarInactiveTintColor: colors.muted,
+    tabBarStyle: layout.tabBar,
+    tabBarIconStyle: { display: 'none' },
+    tabBarLabelStyle: { fontSize: 15 },
+    tabBarItemStyle: { justifyContent: 'center' },
+    sceneStyle: layout.scene,
+  };
 
   // Web only: the document the static export writes, with the Mark as its icon.
   return (
@@ -21,34 +39,21 @@ const RootLayout = (): ReactNode => {
           type="image/svg+xml"
         />
       </Head>
-      <Tabs
-        screenOptions={{
-          headerTitle: 'LintelJS Starter',
-          headerTitleAlign: 'left',
-          headerStyle: layout.header,
-          headerTintColor: colors.foreground,
-          headerShadowVisible: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.muted,
-          tabBarStyle: layout.tabBar,
-          tabBarIconStyle: { display: 'none' },
-          tabBarLabelStyle: { fontSize: 15 },
-          tabBarItemStyle: { justifyContent: 'center' },
-          sceneStyle: layout.scene,
-        }}
-      >
+      <Tabs screenOptions={screenOptions}>
         {PAGES
           .map((page) => {
+            const options = { title: page.label };
+
             return (
               <Tabs.Screen
                 key={page.id}
                 name={page.id === 'home' ? 'index' : page.id}
-                options={{ title: page.label }}
+                options={options}
               />
             );
           })}
         {/* A route, so Tabs would list it: `href: null` keeps it off the bar. */}
-        <Tabs.Screen name="+not-found" options={{ href: null }} />
+        <Tabs.Screen name="+not-found" options={UNLISTED} />
       </Tabs>
     </>
   );

@@ -25,6 +25,14 @@ export const StatusPage = ({
 }: StatusPageProps): ReactNode => {
   const { t } = useTranslation();
   const { layout, text } = useStarterStyles();
+  const homeLinkStyle = onRetry === undefined
+    ? [layout.action, text.action]
+    : [
+        layout.action,
+        layout.actionOutline,
+        text.action,
+        text.actionOutline,
+      ];
 
   return (
     <View style={layout.status}>
@@ -44,14 +52,7 @@ export const StatusPage = ({
             )}
         <Link
           href="/"
-          style={onRetry === undefined
-            ? [layout.action, text.action]
-            : [
-                layout.action,
-                layout.actionOutline,
-                text.action,
-                text.actionOutline,
-              ]}
+          style={homeLinkStyle}
         >
           {t('statusHome')}
         </Link>

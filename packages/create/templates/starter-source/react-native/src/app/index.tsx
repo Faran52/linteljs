@@ -9,9 +9,10 @@ import type { ReactNode } from 'react';
 
 const HomeScreen = (): ReactNode => {
   const { layout, text } = useStarterStyles();
+  const heroStyle = [layout.screen, layout.hero];
 
   return (
-    <View style={[layout.screen, layout.hero]}>
+    <View style={heroStyle}>
       <Mark />
       <Text style={text.title}>{NAME}</Text>
       <Text style={text.lede}>Expo, expo-router and the standard already applied.</Text>

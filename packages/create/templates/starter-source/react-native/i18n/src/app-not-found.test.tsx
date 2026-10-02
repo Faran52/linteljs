@@ -11,7 +11,9 @@ import NotFoundScreen from './app/+not-found';
 vi.mock('expo-router', async () => {
   const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
 
-  return { Link: Text };
+  const expoRouter = { Link: Text };
+
+  return expoRouter;
 });
 
 describe('the not-found screen', () => {

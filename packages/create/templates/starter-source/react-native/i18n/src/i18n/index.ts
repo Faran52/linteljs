@@ -56,14 +56,17 @@ export const chooseLanguage = async (language: string): Promise<void> => {
 
 // The stored choice, then the device's language, then English; nothing detected is stored.
 export const detectLanguage = async (): Promise<string> => {
-  const stored = matchLanguage(await AsyncStorage.getItem(languageStorageKey));
+  const storedTag = await AsyncStorage.getItem(languageStorageKey);
+  const stored = matchLanguage(storedTag);
 
   return stored ?? matchLanguage(Intl.DateTimeFormat().resolvedOptions().locale) ?? fallbackLanguage;
 };
 
 // After the first render: the web export is rendered in English, and hydration has to match it.
 export const restoreLanguage = async (): Promise<void> => {
-  await i18next.changeLanguage(await detectLanguage());
+  const language = await detectLanguage();
+
+  await i18next.changeLanguage(language);
 };
 
 export const initI18n = (): typeof i18next => {

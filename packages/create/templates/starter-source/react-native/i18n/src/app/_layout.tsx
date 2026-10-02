@@ -12,7 +12,11 @@ import { initI18n, restoreLanguage } from '@i18n';
 
 import { LanguageSelect } from '@features/language-select/LanguageSelect';
 
+import type { BottomTabNavigationOptions } from 'expo-router/tabs';
+
 initI18n();
+
+const UNLISTED = { href: null };
 
 const RootLayout = (): ReactNode => {
   const { t } = useTranslation();
@@ -21,6 +25,24 @@ const RootLayout = (): ReactNode => {
   useEffect(() => {
     void restoreLanguage();
   }, []);
+
+  const screenOptions: BottomTabNavigationOptions = {
+    headerTitle: t('starterLabel'),
+    headerRight: () => {
+      return <LanguageSelect />;
+    },
+    headerTitleAlign: 'left',
+    headerStyle: layout.header,
+    headerTintColor: colors.foreground,
+    headerShadowVisible: false,
+    tabBarActiveTintColor: colors.primary,
+    tabBarInactiveTintColor: colors.muted,
+    tabBarStyle: layout.tabBar,
+    tabBarIconStyle: { display: 'none' },
+    tabBarLabelStyle: { fontSize: 15 },
+    tabBarItemStyle: { justifyContent: 'center' },
+    sceneStyle: layout.scene,
+  };
 
   // Web only: the document the static export writes, with the Mark as its icon.
   return (
@@ -33,37 +55,21 @@ const RootLayout = (): ReactNode => {
           type="image/svg+xml"
         />
       </Head>
-      <Tabs
-        screenOptions={{
-          headerTitle: t('starterLabel'),
-          headerRight: () => {
-            return <LanguageSelect />;
-          },
-          headerTitleAlign: 'left',
-          headerStyle: layout.header,
-          headerTintColor: colors.foreground,
-          headerShadowVisible: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.muted,
-          tabBarStyle: layout.tabBar,
-          tabBarIconStyle: { display: 'none' },
-          tabBarLabelStyle: { fontSize: 15 },
-          tabBarItemStyle: { justifyContent: 'center' },
-          sceneStyle: layout.scene,
-        }}
-      >
+      <Tabs screenOptions={screenOptions}>
         {PAGES
           .map((page) => {
+            const options = { title: t(page.id) };
+
             return (
               <Tabs.Screen
                 key={page.id}
                 name={page.id === 'home' ? 'index' : page.id}
-                options={{ title: t(page.id) }}
+                options={options}
               />
             );
           })}
         {/* A route, so Tabs would list it: `href: null` keeps it off the bar. */}
-        <Tabs.Screen name="+not-found" options={{ href: null }} />
+        <Tabs.Screen name="+not-found" options={UNLISTED} />
       </Tabs>
     </>
   );

@@ -172,11 +172,13 @@ const sheetsFor = (colors: Palette) => {
     },
   });
 
-  return {
+  const styles = {
     colors,
     layout,
     text,
   };
+
+  return styles;
 };
 
 const SHEETS = {
@@ -190,5 +192,7 @@ export const stylesFor = (scheme: ColorSchemeName): StarterStyles => {
 
 // Follows the system scheme, as the web targets' `prefers-color-scheme` does.
 export const useStarterStyles = (): StarterStyles => {
-  return stylesFor(useColorScheme());
+  const scheme = useColorScheme();
+
+  return stylesFor(scheme);
 };
