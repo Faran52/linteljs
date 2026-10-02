@@ -84,12 +84,14 @@ const answers = async (origin: string): Promise<boolean> => {
   return false;
 };
 
+// Stryker disable all: Playwright runs this in the page, where Stryker's globals do not exist.
 const hrefsOf = (anchors: Element[]): string[] => {
   return anchors
     .map((anchor) => {
       return anchor.getAttribute('href') ?? '';
     });
 };
+// Stryker restore all
 
 const linksOn = async (page: Page): Promise<string[]> => {
   const hrefs = await page
