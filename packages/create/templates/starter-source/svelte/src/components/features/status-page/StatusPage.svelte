@@ -14,6 +14,8 @@
     message,
     onretry,
   }: Props = $props();
+
+  const actionClasses = $derived(['status-action', onretry && 'status-action-outline']);
 </script>
 
 <!-- Home is a full load, so a crash leaves no state behind. -->
@@ -25,7 +27,7 @@
       <Button onclick={onretry}>Try again</Button>
     {/if}
     <a
-      class={['status-action', onretry && 'status-action-outline']}
+      class={actionClasses}
       href={resolve('/')}
       data-sveltekit-reload
     >
