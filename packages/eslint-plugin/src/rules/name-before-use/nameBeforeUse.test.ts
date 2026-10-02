@@ -236,6 +236,14 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [literalError],
     },
     {
+      code: 'const value = load([alpha])();',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = new [alpha].Builder();',
+      errors: [literalError],
+    },
+    {
       code: 'run([alpha].join(\' \'));',
       options: IGNORE_ARGUMENTS,
       errors: [literalError],
