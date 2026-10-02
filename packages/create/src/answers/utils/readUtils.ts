@@ -129,10 +129,14 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
     }
   }
 
-  return Object.fromEntries(entries
+  const aliasPairs = entries
     .map(([alias, directory]) => {
-      return [alias, String(directory)];
-    }));
+      const aliasPair: [string, string] = [alias, String(directory)];
+
+      return aliasPair;
+    });
+
+  return Object.fromEntries(aliasPairs);
 };
 
 export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue | undefined): ReadResult<R> => {

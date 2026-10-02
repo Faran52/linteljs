@@ -35,7 +35,7 @@ export const migrateLifted = <
     return parsed;
   }
 
-  return {
+  const migrated = {
     ...parsed,
     libraries: listed
       .filter((library) => {
@@ -43,6 +43,8 @@ export const migrateLifted = <
       }),
     [field]: only,
   };
+
+  return migrated;
 };
 
 // A v1 yes is the first store the target offers now; anything else is no answer.

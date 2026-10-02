@@ -89,7 +89,9 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
       continue;
     }
 
-    if (!isEqual(answers[key], unaskedValueOf(candidate))) {
+    const unasked = unaskedValueOf(candidate);
+
+    if (!isEqual(answers[key], unasked)) {
       throw new Error(`${key} is not an answer for ${answers.target}`);
     }
   }
@@ -106,17 +108,10 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
 const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject => {
   const fromV1 = schemaVersion === 1;
 
-  return migrateLifted(
-    migrateLifted(
-      migrateLifted(raw, fromV1, 'form', ANSWERS.form.values),
-      fromV1,
-      'styling',
-      ANSWERS.styling.values,
-    ),
-    fromV1,
-    'data',
-    ANSWERS.data.values,
-  );
+  const withForm = migrateLifted(raw, fromV1, 'form', ANSWERS.form.values);
+  const withStyling = migrateLifted(withForm, fromV1, 'styling', ANSWERS.styling.values);
+
+  return migrateLifted(withStyling, fromV1, 'data', ANSWERS.data.values);
 };
 
 // The library answers, apart so neither half outgrows its complexity budget.
@@ -128,8 +123,7 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
   const dataValue = readAnswer(ANSWERS.data, parsed.data);
   const mockingValue = readAnswer(ANSWERS.mocking, parsed.mocking);
   const languagesValue = readAnswer(ANSWERS.languages, parsed.languages);
-
-  return {
+  const libraryAnswers: Partial<LinteljsConfig> = {
     ...(stylingValue === undefined ? {} : { styling: stylingValue }),
     ...(formValue === undefined ? {} : { form: formValue }),
     ...(routerValue === undefined ? {} : { router: routerValue }),
@@ -138,6 +132,8 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
     ...(mockingValue === undefined ? {} : { mocking: mockingValue }),
     ...(languagesValue === undefined ? {} : { languages: languagesValue }),
   };
+
+  return libraryAnswers;
 };
 
 // `exactOptionalPropertyTypes` refuses a key written `undefined`, so each optional answer is a conditional spread.

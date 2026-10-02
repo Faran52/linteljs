@@ -39,18 +39,22 @@ const isRequired = (key: AnswerKey, record: AnswerRecord): boolean => {
 };
 
 const withDescription = (record: AnswerRecord): Partial<SchemaProperty> => {
-  return { description: record.description };
+  const descriptionPart: Partial<SchemaProperty> = { description: record.description };
+
+  return descriptionPart;
 };
 
 const enumProperty = (record: ChoiceRecord | OptionalChoiceRecord): SchemaProperty => {
-  return {
+  const property: SchemaProperty = {
     ...withDescription(record),
     enum: valuesOf(record.values),
   };
+
+  return property;
 };
 
 const stringListProperty = (record: AnswerRecord): SchemaProperty => {
-  return {
+  const property: SchemaProperty = {
     type: 'array',
     ...withDescription(record),
     items: {
@@ -60,20 +64,24 @@ const stringListProperty = (record: AnswerRecord): SchemaProperty => {
     minItems: 1,
     uniqueItems: true,
   };
+
+  return property;
 };
 
 const enumListProperty = (record: MultiRecord | OptionalMultiRecord): SchemaProperty => {
-  return {
+  const property: SchemaProperty = {
     type: 'array',
     ...withDescription(record),
     items: { enum: valuesOf(record.values) },
     minItems: record.minimum,
     uniqueItems: true,
   };
+
+  return property;
 };
 
 const mapProperty = (record: AnswerRecord): SchemaProperty => {
-  return {
+  const property: SchemaProperty = {
     type: 'object',
     ...withDescription(record),
     propertyNames: { pattern: '^[@$]' },
@@ -82,14 +90,18 @@ const mapProperty = (record: AnswerRecord): SchemaProperty => {
       minLength: 1,
     },
   };
+
+  return property;
 };
 
 const textProperty = (record: TextRecord): SchemaProperty => {
-  return {
+  const property: SchemaProperty = {
     type: 'string',
     ...withDescription(record),
     pattern: record.pattern,
   };
+
+  return property;
 };
 
 const propertyFor = (record: AnswerRecord): SchemaProperty => {
