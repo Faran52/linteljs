@@ -35,7 +35,8 @@ const rulesNamedBy = (tail: string): string[] => {
 // `/* eslint rule: "off" */`: only a block comment is read, and `eslint-env` and the rest fail the lookahead.
 const INLINE_CONFIG = /^\s*eslint(?=\s)([\s\S]*)/;
 
-const OFF_SEVERITY = /^\s*(?:\[\s*)?(?:"off"|'off'|0)\s*(?:[,\]]|$)/;
+// Any case: ESLint 8 and older lower-case the severity, so `"OFF"` turns a rule off there.
+const OFF_SEVERITY = /^\s*(?:\[\s*)?(?:"off"|'off'|0)\s*(?:[,\]]|$)/i;
 
 // Marks the commas outside brackets, so an option object's own `key: 0` is not an entry. Strings holding a bracket are
 // not tracked: they cost a missed report at worst.

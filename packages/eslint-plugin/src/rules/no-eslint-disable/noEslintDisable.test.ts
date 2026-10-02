@@ -20,6 +20,14 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '/* eslint complexity: ["error", { "max": 0 }] */\nexport const value = 1;\n',
     '// eslint no-console: "off"\nexport const value = 1;\n',
     '/* eslint eqeqeq: [1, "always"] */\nexport const value = 1;\n',
+    '/* eslint no-console: 2 */\nexport const value = 1;\n',
+    '/* eslint no-console: "warn" */\nexport const value = 1;\n',
+    '/* eslint no-console: 01 */\nexport const value = 1;\n',
+    '/* eslint */\nexport const value = 1;\n',
+    '/*eslint*/\nexport const value = 1;\n',
+    '/* eslint no-restricted-imports: ["error", { "paths": ["a", "b"] }], eqeqeq: [2] */\nexport const value = 1;\n',
+    '// eslint-disable-linefoo no-console\nexport const value = 1;\n',
+    '// eslint-disable-next-line-x no-console\nexport const value = 1;\n',
     /**
      * Not valid code: a limit of what any rule can see. ESLint honours a bare disable before a rule runs, and a bare
      * one names no rules, so it turns this rule off too. A directive naming this rule does the same, though that one
@@ -89,6 +97,42 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
       code: '//   eslint-disable-next-line no-console\nconsole.log(1);\n',
       errors: [{ messageId: 'noDisable' }],
     },
+    {
+      code: '// eslint-disable-next-line\tno-console\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint-disable-line no-console */ console.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: 'export const view = (\n  <div>\n    {/* eslint-disable-next-line no-console */}\n  </div>\n);\n',
+      errors: [{
+        messageId: 'noDisable',
+        line: 3,
+        column: 6,
+        endLine: 3,
+        endColumn: 47,
+      }],
+    },
+    {
+      code: '/* eslint no-console: "off" -- why */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint no-console: "OFF" */\nconsole.log(1);\n',
+      // ESLint 10 refuses the severity; ESLint 8 and older honour it.
+      errors: [{ message: /^Inline configuration for rule "no-console" is invalid/u }, { messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint no-console: ["Off", "x"] */\nconsole.log(1);\n',
+      // ESLint 10 refuses the severity; ESLint 8 and older honour it.
+      errors: [{ message: /^Inline configuration for rule "no-console" is invalid/u }, { messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint\n  eqeqeq: "error",\n  no-console: "off",\n*/\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
   ],
 });
 
@@ -118,6 +162,23 @@ tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
       code: '// eslint-disable-next-line no-console -- measured, never shipped\nconsole.log(1);\n',
       options: [{ allowRules: ['no-console'] }],
     },
+    {
+      code: '// eslint-disable-next-line\tno-console\nconsole.log(1);\n',
+      options: [{ allowRules: ['no-console'] }],
+    },
+    {
+      code: '/* eslint-disable\n  no-console,\n  no-alert\n*/\nexport const value = 1;\n',
+      options: [{ allowRules: ['no-alert', 'no-console'] }],
+    },
+    {
+      code: "/* eslint 'no-console': 'off', \"no-alert\": 0 */\nconsole.log(1);\n",
+      options: [{ allowRules: ['no-alert', 'no-console'] }],
+    },
+    {
+      // Only the entries that turn a rule off are weighed.
+      code: '/* eslint no-console: "off", eqeqeq: "error" -- measured */\nconsole.log(1);\n',
+      options: [{ allowRules: ['no-console'] }],
+    },
   ],
   invalid: [
     {
@@ -138,6 +199,21 @@ tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
     {
       code: '// eslint-disable-next-line no-alert\nalert(1);\n',
       options: [{ allowRules: ['no-console'] }],
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint no-console: "off", no-alert: "off" */\nconsole.log(1);\n',
+      options: [{ allowRules: ['no-console'] }],
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '// eslint-disable-next-line no-console\nconsole.log(1);\n',
+      options: [{ allowRules: [] }],
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '// eslint-disable-next-line no-console\nconsole.log(1);\n',
+      options: [{}],
       errors: [{ messageId: 'noDisable' }],
     },
   ],

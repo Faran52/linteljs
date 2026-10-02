@@ -17,8 +17,8 @@ Reports every directive ESLint honours as a disable:
 - `// eslint-disable-next-line`
 - `// eslint-disable-line`
 - `/* eslint-disable */`
-- `/* eslint no-console: "off" */`, and the `0` and `["off", ...]` spellings: inline configuration that turns
-  a rule off. One that turns a rule on or sets its options is not reported.
+- `/* eslint no-console: "off" */`, and the `0` and `["off", ...]` spellings in any case: inline configuration
+  that turns a rule off. ESLint 8 and older honour `"OFF"` too. One that turns a rule on or sets its options is not reported.
 
 A description after `--` changes nothing; ESLint honours the directive either way, so the rule
 reports it either way.
