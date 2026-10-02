@@ -1,5 +1,3 @@
-import { I18N_ONLY } from '../vue/constants';
-
 export const ALWAYS: readonly string[] = [
   'src/app.vue',
   'src/error.vue',
@@ -28,11 +26,3 @@ export const SHARED: readonly string[] = [
 ];
 
 export { ACCESSORS as ACCESSORS } from '../vue/constants';
-
-export const I18N_ONLY_FILES = [
-  ...I18N_ONLY
-    .map((component) => {
-      return `${component}.vue`;
-    }),
-  'src/i18n/index.ts',
-];

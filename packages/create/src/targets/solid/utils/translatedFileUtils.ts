@@ -2,12 +2,20 @@ import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
 import {
-  I18N_ONLY_FILES,
+  I18N_ONLY,
   I18N_ONLY_SUITES,
   TRANSLATED,
 } from '../constants';
 
 import type { StarterFile, StarterTest } from '../../types';
+
+const I18N_ONLY_FILES = [
+  ...I18N_ONLY
+    .map((component) => {
+      return `${component}.tsx`;
+    }),
+  'src/i18n/index.ts',
+];
 
 // What i18n rewrites in the Solid starter, each as the pair `translated` makes.
 export const solidI18nFiles = (): StarterFile[] => {

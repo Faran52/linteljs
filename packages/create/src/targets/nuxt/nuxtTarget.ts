@@ -28,7 +28,6 @@ import {
   ACCESSORS,
   ALWAYS,
   FROM_VUE,
-  I18N_ONLY_FILES,
   SHARED,
   TRANSLATED_FROM_VUE,
 } from './constants';
@@ -38,6 +37,14 @@ import type {
   StarterTest,
   TargetRecord,
 } from '../types';
+
+const I18N_ONLY_FILES = [
+  ...I18N_ONLY
+    .map((component) => {
+      return `${component}.vue`;
+    }),
+  'src/i18n/index.ts',
+];
 
 // A target rather than a mode on `vue`: `docs/DESIGN.md` records why.
 export const nuxtTarget: TargetRecord = {
