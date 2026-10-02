@@ -84,23 +84,21 @@ const answers = async (origin: string): Promise<boolean> => {
   return false;
 };
 
-// Stryker disable all: Playwright runs this in the page, where Stryker's globals do not exist.
-const hrefsOf = (anchors: Element[]): string[] => {
-  return anchors
-    .map((anchor) => {
-      return anchor.getAttribute('href') ?? '';
-    });
-};
-// Stryker restore all
-
+// Read from Node, not the page: a page-side callback would carry Stryker's instrumentation into the browser.
 const linksOn = async (page: Page): Promise<string[]> => {
-  const hrefs = await page
+  const anchors = await page
     .locator(STARTER_LINKS)
-    .evaluateAll(hrefsOf);
+    .all();
+  const reads = anchors
+    .map(async (anchor) => {
+      return anchor.getAttribute('href');
+    });
+  const hrefs = await Promise.all(reads);
 
   return hrefs
     .map((href) => {
-      const [route = ''] = href.split(ROUTE_SUFFIX);
+      // The selector only matches anchors with an `href`, so `String` never sees null.
+      const [route = ''] = String(href).split(ROUTE_SUFFIX);
 
       return route;
     });
