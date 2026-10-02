@@ -43,6 +43,8 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
   return emitVitestConfig(answers, setupPath);
 };
 
+const TARGETS = valuesOf(ANSWERS.target.values);
+
 const MERGED = `import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config.js';
@@ -536,7 +538,7 @@ describe('the coverage surface', () => {
     expect(entries).toEqual(expected);
   });
 
-  it.each(valuesOf(ANSWERS.target.values))('keeps the thresholds at 100 on %s', (target) => {
+  it.each(TARGETS)('keeps the thresholds at 100 on %s', (target) => {
     const config = configFor({ target });
 
     expect(config)

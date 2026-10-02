@@ -153,11 +153,11 @@ describe('mergeClaudeSettings', () => {
   });
 
   it('falls back to the emitted file when what is there is not usable', () => {
-    const mergedClaudeSettings = mergeClaudeSettings(OURS, '{ not json');
-    expect(mergedClaudeSettings).toBe(OURS);
-    const oursMergedClaudeSettings = mergeClaudeSettings(OURS, '["an array"]');
-    expect(oursMergedClaudeSettings).toBe(OURS);
-    const mergedClaudeSettings2 = mergeClaudeSettings(OURS, 'null');
-    expect(mergedClaudeSettings2).toBe(OURS);
+    const overMalformed = mergeClaudeSettings(OURS, '{ not json');
+    expect(overMalformed).toBe(OURS);
+    const overArray = mergeClaudeSettings(OURS, '["an array"]');
+    expect(overArray).toBe(OURS);
+    const overNull = mergeClaudeSettings(OURS, 'null');
+    expect(overNull).toBe(OURS);
   });
 });

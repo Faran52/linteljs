@@ -12,11 +12,12 @@ import { emitNuxtConfig, nuxtConfigEmitter } from './nuxtConfigEmitter';
 import type { Answers, HostedAnswers } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
-  return {
+  const answers: HostedAnswers = {
     ...HOSTED_DEFAULTS,
     target: 'nuxt',
     ...overrides,
   };
+  return answers;
 };
 
 const PLAIN = `import { join } from 'node:path';
@@ -143,16 +144,16 @@ export default defineNuxtConfig({
 
 describe('nuxtConfigEmitter', () => {
   it('writes only for the target that reads the file', () => {
-    const nuxtConfig = nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
+    const nuxtArtifacts = nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
     const expected = [{
       stage: 'package',
       target: 'nuxt.config.ts',
       content: { text: PLAIN },
     }];
-    expect(nuxtConfig).toEqual(expected);
+    expect(nuxtArtifacts).toEqual(expected);
 
-    const nuxtConfig2 = nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app');
-    expect(nuxtConfig2).toEqual([]);
+    const vueArtifacts = nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app');
+    expect(vueArtifacts).toEqual([]);
   });
 
   it('names src as the source root and carries the aliases', () => {

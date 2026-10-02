@@ -27,17 +27,17 @@ describe('i18nConfigEmitter', () => {
 
     expect(svelte.at(1)?.target).toBe('project.inlang/settings.json');
     expect(svelte.at(1)?.seed).toBe(true);
-    const expected = { text: emitInlangSettings(['en', 'ja']) };
-    expect(svelte.at(1)?.content).toEqual(expected);
+    const expectedContent = { text: emitInlangSettings(['en', 'ja']) };
+    expect(svelte.at(1)?.content).toEqual(expectedContent);
 
-    const expected2 = {
+    const expectedSettings = {
       '$schema': 'https://inlang.com/schema/project-settings',
       'baseLocale': 'en',
       'locales': ['en', 'ja'],
       'modules': ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
       'plugin.inlang.messageFormat': { pathPattern: './src/i18n/locales/{locale}/common.json' },
     };
-    expect(settings).toEqual(expected2);
+    expect(settings).toEqual(expectedSettings);
 
     expect(react).toHaveLength(1);
     expect(solid).toHaveLength(1);
@@ -125,7 +125,7 @@ describe('i18nConfigEmitter', () => {
   it('writes the whole module, one block per part', () => {
     const text = emitI18nConfig(['en', 'ar']);
 
-    expect(text).toBe([
+    const expected = [
       'import ar from \'./locales/ar/common.json\';',
       'import en from \'./locales/en/common.json\';',
       '',
@@ -164,6 +164,7 @@ describe('i18nConfigEmitter', () => {
       '    });',
       '};',
       '',
-    ].join('\n'));
+    ].join('\n');
+    expect(text).toBe(expected);
   });
 });

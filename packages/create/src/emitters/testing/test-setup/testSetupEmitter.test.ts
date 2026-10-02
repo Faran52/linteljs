@@ -141,7 +141,11 @@ describe('the shipped test setup', () => {
       ...overrides,
     }, FRESH);
 
-    return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+    if (artifact === undefined) {
+      return '';
+    }
+
+    return shippedAssetsReader(artifact.content);
   };
 
   it.each<TargetId>([

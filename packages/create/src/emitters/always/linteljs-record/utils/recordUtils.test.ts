@@ -177,7 +177,8 @@ describe('answerRows', () => {
     ];
     expect(actual).toContainEqual(expected);
 
-    const labels = answerRows(hostedAnswersFor({ agents: [] }), ANSWERS)
+    const rows = answerRows(hostedAnswersFor({ agents: [] }), ANSWERS);
+    const labels = rows
       .map(([row]) => {
         return row;
       });

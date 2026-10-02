@@ -138,11 +138,12 @@ describe('claudeSettingsEmitter', () => {
         preserve,
         removable,
       }) => {
-        return [
+        const shape = [
           target,
           preserve,
           removable,
         ];
+        return shape;
       });
 
     const expected = [
@@ -178,7 +179,9 @@ describe('claudeSettingsEmitter', () => {
       marketplace,
     ] = claudeSettingsEmitter(CLAUDE);
 
-    expect(plugin === undefined ? '' : await shippedAssetsReader(plugin.content)).toBe(`{
+    const pluginText = plugin === undefined ? '' : await shippedAssetsReader(plugin.content);
+
+    expect(pluginText).toBe(`{
   "name": "linteljs",
   "version": "1.0.0",
   "description": "LintelJS project standards and safety hooks",
@@ -186,7 +189,9 @@ describe('claudeSettingsEmitter', () => {
 }
 `);
 
-    expect(marketplace === undefined ? '' : await shippedAssetsReader(marketplace.content)).toBe(`{
+    const marketplaceText = marketplace === undefined ? '' : await shippedAssetsReader(marketplace.content);
+
+    expect(marketplaceText).toBe(`{
   "name": "linteljs",
   "owner": { "name": "Faran Ali" },
   "plugins": [
@@ -223,7 +228,7 @@ describe('claudeSettingsEmitter', () => {
       'linteljs@linteljs': true,
     }));
 
-    const merged2 = merge(null);
-    expect(merged2).toBe(emitClaudeSettings(answers.plugins));
+    const fresh = merge(null);
+    expect(fresh).toBe(emitClaudeSettings(answers.plugins));
   });
 });

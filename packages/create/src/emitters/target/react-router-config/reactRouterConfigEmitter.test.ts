@@ -37,16 +37,16 @@ describe('reactRouterConfigEmitter', () => {
     }];
     expect(artifacts).toEqual(expected);
 
-    const targets = targetsOf({ router: 'react-router' });
-    expect(targets).toEqual([]);
-    const targets2 = targetsOf({});
-    expect(targets2).toEqual([]);
+    const libraryModeTargets = targetsOf({ router: 'react-router' });
+    expect(libraryModeTargets).toEqual([]);
+    const routerlessTargets = targetsOf({});
+    expect(routerlessTargets).toEqual([]);
   });
 
   it('names src as the source root, so nothing downstream learns a second one', () => {
     const reactRouterConfig = emitReactRouterConfig();
 
-    expect(reactRouterConfig).toBe([
+    const expected = [
       "import type { Config } from '@react-router/dev/config';",
       '',
       'export default {',
@@ -54,6 +54,7 @@ describe('reactRouterConfigEmitter', () => {
       '  ssr: true,',
       '} satisfies Config;',
       '',
-    ].join('\n'));
+    ].join('\n');
+    expect(reactRouterConfig).toBe(expected);
   });
 });

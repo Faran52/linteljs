@@ -46,13 +46,17 @@ describe('sharedSlots', () => {
   });
 
   it('carries the check chain built from the answers', () => {
-    expect(sharedSlots('demo-app', answersFor({}))['CHECK_CHAIN']).toContain('lint');
+    const { CHECK_CHAIN: checkChain } = sharedSlots('demo-app', answersFor({}));
+    expect(checkChain).toContain('lint');
   });
 
   it('adds the test and coverage rows only when there is a test runner', () => {
-    expect(sharedSlots('demo-app', answersFor({ testing: 'vitest' }))['TEST_ROWS'])
+    const { TEST_ROWS: vitestRows } = sharedSlots('demo-app', answersFor({ testing: 'vitest' }));
+    const { TEST_ROWS: untestedRows } = sharedSlots('demo-app', answersFor({ testing: 'none' }));
+
+    expect(vitestRows)
       .toContain('| test | `pnpm test` |');
 
-    expect(sharedSlots('demo-app', answersFor({ testing: 'none' }))['TEST_ROWS']).toBe('');
+    expect(untestedRows).toBe('');
   });
 });

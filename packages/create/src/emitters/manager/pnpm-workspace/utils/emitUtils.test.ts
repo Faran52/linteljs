@@ -60,10 +60,10 @@ describe('allowBuildsBlock', () => {
   });
 
   it('names no framework build where the host hosts none', () => {
-    const actual = allowBuildsBlock(answersFor({ target: 'astro' }));
-    expect(actual).not.toContain('vue-demi');
-    const actual2 = allowBuildsBlock(answersFor({ target: 'webextension' }));
-    expect(actual2).not.toContain('vue-demi');
+    const astroBlock = allowBuildsBlock(answersFor({ target: 'astro' }));
+    expect(astroBlock).not.toContain('vue-demi');
+    const extensionBlock = allowBuildsBlock(answersFor({ target: 'webextension' }));
+    expect(extensionBlock).not.toContain('vue-demi');
   });
 
   it('merges in the builds a target needs beyond the shared four, sorted with them', () => {

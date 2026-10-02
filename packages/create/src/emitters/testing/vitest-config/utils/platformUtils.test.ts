@@ -22,7 +22,7 @@ describe('platformEntries', () => {
       },
     ]);
 
-    expect(actual).toBe([
+    const expected = [
       '      platform(',
       "        'ios',",
       "        ['.ios.tsx'],",
@@ -33,7 +33,8 @@ describe('platformEntries', () => {
       "        ['.android.tsx'],",
       "        ['src/**/*.test.tsx'],",
       '      ),',
-    ].join('\n'));
+    ].join('\n');
+    expect(actual).toBe(expected);
   });
 
   it('breaks a list of three or more one value per line', () => {
@@ -47,7 +48,7 @@ describe('platformEntries', () => {
       include: ['src/**/*.test.tsx'],
     }]);
 
-    expect(actual).toBe([
+    const expected = [
       '      platform(',
       "        'native',",
       '        [',
@@ -57,7 +58,8 @@ describe('platformEntries', () => {
       '        ],',
       "        ['src/**/*.test.tsx'],",
       '      ),',
-    ].join('\n'));
+    ].join('\n');
+    expect(actual).toBe(expected);
   });
 
   it('keeps a list of two on one line', () => {
@@ -67,12 +69,13 @@ describe('platformEntries', () => {
       include: ['src/**/*.test.tsx'],
     }]);
 
-    expect(entries).toBe([
+    const expected = [
       '      platform(',
       "        'web',",
       "        ['.web.tsx', '.tsx'],",
       "        ['src/**/*.test.tsx'],",
       '      ),',
-    ].join('\n'));
+    ].join('\n');
+    expect(entries).toBe(expected);
   });
 });

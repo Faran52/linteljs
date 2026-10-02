@@ -131,13 +131,13 @@ export const ANSWERS = [
   });
 
   it('joins a multi-select into one line, and leaves an empty one out', () => {
-    const linteljsRecord = emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app');
+    const withLibraries = emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app');
 
-    expect(linteljsRecord)
+    expect(withLibraries)
       .toContain("value: 'zod, es-toolkit'");
 
-    const linteljsRecord2 = emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app');
-    expect(linteljsRecord2).not.toContain("label: 'AI agents'");
+    const withoutAgents = emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app');
+    expect(withoutAgents).not.toContain("label: 'AI agents'");
   });
 });
 
@@ -152,12 +152,13 @@ describe('the gate it records', () => {
 
 describe('linteljsRecordEmitter', () => {
   it('writes it where every starter reads it', () => {
-    const linteljsRecord = linteljsRecordEmitter(hostedAnswersFor(), EMPTY_PROJECT, 'my-app');
+    const artifacts = linteljsRecordEmitter(hostedAnswersFor(), EMPTY_PROJECT, 'my-app');
+    const text = emitLinteljsRecord(hostedAnswersFor(), 'my-app');
     const expected = [{
       stage: 'standard',
       target: 'src/config/linteljs.ts',
-      content: { text: emitLinteljsRecord(hostedAnswersFor(), 'my-app') },
+      content: { text },
     }];
-    expect(linteljsRecord).toEqual(expected);
+    expect(artifacts).toEqual(expected);
   });
 });

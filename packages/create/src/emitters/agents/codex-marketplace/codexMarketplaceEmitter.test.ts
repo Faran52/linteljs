@@ -147,11 +147,12 @@ describe('codexMarketplaceEmitter', () => {
         target,
         preserve,
       }) => {
-        return [
+        const shape = [
           stage,
           target,
           preserve,
         ];
+        return shape;
       });
 
     const expected = [
@@ -173,8 +174,8 @@ describe('codexMarketplaceEmitter', () => {
     ];
     expect(shapes).toEqual(expected);
 
-    const expected2 = { text: emitCodexMarketplace(CODEX.plugins) };
-    expect(artifacts[1]?.content).toEqual(expected2);
+    const expectedContent = { text: emitCodexMarketplace(CODEX.plugins) };
+    expect(artifacts[1]?.content).toEqual(expectedContent);
   });
 
   it('ships the exact minimal local plugin metadata', async () => {
@@ -186,7 +187,9 @@ describe('codexMarketplaceEmitter', () => {
     const longDescription = "Applies the generated project's LintelJS structure, typing, testing, "
       + 'and verification standards.';
 
-    expect(plugin === undefined ? '' : await shippedAssetsReader(plugin.content)).toBe(`{
+    const pluginText = plugin === undefined ? '' : await shippedAssetsReader(plugin.content);
+
+    expect(pluginText).toBe(`{
   "name": "linteljs",
   "version": "1.0.0",
   "description": "LintelJS project standards and safety hooks",

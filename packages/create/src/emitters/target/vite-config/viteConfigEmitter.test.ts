@@ -40,10 +40,10 @@ const configFor = (overrides: AnswerOverrides): string | null => {
 
 describe('emitViteConfig', () => {
   it('writes nothing for the two targets that own their own build', () => {
-    const config = configFor({ target: 'next' });
-    expect(config).toBeNull();
-    const config2 = configFor({ target: 'angular' });
-    expect(config2).toBeNull();
+    const nextConfig = configFor({ target: 'next' });
+    expect(nextConfig).toBeNull();
+    const angularConfig = configFor({ target: 'angular' });
+    expect(angularConfig).toBeNull();
   });
 
   it.each<[string, AnswerOverrides, string[], string]>([
@@ -110,8 +110,9 @@ describe('emitViteConfig', () => {
   ])('registers the plugins %s builds with', (_label, overrides, imports, plugins) => {
     const config = configFor(overrides) ?? '';
 
+    const exportAt = config.indexOf('\nexport default');
     const importLines = config
-      .slice(0, config.indexOf('\nexport default'))
+      .slice(0, exportAt)
       .split('\n')
       .filter(Boolean);
 
@@ -320,10 +321,10 @@ describe('extra rollup inputs', () => {
 
 describe('the router', () => {
   it('adds nothing for either router', () => {
-    const config = configFor({ router: 'tanstack-router' });
-    expect(config).not.toContain('tanstackRouter');
-    const config2 = configFor({ router: 'react-router' });
-    expect(config2).not.toContain('tanstackRouter');
+    const tanstackConfig = configFor({ router: 'tanstack-router' });
+    expect(tanstackConfig).not.toContain('tanstackRouter');
+    const reactRouterConfig = configFor({ router: 'react-router' });
+    expect(reactRouterConfig).not.toContain('tanstackRouter');
   });
 });
 
@@ -331,7 +332,8 @@ describe('viteConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
     const shapes = viteConfigEmitter(DEFAULT_ANSWERS)
       .map(({ target, preserve }) => {
-        return [target, preserve];
+        const shape = [target, preserve];
+        return shape;
       });
 
     const expected = [['vite.config.ts', true]];

@@ -10,7 +10,7 @@ describe('emitHtmlEntry', () => {
   it('writes the document a bundler serves, titled for the project and loading its entry', () => {
     const html = emitHtmlEntry('my-app', 'src/main.tsx', false);
 
-    expect(html).toBe([
+    const expected = [
       '<!doctype html>',
       '<html lang="en">',
       '    <head>',
@@ -24,7 +24,8 @@ describe('emitHtmlEntry', () => {
       '    </body>',
       '</html>',
       '',
-    ].join('\n'));
+    ].join('\n');
+    expect(html).toBe(expected);
   });
 
   it('links the favicon only when asked to', () => {
@@ -117,12 +118,13 @@ describe('htmlEntryEmitter', () => {
   ])('writes the document %s serves, loading its own entry', (_label, overrides, entry, favicon) => {
     const artifacts = htmlEntryEmitter(hostedAnswersFor(overrides), EMPTY_PROJECT, 'my-app');
 
-    expect(artifacts).toEqual(entry === undefined
+    const expected = entry === undefined
       ? []
       : [{
           stage: 'standard',
           target: 'index.html',
           content: { text: emitHtmlEntry('my-app', entry, favicon) },
-        }]);
+        }];
+    expect(artifacts).toEqual(expected);
   });
 });

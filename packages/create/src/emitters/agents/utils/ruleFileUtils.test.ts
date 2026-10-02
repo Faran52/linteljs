@@ -44,14 +44,16 @@ describe('ruleArtifacts', () => {
     expect(actual).toContain('.rules/repo-structure.mdc');
     expect(artifacts[0]?.stage).toBe('standard');
 
-    const actual2 = transformOf(artifacts, '.rules/repo-structure.mdc')(RULE, null);
+    const transform = transformOf(artifacts, '.rules/repo-structure.mdc');
+    const rewritten = transform(RULE, null);
 
-    expect(actual2)
+    expect(rewritten)
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
 
-    const actual3 = transformOf(artifacts, '.rules/repo-structure.mdc')(RULE.replace('---\n\n#', '---\n\n\n#'), null);
+    const paddedRule = RULE.replace('---\n\n#', '---\n\n\n#');
+    const rewrittenFromPadded = transform(paddedRule, null);
 
-    expect(actual3)
+    expect(rewrittenFromPadded)
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
   });
 });
