@@ -15,9 +15,11 @@ const SKIPPED = [
 
 // Expanded here: the shipped walk reads `.ts` and `.tsx` only and cannot drop an exempt file.
 const filesUnder = (path: string): string[] => {
-  return statSync(path, { throwIfNoEntry: false })?.isDirectory() === true
+  const paths = statSync(path, { throwIfNoEntry: false })?.isDirectory() === true
     ? globSync(`${path}/**/*.{ts,tsx,mts,cts}`)
     : [path];
+
+  return paths;
 };
 
 const files = argv

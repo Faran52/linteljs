@@ -210,7 +210,7 @@ const claimedTwice = [...claimants]
   });
 
 const explain = (file: string, coverage: FileCoverage, gap: string[], own?: string): string[] => {
-  const others = new Map([...hitsByTest]
+  const otherHits = [...hitsByTest]
     .filter(([test]) => {
       return test !== own;
     })
@@ -218,7 +218,8 @@ const explain = (file: string, coverage: FileCoverage, gap: string[], own?: stri
       const labelledHits = [labelOf(test), hits.get(file) ?? new Set<string>()] as const;
 
       return labelledHits;
-    }));
+    });
+  const others = new Map(otherHits);
   const { coveredBy, uncovered } = attribute(gap, others);
   const shown = coveredBy.length > COVERED_BY_SHOWN
     ? [...coveredBy.slice(0, COVERED_BY_SHOWN), `and ${String(coveredBy.length - COVERED_BY_SHOWN)} more`]
@@ -238,10 +239,12 @@ const impure: string[] = [];
 const data: string[] = [];
 let barrels = 0;
 
-for (const [file, coverage] of [...maps]
+const mapsByFile = [...maps]
   .toSorted(([left], [right]) => {
     return left.localeCompare(right);
-  })) {
+  });
+
+for (const [file, coverage] of mapsByFile) {
   const test = paired.get(file);
   const path = relative(root, file);
 
