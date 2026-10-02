@@ -340,6 +340,7 @@ describe('base: ignores', () => {
         '@linteljs/base/utils-size',
         '@linteljs/base/test-size',
         '@linteljs/base/magic-numbers',
+        '@linteljs/base/expression-complexity',
         '@linteljs/base/name-before-use',
         '@linteljs/base/naming',
       ];
@@ -878,6 +879,32 @@ describe('base: magic numbers', () => {
     const ruleIds = await ruleIdsFor(base(), 'export let limit = 40;\n', 'src/shape.ts');
 
     expect(ruleIds).toContain(RULE);
+  });
+});
+
+describe('base: expression complexity', () => {
+  const RULE = 'sonarjs/expression-complexity';
+  const FOUR = 'export const any = (a, b, c, d, e) => a && b && c && d && e;\n';
+  const THREE = 'export const any = (a, b, c, d) => a && b && c && d;\n';
+
+  it.each([
+    ['src/check.ts', true],
+    ['src/check.js', true],
+    ['src/check.test.ts', false],
+    ['__mocks__/check.ts', false],
+    ['e2e/check.ts', false],
+  ])('in %s, reports four operators in one expression: %s', async (file, reported) => {
+    const ruleIds = await ruleIdsFor(base(), FOUR, file);
+    const reports = ruleIds.includes(RULE);
+
+    expect(reports).toBe(reported);
+  });
+
+  it('accepts three operators in one expression', async () => {
+    const ruleIds = await ruleIdsFor(base(), THREE, 'src/check.ts');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(RULE);
   });
 });
 

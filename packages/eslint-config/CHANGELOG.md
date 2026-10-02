@@ -64,6 +64,9 @@ when a version's change lives in a sibling it is described there instead:
   do array indexes, default values, class field initial values, object property values, enum members, numeric
   literal types, readonly class properties and type indexes. Anything else wants a named `const`. Core
   `no-magic-numbers` is off, so the two never double-report.
+- **`base` caps the operators in one expression.** `sonarjs/expression-complexity` runs at error with `max: 3` on
+  every script and SFC file except suites, `__mocks__/` and `e2e/`. A condition joining four or more `&&`, `||`
+  and `?:` wants its parts named in `const`s or a small predicate first.
 - **`base` asks for values to be named before use.** `@linteljs/name-before-use` runs on every script and SFC
   file, suites included, with `ignoreEmptyLiterals` and `ignoreLiteralArguments` on. An `await`, a call that takes
   a call, or an inline array or object in a condition, an argument, `expect`, a `return` or an arrow's body wants

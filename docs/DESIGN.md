@@ -328,6 +328,15 @@ config files out: the chosen options give 82 findings in 28 files; an empty `ign
 183 in 73; `detectObjects: true` gives 90, so a column-width table stays legal; including `constants.ts` gives 90,
 every one already a named entry. `1000` is not allowed, and is `MS_PER_SECOND` instead.
 
+### Expression complexity in source only
+
+`base` turns on `sonarjs/expression-complexity` at its default `max: 3`, restated, for every script and SFC file
+except suites, `__mocks__/` and e2e: a case may spell out the condition it pins, while source names the parts of a
+long condition in `const`s or a small predicate. Config files and `constants.ts` stay in scope, since the rule is
+about reading a condition rather than naming a number. Measured on 2026-10-02: 18 findings in 8 files, all under
+`eslint-plugin/scripts/` and `eslint-config/scripts/`, and none in the suites or the 62 starters. Every one was
+fixed in the code, so the root config carries no exemption for it.
+
 ### `name-before-use` reports and never fixes
 
 `@linteljs/name-before-use` asks for an `await`, a call that takes a call, or an inline array or object to be named

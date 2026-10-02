@@ -388,6 +388,16 @@ export const base = (options: BaseOptions = {}): Layer => {
       },
     },
 
+    // A case may spell out its condition; source names its parts.
+    {
+      name: '@linteljs/base/expression-complexity',
+      files: scriptFiles,
+      ignores: TEST_FILES,
+      rules: {
+        'sonarjs/expression-complexity': ['error', { max: 3 }],
+      },
+    },
+
     // Outside the plugin's `recommended`, so restated here; suites included.
     {
       name: '@linteljs/base/name-before-use',
