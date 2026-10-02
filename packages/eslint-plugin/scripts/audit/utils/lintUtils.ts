@@ -29,8 +29,7 @@ export const configFor = (
     plugins: { '@linteljs': { rules: modules } },
     rules: settings,
   };
-
-  return [
+  const config = [
     {
       ...shared,
       files: ['**/*.ts', '**/*.tsx'],
@@ -42,4 +41,6 @@ export const configFor = (
       languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     },
   ];
+
+  return config;
 };

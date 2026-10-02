@@ -125,7 +125,9 @@ if (missing.length > 0) {
 
 const rules = Object.fromEntries(expected
   .map((name) => {
-    return [`sonarjs/${name}`, 'error' as const];
+    const setting: [string, 'error'] = [`sonarjs/${name}`, 'error'];
+
+    return setting;
   }));
 
 const eslint = new ESLint({
@@ -161,14 +163,16 @@ log(`scanned ${String(results.length)} files under src/ and scripts/`);
 const findings = results
   .flatMap((result) => {
     return result.messages
-      .map((message): Finding => {
-        return {
+      .map((message) => {
+        const finding: Finding = {
           file: relative(root, result.filePath),
           line: message.line,
           rule: message.ruleId,
           text: message.message,
           fatal: Boolean(message.fatal),
         };
+
+        return finding;
       });
   });
 

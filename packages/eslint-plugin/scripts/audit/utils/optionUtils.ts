@@ -13,6 +13,11 @@ export interface Configuration {
 }
 
 const EXTRA_HOOK_NAMES = ['useLayoutEffect', 'useImperativeHandle'];
+const SCALAR_TYPES = [
+  'boolean',
+  'number',
+  'string',
+];
 
 const isStringList = (value: unknown): value is string[] => {
   return Array.isArray(value) && value
@@ -22,17 +27,15 @@ const isStringList = (value: unknown): value is string[] => {
 };
 
 const isScalar = (value: unknown): value is boolean | number | string => {
-  return [
-    'boolean',
-    'number',
-    'string',
-  ].includes(typeof value);
+  return SCALAR_TYPES.includes(typeof value);
 };
 
 // An option type with no values here throws, so a new option cannot quietly go unswept.
 const valuesFor = (property: JSONSchema4): OptionValue[] => {
   if (property.type === 'boolean') {
-    return [true, false];
+    const both = [true, false];
+
+    return both;
   }
 
   if (property.enum !== undefined) {
@@ -42,15 +45,19 @@ const valuesFor = (property: JSONSchema4): OptionValue[] => {
   const fallback: unknown = property.default;
 
   if (property.type === 'integer' && typeof fallback === 'number') {
-    return [
+    const sizes = [
       property.minimum ?? 0,
       fallback,
       fallback * 2 + 2,
     ];
+
+    return sizes;
   }
 
   if (property.type === 'array' && isStringList(fallback)) {
-    return [fallback, [...fallback, ...EXTRA_HOOK_NAMES]];
+    const hookLists = [fallback, [...fallback, ...EXTRA_HOOK_NAMES]];
+
+    return hookLists;
   }
 
   throw new Error(`no values known for a schema property of type ${JSON.stringify(property.type)}`);
@@ -65,11 +72,13 @@ export const configurationsFor = (rule: string): Configuration[] => {
     .flatMap(([option, property]) => {
       return valuesFor(property)
         .map((value) => {
-          return {
+          const configuration: Configuration = {
             label: `${rule} { ${option}: ${JSON.stringify(value)} }`,
             options: { [rule]: { [option]: value } },
             rule,
           };
+
+          return configuration;
         });
     });
 };

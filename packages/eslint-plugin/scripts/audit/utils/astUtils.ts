@@ -112,7 +112,8 @@ const isEslintParser = (value: unknown): value is EslintParser => {
 };
 
 // espree ships inside ESLint; resolved through it because pnpm hoists no transitive dependency.
-const espreeModule: unknown = createRequire(createRequire(import.meta.url).resolve('eslint'))('espree');
+const eslintEntry = createRequire(import.meta.url).resolve('eslint');
+const espreeModule: unknown = createRequire(eslintEntry)('espree');
 
 if (!isParser(espreeModule) || !isEslintParser(tseslint.parser)) {
   throw new Error('espree or typescript-eslint no longer exposes the parse function this audit calls');

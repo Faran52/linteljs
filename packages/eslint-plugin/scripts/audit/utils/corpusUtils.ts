@@ -32,10 +32,12 @@ const MAX_BYTES = 512 * 1024;
 const MAX_LINE = 1000;
 
 // The workspace store: pnpm fills this package's `node_modules` with symlinks the walk skips.
+const HOME = homedir();
+const TEMP = tmpdir();
 const DEFAULT_SOURCES = [
   resolve(import.meta.dirname, '../../../../../node_modules'),
-  join(homedir(), 'Projects'),
-  join(tmpdir(), 'linteljs-real-code'),
+  join(HOME, 'Projects'),
+  join(TEMP, 'linteljs-real-code'),
 ];
 
 export const sourcesFrom = (given: string[]): string[] => {
@@ -61,19 +63,25 @@ const walk = function* (dir: string, keepNodeModules: boolean): Generator<string
   }
 
   for (const entry of entries) {
+    const extension = extname(entry.name);
+
     if (entry.isDirectory()) {
       if (!SKIP_DIRS.has(entry.name) || (keepNodeModules && entry.name === 'node_modules')) {
-        yield* walk(join(dir, entry.name), keepNodeModules);
+        const subdir = join(dir, entry.name);
+
+        yield* walk(subdir, keepNodeModules);
       }
     }
-    else if (entry.isFile() && !entry.name.includes('.min.') && SCRIPT_EXTENSIONS.has(extname(entry.name))) {
+    else if (entry.isFile() && !entry.name.includes('.min.') && SCRIPT_EXTENSIONS.has(extension)) {
       yield join(dir, entry.name);
     }
   }
 };
 
 export const filesUnder = (dir: string): Generator<string> => {
-  return walk(dir, dir.includes('node_modules'));
+  const insideNodeModules = dir.includes('node_modules');
+
+  return walk(dir, insideNodeModules);
 };
 
 // In turn, so the first source does not spend the whole budget.
@@ -88,7 +96,13 @@ export const interleave = function* (dirs: string[]): Generator<string> {
 
     yield* round
       .flatMap((step) => {
-        return step.done === true ? [] : [step.value];
+        if (step.done === true) {
+          return [];
+        }
+
+        const yielded = [step.value];
+
+        return yielded;
       });
 
     live = live
