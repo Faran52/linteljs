@@ -51,7 +51,8 @@ const CODEX_ONLY: HostedAnswers = {
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-sync-'));
+  const prefix = join(tmpdir(), 'linteljs-sync-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -82,7 +83,9 @@ const entryOf = async (answers: HostedAnswers, target: string): Promise<SyncEntr
 };
 
 const statusOf = async (answers: HostedAnswers, target: string): Promise<string | undefined> => {
-  return (await entryOf(answers, target))?.status;
+  const entry = await entryOf(answers, target);
+
+  return entry?.status;
 };
 
 describe('planSync', () => {
@@ -138,7 +141,8 @@ describe('planSync', () => {
 
     const statuses = pending
       .map(({ target, status }) => {
-        return [target, status];
+        const pair = [target, status];
+        return pair;
       });
 
     const expected = [[TYPE_STANDARDS, 'changed']];
@@ -207,7 +211,8 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md', '.claude/settings.json']);
     await writeFile(join(cwd, '.claude/notes.md'), '# ours\n', 'utf8');
 
-    const obsolete = (await planSync(cwd, CODEX_ONLY)).entries
+    const { entries } = await planSync(cwd, CODEX_ONLY);
+    const obsolete = entries
       .filter((entry) => {
         return entry.status === 'obsolete';
       })
@@ -262,7 +267,8 @@ describe('applySync', () => {
 
     const statuses = pending
       .map(({ target, status }) => {
-        return [target, status];
+        const pair = [target, status];
+        return pair;
       });
 
     const expected = [['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']];
@@ -270,9 +276,10 @@ describe('applySync', () => {
 
     const { written } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js', 'tsconfig.json']);
 
-    const expected2 = ['eslint.config.js', 'tsconfig.json'];
-    expect(written).toEqual(expected2);
-    expect((await planSync(cwd, HOSTED_DEFAULTS)).pending).toEqual([]);
+    const expectedWritten = ['eslint.config.js', 'tsconfig.json'];
+    expect(written).toEqual(expectedWritten);
+    const { pending: stillPending } = await planSync(cwd, HOSTED_DEFAULTS);
+    expect(stillPending).toEqual([]);
   });
 
   it('refuses to write a generated artifact through a symbolic link', async () => {
@@ -431,14 +438,14 @@ describe('applySync', () => {
       expect(targetExists).toBe(false);
     }
 
-    const actual = await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'));
-    expect(actual).toBe(true);
-    const actual2 = await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'));
-    expect(actual2).toBe(true);
-    const actual3 = await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'));
-    expect(actual3).toBe(true);
-    const actual4 = await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'));
-    expect(actual4).toBe(true);
+    const hooksJsonExists = await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'));
+    expect(hooksJsonExists).toBe(true);
+    const gitGuardExists = await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'));
+    expect(gitGuardExists).toBe(true);
+    const parserUtilsExists = await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'));
+    expect(parserUtilsExists).toBe(true);
+    const hostUtilsExists = await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'));
+    expect(hostUtilsExists).toBe(true);
   });
 
   it('names a package.json it writes from nothing after the directory', async () => {
@@ -492,7 +499,8 @@ describe('applySync', () => {
       await writeFile(join(cwd, target), '# retired\n', 'utf8');
     }
 
-    expect((await applyPending(HOSTED_DEFAULTS)).removed).toEqual(retired);
+    const { removed } = await applyPending(HOSTED_DEFAULTS);
+    expect(removed).toEqual(retired);
     const retiredExists = await exists(join(cwd, 'retired'));
     expect(retiredExists).toBe(false);
   });
@@ -527,7 +535,9 @@ describe('sync limits itself to what linteljs owns', () => {
   const syncedPackageJson = async (): Promise<ReturnType<typeof parsePackageJson>> => {
     await applyPending(HOSTED_DEFAULTS);
 
-    return parsePackageJson(await readFile(join(cwd, 'package.json'), 'utf8'));
+    const text = await readFile(join(cwd, 'package.json'), 'utf8');
+
+    return parsePackageJson(text);
   };
 
   it('keeps a bumped framework, its scripts and every other version, and upgrades an old @linteljs/* one', async () => {
@@ -546,17 +556,17 @@ describe('sync limits itself to what linteljs owns', () => {
     }];
     expect(upgrades).toEqual(expected);
 
-    const expected2 = { react: '^99.0.0' };
-    expect(synced.dependencies).toEqual(expected2);
+    const expectedDependencies = { react: '^99.0.0' };
+    expect(synced.dependencies).toEqual(expectedDependencies);
 
-    const expected3 = {
+    const expectedDevDependencies = {
       '@linteljs/eslint-config': '^2.0.0',
       'typescript': '^99.0.0',
     };
-    expect(synced.devDependencies).toEqual(expected3);
+    expect(synced.devDependencies).toEqual(expectedDevDependencies);
 
-    const expected4 = { check: 'our own gate' };
-    expect(synced.scripts).toEqual(expected4);
+    const expectedScripts = { check: 'our own gate' };
+    expect(synced.scripts).toEqual(expectedScripts);
   });
 
   it('reports a dependency linteljs needs and the project lacks, and never writes it', async () => {

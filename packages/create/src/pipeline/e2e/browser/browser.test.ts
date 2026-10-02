@@ -28,7 +28,8 @@ createServer((request, response) => {
 const ORIGIN = /http:\/\/localhost:\d+/g;
 
 const projectWith = (script: string, pages: Record<string, string> = {}): string => {
-  const project = mkdtempSync(join(tmpdir(), 'browser-'));
+  const prefix = join(tmpdir(), 'browser-');
+  const project = mkdtempSync(prefix);
   const scripts = { scripts: { preview: script } };
   const manifest = JSON.stringify(scripts);
   const served = JSON.stringify(pages);
@@ -54,12 +55,12 @@ describe('serveArgs', () => {
     ];
     expect(vite).toEqual(expected);
 
-    const expected2 = [
+    const expectedNext = [
       'exec',
       'next',
       'start',
     ];
-    expect(next).toEqual(expected2);
+    expect(next).toEqual(expectedNext);
   });
 });
 

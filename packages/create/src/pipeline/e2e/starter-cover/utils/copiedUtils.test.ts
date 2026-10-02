@@ -17,7 +17,8 @@ const SOURCES = [BASE, MSW];
 const TARGET = '__mocks__/setupTests.ts';
 
 const templateText = (source: string): string => {
-  return readFileSync(join(TEMPLATES_ROOT, source), 'utf8');
+  const path = join(TEMPLATES_ROOT, source);
+  return readFileSync(path, 'utf8');
 };
 
 const upper = (source: string): string => {

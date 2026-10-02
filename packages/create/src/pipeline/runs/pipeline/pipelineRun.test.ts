@@ -48,7 +48,8 @@ interface AnswerOverrides {
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-'));
+  const prefix = join(tmpdir(), 'linteljs-');
+  cwd = await mkdtemp(prefix);
   await writeFile(join(cwd, 'package.json'), `${JSON.stringify({ name: 'demo-app' }, null, 2)}\n`, 'utf8');
 });
 
@@ -256,16 +257,20 @@ describe('the stages that shell out', () => {
   const MARKER = 'invocation.txt';
 
   const planted = async (name: string, exitCode: number): Promise<void> => {
+    const markerPath = JSON.stringify(join(cwd, MARKER));
+
     await plantBinary(join(cwd, 'fake-bin'), name, [
       "const { appendFileSync } = require('node:fs');",
-      `appendFileSync(${JSON.stringify(join(cwd, MARKER))}, `
+      `appendFileSync(${markerPath}, `
       + '`${process.cwd()} ${process.argv.slice(2).join(" ")}\\n`);',
       `process.exit(${String(exitCode)});`,
     ]);
   };
 
   const invocations = async (): Promise<string[]> => {
-    return (await readFile(join(cwd, MARKER), 'utf8'))
+    const log = await readFile(join(cwd, MARKER), 'utf8');
+
+    return log
       .trimEnd()
       .split('\n');
   };
@@ -297,9 +302,10 @@ describe('the stages that shell out', () => {
     const actual = await installNotices('yarn');
     const expected = ['installing with yarn'];
     expect(actual).toEqual(expected);
-    const actual2 = await invocations();
-    const expected2 = [`${await realpath(cwd)} install`];
-    expect(actual2).toEqual(expected2);
+    const invoked = await invocations();
+    const realCwd = await realpath(cwd);
+    const expectedInvoked = [`${realCwd} install`];
+    expect(invoked).toEqual(expectedInvoked);
 
     await pipelineRun({
       name: 'demo-app',
@@ -313,8 +319,8 @@ describe('the stages that shell out', () => {
       ],
     });
 
-    const actual3 = await invocations();
-    expect(actual3).toHaveLength(2);
+    const invokedTwice = await invocations();
+    expect(invokedTwice).toHaveLength(2);
   });
 
   it('stops when the package manager is not installed at all', async () => {
@@ -359,7 +365,8 @@ describe('the repository the hooks install into', () => {
   });
 
   it('initialises one in its own directory when the caller exports another repository', async () => {
-    const outer = await mkdtemp(join(tmpdir(), 'linteljs-outer-'));
+    const outerPrefix = join(tmpdir(), 'linteljs-outer-');
+    const outer = await mkdtemp(outerPrefix);
 
     try {
       await mkdir(join(outer, '.git'));
@@ -474,6 +481,7 @@ describe('what create and sync each discover about a project', () => {
   it('leaves sync nothing to report on a project it has just written', async () => {
     await generate({});
 
-    expect((await planSync(cwd, hostedAnswersFor({}))).pending).toEqual([]);
+    const { pending } = await planSync(cwd, hostedAnswersFor({}));
+    expect(pending).toEqual([]);
   });
 });

@@ -23,7 +23,7 @@ const ANSWERED: Record<string, string> = {
 };
 
 vi.mock('./processUtils', () => {
-  return {
+  const processUtils = {
     runPm: vi.fn(async (pm: PackageManager) => {
       return Promise.resolve({
         status: 0,
@@ -31,13 +31,19 @@ vi.mock('./processUtils', () => {
       });
     }),
   };
+  return processUtils;
 });
 
 describe('answerFlags', () => {
   it('passes a flag for every answer the CLI names one for', () => {
     const named = Object.values(ANSWERS)
       .flatMap((record) => {
-        return 'flag' in record ? [`--${record.flag}`] : [];
+        if (!('flag' in record)) {
+          return [];
+        }
+
+        const flags = [`--${record.flag}`];
+        return flags;
       });
     const passed = new Set([
       ...answerFlags({

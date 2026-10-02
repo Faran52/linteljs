@@ -24,7 +24,8 @@ import { fixPass, nextStep } from './fixPass';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-fixpass-'));
+  const prefix = join(tmpdir(), 'linteljs-fixpass-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -79,7 +80,8 @@ describe('fixPass', () => {
   });
 
   it('does nothing observable when no callback is given', async () => {
-    await expect(fixPass(cwd, DEFAULT_ANSWERS)).resolves.toBeUndefined();
+    const pass = fixPass(cwd, DEFAULT_ANSWERS);
+    await expect(pass).resolves.toBeUndefined();
   });
 
   it.each([
@@ -117,10 +119,11 @@ describe('fixPass', () => {
   });
 
   it('runs eslint over the whole project, fixing, with the JSON formatter', async () => {
-    await plantEslint([
+    const eslintScript = [
       'const asked = process.argv.slice(2).join(" ");',
       'console.log(asked === ". --fix --format json" ? \'[{"output":"a"}]\' : "[]");',
-    ].join('\n'));
+    ].join('\n');
+    await plantEslint(eslintScript);
 
     const notices: string[] = [];
 
@@ -187,11 +190,12 @@ describe('fixPass', () => {
     await writeFile(join(cwd, 'src', 'b.css'), 'b {}\n', 'utf8');
     await writeFile(join(cwd, 'src', 'c.css'), 'c {}\n', 'utf8');
 
-    await plantStylelint([
+    const stylelintScript = [
       "const { writeFileSync } = require('node:fs');",
       "writeFileSync('src/styles/a.css', 'a { }\\n');",
       "writeFileSync('src/c.css', 'c {}\\n');",
-    ].join('\n'));
+    ].join('\n');
+    await plantStylelint(stylelintScript);
 
     const notices: string[] = [];
 

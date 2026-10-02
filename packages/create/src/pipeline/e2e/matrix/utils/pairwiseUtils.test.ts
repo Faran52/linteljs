@@ -16,9 +16,10 @@ import {
 import type { Answers } from '@config/types';
 
 const caseFor = (overrides: Partial<Answers>): PairwiseCase => {
-  return {
+  const pairwiseCase: PairwiseCase = {
     answers: answersFor(overrides),
   };
+  return pairwiseCase;
 };
 
 describe('pairsOf', () => {
