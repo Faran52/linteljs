@@ -48,6 +48,11 @@ when a version's change lives in a sibling it is described there instead:
 - **`typescript()` reports a parameter property.** `constructor(private readonly value: number)` is a class
   property declared in the body and assigned in the constructor, through `@typescript-eslint/parameter-properties`
   with `prefer: 'class-property'`. There is no fix.
+- **`base` reports six more module defects through `import-x`.** A file importing itself (`no-self-import`), a
+  path with a segment it does not need (`no-useless-path-segments`, fixed; an explicit `/index` stays), an
+  absolute path (`no-absolute-path`, fixed), an exported `let` or `var` (`no-mutable-exports`), `module.exports`
+  or `exports.name` (`no-commonjs`) and an AMD `define` or `require` (`no-amd`). `no-commonjs` leaves `require` to
+  `@typescript-eslint/no-require-imports`, which keeps its asset allowance.
 
 ### Added
 

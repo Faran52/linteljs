@@ -181,6 +181,16 @@ export const base = (options: BaseOptions = {}): Layer => {
         'import-x/newline-after-import': 'error',
         'import-x/no-cycle': 'error',
         'import-x/no-anonymous-default-export': 'error',
+        'import-x/no-self-import': 'error',
+        'import-x/no-useless-path-segments': ['error', { noUselessIndex: false }],
+        'import-x/no-absolute-path': 'error',
+        'import-x/no-mutable-exports': 'error',
+        // `@typescript-eslint/no-require-imports` owns `require`, with its asset allowance.
+        'import-x/no-commonjs': ['error', {
+          allowRequire: true,
+          allowPrimitiveModules: false,
+        }],
+        'import-x/no-amd': 'error',
 
         // `/compat`'s looser signatures let a call typecheck that the strict entry refuses.
         'no-restricted-imports': ['error', {

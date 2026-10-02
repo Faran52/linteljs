@@ -343,6 +343,16 @@ Each was tried against the workspace and the 670 starter files with `base` as it
 - The `export` entry of `@stylistic/padding-line-between-statements`: a blank line before every export never
   settles in a barrel of re-exports, where the fix does not apply (46 findings left after `--fix`, every one in an
   `index.ts`). The rest of the list ships; `import-x/newline-after-import` already owns the line after imports.
+- `import-x/consistent-type-specifier-style`: the workspace writes `import type` when every name is a type and an
+  inline `type` when a line mixes types and values, the form `import-x/no-duplicates` with `prefer-inline` merges
+  to. Neither style matches: `prefer-top-level` reports 279 imports in 169 files, `prefer-inline` 324 in 238.
+- `import-x/no-named-as-default`: 70 findings. 68 are a layer imported by its default name (`import base from
+  './baseLayer'`), where each layer exports the same value both ways on purpose, and two `eslint-plugin-import-x`,
+  which ships its API the same way.
+- `import-x/default`, `import-x/named` and `import-x/namespace`: TypeScript reports each (TS1192, TS2305, TS2339)
+  with no export map to build; `import-x/typescript` already turns `named` off.
+- `import-x/no-deprecated`: `@typescript-eslint/no-deprecated` and `sonarjs/deprecation` report the same JSDoc
+  `@deprecated` with type information.
 
 ### Rules `typescript()` leaves off, measured
 

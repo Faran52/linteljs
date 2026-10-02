@@ -586,6 +586,46 @@ describe('base: astro', () => {
   });
 });
 
+describe('base: module hygiene', () => {
+  const ownFile = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/unused.ts');
+
+  it.each([
+    ['import-x/no-self-import', "import { greet } from './unused';\n\nexport const again = greet;\n"],
+    ['import-x/no-useless-path-segments', "import { greet } from '../typed/unused';\n\nexport const again = greet;\n"],
+    ['import-x/no-absolute-path', "import { greet } from '/unused';\n\nexport const again = greet;\n"],
+    ['import-x/no-mutable-exports', 'export let count = 0;\n'],
+    ['import-x/no-commonjs', 'module.exports = { count: 0 };\n'],
+    ['import-x/no-amd', "define(['dependency'], (dependency) => {\n  return dependency;\n});\n"],
+  ])('reports %s', async (ruleId, code) => {
+    const ruleIds = await ruleIdsFor(base(), code, ownFile);
+
+    expect(ruleIds).toContain(ruleId);
+  });
+
+  it('leaves a require to @typescript-eslint/no-require-imports', async () => {
+    const code = "const dependency = require('dependency');\n\nexport const value = dependency;\n";
+    const ruleIds = await ruleIdsFor(base(), code, ownFile);
+
+    expect(ruleIds).not.toContain('import-x/no-commonjs');
+  });
+
+  it.each([
+    ['import-x/no-self-import', [2]],
+    ['import-x/no-useless-path-segments', [2, { noUselessIndex: false }]],
+    ['import-x/no-absolute-path', [2]],
+    ['import-x/no-mutable-exports', [2]],
+    ['import-x/no-commonjs', [2, {
+      allowRequire: true,
+      allowPrimitiveModules: false,
+    }]],
+    ['import-x/no-amd', [2]],
+  ])('sets %s with its options', async (ruleId, expected) => {
+    const entry = await ruleEntryFor(base(), TS_FILE, ruleId);
+
+    expect(entry).toEqual(expected);
+  });
+});
+
 describe('base: import-x/no-cycle', () => {
   const entry = join(import.meta.dirname, '../../../__mocks__/fixtures/cycle/a.cts');
 

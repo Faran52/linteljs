@@ -1185,12 +1185,12 @@ export const runtimeErrorIn = (code: string, filename = ''): string | undefined 
         target: ts.ScriptTarget.ES2022,
       },
     }).outputText;
-  const module = { exports: {} };
+  const sandboxModule = { exports: {} };
 
   try {
     runInNewContext(script, {
-      module,
-      exports: module.exports,
+      module: sandboxModule,
+      exports: sandboxModule.exports,
     }, { timeout: 1000 });
 
     return undefined;
