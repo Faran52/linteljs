@@ -20,7 +20,7 @@ export const styleGlob = (answers: Answers): string => {
 
 // The scripts `check` chains, in order.
 export const gateScripts = (answers: Answers): string[] => {
-  return [
+  const gates: string[] = [
     'lint',
     'lint:types',
     'lint:css',
@@ -28,6 +28,8 @@ export const gateScripts = (answers: Answers): string[] => {
     ...(hasTests(answers) ? ['test:coverage'] : []),
     'build',
   ];
+
+  return gates;
 };
 
 export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {
@@ -57,7 +59,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
 
   scripts['build'] = target.build;
 
-  return {
+  const packageScripts: Record<string, string> & CheckScript = {
     ...scripts,
     check: gateScripts(answers)
       .map((gate) => {
@@ -72,4 +74,6 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
         'husky',
       ].join(' && '),
   };
+
+  return packageScripts;
 };

@@ -8,12 +8,14 @@ import { fillSlots, sharedSlots } from './utils/templateUtils';
 
 // Replaced outright: the scaffolder's advice is wrong in a way someone acts on (port 5173 against 3000).
 export const emitReadme = (template: string, projectName: string, answers: Answers): string => {
-  return fillSlots(template, sharedSlots(projectName, answers), 'README.md');
+  const slots = sharedSlots(projectName, answers);
+
+  return fillSlots(template, slots, 'README.md');
 };
 
 // Rewritten on any run: `--existing` adopts a project whose README says the same wrong thing.
 export const readmeEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
-  return [{
+  const artifacts: Artifact[] = [{
     stage: 'standard',
     target: 'README.md',
     content: {
@@ -23,4 +25,6 @@ export const readmeEmitter = (answers: Answers, _project: ProjectShape, name: st
       },
     },
   }];
+
+  return artifacts;
 };

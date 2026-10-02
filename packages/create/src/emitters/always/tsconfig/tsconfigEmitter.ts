@@ -69,25 +69,31 @@ const BASE_EXCLUDE = [
 const typesFor = (answers: Answers): string[] => {
   const target = targetFor(answers);
 
-  return [
+  const types: string[] = [
     'node',
     ...(target.vitePlugin === undefined ? [] : ['vite/client']),
     // Named, so a project that declined a suite does not typecheck against ambient `describe`.
     ...(answers.testing === 'vitest' ? ['vitest/globals'] : []),
     ...target.tsconfig.types ?? [],
   ];
+
+  return types;
 };
 
 const pathsFrom = (answers: Answers): Record<string, string[]> => {
-  return mapValues(buildAliases(answers), (directory) => {
-    return [directory];
+  const aliases = buildAliases(answers);
+
+  return mapValues(aliases, (directory) => {
+    const locations: string[] = [directory];
+
+    return locations;
   });
 };
 
 const compilerOptionsFor = (answers: Answers): CompilerOptions => {
   const delta = targetFor(answers).tsconfig;
 
-  return {
+  const compilerOptions: CompilerOptions = {
     rootDir: '.',
     ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
 
@@ -139,6 +145,8 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
 
     ...(delta.dropsPaths === true ? {} : { paths: pathsFrom(answers) }),
   };
+
+  return compilerOptions;
 };
 
 export const buildTsconfig = (answers: Answers): TsconfigFile => {
@@ -146,7 +154,7 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
   const delta = record.tsconfig;
   const styled = answers.styling === 'tailwind' ? record.tailwind?.tsconfigInclude ?? [] : [];
 
-  return {
+  const tsconfig: TsconfigFile = {
     ...(delta.extends === undefined ? {} : { extends: delta.extends }),
     compilerOptions: compilerOptionsFor(answers),
     include: [
@@ -156,10 +164,14 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
     ],
     exclude: BASE_EXCLUDE,
   };
+
+  return tsconfig;
 };
 
 export const emitTsconfig = (answers: Answers): string => {
-  return `${JSON.stringify(buildTsconfig(answers), null, 2)}\n`;
+  const tsconfig = buildTsconfig(answers);
+
+  return `${JSON.stringify(tsconfig, null, 2)}\n`;
 };
 
 export const tsconfigEmitter = (answers: Answers): Artifact[] => {

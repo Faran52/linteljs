@@ -21,13 +21,15 @@ const testRows = (answers: Answers, run: string): string => {
 export const sharedSlots = (projectName: string, answers: Answers): Record<string, string> => {
   const run = RUN_PREFIX[answers.packageManager];
 
-  return {
+  const slots: Record<string, string> = {
     PROJECT_NAME: projectName,
     TARGET_LABEL: ANSWERS.target.values[answers.target].label,
     RUN: run,
     CHECK_CHAIN: buildScripts(answers).check,
     TEST_ROWS: testRows(answers, run),
   };
+
+  return slots;
 };
 
 export const fillSlots = (

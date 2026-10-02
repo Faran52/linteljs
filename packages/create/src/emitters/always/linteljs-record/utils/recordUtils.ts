@@ -19,9 +19,11 @@ export const literal = (command: string): string => {
     .reduce<string[]>((joined, word) => {
       const last = joined.at(-1);
 
-      return last === undefined || last.length + word.length >= RUNS_WIDTH
+      const withWord = last === undefined || last.length + word.length >= RUNS_WIDTH
         ? [...joined, word]
         : [...joined.slice(0, -1), `${last} ${word}`];
+
+      return withWord;
     }, []);
 
   return lines
@@ -55,13 +57,16 @@ export const nameDeclaration = (name: string): string => {
 export const gateRows = (answers: Answers): [string, string][] => {
   const run = RUN_PREFIX[answers.packageManager];
   const gates = gateScripts(answers);
+  const scripts = buildScripts(answers);
 
-  return Object.entries(buildScripts(answers))
+  return Object.entries(scripts)
     .filter(([name]) => {
       return gates.includes(name);
     })
     .map(([name, runs]) => {
-      return [`command: '${run} ${name}'`, `runs: ${literal(runs)}`];
+      const row: [string, string] = [`command: '${run} ${name}'`, `runs: ${literal(runs)}`];
+
+      return row;
     });
 };
 
@@ -86,7 +91,9 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
 
   return rows
     .flatMap(([name, version]) => {
-      return version === undefined ? [] : [[`name: '${name}'`, `version: '${version}'`] satisfies [string, string]];
+      const entryRows: [string, string][] = version === undefined ? [] : [[`name: '${name}'`, `version: '${version}'`]];
+
+      return entryRows;
     });
 };
 
@@ -109,8 +116,10 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
       const record = records[key];
       const printed = printable(answers[key]);
 
-      return record.prompt === undefined || printed === undefined
+      const entryRows: [string, string][] = record.prompt === undefined || printed === undefined
         ? []
-        : [[`label: '${record.prompt}'`, `value: '${printed}'`] satisfies [string, string]];
+        : [[`label: '${record.prompt}'`, `value: '${printed}'`]];
+
+      return entryRows;
     });
 };

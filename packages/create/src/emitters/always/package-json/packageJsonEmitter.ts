@@ -57,8 +57,14 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   const overrides = buildOverrides(answers);
   // pnpm reads its overrides from `pnpm-workspace.yaml`; yarn names the field `resolutions`.
   const overrideField = pm === 'npm' || pm === 'bun' ? 'overrides' : 'resolutions';
+  const allowedBuilds = allowedBuildNames(answers);
+  const allowedScripts = Object.fromEntries(allowedBuilds
+    .map((name) => {
+      const allowed: [string, boolean] = [name, true];
 
-  return {
+      return allowed;
+    }));
+  const patched: PackageJson = {
     ...packageJson,
     type: 'module',
     // So npm cannot publish it.
@@ -99,20 +105,19 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
           },
         }),
     // bun blocks every install script it has not been told about, and reads the list from here.
-    ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuildNames(answers) } : {}),
+    ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuilds } : {}),
     // npm 12 blocks every unlisted install script and reads the list from here, not `.npmrc`.
     ...(answers.packageManager === 'npm'
       ? {
           allowScripts: {
             ...existing.allowScripts,
-            ...Object.fromEntries(allowedBuildNames(answers)
-              .map((name) => {
-                return [name, true];
-              })),
+            ...allowedScripts,
           },
         }
       : {}),
   };
+
+  return patched;
 };
 
 const serialized = (packageJson: PackageJson): string => {
@@ -124,16 +129,29 @@ export const resyncPackageJson = (current: string, answers: Answers): string => 
   const existing = parsePackageJson(current);
   const { upgrades } = dependencyDrift(existing, answers);
 
-  return upgrades.length === 0 ? current : serialized(upgradedPackageJson(existing, upgrades));
+  if (upgrades.length === 0) {
+    return current;
+  }
+
+  const upgraded = upgradedPackageJson(existing, upgrades);
+
+  return serialized(upgraded);
 };
 
 // Merged: two of three migrations had to add dependencies their answers already implied.
 export const packageJsonEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
   const merge = (current: string | null): string => {
-    return serialized(patchPackageJson(current === null ? { name } : parsePackageJson(current), answers));
+    const manifest: PackageJson = current === null ? { name } : parsePackageJson(current);
+    const patched = patchPackageJson(manifest, answers);
+
+    return serialized(patched);
   };
 
-  return [merged('package', 'package.json', merge, (current) => {
+  const resync = (current: string): string => {
     return resyncPackageJson(current, answers);
-  })];
+  };
+
+  const artifacts = [merged('package', 'package.json', merge, resync)];
+
+  return artifacts;
 };

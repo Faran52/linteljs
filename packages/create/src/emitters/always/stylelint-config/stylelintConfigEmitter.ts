@@ -15,10 +15,12 @@ import {
 
 // Without a `customSyntax` a `.vue` or `.svelte` file's styles go unlinted.
 const sfcOverride = (extension: string): StyleOverride => {
-  return {
+  const override: StyleOverride = {
     files: `**/*.${extension}`,
     body: ["customSyntax: 'postcss-html',"],
   };
+
+  return override;
 };
 
 const overridesFor = (overrides: StyleOverride[]): string => {

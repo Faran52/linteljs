@@ -23,25 +23,30 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
       .join('\n');
   };
 
-  return [
+  const gate = rows(gateRows(answers));
+  const stack = rows(stackRows(answers, VERSIONS));
+  const recorded = rows(answerRows(answers, ANSWERS));
+  const source = [
     '// Written once by @linteljs/create. Yours from here; only the starter pages read it.',
     nameDeclaration(name),
     '',
     `export const CHECK = '${RUN_PREFIX[answers.packageManager]} check';`,
     '',
     'export const GATE = [',
-    rows(gateRows(answers)),
+    gate,
     '] as const;',
     '',
     'export const STACK = [',
-    rows(stackRows(answers, VERSIONS)),
+    stack,
     '] as const;',
     '',
     'export const ANSWERS = [',
-    rows(answerRows(answers, ANSWERS)),
+    recorded,
     '] as const;',
     '',
   ].join('\n');
+
+  return source;
 };
 
 export const RECORD_MODULE = 'src/config/linteljs.ts';
