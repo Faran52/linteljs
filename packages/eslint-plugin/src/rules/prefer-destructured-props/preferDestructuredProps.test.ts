@@ -45,6 +45,15 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
 
     'export default memo(function (props) { return props.alpha; });',
     'export default memo(function Widget(props) { return props.alpha; });',
+    'const Widget = (...props) => props.length;',
+    'const Widget = ({ alpha }, props) => alpha + props.bravo;',
+    'const Widget = (props) => props[`alpha`];',
+    'const Widget = (props: Props) => props!.alpha;',
+    'const Widget = (props: Props) => (props as Props).alpha;',
+    'const Widget = (props: Props): typeof props.alpha => props.alpha;',
+    'class Panel { Render(props) { return props.alpha; } }',
+    'const registry = { Widget: (props) => props.alpha };',
+    'Widget = (props) => props.alpha;',
   ],
   invalid: [
     {
@@ -85,6 +94,39 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
     },
     {
       code: 'const Widget = memo(forwardRef((props, ref) => <div ref={ref}>{props.alpha}</div>));',
+      errors: [{ messageId: 'destructure' }],
+    },
+
+    {
+      code: 'const Widget = (props) => props[0] + props.alpha;',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'export default function Widget(props) { return props.alpha; }',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'export const Widget = async (props) => props.alpha;',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Outer = (props) => { const Inner = (props) => props.bravo; return <Inner>{props.alpha}</Inner>; };',
+      errors: [{ messageId: 'destructure' }, { messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (props) => <Child value={props.alpha} {...props.rest} />;',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (/* incoming */ props) => props.alpha;',
+      errors: [{ messageId: 'destructure', column: 32 }],
+    },
+    {
+      code: 'const Widget = (props: Props): JSX.Element => <div>{props.alpha}</div>;',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'function Widget<T>(props: Props<T>) { return props.value; }',
       errors: [{ messageId: 'destructure' }],
     },
   ],
