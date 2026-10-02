@@ -79,18 +79,24 @@ export const forAnswers = (answers: Answers, source: string): string => {
       const name = WHEN.exec(line)?.[1];
 
       if (name === undefined) {
-        return [line];
+        const unconditional = [line];
+
+        return unconditional;
       }
 
       if (!isCondition(name)) {
         throw new Error(`Unknown rule condition: ${name}`);
       }
 
-      return CONDITIONS[name](answers)
-        ? [line
-            .replace(WHEN, '')
-            .trimEnd()]
-        : [];
+      if (!CONDITIONS[name](answers)) {
+        return [];
+      }
+
+      const stripped = [line
+        .replace(WHEN, '')
+        .trimEnd()];
+
+      return stripped;
     })
     .join('\n');
 };
@@ -114,10 +120,12 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
     },
     ...target.stateRules
       .map((rule) => {
-        return {
+        const ruleSource: RuleSource = {
           name: rule,
           sources: [`fragments/claude-rules/${rule}`],
         };
+
+        return ruleSource;
       }),
   ];
 
@@ -144,21 +152,25 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
 export const referenceArtifacts = (answers: Answers): Artifact[] => {
   return ruleSources(answers)
     .map(({ name, sources }) => {
-      return {
+      const artifact: Artifact = {
         stage: 'standard',
         target: reference(name),
         content: {
           sources,
           transform: (source: string) => {
-            return withoutClaudePaths(forAnswers(answers, source));
+            const applicable = forAnswers(answers, source);
+
+            return withoutClaudePaths(applicable);
           },
         },
       };
+
+      return artifact;
     });
 };
 
 export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
-  return [
+  const artifacts = [
     copied('plugins/linteljs/skills/linteljs/SKILL.md'),
     ...referenceArtifacts(answers),
     copied('plugins/linteljs/hooks/hooks.json'),
@@ -173,4 +185,6 @@ export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
     copied('plugins/linteljs/hooks/utils/contextUtils.ts'),
     copied('plugins/linteljs/hooks/utils/hostUtils.ts'),
   ];
+
+  return artifacts;
 };

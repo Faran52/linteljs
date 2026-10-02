@@ -163,5 +163,8 @@ export const emitTsconfig = (answers: Answers): string => {
 };
 
 export const tsconfigEmitter = (answers: Answers): Artifact[] => {
-  return [emitted('package', 'tsconfig.json', emitTsconfig(answers))];
+  const tsconfig = emitTsconfig(answers);
+  const artifacts = [emitted('package', 'tsconfig.json', tsconfig)];
+
+  return artifacts;
 };

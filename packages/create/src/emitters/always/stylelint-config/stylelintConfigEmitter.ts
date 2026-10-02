@@ -64,5 +64,8 @@ export const emitStylelintConfig = (answers: Answers): string => {
 };
 
 export const stylelintConfigEmitter = (answers: Answers): Artifact[] => {
-  return [emitted('lint', 'stylelint.config.js', emitStylelintConfig(answers))];
+  const config = emitStylelintConfig(answers);
+  const artifacts = [emitted('lint', 'stylelint.config.js', config)];
+
+  return artifacts;
 };

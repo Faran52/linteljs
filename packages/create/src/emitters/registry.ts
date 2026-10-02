@@ -102,7 +102,12 @@ export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, na
     });
 
   // Computed here: an emitter would have to leave itself out of its own input.
-  return [...artifacts, emitted('standard', MANAGED_PATH, managedRecord(removableIn(artifacts)))];
+  const removable = removableIn(artifacts);
+  const record = managedRecord(removable);
+  const managed = emitted('standard', MANAGED_PATH, record);
+  const withManaged = [...artifacts, managed];
+
+  return withManaged;
 };
 
 // Kept out of `buildArtifacts`, which `sync` re-applies: none of this is linteljs's once the project has it.

@@ -19,5 +19,8 @@ export const emitLinteljsConfig = (answers: Answers): string => {
 // Never written by `sync`, so a reformatted config survives `sync`.
 // Seeded first, so a run that dies before `package.json` leaves the answers recorded.
 export const linteljsConfigEmitter = (answers: Answers): Artifact[] => {
-  return [emitted('package', CONFIG_PATH, emitLinteljsConfig(answers))];
+  const config = emitLinteljsConfig(answers);
+  const artifacts = [emitted('package', CONFIG_PATH, config)];
+
+  return artifacts;
 };

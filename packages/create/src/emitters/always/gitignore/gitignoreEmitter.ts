@@ -33,5 +33,7 @@ export const mergeGitignore = (existing: string | null): string => {
 };
 
 export const gitignoreEmitter = (): Artifact[] => {
-  return [merged('package', '.gitignore', mergeGitignore)];
+  const artifacts = [merged('package', '.gitignore', mergeGitignore)];
+
+  return artifacts;
 };

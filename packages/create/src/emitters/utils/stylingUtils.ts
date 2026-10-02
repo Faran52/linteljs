@@ -24,15 +24,17 @@ export const stylingPlugin = (
   stylesDir = STYLES_DIR,
 ): StylingPlugin => {
   if (styling === 'tailwind') {
-    return {
+    const plugin: StylingPlugin = {
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
       declarations: [],
       call: 'tailwindcss()',
     };
+
+    return plugin;
   }
 
   if (styling === 'stylex' && typed) {
-    return {
+    const plugin: StylingPlugin = {
       imports: [
         "import { type UserOptions } from '@stylexjs/unplugin';",
         "import stylexVite from '@stylexjs/unplugin/vite';",
@@ -44,18 +46,24 @@ export const stylingPlugin = (
       ],
       call: STYLEX_CALL,
     };
+
+    return plugin;
   }
 
   if (styling === 'stylex') {
-    return {
+    const plugin: StylingPlugin = {
       imports: ["import stylex from '@stylexjs/unplugin/vite';"],
       declarations: [stylexAliases(stylesDir)],
       call: STYLEX_CALL,
     };
+
+    return plugin;
   }
 
-  return {
+  const plugin: StylingPlugin = {
     imports: [],
     declarations: [],
   };
+
+  return plugin;
 };

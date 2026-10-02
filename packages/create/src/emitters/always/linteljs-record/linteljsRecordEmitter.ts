@@ -47,5 +47,8 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
 export const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
-  return [emitted('standard', RECORD_MODULE, emitLinteljsRecord(answers, name))];
+  const record = emitLinteljsRecord(answers, name);
+  const artifacts = [emitted('standard', RECORD_MODULE, record)];
+
+  return artifacts;
 };

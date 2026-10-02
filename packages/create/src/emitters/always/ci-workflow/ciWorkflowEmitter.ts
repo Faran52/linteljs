@@ -81,8 +81,11 @@ ${before}      - uses: actions/setup-node@v7
 };
 
 export const ciWorkflowEmitter = (answers: HostedAnswers): Artifact[] => {
-  return [{
-    ...emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers)),
+  const workflow = emitCiWorkflow(answers);
+  const artifacts: Artifact[] = [{
+    ...emitted('standard', '.github/workflows/ci.yml', workflow),
     preserve: true,
   }];
+
+  return artifacts;
 };

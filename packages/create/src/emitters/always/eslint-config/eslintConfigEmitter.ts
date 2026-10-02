@@ -59,7 +59,9 @@ const arrayLiteral = (key: string, values: string[], level = 1): string => {
 };
 
 const arrayRow = (key: OptionRow[0], values: string[]): OptionRow => {
-  return [key, arrayLiteral(key, values)];
+  const row: OptionRow = [key, arrayLiteral(key, values)];
+
+  return row;
 };
 
 const objectLiteral = (entries: [string, string][], level: number): string => {
@@ -126,7 +128,10 @@ const optionRows = (answers: Answers): OptionRow[] => {
     ...answers.ignores ?? [],
   ]));
 
-  rows.push(['aliases', objectLiteral(Object.entries(buildAliases(answers)), 1)]);
+  const aliases = buildAliases(answers);
+  const aliasEntries = Object.entries(aliases);
+
+  rows.push(['aliases', objectLiteral(aliasEntries, 1)]);
 
   // React Router's typegen reads `src/routes.ts` without the tsconfig aliases.
   if (answers.router === 'react-router-framework') {
@@ -134,8 +139,11 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['enforceRelativeImports', 'true']);
   }
 
-  rows.push(['naming', objectLiteral(Object.entries(target.naming), 1)]);
-  rows.push(['folderNaming', objectLiteral(Object.entries(target.folderNaming), 1)]);
+  const namingEntries = Object.entries(target.naming);
+  const folderNamingEntries = Object.entries(target.folderNaming);
+
+  rows.push(['naming', objectLiteral(namingEntries, 1)]);
+  rows.push(['folderNaming', objectLiteral(folderNamingEntries, 1)]);
 
   return rows;
 };
@@ -148,7 +156,7 @@ export const emitEslintConfig = (answers: Answers): string => {
     .join('\n');
 
   // import/no-anonymous-default-export reports a bare array.
-  return [
+  const source = [
     `import { composeConfig } from '${PACKAGE}';`,
     '',
     `const config = await composeConfig({\n${options}\n});`,
@@ -156,8 +164,13 @@ export const emitEslintConfig = (answers: Answers): string => {
     'export default config;',
     '',
   ].join('\n');
+
+  return source;
 };
 
 export const eslintConfigEmitter = (answers: Answers): Artifact[] => {
-  return [emitted('lint', 'eslint.config.js', emitEslintConfig(answers))];
+  const config = emitEslintConfig(answers);
+  const artifacts = [emitted('lint', 'eslint.config.js', config)];
+
+  return artifacts;
 };

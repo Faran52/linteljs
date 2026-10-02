@@ -17,11 +17,13 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
 const scannedExtensions = (answers: Answers): string[] => {
   const { sfcExtension } = targetFor(answers);
 
-  return [
+  const extensions = [
     '.ts',
     '.tsx',
     ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`]),
   ];
+
+  return extensions;
 };
 
 const withExtensions = (source: string, answers: Answers): string => {
@@ -56,18 +58,25 @@ const withTypeSafety = (source: string, answers: Answers): string => {
 };
 
 export const checkerArtifact = (answers: Answers): Artifact => {
-  return {
+  const artifact: Artifact = {
     stage: 'standard',
     target: 'scripts/checkBannedPatterns.ts',
     content: {
       sources: ['project/scripts/checkBannedPatterns.ts'],
       transform: (source, current) => {
-        return mergeChecker(withExtensions(withTypeSafety(source, answers), answers), current);
+        const typedSource = withTypeSafety(source, answers);
+        const scannedSource = withExtensions(typedSource, answers);
+
+        return mergeChecker(scannedSource, current);
       },
     },
   };
+
+  return artifact;
 };
 
 export const bannedPatternsEmitter = (answers: Answers): Artifact[] => {
-  return [checkerArtifact(answers)];
+  const artifacts = [checkerArtifact(answers)];
+
+  return artifacts;
 };

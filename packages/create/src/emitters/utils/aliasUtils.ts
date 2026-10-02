@@ -47,10 +47,14 @@ export const buildAliases = (answers: Answers): AliasMap => {
   const kept: [string, string][] = Object.entries(omit(all, [...omitted]));
 
   // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
-  return Object.fromEntries(kept
+  const withIndexes = kept
     .flatMap(([alias, directory]) => {
-      return alias.endsWith('/*') && directory.endsWith('/*')
+      const pairs: [string, string][] = alias.endsWith('/*') && directory.endsWith('/*')
         ? [[alias, directory], [alias.slice(0, -2), directory.slice(0, -2)]]
         : [[alias, directory]];
-    }));
+
+      return pairs;
+    });
+
+  return Object.fromEntries(withIndexes);
 };

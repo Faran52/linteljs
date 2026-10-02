@@ -1,27 +1,33 @@
 import type { Artifact, Stage } from '@config/types';
 
 export const emitted = (stage: Stage, target: string, text: string): Artifact => {
-  return {
+  const artifact: Artifact = {
     stage,
     target,
     content: { text },
   };
+
+  return artifact;
 };
 
 export const copied = (target: string): Artifact => {
-  return {
+  const artifact: Artifact = {
     stage: 'standard',
     target,
     content: { sources: [`project/${target}`] },
   };
+
+  return artifact;
 };
 
 export const joined = (target: string, sources: string[]): Artifact => {
-  return {
+  const artifact: Artifact = {
     stage: 'standard',
     target,
     content: { sources },
   };
+
+  return artifact;
 };
 
 export const merged = (
@@ -30,7 +36,7 @@ export const merged = (
   merge: (current: string | null) => string,
   resync?: (current: string) => string,
 ): Artifact => {
-  return {
+  const artifact: Artifact = {
     stage,
     target,
     content: resync === undefined
@@ -40,4 +46,6 @@ export const merged = (
           resync,
         },
   };
+
+  return artifact;
 };

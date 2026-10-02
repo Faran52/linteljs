@@ -94,19 +94,23 @@ const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
 };
 
 const tailwindDevDependencies = (target: TargetRecord): string[] => {
-  return [
+  const devDependencies: string[] = [
     usesTailwindVitePlugin(target) ? '@tailwindcss/vite' : '@tailwindcss/postcss',
     'stylelint-config-tailwindcss',
     'tailwindcss',
     ...target.tailwind?.devDependencies ?? [],
   ];
+
+  return devDependencies;
 };
 
 const libraryDependencies = (answers: Answers, target: TargetRecord): string[] => {
   const { framework } = target;
 
   const bound = (bindings: Record<Framework, string>): string[] => {
-    return framework === undefined ? [] : [bindings[framework]];
+    const names = framework === undefined ? [] : [bindings[framework]];
+
+    return names;
   };
 
   const runtime: Record<Library, string[]> = {
@@ -129,7 +133,7 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
     'react-hook-form': ['react-hook-form', ...(hasLibrary(answers, 'zod') ? ['@hookform/resolvers'] : [])],
   };
 
-  return [
+  const dependencies: string[] = [
     // `http.ts` ships on every project and `qs` is what it builds a querystring with.
     'qs',
     ...answers.libraries
@@ -141,6 +145,8 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
     ...(answers.form === undefined ? [] : forms[answers.form]),
     ...(localesOf(answers).length === 0 ? [] : target.i18n?.dependencies ?? []),
   ];
+
+  return dependencies;
 };
 
 const isPackageJson = (value: unknown): value is PackageJson => {
@@ -200,11 +206,13 @@ export const pinned = (overrides: ScopedOverride[], versions: Record<string, str
           return override.name === name;
         })
         .map(({ parent }) => {
-          return {
+          const pin: Pin = {
             parent,
             name,
             version,
           };
+
+          return pin;
         });
     });
 };
@@ -212,23 +220,30 @@ export const pinned = (overrides: ScopedOverride[], versions: Record<string, str
 const pinsFor = (answers: Answers): Pin[] => {
   const scoped = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides ?? [] : [];
 
-  return pinned(scoped, versioned(scoped
+  const scopedNames = scoped
     .map(({ name }) => {
       return name;
-    })));
+    });
+  const versions = versioned(scopedNames);
+
+  return pinned(scoped, versions);
 };
 
 export const flatOverrides = (answers: Answers, pm: Exclude<PackageManager, 'npm'>): Record<string, string> => {
   const keyFor = SCOPED_KEYS[pm];
 
-  return Object.fromEntries(pinsFor(answers)
+  const overrideEntries = pinsFor(answers)
     .map(({
       parent,
       name,
       version,
     }) => {
-      return [keyFor(parent, name), version];
-    }));
+      const overrideEntry: [string, string] = [keyFor(parent, name), version];
+
+      return overrideEntry;
+    });
+
+  return Object.fromEntries(overrideEntries);
 };
 
 export const buildOverrides = (answers: Answers): Overrides => {
@@ -269,7 +284,11 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
   if (store !== undefined) {
     const binding = target.framework && STORE_BINDINGS[store]?.[target.framework];
 
-    names.push(...STORE_DEPENDENCIES[store], ...binding === undefined ? [] : [binding]);
+    names.push(...STORE_DEPENDENCIES[store]);
+
+    if (binding !== undefined) {
+      names.push(binding);
+    }
   }
 
   return versioned(names, target.versions);
@@ -330,7 +349,9 @@ export const allowedBuildNames = (answers: Answers): string[] => {
 };
 
 const rankOfRange = (range: string): number => {
-  return rankOf(range.replace(/^\D+/, ''));
+  const version = range.replace(/^\D+/, '');
+
+  return rankOf(version);
 };
 
 // A range that is not a version (`workspace:*`, `link:`) ranks NaN and is never moved.
@@ -354,7 +375,9 @@ export const dependencyDrift = (existing: PackageJson, answers: Answers): Depend
     devDependencies: {},
   };
 
-  for (const field of ['dependencies', 'devDependencies'] as const) {
+  const fields = ['dependencies', 'devDependencies'] as const;
+
+  for (const field of fields) {
     for (const [name, to] of Object.entries(wanted[field])) {
       const from = installed[name];
       const isOwn = name.startsWith(LINTELJS_SCOPE);
@@ -373,10 +396,12 @@ export const dependencyDrift = (existing: PackageJson, answers: Answers): Depend
     }
   }
 
-  return {
+  const drift: DependencyDrift = {
     upgrades,
     missing,
   };
+
+  return drift;
 };
 
 // Only the `@linteljs/*` entries move, each in the field the project keeps it in.
@@ -393,9 +418,11 @@ export const upgradedPackageJson = (existing: PackageJson, upgrades: Upgrade[]):
     }
   }
 
-  return {
+  const upgraded: PackageJson = {
     ...existing,
     ...(existing.dependencies === undefined ? {} : { dependencies }),
     devDependencies,
   };
+
+  return upgraded;
 };
