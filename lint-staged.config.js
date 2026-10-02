@@ -3,11 +3,13 @@ const config = {
   '*.{ts,mts,cts}': (stagedFiles) => {
     const files = stagedFiles.join(' ');
 
-    return [
+    const commands = [
       `node scripts/checkBannedPatterns.ts ${files}`,
       `eslint ${files} --fix`,
       `node packages/create/templates/project/scripts/typecheckStaged.ts ${files}`,
     ];
+
+    return commands;
   },
   '*.css': ['stylelint --fix'],
 };

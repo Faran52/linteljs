@@ -26,7 +26,11 @@ const aliases = Object.fromEntries(RINGS
   .flatMap((name) => {
     const subpath: [string, string] = [`@${name}/*`, `${ring(name)}/*`];
 
-    return name === 'config' || name === 'utils' ? [subpath] : [[`@${name}`, ring(name)], subpath];
+    const barrel: [string, string] = [`@${name}`, ring(name)];
+
+    const entries = name === 'config' || name === 'utils' ? [subpath] : [barrel, subpath];
+
+    return entries;
   }));
 
 const innerZones = (exceptBarrel: boolean): Zone[] => {
@@ -35,12 +39,14 @@ const innerZones = (exceptBarrel: boolean): Zone[] => {
     .map((name, index) => {
       const before = INNER_RINGS.slice(0, index + 1);
 
-      return {
+      const zone = {
         target: ring(name),
         from: before.map(ring),
         ...(exceptBarrel && name === 'targets' ? { except: ['./index.ts'] } : {}),
         message: `The inner rings point answers/, targets/, utils/, config/. ${name}/ reads only those after it.`,
       };
+
+      return zone;
     });
 };
 
