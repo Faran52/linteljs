@@ -91,7 +91,9 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
           return;
         }
 
-        if (allowIn.has(argumentToOf(node))) {
+        const argumentTo = argumentToOf(node);
+
+        if (allowIn.has(argumentTo)) {
           return;
         }
 

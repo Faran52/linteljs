@@ -73,7 +73,9 @@ const rulesTurnedOffBy = (comment: CommentText): string[] => {
     .flatMap((entry) => {
       const colon = entry.indexOf(':');
 
-      if (!OFF_SEVERITY.test(entry.slice(colon + 1))) {
+      const severity = entry.slice(colon + 1);
+
+      if (!OFF_SEVERITY.test(severity)) {
         return [];
       }
 

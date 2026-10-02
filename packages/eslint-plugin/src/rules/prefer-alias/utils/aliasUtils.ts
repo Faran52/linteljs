@@ -124,7 +124,9 @@ export const throughAlias = (alias: Alias, path: string): string => {
 
 export const pathOf = (alias: Alias, specifier: string): string => {
   // An exact key is its prefix less the slash, so the slice is empty and the join is the directory.
-  return posix.join(alias.directory, specifier.slice(alias.prefix.length));
+  const rest = specifier.slice(alias.prefix.length);
+
+  return posix.join(alias.directory, rest);
 };
 
 export const relativeBetween = (file: string, path: string): string => {

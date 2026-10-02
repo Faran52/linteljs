@@ -150,7 +150,9 @@ export const preferAlias = createRule('prefer-alias', {
       const own = aliasHolding(aliases, file);
       const exempt = aliasExempt
         .some((glob) => {
-          return matchesGlob(glob, posix.relative(base, file));
+          const relativePath = posix.relative(base, file);
+
+          return matchesGlob(glob, relativePath);
         });
 
       if (specifier.startsWith('.')) {

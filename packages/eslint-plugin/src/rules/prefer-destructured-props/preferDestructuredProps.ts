@@ -78,7 +78,9 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
       },
 
       ':function:exit': (node: FunctionLike) => {
-        if (!/^[A-Z]/.test(bindingNameOf(node))) {
+        const bindingName = bindingNameOf(node);
+
+        if (!/^[A-Z]/.test(bindingName)) {
           return;
         }
 
@@ -103,7 +105,9 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
 
         if (references
           .some((reference) => {
-            return memberObjects.get(spanOf(reference.identifier)) !== true;
+            const span = spanOf(reference.identifier);
+
+            return memberObjects.get(span) !== true;
           })) {
           return;
         }

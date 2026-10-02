@@ -83,15 +83,21 @@ export const declaredVariablesIn = (
 };
 
 export const scopeOf = (context: CompatContext, node: RuleNode): Scope.Scope => {
-  return scopeIn(compatCode(sourceCodeOf(context)), context, node);
+  const code = compatCode(sourceCodeOf(context));
+
+  return scopeIn(code, context, node);
 };
 
 export const ancestorsOf = (context: CompatContext, node: Ancestor): Ancestor[] => {
-  return ancestorsIn(compatCode(sourceCodeOf(context)), context, node);
+  const code = compatCode(sourceCodeOf(context));
+
+  return ancestorsIn(code, context, node);
 };
 
 export const declaredVariablesOf = (context: CompatContext, node: RuleNode): Scope.Variable[] => {
-  return declaredVariablesIn(compatCode(sourceCodeOf(context)), context, node);
+  const code = compatCode(sourceCodeOf(context));
+
+  return declaredVariablesIn(code, context, node);
 };
 
 export const ancestorReaderOf = (context: CompatContext): AncestorReader => {
