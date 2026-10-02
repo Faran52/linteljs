@@ -58,8 +58,8 @@ describe('the webextension record', () => {
     expect(recordFor({ surfaces: ['popup'] }).starterStyles)
       .toEqual(expected);
 
-    const expected2 = ['./styles/tokens.css', './styles/base.css'];
-    expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(expected2);
+    const backgroundStyles = ['./styles/tokens.css', './styles/base.css'];
+    expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(backgroundStyles);
   });
 });
 
@@ -98,18 +98,18 @@ describe('the browser axis', () => {
     };
     expect(record.starterFiles).toContainEqual(expected);
 
-    const expected2 = {
+    const onInstalled = {
       target: 'src/background/onInstalled.ts',
       variant: browser,
     };
-    expect(record.starterFiles).toContainEqual(expected2);
+    expect(record.starterFiles).toContainEqual(onInstalled);
 
-    const expected3 = {
+    const onInstalledSuite = {
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
       variant: browser,
     };
-    expect(record.starterTests).toContainEqual(expected3);
+    expect(record.starterTests).toContainEqual(onInstalledSuite);
   });
 });
 
@@ -161,11 +161,11 @@ describe('the surfaces axis', () => {
     ];
     expect(record.coverageExclude).toEqual(expected);
 
-    const expected2 = {
+    const panelSuite = {
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
     };
-    expect(record.starterTests).toContainEqual(expected2);
+    expect(record.starterTests).toContainEqual(panelSuite);
   });
 
   it.each<[Browser]>([
@@ -260,10 +260,10 @@ describe('the hosted framework axis', () => {
     expect(record.dependencies).toEqual(expected);
     expect(record.devDependencies).toContain('eslint-plugin-vue');
     expect(record.devDependencies).toContain('@vitejs/plugin-vue');
-    const expected2 = ['@vue/test-utils'];
-    expect(record.testDevDependencies).toEqual(expected2);
-    const expected3 = ['vue-reactivity.md'];
-    expect(record.stateRules).toEqual(expected3);
+    const testingLibrary = ['@vue/test-utils'];
+    expect(record.testDevDependencies).toEqual(testingLibrary);
+    const vueRules = ['vue-reactivity.md'];
+    expect(record.stateRules).toEqual(vueRules);
   });
 
   it('carries the single-file-component extension where the framework has one', () => {

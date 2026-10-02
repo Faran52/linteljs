@@ -59,10 +59,13 @@ describe('nextI18nFiles', () => {
 
   it('translates the contact page only beside a form', () => {
     const contactOf = (answers: Answers): string[] => {
-      return writtenUnder(nextI18nFiles(), answers)
+      const starterFiles = nextI18nFiles();
+      const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith('src/app/contact/');
         });
+
+      return contact;
     };
 
     const english = contactOf(answersFor({
@@ -81,8 +84,8 @@ describe('nextI18nFiles', () => {
 
     const expected = ['src/app/contact/page.tsx'];
     expect(english).toEqual(expected);
-    const expected2 = ['src/app/contact/page.tsx@i18n'];
-    expect(translated).toEqual(expected2);
+    const translatedContact = ['src/app/contact/page.tsx@i18n'];
+    expect(translated).toEqual(translatedContact);
     expect(formless).toEqual([]);
   });
 });

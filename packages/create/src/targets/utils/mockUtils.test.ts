@@ -162,8 +162,8 @@ describe('accessorFiles', () => {
     ];
     expect(actual).toEqual(expected);
 
-    const actual2 = pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' });
-    expect(actual2).toEqual([]);
+    const rtkPicked = pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' });
+    expect(rtkPicked).toEqual([]);
   });
 
   it('reads another target\'s accessor where one is taken', () => {
@@ -236,8 +236,8 @@ describe('accessorTests', () => {
   it('writes both suites under tanstack query alone', () => {
     const actual = pickedBy(accessorTests(HOOKS), { data: 'tanstack-query' });
     expect(actual).toHaveLength(2);
-    const actual2 = pickedBy(accessorTests(HOOKS));
-    expect(actual2).toEqual([]);
+    const unanswered = pickedBy(accessorTests(HOOKS));
+    expect(unanswered).toEqual([]);
   });
 });
 
@@ -250,8 +250,8 @@ describe('the rtk query api', () => {
     ];
     expect(actual).toEqual(expected);
 
-    const actual2 = pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' });
-    expect(actual2).toEqual([]);
+    const tanstackPicked = pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' });
+    expect(tanstackPicked).toEqual([]);
   });
 });
 
@@ -271,8 +271,8 @@ describe('the rtk query contact api', () => {
 
     const actual = pickedBy(rtkContactFiles(), { data: 'rtk-query' });
     expect(actual).toEqual([]);
-    const actual2 = pickedBy(rtkContactFiles(), { form: 'tanstack-form' });
-    expect(actual2).toEqual([]);
+    const formOnly = pickedBy(rtkContactFiles(), { form: 'tanstack-form' });
+    expect(formOnly).toEqual([]);
   });
 
   it('takes both from the react tree, a suite each', () => {

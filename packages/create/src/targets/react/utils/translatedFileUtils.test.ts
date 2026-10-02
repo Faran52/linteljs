@@ -50,7 +50,7 @@ describe('reactI18nFiles', () => {
     ];
     expect(english).toEqual(expected);
 
-    const expected2 = [
+    const frameworkFiles = [
       'src/config/statuses.ts',
       'src/config/standard.ts',
       'src/components/features/status-page/StatusPage.tsx',
@@ -58,15 +58,18 @@ describe('reactI18nFiles', () => {
       'src/pages/version/VersionPage.tsx',
       `${HEADER}@react-router`,
     ];
-    expect(framework).toEqual(expected2);
+    expect(framework).toEqual(frameworkFiles);
   });
 
   it('translates the contact page and its suite only beside a form', () => {
     const contactOf = (answers: Answers): string[] => {
-      return writtenUnder([...reactI18nFiles(), ...reactI18nTests()], answers)
+      const starterFiles = [...reactI18nFiles(), ...reactI18nTests()];
+      const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith('src/pages/contact/');
         });
+
+      return contact;
     };
 
     const english = contactOf(answersFor({ form: 'tanstack-form' }));
@@ -82,11 +85,11 @@ describe('reactI18nFiles', () => {
     ];
     expect(english).toEqual(expected);
 
-    const expected2 = [
+    const translatedContact = [
       'src/pages/contact/ContactPage.tsx@i18n',
       'src/pages/contact/ContactPage.test.tsx@i18n',
     ];
-    expect(translated).toEqual(expected2);
+    expect(translated).toEqual(translatedContact);
 
     expect(formless).toEqual([]);
   });
@@ -97,10 +100,13 @@ describe('reactI18nFiles', () => {
     ['tanstack-router', 'tanstack-router'],
   ] as const)('gives %s the %s header, and its twin once a language is chosen', (router, variant) => {
     const headerOf = (answers: Answers): string[] => {
-      return writtenUnder(reactI18nFiles(), answers)
+      const starterFiles = reactI18nFiles();
+      const header = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith(HEADER);
         });
+
+      return header;
     };
 
     const english = headerOf(answersFor({ router }));
@@ -111,8 +117,8 @@ describe('reactI18nFiles', () => {
 
     const expected = [`${HEADER}@${variant}`];
     expect(english).toEqual(expected);
-    const expected2 = [`${HEADER}@${variant}-i18n`];
-    expect(translated).toEqual(expected2);
+    const translatedHeader = [`${HEADER}@${variant}-i18n`];
+    expect(translated).toEqual(translatedHeader);
   });
 });
 

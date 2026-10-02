@@ -63,10 +63,10 @@ describe('vueTarget', () => {
   it('takes one store module per store it offers, and none without one', () => {
     const destinations = destinationsFor();
     expect(destinations).not.toContain('src/lib/store/counter/counterStore.ts');
-    const destinations2 = destinationsFor({ store: 'pinia' });
-    expect(destinations2).toContain('src/lib/store/counter/counterStore.ts');
-    const destinations3 = destinationsFor({ store: 'tanstack-store' });
-    expect(destinations3).toContain('src/lib/store/counter/counterStore.ts');
+    const withPinia = destinationsFor({ store: 'pinia' });
+    expect(withPinia).toContain('src/lib/store/counter/counterStore.ts');
+    const withTanstackStore = destinationsFor({ store: 'tanstack-store' });
+    expect(withTanstackStore).toContain('src/lib/store/counter/counterStore.ts');
   });
 
   it('installs a store plugin only for the store that needs one', () => {
@@ -89,10 +89,10 @@ describe('vueTarget', () => {
 
     const actual = installs('pinia');
     expect(actual).toBe('pinia');
-    const actual2 = installs('tanstack-store');
-    expect(actual2).toBeUndefined();
-    const actual3 = installs(undefined);
-    expect(actual3).toBeUndefined();
+    const tanstackStore = installs('tanstack-store');
+    expect(tanstackStore).toBeUndefined();
+    const storeless = installs(undefined);
+    expect(storeless).toBeUndefined();
   });
 
   it('ships a button under no answers, since the status page retries with it', () => {

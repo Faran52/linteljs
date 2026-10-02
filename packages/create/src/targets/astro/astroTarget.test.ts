@@ -157,10 +157,10 @@ describe('the hosted framework axis', () => {
 
     const expected = ['astro', 'vue'];
     expect(record.dependencies).toEqual(expected);
-    const expected2 = ['@vue/test-utils'];
-    expect(record.testDevDependencies).toEqual(expected2);
-    const expected3 = ['vue-reactivity.md'];
-    expect(record.stateRules).toEqual(expected3);
+    const testingLibrary = ['@vue/test-utils'];
+    expect(record.testDevDependencies).toEqual(testingLibrary);
+    const vueRules = ['vue-reactivity.md'];
+    expect(record.stateRules).toEqual(vueRules);
   });
 
   it('declares astro once, as a runtime dependency, hosted or not', () => {

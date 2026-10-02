@@ -83,9 +83,9 @@ describe('hasI18n', () => {
   it('holds once any language is chosen', () => {
     const actual = hasI18n(answersFor({}));
     expect(actual).toBe(false);
-    const actual2 = hasI18n(answersFor({ languages: [] }));
-    expect(actual2).toBe(false);
-    const actual3 = hasI18n(answersFor({ languages: ['ko'] }));
-    expect(actual3).toBe(true);
+    const noLanguages = hasI18n(answersFor({ languages: [] }));
+    expect(noLanguages).toBe(false);
+    const korean = hasI18n(answersFor({ languages: ['ko'] }));
+    expect(korean).toBe(true);
   });
 });

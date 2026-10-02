@@ -63,10 +63,13 @@ describe('vueI18nFiles', () => {
 
   it('translates the contact view only beside a form', () => {
     const contactOf = (answers: Answers): string[] => {
-      return writtenUnder(vueI18nFiles(), answers)
+      const starterFiles = vueI18nFiles();
+      const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith('src/views/ContactView');
         });
+
+      return contact;
     };
 
     const english = contactOf(answersFor({
@@ -85,8 +88,8 @@ describe('vueI18nFiles', () => {
 
     const expected = ['src/views/ContactView.vue'];
     expect(english).toEqual(expected);
-    const expected2 = ['src/views/ContactView.vue@i18n'];
-    expect(translated).toEqual(expected2);
+    const translatedContact = ['src/views/ContactView.vue@i18n'];
+    expect(translated).toEqual(translatedContact);
     expect(formless).toEqual([]);
   });
 });

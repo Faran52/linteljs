@@ -25,9 +25,9 @@ describe('translated', () => {
     const actual = [whenOf(base)(ENGLISH), whenOf(twin)(ENGLISH)];
     const expected = [true, false];
     expect(actual).toEqual(expected);
-    const actual2 = [whenOf(base)(ARABIC), whenOf(twin)(ARABIC)];
-    const expected2 = [false, true];
-    expect(actual2).toEqual(expected2);
+    const inArabic = [whenOf(base)(ARABIC), whenOf(twin)(ARABIC)];
+    const twinOnly = [false, true];
+    expect(inArabic).toEqual(twinOnly);
   });
 
   it('keeps the file\'s own condition on both sides, and suffixes its variant', () => {
@@ -49,9 +49,10 @@ describe('translated', () => {
 
 describe('localeFiles', () => {
   it('writes English and each chosen locale, and no other', () => {
+    const japanese = answersFor({ languages: ['ja'] });
     const written = localeFiles()
       .filter((file) => {
-        return whenOf(file)(answersFor({ languages: ['ja'] }));
+        return whenOf(file)(japanese);
       })
       .map(({ target }) => {
         return target;
@@ -76,7 +77,7 @@ describe('LOCALES_TEST', () => {
   it('runs only in a translated project', () => {
     const actual = LOCALES_TEST.when?.(ENGLISH);
     expect(actual).toBe(false);
-    const actual2 = LOCALES_TEST.when?.(ARABIC);
-    expect(actual2).toBe(true);
+    const inArabic = LOCALES_TEST.when?.(ARABIC);
+    expect(inArabic).toBe(true);
   });
 });

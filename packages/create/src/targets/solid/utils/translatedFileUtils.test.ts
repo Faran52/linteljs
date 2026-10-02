@@ -58,10 +58,13 @@ describe('solidI18nFiles', () => {
 
   it('translates the contact page only beside a form', () => {
     const contactOf = (answers: Answers): string[] => {
-      return writtenUnder(solidI18nFiles(), answers)
+      const starterFiles = solidI18nFiles();
+      const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith('src/pages/contact/');
         });
+
+      return contact;
     };
 
     const english = contactOf(answersFor({
@@ -80,8 +83,8 @@ describe('solidI18nFiles', () => {
 
     const expected = ['src/pages/contact/ContactPage.tsx'];
     expect(english).toEqual(expected);
-    const expected2 = ['src/pages/contact/ContactPage.tsx@i18n'];
-    expect(translated).toEqual(expected2);
+    const translatedContact = ['src/pages/contact/ContactPage.tsx@i18n'];
+    expect(translated).toEqual(translatedContact);
     expect(formless).toEqual([]);
   });
 });
@@ -106,13 +109,13 @@ describe('solidI18nTests', () => {
     ];
     expect(written).toEqual(expected);
 
-    const expected2 = [
+    const coveredFiles = [
       'src/components/features/language-select/LanguageSelect.tsx',
       'src/components/ui/code-text/CodeText.tsx',
       'src/components/features/app-header/AppHeader.tsx',
       'src/i18n/index.ts',
     ];
-    expect(covers).toEqual(expected2);
+    expect(covers).toEqual(coveredFiles);
   });
 
   it('adds no suite otherwise', () => {

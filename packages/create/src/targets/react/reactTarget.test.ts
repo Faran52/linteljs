@@ -104,12 +104,12 @@ describe('reactTarget', () => {
         return file.variant;
       });
 
-    const expected2 = [
+    const routerVariants = [
       undefined,
       'react-router',
       'tanstack-router',
     ];
-    expect(appVariants).toEqual(expected2);
+    expect(appVariants).toEqual(routerVariants);
   });
 
   it('ships the mocking layer only when msw was answered, and picks the handlers by whether a form was', () => {
@@ -120,20 +120,23 @@ describe('reactTarget', () => {
         ...overrides,
       };
 
-      return Object.fromEntries(recordFor(overrides).starterFiles
+      const entries = recordFor(overrides).starterFiles
         .filter((file) => {
           return file.when === undefined || file.when(answers);
         })
         .map((file) => {
-          return [file.target, file.variant];
-        }));
+          const entry: [string, string | undefined] = [file.target, file.variant];
+          return entry;
+        });
+      const variantByTarget = Object.fromEntries(entries);
+      return variantByTarget;
     };
 
     const sources = sourcesFor({});
     expect(sources).not.toHaveProperty('__mocks__/msw/handlers.ts');
-    const sources2 = sourcesFor({ mocking: 'msw' });
-    expect(sources2).toHaveProperty('src/lib/utils/fetchExtendedUtils.ts');
-    expect(sourcesFor({ mocking: 'msw' })['__mocks__/msw/handlers.ts']).toBeUndefined();
+    const mswSources = sourcesFor({ mocking: 'msw' });
+    expect(mswSources).toHaveProperty('src/lib/utils/fetchExtendedUtils.ts');
+    expect(mswSources['__mocks__/msw/handlers.ts']).toBeUndefined();
 
     const source = sourcesFor({
       mocking: 'msw',
@@ -151,20 +154,23 @@ describe('reactTarget', () => {
         ...overrides,
       };
 
-      return Object.fromEntries(recordFor(overrides).starterTests
+      const entries = recordFor(overrides).starterTests
         .filter((test) => {
           return test.when === undefined || test.when(answers);
         })
         .map((test) => {
-          return [test.target, test.variant];
-        }));
+          const entry: [string, string | undefined] = [test.target, test.variant];
+          return entry;
+        });
+      const variantByTarget = Object.fromEntries(entries);
+      return variantByTarget;
     };
 
     const suites = suitesFor({});
     expect(suites).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
-    expect(suitesFor({ mocking: 'msw' })['__mocks__/msw/handlers.test.ts']).toBeUndefined();
-    const suites2 = suitesFor({ mocking: 'msw' });
-    expect(suites2).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
+    const mswSuites = suitesFor({ mocking: 'msw' });
+    expect(mswSuites['__mocks__/msw/handlers.test.ts']).toBeUndefined();
+    expect(mswSuites).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
 
     const suite = suitesFor({
       mocking: 'msw',
@@ -207,6 +213,8 @@ const FORM_I18N: readonly Condition[] = [{
   languages: ANSWERED,
 }];
 
+const PAGES = ['about/AboutPage', 'version/VersionPage'];
+
 const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-router-framework'] }];
 
 const GATES: GateRow[] = [
@@ -232,14 +240,15 @@ const GATES: GateRow[] = [
   ['src/config/statuses.ts@i18n', WITH_I18N],
   ['src/config/standard.ts', WITHOUT_I18N],
   ['src/config/standard.ts@i18n', WITH_I18N],
-  ...['about/AboutPage', 'version/VersionPage']
+  ...PAGES
     .flatMap((page): GateRow[] => {
-      return [
+      const rows: GateRow[] = [
         [`src/pages/${page}.tsx`, WITHOUT_I18N],
         [`src/pages/${page}.tsx@i18n`, WITH_I18N],
         [`src/pages/${page}.test.tsx`, WITHOUT_I18N],
         [`src/pages/${page}.test.tsx@i18n`, WITH_I18N],
       ];
+      return rows;
     }),
   ['src/components/features/status-page/StatusPage.tsx', WITHOUT_I18N],
   ['src/components/features/status-page/StatusPage.tsx@i18n', WITH_I18N],
@@ -252,7 +261,8 @@ const GATES: GateRow[] = [
   ['src/i18n/locales.test.ts@i18n', WITH_I18N],
   ...LANGUAGES
     .map((language): GateRow => {
-      return [`src/i18n/locales/${language}/common.json@i18n`, WITH_I18N];
+      const row: GateRow = [`src/i18n/locales/${language}/common.json@i18n`, WITH_I18N];
+      return row;
     }),
   ['src/App.tsx', NO_ROUTER],
   ['src/App.tsx@react-router', [{ router: ['react-router'] }]],

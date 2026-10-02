@@ -51,9 +51,13 @@ describe('componentStyles', () => {
       [],
     ],
   ])('ships the stylesheets of the components written under %s', (_case, overrides, components) => {
-    const stylesheetNames = pickedBy(componentStyles(), overrides)
+    const styles = componentStyles();
+    const stylesheetNames = pickedBy(styles, overrides)
       .map((picked) => {
-        return picked.slice(picked.lastIndexOf('/') + 1, picked.indexOf('.css'));
+        const nameStart = picked.lastIndexOf('/') + 1;
+        const nameEnd = picked.indexOf('.css');
+        const stylesheetName = picked.slice(nameStart, nameEnd);
+        return stylesheetName;
       });
 
     expect(stylesheetNames).toEqual(components);
@@ -83,13 +87,13 @@ describe('componentStyleModules', () => {
 
     const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
-    const expected2 = [
+    const stylexModules = [
       'src/components/features/app-header/styles.ts stylex',
       'src/components/ui/mark/styles.ts stylex',
       'src/components/ui/button/styles.ts stylex',
       'src/styles/tokens.stylex.ts stylex',
     ];
-    expect(picked).toEqual(expected2);
+    expect(picked).toEqual(stylexModules);
   });
 
   it('takes another target\'s bytes into its own directories', () => {
@@ -111,7 +115,7 @@ describe('stylexDocument', () => {
 
     const expected = ['src/layouts/Layout.astro base'];
     expect(plain).toEqual(expected);
-    const expected2 = ['src/layouts/Layout.astro stylex'];
-    expect(stylex).toEqual(expected2);
+    const stylexLayout = ['src/layouts/Layout.astro stylex'];
+    expect(stylex).toEqual(stylexLayout);
   });
 });

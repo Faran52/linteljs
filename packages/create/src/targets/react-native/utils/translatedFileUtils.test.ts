@@ -82,8 +82,8 @@ describe('reactNativeI18nFiles', () => {
 
     const expected = [...ENGLISH_FILES, 'src/app/_layout.tsx'];
     expect(plain).toEqual(expected);
-    const expected2 = [...ENGLISH_FILES, 'src/app/_layout.tsx@tailwind'];
-    expect(tailwind).toEqual(expected2);
+    const tailwindFiles = [...ENGLISH_FILES, 'src/app/_layout.tsx@tailwind'];
+    expect(tailwind).toEqual(tailwindFiles);
   });
 });
 
@@ -113,7 +113,7 @@ describe('reactNativeI18nTests', () => {
     ];
     expect(written).toEqual(expected);
 
-    const expected2 = [
+    const coveredFiles = [
       'src/app/about.tsx',
       'src/app/about.tsx',
       'src/app/version.tsx',
@@ -125,7 +125,7 @@ describe('reactNativeI18nTests', () => {
       'src/i18n/index.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
     ];
-    expect(covers).toEqual(expected2);
+    expect(covers).toEqual(coveredFiles);
   });
 
   it('writes the English suites otherwise', () => {

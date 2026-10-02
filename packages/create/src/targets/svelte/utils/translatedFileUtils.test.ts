@@ -63,10 +63,13 @@ describe('svelteI18nFiles', () => {
 
   it('translates the contact page only beside a form', () => {
     const contactOf = (answers: Answers): string[] => {
-      return writtenUnder(svelteI18nFiles(), answers)
+      const starterFiles = svelteI18nFiles();
+      const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
           return file.startsWith('src/routes/contact/');
         });
+
+      return contact;
     };
 
     const english = contactOf(answersFor({
@@ -85,8 +88,8 @@ describe('svelteI18nFiles', () => {
 
     const expected = ['src/routes/contact/+page.svelte'];
     expect(english).toEqual(expected);
-    const expected2 = ['src/routes/contact/+page.svelte@i18n'];
-    expect(translated).toEqual(expected2);
+    const translatedContact = ['src/routes/contact/+page.svelte@i18n'];
+    expect(translated).toEqual(translatedContact);
     expect(formless).toEqual([]);
   });
 });

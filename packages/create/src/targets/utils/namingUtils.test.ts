@@ -61,8 +61,8 @@ describe('sfcNaming', () => {
     };
     expect(actual).toStrictEqual(expected);
 
-    const actual2 = sfcNaming('svelte', 'routes');
-    const expected2 = ['src/**/*.svelte'];
-    expect(actual2).toHaveProperty(expected2, '!([a-z]*[A-Z]*)');
+    const svelteRoutes = sfcNaming('svelte', 'routes');
+    const sfcPath = ['src/**/*.svelte'];
+    expect(svelteRoutes).toHaveProperty(sfcPath, '!([a-z]*[A-Z]*)');
   });
 });

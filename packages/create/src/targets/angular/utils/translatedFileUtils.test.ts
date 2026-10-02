@@ -84,7 +84,7 @@ describe('angularI18nTests', () => {
     ];
     expect(written).toEqual(expected);
 
-    const expected2 = [
+    const coveredFiles = [
       'src/i18n/index.ts',
       'src/components/ui/code-text/code-text.ts',
       'src/components/features/app-header/app-header.ts',
@@ -95,7 +95,7 @@ describe('angularI18nTests', () => {
       'src/components/features/status-page/status-page.ts',
       'src/components/features/status-page/status-page.ts',
     ];
-    expect(covers).toEqual(expected2);
+    expect(covers).toEqual(coveredFiles);
   });
 
   it('writes the English contact and status suites otherwise', () => {
