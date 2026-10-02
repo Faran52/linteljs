@@ -26,7 +26,8 @@ import { projectFileWriter } from './projectFileUtils';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-project-file-'));
+  const prefix = join(tmpdir(), 'linteljs-project-file-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -38,13 +39,15 @@ afterEach(async () => {
 
 describe('projectFileWriter', () => {
   it('closes every file it opens', async () => {
-    const before = (await readdir('/dev/fd')).length;
-
-    for (const text of [
+    const descriptors = await readdir('/dev/fd');
+    const before = descriptors.length;
+    const texts = [
       'one\n',
       'two\n',
       'three\n',
-    ]) {
+    ];
+
+    for (const text of texts) {
       await projectFileWriter(cwd, 'file.txt', text);
     }
 
@@ -73,9 +76,9 @@ describe('projectFileWriter', () => {
 
     await symlink(external, target);
 
-    const projectFilePromise = projectFileWriter(cwd, 'generated.txt', 'generated\n');
+    const writing = projectFileWriter(cwd, 'generated.txt', 'generated\n');
 
-    await expect(projectFilePromise)
+    await expect(writing)
       .rejects.toThrow('Refusing to write generated.txt: target is a symbolic link');
 
     const actual = await readlink(target);
@@ -90,9 +93,9 @@ describe('projectFileWriter', () => {
     await mkdir(external);
     await symlink(external, join(cwd, 'nested'));
 
-    const projectFilePromise = projectFileWriter(cwd, 'nested/generated.txt', 'generated\n');
+    const writing = projectFileWriter(cwd, 'nested/generated.txt', 'generated\n');
 
-    await expect(projectFilePromise)
+    await expect(writing)
       .rejects.toThrow('Refusing to use nested/generated.txt: a parent directory is a symbolic link');
 
     const file = await readIfPresent(join(external, 'generated.txt'));
@@ -107,16 +110,16 @@ describe('projectFileWriter', () => {
       return '../outside.txt';
     }],
   ])('refuses %s', async (_case, targetFor) => {
-    const projectFilePromise = projectFileWriter(cwd, targetFor(cwd), 'generated\n');
+    const writing = projectFileWriter(cwd, targetFor(cwd), 'generated\n');
 
-    await expect(projectFilePromise)
+    await expect(writing)
       .rejects.toThrow('target must be a relative path inside the project');
   });
 
   it('surfaces a non-symbolic-link write failure unchanged', async () => {
     await mkdir(join(cwd, 'generated.txt'));
 
-    const projectFilePromise = projectFileWriter(cwd, 'generated.txt', 'generated\n');
-    await expect(projectFilePromise).rejects.toThrow(/EISDIR/);
+    const writing = projectFileWriter(cwd, 'generated.txt', 'generated\n');
+    await expect(writing).rejects.toThrow(/EISDIR/);
   });
 });

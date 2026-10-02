@@ -22,7 +22,8 @@ import { managedPathsReader } from './managedPathsReader';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-managed-'));
+  const prefix = join(tmpdir(), 'linteljs-managed-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -33,7 +34,8 @@ afterEach(async () => {
 });
 
 const record = async (text: string): Promise<void> => {
-  await mkdir(dirname(join(cwd, MANAGED_PATH)), { recursive: true });
+  const managedDirectory = dirname(join(cwd, MANAGED_PATH));
+  await mkdir(managedDirectory, { recursive: true });
   await writeFile(join(cwd, MANAGED_PATH), text, 'utf8');
 };
 

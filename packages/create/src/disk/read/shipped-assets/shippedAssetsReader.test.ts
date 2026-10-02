@@ -23,12 +23,14 @@ describe('TEMPLATES_ROOT', () => {
     vi.resetModules();
 
     vi.doMock('node:fs', async (importOriginal) => {
-      return {
-        ...await importOriginal<typeof import('node:fs')>(),
+      const actual = await importOriginal<typeof import('node:fs')>();
+      const fs = {
+        ...actual,
         existsSync: () => {
           return false;
         },
       };
+      return fs;
     });
 
     const { TEMPLATES_ROOT: root } = await import('./shippedAssetsReader');
@@ -61,10 +63,8 @@ describe('shippedAssetsReader', () => {
         'fragments/claude-rules/testing.standard.md',
       ],
     });
-    const [head, standard] = await Promise.all([
-      readFile(join(TEMPLATES_ROOT, 'fragments/claude-rules/testing.react.md'), 'utf8'),
-      readFile(join(TEMPLATES_ROOT, 'fragments/claude-rules/testing.standard.md'), 'utf8'),
-    ]);
+    const head = await readFile(join(TEMPLATES_ROOT, 'fragments/claude-rules/testing.react.md'), 'utf8');
+    const standard = await readFile(join(TEMPLATES_ROOT, 'fragments/claude-rules/testing.standard.md'), 'utf8');
 
     expect(joined).toBe(`${head}\n${standard}`);
   });

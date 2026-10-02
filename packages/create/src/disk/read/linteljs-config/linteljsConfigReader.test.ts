@@ -38,18 +38,21 @@ import { linteljsConfigReader } from './linteljsConfigReader';
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
 
-  return {
+  const fsPromises = {
     ...actual,
     lstat: vi.fn(actual.lstat),
   };
+  return fsPromises;
 });
 
 let cwd = '';
 let external = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-config-'));
-  external = await mkdtemp(join(tmpdir(), 'linteljs-config-external-'));
+  const prefix = join(tmpdir(), 'linteljs-config-');
+  const externalPrefix = join(tmpdir(), 'linteljs-config-external-');
+  cwd = await mkdtemp(prefix);
+  external = await mkdtemp(externalPrefix);
 });
 
 afterEach(async () => {
@@ -82,8 +85,8 @@ describe('linteljsConfigReader', () => {
   it('preserves the parse error for malformed JSON', async () => {
     await writeFile(join(cwd, CONFIG_PATH), '{', 'utf8');
 
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
-    await expect(linteljsConfigPromise).rejects.toThrow(/linteljs\.config\.json is not valid JSON/);
+    const reading = linteljsConfigReader(cwd);
+    await expect(reading).rejects.toThrow(/linteljs\.config\.json is not valid JSON/);
   });
 
   it('leaves the config file byte-for-byte unchanged', async () => {
@@ -109,9 +112,9 @@ describe('linteljsConfigReader', () => {
 
     await symlink(target, path);
 
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
+    const reading = linteljsConfigReader(cwd);
 
-    await expect(linteljsConfigPromise).rejects.toThrow(
+    await expect(reading).rejects.toThrow(
       'linteljs.config.json must be a regular file; symbolic links are not allowed',
     );
 
@@ -124,9 +127,9 @@ describe('linteljsConfigReader', () => {
   it('rejects a non-regular config entry before trying to read it', async () => {
     await mkdir(join(cwd, CONFIG_PATH));
 
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
+    const reading = linteljsConfigReader(cwd);
 
-    await expect(linteljsConfigPromise)
+    await expect(reading)
       .rejects.toThrow('linteljs.config.json must be a regular file');
   });
 
@@ -153,7 +156,8 @@ describe('linteljsConfigReader', () => {
   it('closes the file it reads', async () => {
     await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
 
-    const before = (await readdir('/dev/fd')).length;
+    const descriptors = await readdir('/dev/fd');
+    const before = descriptors.length;
 
     await linteljsConfigReader(cwd);
     await linteljsConfigReader(cwd);
@@ -165,15 +169,16 @@ describe('linteljsConfigReader', () => {
   it('rejects a named pipe without opening it', async () => {
     execFileSync('/usr/bin/mkfifo', [join(cwd, CONFIG_PATH)]);
 
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
-    await expect(linteljsConfigPromise).rejects.toThrow('linteljs.config.json must be a regular file');
+    const reading = linteljsConfigReader(cwd);
+    await expect(reading).rejects.toThrow('linteljs.config.json must be a regular file');
   });
 
   it('passes on a failure to read that is not absence', async () => {
-    vi.mocked(lstat).mockRejectedValueOnce(Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' }));
+    const deniedError = Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' });
+    vi.mocked(lstat).mockRejectedValueOnce(deniedError);
 
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
-    await expect(linteljsConfigPromise).rejects.toThrow('EACCES: permission denied');
+    const reading = linteljsConfigReader(cwd);
+    await expect(reading).rejects.toThrow('EACCES: permission denied');
   });
 
   describe('an entry swapped after it was checked', () => {
@@ -191,26 +196,26 @@ describe('linteljsConfigReader', () => {
       await mkdir(join(cwd, CONFIG_PATH));
       await checkedAsRegular();
 
-      const linteljsConfigPromise = linteljsConfigReader(cwd);
-      await expect(linteljsConfigPromise).rejects.toThrow(/^linteljs\.config\.json must be a regular file$/u);
+      const reading = linteljsConfigReader(cwd);
+      await expect(reading).rejects.toThrow(/^linteljs\.config\.json must be a regular file$/u);
     });
 
     it('refuses a symbolic link it was about to follow', async () => {
       await symlink(join(external, 'regular.json'), join(cwd, CONFIG_PATH));
       await checkedAsRegular();
 
-      const linteljsConfigPromise = linteljsConfigReader(cwd);
+      const reading = linteljsConfigReader(cwd);
 
-      await expect(linteljsConfigPromise).rejects.toThrow(
+      await expect(reading).rejects.toThrow(
         'linteljs.config.json must be a regular file; symbolic links are not allowed',
       );
     });
   });
 
   it('rejects a directory without a LintelJS config', async () => {
-    const linteljsConfigPromise = linteljsConfigReader(cwd);
+    const reading = linteljsConfigReader(cwd);
 
-    await expect(linteljsConfigPromise)
+    await expect(reading)
       .rejects.toThrow('linteljs.config.json was not found; this is not a LintelJS-managed project');
   });
 });

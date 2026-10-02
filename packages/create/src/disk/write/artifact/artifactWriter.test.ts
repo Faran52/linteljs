@@ -29,8 +29,10 @@ let cwd = '';
 let external = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-artifact-'));
-  external = await mkdtemp(join(tmpdir(), 'linteljs-artifact-external-'));
+  const prefix = join(tmpdir(), 'linteljs-artifact-');
+  const externalPrefix = join(tmpdir(), 'linteljs-artifact-external-');
+  cwd = await mkdtemp(prefix);
+  external = await mkdtemp(externalPrefix);
 });
 
 afterEach(async () => {
@@ -54,8 +56,8 @@ describe('artifactWriter', () => {
       preserve: true,
     } satisfies Artifact;
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(false);
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(false);
     const file = await readFile(join(cwd, 'kept.txt'), 'utf8');
     expect(file).toBe('project\n');
   });
@@ -68,8 +70,8 @@ describe('artifactWriter', () => {
       preserve: true,
     } satisfies Artifact;
 
-    const cwdArtifact = await artifactWriter(cwd, artifact, true);
-    expect(cwdArtifact).toBe(false);
+    const wrote = await artifactWriter(cwd, artifact, true);
+    expect(wrote).toBe(false);
     const file = await readFile(join(cwd, 'kept.txt'), 'utf8');
     expect(file).toBe('project\n');
   });
@@ -82,19 +84,22 @@ describe('artifactWriter', () => {
     await symlink(live, join(cwd, 'live.md'));
     await symlink(dangling, join(cwd, 'dangling.md'));
 
-    for (const target of ['live.md', 'dangling.md']) {
-      const written = artifactWriter(cwd, {
+    const links = ['live.md', 'dangling.md'];
+
+    for (const target of links) {
+      const preserved = {
         ...emitted('standard', target, 'shipped\n'),
         preserve: true,
-      });
+      } satisfies Artifact;
+      const written = artifactWriter(cwd, preserved);
 
       await expect(written).resolves.toBe(false);
     }
 
-    const actual = await readlink(join(cwd, 'live.md'));
-    expect(actual).toBe(live);
-    const actual2 = await readlink(join(cwd, 'dangling.md'));
-    expect(actual2).toBe(dangling);
+    const liveLink = await readlink(join(cwd, 'live.md'));
+    expect(liveLink).toBe(live);
+    const danglingLink = await readlink(join(cwd, 'dangling.md'));
+    expect(danglingLink).toBe(dangling);
     const file = await readFile(live, 'utf8');
     expect(file).toBe('external\n');
     const promise = stat(dangling);
@@ -107,10 +112,10 @@ describe('artifactWriter', () => {
       seed: true,
     } satisfies Artifact;
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(false);
-    const artifact2 = await artifactWriter(cwd, artifact, true);
-    expect(artifact2).toBe(true);
+    const wroteWithoutSeeds = await artifactWriter(cwd, artifact);
+    expect(wroteWithoutSeeds).toBe(false);
+    const wroteWithSeeds = await artifactWriter(cwd, artifact, true);
+    expect(wroteWithSeeds).toBe(true);
   });
 
   it('gives a merged artifact the current file and reports its write', async () => {
@@ -120,8 +125,8 @@ describe('artifactWriter', () => {
       return `${current ?? ''}merged\n`;
     });
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(true);
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(true);
 
     const file = await readFile(join(cwd, 'settings.json'), 'utf8');
     expect(file).toBe('current\nmerged\n');
@@ -136,13 +141,13 @@ describe('artifactWriter', () => {
     await mkdir(join(cwd, 'src'));
     await writeFile(join(cwd, 'src/App.tsx'), '', 'utf8');
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(false);
+    const wroteBeforeRequired = await artifactWriter(cwd, artifact);
+    expect(wroteBeforeRequired).toBe(false);
 
     await writeFile(join(cwd, 'src/main.tsx'), '', 'utf8');
 
-    const artifact2 = await artifactWriter(cwd, artifact);
-    expect(artifact2).toBe(true);
+    const wroteOnceRequired = await artifactWriter(cwd, artifact);
+    expect(wroteOnceRequired).toBe(true);
   });
 
   it('gives a transformed artifact the current file', async () => {
@@ -159,8 +164,8 @@ describe('artifactWriter', () => {
       },
     } satisfies Artifact;
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(true);
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(true);
     const file = await readFile(join(cwd, 'checker.ts'), 'utf8');
     expect(file).toBe('current\ntransformed\n');
   });
@@ -171,14 +176,16 @@ describe('artifactWriter', () => {
       executable: true,
     } satisfies Artifact;
 
-    const cwdArtifact = await artifactWriter(cwd, artifact);
-    expect(cwdArtifact).toBe(true);
-    expect((await stat(join(cwd, 'hook.sh'))).mode & 0o111).toBe(0o111);
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(true);
+    const hook = await stat(join(cwd, 'hook.sh'));
+    expect(hook.mode & 0o111).toBe(0o111);
   });
 
   it('leaves an ordinary artifact without an execute bit', async () => {
-    const artifact = await artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'));
-    expect(artifact).toBe(true);
-    expect((await stat(join(cwd, 'notes.md'))).mode & 0o111).toBe(0);
+    const wrote = await artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'));
+    expect(wrote).toBe(true);
+    const notes = await stat(join(cwd, 'notes.md'));
+    expect(notes.mode & 0o111).toBe(0);
   });
 });

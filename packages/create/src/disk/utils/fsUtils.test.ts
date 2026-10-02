@@ -31,7 +31,8 @@ import {
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-fs-'));
+  const prefix = join(tmpdir(), 'linteljs-fs-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -43,16 +44,18 @@ afterEach(async () => {
 
 describe('hasCode', () => {
   it('recognises only an error carrying that code', () => {
-    const actual = hasCode(Object.assign(new Error('gone'), { code: 'ENOENT' }), 'ENOENT');
-    expect(actual).toBe(true);
-    const actual2 = hasCode(Object.assign(new Error('denied'), { code: 'EACCES' }), 'ENOENT');
-    expect(actual2).toBe(false);
-    const actual3 = hasCode(new Error('no code at all'), 'ENOENT');
-    expect(actual3).toBe(false);
-    const actual4 = hasCode('not even an error', 'ENOENT');
-    expect(actual4).toBe(false);
-    const actual5 = hasCode({ code: 'ENOENT' }, 'ENOENT');
-    expect(actual5).toBe(false);
+    const goneError = Object.assign(new Error('gone'), { code: 'ENOENT' });
+    const matchesGone = hasCode(goneError, 'ENOENT');
+    expect(matchesGone).toBe(true);
+    const deniedError = Object.assign(new Error('denied'), { code: 'EACCES' });
+    const matchesDenied = hasCode(deniedError, 'ENOENT');
+    expect(matchesDenied).toBe(false);
+    const matchesCodeless = hasCode(new Error('no code at all'), 'ENOENT');
+    expect(matchesCodeless).toBe(false);
+    const matchesString = hasCode('not even an error', 'ENOENT');
+    expect(matchesString).toBe(false);
+    const matchesPlainObject = hasCode({ code: 'ENOENT' }, 'ENOENT');
+    expect(matchesPlainObject).toBe(false);
   });
 });
 
@@ -95,12 +98,12 @@ describe('entryExists', () => {
     await symlink('target.txt', join(cwd, 'live.txt'));
     await symlink('missing.txt', join(cwd, 'dangling.txt'));
 
-    const actual = await entryExists(join(cwd, 'live.txt'));
-    expect(actual).toBe(true);
-    const actual2 = await entryExists(join(cwd, 'dangling.txt'));
-    expect(actual2).toBe(true);
-    const actual3 = await entryExists(join(cwd, 'absent.txt'));
-    expect(actual3).toBe(false);
+    const liveExists = await entryExists(join(cwd, 'live.txt'));
+    expect(liveExists).toBe(true);
+    const danglingExists = await entryExists(join(cwd, 'dangling.txt'));
+    expect(danglingExists).toBe(true);
+    const absentExists = await entryExists(join(cwd, 'absent.txt'));
+    expect(absentExists).toBe(false);
   });
 
   it('rethrows a failure that is not absence', async () => {
@@ -125,8 +128,8 @@ describe('readIfPresent', () => {
   });
 
   it('rethrows a failure that is not absence', async () => {
-    const filePromise = readIfPresent(cwd);
-    await expect(filePromise).rejects.toThrow();
+    const reading = readIfPresent(cwd);
+    await expect(reading).rejects.toThrow();
   });
 });
 
@@ -167,15 +170,15 @@ describe('allPresent', () => {
   it('answers every candidate that exists, in the order given', async () => {
     await writeFile(join(cwd, 'a.ts'), '', 'utf8');
 
-    const actual = await allPresent(cwd, CANDIDATES);
-    const expected = ['a.ts'];
-    expect(actual).toEqual(expected);
+    const presentBefore = await allPresent(cwd, CANDIDATES);
+    const expectedBefore = ['a.ts'];
+    expect(presentBefore).toEqual(expectedBefore);
 
     await writeFile(join(cwd, 'a.tsx'), '', 'utf8');
 
-    const actual2 = await allPresent(cwd, CANDIDATES);
-    const expected2 = ['a.tsx', 'a.ts'];
-    expect(actual2).toEqual(expected2);
+    const presentAfter = await allPresent(cwd, CANDIDATES);
+    const expectedAfter = ['a.tsx', 'a.ts'];
+    expect(presentAfter).toEqual(expectedAfter);
   });
 });
 

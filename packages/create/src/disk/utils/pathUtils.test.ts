@@ -20,7 +20,8 @@ import { safeProjectPath } from './pathUtils';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-path-'));
+  const prefix = join(tmpdir(), 'linteljs-path-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -52,8 +53,8 @@ describe('safeProjectPath', () => {
   it('refuses a target that climbs out of the project', async () => {
     const promise = safeProjectPath(cwd, '../x');
     await expect(promise).rejects.toThrow('must be a relative path');
-    const cwdPromise = safeProjectPath(cwd, '..');
-    await expect(cwdPromise).rejects.toThrow('must be a relative path');
+    const escaping = safeProjectPath(cwd, '..');
+    await expect(escaping).rejects.toThrow('must be a relative path');
   });
 
   it.each(['', '.'])('refuses %j, which names the project root', async (target) => {

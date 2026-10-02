@@ -27,7 +27,8 @@ const TARGET_IDS = valuesOf(ANSWERS.target.values);
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-shape-'));
+  const prefix = join(tmpdir(), 'linteljs-shape-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
