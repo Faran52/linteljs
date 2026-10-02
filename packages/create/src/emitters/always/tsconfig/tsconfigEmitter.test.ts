@@ -132,8 +132,8 @@ describe('buildTsconfig', () => {
 
     const tsconfig = buildTsconfig(answersFor({ target: 'react' }));
     expect(tsconfig).toStrictEqual(expected);
-    const tsconfig2 = emitTsconfig(answersFor({ target: 'react' }));
-    expect(tsconfig2).toBe(`${JSON.stringify(expected, null, 2)}\n`);
+    const emitted = emitTsconfig(answersFor({ target: 'react' }));
+    expect(emitted).toBe(`${JSON.stringify(expected, null, 2)}\n`);
   });
 
   it('adds no include of its own for tailwind on a target that declares none', () => {
@@ -326,13 +326,13 @@ describe('buildTsconfig', () => {
       jsx: compilerOptions.jsx,
       jsxImportSource: compilerOptions.jsxImportSource,
     };
-    const expected2 = {
+    const settings = {
       extends: undefined,
       jsx: undefined,
       jsxImportSource: undefined,
       ...expected,
     };
-    expect(actual).toStrictEqual(expected2);
+    expect(actual).toStrictEqual(settings);
   });
 
   it('declares every key Next would otherwise inject', () => {
@@ -348,8 +348,9 @@ describe('buildTsconfig', () => {
   it('drops vitest globals when testing is declined', () => {
     const expected = ['node', 'vite/client'];
 
-    expect(buildTsconfig(answersFor({ testing: 'none' })).compilerOptions.types)
-      .toEqual(expected);
+    const { compilerOptions } = buildTsconfig(answersFor({ testing: 'none' }));
+
+    expect(compilerOptions.types).toEqual(expected);
   });
 
   it.each<[TargetId, string[]]>([
@@ -389,15 +390,18 @@ describe('buildTsconfig', () => {
     ]],
     ['react-native', ['node', 'vitest/globals']],
   ])('declares the ambient types %s builds against', (target, types) => {
-    expect(buildTsconfig(answersFor({ target })).compilerOptions.types).toEqual(types);
+    const { compilerOptions } = buildTsconfig(answersFor({ target }));
+
+    expect(compilerOptions.types).toEqual(types);
   });
 
   it('allows the ts extension the shipped scripts import with, by rewrite where ngtsc drops noEmit', () => {
     const optionsOf = (target: 'angular' | 'react' | 'vue') => {
-      const { allowImportingTsExtensions, rewriteRelativeImportExtensions } = buildTsconfig(answersFor({ target }))
-        .compilerOptions;
+      const { compilerOptions } = buildTsconfig(answersFor({ target }));
+      const { allowImportingTsExtensions, rewriteRelativeImportExtensions } = compilerOptions;
 
-      return [allowImportingTsExtensions, rewriteRelativeImportExtensions];
+      const extensionOptions = [allowImportingTsExtensions, rewriteRelativeImportExtensions];
+      return extensionOptions;
     };
 
     const actual = [
@@ -424,17 +428,19 @@ describe('buildTsconfig', () => {
     const expected = ['.', './.react-router/types'];
     expect(compilerOptions.rootDirs).toEqual(expected);
     expect(include).toContain('.react-router/types/**/*');
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions).not.toHaveProperty('rootDirs');
+    const dataMode = buildTsconfig(answersFor({ target: 'react' }));
+    expect(dataMode.compilerOptions).not.toHaveProperty('rootDirs');
   });
 
   it('includes the NativeWind declaration file on react-native under tailwind alone', () => {
     const styled = buildTsconfig(answersFor({
       target: 'react-native',
       styling: 'tailwind',
-    })).include;
+    }));
+    const unstyled = buildTsconfig(answersFor({ target: 'react-native' }));
 
-    expect(styled).toContain('nativewind-env.d.ts');
-    expect(buildTsconfig(answersFor({ target: 'react-native' })).include).not.toContain('nativewind-env.d.ts');
+    expect(styled.include).toContain('nativewind-env.d.ts');
+    expect(unstyled.include).not.toContain('nativewind-env.d.ts');
 
     const { include } = buildTsconfig(answersFor({
       target: 'react',
@@ -445,20 +451,25 @@ describe('buildTsconfig', () => {
   });
 
   it('drops noEmit only on angular, whose vitest compiler has to emit', () => {
-    expect(buildTsconfig(answersFor({ target: 'angular' })).compilerOptions.noEmit)
-      .toBeUndefined();
+    const angular = buildTsconfig(answersFor({ target: 'angular' }));
+    const react = buildTsconfig(answersFor({ target: 'react' }));
 
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.noEmit).toBe(true);
+    expect(angular.compilerOptions.noEmit).toBeUndefined();
+    expect(react.compilerOptions.noEmit).toBe(true);
   });
 });
 
 describe('alias coupling', () => {
-  for (const target of TARGET_IDS
+  const pathTargets = TARGET_IDS
     .filter((id) => {
       return id !== 'nuxt';
-    })) {
-    for (const withZod of [true, false]) {
-      const libraries: Library[] = withZod ? ['zod'] : [];
+    });
+  const zodChoices = [true, false];
+  const zod: Library[] = ['zod'];
+
+  for (const target of pathTargets) {
+    for (const withZod of zodChoices) {
+      const libraries: Library[] = withZod ? zod : [];
       const label = `${target}${withZod ? ' with zod' : ''}`;
 
       it(`emits the same alias map into tsconfig paths and base() for ${label}`, () => {
@@ -507,8 +518,8 @@ describe('alias coupling', () => {
 
     const expected = ['./src/lib/engine/index.ts'];
     expect(paths?.['@engine']).toEqual(expected);
-    const expected2 = ['./src/workers/*'];
-    expect(paths?.['@workers/*']).toEqual(expected2);
+    const workers = ['./src/workers/*'];
+    expect(paths?.['@workers/*']).toEqual(workers);
     expect(buildAliases(answers)['@engine']).toBe('./src/lib/engine/index.ts');
     expect(config).toContain("'@engine': './src/lib/engine/index.ts',");
     expect(config).toContain("'@workers/*': './src/workers/*',");
@@ -551,8 +562,8 @@ describe('alias coupling', () => {
 
     const expected = ['./src/lib/server/*'];
     expect(paths?.['@server/*']).toEqual(expected);
-    const expected2 = ['./src/content/*'];
-    expect(paths?.['@content/*']).toEqual(expected2);
+    const content = ['./src/content/*'];
+    expect(paths?.['@content/*']).toEqual(content);
     expect(buildAliases(answers)['@server/*']).toBe('./src/lib/server/*');
     const eslintConfig = emitEslintConfig(answers);
     expect(eslintConfig).toContain("'@content/*': './src/content/*',");
@@ -565,7 +576,7 @@ describe('alias coupling', () => {
       });
 
     for (const target of others) {
-      const { paths } = buildTsconfig(answersFor({ target })).compilerOptions;
+      const { compilerOptions: { paths } } = buildTsconfig(answersFor({ target }));
 
       expect(paths ?? {}).not.toHaveProperty('@server/*');
       expect(paths ?? {}).not.toHaveProperty('@content/*');
@@ -573,29 +584,28 @@ describe('alias coupling', () => {
   });
 
   it("resolves react native's hooks and Expo's aliases where its tree keeps them", () => {
-    const { paths } = buildTsconfig(answersFor({ target: 'react-native' })).compilerOptions;
+    const { compilerOptions: { paths } } = buildTsconfig(answersFor({ target: 'react-native' }));
 
-    const expected = ['./src/hooks/*'];
-    expect(paths?.['@hooks/*']).toEqual(expected);
-    const expected2 = ['./assets/*'];
-    expect(paths?.['@/assets/*']).toEqual(expected2);
-    const expected3 = ['./src/*'];
-    expect(paths?.['@/*']).toEqual(expected3);
+    const hooks = ['./src/hooks/*'];
+    expect(paths?.['@hooks/*']).toEqual(hooks);
+    const assets = ['./assets/*'];
+    expect(paths?.['@/assets/*']).toEqual(assets);
+    const source = ['./src/*'];
+    expect(paths?.['@/*']).toEqual(source);
   });
 
   it("matches the extension target's own documented layout", () => {
-    const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
+    const { compilerOptions: { paths } } = buildTsconfig(answersFor({ target: 'webextension' }));
 
     const expected = ['./src/lib/model/*'];
     expect(paths?.['@model/*']).toEqual(expected);
     expect(paths).not.toHaveProperty('@store/*');
     expect(paths).not.toHaveProperty('@providers/*');
 
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
-      .toHaveProperty('@store/*');
+    const react = buildTsconfig(answersFor({ target: 'react' }));
 
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
-      .not.toHaveProperty('@providers/*');
+    expect(react.compilerOptions.paths).toHaveProperty('@store/*');
+    expect(react.compilerOptions.paths).not.toHaveProperty('@providers/*');
   });
 
   it('extends what SvelteKit generates, and keeps $lib resolvable through it', () => {
@@ -604,9 +614,10 @@ describe('alias coupling', () => {
     expect(config.extends).toBe('./.svelte-kit/tsconfig.json');
     const expected = ['./src/lib'];
     expect(config.compilerOptions.paths?.['$lib']).toEqual(expected);
-    const expected2 = ['./src/lib/*'];
-    expect(config.compilerOptions.paths?.['$lib/*']).toEqual(expected2);
-    expect(buildTsconfig(answersFor({ target: 'react' })).extends).toBeUndefined();
+    const libFiles = ['./src/lib/*'];
+    expect(config.compilerOptions.paths?.['$lib/*']).toEqual(libFiles);
+    const react = buildTsconfig(answersFor({ target: 'react' }));
+    expect(react.extends).toBeUndefined();
   });
 });
 
@@ -643,18 +654,19 @@ describe('a hosted framework brings its own JSX settings', () => {
 
     expect(compilerOptions).not.toHaveProperty('jsx');
 
-    expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
-      .not.toHaveProperty('jsx');
+    const frameworkless = buildTsconfig(answersFor({ target: 'webextension' }));
+    expect(frameworkless.compilerOptions).not.toHaveProperty('jsx');
   });
 });
 
 describe('tsconfigEmitter', () => {
   it('writes the emitted text to tsconfig.json at the package stage', () => {
     const tsconfig = tsconfigEmitter(answersFor({}));
+    const text = emitTsconfig(answersFor({}));
     const expected = [{
       stage: 'package',
       target: 'tsconfig.json',
-      content: { text: emitTsconfig(answersFor({})) },
+      content: { text },
     }];
     expect(tsconfig).toEqual(expected);
   });

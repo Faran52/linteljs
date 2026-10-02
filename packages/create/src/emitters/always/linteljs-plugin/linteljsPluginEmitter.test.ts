@@ -45,8 +45,13 @@ interface SkillDocument {
   body: string;
 }
 
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const AGENTS = valuesOf(ANSWERS.agents.values);
+
 const find = (overrides: AnswerOverrides, target: string): Artifact | undefined => {
-  return referenceArtifacts(answersFor(overrides))
+  const artifacts = referenceArtifacts(answersFor(overrides));
+
+  return artifacts
     .find((artifact) => {
       return artifact.target === target;
     });
@@ -80,7 +85,8 @@ describe('referenceArtifacts', () => {
     });
     const reads = artifacts
       .map(async ({ content }) => {
-        return await shippedAssetsReader(content);
+        const text = await shippedAssetsReader(content);
+        return text;
       });
 
     const contents = await Promise.all(reads);
@@ -91,7 +97,9 @@ describe('referenceArtifacts', () => {
   });
 
   const targetsOf = (overrides: AnswerOverrides): string[] => {
-    return referenceArtifacts(answersFor(overrides))
+    const artifacts = referenceArtifacts(answersFor(overrides));
+
+    return artifacts
       .map(({ target }) => {
         return target;
       });
@@ -108,7 +116,8 @@ describe('referenceArtifacts', () => {
     ['vue', 'vue-reactivity.md'],
     ['svelte', 'svelte-reactivity.md'],
   ])('gives %s its own reactivity rule and no react-state', (target, rule) => {
-    const sources = sourcesOf(find({ target }, reference(rule)));
+    const artifact = find({ target }, reference(rule));
+    const sources = sourcesOf(artifact);
     const expected = [`fragments/claude-rules/${rule}`];
     expect(sources).toEqual(expected);
     const targets = targetsOf({ target });
@@ -119,7 +128,8 @@ describe('referenceArtifacts', () => {
     const targets = targetsOf({ libraries: [] });
     expect(targets).not.toContain(reference('type-standards-zod.md'));
 
-    const sources = sourcesOf(find({ libraries: ['zod'] }, reference('type-standards-zod.md')));
+    const artifact = find({ libraries: ['zod'] }, reference('type-standards-zod.md'));
+    const sources = sourcesOf(artifact);
     const expected = ['fragments/claude-rules/type-standards-zod.md'];
 
     expect(sources)
@@ -129,8 +139,8 @@ describe('referenceArtifacts', () => {
   it('drops the testing rule when there is nothing to govern', () => {
     const targets = targetsOf({});
     expect(targets).toContain(reference('testing.md'));
-    const targets2 = targetsOf({ testing: 'none' });
-    expect(targets2).not.toContain(reference('testing.md'));
+    const untested = targetsOf({ testing: 'none' });
+    expect(untested).not.toContain(reference('testing.md'));
   });
 
   it('composes testing.md from the target head and the shared standard', async () => {
@@ -182,11 +192,11 @@ describe('referenceArtifacts', () => {
     expect(actual).toBe('kept\ngated');
     const opposite = answers.store === undefined ? answersFor({ store: 'zustand' }) : answersFor();
 
-    const actual2 = forAnswers({
+    const ungated = forAnswers({
       ...opposite,
       surfaces: [],
     }, source);
-    expect(actual2).toBe('kept');
+    expect(ungated).toBe('kept');
   });
 
   it('treats a marker mid-line as text', () => {
@@ -202,7 +212,7 @@ describe('referenceArtifacts', () => {
     }).toThrow('Unknown rule condition: tailwind');
   });
 
-  it.each(valuesOf(ANSWERS.target.values))('leaves no condition marker in the %s structure rule', async (target) => {
+  it.each(TARGET_IDS)('leaves no condition marker in the %s structure rule', async (target) => {
     const text = await textOf({ target }, 'repo-structure.md');
     expect(text).not.toContain('<!--');
   });
@@ -216,9 +226,10 @@ const targetsOf = (answers: Answers): string[] => {
 };
 
 describe('linteljsPluginEmitter', () => {
-  it.each(valuesOf(ANSWERS.agents.values))('writes the same tree for %s as for no agent at all', (agent) => {
+  it.each(AGENTS)('writes the same tree for %s as for no agent at all', (agent) => {
     const targets = targetsOf(answersFor({ agents: [agent] }));
-    expect(targets).toEqual(targetsOf(answersFor({ agents: [] })));
+    const agentless = targetsOf(answersFor({ agents: [] }));
+    expect(targets).toEqual(agentless);
   });
 
   it('ships the hooks and the parser and host adapter they share', () => {
@@ -227,7 +238,8 @@ describe('linteljsPluginEmitter', () => {
         return target.startsWith('plugins/linteljs/hooks/');
       })
       .map(({ target, executable }) => {
-        return [target, executable];
+        const hook = [target, executable];
+        return hook;
       });
 
     const expected = [
@@ -263,13 +275,17 @@ const parseSkill = (text: string): SkillDocument => {
         throw new Error(`Invalid SKILL.md frontmatter line: ${line}`);
       }
 
-      return [line.slice(0, separator), line.slice(separator + 2)];
+      const key = line.slice(0, separator);
+      const value = line.slice(separator + 2);
+      const entry: [string, string] = [key, value];
+      return entry;
     });
 
-  return {
+  const document: SkillDocument = {
     frontmatter: new Map(entries),
     body: match[2],
   };
+  return document;
 };
 
 const skillDocument = async (): Promise<SkillDocument> => {
@@ -299,7 +315,8 @@ describe('SKILL.md', () => {
     ['framework state', 'Changing state: each framework state reference in `references/`.'],
     ['tests', 'Editing tests, mocks or test setup: `references/testing.md`, when it exists.'],
   ])('routes %s work', async (_label, text) => {
-    expect((await skillDocument()).body).toContain(text);
+    const { body } = await skillDocument();
+    expect(body).toContain(text);
   });
 
   it('points at the adapter rather than repeating it', async () => {
