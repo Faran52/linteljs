@@ -20,7 +20,7 @@ const hasForm = (answers: Answers): boolean => {
 
 // What i18n rewrites in the React starter, each as the pair `translated` makes.
 export const reactI18nFiles = (): StarterFile[] => {
-  return [
+  const files: StarterFile[] = [
     // In framework mode React Router's build owns the entry, so a second one would go uncalled.
     ...translated<StarterFile>({
       target: 'src/main.tsx',
@@ -77,10 +77,12 @@ export const reactI18nFiles = (): StarterFile[] => {
       variant: 'i18n',
     },
   ];
+
+  return files;
 };
 
 export const reactI18nTests = (): StarterTest[] => {
-  return [
+  const tests: StarterTest[] = [
     ...translated<StarterTest>({
       target: 'src/components/features/status-page/StatusPage.test.tsx',
       covers: 'src/components/features/status-page/StatusPage.tsx',
@@ -118,4 +120,6 @@ export const reactI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
   ];
+
+  return tests;
 };

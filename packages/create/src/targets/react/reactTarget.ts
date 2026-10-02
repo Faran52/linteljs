@@ -1,6 +1,8 @@
 import { hasLibrary } from '@utils/answerUtils';
 
 import {
+  CONTACT_HOOK_FORMS,
+  COUNTER_MODULE_STORES,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
   OUTSIDE_TESTS,
@@ -33,6 +35,7 @@ import {
   DECLARATIVE_ROUTERS,
   REACT_ACCESSORS,
   REACT_I18N,
+  ROOT_VARIANTS,
   ROUTERS,
   SHARED,
   WELL_KNOWN_404,
@@ -89,14 +92,18 @@ const baseReactTarget: TargetRecord = {
   starterFiles: [
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     // So `AppHeader.tsx` varies by router alone, not router times styling.
     ...componentStyleModules(),
@@ -198,15 +205,17 @@ const baseReactTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    ...(['tanstack-form', 'react-hook-form'] as const)
+    ...CONTACT_HOOK_FORMS
       .map((form): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/pages/contact/useContactForm.ts',
           when: (answers) => {
             return answers.form === form;
           },
           variant: form,
         };
+
+        return file;
       }),
     { target: 'src/components/ui/button/Button.tsx' },
     {
@@ -261,15 +270,17 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'redux-toolkit',
     },
-    ...(['zustand', 'tanstack-store'] as const)
+    ...COUNTER_MODULE_STORES
       .map((store): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
           },
           variant: store,
         };
+
+        return file;
       }),
     // RTK Query's middleware must be registered in the Redux store.
     {
@@ -288,29 +299,26 @@ const baseReactTarget: TargetRecord = {
     },
     ...DECLARATIVE_ROUTERS
       .map((router): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/App.tsx',
           when: (answers) => {
             return answers.router === router;
           },
           variant: router,
         };
+
+        return file;
       }),
-    ...([
-      'src/routes/router.tsx',
-    ] as const)
-      .map((target): StarterFile => {
-        return {
-          target,
-          when: (answers) => {
-            return answers.router === 'react-router';
-          },
-          variant: 'react-router',
-        };
-      }),
+    {
+      target: 'src/routes/router.tsx',
+      when: (answers) => {
+        return answers.router === 'react-router';
+      },
+      variant: 'react-router',
+    },
     // No `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's build owns the entry.
     // StyleX's dev CSS goes into `index.html`, so its framework document links it itself.
-    ...([['react-router-framework', false], ['stylex', true]] as const)
+    ...ROOT_VARIANTS
       .flatMap(([variant, stylex]): StarterFile[] => {
         return translated<StarterFile>({
           target: 'src/root.tsx',
@@ -473,9 +481,11 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
 };
 
 export const reactTarget: TargetBuilder = (answers) => {
-  return {
+  const record: TargetRecord = {
     ...baseReactTarget,
     ...(isFrameworkMode(answers) ? FRAMEWORK_MODE : {}),
     i18n: REACT_I18N,
   };
+
+  return record;
 };

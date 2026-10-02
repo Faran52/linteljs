@@ -15,7 +15,7 @@ const always = (): boolean => {
 export const translated = <T extends StarterFile | StarterTest>(file: T): T[] => {
   const when = file.when ?? always;
 
-  return [
+  const variants: T[] = [
     {
       ...file,
       when: (answers: Answers) => {
@@ -30,13 +30,15 @@ export const translated = <T extends StarterFile | StarterTest>(file: T): T[] =>
       variant: file.variant === undefined ? 'i18n' : `${file.variant}-i18n`,
     },
   ];
+
+  return variants;
 };
 
 // Every target reads the same locales, so a key added once reaches all of them.
 export const localeFiles = (): StarterFile[] => {
   return LANGUAGES
     .map((language): StarterFile => {
-      return {
+      const localeFile: StarterFile = {
         target: `src/i18n/locales/${language}/common.json`,
         when: (answers) => {
           return localesOf(answers).includes(language);
@@ -44,6 +46,8 @@ export const localeFiles = (): StarterFile[] => {
         variant: 'i18n',
         shared: true,
       };
+
+      return localeFile;
     });
 };
 

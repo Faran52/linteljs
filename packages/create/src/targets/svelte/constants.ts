@@ -41,29 +41,45 @@ const PARAGLIDE = {
   outdir: './.svelte-kit/paraglide',
 };
 
+const PARAGLIDE_COMMAND = [
+  'paraglide-js compile',
+  `--project ${PARAGLIDE.project}`,
+  `--outdir ${PARAGLIDE.outdir}`,
+  '--strategy baseLocale',
+  '--emit-ts-declarations',
+].join(' ');
+
+const PARAGLIDE_PLUGIN_CALL = [
+  'paraglideVitePlugin({',
+  `      project: '${PARAGLIDE.project}',`,
+  `      outdir: '${PARAGLIDE.outdir}',`,
+  "      strategy: ['baseLocale'],",
+  '      emitTsDeclarations: true,',
+  '    })',
+].join('\n');
+
 export const SVELTE_I18N: I18nParts = {
   dependencies: [],
   compiler: {
-    command: [
-      'paraglide-js compile',
-      `--project ${PARAGLIDE.project}`,
-      `--outdir ${PARAGLIDE.outdir}`,
-      '--strategy baseLocale',
-      '--emit-ts-declarations',
-    ].join(' '),
+    command: PARAGLIDE_COMMAND,
     devDependencies: ['@inlang/paraglide-js', '@inlang/plugin-message-format'],
     vitePlugin: {
       imports: ["import { paraglideVitePlugin } from '@inlang/paraglide-js';"],
-      calls: [
-        [
-          'paraglideVitePlugin({',
-          `      project: '${PARAGLIDE.project}',`,
-          `      outdir: '${PARAGLIDE.outdir}',`,
-          "      strategy: ['baseLocale'],",
-          '      emitTsDeclarations: true,',
-          '    })',
-        ].join('\n'),
-      ],
+      calls: [PARAGLIDE_PLUGIN_CALL],
     },
   },
 };
+
+// The components Svelte's query bindings read their client through.
+export const QUERY_CONTEXT_MOCKS = [
+  '__mocks__/WithExtendedQuery.svelte',
+  '__mocks__/WithExtendedMutation.svelte',
+  '__mocks__/ExtendedQueryProbe.svelte',
+  '__mocks__/ExtendedMutationProbe.svelte',
+] as const;
+
+export const FORM_FILES = [
+  'src/routes/contact/useContactForm.ts',
+  'src/components/ui/text-input/TextInput.svelte',
+  'src/components/ui/text-input/types.ts',
+] as const;

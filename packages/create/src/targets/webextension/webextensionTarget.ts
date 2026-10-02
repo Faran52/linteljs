@@ -16,17 +16,19 @@ import { popupI18nFiles, popupI18nTests } from './utils/translatedFileUtils';
 
 import type { Answers, Browser } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { StarterFile } from '../types';
+import type { StarterFile, TargetRecord } from '../types';
 
 // The Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy both.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     {
       target: 'src/styles/theme.css',
@@ -42,7 +44,9 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
     files.push(
       ...POPUP
         .map((target): StarterFile => {
-          return { target };
+          const file: StarterFile = { target };
+
+          return file;
         }),
       ...popupI18nFiles(),
       // No components here, so a stylesheet under `components/` would sit beside nothing.
@@ -94,7 +98,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
 };
 
 const surfaceCoverageExclude = (answers: Answers): string[] => {
-  return [
+  const coverageExclude: string[] = [
     // Only the popup reads the record, so without it nothing a suite runs imports the module.
     ...hasSurface(answers, 'popup') ? [] : ['src/config/linteljs.ts'],
     ...hasSurface(answers, 'background') ? ['src/background/index.ts'] : [],
@@ -102,6 +106,8 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
       ? ['src/devtools/index.ts', 'src/panel/index.ts']
       : [],
   ];
+
+  return coverageExclude;
 };
 
 export const webextensionTarget: TargetBuilder = (answers) => {
@@ -109,7 +115,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
   const browser = BROWSERS[answers.browser];
   const hosted = hostedPartsFor(answers.hostedFramework);
 
-  return {
+  const record: TargetRecord = {
     id: 'webextension',
     htmlEntry: popup ? 'src/main.ts' : undefined,
     hostsBrowser: true,
@@ -188,4 +194,6 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     stateRules: hosted?.stateRules ?? [],
     ...(popup ? { i18n: WEBEXTENSION_I18N } : {}),
   };
+
+  return record;
 };

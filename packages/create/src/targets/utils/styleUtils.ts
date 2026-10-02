@@ -38,7 +38,9 @@ const COMPONENTS: readonly (readonly [keyof ComponentPaths, (answers: Answers) =
 ];
 
 const at = (target: string, asset: string): AssetPath => {
-  return target === asset ? {} : { source: asset };
+  const assetPath: AssetPath = target === asset ? {} : { source: asset };
+
+  return assetPath;
 };
 
 // Ships with its component: an entry importing a file never written fails the build with ENOENT.
@@ -47,7 +49,7 @@ export const componentStyles = (paths: ComponentPaths = COMPONENT_PATHS): Starte
     .map(([key, ships]): StarterFile => {
       const target = `${paths[key]}.css`;
 
-      return {
+      const file: StarterFile = {
         target,
         when: (answers) => {
           return ships(answers) && !isStylex(answers);
@@ -55,11 +57,15 @@ export const componentStyles = (paths: ComponentPaths = COMPONENT_PATHS): Starte
         shared: true,
         ...at(target, `${COMPONENT_PATHS[key]}.css`),
       };
+
+      return file;
     });
 };
 
 const directoryOf = (path: string): string => {
-  return path.slice(0, path.lastIndexOf('/'));
+  const lastSlash = path.lastIndexOf('/');
+
+  return path.slice(0, lastSlash);
 };
 
 // Ships with its component, since a module nothing imports fails the coverage gate.
@@ -82,7 +88,7 @@ export const componentStyleModules = (
       const target = `${directoryOf(paths[key])}/styles.ts`;
       const asset = at(target, `${directoryOf(COMPONENT_PATHS[key])}/styles.ts`);
 
-      return [
+      const variants: StarterFile[] = [
         {
           target,
           when: (answers) => {
@@ -101,13 +107,15 @@ export const componentStyleModules = (
           ...asset,
         },
       ];
+
+      return variants;
     })
     .concat(tokens);
 };
 
 // StyleX injects its dev CSS into `index.html`, so a server-rendered document links it itself.
 export const stylexDocument = (target: string): StarterFile[] => {
-  return [
+  const documents: StarterFile[] = [
     {
       target,
       when: (answers) => {
@@ -120,4 +128,6 @@ export const stylexDocument = (target: string): StarterFile[] => {
       variant: 'stylex',
     },
   ];
+
+  return documents;
 };

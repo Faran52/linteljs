@@ -39,3 +39,20 @@ export const I18N_ONLY: readonly string[] = [
 
 // Reads the shared locales as they are, with no compiler and no provider.
 export const SOLID_I18N: I18nParts = { dependencies: ['@solid-primitives/i18n'] };
+
+const HEADER = 'src/components/features/app-header/AppHeader';
+
+export const I18N_ONLY_FILES = [
+  ...I18N_ONLY
+    .map((component) => {
+      return `${component}.tsx`;
+    }),
+  'src/i18n/index.ts',
+];
+
+export const I18N_ONLY_SUITES = [...I18N_ONLY, HEADER];
+
+export const FORM_FILES = [
+  'src/pages/contact/useContactForm.ts',
+  'src/components/ui/text-input/TextInput.tsx',
+] as const;

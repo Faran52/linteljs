@@ -131,6 +131,15 @@ export const COMMON_REACT_PLUGINS = [
   'eslint-plugin-react-hooks',
 ];
 
+// The config files every starter translates, each from the one shared asset.
+export const TRANSLATED_CONFIGS = ['src/config/statuses.ts', 'src/config/standard.ts'];
+
+// The forms whose contact page reads a `useContactForm` hook of their own.
+export const CONTACT_HOOK_FORMS = ['tanstack-form', 'react-hook-form'] as const;
+
+// The stores whose counter is a module of its own.
+export const COUNTER_MODULE_STORES = ['zustand', 'tanstack-store'] as const;
+
 // The suite of the shared `ForbiddenError`, on every target whose boundary maps it to the 403 page.
 export const STATUS_UTILS_TEST: StarterTest = {
   target: 'src/lib/utils/statusUtils.test.ts',

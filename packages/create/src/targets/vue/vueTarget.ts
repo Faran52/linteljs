@@ -23,6 +23,8 @@ import {
   ACCESSORS,
   ALWAYS,
   COMPONENTS,
+  COUNTER_MODULE_STORES,
+  FORM_FILES,
   SHARED,
   VUE_I18N,
 } from './constants';
@@ -76,14 +78,18 @@ export const vueTarget: TargetRecord = {
     ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     {
       target: 'src/views/HomeView.vue',
@@ -97,16 +103,14 @@ export const vueTarget: TargetRecord = {
       variant: 'with-store',
     },
     { target: 'src/components/ui/app-button/AppButton.vue' },
-    ...([
-      'src/views/useContactForm.ts',
-      'src/components/ui/text-input/TextInput.vue',
-      'src/components/ui/text-input/types.ts',
-    ] as const)
+    ...FORM_FILES
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasForm,
         };
+
+        return file;
       }),
     {
       target: 'src/lib/apis/contact/index.ts',
@@ -167,15 +171,17 @@ export const vueTarget: TargetRecord = {
       },
       variant: 'pinia',
     },
-    ...(['pinia', 'tanstack-store'] as const)
+    ...COUNTER_MODULE_STORES
       .map((store): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
           },
           variant: store,
         };
+
+        return file;
       }),
     {
       target: 'src/lib/providers/data/dataProvider.ts',

@@ -1,3 +1,4 @@
+import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
 import {
@@ -11,8 +12,15 @@ import type { StarterFile, StarterTest } from '../../types';
 
 // What i18n rewrites in the Next starter, each as the pair `translated` makes.
 export const nextI18nFiles = (): StarterFile[] => {
-  return [
-    ...(['src/config/statuses.ts', 'src/config/standard.ts'] as const)
+  const i18nOnly = [
+    ...I18N_ONLY
+      .map((component) => {
+        return `${component}.tsx`;
+      }),
+    'src/i18n/index.ts',
+  ];
+  const files: StarterFile[] = [
+    ...TRANSLATED_CONFIGS
       .flatMap((target) => {
         return translated<StarterFile>({
           target,
@@ -27,25 +35,24 @@ export const nextI18nFiles = (): StarterFile[] => {
       target: 'src/app/contact/page.tsx',
       when: hasForm,
     }),
-    ...[
-      ...I18N_ONLY
-        .map((component) => {
-          return `${component}.tsx`;
-        }),
-      'src/i18n/index.ts',
-    ]
+    ...i18nOnly
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasI18n,
           variant: 'i18n',
         };
+
+        return file;
       }),
   ];
+
+  return files;
 };
 
 export const nextI18nTests = (): StarterTest[] => {
-  return [
+  const i18nSuites = [...I18N_ONLY, STATUS_PAGE];
+  const tests: StarterTest[] = [
     ...TRANSLATED_SUITES
       .flatMap((suite) => {
         return translated<StarterTest>({
@@ -62,14 +69,16 @@ export const nextI18nTests = (): StarterTest[] => {
       },
       shared: 'react',
     },
-    ...[...I18N_ONLY, STATUS_PAGE]
+    ...i18nSuites
       .map((component): StarterTest => {
-        return {
+        const test: StarterTest = {
           target: `${component}.test.tsx`,
           covers: `${component}.tsx`,
           when: hasI18n,
           variant: 'i18n',
         };
+
+        return test;
       }),
     {
       target: 'src/i18n/index.test.ts',
@@ -78,4 +87,6 @@ export const nextI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
   ];
+
+  return tests;
 };

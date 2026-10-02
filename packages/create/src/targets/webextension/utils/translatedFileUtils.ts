@@ -12,7 +12,7 @@ const INDEX = 'src/i18n/index';
 
 // The popup is plain DOM under every host, so it reads the shared locales through a resolver of its own.
 export const popupI18nFiles = (): StarterFile[] => {
-  return [
+  const files: StarterFile[] = [
     ...translated<StarterFile>({ target: `${POPUP}.ts` }),
     {
       target: `${INDEX}.ts`,
@@ -21,10 +21,12 @@ export const popupI18nFiles = (): StarterFile[] => {
     },
     ...localeFiles(),
   ];
+
+  return files;
 };
 
 export const popupI18nTests = (): StarterTest[] => {
-  return [
+  const tests: StarterTest[] = [
     ...translated<StarterTest>({
       target: `${POPUP}.test.ts`,
       covers: `${POPUP}.ts`,
@@ -37,4 +39,6 @@ export const popupI18nTests = (): StarterTest[] => {
     },
     LOCALES_TEST,
   ];
+
+  return tests;
 };

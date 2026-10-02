@@ -1,4 +1,8 @@
-import { FOLDER_ROUTED, PARTS } from '../constants';
+import {
+  FOLDER_ROUTED,
+  PARTS,
+  TRANSLATED_CONFIGS,
+} from '../constants';
 import { hasI18n } from '../utils/gateUtils';
 import {
   localeFiles,
@@ -24,6 +28,7 @@ import {
   ACCESSORS,
   ALWAYS,
   FROM_VUE,
+  I18N_ONLY_FILES,
   SHARED,
   TRANSLATED_FROM_VUE,
 } from './constants';
@@ -89,23 +94,29 @@ export const nuxtTarget: TargetRecord = {
     }),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     ...FROM_VUE
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: 'vue',
         };
+
+        return file;
       }),
-    ...(['src/config/statuses.ts', 'src/config/standard.ts'] as const)
+    ...TRANSLATED_CONFIGS
       .flatMap((target) => {
         return translated<StarterFile>({
           target,
@@ -120,20 +131,16 @@ export const nuxtTarget: TargetRecord = {
         });
       }),
     ...translated<StarterFile>({ target: 'src/components/features/app-header/AppHeader.vue' }),
-    ...[
-      ...I18N_ONLY
-        .map((component) => {
-          return `${component}.vue`;
-        }),
-      'src/i18n/index.ts',
-    ]
+    ...I18N_ONLY_FILES
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasI18n,
           variant: 'i18n',
           shared: 'vue',
         };
+
+        return file;
       }),
     {
       target: 'src/plugins/i18n.ts',
@@ -203,13 +210,15 @@ export const nuxtTarget: TargetRecord = {
     }),
     ...I18N_ONLY
       .map((component): StarterTest => {
-        return {
+        const test: StarterTest = {
           target: `${component}.test.ts`,
           covers: `${component}.vue`,
           when: hasI18n,
           variant: 'i18n',
           shared: 'vue',
         };
+
+        return test;
       }),
     {
       target: 'src/i18n/index.test.ts',

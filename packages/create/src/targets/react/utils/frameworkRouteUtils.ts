@@ -22,14 +22,16 @@ const PAGES = [
 ] as const;
 
 export const frameworkRouteFiles = (): StarterFile[] => {
-  return [
+  const files: StarterFile[] = [
     ...PAGES
       .map((page): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: `src/routes/${page}.tsx`,
           when: isFrameworkMode,
           variant: 'react-router-framework',
         };
+
+        return file;
       }),
     {
       target: 'src/routes.ts',
@@ -47,18 +49,22 @@ export const frameworkRouteFiles = (): StarterFile[] => {
       variant: 'react-router-framework',
     },
   ];
+
+  return files;
 };
 
 export const frameworkRouteTests = (): StarterTest[] => {
-  return [
+  const tests: StarterTest[] = [
     ...PAGES
       .map((page): StarterTest => {
-        return {
+        const test: StarterTest = {
           target: `src/routes/${page}.test.tsx`,
           covers: `src/routes/${page}.tsx`,
           when: isFrameworkMode,
           variant: 'react-router-framework',
         };
+
+        return test;
       }),
     {
       target: 'src/routes.test.ts',
@@ -79,4 +85,6 @@ export const frameworkRouteTests = (): StarterTest[] => {
       variant: 'react-router-framework',
     },
   ];
+
+  return tests;
 };

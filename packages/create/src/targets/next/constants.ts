@@ -55,3 +55,6 @@ export { REACT_ACCESSORS as ACCESSORS } from '../react/constants';
 
 // next-intl, as Next's own i18n serves the Pages Router alone.
 export const NEXT_I18N: I18nParts = { dependencies: ['next-intl'] };
+
+// The config files StyleX's Babel build reads.
+export const STYLEX_CONFIGS = ['.babelrc', 'postcss.config.mjs'] as const;

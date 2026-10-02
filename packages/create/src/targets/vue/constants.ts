@@ -51,3 +51,11 @@ export const VUE_I18N: I18nParts = {
   dependencies: ['vue-i18n'],
   testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
 };
+
+export const FORM_FILES = [
+  'src/views/useContactForm.ts',
+  'src/components/ui/text-input/TextInput.vue',
+  'src/components/ui/text-input/types.ts',
+] as const;
+
+export const COUNTER_MODULE_STORES = ['pinia', 'tanstack-store'] as const;

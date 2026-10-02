@@ -54,3 +54,23 @@ export const TRANSLATED: readonly string[] = [
 
 // A signal over the shared locales: no library, so nothing to install.
 export const ANGULAR_I18N: I18nParts = { dependencies: [] };
+
+const CODE_TEXT = 'src/components/ui/code-text/code-text';
+
+export const I18N_ONLY_FILES = [
+  'src/i18n/index.ts',
+  `${CODE_TEXT}.ts`,
+  `${CODE_TEXT}.html`,
+];
+
+export const I18N_ONLY_SUITES = [
+  'src/i18n/index',
+  CODE_TEXT,
+  'src/components/features/app-header/app-header',
+  'src/app/about/about',
+  'src/app/version/version',
+];
+
+export const TRANSLATED_SUITES = ['src/app/contact/contact', 'src/components/features/status-page/status-page'];
+
+export const CONTACT_PAGE_FILES = ['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const;

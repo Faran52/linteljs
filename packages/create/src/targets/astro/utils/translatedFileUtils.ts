@@ -1,3 +1,4 @@
+import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
 import { stylexDocument } from '../../utils/styleUtils';
@@ -7,14 +8,16 @@ import type { StarterFile, StarterTest } from '../../types';
 
 const INDEX = 'src/i18n/index';
 
+const I18N_ONLY_FILES = [`${INDEX}.ts`, 'src/components/ui/code-text/CodeText.astro'];
+
 // What i18n rewrites in the Astro starter, each as the pair `translated` makes.
 export const astroI18nFiles = (): StarterFile[] => {
-  return [
+  const files: StarterFile[] = [
     ...stylexDocument('src/layouts/Layout.astro')
       .flatMap((file) => {
         return translated(file);
       }),
-    ...(['src/config/statuses.ts', 'src/config/standard.ts'] as const)
+    ...TRANSLATED_CONFIGS
       .flatMap((target) => {
         return translated<StarterFile>({
           target,
@@ -25,20 +28,24 @@ export const astroI18nFiles = (): StarterFile[] => {
       .flatMap((target) => {
         return translated<StarterFile>({ target });
       }),
-    ...[`${INDEX}.ts`, 'src/components/ui/code-text/CodeText.astro']
+    ...I18N_ONLY_FILES
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasI18n,
           variant: 'i18n',
         };
+
+        return file;
       }),
   ];
+
+  return files;
 };
 
 // Vitest renders no `.astro` template, so the client script carries the one suite.
 export const astroI18nTests = (): StarterTest[] => {
-  return [
+  const tests: StarterTest[] = [
     {
       target: `${INDEX}.test.ts`,
       covers: `${INDEX}.ts`,
@@ -46,4 +53,6 @@ export const astroI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
   ];
+
+  return tests;
 };

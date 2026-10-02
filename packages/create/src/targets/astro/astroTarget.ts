@@ -18,7 +18,7 @@ import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
 
 import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { StarterFile } from '../types';
+import type { StarterFile, TargetRecord } from '../types';
 
 // `vite: false`: Astro's Vite options live in `astro.config.mjs`, borrowed through `getViteConfig`.
 
@@ -33,7 +33,7 @@ export const astroTarget: TargetBuilder = (answers) => {
   const framework = answers.hostedFramework;
   const hosted = hostedPartsFor(framework);
 
-  return {
+  const record: TargetRecord = {
     id: 'astro',
     hostsFramework: true,
     astro: true,
@@ -106,14 +106,18 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...localeFiles(),
       ...ALWAYS
         .map((target): StarterFile => {
-          return { target };
+          const file: StarterFile = { target };
+
+          return file;
         }),
       ...SHARED
         .map((target): StarterFile => {
-          return {
+          const file: StarterFile = {
             target,
             shared: true,
           };
+
+          return file;
         }),
       {
         target: 'src/styles/theme.css',
@@ -153,4 +157,6 @@ export const astroTarget: TargetBuilder = (answers) => {
     stateRules: hosted?.stateRules ?? [],
     i18n: ASTRO_I18N,
   };
+
+  return record;
 };

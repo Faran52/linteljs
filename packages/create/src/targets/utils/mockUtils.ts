@@ -32,7 +32,7 @@ export const mockFiles = (
   servesAWorker = true,
   adapter = 'src/lib/utils/fetchExtendedUtils.ts',
 ): StarterFile[] => {
-  return [
+  const files: StarterFile[] = [
     // Unconditional: a project without a query library still makes requests.
     {
       target: adapter,
@@ -70,10 +70,12 @@ export const mockFiles = (
       } satisfies StarterFile]
       : [],
   ];
+
+  return files;
 };
 
 export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER): StarterTest[] => {
-  return [
+  const tests: StarterTest[] = [
     {
       target: `${adapter}.test.ts`,
       covers: `${adapter}.ts`,
@@ -100,6 +102,8 @@ export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER): StarterTes
       } satisfies StarterTest]
       : [],
   ];
+
+  return tests;
 };
 
 const usesQueryLibrary = (answers: Answers): boolean => {
@@ -118,9 +122,9 @@ export const accessorFiles = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterFile[] => {
-  return [names.query, names.mutation]
+  const files = [names.query, names.mutation]
     .map((entry): StarterFile => {
-      return {
+      const file: StarterFile = {
         target: `${accessorStem(names, entry)}.ts`,
         when: usesQueryLibrary,
         variant: 'tanstack-query',
@@ -131,18 +135,22 @@ export const accessorFiles = (
               source: `${accessorStem(from.names, entry)}.ts`,
             }),
       };
+
+      return file;
     });
+
+  return files;
 };
 
 export const accessorTests = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterTest[] => {
-  return [names.query, names.mutation]
+  const tests = [names.query, names.mutation]
     .map((entry): StarterTest => {
       const stem = accessorStem(names, entry);
 
-      return {
+      const test: StarterTest = {
         target: `${stem}${names.testSuffix}`,
         covers: `${stem}.ts`,
         when: usesQueryLibrary,
@@ -154,7 +162,11 @@ export const accessorTests = (
               source: `${accessorStem(from.names, entry)}${from.names.testSuffix}`,
             }),
       };
+
+      return test;
     });
+
+  return tests;
 };
 
 // `rtk-query` is `@reduxjs/toolkit`, and needs that store's reducer and middleware.
@@ -163,22 +175,26 @@ const usesRtkQuery = (answers: Answers): boolean => {
 };
 
 export const rtkFiles = (): StarterFile[] => {
-  return [{
+  const files: StarterFile[] = [{
     target: 'src/lib/apis/base/baseApi.ts',
     when: usesRtkQuery,
     variant: 'rtk-query',
     shared: true,
   }];
+
+  return files;
 };
 
 export const rtkTests = (): StarterTest[] => {
-  return [{
+  const tests: StarterTest[] = [{
     target: 'src/lib/apis/base/baseApi.test.ts',
     covers: 'src/lib/apis/base/baseApi.ts',
     when: usesRtkQuery,
     variant: 'rtk-query',
     shared: true,
   }];
+
+  return tests;
 };
 
 const usesRtkContact = (answers: Answers): boolean => {
@@ -189,25 +205,31 @@ const RTK_CONTACT_STEMS = ['contactEndpoints', 'contactHooks'] as const;
 
 // React's tree holds them, which Next shares.
 export const rtkContactFiles = (): StarterFile[] => {
-  return ['index', ...RTK_CONTACT_STEMS]
+  const files = ['index', ...RTK_CONTACT_STEMS]
     .map((stem): StarterFile => {
-      return {
+      const file: StarterFile = {
         target: `src/lib/apis/contact/${stem}.ts`,
         when: usesRtkContact,
         variant: 'rtk-query',
         shared: 'react',
       };
+
+      return file;
     });
+
+  return files;
 };
 
 export const rtkContactTests = (): StarterTest[] => {
   return RTK_CONTACT_STEMS
     .map((stem): StarterTest => {
-      return {
+      const test: StarterTest = {
         target: `src/lib/apis/contact/${stem}.test.ts`,
         covers: `src/lib/apis/contact/${stem}.ts`,
         variant: 'rtk-query',
         shared: 'react',
       };
+
+      return test;
     });
 };

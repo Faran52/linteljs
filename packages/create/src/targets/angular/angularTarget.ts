@@ -17,6 +17,7 @@ import {
   ACCESSORS,
   ALWAYS,
   ANGULAR_I18N,
+  CONTACT_PAGE_FILES,
   SHARED,
 } from './constants';
 import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
@@ -81,14 +82,18 @@ export const angularTarget: TargetRecord = {
     ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     {
       target: 'src/config/routes.ts',
@@ -96,9 +101,9 @@ export const angularTarget: TargetRecord = {
       shared: true,
     },
     // Reactive Forms ship with Angular, so the Contact page does too; TanStack Form swaps its component.
-    ...(['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const)
+    ...CONTACT_PAGE_FILES
       .flatMap((target): StarterFile[] => {
-        return [
+        const variants: StarterFile[] = [
           ...translated<StarterFile>({
             target,
             when: (answers) => {
@@ -113,6 +118,8 @@ export const angularTarget: TargetRecord = {
             variant: 'tanstack-form',
           }),
         ];
+
+        return variants;
       }),
     {
       target: 'src/lib/apis/contact/schemas.ts',

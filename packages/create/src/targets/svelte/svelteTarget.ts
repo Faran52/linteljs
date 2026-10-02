@@ -26,6 +26,8 @@ import {
 import {
   ACCESSORS,
   ALWAYS,
+  FORM_FILES,
+  QUERY_CONTEXT_MOCKS,
   SHARED,
   SVELTE_I18N,
 } from './constants';
@@ -33,7 +35,6 @@ import { svelteI18nFiles, svelteI18nTests } from './utils/translatedFileUtils';
 
 import type {
   StarterFile,
-  StarterTest,
   TargetRecord,
 } from '../types';
 
@@ -100,31 +101,32 @@ export const svelteTarget: TargetRecord = {
     ...svelteI18nFiles(),
     ...localeFiles(),
     // Svelte's query bindings read their client out of context, which needs a component.
-    ...([
-      '__mocks__/WithExtendedQuery.svelte',
-      '__mocks__/WithExtendedMutation.svelte',
-      '__mocks__/ExtendedQueryProbe.svelte',
-      '__mocks__/ExtendedMutationProbe.svelte',
-    ] as const)
+    ...QUERY_CONTEXT_MOCKS
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: (answers) => {
             return answers.data === 'tanstack-query';
           },
           variant: 'tanstack-query',
         };
+
+        return file;
       }),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     {
       target: 'static/favicon.svg',
@@ -143,16 +145,14 @@ export const svelteTarget: TargetRecord = {
       variant: 'with-store',
     },
     { target: 'src/components/ui/button/Button.svelte' },
-    ...([
-      'src/routes/contact/useContactForm.ts',
-      'src/components/ui/text-input/TextInput.svelte',
-      'src/components/ui/text-input/types.ts',
-    ] as const)
+    ...FORM_FILES
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasForm,
         };
+
+        return file;
       }),
     {
       target: 'src/lib/apis/contact/index.ts',
@@ -236,12 +236,7 @@ export const svelteTarget: TargetRecord = {
   // SvelteKit reserves the `+` prefix, so a suite takes the rest of the name.
   starterTests: [
     ...mockTests(true),
-    ...accessorTests(ACCESSORS)
-      .map((test): StarterTest => {
-        return {
-          ...test,
-        };
-      }),
+    ...accessorTests(ACCESSORS),
     ...svelteI18nTests(),
     LOCALES_TEST,
     {

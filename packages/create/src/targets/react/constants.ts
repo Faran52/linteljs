@@ -63,3 +63,6 @@ export const REACT_I18N: I18nParts = {
   ],
   testSetup: 'fragments/test-setup/setupTests.i18n.ts',
 };
+
+// Each `root.tsx` variant, and whether it is the StyleX one.
+export const ROOT_VARIANTS = [['react-router-framework', false], ['stylex', true]] as const;

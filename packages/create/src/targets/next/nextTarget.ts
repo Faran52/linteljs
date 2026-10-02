@@ -2,6 +2,8 @@ import { hasLibrary } from '@utils/answerUtils';
 
 import {
   COMMON_REACT_PLUGINS,
+  CONTACT_HOOK_FORMS,
+  COUNTER_MODULE_STORES,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
   STATUS_UTILS_TEST,
@@ -32,6 +34,7 @@ import {
   FROM_REACT,
   NEXT_I18N,
   SHARED,
+  STYLEX_CONFIGS,
 } from './constants';
 import { nextI18nFiles, nextI18nTests } from './utils/translatedFileUtils';
 
@@ -105,15 +108,17 @@ export const nextTarget: TargetRecord = {
     ...mockFiles(true),
     ...componentStyles(),
     ...componentStyleModules('react'),
-    ...(['.babelrc', 'postcss.config.mjs'] as const)
+    ...STYLEX_CONFIGS
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: (answers) => {
             return answers.styling === 'stylex';
           },
           variant: 'stylex',
         };
+
+        return file;
       }),
     {
       target: 'postcss.config.mjs',
@@ -131,21 +136,27 @@ export const nextTarget: TargetRecord = {
     ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     ...FROM_REACT
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: 'react',
         };
+
+        return file;
       }),
     // Next links an `app/icon.svg` itself.
     {
@@ -194,9 +205,9 @@ export const nextTarget: TargetRecord = {
       variant: 'with-form',
       shared: true,
     },
-    ...(['tanstack-form', 'react-hook-form'] as const)
+    ...CONTACT_HOOK_FORMS
       .map((form): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/app/contact/useContactForm.ts',
           when: (answers) => {
             return answers.form === form;
@@ -205,17 +216,14 @@ export const nextTarget: TargetRecord = {
           shared: 'react',
           source: 'src/pages/contact/useContactForm.ts',
         };
+
+        return file;
       }),
-    ...([
-      'src/components/ui/text-input/TextInput.tsx',
-    ] as const)
-      .map((target): StarterFile => {
-        return {
-          target,
-          when: hasForm,
-          shared: 'react',
-        };
-      }),
+    {
+      target: 'src/components/ui/text-input/TextInput.tsx',
+      when: hasForm,
+      shared: 'react',
+    },
     {
       target: 'src/lib/apis/contact/index.ts',
       when: (answers) => {
@@ -284,9 +292,9 @@ export const nextTarget: TargetRecord = {
       variant: 'tanstack-query',
       shared: 'react',
     },
-    ...(['zustand', 'tanstack-store'] as const)
+    ...COUNTER_MODULE_STORES
       .map((store): StarterFile => {
-        return {
+        const file: StarterFile = {
           target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
@@ -294,6 +302,8 @@ export const nextTarget: TargetRecord = {
           variant: store,
           shared: 'react',
         };
+
+        return file;
       }),
     // RTK Query's middleware must be registered in the Redux store.
     {

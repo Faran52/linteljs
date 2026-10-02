@@ -19,7 +19,9 @@ export const partsFor = (framework: HostedFramework): FrameworkParts => {
 // Keyed by `undefined` too, so a target that hosts no framework looks up nothing rather than branching.
 const HOSTED = new Map<HostedFramework | undefined, FrameworkParts>(valuesOf(PARTS)
   .map((framework) => {
-    return [framework, PARTS[framework]];
+    const entry: [HostedFramework | undefined, FrameworkParts] = [framework, PARTS[framework]];
+
+    return entry;
   }));
 
 export const hostedPartsFor = (framework: HostedFramework | undefined): FrameworkParts | undefined => {
@@ -29,9 +31,11 @@ export const hostedPartsFor = (framework: HostedFramework | undefined): Framewor
 export const hostedNaming = (framework: HostedFramework): NamingMap => {
   const { componentGlob } = partsFor(framework);
 
-  return {
+  const naming: NamingMap = {
     [componentGlob]: COMPONENT,
     ...scriptKeys(),
     'src/**/*.d.ts': DECLARATION,
   };
+
+  return naming;
 };

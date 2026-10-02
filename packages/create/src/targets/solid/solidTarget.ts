@@ -24,6 +24,7 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 import {
   ACCESSORS,
   ALWAYS,
+  FORM_FILES,
   SHARED,
   SOLID_I18N,
 } from './constants';
@@ -77,14 +78,18 @@ export const solidTarget: TargetRecord = {
     ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     {
       target: 'src/pages/home/HomePage.tsx',
@@ -105,15 +110,14 @@ export const solidTarget: TargetRecord = {
       shared: true,
     },
     { target: 'src/components/ui/button/Button.tsx' },
-    ...([
-      'src/pages/contact/useContactForm.ts',
-      'src/components/ui/text-input/TextInput.tsx',
-    ] as const)
+    ...FORM_FILES
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           when: hasForm,
         };
+
+        return file;
       }),
     {
       target: 'src/lib/apis/contact/index.ts',

@@ -122,14 +122,18 @@ export const reactNativeTarget: TargetRecord = {
     ...rtkFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
-        return { target };
+        const file: StarterFile = { target };
+
+        return file;
       }),
     ...SHARED
       .map((target): StarterFile => {
-        return {
+        const file: StarterFile = {
           target,
           shared: true,
         };
+
+        return file;
       }),
     ...reactNativeI18nFiles(),
     ...localeFiles(),
