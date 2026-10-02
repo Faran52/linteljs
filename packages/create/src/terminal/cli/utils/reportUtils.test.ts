@@ -408,6 +408,21 @@ describe('installCommands', () => {
     expect(commands).toEqual(expected);
   });
 
+  it.each([
+    ['pnpm', '  pnpm add "qs@^6.0.0"'],
+    ['npm', '  npm install "qs@^6.0.0"'],
+    ['yarn', '  yarn add "qs@^6.0.0"'],
+    ['bun', '  bun add "qs@^6.0.0"'],
+  ] as const)('adds with %s\'s own command', (packageManager, command) => {
+    const commands = installCommands(packageManager, {
+      dependencies: { qs: '^6.0.0' },
+      devDependencies: {},
+    });
+
+    const expected = [command];
+    expect(commands).toEqual(expected);
+  });
+
   it('prints nothing when nothing is missing', () => {
     const commands = installCommands('pnpm', {
       dependencies: {},

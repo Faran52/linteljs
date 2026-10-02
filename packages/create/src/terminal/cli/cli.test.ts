@@ -46,7 +46,6 @@ import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
-import { SYNC_NEEDS_YES } from './constants';
 import { parseCliArgs } from './utils/argvUtils';
 
 import type { Answers } from '@config/types';
@@ -425,6 +424,7 @@ describe('main: sync', () => {
     expect(code).toBe(0);
     expect(asked.calls).toEqual([]);
     expect(printed).toContain('Everything is already up to date.');
+    expect(printed).not.toContain('linteljs needs packages');
   });
 
   it('lists the files in one table, asks once, and writes nothing when declined', async () => {
@@ -473,7 +473,7 @@ describe('main: sync', () => {
     const { code, errors } = await runMain(['sync']);
 
     expect(code).toBe(1);
-    const expected = [SYNC_NEEDS_YES];
+    const expected = ['Nothing was written: sync asks before it writes. Run it in a terminal, or pass --yes.'];
     expect(errors).toEqual(expected);
     const file = await readFile(join(project, RULE), 'utf8');
     expect(file).toBe('# local edit\n');
@@ -499,6 +499,8 @@ describe('main: sync', () => {
     const synced = parsePackageJson(syncedText);
 
     expect(code).toBe(0);
+    const heading = 'linteljs needs packages this project does not have. sync leaves dependencies to you:';
+    expect(printed).toContain(`${heading}\n  pnpm add -D "husky@`);
     expect(printed).toMatch(/ {2}pnpm add -D "husky@[^"]+"\n/u);
     expect(synced.devDependencies).not.toHaveProperty('husky');
   });
