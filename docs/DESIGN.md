@@ -1725,10 +1725,14 @@ rule down under `scripts/` for a consumer, a published default that is not this 
 `release/run-rules/runRulesRelease.ts` writes to `process.stdout` instead: it runs in a container holding only the
 plugin's own `dist/` and `scripts/`, with no logger above them.
 
-`sonarjs/no-os-command-from-path` joins it for the same directories. Measured on 2026-10-02 with the rule on: one
-finding, `scripts/audit-ignores/auditIgnoresScript.ts` running `execFileSync('pnpm', ...)`, and the rule wants an absolute path because a writeable `PATH` entry could shadow the
-name. That is a real hazard for a program a user runs and not for one a maintainer invokes in this checkout, where
-resolving `pnpm` to an absolute path would consult the same `PATH`.
+### `@linteljs/workspace/audit-ignores`
+
+`sonarjs/no-os-command-from-path` is off for `scripts/audit-ignores/auditIgnoresScript.ts` alone. Measured on
+2026-10-02 with the rule on across the workspace: one finding, that file's `execFileSync('pnpm', ...)`. The rule
+wants an absolute path because a writeable `PATH` entry could shadow the name. That is a real hazard for a program
+a user runs, not for one a maintainer runs in this checkout, where resolving `pnpm` to an absolute path would read
+the same `PATH`. `npm_execpath` is no cleaner: it is set only under a package manager, and may name a script rather
+than a binary.
 
 ### `@linteljs/workspace/ast-identity`
 
