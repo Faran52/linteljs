@@ -151,7 +151,13 @@ export const findProp = (
 ): JsxAttribute | undefined => {
   return attributes
     .find((attribute): attribute is JsxAttribute => {
-      return attribute.type === 'JSXAttribute' && names.includes(elementNameOf(attribute.name));
+      if (attribute.type !== 'JSXAttribute') {
+        return false;
+      }
+
+      const name = elementNameOf(attribute.name);
+
+      return names.includes(name);
     });
 };
 
@@ -232,8 +238,15 @@ export const isInteractive = (
   element: JsxChild | JsxElement,
   components: readonly string[],
 ): boolean => {
-  return components.includes(elementNameOf(openingOf(element).name))
-    || hasProp(elementAttributesOf(element), TOUCH_HANDLER_PROPS);
+  const name = elementNameOf(openingOf(element).name);
+
+  if (components.includes(name)) {
+    return true;
+  }
+
+  const attributes = elementAttributesOf(element);
+
+  return hasProp(attributes, TOUCH_HANDLER_PROPS);
 };
 
 // The elements a `{}` can render through `&&`, `||`, `??` and `?:`. A call or a variable is not followed.
@@ -245,7 +258,9 @@ const renderedBy = (expression: JsxExpression | undefined): JsxChild[] => {
       children: expression.children,
     };
 
-    return [element, ...descendantElements(element)];
+    const subtree = [element, ...descendantElements(element)];
+
+    return subtree;
   }
 
   if (expression?.type === 'JSXFragment') {
@@ -256,11 +271,15 @@ const renderedBy = (expression: JsxExpression | undefined): JsxChild[] => {
   }
 
   if (expression?.type === 'LogicalExpression') {
-    return [...renderedBy(expression.left), ...renderedBy(expression.right)];
+    const rendered = [...renderedBy(expression.left), ...renderedBy(expression.right)];
+
+    return rendered;
   }
 
   if (expression?.type === 'ConditionalExpression') {
-    return [...renderedBy(expression.consequent), ...renderedBy(expression.alternate)];
+    const rendered = [...renderedBy(expression.consequent), ...renderedBy(expression.alternate)];
+
+    return rendered;
   }
 
   return [];
@@ -270,7 +289,9 @@ export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
   return (node.children ?? NO_CHILDREN)
     .flatMap((child) => {
       if (child.type === 'JSXElement') {
-        return [child, ...descendantElements(child)];
+        const subtree = [child, ...descendantElements(child)];
+
+        return subtree;
       }
 
       return child.type === 'JSXExpressionContainer' ? renderedBy(child.expression) : descendantElements(child);

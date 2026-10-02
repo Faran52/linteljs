@@ -101,9 +101,11 @@ export const declaredVariablesOf = (context: CompatContext, node: RuleNode): Sco
 };
 
 export const ancestorReaderOf = (context: CompatContext): AncestorReader => {
-  return {
+  const reader: AncestorReader = {
     getAncestors: (node) => {
       return ancestorsOf(context, node);
     },
   };
+
+  return reader;
 };

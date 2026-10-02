@@ -122,7 +122,7 @@ export const createRule = (
   name: string,
   definition: LintelRuleDefinition,
 ): LintelRuleModule => {
-  return {
+  const ruleModule: LintelRuleModule = {
     ...definition,
     meta: {
       ...definition.meta,
@@ -132,4 +132,6 @@ export const createRule = (
       },
     },
   };
+
+  return ruleModule;
 };

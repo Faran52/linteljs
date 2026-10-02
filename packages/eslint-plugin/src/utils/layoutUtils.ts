@@ -37,7 +37,9 @@ export const adjacentPairs = function* <T>(items: T[]): IterableIterator<[T, T]>
 
   for (const item of items) {
     if (previous !== undefined) {
-      yield [previous, item];
+      const pair: [T, T] = [previous, item];
+
+      yield pair;
     }
 
     previous = item;
@@ -137,10 +139,12 @@ export const indentReader = (sourceCode: SourceCode): ((node: RuleNode) => Inden
   return (node) => {
     const outer = getIndent(sourceCode, node);
 
-    return {
+    const indents: Indents = {
       outer,
       inner: `${outer}${step}`,
     };
+
+    return indents;
   };
 };
 
@@ -190,29 +194,36 @@ export const listGaps = (
   // Found from the last item, not the node, since a pattern's type annotation comes after its brace.
   const close = cursor.value === ',' || !commaSeparated ? mustFind(sourceCode.getTokenAfter(cursor)) : cursor;
 
-  return [
+  const firstInside = mustFind(sourceCode.getTokenAfter(open, COMMENTS));
+  const memberGaps = ends
+    .slice(0, -1)
+    .map((end): ListGap => {
+      const anchor = trailingEnd(sourceCode, end);
+      const next = mustFind(sourceCode.getTokenAfter(anchor, COMMENTS));
+      const gap: ListGap = [
+        anchor,
+        next,
+        inner,
+      ];
+
+      return gap;
+    });
+  const lastInside = mustFind(sourceCode.getTokenBefore(close, COMMENTS));
+  const gaps: ListGap[] = [
     [
       open,
-      mustFind(sourceCode.getTokenAfter(open, COMMENTS)),
+      firstInside,
       inner,
     ],
-    ...ends
-      .slice(0, -1)
-      .map((end): ListGap => {
-        const anchor = trailingEnd(sourceCode, end);
-
-        return [
-          anchor,
-          mustFind(sourceCode.getTokenAfter(anchor, COMMENTS)),
-          inner,
-        ];
-      }),
+    ...memberGaps,
     [
-      mustFind(sourceCode.getTokenBefore(close, COMMENTS)),
+      lastInside,
       close,
       outer,
     ],
   ];
+
+  return gaps;
 };
 
 // Crowded: over `maxInline` items on one line. Half-split: some breaks made and some not. Neither gives none.
