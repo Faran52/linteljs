@@ -42,10 +42,12 @@ export const svelteRuleTester = new RuleTester({
 export const ALIASED_PROJECT = join(import.meta.dirname, 'fixtures', 'aliased-project');
 
 // Type-aware: `prefer-alias` reads `paths` and resolution off the program this tsconfig builds.
+// `CI=true` infers a single run, which gives a file parsed twice an isolated program with no `paths`.
 export const typedRuleTester = new RuleTester({
   languageOptions: {
     parser: tseslint.parser,
     parserOptions: {
+      disallowAutomaticSingleRunInference: true,
       project: './tsconfig.json',
       tsconfigRootDir: ALIASED_PROJECT,
     },
