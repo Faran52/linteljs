@@ -35,6 +35,8 @@ export const NEXT_PROJECT: Layer = [
 // On disk for the same reason.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 
+export const LEAKED_RENDER_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Count.tsx');
+
 export const ownBlockNames = (layer: Layer): string[] => {
   return layer
     .flatMap(({ name }) => {

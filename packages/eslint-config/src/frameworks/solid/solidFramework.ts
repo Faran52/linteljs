@@ -4,7 +4,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
 import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
-import { presetOf } from '../../utils/presetUtils';
+import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
@@ -19,6 +19,7 @@ export const solid = (): Layer => {
   return [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SCRIPT_FILES),
     ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SCRIPT_FILES),
+    ...sonarjsRules('@linteljs/solid/sonarjs', { 'sonarjs/jsx-no-leaked-render': 'error' }, SCRIPT_FILES),
 
     {
       name: '@linteljs/solid',

@@ -59,6 +59,8 @@ when a version's change lives in a sibling it is described there instead:
   warning to error. `react()` and `next()` also report a `<button>` with no `type`, an `<iframe>` with no `sandbox`,
   a `target="_blank"` link to another origin with no `rel="noreferrer noopener"`, and a `javascript:` URL at error.
   React Native gets none of the DOM rules.
+- **`solid()` reports a leaked render.** `sonarjs/jsx-no-leaked-render` is on at error for Solid, so a number
+  rendered through `&&`, which shows a `0`, is reported. It needs type information, so it runs beside `typescript()`.
 
 ### Added
 

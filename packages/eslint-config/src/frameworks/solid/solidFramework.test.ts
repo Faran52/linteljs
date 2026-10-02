@@ -1,6 +1,9 @@
 import {
+  LEAKED_RENDER_FIXTURE,
   ownBlockNames,
+  ruleEntryFor,
   ruleIdsFor,
+  ruleIdsForFile,
   sortsAheadOfPackages,
   startsWith,
 } from '@mocks/lintText';
@@ -12,6 +15,7 @@ import {
 } from 'vitest';
 
 import base from '../../layers/base/baseLayer';
+import typescript from '../../layers/typescript/typescriptLayer';
 
 import solid, { solidGroup } from './solidFramework';
 
@@ -56,6 +60,24 @@ describe('solid', () => {
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
   });
 
+  it('reports a number rendered through &&, which shows a 0', async () => {
+    const ruleIds = await ruleIdsForFile([
+      ...base(),
+      ...typescript(),
+      ...solid(),
+    ], LEAKED_RENDER_FIXTURE);
+    const entry = await ruleEntryFor(solid(), 'src/Count.tsx', 'sonarjs/jsx-no-leaked-render');
+
+    expect(ruleIds).toContain('sonarjs/jsx-no-leaked-render');
+    expect(entry).toEqual([2]);
+  });
+
+  it('leaves the leaked render to the framework, so base alone stays quiet', async () => {
+    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], LEAKED_RENDER_FIXTURE);
+
+    expect(ruleIds).not.toContain('sonarjs/jsx-no-leaked-render');
+  });
+
   it('runs its linteljs rule without base', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
 
@@ -73,6 +95,7 @@ describe('solid', () => {
 
   it('names every block it writes', () => {
     expect(ownBlockNames(solid())).toEqual([
+      '@linteljs/solid/sonarjs',
       '@linteljs/solid',
     ]);
   });
