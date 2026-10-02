@@ -186,17 +186,20 @@ const value = thing;`,
 });
 
 const component = (...script: string[]): string => {
-  return [
+  const indented = script
+    .map((line) => {
+      return line === '' ? '' : `  ${line}`;
+    });
+  const lines = [
     '<script lang="ts">',
-    ...script
-      .map((line) => {
-        return line === '' ? '' : `  ${line}`;
-      }),
+    ...indented,
     '</script>',
     '',
     '<p>{count}</p>',
     '',
-  ].join('\n');
+  ];
+
+  return lines.join('\n');
 };
 
 svelteRuleTester.run('interface-order: svelte', interfaceOrder, {

@@ -41,11 +41,13 @@ const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction
     create: (context) => {
       captured = context.sourceCode;
 
-      return {
+      const listeners = {
         '*': (node: RuleNode) => {
           nodes.push(node);
         },
       };
+
+      return listeners;
     },
   };
 
@@ -71,24 +73,28 @@ const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction
     throw new Error(`no function in snippet: ${code}`);
   }
 
-  return {
+  const parsed = {
     sourceCode: captured,
     fn,
   };
+
+  return parsed;
 };
 
 describe('SAFE_DECLARATION_PARENTS', () => {
   it('lists exactly the statement positions a declaration is legal in', () => {
-    const expected = [
+    const legalParents = [
       'BlockStatement',
       'ExportNamedDeclaration',
       'Program',
       'StaticBlock',
       'SwitchCase',
       'TSModuleBlock',
-    ].toSorted(alphabetically);
+    ];
+    const expected = legalParents.toSorted(alphabetically);
 
-    const sorted = [...SAFE_DECLARATION_PARENTS].toSorted(alphabetically);
+    const listed = [...SAFE_DECLARATION_PARENTS];
+    const sorted = listed.toSorted(alphabetically);
     expect(sorted).toEqual(expected);
   });
 });

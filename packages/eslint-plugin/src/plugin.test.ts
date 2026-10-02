@@ -66,13 +66,12 @@ describe('recommended preset', () => {
   });
 
   it('enables exactly those ids in the legacy shape', () => {
-    const enabled = [
-      ...Object.keys(configs.recommended.rules),
-      ...configs.recommended.overrides
-        .flatMap((override) => {
-          return Object.keys(override.rules);
-        }),
-    ]
+    const overrideIds = configs.recommended.overrides
+      .flatMap((override) => {
+        return Object.keys(override.rules);
+      });
+    const ids = [...Object.keys(configs.recommended.rules), ...overrideIds];
+    const enabled = ids
       .toSorted((left, right) => {
         return left.localeCompare(right);
       });

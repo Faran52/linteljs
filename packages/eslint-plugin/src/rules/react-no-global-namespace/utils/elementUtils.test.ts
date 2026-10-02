@@ -17,14 +17,16 @@ interface NamedTag {
 }
 
 const element = (parts: JsxElementNode): TypedNode & JsxElementNode => {
-  return {
+  const node = {
     type: 'JSXElement',
     ...parts,
   };
+
+  return node;
 };
 
 const tag = (object: string, property: string): NamedTag => {
-  return {
+  const memberTag = {
     name: {
       type: 'JSXMemberExpression',
       object: {
@@ -37,6 +39,8 @@ const tag = (object: string, property: string): NamedTag => {
       },
     },
   };
+
+  return memberTag;
 };
 
 describe('globalNamespaceTags', () => {

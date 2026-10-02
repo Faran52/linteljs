@@ -108,36 +108,51 @@ describe('outermostCall', () => {
 const answerFor = (code: string, type = 'CallExpression'): boolean => {
   const parsed = sourceCodeFrom(code);
 
-  return isAwaitedOrAsyncReturn(parsed.sourceCode, parsed.lastNode(type));
+  const node = parsed.lastNode(type);
+
+  return isAwaitedOrAsyncReturn(parsed.sourceCode, node);
 };
 
 describe('isAwaitedOrAsyncReturn', () => {
-  it('reports true for an awaited call', () => {
-    expect(answerFor('const run = async () => {\n  await queue.catch(log);\n};\n')).toBe(true);
-  });
-
-  it('reports false for a call nothing settles', () => {
-    expect(answerFor('queue.catch(log);\n')).toBe(false);
-  });
-
-  it('reports true for an implicit return from an async arrow', () => {
-    expect(answerFor('const run = async () => queue.catch(log);\n')).toBe(true);
-  });
-
-  it('reports false for an implicit return from a plain arrow', () => {
-    expect(answerFor('const run = () => queue.catch(log);\n')).toBe(false);
-  });
-
-  it('reports false for a call in an async arrow parameter default', () => {
-    expect(answerFor('const run = async (fallback = queue.catch(report)) => fallback;\n')).toBe(false);
-  });
-
-  it('reports true for a return from an async function', () => {
-    expect(answerFor('async function run() {\n  return queue.catch(log);\n}\n')).toBe(true);
-  });
-
-  it('reports false for a return from a plain function', () => {
-    expect(answerFor('function run() {\n  return queue.catch(log);\n}\n')).toBe(false);
+  it.each([
+    [
+      'reports true for an awaited call',
+      'const run = async () => {\n  await queue.catch(log);\n};\n',
+      true,
+    ],
+    [
+      'reports false for a call nothing settles',
+      'queue.catch(log);\n',
+      false,
+    ],
+    [
+      'reports true for an implicit return from an async arrow',
+      'const run = async () => queue.catch(log);\n',
+      true,
+    ],
+    [
+      'reports false for an implicit return from a plain arrow',
+      'const run = () => queue.catch(log);\n',
+      false,
+    ],
+    [
+      'reports false for a call in an async arrow parameter default',
+      'const run = async (fallback = queue.catch(report)) => fallback;\n',
+      false,
+    ],
+    [
+      'reports true for a return from an async function',
+      'async function run() {\n  return queue.catch(log);\n}\n',
+      true,
+    ],
+    [
+      'reports false for a return from a plain function',
+      'function run() {\n  return queue.catch(log);\n}\n',
+      false,
+    ],
+  ])('%s', (_label, code, expected) => {
+    const answer = answerFor(code);
+    expect(answer).toBe(expected);
   });
 
   it('reports true for a type-asserted return from an async function', () => {
@@ -151,15 +166,17 @@ describe('isAwaitedOrAsyncReturn', () => {
   });
 
   it('reads the nearest enclosing function, not the outermost', () => {
-    const code = [
+    const lines = [
       'async function run() {',
       '  return items.map(function each() {',
       '    return queue.catch(log);',
       '  });',
       '}',
       '',
-    ].join('\n');
+    ];
+    const code = lines.join('\n');
 
-    expect(answerFor(code, 'MemberExpression')).toBe(false);
+    const answer = answerFor(code, 'MemberExpression');
+    expect(answer).toBe(false);
   });
 });

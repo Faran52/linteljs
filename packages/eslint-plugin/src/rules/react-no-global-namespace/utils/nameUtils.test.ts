@@ -9,10 +9,12 @@ import { nameOf } from './nameUtils.ts';
 import type { NamedNode, TypedNode } from '../../../utils/ruleUtils.ts';
 
 const named = (type: string, name: string): TypedNode & NamedNode => {
-  return {
+  const node = {
     type,
     name,
   };
+
+  return node;
 };
 
 describe('nameOf', () => {

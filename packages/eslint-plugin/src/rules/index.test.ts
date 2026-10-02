@@ -16,7 +16,9 @@ describe('rules', () => {
     expect(ruleIds).toEqual(ruleDirectories.toSorted(alphabetically));
   });
 
-  it.each(Object.entries(rules))('registers %s as the rule its own directory exports', async (name, rule) => {
+  const registered = Object.entries(rules);
+
+  it.each(registered)('registers %s as the rule its own directory exports', async (name, rule) => {
     const loaded: unknown = await import(`./${name}/${moduleNameOf(name)}.ts`);
 
     const expected = [moduleNameOf(name)];

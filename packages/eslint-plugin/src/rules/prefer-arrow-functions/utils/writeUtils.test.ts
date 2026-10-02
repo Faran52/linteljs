@@ -35,10 +35,12 @@ const functionFrom = (code: string): ParsedFunction => {
     throw new Error(`not a function: ${code}`);
   }
 
-  return {
+  const parsed = {
     sourceCode,
     fn,
   };
+
+  return parsed;
 };
 
 const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction => {
@@ -50,11 +52,13 @@ const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction =>
     create: (context) => {
       captured = context.sourceCode;
 
-      return {
+      const listeners = {
         '*': (node: RuleNode) => {
           nodes.push(node);
         },
       };
+
+      return listeners;
     },
   };
 
@@ -82,10 +86,12 @@ const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction =>
     throw new Error(`no function in snippet: ${code}`);
   }
 
-  return {
+  const parsed = {
     sourceCode: captured,
     fn,
   };
+
+  return parsed;
 };
 
 describe('getFunctionId', () => {
@@ -109,28 +115,37 @@ describe('getFunctionId', () => {
 });
 
 describe('writeArrowFunction', () => {
-  it('writes an empty parameter list and a block body unchanged', () => {
-    const { sourceCode, fn } = functionFrom('function greet() {\n  return 1;\n}');
+  it.each([
+    [
+      'writes an empty parameter list and a block body unchanged',
+      'function greet() {\n  return 1;\n}',
+      '() => {\n  return 1;\n}',
+    ],
+    [
+      'joins multiple parameters with a comma and a space',
+      'function greet(first, second) {\n  return first;\n}',
+      '(first, second) => {\n  return first;\n}',
+    ],
+    [
+      'carries a destructured parameter across using its own source text',
+      'function greet({ name }) {\n  return name;\n}',
+      '({ name }) => {\n  return name;\n}',
+    ],
+    [
+      'prefixes async functions with async',
+      'async function load() {\n  return 1;\n}',
+      'async () => {\n  return 1;\n}',
+    ],
+    [
+      'writes nothing for generics or a return type when the function carries neither',
+      'function greet(name) {\n  return name;\n}',
+      '(name) => {\n  return name;\n}',
+    ],
+  ])('%s', (_label, code, expected) => {
+    const { sourceCode, fn } = functionFrom(code);
 
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('() => {\n  return 1;\n}');
-  });
-
-  it('joins multiple parameters with a comma and a space', () => {
-    const { sourceCode, fn } = functionFrom('function greet(first, second) {\n  return first;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('(first, second) => {\n  return first;\n}');
-  });
-
-  it('carries a destructured parameter across using its own source text', () => {
-    const { sourceCode, fn } = functionFrom('function greet({ name }) {\n  return name;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('({ name }) => {\n  return name;\n}');
-  });
-
-  it('prefixes async functions with async', () => {
-    const { sourceCode, fn } = functionFrom('async function load() {\n  return 1;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('async () => {\n  return 1;\n}');
+    const arrow = writeArrowFunction(sourceCode, fn, false);
+    expect(arrow).toBe(expected);
   });
 
   it('wraps a concise body in braces and an explicit return', () => {
@@ -141,62 +156,58 @@ describe('writeArrowFunction', () => {
       throw new Error('not a function');
     }
 
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('() => { return 1 }');
+    const arrow = writeArrowFunction(sourceCode, fn, false);
+    expect(arrow).toBe('() => { return 1 }');
   });
 
-  it('writes nothing for generics or a return type when the function carries neither', () => {
-    const { sourceCode, fn } = functionFrom('function greet(name) {\n  return name;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('(name) => {\n  return name;\n}');
-  });
-
-  it('carries a return type annotation across using its own source text', () => {
-    const { sourceCode, fn } = tsFunctionFrom('function greet(name: string): string {\n  return name;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('(name: string): string => {\n  return name;\n}');
-  });
-
-  it('carries a generic parameter list across unchanged outside a tsx file', () => {
-    const { sourceCode, fn } = tsFunctionFrom('function identity<T>(value: T): T {\n  return value;\n}');
-
-    expect(writeArrowFunction(sourceCode, fn, false)).toBe('<T>(value: T): T => {\n  return value;\n}');
-  });
-
-  it('adds a disambiguating comma to a lone generic parameter in a tsx file', () => {
-    const { sourceCode, fn } = tsFunctionFrom(
+  it.each([
+    [
+      'carries a return type annotation across using its own source text',
+      'function greet(name: string): string {\n  return name;\n}',
+      'source.ts',
+      false,
+      '(name: string): string => {\n  return name;\n}',
+    ],
+    [
+      'carries a generic parameter list across unchanged outside a tsx file',
+      'function identity<T>(value: T): T {\n  return value;\n}',
+      'source.ts',
+      false,
+      '<T>(value: T): T => {\n  return value;\n}',
+    ],
+    [
+      'adds a disambiguating comma to a lone generic parameter in a tsx file',
       'function identity<T>(value: T): T {\n  return value;\n}',
       'component.tsx',
-    );
-
-    expect(writeArrowFunction(sourceCode, fn, true)).toBe('<T,>(value: T): T => {\n  return value;\n}');
-  });
-
-  it('keeps a constraint when adding the disambiguating comma', () => {
-    const { sourceCode, fn } = tsFunctionFrom(
+      true,
+      '<T,>(value: T): T => {\n  return value;\n}',
+    ],
+    [
+      'keeps a constraint when adding the disambiguating comma',
       'function identity<T extends string>(value: T): T {\n  return value;\n}',
       'component.tsx',
-    );
-
-    expect(writeArrowFunction(sourceCode, fn, true)).toBe('<T extends string,>(value: T): T => {\n  return value;\n}');
-  });
-
-  it('does not add a second comma when one is already there', () => {
-    const { sourceCode, fn } = tsFunctionFrom(
+      true,
+      '<T extends string,>(value: T): T => {\n  return value;\n}',
+    ],
+    [
+      'does not add a second comma when one is already there',
       'function identity<T,>(value: T): T {\n  return value;\n}',
       'component.tsx',
-    );
-
-    expect(writeArrowFunction(sourceCode, fn, true)).toBe('<T,>(value: T): T => {\n  return value;\n}');
-  });
-
-  it('does not disambiguate a generic list with more than one parameter', () => {
-    const { sourceCode, fn } = tsFunctionFrom(
+      true,
+      '<T,>(value: T): T => {\n  return value;\n}',
+    ],
+    [
+      'does not disambiguate a generic list with more than one parameter',
       'function pair<A, B>(first: A, second: B): [A, B] {\n  return [first, second];\n}',
       'component.tsx',
-    );
+      true,
+      '<A, B>(first: A, second: B): [A, B] => {\n  return [first, second];\n}',
+    ],
+  ])('%s', (_label, code, filename, isTsx, expected) => {
+    const { sourceCode, fn } = tsFunctionFrom(code, filename);
 
-    expect(writeArrowFunction(sourceCode, fn, true))
-      .toBe('<A, B>(first: A, second: B): [A, B] => {\n  return [first, second];\n}');
+    const arrow = writeArrowFunction(sourceCode, fn, isTsx);
+    expect(arrow).toBe(expected);
   });
 });
 
