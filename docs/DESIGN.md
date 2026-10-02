@@ -344,6 +344,17 @@ Each was tried against the workspace and the 670 starter files with `base` as it
   settles in a barrel of re-exports, where the fix does not apply (46 findings left after `--fix`, every one in an
   `index.ts`). The rest of the list ships; `import-x/newline-after-import` already owns the line after imports.
 
+### Rules `typescript()` leaves off, measured
+
+- `@typescript-eslint/no-use-before-define`, with `functions: false` and `variables: true`: five findings in the
+  workspace, none in the starters. Four are mutual recursion between `const` arrows (`envSplit` and `envWrapper`,
+  `renderedBy` and `descendantElements`), which `func-style: expression` makes the only way to write it and which
+  no order settles; the escape would be a disable comment, which `@linteljs/no-eslint-disable` bans. With
+  `variables: false` it finds nothing TypeScript does not already report as TS2448, TS2449 or TS2450.
+- `@typescript-eslint/no-restricted-types`: the reference list bans only `Object`, which
+  `@typescript-eslint/no-wrapper-object-types` in `strictTypeChecked` already reports, with `Function` left to
+  `no-unsafe-function-type` and `{}` to `no-empty-object-type`. An empty list is no rule.
+
 ## Targets
 
 Ten: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, and a Manifest V3

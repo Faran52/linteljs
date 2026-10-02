@@ -26,6 +26,8 @@ const REQUIRES_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typ
 
 const DESTRUCTURING_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/destructuring.ts');
 
+const PROPERTIES_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/properties.ts');
+
 describe('typescript', () => {
   it('reports a floating promise, which needs type information to see', async () => {
     await expect(ruleIdsForFile([...base(), ...typescript()], TYPED_FILE))
@@ -62,6 +64,29 @@ describe('typescript', () => {
 
     expect(reported).toHaveLength(1);
     expect(ruleIds).not.toContain('prefer-destructuring');
+  });
+
+  it('reports a parameter property and leaves a declared class property alone', async () => {
+    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], PROPERTIES_FILE);
+    const reported = ruleIds
+      .filter((ruleId) => {
+        return ruleId === '@typescript-eslint/parameter-properties';
+      });
+
+    expect(reported).toHaveLength(1);
+  });
+
+  it('restates every parameter-properties option, a rule base leaves to this layer', async () => {
+    const layer = [...base(), ...typescript()];
+    const entry = await ruleEntryFor(layer, 'src/a.ts', '@typescript-eslint/parameter-properties');
+    const baseRuleNames = await ruleNamesFor(base(), 'src/a.ts');
+
+    expect(entry).toEqual([2, {
+      allow: [],
+      prefer: 'class-property',
+    }]);
+
+    expect(baseRuleNames).not.toContain('@typescript-eslint/parameter-properties');
   });
 
   it('restates every prefer-destructuring option on a TypeScript file', async () => {

@@ -45,6 +45,9 @@ when a version's change lives in a sibling it is described there instead:
 - **`base` prefers destructuring in a declaration.** `const width = box.width` is `const { width } = box`, and the
   fix rewrites it. Arrays, assignments and renamed properties are left alone. `typescript()` swaps the core rule
   for `@typescript-eslint/prefer-destructuring` on TypeScript files, with the same options.
+- **`typescript()` reports a parameter property.** `constructor(private readonly value: number)` is a class
+  property declared in the body and assigned in the constructor, through `@typescript-eslint/parameter-properties`
+  with `prefer: 'class-property'`. There is no fix.
 
 ### Added
 

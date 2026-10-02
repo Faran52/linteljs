@@ -14,6 +14,12 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
       languageOptions: {
         parserOptions: { projectService: true },
       },
+      rules: {
+        '@typescript-eslint/parameter-properties': ['error', {
+          allow: [],
+          prefer: 'class-property',
+        }],
+      },
     },
 
     // `strictTypeChecked` has no files glob; config files stay untyped.
