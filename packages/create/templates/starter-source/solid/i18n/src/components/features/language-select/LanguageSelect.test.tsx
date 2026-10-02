@@ -78,8 +78,10 @@ describe('LanguageSelect', () => {
   });
 
   it('takes the style its header gives it', () => {
+    const headerStyle = { color: 'red' };
+
     render(() => {
-      return <LanguageSelect class="tab" style={{ color: 'red' }} />;
+      return <LanguageSelect class="tab" style={headerStyle} />;
     });
 
     const select = screen.getByRole('combobox');

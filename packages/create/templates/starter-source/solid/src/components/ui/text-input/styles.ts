@@ -8,10 +8,14 @@ export const styles = {
   error: { class: 'error' },
 
   input: (invalid: boolean): ElementProps => {
-    return { class: invalid ? 'input input-invalid' : 'input' };
+    const props = { class: invalid ? 'input input-invalid' : 'input' };
+
+    return props;
   },
 
   textarea: (invalid: boolean): ElementProps => {
-    return { class: invalid ? 'textarea textarea-invalid' : 'textarea' };
+    const props = { class: invalid ? 'textarea textarea-invalid' : 'textarea' };
+
+    return props;
   },
 };

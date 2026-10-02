@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/solid-query';
+import { type QueryOptions, useQuery } from '@tanstack/solid-query';
 
 import {
   type ApiError,
@@ -34,7 +34,7 @@ export const createExtendedQuery = <TResponse>(
   } = options;
 
   const result = useQuery<TResponse, ApiError>(() => {
-    return {
+    const queryOptions = {
       queryKey: [path, query],
       queryFn: ({ signal }) => {
         return request<TResponse>(path, {
@@ -44,10 +44,12 @@ export const createExtendedQuery = <TResponse>(
       },
       enabled,
       staleTime,
-    };
+    } satisfies QueryOptions<TResponse, ApiError>;
+
+    return queryOptions;
   });
 
-  return {
+  const extendedQuery: ExtendedQueryResult<TResponse> = {
     response: () => {
       return result.data;
     },
@@ -64,4 +66,6 @@ export const createExtendedQuery = <TResponse>(
       void result.refetch();
     },
   };
+
+  return extendedQuery;
 };

@@ -32,7 +32,7 @@ export const useContactForm = (): ContactForm => {
   const [sent, setSent] = createSignal(false);
   const submit = useSubmitContact();
   const form = createForm(() => {
-    return {
+    const options = {
       defaultValues: {
         email: '',
         message: '',
@@ -42,7 +42,9 @@ export const useContactForm = (): ContactForm => {
         onChange: ({ value }: ContactSubmission) => {
           const found = validateContact(value);
 
-          return Object.keys(found).length > 0 ? { fields: found } : undefined;
+          const errors = Object.keys(found).length > 0 ? { fields: found } : undefined;
+
+          return errors;
         },
       },
       onSubmit: async ({ value }: ContactSubmission) => {
@@ -50,6 +52,8 @@ export const useContactForm = (): ContactForm => {
         setSent(true);
       },
     };
+
+    return options;
   });
   const state = form
     .useSelector((current) => {
@@ -61,7 +65,7 @@ export const useContactForm = (): ContactForm => {
     label: string,
     extra: Partial<TextInputProps> = {},
   ): TextInputProps => {
-    return {
+    const props: TextInputProps = {
       id: name,
       label,
       ...extra,
@@ -81,23 +85,29 @@ export const useContactForm = (): ContactForm => {
       onBlur: () => {
         form
           .setFieldMeta(name, (prev) => {
-            return {
+            const blurred = {
               ...prev,
               isBlurred: true,
             };
+
+            return blurred;
           });
 
         // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
         // wrapping settles which for the promise rules.
-        void Promise.resolve(form.validateField(name, 'change'));
+        const validation = form.validateField(name, 'change');
+
+        void Promise.resolve(validation);
       },
       onChange: (value) => {
         form.setFieldValue(name, value);
       },
     };
+
+    return props;
   };
 
-  return {
+  const contactForm: ContactForm = {
     fields: {
       email: field('email', 'Email', { type: 'email' }),
       message: field('message', 'Message', { multiline: true }),
@@ -112,4 +122,6 @@ export const useContactForm = (): ContactForm => {
       void form.handleSubmit();
     },
   };
+
+  return contactForm;
 };

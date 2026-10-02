@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/solid-query';
+import {
+  type MutationOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/solid-query';
 
 import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
@@ -28,7 +32,7 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
   const client = useQueryClient();
 
   const mutation = useMutation<TResponse, ApiError, TBody>(() => {
-    return {
+    const mutationOptions: MutationOptions<TResponse, ApiError, TBody> = {
       mutationFn: (body: TBody) => {
         return request<TResponse>(path, {
           method,
@@ -44,9 +48,11 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
         await Promise.all(invalidations);
       },
     };
+
+    return mutationOptions;
   });
 
-  return {
+  const extendedMutation: ExtendedMutationResult<TResponse, TBody> = {
     send: (body) => {
       return mutation.mutateAsync(body);
     },
@@ -60,4 +66,6 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
       return mutation.status;
     },
   };
+
+  return extendedMutation;
 };

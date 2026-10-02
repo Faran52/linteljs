@@ -7,10 +7,12 @@ import { useCounter } from './counterStore';
 describe('useCounter', () => {
   it('counts up, and every reader sees the same count', () => {
     const { result } = renderHook(() => {
-      return {
+      const readers = {
         one: useCounter(),
         two: useCounter(),
       };
+
+      return readers;
     }, { wrapper: StoreProvider });
 
     result.one.add();

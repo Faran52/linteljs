@@ -20,7 +20,9 @@ export const submitContact = async (values: ContactValues): Promise<ContactResul
 // A mutation, which puts the call in the cache and gives it a retry.
 export const useSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {
   const mutation = useMutation(() => {
-    return { mutationFn: submitContact };
+    const options = { mutationFn: submitContact };
+
+    return options;
   });
 
   return async (values) => {

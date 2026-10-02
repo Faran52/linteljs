@@ -9,6 +9,8 @@ export const styles = {
   tabs: { class: 'tabs' },
 
   tab: (current: boolean): ElementProps => {
-    return { class: current ? 'tab tab-button tab-current' : 'tab tab-button' };
+    const props = { class: current ? 'tab tab-button tab-current' : 'tab tab-button' };
+
+    return props;
   },
 };
