@@ -87,5 +87,5 @@ binding to test for case and is declined rather than guessed at.
 ## Why there is no autofix
 
 Rewriting the signature means inventing names for every member read, renaming each use, and
-carrying any type annotation across. On a `props['alpha']` read there may not even be a legal
+carrying any type annotation across. On a `props['aria-label']` read there is not even a legal
 identifier to invent. That rewrite belongs to a human.

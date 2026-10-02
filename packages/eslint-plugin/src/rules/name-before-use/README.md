@@ -17,7 +17,7 @@ those three stand only where they get a name or stand alone:
 
 Everywhere else (conditions, `for` headers, ternaries, call arguments, `expect`, `return`, an arrow's
 body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
-of the outer one's value and is judged there. `as`, `satisfies`, `!` and optional chaining pass the
+of the outer one's value and is judged there. `as`, `satisfies`, `!`, an angle-bracket assertion and optional chaining pass the
 position through.
 
 ## Examples of incorrect code for this rule

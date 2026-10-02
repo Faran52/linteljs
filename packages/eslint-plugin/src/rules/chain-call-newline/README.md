@@ -119,15 +119,9 @@ what that rule asks for everywhere but inside a multi-line ternary, where it set
 
 `@stylistic/newline-per-chained-call` counts differently: it counts the head's own call, so at depth
 one it splits every `expect(x).toBe(y)`, at depth two it misses a two-call chain, and its fix leaves
-a chain half split. Measured on 2026-10-02 with this rule swapped for it, at every
-`ignoreChainWithDepth` from 1 to 5, over the workspace and every starter (1,086 files):
+a chain half split. It gives this rule's fixed output on 24 of the 76 suite cases at depth one, and
+on 33 at any depth from two to five.
 
-| depth | this repo today | the tree before this rule landed | this rule's suite, same fixed output |
-| --- | --- | --- | --- |
-| 1 | 3,531 reports, 416 files rewritten | 374 files differ | 24 of 76 |
-| 2 | no difference | 127 files differ, +669 -948 | 33 of 76 |
-| 3 to 5 | no difference | 127 files differ | 33 of 76 |
-
-Depth 2 and up accepts everything this rule writes and misses most of what it asks for: it leaves
+Depth two and up accepts everything this rule writes and misses most of what it asks for: it leaves
 `items.map(fn).filter(keep)` on one line, leaves `items.map((item) => {...})` with the call on the
 head's line, and leaves `items\n  .map(fn).filter(keep)` half split.

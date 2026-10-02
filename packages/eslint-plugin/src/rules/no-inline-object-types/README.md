@@ -11,31 +11,11 @@ guard, or documented above its own declaration, so the second place that needs i
 or takes a worse type. Naming it costs one line and the name is usually the thing the reader wanted
 anyway.
 
-## Rule details
-
 Reports a `TSTypeLiteral` that carries at least one member, wherever it appears: a parameter, a
 return annotation, a variable annotation, a generic argument, a property inside an interface, or an
 arm of a union or intersection.
 
-Two shapes are not reported.
-
-**The named declaration itself.** `type Answers = { target: string }` is the thing the rule is
-asking for, so the literal directly under a type alias is left alone. A literal *nested* inside one
-is not: the alias names the outer shape, and the inner one is still anonymous.
-
-**An empty literal.** `{}` has nothing in it to name, and `string & {}` is the idiom that keeps a
-union of string literals open to any other string while an editor still offers the named ones.
-
-A mapped type (`{ [K in keyof T]: boolean }`) and an index signature are different nodes and are
-not this rule's business.
-
-Report-only, with no fix. Extracting the shape needs a name and a place to put it, and both are
-decisions a fixer would have to invent; a generated `Type1` beside the code is worse than the
-inline shape it replaced.
-
-## Examples
-
-Incorrect:
+## Examples of incorrect code for this rule
 
 ```ts
 export const read = (answers: { target: string }): string => {
@@ -49,7 +29,7 @@ interface Manifest {
 type Result = { ok: true } | { ok: false };
 ```
 
-Correct:
+## Examples of correct code for this rule
 
 ```ts
 interface Answers {
@@ -126,3 +106,21 @@ export type X = Extract<string, { a: string }>;  // allowed, and probably not wh
 
 Resolving the name would need type information, which this rule does not ask for. Keep the list
 short and made of names nobody in the project redeclares.
+
+## What it leaves alone
+
+**The named declaration itself.** `type Answers = { target: string }` is the thing the rule is
+asking for, so the literal directly under a type alias is left alone. A literal *nested* inside one
+is not: the alias names the outer shape, and the inner one is still anonymous.
+
+**An empty literal.** `{}` has nothing in it to name, and `string & {}` is the idiom that keeps a
+union of string literals open to any other string while an editor still offers the named ones.
+
+A mapped type (`{ [K in keyof T]: boolean }`) and an index signature are different nodes and are
+not this rule's business.
+
+## Why there is no autofix
+
+Extracting the shape needs a name and a place to put it, and both are
+decisions a fixer would have to invent; a generated `Type1` beside the code is worse than the
+inline shape it replaced.
