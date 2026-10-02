@@ -18,10 +18,12 @@ export const gitSpawn = (args: string[], options: GitOptions): GitMissing | Spaw
   const binary = resolvedBinary('git');
 
   if (binary === undefined) {
-    return {
+    const missing: GitMissing = {
       error: new Error('git was not found on PATH, and the hooks this tool installs need one.'),
       status: null,
     };
+
+    return missing;
   }
 
   return spawnSync(binary, args, {

@@ -35,7 +35,9 @@ export const localBinarySpawn = async (cwd: string, name: string, args: string[]
     // A spawn that never started emits `error` and no `close`.
     child
       .on('error', (error) => {
-        settle('code' in error && error.code === 'ENOENT' ? null : { failed: true });
+        const run: LocalBinaryRun | null = 'code' in error && error.code === 'ENOENT' ? null : { failed: true };
+
+        settle(run);
       });
 
     child
