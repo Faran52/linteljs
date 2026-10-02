@@ -59,6 +59,11 @@ when a version's change lives in a sibling it is described there instead:
 - **`solid()` reports more:** `sonarjs/jsx-no-leaked-render`, so a number rendered through `&&`, which shows a `0`,
   is reported. It needs type information, so it runs beside `typescript()`. `@stylistic/jsx-self-closing-comp` and
   `jsx-pascal-case` are on too.
+- **`base` bans magic numbers in source files.** `@typescript-eslint/no-magic-numbers` runs on every script and
+  SFC file except suites, `__mocks__/`, `e2e/`, `*.config.*` and `constants.ts`. `-1`, `0`, `1` and `2` pass, as
+  do array indexes, default values, class field initial values, object property values, enum members, numeric
+  literal types, readonly class properties and type indexes. Anything else wants a named `const`. Core
+  `no-magic-numbers` is off, so the two never double-report.
 
 ### Added
 

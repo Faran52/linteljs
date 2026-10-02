@@ -32,11 +32,16 @@ const COMPONENT_FILES = ['**/*.{tsx,jsx,vue,svelte}'];
 // Only on request: naming `.astro` would pull it into a project that has no parser for it.
 const ASTRO_FILES = ['**/*.astro'];
 
-const SIZE_EXEMPT_FILES = [
+const TEST_FILES = [
   '**/*.{test,spec}.*',
   '**/__mocks__/**',
   '**/e2e/**',
 ];
+
+// A config states its numbers as options; a `constants.ts` already names every number it holds.
+const NUMBER_EXEMPT_FILES = ['**/*.config.*', '**/constants.ts'];
+
+const MAX_COGNITIVE_COMPLEXITY = 15;
 
 // `process.cwd()` off the global so a test can replace it; this file resolves from `node_modules`.
 const gitignored = (): Layer => {
@@ -275,7 +280,7 @@ export const base = (options: BaseOptions = {}): Layer => {
           { enforceForRenamedProperties: false },
         ],
 
-        'sonarjs/cognitive-complexity': ['error', 15],
+        'sonarjs/cognitive-complexity': ['error', MAX_COGNITIVE_COMPLEXITY],
 
         // Counted as code: blank lines and comments are free.
         'max-lines': ['error', {
@@ -348,10 +353,38 @@ export const base = (options: BaseOptions = {}): Layer => {
     // A suite is a list of cases rather than a function.
     {
       name: '@linteljs/base/test-size',
-      files: SIZE_EXEMPT_FILES,
+      files: TEST_FILES,
       rules: {
         'max-lines': 'off',
         'max-lines-per-function': 'off',
+      },
+    },
+
+    // The typescript-eslint copy, which knows enums and literal types, on plain JavaScript as well.
+    {
+      name: '@linteljs/base/magic-numbers',
+      files: scriptFiles,
+      ignores: [...TEST_FILES, ...NUMBER_EXEMPT_FILES],
+      plugins: { '@typescript-eslint': tseslint.plugin },
+      rules: {
+        'no-magic-numbers': 'off',
+        '@typescript-eslint/no-magic-numbers': ['error', {
+          ignore: [
+            -1,
+            0,
+            1,
+            2,
+          ],
+          ignoreArrayIndexes: true,
+          ignoreDefaultValues: true,
+          ignoreClassFieldInitialValues: true,
+          enforceConst: true,
+          detectObjects: false,
+          ignoreEnums: true,
+          ignoreNumericLiteralTypes: true,
+          ignoreReadonlyClassProperties: true,
+          ignoreTypeIndexes: true,
+        }],
       },
     },
 

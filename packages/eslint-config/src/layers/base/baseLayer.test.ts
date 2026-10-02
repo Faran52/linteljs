@@ -339,6 +339,7 @@ describe('base: ignores', () => {
         '@linteljs/base/component-size',
         '@linteljs/base/utils-size',
         '@linteljs/base/test-size',
+        '@linteljs/base/magic-numbers',
         '@linteljs/base/naming',
       ];
       expect(baseBlocks).toEqual(expected);
@@ -833,6 +834,49 @@ describe('base: presets', () => {
     const layer = await layerWithoutConfig('@linteljs/eslint-plugin', 'flat/recommended', loadBase);
 
     expect(layer).toThrow('@linteljs/flat/recommended is not published');
+  });
+});
+
+describe('base: magic numbers', () => {
+  const RULE = '@typescript-eslint/no-magic-numbers';
+  const MAGIC = 'export const wait = (ms) => ms * 1000;\n';
+
+  it.each([
+    ['src/timer.ts', true],
+    ['src/timer.js', true],
+    ['src/timer.test.ts', false],
+    ['__mocks__/timer.ts', false],
+    ['e2e/timer.ts', false],
+    ['vite.config.ts', false],
+    ['src/constants.ts', false],
+  ])('in %s, reports a bare number: %s', async (file, reported) => {
+    const ruleIds = await ruleIdsFor(base(), MAGIC, file);
+    const reports = ruleIds.includes(RULE);
+
+    expect(reports).toBe(reported);
+  });
+
+  it.each([
+    ['a small integer', 'export const next = (n: number): number => n * 2 - 1;\n'],
+    ['an array index', 'export const second = (list: number[]): number | undefined => list[3];\n'],
+    ['a default value', 'export const pad = (width = 8): number => width;\n'],
+    ['a const', 'export const LIMIT = 40;\n'],
+    ['an object property', 'export const widths = { label: 14 };\n'],
+    ['an enum member', 'export enum Code { Interrupted = 130 }\n'],
+    ['a numeric literal type', 'export type Port = 80 | 443;\n'],
+    ['a readonly class property', 'export class Box {\n  readonly size = 64;\n}\n'],
+    ['a type index', "export type Fourth = ['a', 'b', 'c', 'd'][3];\n"],
+  ])('accepts %s', async (_shape, code) => {
+    const ruleIds = await ruleIdsFor(base(), code, 'src/shape.ts');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(RULE);
+  });
+
+  it('reports a number assigned to a let', async () => {
+    const ruleIds = await ruleIdsFor(base(), 'export let limit = 40;\n', 'src/shape.ts');
+
+    expect(ruleIds).toContain(RULE);
   });
 });
 
