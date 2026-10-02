@@ -121,14 +121,14 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    const expected = [{
+    const expectedAliases = [{
       prefix: '@root/',
       directory: '/p',
     }];
-    expect(project?.aliases).toEqual(expected);
+    expect(project?.aliases).toEqual(expectedAliases);
 
-    const expected2 = ['', '@root'];
-    expect(project?.pinned).toEqual(expected2);
+    const expectedPinned = ['', '@root'];
+    expect(project?.pinned).toEqual(expectedPinned);
   });
 
   it('reads nothing off a project with a baseUrl', () => {

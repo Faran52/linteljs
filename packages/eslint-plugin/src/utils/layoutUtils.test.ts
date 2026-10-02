@@ -51,8 +51,8 @@ describe('adjacentPairs', () => {
   it('yields nothing for a list too short to hold a pair', () => {
     const actual = [...adjacentPairs(['only'])];
     expect(actual).toEqual([]);
-    const actual2 = [...adjacentPairs([])];
-    expect(actual2).toEqual([]);
+    const fromEmpty = [...adjacentPairs([])];
+    expect(fromEmpty).toEqual([]);
   });
 
   it('carries a null member through as a side of a pair', () => {
@@ -78,16 +78,16 @@ describe('lineSpan', () => {
     ];
     expect(actual).toEqual(expected);
 
-    const actual2 = lineSpan(4, 4);
-    const expected2 = [4];
-    expect(actual2).toEqual(expected2);
+    const single = lineSpan(4, 4);
+    const expectedSingle = [4];
+    expect(single).toEqual(expectedSingle);
   });
 
   it('is empty when last falls before first', () => {
     const actual = lineSpan(5, 4);
     expect(actual).toEqual([]);
-    const actual2 = lineSpan(5, 2);
-    expect(actual2).toEqual([]);
+    const furtherBack = lineSpan(5, 2);
+    expect(furtherBack).toEqual([]);
   });
 });
 
@@ -300,14 +300,15 @@ describe('indentReader', () => {
     const indentsAt = indentReader(sourceCode);
 
     const indents = indentsAt(firstNode('ObjectPattern'));
-    expect(indents).toEqual(indentsAt(firstNode('ObjectPattern')));
+    const reread = indentsAt(firstNode('ObjectPattern'));
+    expect(indents).toEqual(reread);
 
-    const indents2 = indentsAt(firstNode('Program'));
+    const programIndents = indentsAt(firstNode('Program'));
     const expected = {
       outer: '',
       inner: '  ',
     };
-    expect(indents2).toEqual(expected);
+    expect(programIndents).toEqual(expected);
   });
 });
 
@@ -328,17 +329,17 @@ describe('sameLine', () => {
   });
 
   it('reports false when either side carries no location', () => {
-    const actual = sameLine({}, second);
-    expect(actual).toBe(false);
-    const actual2 = sameLine(first, {});
-    expect(actual2).toBe(false);
+    const leftBare = sameLine({}, second);
+    expect(leftBare).toBe(false);
+    const rightBare = sameLine(first, {});
+    expect(rightBare).toBe(false);
   });
 
   it('reports false when either side is absent entirely', () => {
-    const actual = sameLine(null, second);
-    expect(actual).toBe(false);
-    const actual2 = sameLine(first, null);
-    expect(actual2).toBe(false);
+    const leftAbsent = sameLine(null, second);
+    expect(leftAbsent).toBe(false);
+    const rightAbsent = sameLine(first, null);
+    expect(rightAbsent).toBe(false);
   });
 
   it('reports false when neither side has a line', () => {
@@ -348,7 +349,11 @@ describe('sameLine', () => {
 });
 
 const gapAfterComma = (code: string): boolean => {
-  return gapIsBlank(sourceCodeFrom(code).sourceCode, code.indexOf(',') + 1, code.indexOf('two'));
+  const { sourceCode } = sourceCodeFrom(code);
+  const start = code.indexOf(',') + 1;
+  const end = code.indexOf('two');
+
+  return gapIsBlank(sourceCode, start, end);
 };
 
 describe('gapIsBlank', () => {
@@ -389,35 +394,37 @@ describe('inferred indentation', () => {
   });
 
   it('matches a four-space file rather than imposing two', () => {
-    const source = [
+    const lines = [
       "import { alpha, bravo, charlie } from 'mod';",
       '',
       'function load() {',
       '    return alpha;',
       '}',
       '',
-    ].join('\n');
+    ];
+    const source = lines.join('\n');
 
     const fixed = fixWith(source);
     expect(fixed).toContain("import {\n    alpha,\n    bravo,\n    charlie\n} from 'mod';");
   });
 
   it('matches a tab-indented file', () => {
-    const source = [
+    const lines = [
       "import { alpha, bravo, charlie } from 'mod';",
       '',
       'function load() {',
       '\treturn alpha;',
       '}',
       '',
-    ].join('\n');
+    ];
+    const source = lines.join('\n');
 
     const fixed = fixWith(source);
     expect(fixed).toContain("import {\n\talpha,\n\tbravo,\n\tcharlie\n} from 'mod';");
   });
 
   it('ignores block comment continuation lines', () => {
-    const source = [
+    const lines = [
       '/**',
       ' * A doc block, whose continuation lines start with a single space.',
       ' */',
@@ -427,21 +434,23 @@ describe('inferred indentation', () => {
       '    return alpha;',
       '}',
       '',
-    ].join('\n');
+    ];
+    const source = lines.join('\n');
 
     const fixed = fixWith(source);
     expect(fixed).toContain("import {\n    alpha,\n    bravo,\n    charlie\n} from 'mod';");
   });
 
   it('falls back to two spaces when the narrowest indent is implausible', () => {
-    const source = [
+    const lines = [
       "import { alpha, bravo, charlie } from 'mod';",
       '',
       'const value = [',
       '              deeplyAligned,',
       '];',
       '',
-    ].join('\n');
+    ];
+    const source = lines.join('\n');
 
     const fixed = fixWith(source);
     expect(fixed).toContain("import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';");
@@ -462,11 +471,13 @@ describe('listGaps', () => {
         after,
         indent,
       ]) => {
-        return [
+        const gap = [
           sourceCode.text.slice(...rangeOf(before)),
           sourceCode.text.slice(...rangeOf(after)),
           indent,
         ];
+
+        return gap;
       });
   };
 
@@ -479,7 +490,9 @@ describe('listGaps', () => {
   ): string[][] => {
     const open = mustFind(sourceCode.getFirstToken(node));
 
-    return describeGaps(sourceCode, listGaps(sourceCode, open, items, INDENTS, commaSeparated));
+    const gaps = listGaps(sourceCode, open, items, INDENTS, commaSeparated);
+
+    return describeGaps(sourceCode, gaps);
   };
 
   const elementsOf = (node: RuleNode) => {
@@ -574,8 +587,8 @@ describe('listGaps', () => {
     const members = [firstNode('TSPropertySignature'), lastNode('TSPropertySignature')];
     const properties = pattern.type === 'ObjectPattern' ? pattern.properties : [];
 
-    const gaps = gapsOf(sourceCode, body, members, false);
-    const expected = [
+    const memberGaps = gapsOf(sourceCode, body, members, false);
+    const expectedMemberGaps = [
       [
         '{',
         'alpha',
@@ -592,10 +605,10 @@ describe('listGaps', () => {
         '',
       ],
     ];
-    expect(gaps).toEqual(expected);
+    expect(memberGaps).toEqual(expectedMemberGaps);
 
-    const sourceCodeGaps = gapsOf(sourceCode, pattern, properties, true);
-    const expected2 = [
+    const patternGaps = gapsOf(sourceCode, pattern, properties, true);
+    const expectedPatternGaps = [
       [
         '{',
         'alpha',
@@ -612,7 +625,7 @@ describe('listGaps', () => {
         '',
       ],
     ];
-    expect(sourceCodeGaps).toEqual(expected2);
+    expect(patternGaps).toEqual(expectedPatternGaps);
   });
 });
 
@@ -621,10 +634,13 @@ const arrayGaps = (code: string): ListGap[] => {
   const node = firstNode('ArrayExpression');
   const elements = node.type === 'ArrayExpression' ? node.elements : [];
 
-  return listGaps(sourceCode, mustFind(sourceCode.getFirstToken(node)), elements, {
+  const open = mustFind(sourceCode.getFirstToken(node));
+  const indents = {
     outer: '',
     inner: '  ',
-  }, true);
+  };
+
+  return listGaps(sourceCode, open, elements, indents, true);
 };
 
 describe('gapsToBreak', () => {

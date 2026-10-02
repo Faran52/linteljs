@@ -140,10 +140,10 @@ describe('findProp', () => {
   });
 
   it('sees a spread', () => {
-    const actual = hasSpread([accessible]);
-    expect(actual).toBe(false);
-    const actual2 = hasSpread([accessible, spread]);
-    expect(actual2).toBe(true);
+    const withoutSpread = hasSpread([accessible]);
+    expect(withoutSpread).toBe(false);
+    const withSpread = hasSpread([accessible, spread]);
+    expect(withSpread).toBe(true);
   });
 });
 
@@ -311,13 +311,14 @@ describe('isHidden', () => {
       false,
     ],
   ])('reads %s', (_label, value, hidden) => {
+    const valueField = { value };
     const answered = isHidden([{
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
         name: 'aria-hidden',
       },
-      ...value === undefined ? {} : { value },
+      ...value === undefined ? {} : valueField,
     }]);
 
     expect(answered).toBe(hidden);
@@ -416,19 +417,23 @@ describe('descendantElements through an expression', () => {
     };
     const call = { type: 'CallExpression' };
 
+    const expressions = [
+      logical,
+      conditional,
+      call,
+    ];
+    const children = expressions
+      .map((expression) => {
+        const container = {
+          type: 'JSXExpressionContainer',
+          expression,
+        };
+
+        return container;
+      });
     const descendants = descendantElements({
       type: 'JSXElement',
-      children: [
-        logical,
-        conditional,
-        call,
-      ]
-        .map((expression) => {
-          return {
-            type: 'JSXExpressionContainer',
-            expression,
-          };
-        }),
+      children,
     });
 
     const expected = [

@@ -22,14 +22,15 @@ interface ProbeOptions {
   max: number;
 }
 
-const parsed = sourceCodeFrom([
+const probeLines = [
   'const alpha = 1;',
   '',
   'const beta = (delta) => {',
   '  return delta;',
   '};',
   '',
-].join('\n'));
+];
+const parsed = sourceCodeFrom(probeLines.join('\n'));
 
 describe('isDirective', () => {
   it('answers for a statement carrying a string directive', () => {
@@ -55,23 +56,23 @@ describe('isDirective', () => {
 
 describe('isIdentifierNamed', () => {
   it('answers for an identifier of that name only', () => {
-    const actual = isIdentifierNamed({
+    const matching = isIdentifierNamed({
       type: 'Identifier',
       name: 'stylex',
     }, 'stylex');
-    expect(actual).toBe(true);
+    expect(matching).toBe(true);
 
-    const actual2 = isIdentifierNamed({
+    const otherName = isIdentifierNamed({
       type: 'Identifier',
       name: 'css',
     }, 'stylex');
-    expect(actual2).toBe(false);
+    expect(otherName).toBe(false);
 
-    const actual3 = isIdentifierNamed({
+    const privateName = isIdentifierNamed({
       type: 'PrivateIdentifier',
       name: 'stylex',
     }, 'stylex');
-    expect(actual3).toBe(false);
+    expect(privateName).toBe(false);
   });
 });
 
@@ -79,7 +80,8 @@ describe('mustFind', () => {
   it('hands back whatever the lookup found', () => {
     const identifier = parsed.firstNode('Identifier');
 
-    expect(mustFind(parsed.sourceCode.getFirstToken(identifier)).value).toBe('alpha');
+    const token = mustFind(parsed.sourceCode.getFirstToken(identifier));
+    expect(token.value).toBe('alpha');
   });
 
   it('names the plugin and asks for an issue when one comes back null', () => {
@@ -93,7 +95,9 @@ describe('mustFind', () => {
     const empty: string[] = [];
 
     expect(() => {
-      return mustFind(empty.at(0));
+      const pastTheEnd = empty.at(0);
+
+      return mustFind(pastTheEnd);
     }).toThrow('a lookup the parse promises came back empty');
   });
 });
@@ -149,15 +153,15 @@ describe('rebuildLosesComments', () => {
     const commented = sourceCodeFrom('const a = { /* kept */ b: 1 };\n');
     const bare = sourceCodeFrom('const a = { b: 1 };\n');
 
-    const actual = rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'));
-    expect(actual).toBe(true);
-    const actual2 = rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'));
-    expect(actual2).toBe(false);
+    const withComment = rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'));
+    expect(withComment).toBe(true);
+    const withoutComment = rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'));
+    expect(withoutComment).toBe(false);
   });
 });
 
 describe('resolveVariable', () => {
-  const nested = sourceCodeFrom([
+  const shadowingLines = [
     'const outer = 1;',
     'const shadowed = 2;',
     'const run = () => {',
@@ -165,7 +169,8 @@ describe('resolveVariable', () => {
     '  return shadowed;',
     '};',
     '',
-  ].join('\n'));
+  ];
+  const nested = sourceCodeFrom(shadowingLines.join('\n'));
   const scope = nested.sourceCode.getScope(nested.firstNode('ReturnStatement'));
 
   it('walks up the scope chain to a binding declared outside the reference', () => {
@@ -193,8 +198,7 @@ describe('docsUrl', () => {
   it('points at a tree url rather than a blob url', () => {
     const actual = docsUrl('prefer-arrow-functions');
     expect(actual).toContain('/tree/main/');
-    const actual2 = docsUrl('prefer-arrow-functions');
-    expect(actual2).not.toContain('/blob/');
+    expect(actual).not.toContain('/blob/');
   });
 });
 

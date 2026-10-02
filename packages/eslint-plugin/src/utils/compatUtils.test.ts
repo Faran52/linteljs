@@ -72,15 +72,15 @@ describe('physicalFilenameOf', () => {
   });
 
   it('falls back to the reported filename, in both spellings', () => {
-    const physicalFilename = physicalFilenameOf({ filename: '/repo/src/a.ts' });
-    expect(physicalFilename).toBe('/repo/src/a.ts');
+    const fromProperty = physicalFilenameOf({ filename: '/repo/src/a.ts' });
+    expect(fromProperty).toBe('/repo/src/a.ts');
 
-    const physicalFilename2 = physicalFilenameOf({
+    const fromGetter = physicalFilenameOf({
       getFilename: () => {
         return '/repo/src/b.ts';
       },
     });
-    expect(physicalFilename2).toBe('/repo/src/b.ts');
+    expect(fromGetter).toBe('/repo/src/b.ts');
   });
 
   it('throws when the major offers no filename at all', () => {
