@@ -351,6 +351,21 @@ an `.astro` template, which parses as JSX, keeps the layout set. The layer suite
 `AssignmentExpression` is off. Arrays are off on both: `const first = list[0]` names an index, which `[first]`
 hides. A renamed property (`const tall = box.height`) is not reported, since `{ height: tall }` is no shorter.
 
+### Aliases come from the program's `paths`
+
+`@linteljs/prefer-alias` reads the aliases off the TypeScript program, not off a list in its options, and checks
+each rewrite against the file tsc resolves. The tsconfig is already the one place a project declares its aliases,
+so a second list in the ESLint config would drift from it. That needs type information, so the rule sits in
+`typescript()` and reports nothing without it. `aliasExempt` is for a file some other tool reads without the
+aliases, and `enforceRelativeImports` makes such a file relative throughout.
+
+### No parameter properties
+
+`typescript()` reports `constructor(private readonly value: number)` and wants the property declared in the body.
+A parameter property is TypeScript that emits code, so Node's type stripping cannot run it and `erasableSyntaxOnly`
+refuses it. The rule holds that in every consumer, including one whose tsconfig does not set the flag. A class
+then reads like plain JavaScript: its fields are in its body.
+
 ### Rules `base` leaves off, measured
 
 Each was tried against the workspace and the 670 starter files with `base` as it stands.
@@ -1187,7 +1202,7 @@ Yarn 1 rather than a version number.
 
 Every file this CLI owns reaches disk as an `Artifact` through `artifactWriter`; `pipelineRun.ts` holds no
 `projectFileWriter` call, which its suite pins by reading its own source. Adding a conditional file is an emitter,
-never an orchestrator edit: the coupling `switch (target)` is banned for in the emitters, one level up.
+never an orchestrator edit, which would move up a level the `switch (target)` the emitters are barred from.
 
 ### Two artifact lists, and why `sync` sees only one
 
@@ -1632,7 +1647,7 @@ on `layoutUtils`.
 ### `resolver: { project: 'packages/*/tsconfig.json' }`
 
 The default resolver reads a single tsconfig discovered from the working directory, which in a workspace is the
-root, and each package's `@mocks/*` lives in its own tsconfig. Measured without the override: 85
+root, and each package's `@mocks/*` lives in its own tsconfig. Measured on 2026-10-02 without the override: 156
 `import-x/no-unresolved` findings, every one an `@mocks/` import.
 
 `noWarnOnMultipleProjects` rides beside it. The resolver prints "Multiple projects found" twice per run when
