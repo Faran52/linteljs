@@ -10,6 +10,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
+  LEGACY_CONFIG_PATH,
   parseLinteljsConfig,
 } from '@answers';
 import { entryExists, linteljsConfigReader } from '@disk';
@@ -101,7 +102,9 @@ const askedFrom = async (
     return fromConfig(config);
   }
 
-  const hasConfig = options.existing && await entryExists(join(options.cwd, CONFIG_PATH));
+  // A 1.x project records its answers under the old name.
+  const hasConfig = options.existing && (await entryExists(join(options.cwd, CONFIG_PATH))
+    || await entryExists(join(options.cwd, LEGACY_CONFIG_PATH)));
 
   if (hasConfig) {
     const config = await linteljsConfigReader(options.cwd);

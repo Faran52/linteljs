@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 
 import { STAGES } from '@config/constants';
@@ -7,7 +8,13 @@ import {
   type Stage,
 } from '@config/types';
 
-import { artifactWriter, projectShapeReader } from '@disk';
+import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
+import {
+  artifactWriter,
+  entryExists,
+  projectShapeReader,
+  rm,
+} from '@disk';
 import {
   type Artifact,
   buildArtifacts,
@@ -52,6 +59,21 @@ const writeArtifacts = async (
     if (isWritten) {
       options.onWrite?.(artifact.target);
     }
+
+    // Only once the current name holds the answers: until then the old one is their only copy.
+    if (artifact.target === CONFIG_PATH) {
+      await removeLegacyConfig(options.cwd);
+    }
+  }
+};
+
+const removeLegacyConfig = async (cwd: string): Promise<void> => {
+  const legacyPath = join(cwd, LEGACY_CONFIG_PATH);
+  const hasLegacy = await entryExists(legacyPath);
+
+  if (hasLegacy) {
+    // On a symlink this drops the link, not its target.
+    await rm(legacyPath);
   }
 };
 

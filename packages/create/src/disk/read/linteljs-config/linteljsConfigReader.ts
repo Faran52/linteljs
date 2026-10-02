@@ -11,7 +11,7 @@ import {
 
 import { entryExists, hasCode } from '../../utils/fsUtils';
 
-// The older name is read and never written; `sync` clears it.
+// The older name is read and never written; `create --existing` and `sync` clear it.
 const configPath = async (cwd: string): Promise<string> => {
   const current = join(cwd, CONFIG_PATH);
   const hasCurrent = await entryExists(current);

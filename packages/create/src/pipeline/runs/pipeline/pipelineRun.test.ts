@@ -29,7 +29,7 @@ import {
   type TargetId,
 } from '@config/types';
 
-import { CONFIG_PATH } from '@answers';
+import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
@@ -115,6 +115,26 @@ describe('runPipeline against a directory that already exists', () => {
     expect(written).not.toContain('src/App.tsx');
     const file = await readFile(join(cwd, 'README.md'), 'utf8');
     expect(file).toContain('# demo-app');
+  });
+
+  it('keeps a 1.x config while the stage that writes the current name is skipped', async () => {
+    const legacyPath = join(cwd, LEGACY_CONFIG_PATH);
+
+    await writeFile(legacyPath, '{}\n', 'utf8');
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: hostedAnswersFor({}),
+      existing: true,
+      skip: [
+        'package',
+        'install',
+      ],
+    });
+
+    const legacyExists = await exists(legacyPath);
+    expect(legacyExists).toBe(true);
   });
 
   it('writes nothing of a stage it was told to skip', async () => {

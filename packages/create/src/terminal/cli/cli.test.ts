@@ -35,6 +35,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
+  LEGACY_CONFIG_PATH,
   parseLinteljsConfig,
 } from '@answers';
 import { exists } from '@disk';
@@ -393,6 +394,24 @@ describe('main: patching a project that already exists', () => {
     expect(written).toMatchObject(expected);
 
     expect(written).not.toHaveProperty('packageManagerVersion');
+  });
+
+  it('keeps the answers a 1.x project recorded, under the new name, and removes the old one', async () => {
+    const legacyPath = join(project, LEGACY_CONFIG_PATH);
+    const legacyConfig = emitLinteljsConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'svelte',
+    });
+
+    await writeFile(legacyPath, legacyConfig, 'utf8');
+
+    const { code } = await generated();
+    const written = await configAt();
+    const legacyExists = await exists(legacyPath);
+
+    expect(code).toBe(0);
+    expect(written).toMatchObject({ target: 'svelte' });
+    expect(legacyExists).toBe(false);
   });
 });
 

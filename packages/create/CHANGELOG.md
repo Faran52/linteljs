@@ -18,9 +18,9 @@ when a version's change lives in a sibling it is described there instead:
   `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
   below its floor is refused, never upgraded: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is refused too.
 - **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read by
-  `sync`, which writes its answers under the new name and then removes the old one. A v1 file is migrated on read:
-  the form library, `tailwind` and `tanstack-query` move out of `libraries` into `form`, `styling` and `data`, and
-  `store: true` becomes the target's first store.
+  `create --existing` and `sync`, which write its answers under the new name and then remove the old one. A v1 file
+  is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into `form`,
+  `styling` and `data`, and `store: true` becomes the target's first store.
 - **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
   `sync` rewrites the file.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
