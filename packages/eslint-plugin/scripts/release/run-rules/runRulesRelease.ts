@@ -39,13 +39,19 @@ const FIXTURE = [
 ].join('\n');
 
 const isLegacyEslint = (value: unknown): value is LegacyEslint => {
-  return typeof value === 'object' && value !== null && 'Linter' in value && typeof value.Linter === 'function'
-    && 'defineRule' in value.Linter.prototype;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  return 'Linter' in value && typeof value.Linter === 'function' && 'defineRule' in value.Linter.prototype;
 };
 
 const isBuiltPlugin = (value: unknown): value is BuiltPlugin => {
-  return typeof value === 'object' && value !== null && 'rules' in value
-    && typeof value.rules === 'object' && value.rules !== null;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  return 'rules' in value && typeof value.rules === 'object' && value.rules !== null;
 };
 
 // `require`, since ESLint 6 and the bundle are CommonJS; resolved from where the container copies it.

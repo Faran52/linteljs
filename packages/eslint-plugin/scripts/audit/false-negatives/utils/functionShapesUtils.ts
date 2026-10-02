@@ -111,8 +111,13 @@ const arrowDeclarationOf = (node: AstNode): ArrowDeclaration | undefined => {
   const id = declarator?.id;
   const arrow = declarator?.init;
 
-  if (node.kind !== 'const' || node.declarations?.length !== 1 || id?.type !== 'Identifier' || id.typeAnnotation
-    || id.name === undefined || !isBlockArrow(arrow) || arrow.typeParameters) {
+  const isSingleConst = node.kind === 'const' && node.declarations?.length === 1;
+
+  if (!isSingleConst || id?.type !== 'Identifier' || id.typeAnnotation || id.name === undefined) {
+    return undefined;
+  }
+
+  if (!isBlockArrow(arrow) || arrow.typeParameters) {
     return undefined;
   }
 
@@ -194,10 +199,9 @@ export const functionExpressionCase: Build = (state) => {
 const objectArrowProperty = (node: AstNode): AstNode | undefined => {
   const arrow = nodeOf(node.value);
 
-  return node.kind !== 'init' || node.method === true || node.computed === true || !isBlockArrow(arrow)
-    || arrow.typeParameters
-    ? undefined
-    : arrow;
+  const isPlainProperty = node.kind === 'init' && node.method !== true && node.computed !== true;
+
+  return isPlainProperty && isBlockArrow(arrow) && !arrow.typeParameters ? arrow : undefined;
 };
 
 // The key sits outside the function's range, so shorthand replaces the whole property.
@@ -481,8 +485,10 @@ const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefin
       return elementNames;
     });
 
-  if (node.callee?.type !== 'Identifier' || !hooks.includes(node.callee.name ?? '') || last?.type !== 'ArrayExpression'
-    || elements.length < 2 || names.length !== elements.length) {
+  const isHookCall = node.callee?.type === 'Identifier' && hooks.includes(node.callee.name ?? '');
+  const isNamesOnlyArray = elements.length >= 2 && names.length === elements.length;
+
+  if (!isHookCall || last?.type !== 'ArrayExpression' || !isNamesOnlyArray) {
     return undefined;
   }
 
@@ -530,10 +536,9 @@ const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined =
     .flatMap((property) => {
       const value = nodeOf(property.value);
 
-      const propertyNames = property.type === 'Property' && property.computed !== true && property.shorthand === true
-        && value?.type === 'Identifier' && value.name !== undefined
-        ? [value.name]
-        : [];
+      const isShorthand = property.type === 'Property' && property.computed !== true && property.shorthand === true;
+      const valueName = value?.type === 'Identifier' ? value.name : undefined;
+      const propertyNames = isShorthand && valueName !== undefined ? [valueName] : [];
 
       return propertyNames;
     });
@@ -621,9 +626,11 @@ const isNonReference = (node: AstNode): boolean => {
     return false;
   }
 
-  return (KEYED.has(parent.type) && parent.key === node && parent.computed !== true)
-    || (parent.type === 'MemberExpression' && parent.property === node && parent.computed !== true)
-    || (LABELLED.has(parent.type) && parent.label === node);
+  const isKey = KEYED.has(parent.type) && parent.key === node && parent.computed !== true;
+  const isProperty = parent.type === 'MemberExpression' && parent.property === node && parent.computed !== true;
+  const isLabel = LABELLED.has(parent.type) && parent.label === node;
+
+  return isKey || isProperty || isLabel;
 };
 
 // The destructured names are the ground truth, so no scope analysis is needed.
@@ -708,9 +715,9 @@ export const arrowComponentCase: Build = (state) => {
     const { id, init } = node;
     const names = init?.type === 'ArrowFunctionExpression' ? propsPatternNames(init.params?.[0]) : undefined;
 
-    return id?.type === 'Identifier' && /^[A-Z]/.test(id.name ?? '') && init && names
-      ? componentPropsRewrite(state, init, names)
-      : undefined;
+    const isComponent = id?.type === 'Identifier' && /^[A-Z]/.test(id.name ?? '');
+
+    return isComponent && init && names ? componentPropsRewrite(state, init, names) : undefined;
   });
 };
 

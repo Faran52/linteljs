@@ -55,9 +55,11 @@ export const importJoinedCase = importCase((node, named, state) => {
 export const importTailJoinedCase = importCase((_, named, state) => {
   const [previous, last] = named.slice(named.length - 2);
 
-  return named.length < MIN_LIST_LENGTH || !fullySplit(named) || previous === undefined || last === undefined
-    ? undefined
-    : joinRange(state, previous.range[1], last.range[0]);
+  if (named.length < MIN_LIST_LENGTH || !fullySplit(named)) {
+    return undefined;
+  }
+
+  return previous === undefined || last === undefined ? undefined : joinRange(state, previous.range[1], last.range[0]);
 });
 
 export const importBlankLineCase = importCase((_, named, state) => {
@@ -92,9 +94,11 @@ export const patternBlankLineCase: Build = (state) => {
     const properties = node.properties ?? [];
     const [first, second] = properties;
 
-    return properties.length <= DEFAULT_MAX_PROPERTIES || !fullySplit(properties) || !first || !second
-      ? undefined
-      : insertBlankLine(state, first, second);
+    if (properties.length <= DEFAULT_MAX_PROPERTIES || !fullySplit(properties)) {
+      return undefined;
+    }
+
+    return first && second ? insertBlankLine(state, first, second) : undefined;
   });
 };
 
@@ -163,9 +167,11 @@ export const exportJoinedCase: Build = (state) => {
     const [first] = specifiers;
     const last = specifiers.at(-1);
 
-    return specifiers.length < MIN_LIST_LENGTH || !first || !last || !spansLines(first, last)
-      ? undefined
-      : joinRange(state, first.range[0], last.range[1]);
+    if (specifiers.length < MIN_LIST_LENGTH || !first || !last) {
+      return undefined;
+    }
+
+    return spansLines(first, last) ? joinRange(state, first.range[0], last.range[1]) : undefined;
   });
 };
 
@@ -191,8 +197,13 @@ export const exportTripleCase = (kind: string): Build => {
       const local = only?.local;
 
       // `export { default }` needs a `from`, and the keyword cannot be aliased into a local binding.
-      if (node.specifiers?.length !== 1 || exportKindOf(node) !== kind || !only || local?.type !== 'Identifier'
-        || local.name === undefined || local.name === 'default') {
+      const isSoleOfKind = node.specifiers?.length === 1 && exportKindOf(node) === kind;
+
+      if (!isSoleOfKind || !only || local?.type !== 'Identifier' || local.name === undefined) {
+        return undefined;
+      }
+
+      if (local.name === 'default') {
         return undefined;
       }
 

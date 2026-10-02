@@ -93,13 +93,25 @@ const NOT_CHILDREN = new Set([
 ]);
 
 const isAstNode = (value: unknown): value is AstNode => {
-  return typeof value === 'object' && value !== null && 'type' in value && typeof value.type === 'string'
-    && 'range' in value && Array.isArray(value.range);
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const hasType = 'type' in value && typeof value.type === 'string';
+  const hasRange = 'range' in value && Array.isArray(value.range);
+
+  return hasType && hasRange;
 };
 
 const isProgram = (value: unknown): value is Program => {
-  return isAstNode(value) && 'tokens' in value && Array.isArray(value.tokens)
-    && 'comments' in value && Array.isArray(value.comments) && Array.isArray(value.body);
+  if (!isAstNode(value) || !Array.isArray(value.body)) {
+    return false;
+  }
+
+  const hasTokens = 'tokens' in value && Array.isArray(value.tokens);
+  const hasComments = 'comments' in value && Array.isArray(value.comments);
+
+  return hasTokens && hasComments;
 };
 
 const isParser = (value: unknown): value is Parser => {

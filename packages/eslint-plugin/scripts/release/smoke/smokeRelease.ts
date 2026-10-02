@@ -50,12 +50,14 @@ const alphabetically = (left: string, right: string): number => {
 };
 
 const isPluginShape = (value: unknown): value is PluginShape => {
-  return typeof value === 'object'
-    && value !== null
-    && 'rules' in value
-    && Boolean(value.rules)
-    && 'configs' in value
-    && Boolean(value.configs);
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const hasRules = 'rules' in value && Boolean(value.rules);
+  const hasConfigs = 'configs' in value && Boolean(value.configs);
+
+  return hasRules && hasConfigs;
 };
 
 const defaultExportOf = async (href: string): Promise<unknown> => {

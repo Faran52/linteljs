@@ -96,8 +96,14 @@ export const atReport = (report: Linter.LintMessage): string => {
 };
 
 const isPropertyName = (parent: AstNode | undefined, key: string | undefined): boolean => {
-  return parent !== undefined && parent.computed !== true
-    && ((parent.type === 'MemberExpression' && key === 'property') || (parent.type === 'Property' && key === 'key'));
+  if (parent === undefined || parent.computed === true) {
+    return false;
+  }
+
+  const isMemberProperty = parent.type === 'MemberExpression' && key === 'property';
+  const isPropertyKey = parent.type === 'Property' && key === 'key';
+
+  return isMemberProperty || isPropertyKey;
 };
 
 // `import.meta` is a MetaProperty too, and module-scoped, so only `new.target` is at stake.
@@ -166,9 +172,12 @@ export const shapesOf = (ast: Program): Shapes => {
       shapes.functions.set(at(node), node);
     }
 
-    if (node.type === 'CallExpression' && callee?.type === 'MemberExpression' && callee.computed !== true
-      && callee.property?.type === 'Identifier' && PROMISE_METHODS.has(callee.property.name ?? '')) {
-      shapes.promiseCalls.add(at(callee.property));
+    const isMemberCall = node.type === 'CallExpression' && callee?.type === 'MemberExpression'
+      && callee.computed !== true;
+    const method = isMemberCall && callee.property?.type === 'Identifier' ? callee.property : undefined;
+
+    if (method && PROMISE_METHODS.has(method.name ?? '')) {
+      shapes.promiseCalls.add(at(method));
     }
 
     if (node.type === 'VariableDeclarator' && id?.type === 'ObjectPattern' && init?.type === 'Identifier'
