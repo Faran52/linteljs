@@ -71,18 +71,22 @@ const definePreset = (
   name: string,
   selected: RuleEntry[],
 ): Linter.Config[] => {
-  return [
+  const universalRules = toRuleRecord(byLanguage(selected, 'universal'));
+  const typescriptRules = toRuleRecord(byLanguage(selected, 'typescript'));
+  const configs: Linter.Config[] = [
     {
       name: `${PLUGIN_NAME}/${name}`,
       plugins: { [PLUGIN_NAME]: plugin },
-      rules: toRuleRecord(byLanguage(selected, 'universal')),
+      rules: universalRules,
     },
     {
       name: `${PLUGIN_NAME}/${name}/typescript`,
       files: [...TYPESCRIPT_FILES],
-      rules: toRuleRecord(byLanguage(selected, 'typescript')),
+      rules: typescriptRules,
     },
   ];
+
+  return configs;
 };
 
 // `all` is the one way in for a rule that ships off by default.
@@ -99,14 +103,18 @@ const presets: [PresetName, RuleEntry[]][] = [
 const defineLegacyPreset = (
   selected: RuleEntry[],
 ): LegacyPreset => {
-  return {
+  const universalRules = toRuleRecord(byLanguage(selected, 'universal'));
+  const typescriptRules = toRuleRecord(byLanguage(selected, 'typescript'));
+  const preset: LegacyPreset = {
     plugins: [PLUGIN_NAME],
-    rules: toRuleRecord(byLanguage(selected, 'universal')),
+    rules: universalRules,
     overrides: [{
       files: [...TYPESCRIPT_FILES],
-      rules: toRuleRecord(byLanguage(selected, 'typescript')),
+      rules: typescriptRules,
     }],
   };
+
+  return preset;
 };
 
 const buildConfigs = (): LintelConfigs => {

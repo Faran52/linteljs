@@ -149,7 +149,9 @@ const takesBlockCallback = (link: Link): boolean => {
 
 // A non-computed member is always `object . property`.
 const dotOf = (sourceCode: SourceCode, member: Member): AST.Token => {
-  return mustFind(sourceCode.getTokenBefore(member.property));
+  const dot = mustFind(sourceCode.getTokenBefore(member.property));
+
+  return dot;
 };
 
 const lineEndAfter = (text: string, from: number): number => {
@@ -322,11 +324,14 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const outer = indentAt(plan, top);
       const gaps = breaks
         .map(({ dot }): Gap => {
-          return {
+          const before = mustFind(sourceCode.getTokenBefore(dot));
+          const gap: Gap = {
             dot,
-            range: [mustFind(sourceCode.getTokenBefore(dot)).range[1], dot.range[0]],
+            range: [before.range[1], dot.range[0]],
             indent: `${outer}${step}`,
           };
+
+          return gap;
         });
 
       const blank = gaps
@@ -446,7 +451,9 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const edits = [...plan.gaps.values()]
         .flat()
         .map((gap): Edit => {
-          return [gap.range, `${eol}${gap.indent}`];
+          const edit: Edit = [gap.range, `${eol}${gap.indent}`];
+
+          return edit;
         });
 
       for (const [line, shift] of plan.shifts) {
@@ -463,25 +470,35 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
     // Collected rather than reported, so the chains nested in each are known when its fix is planned.
     const collect = (top: RuleNode, chain: Part): void => {
-      if (continues(mustFind(top.parent), chain)) {
+      const parent = mustFind(top.parent);
+
+      if (continues(parent, chain)) {
         return;
       }
 
       const links = chainLinksOf(top, chain);
 
-      if (links.length === 1 && !takesBlockCallback(mustFind(links[0]))) {
-        return;
+      if (links.length === 1) {
+        const only = mustFind(links[0]);
+
+        if (!takesBlockCallback(only)) {
+          return;
+        }
       }
 
       const breaks = links
         .map((link): Break => {
-          return {
+          const chainBreak: Break = {
             dot: dotOf(sourceCode, link.start),
             link,
           };
+
+          return chainBreak;
         })
         .filter(({ dot }) => {
-          return sameLine(sourceCode.getTokenBefore(dot), dot);
+          const before = sourceCode.getTokenBefore(dot);
+
+          return sameLine(before, dot);
         });
 
       if (breaks.length > 0) {
@@ -512,7 +529,9 @@ export const chainCallNewline = createRule('chain-call-newline', {
         loc: mustFind(breaks[0]).dot.loc,
         messageId: 'callOnNewline',
         * fix(fixer) {
-          for (const [range, insert] of editsOf(planAt(index))) {
+          const plan = planAt(index);
+
+          for (const [range, insert] of editsOf(plan)) {
             yield fixer.replaceTextRange(range, insert);
           }
         },

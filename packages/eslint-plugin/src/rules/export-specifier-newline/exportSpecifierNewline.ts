@@ -39,8 +39,10 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
           return;
         }
 
-        const open = mustFind(sourceCode.getTokenBefore(mustFind(specifiers[0])));
-        const toBreak = gapsToBreak(listGaps(sourceCode, open, specifiers, indentsAt(node), true), MAX_INLINE);
+        const first = mustFind(specifiers[0]);
+        const open = mustFind(sourceCode.getTokenBefore(first));
+        const gaps = listGaps(sourceCode, open, specifiers, indentsAt(node), true);
+        const toBreak = gapsToBreak(gaps, MAX_INLINE);
 
         if (toBreak.length === 0) {
           return;

@@ -45,7 +45,8 @@ export const arrayNewline = createRule('array-newline', {
       }
 
       const open = mustFind(sourceCode.getFirstToken(node));
-      const toBreak = gapsToBreak(listGaps(sourceCode, open, elements, indentsAt(node), true), MAX_INLINE);
+      const gaps = listGaps(sourceCode, open, elements, indentsAt(node), true);
+      const toBreak = gapsToBreak(gaps, MAX_INLINE);
 
       if (toBreak.length === 0) {
         return;

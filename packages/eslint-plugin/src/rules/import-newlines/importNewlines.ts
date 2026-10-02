@@ -69,7 +69,8 @@ export const importNewlines = createRule('import-newlines', {
           return;
         }
 
-        const open = mustFind(sourceCode.getTokenBefore(mustFind(named[0])));
+        const first = mustFind(named[0]);
+        const open = mustFind(sourceCode.getTokenBefore(first));
         const gaps = listGaps(sourceCode, open, named, indentsAt(node), true);
         const toBreak = gapsToBreak(gaps, maxItems);
         const blank = gaps.filter(isBlank);
