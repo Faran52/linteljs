@@ -29,6 +29,14 @@ type TestedTarget = (typeof TARGET_IDS)[number];
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const pairsOf = (answers: Answers): string[] => {
+  const libraryFlags = valuesOf(ANSWERS.libraries.values)
+    .map((library): [string, string] => {
+      const isChosen = answers.libraries.includes(library);
+      const flag: [string, string] = [library, String(isChosen)];
+
+      return flag;
+    });
+  const libraries = Object.fromEntries(libraryFlags);
   const axes = Object.entries({
     packageManager: answers.packageManager,
     hostedFramework: answers.hostedFramework,
@@ -42,10 +50,7 @@ const pairsOf = (answers: Answers): string[] => {
     languages: answers.languages?.join(','),
     testing: answers.testing,
     typeSafety: answers.typeSafety,
-    ...Object.fromEntries(valuesOf(ANSWERS.libraries.values)
-      .map((library) => {
-        return [library, String(answers.libraries.includes(library))];
-      })),
+    ...libraries,
   })
     .map(([axis, value]) => {
       return `${axis}=${value ?? '-'}`;
@@ -118,7 +123,9 @@ describe('targetCases', () => {
   it('covers every pair of answers the full enumeration reaches', () => {
     for (const target of TARGET_IDS) {
       const covered = coveredBy(pairedCases(target));
-      const missing = [...coveredBy(everyCase(target))]
+      const everyPair = coveredBy(everyCase(target));
+      const pairs = [...everyPair];
+      const missing = pairs
         .filter((pair) => {
           return !covered.has(pair);
         });
@@ -153,20 +160,20 @@ describe('targetCases', () => {
     });
     expect(astroHas).toBe(true);
 
-    const webextensionHas = has('webextension', (answers) => {
+    const webextensionHostsVueQuery = has('webextension', (answers) => {
       return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
     });
-    expect(webextensionHas).toBe(true);
+    expect(webextensionHostsVueQuery).toBe(true);
 
-    const webextensionHas2 = has('webextension', (answers) => {
+    const webextensionOnChrome = has('webextension', (answers) => {
       return answers.browser === 'chrome';
     });
-    expect(webextensionHas2).toBe(true);
+    expect(webextensionOnChrome).toBe(true);
 
-    const angularHas = has('angular', (answers) => {
+    const angularUntested = has('angular', (answers) => {
       return answers.testing === 'none';
     });
-    expect(angularHas).toBe(true);
+    expect(angularUntested).toBe(true);
 
     const reactNativeHas = has('react-native', (answers) => {
       return answers.testing === 'none';
@@ -178,25 +185,25 @@ describe('targetCases', () => {
     });
     expect(reactHas).toBe(true);
 
-    const nextHas = has('next', (answers) => {
+    const nextZustandTanstackForm = has('next', (answers) => {
       return answers.store === 'zustand' && answers.form === 'tanstack-form';
     });
-    expect(nextHas).toBe(true);
+    expect(nextZustandTanstackForm).toBe(true);
 
-    const nextHas2 = has('next', (answers) => {
+    const nextStylex = has('next', (answers) => {
       return answers.styling === 'stylex';
     });
-    expect(nextHas2).toBe(true);
+    expect(nextStylex).toBe(true);
 
-    const angularHas2 = has('angular', (answers) => {
+    const angularFormless = has('angular', (answers) => {
       return answers.form === undefined;
     });
-    expect(angularHas2).toBe(true);
+    expect(angularFormless).toBe(true);
 
-    const angularHas3 = has('angular', (answers) => {
+    const angularTanstackFormZod = has('angular', (answers) => {
       return answers.form === 'tanstack-form' && answers.libraries.includes('zod');
     });
-    expect(angularHas3).toBe(true);
+    expect(angularTanstackFormZod).toBe(true);
   });
 
   it('offers no languages or every one on every target', () => {
@@ -205,22 +212,24 @@ describe('targetCases', () => {
         .map(({ answers }) => {
           return answers.languages?.join(',') ?? 'none';
         });
-      const expected = ['none', valuesOf(ANSWERS.languages.values).join(',')];
+      const offered = ['none', valuesOf(ANSWERS.languages.values).join(',')];
 
       const actual = [target, [...new Set(chosen)]];
-      const expected2 = [target, expected];
-      expect(actual).toEqual(expected2);
+      const expected = [target, offered];
+      expect(actual).toEqual(expected);
     }
   });
 
   it('runs a regional language on an SSR, a compiled and a library-free target', () => {
-    for (const target of [
+    const regionalTargets = [
       'next',
       'nuxt',
       'svelte',
       'angular',
       'astro',
-    ] as const) {
+    ] as const;
+
+    for (const target of regionalTargets) {
       const regional = pairedCases(target)
         .some(({ answers }) => {
           return answers.languages?.includes('zh-TW') === true;
@@ -233,13 +242,8 @@ describe('targetCases', () => {
   });
 
   it('enumerates only answers the CLI accepts', () => {
-    for (const { label, answers } of everyTargetsCases()
-      .map((item) => {
-        return {
-          label: JSON.stringify(item.answers),
-          answers: item.answers,
-        };
-      })) {
+    for (const { answers } of everyTargetsCases()) {
+      const label = JSON.stringify(answers);
       const actual = [label, accepts(answers)];
       const expected = [label, true];
       expect(actual).toEqual(expected);
@@ -258,12 +262,17 @@ describe('targetCases', () => {
 
       for (const hostedFramework of hosts) {
         for (const form of valuesOf(ANSWERS.form.values)) {
-          const accepted = accepts({
+          const candidate: Answers = {
             ...DEFAULT_ANSWERS,
             target,
-            ...(hostedFramework === undefined ? {} : { hostedFramework }),
             form,
-          });
+          };
+
+          if (hostedFramework !== undefined) {
+            candidate.hostedFramework = hostedFramework;
+          }
+
+          const accepted = accepts(candidate);
           const offered = cases
             .some(({ answers }) => {
               return answers.hostedFramework === hostedFramework && answers.form === form;
@@ -305,74 +314,93 @@ describe('targetCases', () => {
       });
 
     const seen = (read: (answers: Answers) => string | undefined): (string | undefined)[] => {
-      return [...new Set(answered.map(read))]
+      const distinct = new Set(answered.map(read));
+      const values = [...distinct];
+
+      return values
         .toSorted((left, right) => {
           return (left ?? '').localeCompare(right ?? '');
         });
     };
 
     const all = (values: readonly string[], optional: boolean): (string | undefined)[] => {
-      return [...(optional ? [undefined] : []), ...values]
+      const offered: (string | undefined)[] = [...values];
+
+      if (optional) {
+        offered.push(undefined);
+      }
+
+      return offered
         .toSorted((left, right) => {
           return (left ?? '').localeCompare(right ?? '');
         });
     };
 
-    const actual = seen(({ packageManager }) => {
+    const managers = seen(({ packageManager }) => {
       return packageManager;
     });
-    expect(actual).toEqual(all(valuesOf(ANSWERS.packageManager.values), false));
+    const everyManager = all(valuesOf(ANSWERS.packageManager.values), false);
+    expect(managers).toEqual(everyManager);
 
-    const actual2 = seen(({ testing }) => {
+    const suites = seen(({ testing }) => {
       return testing;
     });
-    expect(actual2).toEqual(all(valuesOf(ANSWERS.testing.values), false));
+    const everySuite = all(valuesOf(ANSWERS.testing.values), false);
+    expect(suites).toEqual(everySuite);
 
-    const actual3 = seen(({ typeSafety }) => {
+    const typeSafeties = seen(({ typeSafety }) => {
       return typeSafety;
     });
     const expected = ['strict'];
-    expect(actual3).toEqual(expected);
+    expect(typeSafeties).toEqual(expected);
 
-    const actual4 = seen(({ browser }) => {
+    const browsers = seen(({ browser }) => {
       return browser;
     });
-    expect(actual4).toEqual(all(valuesOf(ANSWERS.browser.values), false));
+    const everyBrowser = all(valuesOf(ANSWERS.browser.values), false);
+    expect(browsers).toEqual(everyBrowser);
 
-    const actual5 = seen(({ hostedFramework }) => {
+    const hostedFrameworks = seen(({ hostedFramework }) => {
       return hostedFramework;
     });
-    expect(actual5).toEqual(all(valuesOf(ANSWERS.hostedFramework.values), true));
+    const everyHostedFramework = all(valuesOf(ANSWERS.hostedFramework.values), true);
+    expect(hostedFrameworks).toEqual(everyHostedFramework);
 
-    const actual6 = seen(({ styling }) => {
+    const stylings = seen(({ styling }) => {
       return styling;
     });
-    expect(actual6).toEqual(all(valuesOf(ANSWERS.styling.values), true));
+    const everyStyling = all(valuesOf(ANSWERS.styling.values), true);
+    expect(stylings).toEqual(everyStyling);
 
-    const actual7 = seen(({ form }) => {
+    const forms = seen(({ form }) => {
       return form;
     });
-    expect(actual7).toEqual(all(valuesOf(ANSWERS.form.values), true));
+    const everyForm = all(valuesOf(ANSWERS.form.values), true);
+    expect(forms).toEqual(everyForm);
 
-    const actual8 = seen(({ router }) => {
+    const routers = seen(({ router }) => {
       return router;
     });
-    expect(actual8).toEqual(all(valuesOf(ANSWERS.router.values), true));
+    const everyRouter = all(valuesOf(ANSWERS.router.values), true);
+    expect(routers).toEqual(everyRouter);
 
-    const actual9 = seen(({ store }) => {
+    const stores = seen(({ store }) => {
       return store;
     });
-    expect(actual9).toEqual(all(valuesOf(ANSWERS.store.values), true));
+    const everyStore = all(valuesOf(ANSWERS.store.values), true);
+    expect(stores).toEqual(everyStore);
 
-    const actual10 = seen(({ data }) => {
+    const dataLayers = seen(({ data }) => {
       return data;
     });
-    expect(actual10).toEqual(all(valuesOf(ANSWERS.data.values), true));
+    const everyDataLayer = all(valuesOf(ANSWERS.data.values), true);
+    expect(dataLayers).toEqual(everyDataLayer);
 
-    const actual11 = seen(({ mocking }) => {
+    const mockings = seen(({ mocking }) => {
       return mocking;
     });
-    expect(actual11).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
+    const everyMocking = all(valuesOf(ANSWERS.mocking.values), true);
+    expect(mockings).toEqual(everyMocking);
   });
 
   it('carries every multi-select but libraries at its full value, and surfaces only where a target has them', () => {
@@ -399,7 +427,7 @@ describe('targetCases', () => {
       variant,
     } of TARGET_IDS.flatMap(pairedCases)) {
       const record = targetFor(answers);
-      const expected = [
+      const parts = [
         answers.target,
         answers.packageManager,
         answers.testing,
@@ -414,12 +442,14 @@ describe('targetCases', () => {
         answers.languages === undefined ? undefined : 'languages',
         answers.libraries.length === 0 ? 'no-libraries' : answers.libraries.join('+'),
         variant,
-      ]
+      ];
+      const expected = parts
         .filter((part) => {
           return part !== undefined;
-        });
+        })
+        .join(' ');
 
-      expect(label).toBe(expected.join(' '));
+      expect(label).toBe(expected);
     }
   });
 
@@ -511,10 +541,10 @@ describe('targetCases', () => {
           return item.answers.packageManager;
         });
 
-      const managers = new Set(ran);
+      const managers = [...new Set(ran)];
 
-      const actual = [target, [...managers]
-        .sort((left, right) => {
+      const actual = [target, managers
+        .toSorted((left, right) => {
           return left.localeCompare(right);
         })];
       const expected = [target, valuesOf(ANSWERS.packageManager.values)
