@@ -26,6 +26,14 @@ when a version's change lives in a sibling it is described there instead:
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and three `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
+- **`sync` changes only what linteljs owns, and asks once.** It shows one table of the files to add, update or
+  delete and the `@linteljs/*` versions to upgrade, then asks; `--yes` applies without asking, and without a
+  terminal and without `--yes` it writes nothing and exits 1. `--force` is gone and is now an unknown flag, and
+  `sync` no longer prints a diff per file.
+- **`sync` moves only the `@linteljs/*` versions in `package.json`,** and only when they are behind. Any other
+  dependency the project lacks is printed as an install command, never written.
+- **`.github/workflows/ci.yml` is written only when a project is created,** or by `sync` when it is missing.
+- **`sync` keeps `ignoredBuiltDependencies` in `pnpm-workspace.yaml`.** Only `create` drops it.
 
 ### Added
 

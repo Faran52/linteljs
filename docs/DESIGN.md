@@ -1178,33 +1178,42 @@ never an orchestrator edit: the coupling `switch (target)` is banned for in the 
   manifest and the starter source.
 
 `sync` reads `linteljs.config.json` rather than writing it, so a project that reformatted its config keeps those
-bytes through `sync --force`. Two properties carry what would otherwise be branches in the pipeline: `seed: true`
+bytes through `sync`. Two properties carry what would otherwise be branches in the pipeline: `seed: true`
 is birth only (`create`, and `--existing --seed`), and `requires` names a path that has to exist, which skips a
 starter test whose file a rearranged starter moved. A `preserve` file that already exists is the project's on
 every run, born or not.
 
-### Birth-only and owned-outright files
+### Birth-only and merged files
 
 **The build configs are birth-only.** `vite.config.ts`, `vitest.config.ts`, `astro.config.mjs` and the test setup
 carry `preserve`. What this CLI writes is a starting point every real project outgrows inside its first feature:
 one reference extension builds an IIFE bundle per content script plus a native messaging host, another a second
 mode for a preview page, and the emitted vitest excludes name this CLI's guesses at a layout where a project excludes
-the entry points it has. Re-emitting would flatten that, and reporting it as `changed` invites a `--force` that
+the entry points it has. Re-emitting would flatten that, and reporting it as `changed` invites a `sync` that
 does.
 
-**`.github/workflows/ci.yml` is owned outright, the opposite call.** A gate nothing runs is not a gate: a
-reference repo renamed `check` and left its workflow calling the old name, and every push failed for two days while
-the project gated clean locally. The command is derived from `buildScripts`, since a workflow cannot name a script
-`package.json` does not define, and a project with more to run adds `deploy.yml` beside it. A drifting `ci.yml` is a
-`sync` diff instead of a red build.
+**`.github/workflows/ci.yml` is birth-only too.** It carries `preserve`: `create` writes it, and `sync` writes it
+only when it is missing. A project's CI grows its own jobs (a deploy, a matrix), and `sync` no longer writes
+`package.json` scripts either, so the workflow and the scripts it calls stay the project's together. The command is
+still derived from `buildScripts` at birth, since a workflow cannot name a script `package.json` does not define.
 
-**`package.json` is a merged artifact**, like `.gitignore` and `pnpm-workspace.yaml`, through `patchPackageJson`, so
-a dependency a release adds to a layer reaches existing projects on `sync` and not only new ones. Two of three
-reference migrations had to add plugins by hand that their recorded answers already implied.
+**`package.json` is a merged artifact**, like `.gitignore` and `pnpm-workspace.yaml`. `create` writes the full patch
+through `patchPackageJson`. `sync` goes through `MergedText.resync` (`config/types.ts`), which a merge supplies
+when the project owns more of an existing file than the merge leaves: it moves only the `@linteljs/*` versions, and
+only when they are behind. A range that is not a version, such as `workspace:*`, is never moved. Any other
+dependency the answers imply and the project lacks is printed as an install command for the project's manager,
+never written, so the framework and every other version stay the project's.
+
+**`.gitignore` needs no `resync`.** Its merge only appends the lines it lacks under `# linteljs`, and never removes
+or reorders one, so `sync` cannot undo a project's edit.
+
+**`pnpm-workspace.yaml` keeps `ignoredBuiltDependencies` on `sync`.** Its merge only adds a block that is absent,
+except that at birth it drops the scaffolder's `ignoredBuiltDependencies`, which opts out of exactly the builds
+linteljs opts into. On `sync` its `resync` keeps that block, since by then it is the project's own.
 
 ### What `sync` may delete, and why the project holds the list
 
-A project records what this CLI wrote in `plugins/linteljs/managed.json`, and `sync --force` deletes what is in that
+A project records what this CLI wrote in `plugins/linteljs/managed.json`, and `sync` deletes what is in that
 record and no longer expected. It lives in linteljs's own tree rather than in `linteljs.config.json`, which is the
 project's to reformat.
 

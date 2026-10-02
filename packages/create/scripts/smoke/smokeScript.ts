@@ -22,7 +22,6 @@ const FLAGS = [
   '--skip',
   '--yes',
   '-y',
-  '--force',
   '--help',
   '-h',
 ];

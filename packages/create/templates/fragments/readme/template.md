@@ -25,8 +25,8 @@ is canonical for the rest, the development server script included.
   `plugins/linteljs/skills/linteljs/references/`, copied to `.github/instructions/` for Copilot and
   `.cursor/rules/` for Cursor when you chose them. Each chosen agent's own file (`CLAUDE.md`, `AGENTS.md`,
   `.github/copilot-instructions.md`, `.cursor/rules/linteljs.mdc`) points at them and is yours to edit.
-- `npx @linteljs/create sync` diffs every linteljs-owned file against the installed CLI's version and writes
-  nothing until you pass `--force`.
+- `npx @linteljs/create sync` lists every linteljs-owned file and `@linteljs/*` version it would change in one
+  table and asks once, or applies with `--yes`.
 
 ## Hooks
 

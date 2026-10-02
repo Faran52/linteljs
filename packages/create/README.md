@@ -78,8 +78,7 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --no-install      skip the install and the eslint --fix pass that needs it
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
-  --yes, -y         accept the defaults, ask nothing
-  --force           sync: overwrite without asking
+  --yes, -y         accept the defaults, ask nothing; sync: apply without asking
   --version, -v
   --help, -h
 ```
@@ -92,14 +91,19 @@ writes nothing.
 ```bash
 npx @linteljs/create --existing
 npx @linteljs/create sync
-npx @linteljs/create sync --force
+npx @linteljs/create sync --yes
 ```
 
 `--existing` applies the standard in place, reading `linteljs.config.json` if it exists and asking otherwise; it
-never guesses a framework. `sync` shows one diff per file and writes nothing; `--force` applies them. `sync`
-never replaces `package.json`, `.gitignore`, `pnpm-workspace.yaml`, `linteljs.config.json`, your README, or an
-agent's instruction file after its first write. Removing an agent from the config removes only the exact paths
-linteljs wrote for it.
+never guesses a framework.
+
+`sync` updates only what linteljs owns: its hooks, scripts and configs, and the `@linteljs/*` versions in
+`package.json`, which it moves only when they are behind. It shows one table of the files to add, update or delete
+and the versions to upgrade, then asks once. `--yes` applies without asking; without a terminal and without
+`--yes` it writes nothing and exits 1. A dependency the project lacks is printed as an install command for its
+package manager, never written. `sync` never rewrites your other dependencies or `package.json` scripts,
+`.github/workflows/ci.yml`, the build configs, `linteljs.config.json`, your README, or an agent's instruction file
+after its first write. Removing an agent from the config removes only the exact paths linteljs wrote for it.
 
 ## Agents
 

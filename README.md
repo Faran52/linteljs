@@ -32,9 +32,9 @@ npx @linteljs/create --existing
 npx @linteljs/create sync
 ```
 
-`--existing` applies the standard in place. `sync` diffs every linteljs-owned file against the current version
-and writes nothing until you pass `--force`. It plans from `linteljs.config.json`, so it never guesses a framework
-or overrides a recorded choice.
+`--existing` applies the standard in place. `sync` lists every linteljs-owned file and `@linteljs/*` version it
+would change in one table and asks once, or applies with `--yes`. It plans from `linteljs.config.json`, so it never
+guesses a framework or overrides a recorded choice.
 
 ## Why
 
