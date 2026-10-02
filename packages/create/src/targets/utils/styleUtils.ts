@@ -1,6 +1,6 @@
 import { hasForm } from './gateUtils';
 
-import type { Answers, TargetId } from '@config/types';
+import type { Answers } from '@config/types';
 import type { StarterFile } from '../types';
 
 // Vue refuses a single-word component name, so its mark and button are `AppMark` and `AppButton`.
@@ -70,10 +70,17 @@ const directoryOf = (path: string): string => {
 
 // Ships with its component, since a module nothing imports fails the coverage gate.
 export const componentStyleModules = (
-  from?: TargetId,
+  from?: 'react' | 'solid',
   paths: ComponentPaths = COMPONENT_PATHS,
 ): StarterFile[] => {
   const shared = from === undefined ? {} : { shared: from };
+  // Solid's tree spreads `class`, which `attrs` writes from React's sheet where `props` writes `className`.
+  const sheet: Pick<StarterFile, 'shared' | 'stylexAttrs'> = from === 'solid'
+    ? {
+        shared: 'react',
+        stylexAttrs: true,
+      }
+    : shared;
 
   const tokens: StarterFile = {
     // One asset: all four modules read these tokens and no framework touches them.
@@ -103,7 +110,7 @@ export const componentStyleModules = (
             return ships(answers) && isStylex(answers);
           },
           variant: 'stylex',
-          ...shared,
+          ...sheet,
           ...asset,
         },
       ];

@@ -72,7 +72,7 @@ export const solidTarget: TargetRecord = {
   starterFiles: [
     ...mockFiles(true),
     ...componentStyles(),
-    ...componentStyleModules(),
+    ...componentStyleModules('solid'),
     ...accessorFiles(ACCESSORS),
     ...solidI18nFiles(),
     ...localeFiles(),

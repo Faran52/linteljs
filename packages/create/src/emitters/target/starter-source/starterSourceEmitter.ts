@@ -19,6 +19,8 @@ import {
   CODE_EXTENSION,
   NOT_DOTTED,
   RELATIVE_SPECIFIER,
+  STYLEX_ATTRS,
+  STYLEX_PROPS,
   USE_CLIENT,
 } from './constants';
 
@@ -89,6 +91,14 @@ const importsRewritten = (file: Starter, renames: Map<string, string>) => {
   };
 };
 
+const spreadAsAttrs = (source: string): string => {
+  return source.replaceAll(STYLEX_PROPS, STYLEX_ATTRS);
+};
+
+const openAsClient = (source: string): string => {
+  return `${USE_CLIENT}${source}`;
+};
+
 // Birth only: a project owns its own source from its first run.
 export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const target = targetFor(answers);
@@ -110,20 +120,25 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const artifactOf = (file: Starter): Artifact => {
     const sources = [sourceOf(target.id, file)];
     const rewritten = importsRewritten(file, renames);
-    const isBoundary = clientBoundaries.has(file.target);
+    const steps = [
+      ...renames.size === 0 ? [] : [rewritten],
+      ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
+      ...clientBoundaries.has(file.target) ? [openAsClient] : [],
+    ];
 
     const artifact: Artifact = {
       stage: 'standard',
       target: file.target,
-      content: renames.size === 0 && !isBoundary
+      content: steps.length === 0
         ? { sources }
         : {
             sources,
-            transform: isBoundary
-              ? (source) => {
-                  return `${USE_CLIENT}${rewritten(source)}`;
-                }
-              : rewritten,
+            transform: (source) => {
+              return steps
+                .reduce((text, step) => {
+                  return step(text);
+                }, source);
+            },
           },
       seed: true,
     };

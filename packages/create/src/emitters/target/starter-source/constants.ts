@@ -5,3 +5,7 @@ export const RELATIVE_SPECIFIER = /(?<quote>['"])(?<specifier>\.\.?\/[^'"\n]+)\k
 export const NOT_DOTTED = /^(?!\.)/v;
 
 export const USE_CLIENT = "'use client';\n\n";
+
+export const STYLEX_PROPS = 'stylex.props';
+
+export const STYLEX_ATTRS = 'stylex.attrs';

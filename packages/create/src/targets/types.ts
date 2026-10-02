@@ -40,6 +40,8 @@ export interface StarterFile {
   shared?: true | TargetId;
   // Angular names files in kebab and the other nine in camel, so a shared asset lands under two names.
   source?: string;
+  // React's StyleX sheet, spread with `attrs` for the `class` every other framework reads.
+  stylexAttrs?: true;
 }
 
 // Compiles the catalog from the inlang project the i18n config emitter writes. `prepare` and `typecheck` run its

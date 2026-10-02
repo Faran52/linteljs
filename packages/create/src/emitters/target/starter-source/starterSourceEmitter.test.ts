@@ -623,3 +623,69 @@ describe('a client boundary', () => {
     expect(written).toBe(expected);
   });
 });
+
+describe('a StyleX sheet', () => {
+  const stylex: Partial<Answers> = {
+    styling: 'stylex',
+    form: 'tanstack-form',
+  };
+
+  it.each<[TargetId, string, string]>([
+    [
+      'solid',
+      'src/components/ui/button/styles.ts',
+      'src/components/ui/button/styles.ts',
+    ],
+    [
+      'svelte',
+      'src/components/ui/mark/styles.ts',
+      'src/components/ui/mark/styles.ts',
+    ],
+    [
+      'astro',
+      'src/components/features/app-header/styles.ts',
+      'src/components/features/app-header/styles.ts',
+    ],
+    [
+      'vue',
+      'src/components/ui/app-button/styles.ts',
+      'src/components/ui/button/styles.ts',
+    ],
+    [
+      'nuxt',
+      'src/components/ui/text-input/styles.ts',
+      'src/components/ui/text-input/styles.ts',
+    ],
+  ])('writes %s its %s as React writes %s, spread with attrs', async (target, written, react) => {
+    const text = await textOf({
+      target,
+      ...stylex,
+    }, written);
+    const shared = await textOf({
+      target: 'react',
+      ...stylex,
+    }, react);
+    const expected = shared.replaceAll('stylex.props', 'stylex.attrs');
+
+    expect(text).toBe(expected);
+    expect(text).not.toBe(shared);
+  });
+
+  it.each<TargetId>(['react', 'next'])('leaves %s spreading props', async (target) => {
+    const text = await textOf({
+      target,
+      ...stylex,
+    }, 'src/components/ui/button/styles.ts');
+
+    expect(text).toContain('button: stylex.props(sheet.button),');
+  });
+
+  it('writes the button sheet as Solid spreads it', async () => {
+    const text = await textOf({
+      target: 'solid',
+      ...stylex,
+    }, 'src/components/ui/button/styles.ts');
+
+    expect(text).toContain('button: stylex.attrs(sheet.button),');
+  });
+});

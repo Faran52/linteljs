@@ -106,6 +106,26 @@ describe('componentStyleModules', () => {
 
     expect(componentStyleModules()[0]).not.toHaveProperty('shared');
   });
+
+  it('reads React\'s StyleX sheet into Solid\'s tree, spread with attrs', () => {
+    const [plain, sheet] = componentStyleModules('solid', RENAMED);
+    const expected = {
+      target: 'src/components/features/app-header/styles.ts',
+      variant: 'stylex',
+      shared: 'react',
+      stylexAttrs: true,
+    };
+
+    expect(sheet).toEqual(expect.objectContaining(expected));
+    expect(plain).not.toHaveProperty('stylexAttrs');
+  });
+
+  it.each([undefined, 'react'] as const)('spreads the StyleX sheet with props from %s', (from) => {
+    const sheet = componentStyleModules(from)[1];
+
+    expect(sheet).not.toHaveProperty('stylexAttrs');
+    expect(sheet?.shared).toBe(from);
+  });
 });
 
 describe('stylexDocument', () => {
