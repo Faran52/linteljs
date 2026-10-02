@@ -23,7 +23,8 @@ describe('tanstackRouter', () => {
     ].join('\n');
     const ruleIds = await ruleIdsFor([...react(), ...tanstackRouter()], code, 'src/routes/index.tsx');
 
-    expect(ruleIds.some(startsWith('@tanstack/router/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('@tanstack/router/'));
+    expect(anyMatch).toBe(true);
   });
 
   it.each([

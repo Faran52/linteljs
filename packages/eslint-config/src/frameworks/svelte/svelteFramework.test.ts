@@ -31,7 +31,8 @@ describe('svelte', () => {
     const ruleIds = await ruleIdsForFile([...base(), ...svelte()], join(SFC_FIXTURES, 'Page.svelte'));
 
     expect(ruleIds).not.toContain(null);
-    expect(ruleIds.some(startsWith('svelte/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('svelte/'));
+    expect(anyMatch).toBe(true);
   });
 
   it.each([
@@ -49,7 +50,8 @@ describe('svelte', () => {
     const unexempted = await ruleIdsFor(base({ naming }), code, path);
     const exempted = await ruleIdsFor([...base({ naming }), ...svelte()], code, path);
 
-    expect(unexempted.includes(FILENAME_RULE)).toBe(reserved);
+    const included = unexempted.includes(FILENAME_RULE);
+    expect(included).toBe(reserved);
     expect(exempted).not.toContain(FILENAME_RULE);
   });
 
@@ -59,8 +61,10 @@ describe('svelte', () => {
   ])('holds check-file off the route file %s', async (path) => {
     const naming = { 'src/**/*.{js,svelte}': 'CAMEL_CASE' } as const;
 
-    await expect(enabledRuleIdsFor(base({ naming }), path)).resolves.toContain(FILENAME_RULE);
-    await expect(enabledRuleIdsFor([...base({ naming }), ...svelte()], path)).resolves.not.toContain(FILENAME_RULE);
+    const enabledRuleIds = await enabledRuleIdsFor(base({ naming }), path);
+    expect(enabledRuleIds).toContain(FILENAME_RULE);
+    const enabledRuleIds2 = await enabledRuleIdsFor([...base({ naming }), ...svelte()], path);
+    expect(enabledRuleIds2).not.toContain(FILENAME_RULE);
   });
 
   it.each([
@@ -70,17 +74,18 @@ describe('svelte', () => {
   ])('lets %s go unresolved', async (specifier) => {
     const code = `import { a } from '${specifier}';\n\nexport const value = a;\n`;
 
-    await expect(ruleIdsFor(base(), code, 'src/lib/sample.ts')).resolves.toContain('import-x/no-unresolved');
+    const ruleIds = await ruleIdsFor(base(), code, 'src/lib/sample.ts');
+    expect(ruleIds).toContain('import-x/no-unresolved');
 
-    await expect(ruleIdsFor([...base(), ...svelte()], code, 'src/lib/sample.ts'))
-      .resolves.not.toContain('import-x/no-unresolved');
+    const ruleIds2 = await ruleIdsFor([...base(), ...svelte()], code, 'src/lib/sample.ts');
+    expect(ruleIds2).not.toContain('import-x/no-unresolved');
   });
 
   it('still reports a package that does not resolve', async () => {
     const code = "import { a } from 'not-installed';\n\nexport const value = a;\n";
 
-    await expect(ruleIdsFor([...base(), ...svelte()], code, 'src/lib/sample.ts'))
-      .resolves.toContain('import-x/no-unresolved');
+    const ruleIds = await ruleIdsFor([...base(), ...svelte()], code, 'src/lib/sample.ts');
+    expect(ruleIds).toContain('import-x/no-unresolved');
   });
 
   it('parses a .svelte.ts rune module', async () => {
@@ -101,15 +106,18 @@ describe('svelte', () => {
     '$app/navigation',
     '$env/static/public',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: svelteGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: svelteGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(svelte())).toEqual([
+    const actual = ownBlockNames(svelte());
+    const expected = [
       '@linteljs/svelte/framework-specifiers',
       '@linteljs/svelte/route-filenames',
       '@linteljs/svelte',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('caps a component file at 350 lines of code, markup and script together', async () => {

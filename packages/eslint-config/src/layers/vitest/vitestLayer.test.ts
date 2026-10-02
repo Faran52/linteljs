@@ -23,39 +23,41 @@ describe('vitest', () => {
   const layer = [...base(), ...vitest()];
 
   it('reports a focused test', async () => {
-    await expect(ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.test.ts'))
-      .resolves.toContain('vitest/no-focused-tests');
+    const ruleIds = await ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.test.ts');
+    expect(ruleIds).toContain('vitest/no-focused-tests');
   });
 
   it('counts a type assertion as an assertion', async () => {
-    await expect(ruleIdsFor(layer, TYPED, 'src/lib/utils/sample.test.ts'))
-      .resolves.not.toContain('vitest/expect-expect');
+    const ruleIds = await ruleIdsFor(layer, TYPED, 'src/lib/utils/sample.test.ts');
+    expect(ruleIds).not.toContain('vitest/expect-expect');
   });
 
   it('leaves a non-test file alone', async () => {
-    await expect(ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.ts'))
-      .resolves.not.toContain('vitest/no-focused-tests');
+    const ruleIds = await ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.ts');
+    expect(ruleIds).not.toContain('vitest/no-focused-tests');
   });
 
   it.each([
     ['expect', "import { expect, it } from 'vitest';\n\nit('adds', () => {\n  expect(1 + 1).toBe(2);\n});\n"],
     ['assertType', "import { assertType, it } from 'vitest';\n\nit('types', () => {\n  assertType<number>(1);\n});\n"],
   ])('counts %s as an assertion', async (_name, code) => {
-    await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts'))
-      .resolves.not.toContain('vitest/expect-expect');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    expect(ruleIds).not.toContain('vitest/expect-expect');
   });
 
   it('accepts the message vitest takes as a second argument to expect', async () => {
     const code = "import { expect, it } from 'vitest';\n\nit('adds', () => {\n  expect(1 + 1, 'sum').toBe(2);\n});\n";
 
-    await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts')).resolves.not.toContain('vitest/valid-expect');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    expect(ruleIds).not.toContain('vitest/valid-expect');
   });
 
   it('accepts a message held in a variable, which the rule forgives by default only as a literal', async () => {
     const code = "import { expect, it } from 'vitest';\n\nconst label = 'sum';\n\n"
       + "it('adds', () => {\n  expect(1 + 1, label).toBe(2);\n});\n";
 
-    await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts')).resolves.not.toContain('vitest/valid-expect');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    expect(ruleIds).not.toContain('vitest/valid-expect');
   });
 
   it('enables no framework rule on a suite', async () => {
@@ -65,9 +67,11 @@ describe('vitest', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(vitest())).toEqual([
+    const actual = ownBlockNames(vitest());
+    const expected = [
       '@linteljs/vitest',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it.each([

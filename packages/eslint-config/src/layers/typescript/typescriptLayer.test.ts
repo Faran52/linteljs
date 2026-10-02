@@ -30,8 +30,8 @@ const PROPERTIES_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/t
 
 describe('typescript', () => {
   it('reports a floating promise, which needs type information to see', async () => {
-    await expect(ruleIdsForFile([...base(), ...typescript()], TYPED_FILE))
-      .resolves.toContain('@typescript-eslint/no-floating-promises');
+    const actual = await ruleIdsForFile([...base(), ...typescript()], TYPED_FILE);
+    expect(actual).toContain('@typescript-eslint/no-floating-promises');
   });
 
   it('leaves one owner for unused code once the typed layer is composed', async () => {
@@ -81,10 +81,11 @@ describe('typescript', () => {
     const entry = await ruleEntryFor(layer, 'src/a.ts', '@typescript-eslint/parameter-properties');
     const baseRuleNames = await ruleNamesFor(base(), 'src/a.ts');
 
-    expect(entry).toEqual([2, {
+    const expected = [2, {
       allow: [],
       prefer: 'class-property',
-    }]);
+    }];
+    expect(entry).toEqual(expected);
 
     expect(baseRuleNames).not.toContain('@typescript-eslint/parameter-properties');
   });
@@ -94,7 +95,7 @@ describe('typescript', () => {
     const entry = await ruleEntryFor(layer, 'src/a.ts', '@typescript-eslint/prefer-destructuring');
     const enabled = await enabledRuleIdsFor(layer, 'src/a.ts');
 
-    expect(entry).toEqual([
+    const expected = [
       2,
       {
         VariableDeclarator: {
@@ -110,17 +111,18 @@ describe('typescript', () => {
         enforceForRenamedProperties: false,
         enforceForDeclarationWithTypeAnnotation: false,
       },
-    ]);
+    ];
+    expect(entry).toEqual(expected);
 
     expect(enabled).not.toContain('prefer-destructuring');
   });
 
   it('turns the type-aware rules off a plain .js file', async () => {
-    await expect(ruleNamesFor([...base(), ...typescript()], 'src/tool.js'))
-      .resolves.toContain('@typescript-eslint/no-floating-promises');
+    const ruleNames = await ruleNamesFor([...base(), ...typescript()], 'src/tool.js');
+    expect(ruleNames).toContain('@typescript-eslint/no-floating-promises');
 
-    await expect(enabledRuleIdsFor([...base(), ...typescript()], 'src/tool.js'))
-      .resolves.not.toContain('@typescript-eslint/no-floating-promises');
+    const enabledRuleIds = await enabledRuleIdsFor([...base(), ...typescript()], 'src/tool.js');
+    expect(enabledRuleIds).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
   it('restates the prefer-alias defaults', () => {
@@ -129,12 +131,13 @@ describe('typescript', () => {
         return name === '@linteljs/typescript/prefer-alias';
       });
 
-    expect(block?.rules).toEqual({
+    const expected = {
       '@linteljs/prefer-alias': ['error', {
         aliasExempt: [],
         enforceRelativeImports: false,
       }],
-    });
+    };
+    expect(block?.rules).toEqual(expected);
   });
 
   it('configures prefer-alias on every typed extension, the SFCs included', async () => {
@@ -148,16 +151,18 @@ describe('typescript', () => {
     ]) {
       const entry = await ruleEntryFor(layer, file, '@linteljs/prefer-alias');
 
-      expect({
+      const actual = {
         file,
         entry,
-      }).toEqual({
+      };
+      const expected = {
         file,
         entry: [2, {
           aliasExempt: ['src/routes.ts'],
           enforceRelativeImports: false,
         }],
-      });
+      };
+      expect(actual).toEqual(expected);
     }
   });
 
@@ -168,13 +173,15 @@ describe('typescript', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(typescript())).toEqual([
+    const actual = ownBlockNames(typescript());
+    const expected = [
       '@linteljs/typescript',
       '@linteljs/typescript/untyped',
       '@linteljs/typescript/prefer-destructuring',
       '@linteljs/typescript/unused-vars-handover',
       '@linteljs/typescript/prefer-alias',
       '@linteljs/typescript/asset-requires',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });

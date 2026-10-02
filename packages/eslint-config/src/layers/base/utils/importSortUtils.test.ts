@@ -32,7 +32,7 @@ describe('buildGroups', () => {
   it('omits the framework and alias buckets when neither is supplied', () => {
     const groups = buildGroups();
 
-    expect(groups).toEqual([
+    const expected = [
       [
         '^node:',
         '^fs$',
@@ -43,7 +43,8 @@ describe('buildGroups', () => {
       [String.raw`^\./`],
       [String.raw`^(?!.*[.](?:css|json)$)[^.].*\u0000$`, String.raw`^[.].*\u0000$`],
       [String.raw`^.+\.s?css$`],
-    ]);
+    ];
+    expect(groups).toEqual(expected);
   });
 
   it('places the framework bucket second, directly after the built-ins', () => {
@@ -56,10 +57,14 @@ describe('buildGroups', () => {
   it('orders the alias buckets down the dependency direction', () => {
     const groups = buildGroups(ALIASES, reactGroup);
 
-    expect(indexOfPattern(groups, '^@config(?:/|$)')).toBeLessThan(indexOfPattern(groups, '^@lib(?:/|$)'));
-    expect(indexOfPattern(groups, '^@lib(?:/|$)')).toBeLessThan(indexOfPattern(groups, '^@hooks(?:/|$)'));
-    expect(indexOfPattern(groups, '^@hooks(?:/|$)')).toBeLessThan(indexOfPattern(groups, '^@ui(?:/|$)'));
-    expect(indexOfPattern(groups, '^@ui(?:/|$)')).toBeLessThan(indexOfPattern(groups, '^@mocks(?:/|$)'));
+    const actual = indexOfPattern(groups, '^@config(?:/|$)');
+    expect(actual).toBeLessThan(indexOfPattern(groups, '^@lib(?:/|$)'));
+    const actual2 = indexOfPattern(groups, '^@lib(?:/|$)');
+    expect(actual2).toBeLessThan(indexOfPattern(groups, '^@hooks(?:/|$)'));
+    const actual3 = indexOfPattern(groups, '^@hooks(?:/|$)');
+    expect(actual3).toBeLessThan(indexOfPattern(groups, '^@ui(?:/|$)'));
+    const actual4 = indexOfPattern(groups, '^@ui(?:/|$)');
+    expect(actual4).toBeLessThan(indexOfPattern(groups, '^@mocks(?:/|$)'));
   });
 
   it('emits no pattern for an alias the project does not declare', () => {
@@ -72,13 +77,15 @@ describe('buildGroups', () => {
   it('shares the components bucket between @ui and @components', () => {
     const groups = buildGroups(ALIASES);
 
-    expect(groups[indexOfPattern(groups, '^@ui(?:/|$)')]).toEqual(['^@ui(?:/|$)', '^@components(?:/|$)']);
+    const expected = ['^@ui(?:/|$)', '^@components(?:/|$)'];
+    expect(groups[indexOfPattern(groups, '^@ui(?:/|$)')]).toEqual(expected);
   });
 
   it('gives an alias no bucket names its own group rather than losing it to node_modules', () => {
     const groups = buildGroups({ '@/*': './src/*' });
 
-    expect(indexOfPattern(groups, '^@(?:/|$)')).toBeGreaterThan(indexOfPattern(groups, String.raw`^@?\w`));
+    const actual = indexOfPattern(groups, '^@(?:/|$)');
+    expect(actual).toBeGreaterThan(indexOfPattern(groups, String.raw`^@?\w`));
   });
 
   it('sorts the unnamed aliases so the group is stable between runs', () => {
@@ -87,7 +94,8 @@ describe('buildGroups', () => {
       '@assets/*': './src/assets/*',
     });
 
-    expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(['^@assets(?:/|$)', '^@widgets(?:/|$)']);
+    const expected = ['^@assets(?:/|$)', '^@widgets(?:/|$)'];
+    expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(expected);
   });
 
   it('matches a bare alias as well as a deep one', () => {
@@ -101,10 +109,14 @@ describe('buildGroups', () => {
         return pattern.startsWith('^@engine');
       }) ?? '');
 
-    expect(indexOfPattern(groups, '^@engine(?:/|$)')).toBeGreaterThan(-1);
-    expect(engine.exec('@engine')).not.toBeNull();
-    expect(engine.exec('@engine/parse')).not.toBeNull();
-    expect(engine.exec('@engineering/toolkit')).toBeNull();
+    const actual = indexOfPattern(groups, '^@engine(?:/|$)');
+    expect(actual).toBeGreaterThan(-1);
+    const actual2 = engine.exec('@engine');
+    expect(actual2).not.toBeNull();
+    const actual3 = engine.exec('@engine/parse');
+    expect(actual3).not.toBeNull();
+    const actual4 = engine.exec('@engineering/toolkit');
+    expect(actual4).toBeNull();
   });
 
   it('matches a bare alias in a named bucket too', () => {
@@ -116,8 +128,10 @@ describe('buildGroups', () => {
         }) ?? '',
     );
 
-    expect(utils.exec('@utils')).not.toBeNull();
-    expect(utils.exec('@utils/format')).not.toBeNull();
+    const actual = utils.exec('@utils');
+    expect(actual).not.toBeNull();
+    const actual2 = utils.exec('@utils/format');
+    expect(actual2).not.toBeNull();
   });
 
   it('escapes an alias whose name is regex syntax', () => {
@@ -128,9 +142,12 @@ describe('buildGroups', () => {
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');
-    expect('$lib/store/user'.startsWith('$lib/')).toBe(true);
-    expect(new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user')).not.toBeNull();
-    expect(new RegExp('^$lib(?:/|$)').exec('$lib/store/user')).toBeNull();
+    const actual = '$lib/store/user'.startsWith('$lib/');
+    expect(actual).toBe(true);
+    const actual2 = new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user');
+    expect(actual2).not.toBeNull();
+    const actual3 = new RegExp('^$lib(?:/|$)').exec('$lib/store/user');
+    expect(actual3).toBeNull();
   });
 
   it('files every named alias in its bucket and nowhere else', () => {
@@ -162,7 +179,8 @@ describe('buildGroups', () => {
       return `^${name}(?:/|$)`;
     };
 
-    expect(buildGroups(aliases).slice(2, -4)).toEqual([
+    const sliced = buildGroups(aliases).slice(2, -4);
+    const expected = [
       [
         '@config',
         '@typings',
@@ -189,11 +207,13 @@ describe('buildGroups', () => {
       ].map(pattern),
       ['@mocks'].map(pattern),
       ['@widgets'].map(pattern),
-    ]);
+    ];
+    expect(sliced).toEqual(expected);
   });
 
   it('adds no framework bucket for an empty framework group', () => {
-    expect(buildGroups({}, [])).toEqual(buildGroups());
+    const groups = buildGroups({}, []);
+    expect(groups).toEqual(buildGroups());
   });
 
   it('matches an alias whose wildcard sits mid-key', () => {
@@ -209,7 +229,9 @@ describe('buildGroups', () => {
   it('keeps the styles bucket last', () => {
     const groups = buildGroups(ALIASES, reactGroup);
 
-    expect(groups.at(-1)).toEqual([String.raw`^.+\.s?css$`]);
+    const actual = groups.at(-1);
+    const expected = [String.raw`^.+\.s?css$`];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -223,11 +245,12 @@ describe('base: simple-import-sort', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(base(), code, 'src/lib/utils/sample.ts'))
-      .resolves.toContain('simple-import-sort/imports');
+    const ruleIds = await ruleIdsFor(base(), code, 'src/lib/utils/sample.ts');
+    expect(ruleIds).toContain('simple-import-sort/imports');
   });
 
   it('sorts a framework import with the packages when no framework group is given', async () => {
-    await expect(sortsAheadOfPackages(base(), 'react')).resolves.toBe(false);
+    const actual = await sortsAheadOfPackages(base(), 'react');
+    expect(actual).toBe(false);
   });
 });

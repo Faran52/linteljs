@@ -79,8 +79,10 @@ describe('tailwind', () => {
   });
 
   it('carries the entry point through to the plugin when given one', () => {
+    const expected = { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } };
+
     expect(ownBlockOf(tailwind('./src/app/globals.css')).settings).toEqual(
-      { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } },
+      expected,
     );
   });
 
@@ -97,7 +99,8 @@ describe('tailwind', () => {
     ].join('\n');
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
 
-    expect(ruleIds.some(startsWith('better-tailwindcss/'))).toBe(false);
+    const anyMatch = ruleIds.some(startsWith('better-tailwindcss/'));
+    expect(anyMatch).toBe(false);
   });
 
   it('leaves a class the theme does not know alone', async () => {
@@ -108,8 +111,8 @@ describe('tailwind', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(layer, code, 'src/components/Card.tsx'))
-      .resolves.not.toContain('better-tailwindcss/no-unknown-classes');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    expect(ruleIds).not.toContain('better-tailwindcss/no-unknown-classes');
   });
 
   it.each([

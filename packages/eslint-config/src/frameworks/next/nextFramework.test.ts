@@ -53,7 +53,8 @@ describe('next', () => {
         return rule.startsWith('jsx-a11y-x/');
       });
 
-    expect(a11y).toEqual(['jsx-a11y-x/alt-text']);
+    const expected = ['jsx-a11y-x/alt-text'];
+    expect(a11y).toEqual(expected);
   });
 
   it('reports an unsupported aria attribute through those rules', async () => {
@@ -64,10 +65,11 @@ describe('next', () => {
   });
 
   it('tells alt-text about next/image', () => {
-    expect(next()[0]?.rules?.['jsx-a11y-x/alt-text']).toEqual(['error', {
+    const expected = ['error', {
       elements: ['img'],
       img: ['Image'],
-    }]);
+    }];
+    expect(next()[0]?.rules?.['jsx-a11y-x/alt-text']).toEqual(expected);
   });
 
   it('registers only the next plugin', () => {
@@ -76,7 +78,8 @@ describe('next', () => {
         return Object.keys(entry.plugins ?? {});
       });
 
-    expect(plugins).toEqual(['@next/next']);
+    const expected = ['@next/next'];
+    expect(plugins).toEqual(expected);
   });
 
   it('registers none of the plugins the replaced config bundled', () => {
@@ -120,12 +123,15 @@ describe('next', () => {
     'next',
     'next/link',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: nextGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nextGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(next())).toEqual([
+    const actual = ownBlockNames(next());
+    const expected = [
       '@linteljs/next',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });

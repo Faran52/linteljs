@@ -24,7 +24,8 @@ describe('solid', () => {
     const code = 'export const Note = (props) => {\n  const { a } = props;\n\n  return <div>{a}</div>;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Note.tsx');
 
-    expect(ruleIds.some(startsWith('solid/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('solid/'));
+    expect(anyMatch).toBe(true);
   });
 
   it('reports an image with no alt text', async () => {
@@ -69,7 +70,8 @@ describe('solid', () => {
     const entry = await ruleEntryFor(solid(), 'src/Count.tsx', 'sonarjs/jsx-no-leaked-render');
 
     expect(ruleIds).toContain('sonarjs/jsx-no-leaked-render');
-    expect(entry).toEqual([2]);
+    const expected = [2];
+    expect(entry).toEqual(expected);
   });
 
   it('leaves the leaked render to the framework, so base alone stays quiet', async () => {
@@ -81,8 +83,8 @@ describe('solid', () => {
   it('runs its linteljs rule without base', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
 
-    await expect(ruleIdsFor(solid(), code, 'src/pages/Chip.tsx'))
-      .resolves.toContain('@linteljs/no-duplicate-jsx-props');
+    const ruleIds = await ruleIdsFor(solid(), code, 'src/pages/Chip.tsx');
+    expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
 
   it.each([
@@ -90,14 +92,17 @@ describe('solid', () => {
     'solid-js/web',
     '@solidjs/router',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: solidGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: solidGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(solid())).toEqual([
+    const actual = ownBlockNames(solid());
+    const expected = [
       '@linteljs/solid/sonarjs',
       '@linteljs/solid',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it.each([

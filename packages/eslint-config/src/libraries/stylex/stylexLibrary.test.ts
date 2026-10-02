@@ -71,17 +71,18 @@ const lint = async (code: string): Promise<string[]> => {
 
 describe('stylex', () => {
   it('reports a shorthand StyleX compiles to nothing, even around a custom property', async () => {
-    await expect(ruleIdsFor(layer, moduleWith("background: 'var(--card)'"), 'src/components/card/styles.ts'))
-      .resolves.toContain('@stylexjs/valid-styles');
+    const ruleIds = await ruleIdsFor(layer, moduleWith("background: 'var(--card)'"), 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('reports a shorthand carrying more than one value', async () => {
-    await expect(ruleIdsFor(layer, moduleWith("padding: '1px 2px'"), 'src/components/card/styles.ts'))
-      .resolves.toContain('@stylexjs/valid-shorthands');
+    const ruleIds = await ruleIdsFor(layer, moduleWith("padding: '1px 2px'"), 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/valid-shorthands');
   });
 
   it('splits a multi-value shorthand under --fix-type problem', async () => {
-    await expect(fixed(moduleWith("padding: '1px 2px'"))).resolves.toContain("paddingBlock: '1px'");
+    const actual = await fixed(moduleWith("padding: '1px 2px'"));
+    expect(actual).toContain("paddingBlock: '1px'");
   });
 
   it('splits into physical longhands and drops !important', async () => {
@@ -92,7 +93,8 @@ describe('stylex', () => {
   });
 
   it('leaves a logical border shorthand to be fixed by hand', async () => {
-    await expect(fixed(moduleWith("borderBlockEnd: '1px solid red'"))).resolves.toBeUndefined();
+    const actual = await fixed(moduleWith("borderBlockEnd: '1px solid red'"));
+    expect(actual).toBeUndefined();
   });
 
   it.each([
@@ -109,17 +111,21 @@ describe('stylex', () => {
   it('reads the legacy stylex import too', async () => {
     const code = moduleWith("background: 'var(--card)'").replace("'@stylexjs/stylex'", "'stylex'");
 
-    await expect(ruleIdsFor(layer, code, 'src/components/card/styles.ts')).resolves.toContain('@stylexjs/valid-styles');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('takes a custom property as a key', async () => {
     const ruleIds = await ruleIdsFor(layer, moduleWith("'--card-gap': '4px'"), 'src/components/card/styles.ts');
 
-    expect(ruleIds.some(startsWith('@stylexjs/'))).toBe(false);
+    const anyMatch = ruleIds.some(startsWith('@stylexjs/'));
+    expect(anyMatch).toBe(false);
   });
 
   it('names its one block', () => {
-    expect(ownBlockNames(stylex())).toEqual(['@linteljs/stylex']);
+    const actual = ownBlockNames(stylex());
+    const expected = ['@linteljs/stylex'];
+    expect(actual).toEqual(expected);
   });
 
   it('reports a style nothing reads', async () => {
@@ -132,8 +138,8 @@ describe('stylex', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(layer, code, 'src/components/card/styles.ts'))
-      .resolves.toContain('@stylexjs/no-unused');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/no-unused');
   });
 
   it('reports a pseudo-class written the legacy way, as a key of its own', async () => {
@@ -156,8 +162,8 @@ describe('stylex', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(layer, code, 'src/components/Card.tsx'))
-      .resolves.toContain('@stylexjs/no-conflicting-props');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    expect(ruleIds).toContain('@stylexjs/no-conflicting-props');
   });
 
   it.each([
@@ -191,38 +197,39 @@ describe('stylex', () => {
   ])('reports %s under the legacy stylex import too', async (rule, code, path) => {
     const legacy = code.replace("'@stylexjs/stylex'", "'stylex'");
 
-    await expect(ruleIdsFor(layer, legacy, path)).resolves.toContain(rule);
+    const ruleIds = await ruleIdsFor(layer, legacy, path);
+    expect(ruleIds).toContain(rule);
   });
 
   it('reports tokens defined outside a .stylex.ts file', async () => {
     const code = `${IMPORT}\n\nexport const tokens = stylex.defineVars({ primary: 'var(--primary)' });\n`;
 
-    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.ts'))
-      .resolves.toContain('@stylexjs/enforce-extension');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/styles/tokens.ts');
+    expect(ruleIds).toContain('@stylexjs/enforce-extension');
 
-    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
-      .resolves.not.toContain('@stylexjs/enforce-extension');
+    const layerRuleIds = await ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts');
+    expect(layerRuleIds).not.toContain('@stylexjs/enforce-extension');
   });
 
   it('keeps a .stylex.ts file to its tokens', async () => {
     const code = `${IMPORT}\n\nexport const tokens = stylex.defineVars({ primary: 'red' });\nexport const other = 1;\n`;
 
-    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
-      .resolves.toContain('@stylexjs/enforce-extension');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts');
+    expect(ruleIds).toContain('@stylexjs/enforce-extension');
   });
 
   it('takes constants in a .stylex.ts file', async () => {
     const code = `${IMPORT}\n\nexport const sizes = stylex.defineConsts({ small: '4px' });\n`;
 
-    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
-      .resolves.not.toContain('@stylexjs/enforce-extension');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts');
+    expect(ruleIds).not.toContain('@stylexjs/enforce-extension');
   });
 
   it('reports an imported number in a numeric property rather than crashing on it', async () => {
     const code = moduleWith('zIndex: LAYER', ["import { LAYER } from './layers';"]);
 
-    await expect(ruleIdsFor(layer, code, 'src/components/card/styles.ts'))
-      .resolves.toContain('@stylexjs/valid-styles');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('stays quiet on longhands, tokens and contextual values', async () => {
@@ -231,7 +238,8 @@ describe('stylex', () => {
     );
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
 
-    expect(ruleIds.some(startsWith('@stylexjs/'))).toBe(false);
+    const anyMatch = ruleIds.some(startsWith('@stylexjs/'));
+    expect(anyMatch).toBe(false);
   });
 
   it.each([
@@ -246,22 +254,22 @@ describe('stylex', () => {
       'StyledCard.svelte',
     ],
   ])('reaches the script block of a %s component', async (_label, framework, file) => {
-    await expect(ruleIdsForFile([
+    const actual = await ruleIdsForFile([
       ...base(),
       ...framework(),
       ...stylex(),
-    ], join(SFC_FIXTURES, file)))
-      .resolves.toContain('@stylexjs/valid-styles');
+    ], join(SFC_FIXTURES, file));
+    expect(actual).toContain('@stylexjs/valid-styles');
   });
 
   it('reaches the frontmatter of an astro page', async () => {
     const code = `---\n${moduleWith("background: 'var(--card)'")}---\n\n<div>x</div>\n`;
 
-    await expect(ruleIdsFor([
+    const ruleIds = await ruleIdsFor([
       ...base(),
       ...stylex(),
       ...astro(),
-    ], code, 'src/pages/index.astro'))
-      .resolves.toContain('@stylexjs/valid-styles');
+    ], code, 'src/pages/index.astro');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 });

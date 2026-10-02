@@ -16,13 +16,16 @@ describe('presetOf', () => {
       rules: {},
     };
 
-    expect(presetOf(config, 'probe')).toEqual([config]);
+    const preset = presetOf(config, 'probe');
+    const expected = [config];
+    expect(preset).toEqual(expected);
   });
 
   it('passes an array of flat configs through', () => {
     const configs = [{ name: 'probe/one' }, { name: 'probe/two' }];
 
-    expect(presetOf(configs, 'probe')).toBe(configs);
+    const preset = presetOf(configs, 'probe');
+    expect(preset).toBe(configs);
   });
 
   it('scopes every entry with no glob of its own to the files given', () => {
@@ -31,18 +34,21 @@ describe('presetOf', () => {
       files: ['**/*.vue'],
     }], 'probe', ['**/*.ts']);
 
-    expect(preset).toEqual([{
+    const expected = [{
       name: 'probe/one',
       files: ['**/*.ts'],
     }, {
       name: 'probe/two',
       files: ['**/*.vue'],
-    }]);
+    }];
+    expect(preset).toEqual(expected);
 
-    expect(presetOf({ name: 'probe' }, 'probe', ['**/*.ts'])).toEqual([{
+    const preset2 = presetOf({ name: 'probe' }, 'probe', ['**/*.ts']);
+    const expected2 = [{
       name: 'probe',
       files: ['**/*.ts'],
-    }]);
+    }];
+    expect(preset2).toEqual(expected2);
   });
 
   it('throws when the plugin publishes no such preset', () => {
@@ -68,10 +74,12 @@ describe('sonarjsRules', () => {
     + 'export default { updated() { count.value++; } };\n';
 
   it('turns a sonarjs rule on with no other layer beneath it', async () => {
-    await expect(ruleIdsFor(mutating, code, 'src/card.ts')).resolves.toContain(rule);
+    const ruleIds = await ruleIdsFor(mutating, code, 'src/card.ts');
+    expect(ruleIds).toContain(rule);
   });
 
   it('registers the plugin object base registers, so the two compose', async () => {
-    await expect(ruleIdsFor([...base(), ...mutating], code, 'src/card.ts')).resolves.toContain(rule);
+    const ruleIds = await ruleIdsFor([...base(), ...mutating], code, 'src/card.ts');
+    expect(ruleIds).toContain(rule);
   });
 });

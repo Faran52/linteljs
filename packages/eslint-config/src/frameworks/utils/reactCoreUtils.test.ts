@@ -47,8 +47,8 @@ describe('reactCore', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx'))
-      .resolves.toContain('react-hooks/rules-of-hooks');
+    const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
+    expect(ruleIds).toContain('react-hooks/rules-of-hooks');
   });
 
   it('reports an unsorted hook dependency array through the linteljs rule it adds', async () => {
@@ -65,8 +65,8 @@ describe('reactCore', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx'))
-      .resolves.toContain('@linteljs/sort-hook-dependencies');
+    const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
+    expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
   });
 
   it('reports a component reading its props member by member', async () => {
@@ -77,8 +77,8 @@ describe('reactCore', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx'))
-      .resolves.toContain('@linteljs/prefer-destructured-props');
+    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx');
+    expect(ruleIds).toContain('@linteljs/prefer-destructured-props');
   });
 
   it('stays quiet on a component that forwards its props whole', async () => {
@@ -89,8 +89,8 @@ describe('reactCore', () => {
       '',
     ].join('\n');
 
-    await expect(ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx'))
-      .resolves.not.toContain('@linteljs/prefer-destructured-props');
+    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx');
+    expect(ruleIds).not.toContain('@linteljs/prefer-destructured-props');
   });
 
   it('reports through the eslint-react preset it composes', async () => {
@@ -117,8 +117,8 @@ describe('reactCore', () => {
     const layer = [...base(), ...reactCore()];
     const code = "export const Widget = () => {\n  return <div className='x' />;\n};\n";
 
-    await expect(ruleIdsFor(layer, code, 'src/components/ui/Widget.tsx'))
-      .resolves.toContain('@stylistic/jsx-quotes');
+    const ruleIds = await ruleIdsFor(layer, code, 'src/components/ui/Widget.tsx');
+    expect(ruleIds).toContain('@stylistic/jsx-quotes');
   });
 
   it('caps a single-line tag at two props and a multiline one at one per line', async () => {
@@ -128,9 +128,12 @@ describe('reactCore', () => {
     const three = 'export const Widget = () => {\n  return <div id="a" lang="b" title="c" />;\n};\n';
     const multiline = 'export const Widget = () => {\n  return (\n    <div\n      id="a" lang="b"\n    />\n  );\n};\n';
 
-    await expect(ruleIdsFor(layer, two, widget)).resolves.not.toContain('@stylistic/jsx-max-props-per-line');
-    await expect(ruleIdsFor(layer, three, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
-    await expect(ruleIdsFor(layer, multiline, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
+    const ruleIds = await ruleIdsFor(layer, two, widget);
+    expect(ruleIds).not.toContain('@stylistic/jsx-max-props-per-line');
+    const layerRuleIds = await ruleIdsFor(layer, three, widget);
+    expect(layerRuleIds).toContain('@stylistic/jsx-max-props-per-line');
+    const ruleIds2 = await ruleIdsFor(layer, multiline, widget);
+    expect(ruleIds2).toContain('@stylistic/jsx-max-props-per-line');
   });
 
   it('reports a state setter called with its own state, a sonarjs React rule base leaves off', async () => {
@@ -174,7 +177,8 @@ describe('reactCore', () => {
     'react-native',
     '@react-navigation/native',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: reactGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: reactGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
@@ -192,21 +196,21 @@ describe('reactCore', () => {
 
     const layer = base({ frameworkGroup: reactGroup });
 
-    await expect(ruleIdsFor(layer, block([
+    const ruleIds = await ruleIdsFor(layer, block([
       'react',
       'react-dom',
       'react/jsx-runtime',
       'react-aria',
-    ]), 'src/lib/a.ts'))
-      .resolves.not.toContain('simple-import-sort/imports');
+    ]), 'src/lib/a.ts');
+    expect(ruleIds).not.toContain('simple-import-sort/imports');
 
-    await expect(ruleIdsFor(layer, block([
+    const layerRuleIds = await ruleIdsFor(layer, block([
       'react',
       'react/jsx-runtime',
       'react-aria',
       'react-dom',
-    ]), 'src/lib/a.ts'))
-      .resolves.toContain('simple-import-sort/imports');
+    ]), 'src/lib/a.ts');
+    expect(layerRuleIds).toContain('simple-import-sort/imports');
   });
 
   it.each([
@@ -339,10 +343,12 @@ describe('reactCore', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(reactCore())).toEqual([
+    const actual = ownBlockNames(reactCore());
+    const expected = [
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });

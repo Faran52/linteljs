@@ -83,25 +83,31 @@ describe('FRAMEWORKS', () => {
         return framework;
       });
 
-    expect(Object.keys(FRAMEWORKS)).toEqual(withParts);
+    const actual = Object.keys(FRAMEWORKS);
+    expect(actual).toEqual(withParts);
   });
 
   it.each(FRAMEWORK_PARTS)('loads %s', async (framework, parts) => {
-    await expect(FRAMEWORKS[framework]()).resolves.toEqual(parts());
+    const actual = await FRAMEWORKS[framework]();
+    expect(actual).toEqual(parts());
   });
 });
 
 describe('LIBRARIES', () => {
   it('loads each library layer', async () => {
-    await expect(LIBRARIES['tanstack-query']({})).resolves.toEqual(tanstackQuery());
-    await expect(LIBRARIES['tanstack-router']({})).resolves.toEqual(tanstackRouter());
-    await expect(LIBRARIES.stylex({})).resolves.toEqual(stylex());
+    const actual = await LIBRARIES['tanstack-query']({});
+    expect(actual).toEqual(tanstackQuery());
+    const actual2 = await LIBRARIES['tanstack-router']({});
+    expect(actual2).toEqual(tanstackRouter());
+    const actual3 = await LIBRARIES.stylex({});
+    expect(actual3).toEqual(stylex());
   });
 
   it('hands tailwind the entry point it was given, and none when it was given none', async () => {
-    await expect(LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' }))
-      .resolves.toEqual(tailwind('src/styles/app.css'));
+    const actual = await LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' });
+    expect(actual).toEqual(tailwind('src/styles/app.css'));
 
-    await expect(LIBRARIES.tailwind({})).resolves.toEqual(tailwind());
+    const actual2 = await LIBRARIES.tailwind({});
+    expect(actual2).toEqual(tailwind());
   });
 });

@@ -21,23 +21,24 @@ const NO_ALT = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></bo
 
 describe('html', () => {
   it('reports an img with no alt', async () => {
-    await expect(ruleIdsFor(html(), NO_ALT, 'index.html'))
-      .resolves.toContain('@html-eslint/require-img-alt');
+    const ruleIds = await ruleIdsFor(html(), NO_ALT, 'index.html');
+    expect(ruleIds).toContain('@html-eslint/require-img-alt');
   });
 
   it('enables no html rule on a TypeScript file', async () => {
     const enabled = await enabledRuleIdsFor([...base(), ...html()], 'src/lib/utils/sample.ts');
 
-    expect(enabled.filter(startsWith('@html-eslint/'))).toEqual([]);
+    const filtered = enabled.filter(startsWith('@html-eslint/'));
+    expect(filtered).toEqual([]);
   });
 
   it('survives composition with the type-aware layer', async () => {
-    await expect(ruleIdsFor([
+    const ruleIds = await ruleIdsFor([
       ...base(),
       ...typescript(),
       ...html(),
-    ], NO_ALT, 'index.html'))
-      .resolves.toContain('@html-eslint/require-img-alt');
+    ], NO_ALT, 'index.html');
+    expect(ruleIds).toContain('@html-eslint/require-img-alt');
   });
 
   it.each([
@@ -50,9 +51,11 @@ describe('html', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(html())).toEqual([
+    const actual = ownBlockNames(html());
+    const expected = [
       '@linteljs/html',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it.each([

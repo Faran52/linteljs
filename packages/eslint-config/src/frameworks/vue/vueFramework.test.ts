@@ -29,7 +29,8 @@ describe('vue', () => {
     const ruleIds = await ruleIdsForFile(vue(), join(SFC_FIXTURES, 'Home.vue'));
 
     expect(ruleIds).not.toContain(null);
-    expect(ruleIds.some(startsWith('vue/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('vue/'));
+    expect(anyMatch).toBe(true);
   });
 
   it('reports accessibility findings on a template', async () => {
@@ -120,15 +121,18 @@ describe('vue', () => {
     'pinia',
     '@vue/test-utils',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: vueGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: vueGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(vue())).toEqual([
+    const actual = ownBlockNames(vue());
+    const expected = [
       '@linteljs/vue',
       '@linteljs/vue/sonarjs',
       '@linteljs/vue/sfc-import-seam',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('reports reactive state mutated in the updated hook, a sonarjs Vue rule base leaves off', async () => {

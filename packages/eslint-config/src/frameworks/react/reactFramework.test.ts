@@ -30,12 +30,14 @@ describe('react', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(react())).toEqual([
+    const actual = ownBlockNames(react());
+    const expected = [
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
       '@linteljs/react/dom',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -49,7 +51,8 @@ describe('react', () => {
     const entry = await ruleEntryFor(react(), 'src/Chip.tsx', ruleId);
 
     expect(ruleIds).toContain(ruleId);
-    expect(entry).toEqual([2]);
+    const expected = [2];
+    expect(entry).toEqual(expected);
   });
 
   it.each([

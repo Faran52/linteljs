@@ -34,7 +34,8 @@ describe('reactNative', () => {
     const native = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
-    expect(native.some(startsWith('jsx-a11y-x/'))).toBe(false);
+    const anyMatch = native.some(startsWith('jsx-a11y-x/'));
+    expect(anyMatch).toBe(false);
   });
 
   it('reports a touchable with no accessible name', async () => {
@@ -64,7 +65,8 @@ describe('reactNative', () => {
   it('keeps dom-no-script-url at the preset severity react raises', async () => {
     const entry = await ruleEntryFor(reactNative(), 'src/Save.tsx', '@eslint-react/dom-no-script-url');
 
-    expect(entry).toEqual([1]);
+    const expected = [1];
+    expect(entry).toEqual(expected);
   });
 
   it('leaves those rules out of the react layer', async () => {
@@ -101,11 +103,13 @@ describe('reactNative', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(reactNative())).toEqual([
+    const actual = ownBlockNames(reactNative());
+    const expected = [
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
       '@linteljs/react-native/accessibility',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });

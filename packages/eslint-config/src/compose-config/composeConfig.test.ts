@@ -66,11 +66,11 @@ describe('composeConfig', () => {
   it('returns base alone when asked for nothing, rather than a default nobody wrote', async () => {
     const baseOnly = await composeConfig();
 
-    await expect(ruleIdsFor(baseOnly, 'export const value = "x";\n', 'src/lib/utils/sample.ts'))
-      .resolves.toContain('@stylistic/quotes');
+    const ruleIds = await ruleIdsFor(baseOnly, 'export const value = "x";\n', 'src/lib/utils/sample.ts');
+    expect(ruleIds).toContain('@stylistic/quotes');
 
-    await expect(ruleIdsForFile(baseOnly, TYPED_FILE))
-      .resolves.not.toContain('@typescript-eslint/no-floating-promises');
+    const actual = await ruleIdsForFile(baseOnly, TYPED_FILE);
+    expect(actual).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
   it('composes the type-aware layer on request', async () => {
@@ -167,8 +167,8 @@ describe('composeConfig', () => {
       libraries: ['tanstack-query'],
     });
 
-    await expect(ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts'))
-      .resolves.toContain('@tanstack/query/exhaustive-deps');
+    const ruleIds = await ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts');
+    expect(ruleIds).toContain('@tanstack/query/exhaustive-deps');
   });
 
   it('composes the tanstack-router layer through the same door', async () => {
@@ -186,8 +186,8 @@ describe('composeConfig', () => {
       libraries: ['tanstack-router'],
     });
 
-    await expect(ruleIdsFor(config, code, 'src/routes/index.tsx'))
-      .resolves.toContain('@tanstack/router/create-route-property-order');
+    const ruleIds = await ruleIdsFor(config, code, 'src/routes/index.tsx');
+    expect(ruleIds).toContain('@tanstack/router/create-route-property-order');
   });
 
   it('composes the tailwind layer through the same door', async () => {
@@ -200,8 +200,8 @@ describe('composeConfig', () => {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
     }];
 
-    await expect(ruleIdsFor(pinned, code, 'src/components/Card.tsx'))
-      .resolves.toContain('better-tailwindcss/no-duplicate-classes');
+    const ruleIds = await ruleIdsFor(pinned, code, 'src/components/Card.tsx');
+    expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');
   });
 
   it('hands the alias options to the typescript layer', async () => {
@@ -215,12 +215,13 @@ describe('composeConfig', () => {
         return name === '@linteljs/typescript/prefer-alias';
       });
 
-    expect(block?.rules).toEqual({
+    const expected = {
       '@linteljs/prefer-alias': ['error', {
         aliasExempt: ['src/routes.ts'],
         enforceRelativeImports: true,
       }],
-    });
+    };
+    expect(block?.rules).toEqual(expected);
   });
 
   it('hands the tailwind entry point to the tailwind layer', async () => {
@@ -233,7 +234,8 @@ describe('composeConfig', () => {
         return name === '@linteljs/tailwind';
       });
 
-    expect(block?.settings).toEqual({ 'better-tailwindcss': { entryPoint: './src/app/globals.css' } });
+    const expected = { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } };
+    expect(block?.settings).toEqual(expected);
   });
 
   it('composes the stylex layer through the same door', async () => {
@@ -250,29 +252,29 @@ describe('composeConfig', () => {
       libraries: ['stylex'],
     });
 
-    await expect(ruleIdsFor(config, code, 'src/components/card/styles.ts'))
-      .resolves.toContain('@stylexjs/valid-styles');
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/card/styles.ts');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('puts vue underneath nuxt rather than beside it', async () => {
     const config = await composeConfig({ framework: 'nuxt' });
 
-    await expect(enabledRuleIdsFor(config, 'src/components/badge.vue'))
-      .resolves.toContain('vue/multi-word-component-names');
+    const enabledRuleIds = await enabledRuleIdsFor(config, 'src/components/badge.vue');
+    expect(enabledRuleIds).toContain('vue/multi-word-component-names');
 
-    await expect(enabledRuleIdsFor(config, 'src/pages/about.vue'))
-      .resolves.not.toContain('vue/multi-word-component-names');
+    const configEnabledRuleIds = await enabledRuleIdsFor(config, 'src/pages/about.vue');
+    expect(configEnabledRuleIds).not.toContain('vue/multi-word-component-names');
   });
 
   it('composes the vitest layer on request and not otherwise', async () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    await expect(ruleIdsFor(await composeConfig({ vitest: true }), code, path))
-      .resolves.toContain('vitest/no-focused-tests');
+    const ruleIds = await ruleIdsFor(await composeConfig({ vitest: true }), code, path);
+    expect(ruleIds).toContain('vitest/no-focused-tests');
 
-    await expect(ruleIdsFor(await composeConfig(), code, path))
-      .resolves.not.toContain('vitest/no-focused-tests');
+    const ruleIds2 = await ruleIdsFor(await composeConfig(), code, path);
+    expect(ruleIds2).not.toContain('vitest/no-focused-tests');
   });
 
   it('composes the html layer on request and not otherwise', async () => {
@@ -285,8 +287,8 @@ describe('composeConfig', () => {
 
     await expect(ruleIds).resolves.toContain('@html-eslint/require-img-alt');
 
-    await expect(ruleIdsFor(await composeConfig({ typescript: true }), code, 'index.html'))
-      .resolves.not.toContain('@html-eslint/require-img-alt');
+    const ruleIds2 = await ruleIdsFor(await composeConfig({ typescript: true }), code, 'index.html');
+    expect(ruleIds2).not.toContain('@html-eslint/require-img-alt');
   });
 
   it('composes the astro layer on request and not otherwise', async () => {
@@ -299,8 +301,8 @@ describe('composeConfig', () => {
 
     await expect(ruleIds).resolves.toContain('astro/jsx-a11y/alt-text');
 
-    await expect(ruleIdsFor(await composeConfig({ typescript: true }), page, 'src/pages/index.astro'))
-      .resolves.not.toContain('astro/jsx-a11y/alt-text');
+    const ruleIds2 = await ruleIdsFor(await composeConfig({ typescript: true }), page, 'src/pages/index.astro');
+    expect(ruleIds2).not.toContain('astro/jsx-a11y/alt-text');
   });
 
   it('widens base to the frontmatter when astro is asked for', async () => {
@@ -350,12 +352,13 @@ describe('composeConfig', () => {
       },
     });
 
-    await expect(ruleIdsFor(config, 'export const value = 1;\n', 'src/lib/utils/Bad-Name.ts'))
-      .resolves.toContain('check-file/filename-naming-convention');
+    const ruleIds = await ruleIdsFor(config, 'export const value = 1;\n', 'src/lib/utils/Bad-Name.ts');
+    expect(ruleIds).toContain('check-file/filename-naming-convention');
 
     const ignored = await ruleIdsFor(config, 'export const value = 1;\n', 'generated/Bad-Name.ts');
 
-    expect(ignored.filter(Boolean)).toEqual([]);
+    const filtered = ignored.filter(Boolean);
+    expect(filtered).toEqual([]);
   });
 });
 
@@ -590,12 +593,15 @@ describe('layer order', () => {
         ...typescript(),
       ], file);
 
-      expect(fatalsIn(correct)).toEqual([]);
+      const fatals = fatalsIn(correct);
+      expect(fatals).toEqual([]);
       expect(reportsFrom(correct, prefix).length).toBeGreaterThan(0);
 
-      expect(fatalsIn(wrong)).toHaveLength(1);
+      const wrongFatals = fatalsIn(wrong);
+      expect(wrongFatals).toHaveLength(1);
       expect(fatalsIn(wrong)[0]).toMatch(/^Parsing error: /);
-      expect(reportsFrom(wrong, prefix)).toEqual([]);
+      const reports = reportsFrom(wrong, prefix);
+      expect(reports).toEqual([]);
     },
   );
 });

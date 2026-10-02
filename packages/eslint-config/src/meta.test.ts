@@ -86,16 +86,18 @@ it('holds compose-config to its entry, its suite and its loaders', () => {
   const composeFiles = readdirSync(join(srcDir, 'compose-config'))
     .toSorted(byName);
 
-  expect(composeFiles).toEqual([
+  const expected = [
     'composeConfig.test.ts',
     'composeConfig.ts',
     'utils',
-  ]);
+  ];
+  expect(composeFiles).toEqual(expected);
 
   const composeUtils = readdirSync(join(srcDir, 'compose-config', 'utils'))
     .toSorted(byName);
 
-  expect(composeUtils).toEqual(['loaderUtils.test.ts', 'loaderUtils.ts']);
+  const expected2 = ['loaderUtils.test.ts', 'loaderUtils.ts'];
+  expect(composeUtils).toEqual(expected2);
 });
 
 describe('tsdown entries', () => {

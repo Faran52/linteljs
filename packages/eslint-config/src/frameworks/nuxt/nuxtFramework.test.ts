@@ -41,7 +41,8 @@ describe('nuxt', () => {
     const ruleIds = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
 
     expect(ruleIds).not.toContain(null);
-    expect(ruleIds.some(startsWith('vue'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('vue'));
+    expect(anyMatch).toBe(true);
   });
 
   it.each([
@@ -51,8 +52,10 @@ describe('nuxt', () => {
   ])('lets the route file %s be one word', async (path) => {
     const rule = 'vue/multi-word-component-names';
 
-    await expect(enabledRuleIdsFor(layer, 'src/components/badge.vue')).resolves.toContain(rule);
-    await expect(enabledRuleIdsFor(layer, path)).resolves.not.toContain(rule);
+    const enabledRuleIds = await enabledRuleIdsFor(layer, 'src/components/badge.vue');
+    expect(enabledRuleIds).toContain(rule);
+    const layerEnabledRuleIds = await enabledRuleIdsFor(layer, path);
+    expect(layerEnabledRuleIds).not.toContain(rule);
   });
 
   it.each([
@@ -60,16 +63,20 @@ describe('nuxt', () => {
     'nuxt/app',
     '#imports',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('leaves ~/ out of the framework bucket', async () => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), '~/utils')).resolves.toBe(false);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), '~/utils');
+    expect(actual).toBe(false);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(nuxt())).toEqual([
+    const actual = ownBlockNames(nuxt());
+    const expected = [
       '@linteljs/nuxt/route-files',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });

@@ -34,7 +34,8 @@ describe('astro', () => {
       'src/pages/index.astro',
     );
 
-    expect(ruleIds.some(startsWith('astro/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('astro/'));
+    expect(anyMatch).toBe(true);
   });
 
   it('reports an image with no alt text in a template', async () => {
@@ -52,7 +53,8 @@ describe('astro', () => {
   it('enables no astro rule on a TypeScript file', async () => {
     const enabled = await enabledRuleIdsFor(WITH_BASE, 'src/lib/utils/sample.ts');
 
-    expect(enabled.filter(startsWith('astro/'))).toEqual([]);
+    const filtered = enabled.filter(startsWith('astro/'));
+    expect(filtered).toEqual([]);
   });
 
   it('stacks under base without either losing its rules', async () => {
@@ -73,12 +75,13 @@ describe('astro', () => {
         return name.startsWith('astro/base');
       });
 
-    expect(astroBase).toEqual([
+    const expected = [
       'astro/base/plugin',
       'astro/base',
       'astro/base/javascript',
       'astro/base/typescript',
-    ]);
+    ];
+    expect(astroBase).toEqual(expected);
   });
 
   it.each([
@@ -106,7 +109,7 @@ describe('astro', () => {
         return name?.startsWith('@linteljs/astro/typescript');
       });
 
-    expect(typed).toEqual([
+    const expected = [
       {
         name: '@linteljs/astro/typescript',
         files: ['**/*.astro'],
@@ -118,7 +121,8 @@ describe('astro', () => {
         files: ['**/*.astro/*.ts'],
         languageOptions: { parser: tseslint.parser },
       },
-    ]);
+    ];
+    expect(typed).toEqual(expected);
   });
 
   it('leaves inline text beside an element on its line, where a break would render as a space', async () => {
@@ -129,13 +133,15 @@ describe('astro', () => {
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(astro())).toEqual([
+    const actual = ownBlockNames(astro());
+    const expected = [
       '@linteljs/astro/typescript',
       '@linteljs/astro/jsx-layout',
       '@linteljs/astro/text-whitespace',
       '@linteljs/astro/typescript-scripts',
       '@linteljs/astro/untyped',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('caps a component file at 350 lines of code, frontmatter and template together', async () => {

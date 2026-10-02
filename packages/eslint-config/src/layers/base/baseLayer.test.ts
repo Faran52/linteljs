@@ -257,12 +257,13 @@ describe('base: ignores', () => {
   const built = 'src/generated/bundle.js';
 
   it('lints a path no ignore covers', async () => {
-    await expect(ruleIdsFor(base(), doubleQuoted, built)).resolves.toContain('@stylistic/quotes');
+    const ruleIds = await ruleIdsFor(base(), doubleQuoted, built);
+    expect(ruleIds).toContain('@stylistic/quotes');
   });
 
   it('reports nothing under a path the ignore list covers', async () => {
-    await expect(ruleIdsFor(base({ ignores: ['src/generated/**'] }), doubleQuoted, built))
-      .resolves.not.toContain('@stylistic/quotes');
+    const ruleIds = await ruleIdsFor(base({ ignores: ['src/generated/**'] }), doubleQuoted, built);
+    expect(ruleIds).not.toContain('@stylistic/quotes');
   });
 
   it('reports nothing under a path only .gitignore covers', async () => {
@@ -273,8 +274,8 @@ describe('base: ignores', () => {
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
 
     try {
-      await expect(ruleIdsFor(base(), doubleQuoted, join(root, 'dist/bundle.js')))
-        .resolves.not.toContain('@stylistic/quotes');
+      const ruleIds = await ruleIdsFor(base(), doubleQuoted, join(root, 'dist/bundle.js'));
+      expect(ruleIds).not.toContain('@stylistic/quotes');
     }
     finally {
       spy.mockRestore();
@@ -304,7 +305,7 @@ describe('base: ignores', () => {
           return name.startsWith('@linteljs/base');
         });
 
-      expect(baseBlocks).toEqual([
+      const expected = [
         '@linteljs/base/gitignore',
         '@linteljs/base/ignores',
         '@linteljs/base/typescript-syntax',
@@ -316,7 +317,8 @@ describe('base: ignores', () => {
         '@linteljs/base/utils-size',
         '@linteljs/base/test-size',
         '@linteljs/base/naming',
-      ]);
+      ];
+      expect(baseBlocks).toEqual(expected);
     }
     finally {
       spy.mockRestore();
@@ -339,7 +341,8 @@ describe('base: ignores', () => {
         });
 
       expect(gitignoreEntries).toEqual([]);
-      await expect(ruleIdsFor(base(), doubleQuoted, built)).resolves.toContain('@stylistic/quotes');
+      const ruleIds = await ruleIdsFor(base(), doubleQuoted, built);
+      expect(ruleIds).toContain('@stylistic/quotes');
     }
     finally {
       spy.mockRestore();
@@ -354,48 +357,52 @@ describe('base: ignores', () => {
 
 describe('base: quality', () => {
   it('reports a function declaration', async () => {
-    await expect(ruleIdsFor(base(), 'export function foo() {\n  return 1;\n}\n', TS_FILE))
-      .resolves.toContain('func-style');
+    const ruleIds = await ruleIdsFor(base(), 'export function foo() {\n  return 1;\n}\n', TS_FILE);
+    expect(ruleIds).toContain('func-style');
   });
 
   it('reports console.log but not console.warn or console.error', async () => {
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', TS_FILE)).resolves.toContain('no-console');
-    await expect(ruleIdsFor(base(), 'console.warn(1);\n', TS_FILE)).resolves.not.toContain('no-console');
-    await expect(ruleIdsFor(base(), 'console.error(1);\n', TS_FILE)).resolves.not.toContain('no-console');
+    const ruleIds = await ruleIdsFor(base(), 'console.log(1);\n', TS_FILE);
+    expect(ruleIds).toContain('no-console');
+    const ruleIds2 = await ruleIdsFor(base(), 'console.warn(1);\n', TS_FILE);
+    expect(ruleIds2).not.toContain('no-console');
+    const ruleIds3 = await ruleIdsFor(base(), 'console.error(1);\n', TS_FILE);
+    expect(ruleIds3).not.toContain('no-console');
   });
 
   it('reports console.log in a .js file too', async () => {
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', 'src/tool.js')).resolves.toContain('no-console');
+    const ruleIds = await ruleIdsFor(base(), 'console.log(1);\n', 'src/tool.js');
+    expect(ruleIds).toContain('no-console');
   });
 
   it('allows a fixture to execute a source string, and no source file to', async () => {
     const code = "import { runInThisContext } from 'node:vm';\n\nexport const run = (source: string): unknown => {\n"
       + '  return runInThisContext(source);\n};\n';
 
-    await expect(ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts'))
-      .resolves.not.toContain('sonarjs/code-eval');
+    const ruleIds = await ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts');
+    expect(ruleIds).not.toContain('sonarjs/code-eval');
 
-    await expect(ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts'))
-      .resolves.not.toContain('sonarjs/code-eval');
+    const ruleIds2 = await ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts');
+    expect(ruleIds2).not.toContain('sonarjs/code-eval');
 
-    await expect(ruleIdsFor(base(), code, 'src/runner.ts'))
-      .resolves.toContain('sonarjs/code-eval');
+    const ruleIds3 = await ruleIdsFor(base(), code, 'src/runner.ts');
+    expect(ruleIds3).toContain('sonarjs/code-eval');
   });
 
   it('grants a fixture nothing beyond that one rule', async () => {
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', '__mocks__/chromeFixture.ts'))
-      .resolves.toContain('no-console');
+    const ruleIds = await ruleIdsFor(base(), 'console.log(1);\n', '__mocks__/chromeFixture.ts');
+    expect(ruleIds).toContain('no-console');
   });
 
   it('allows console in a build script, and nowhere near it', async () => {
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', 'scripts/generateIcons.js'))
-      .resolves.not.toContain('no-console');
+    const ruleIds = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/generateIcons.js');
+    expect(ruleIds).not.toContain('no-console');
 
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', 'scripts/nested/build.ts'))
-      .resolves.not.toContain('no-console');
+    const ruleIds2 = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/nested/build.ts');
+    expect(ruleIds2).not.toContain('no-console');
 
-    await expect(ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts'))
-      .resolves.toContain('no-console');
+    const ruleIds3 = await ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts');
+    expect(ruleIds3).toContain('no-console');
   });
 
   it('prefers destructuring in an object declaration only', async () => {
@@ -421,7 +428,7 @@ describe('base: quality', () => {
     const entry = await ruleEntryFor(base(), TS_FILE, 'prefer-destructuring');
     const ruleNames = await ruleNamesFor(base(), TS_FILE);
 
-    expect(entry).toEqual([
+    const expected = [
       2,
       {
         VariableDeclarator: {
@@ -434,7 +441,8 @@ describe('base: quality', () => {
         },
       },
       { enforceForRenamedProperties: false },
-    ]);
+    ];
+    expect(entry).toEqual(expected);
 
     expect(ruleNames).not.toContain('@typescript-eslint/prefer-destructuring');
   });
@@ -464,7 +472,8 @@ describe('base: duplicate imports', () => {
     const code = "import type { ZodType } from 'zod';\nimport { z } from 'zod';\n\n"
       + 'export const value: ZodType = z.string();\n';
 
-    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('import-x/no-duplicates');
+    const ruleIds = await ruleIdsFor(base(), code, TS_FILE);
+    expect(ruleIds).toContain('import-x/no-duplicates');
   });
 });
 
@@ -474,14 +483,14 @@ describe('base: restricted imports', () => {
       return `import { sortBy } from '${from}';\n\nexport const run = sortBy;\n`;
     };
 
-    await expect(ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE))
-      .resolves.toContain('no-restricted-imports');
+    const ruleIds = await ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE);
+    expect(ruleIds).toContain('no-restricted-imports');
 
-    await expect(ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE))
-      .resolves.toContain('no-restricted-imports');
+    const ruleIds2 = await ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE);
+    expect(ruleIds2).toContain('no-restricted-imports');
 
-    await expect(ruleIdsFor(base(), importing('es-toolkit'), TS_FILE))
-      .resolves.not.toContain('no-restricted-imports');
+    const ruleIds3 = await ruleIdsFor(base(), importing('es-toolkit'), TS_FILE);
+    expect(ruleIds3).not.toContain('no-restricted-imports');
   });
 });
 
@@ -631,7 +640,8 @@ describe('base: import-x/no-cycle', () => {
   const entry = join(import.meta.dirname, '../../../__mocks__/fixtures/cycle/a.cts');
 
   it('reports a two-file cycle across .cts files', async () => {
-    await expect(ruleIdsForFile(base(), entry)).resolves.toContain('import-x/no-cycle');
+    const actual = await ruleIdsForFile(base(), entry);
+    expect(actual).toContain('import-x/no-cycle');
   });
 
   it('does not report the same cycle under the hand-written settings block it replaces', async () => {
@@ -650,7 +660,8 @@ describe('base: import-x/no-cycle', () => {
       },
     ];
 
-    await expect(ruleIdsForFile(handWritten, entry)).resolves.toEqual([]);
+    const actual = await ruleIdsForFile(handWritten, entry);
+    expect(actual).toEqual([]);
   });
 });
 
@@ -667,7 +678,8 @@ describe('base: resolver options', () => {
   it('tries declaration files by default, and keeps the upstream parser settings', () => {
     const settings = settingsOf(base());
 
-    expect(settings?.['import-x/resolver']).toEqual({ typescript: RESOLVER_DEFAULTS });
+    const expected = { typescript: RESOLVER_DEFAULTS };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
     expect(settings).toHaveProperty('import-x/parsers');
     expect(settings).toHaveProperty('import-x/extensions');
     expect(settings).toHaveProperty('import-x/external-module-folders');
@@ -676,12 +688,13 @@ describe('base: resolver options', () => {
   it('points the resolver at a named tsconfig when one is supplied, keeping the defaults', () => {
     const settings = settingsOf(base({ resolver: { project: 'packages/*/tsconfig.json' } }));
 
-    expect(settings?.['import-x/resolver']).toEqual({
+    const expected = {
       typescript: {
         ...RESOLVER_DEFAULTS,
         project: 'packages/*/tsconfig.json',
       },
-    });
+    };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
 
     expect(settings).toHaveProperty('import-x/parsers');
   });
@@ -690,12 +703,13 @@ describe('base: resolver options', () => {
     const conditionNames = ['import', 'types'];
     const settings = settingsOf(base({ resolver: { conditionNames } }));
 
-    expect(settings?.['import-x/resolver']).toEqual({
+    const expected = {
       typescript: {
         ...RESOLVER_DEFAULTS,
         conditionNames,
       },
-    });
+    };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
   });
 
   it('passes noWarnOnMultipleProjects through only when asked', () => {
@@ -706,7 +720,7 @@ describe('base: resolver options', () => {
       },
     }));
 
-    expect(settings).toMatchObject({
+    const expected = {
       'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
@@ -714,9 +728,12 @@ describe('base: resolver options', () => {
           noWarnOnMultipleProjects: true,
         },
       },
-    });
+    };
+    expect(settings).toMatchObject(expected);
 
-    expect(settingsOf(base())).toMatchObject({ 'import-x/resolver': { typescript: { alwaysTryTypes: true } } });
+    const settings2 = settingsOf(base());
+    const expected2 = { 'import-x/resolver': { typescript: { alwaysTryTypes: true } } };
+    expect(settings2).toMatchObject(expected2);
   });
 });
 

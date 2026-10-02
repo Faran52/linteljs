@@ -22,7 +22,8 @@ describe('tanstackQuery', () => {
     ].join('\n');
     const ruleIds = await ruleIdsFor([...react(), ...tanstackQuery()], code, 'src/lib/hooks/useThing.ts');
 
-    expect(ruleIds.some(startsWith('@tanstack/query/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('@tanstack/query/'));
+    expect(anyMatch).toBe(true);
   });
 
   it.each([

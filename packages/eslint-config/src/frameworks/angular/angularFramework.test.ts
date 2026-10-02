@@ -21,11 +21,11 @@ describe('angular', () => {
     const decorated = "@Component({ selector: 'app-mark' })\nexport class Mark {}\n";
     const bare = 'export class Bag {}\n';
 
-    await expect(ruleIdsFor([...base(), ...angular()], decorated, 'src/app/mark.ts'))
-      .resolves.not.toContain('@typescript-eslint/no-extraneous-class');
+    const ruleIds = await ruleIdsFor([...base(), ...angular()], decorated, 'src/app/mark.ts');
+    expect(ruleIds).not.toContain('@typescript-eslint/no-extraneous-class');
 
-    await expect(ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts'))
-      .resolves.toContain('@typescript-eslint/no-extraneous-class');
+    const ruleIds2 = await ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts');
+    expect(ruleIds2).toContain('@typescript-eslint/no-extraneous-class');
   });
 
   it('caps a component class file at 500 lines of code', async () => {
@@ -75,7 +75,8 @@ describe('angular', () => {
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.html');
 
     expect(ruleIds).not.toContain(null);
-    expect(ruleIds.some(startsWith('@angular-eslint/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('@angular-eslint/'));
+    expect(anyMatch).toBe(true);
   });
 
   it('reports accessibility findings on a template', async () => {
@@ -98,7 +99,8 @@ describe('angular', () => {
     ].join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.ts');
 
-    expect(ruleIds.some(startsWith('@angular-eslint/'))).toBe(true);
+    const anyMatch = ruleIds.some(startsWith('@angular-eslint/'));
+    expect(anyMatch).toBe(true);
   });
 
   it('reports on a template written inline in a component', async () => {
@@ -117,15 +119,18 @@ describe('angular', () => {
     'rxjs',
     'rxjs/operators',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    await expect(sortsAheadOfPackages(base({ frameworkGroup: angularGroup }), specifier)).resolves.toBe(true);
+    const actual = await sortsAheadOfPackages(base({ frameworkGroup: angularGroup }), specifier);
+    expect(actual).toBe(true);
   });
 
   it('names every block it writes', () => {
-    expect(ownBlockNames(angular())).toEqual([
+    const actual = ownBlockNames(angular());
+    const expected = [
       '@linteljs/angular/inline-templates',
       '@linteljs/angular/decorated-classes',
       '@linteljs/angular/sonarjs',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it.each([
