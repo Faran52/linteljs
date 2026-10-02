@@ -19,6 +19,7 @@ import type { Answers } from '@config/types';
 const NOT_A_CASE = 'react pnpm vitest no-such-answer';
 
 describe('starterCover', () => {
+  // Every case renders every starter: about 5s plain, past the 30s default once Stryker instruments it on CI.
   it('reaches every starter text from the committed cases', () => {
     const cover = starterCover(STARTER_CASES);
     const toAdd = `add to STARTER_CASES:\n${cover.suggested.join('\n')}`;
@@ -27,7 +28,7 @@ describe('starterCover', () => {
     expect(cover.unknown).toStrictEqual([]);
     expect(cover.unplaced).toStrictEqual([]);
     expect(cover.suggested).toStrictEqual([]);
-  });
+  }, 120_000);
 
   it('suggests cases that reach what no case reaches', () => {
     const cover = starterCover([]);
