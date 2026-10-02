@@ -118,8 +118,11 @@ const render = (element: HTMLElement, language: Language): void => {
     return;
   }
 
-  element.replaceChildren(...partsOf(t(key, element.dataset, language))
-    .map(nodeOf));
+  const text = t(key, element.dataset, language);
+  const nodes = partsOf(text)
+    .map(nodeOf);
+
+  element.replaceChildren(...nodes);
 };
 
 const pickerOf = (): HTMLSelectElement | undefined => {

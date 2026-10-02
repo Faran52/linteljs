@@ -22,11 +22,13 @@ const here = Astro.url.pathname;
   <nav {...styles.tabs} aria-label="Main">
     {PAGES
       .map((page) => {
+        const isCurrent = isCurrentPath(here, page.path);
+
         return (
           <a
-            {...styles.tab(isCurrentPath(here, page.path))}
+            {...styles.tab(isCurrent)}
             href={page.path}
-            aria-current={isCurrentPath(here, page.path) ? 'page' : undefined}
+            aria-current={isCurrent ? 'page' : undefined}
             data-i18n={page.id}
           >
             {translateId(page.id)}

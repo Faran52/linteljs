@@ -58,22 +58,27 @@ describe('renderPopup', () => {
   });
 
   it('offers every language, each named in itself', () => {
-    const options = [...pickerOf(open()).options]
+    const picker = pickerOf(open());
+    const options = [...picker.options]
       .map((option) => {
-        return [
+        const shown = [
           option.value,
           option.lang,
           option.textContent,
         ];
+
+        return shown;
       });
 
     const expected = languages
       .map(({ id, label }) => {
-        return [
+        const offered = [
           id,
           id,
           label,
         ];
+
+        return offered;
       });
 
     expect(options).toEqual(expected);

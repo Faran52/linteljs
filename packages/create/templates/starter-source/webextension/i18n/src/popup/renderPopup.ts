@@ -36,8 +36,11 @@ export const renderPopup = (root: HTMLElement): void => {
     document.documentElement.dir = directionOf(language);
     lede.textContent = t('popupLede', language);
 
-    hint.replaceChildren(...partsOf(t('popupGate', language, { command: CHECK }))
-      .map(nodeOf));
+    const gate = t('popupGate', language, { command: CHECK });
+    const gateNodes = partsOf(gate)
+      .map(nodeOf);
+
+    hint.replaceChildren(...gateNodes);
 
     picker.value = language;
     picker.setAttribute('aria-label', t('language', language));
