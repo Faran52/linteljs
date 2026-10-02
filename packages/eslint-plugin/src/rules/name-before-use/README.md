@@ -17,7 +17,8 @@ those three stand only where they get a name or stand alone:
 
 Everywhere else (conditions, `for` headers, a ternary's test, call arguments, `expect`, `return`, an
 arrow's body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
-of the outer one's value and is judged there. `as`, `satisfies`, `!`, an angle-bracket assertion and optional chaining pass the
+of the outer one's value and is judged there, including one reached through a spread or a branch, as in
+`{ ...(exact && { exact }) }`. `as`, `satisfies`, `!`, an angle-bracket assertion and optional chaining pass the
 position through.
 
 A ternary's two branches and the right side of `&&`, `||` and `??` stand where the whole expression
@@ -47,6 +48,11 @@ expect(parse(text)).toBe(expected);
 ```ts
 // incorrect: an await as a ternary's test
 const label = (await isReady()) ? 'ready' : 'waiting';
+```
+
+```ts
+// incorrect: a literal spread into a call
+run(...[alpha, bravo]);
 ```
 
 ```ts
@@ -82,6 +88,11 @@ expect(parsed).toBe(expected);
 // correct: the const names both branches and the right side
 const rules = withVitest ? await loadVitest() : [];
 const config = source ?? await loadConfig();
+```
+
+```ts
+// correct: a conditional spread is part of the named literal
+const options = { ...(flag ? { alpha } : {}), size };
 ```
 
 ```ts

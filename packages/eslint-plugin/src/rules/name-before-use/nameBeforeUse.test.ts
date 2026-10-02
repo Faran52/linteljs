@@ -26,6 +26,11 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     // Nested literals belong to the named outer one.
     'const config = { plugins: [alpha], rules: { beta: [\'error\', { max: 1 }] } };',
     'const matrix = [[1, 2], [3, 4]];',
+    'const items = [...[alpha]];',
+    'const options = { ...(exact && { exact }), size };',
+    'const options = { ...(flag ? { alpha } : {}) };',
+    'const items = [...(flag ? [alpha] : []), beta];',
+    'const config = { rules: flag ? { alpha } : { beta } };',
 
     // Wrappers stand where they stand.
     'const items = [alpha] as const;',
@@ -190,8 +195,20 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [literalError],
     },
     {
-      code: 'const items = [...[alpha]];',
+      code: 'run(...[alpha]);',
       errors: [literalError],
+    },
+    {
+      code: 'run({ ...(flag && { alpha }) });',
+      errors: [literalError],
+    },
+    {
+      code: 'const items = [...([alpha] || beta)];',
+      errors: [literalError],
+    },
+    {
+      code: 'const options = { ...(flag ? await load() : {}) };',
+      errors: [awaitError],
     },
     {
       code: 'const value = { [[alpha]]: 1 };',

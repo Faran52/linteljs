@@ -46,6 +46,8 @@ const NAMING_TYPES = new Set([
 
 const CALL_TYPES = new Set(['CallExpression', 'NewExpression']);
 
+const LITERAL_TYPES = new Set(['ArrayExpression', 'ObjectExpression']);
+
 const isWrapper = (parent: RuleNode): boolean => {
   return TRANSPARENT_TYPES.has(parent.type);
 };
@@ -87,15 +89,20 @@ const standsNamed = (node: RuleNode): boolean => {
   return NAMING_TYPES.has(parent.type);
 };
 
+// A spread hands its operand to whatever holds the spread, as in `{ ...(flag ? { alpha } : {}) }`.
+const isMember: PassesPosition = (parent, child) => {
+  return parent.type === 'SpreadElement' || isBranch(parent, child);
+};
+
 // A literal nested in a literal is part of the outer one's value, judged once there.
 const isInsideLiteral = (node: RuleNode): boolean => {
-  const [child, parent] = usingParentOf(node, isWrapper);
+  const [child, parent] = usingParentOf(node, isMember);
 
   if (parent.type === 'Property') {
     return Object.is(parent.value, child);
   }
 
-  return parent.type === 'ArrayExpression';
+  return LITERAL_TYPES.has(parent.type);
 };
 
 const isEmptyLiteral = (node: LiteralNode): boolean => {
