@@ -37,6 +37,13 @@ describe('safeProjectPath', () => {
     expect(actual).toBe(join(cwd, 'src', 'main.tsx'));
   });
 
+  it('resolves a target under a parent directory that already exists', async () => {
+    await mkdir(join(cwd, 'src'));
+
+    const actual = await safeProjectPath(cwd, 'src/main.tsx');
+    expect(actual).toBe(join(cwd, 'src', 'main.tsx'));
+  });
+
   it('resolves a target at the root of a project that is itself a symbolic link', async () => {
     await mkdir(join(cwd, 'real'));
     await symlink(join(cwd, 'real'), join(cwd, 'linked'));

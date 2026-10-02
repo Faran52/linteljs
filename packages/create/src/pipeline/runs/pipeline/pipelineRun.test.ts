@@ -137,6 +137,23 @@ describe('runPipeline against a directory that already exists', () => {
     expect(legacyExists).toBe(true);
   });
 
+  it('removes a 1.x config once the current name is written', async () => {
+    const legacyPath = join(cwd, LEGACY_CONFIG_PATH);
+
+    await writeFile(legacyPath, '{}\n', 'utf8');
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: hostedAnswersFor({}),
+      existing: true,
+      skip: ['install'],
+    });
+
+    const legacyExists = await exists(legacyPath);
+    expect(legacyExists).toBe(false);
+  });
+
   it('writes nothing of a stage it was told to skip', async () => {
     const written: string[] = [];
 

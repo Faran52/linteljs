@@ -62,6 +62,18 @@ describe('artifactWriter', () => {
     expect(file).toBe('project\n');
   });
 
+  it('writes a preserved artifact that is not there yet', async () => {
+    const artifact = {
+      ...emitted('standard', 'kept.txt', 'shipped\n'),
+      preserve: true,
+    } satisfies Artifact;
+
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(true);
+    const file = await readFile(join(cwd, 'kept.txt'), 'utf8');
+    expect(file).toBe('shipped\n');
+  });
+
   it('leaves an existing preserved artifact alone on a run that plants seeds too', async () => {
     await writeFile(join(cwd, 'kept.txt'), 'project\n', 'utf8');
 
