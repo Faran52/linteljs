@@ -255,7 +255,7 @@ export const narrow = (
       .join('\n')}\n`;
   };
 
-  for (const pad of [
+  const pads = [
     0,
     1,
     2,
@@ -263,7 +263,9 @@ export const narrow = (
     8,
     16,
     32,
-  ]) {
+  ];
+
+  for (const pad of pads) {
     const padded = slice(pad);
     const reproduces = evaluate(context, padded, name, finding.rules).findings
       .some((candidate) => {

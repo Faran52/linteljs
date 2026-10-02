@@ -12,6 +12,7 @@ import { configFor, moduleOf } from '../../utils/lintUtils.ts';
 import { AUDIT_RULES, hoistedProbe } from './reportShapeUtils.ts';
 
 import type { Linter } from 'eslint';
+import type { LintelRuleModule } from '../../../../src/types.ts';
 import type { AuditContext, Counts } from '../types.ts';
 
 export const pluginConfig = (context: AuditContext, names: string[]): Linter.Config[] => {
@@ -22,21 +23,23 @@ export const pluginConfig = (context: AuditContext, names: string[]): Linter.Con
     return cached;
   }
 
-  const config = configFor(
-    Object.fromEntries(names
-      .map((name) => {
-        return [name, moduleOf(name)];
-      })),
-    Object.fromEntries(names
-      .map((name) => {
-        const options = context.options[name];
-        const entry: Linter.RuleEntry = options === undefined ? 'error' : ['error', options];
+  const modules = Object.fromEntries(names
+    .map((name) => {
+      const registered: [string, LintelRuleModule] = [name, moduleOf(name)];
 
-        return [`@linteljs/${name}`, entry];
-      })),
-    // Files disable rules this config never loads, and ESLint 9+ deletes such a comment when left on.
-    { reportUnusedDisableDirectives: 'off' },
-  );
+      return registered;
+    }));
+  const settings = Object.fromEntries(names
+    .map((name) => {
+      const options = context.options[name];
+      const entry: Linter.RuleEntry = options === undefined ? 'error' : ['error', options];
+      const setting: [string, Linter.RuleEntry] = [`@linteljs/${name}`, entry];
+
+      return setting;
+    }));
+  // Files disable rules this config never loads, and ESLint 9+ deletes such a comment when left on.
+  const linterOptions: Linter.LinterOptions = { reportUnusedDisableDirectives: 'off' };
+  const config = configFor(modules, settings, linterOptions);
 
   context.configCache.set(key, config);
 
@@ -46,7 +49,7 @@ export const pluginConfig = (context: AuditContext, names: string[]): Linter.Con
 export const auditConfig = (context: AuditContext): Linter.Config[] => {
   return pluginConfig(context, AUDIT_RULES)
     .map((entry) => {
-      return {
+      const probed = {
         ...entry,
         plugins: {
           ...entry.plugins,
@@ -57,12 +60,15 @@ export const auditConfig = (context: AuditContext): Linter.Config[] => {
           'probe/hoisted': 'error' as const,
         },
       };
+
+      return probed;
     });
 };
 
 export const fix = (context: AuditContext, source: string, name: string, names: string[]): string => {
   const started = performance.now();
-  const { output } = context.linter.verifyAndFix(source, pluginConfig(context, names), name);
+  const config = pluginConfig(context, names);
+  const { output } = context.linter.verifyAndFix(source, config, name);
 
   if (context.fixTimes.length === 0) {
     context.fixTimes.push(performance.now() - started);
@@ -94,7 +100,7 @@ export const subsetOf = (candidates: string[], names: string[]): string[] => {
 };
 
 export const emptyCounts = (): Counts => {
-  return {
+  const counts: Counts = {
     changed: 0,
     compiled: 0,
     duplicate: 0,
@@ -103,6 +109,8 @@ export const emptyCounts = (): Counts => {
     scanned: 0,
     unparsed: 0,
   };
+
+  return counts;
 };
 
 export const load = (context: AuditContext, file: string, bucket: Counts): [string, string, Program] | undefined => {
@@ -130,9 +138,11 @@ export const load = (context: AuditContext, file: string, bucket: Counts): [stri
     return undefined;
   }
 
-  return [
+  const loaded: [string, string, Program] = [
     source,
     name,
     ast,
   ];
+
+  return loaded;
 };

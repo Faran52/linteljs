@@ -41,7 +41,10 @@ const SIZE_BUCKETS: [string, number][] = [
 
 // Nearest-rank, so the answer is a time some file took.
 const quantile = (sorted: number[], fraction: number): number => {
-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] ?? 0;
+  const rank = Math.floor(sorted.length * fraction);
+  const index = Math.min(sorted.length - 1, rank);
+
+  return sorted[index] ?? 0;
 };
 
 const medianOf = (values: number[]): number => {
@@ -70,17 +73,23 @@ const bucketRows = (timings: Timing[]): BucketRow[] => {
           return sample.bytes >= floor && sample.bytes < limit;
         });
 
-      return inBucket.length === 0
-        ? []
-        : [{
-            files: inBucket.length,
-            label,
-            medianMs: medianOf(inBucket
-              .map((sample) => {
-                return sample.ms;
-              })),
-            nsPerByte: medianOf(inBucket.map(nanosPerByte)),
-          }];
+      if (inBucket.length === 0) {
+        return [];
+      }
+
+      const durations = inBucket
+        .map((sample) => {
+          return sample.ms;
+        });
+      const costs = inBucket.map(nanosPerByte);
+      const rows: BucketRow[] = [{
+        files: inBucket.length,
+        label,
+        medianMs: medianOf(durations),
+        nsPerByte: medianOf(costs),
+      }];
+
+      return rows;
     });
 };
 
@@ -129,8 +138,7 @@ const outlierLines = (timings: Timing[]): string[] => {
     });
 
   const outliers = orderBy(slow, [nanosPerByte], ['desc']);
-
-  return [
+  const lines = [
     `${String(outliers.length)} timing outlier(s): over ${String(OUTLIER_FACTOR)}x the median `
     + `${median.toFixed(0)} ns/byte, among files over ${String(OUTLIER_FLOOR_BYTES)} bytes and `
     + `${String(OUTLIER_FLOOR_MS)}ms`,
@@ -141,6 +149,8 @@ const outlierLines = (timings: Timing[]): string[] => {
           + `${nanosPerByte(sample).toFixed(0)} ns/byte  ${sample.file}`;
       }),
   ];
+
+  return lines;
 };
 
 export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (file: string) => Dominant): void => {
@@ -161,7 +171,7 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
   const rows = bucketRows(timings);
   const slowest = orderBy(timings, ['ms'], ['desc']).slice(0, 20);
 
-  log([
+  const report = [
     'timing: one whole-plugin --fix pass per linted file, the audit pass excluded',
     `  ${String(timings.length)} files in ${lintSeconds.toFixed(1)}s of fix time, `
     + `${(timings.length / lintSeconds).toFixed(1)} files/s (${(wallMs / 1000).toFixed(1)}s wall, `
@@ -184,8 +194,7 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
     ...slowest
       .flatMap((sample) => {
         const dominant = dominantRule(sample.file);
-
-        return [
+        const sampleLines = [
           `    ${sample.ms
             .toFixed(1)
             .padStart(8)}ms ${kib(sample.bytes).padStart(11)} `
@@ -195,10 +204,14 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
               + `${dominant.ms.toFixed(1)}ms over a ${dominant.baseline.toFixed(1)}ms parse`,
           `      ${sample.file}`,
         ];
+
+        return sampleLines;
       }),
     ...outlierLines(timings)
       .map((line) => {
         return `  ${line}`;
       }),
-  ].join('\n'));
+  ].join('\n');
+
+  log(report);
 };

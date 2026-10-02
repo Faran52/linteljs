@@ -57,8 +57,7 @@ export const hoistedProbe: Rule.RuleModule = {
   create: (context) => {
     const { sourceCode } = context;
     const reader: AncestorReader = sourceCode;
-
-    return {
+    const visitors: Rule.RuleListener = {
       FunctionDeclaration: (node) => {
         const [variable] = sourceCode.getDeclaredVariables(node);
         const start = node.range?.[0] ?? 0;
@@ -82,6 +81,8 @@ export const hoistedProbe: Rule.RuleModule = {
         }
       },
     };
+
+    return visitors;
   },
 };
 
@@ -182,11 +183,13 @@ export const shapesOf = (ast: Program): Shapes => {
 };
 
 const finding = (ruleId: string, category: string, detail: string): Finding => {
-  return {
+  const reported = {
     category,
     detail,
     rules: [ruleId.replace('@linteljs/', '')],
   };
+
+  return reported;
 };
 
 export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<string>): Finding | undefined => {
