@@ -95,7 +95,7 @@ const expectedPresetNames = [
 
 // The configs below name rules by hand, so they would pass with every preset key misspelled.
 const esmPresetConfig = (pluginPath: string): string => {
-  return [
+  const config = [
     `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
     'export default [',
@@ -103,10 +103,12 @@ const esmPresetConfig = (pluginPath: string): string => {
     '];',
     '',
   ].join('\n');
+
+  return config;
 };
 
 const esmConfig = (pluginPath: string): string => {
-  return [
+  const config = [
     `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
     'export default [',
@@ -119,10 +121,12 @@ const esmConfig = (pluginPath: string): string => {
     '];',
     '',
   ].join('\n');
+
+  return config;
 };
 
 const cjsConfig = (pluginPath: string): string => {
-  return [
+  const config = [
     `const linteljs = require(${JSON.stringify(pluginPath)});`,
     '',
     'module.exports = [',
@@ -135,6 +139,8 @@ const cjsConfig = (pluginPath: string): string => {
     '];',
     '',
   ].join('\n');
+
+  return config;
 };
 
 const eslintBin = join(root, 'node_modules', 'eslint', 'bin', 'eslint.js');
@@ -160,23 +166,31 @@ const checkFlavour = async (name: string, configFile: string, configSource: stri
 
   assert.deepEqual(fatalOf(result), [], `${name}: fatal parse error`);
 
+  const firedIds = [...reported].join(', ');
+
   for (const ruleId of expectedRuleIds) {
-    assert.ok(reported.has(ruleId), `${name}: expected ${ruleId} to report, got ${[...reported].join(', ')}`);
+    assert.ok(reported.has(ruleId), `${name}: expected ${ruleId} to report, got ${firedIds}`);
   }
 
   log(`${name} entry loaded, ${String(reported.size)}/${String(expectedRuleIds.length)} expected rule ids fired`);
 };
 
-const esmEntry = pathToFileURL(join(distDir, 'index.mjs')).href;
+const esmPath = join(distDir, 'index.mjs');
+const esmEntry = pathToFileURL(esmPath).href;
+const cjsPath = join(distDir, 'index.js');
+const esmSource = esmConfig(esmEntry);
+const cjsSource = cjsConfig(cjsPath);
+const esmPresetSource = esmPresetConfig(esmEntry);
 
 await Promise.all([
-  checkFlavour('esm', 'eslint.config.mjs', esmConfig(esmEntry)),
-  checkFlavour('cjs', 'eslint.config.cjs', cjsConfig(join(distDir, 'index.js'))),
-  checkFlavour('esm-preset', 'eslint.config.mjs', esmPresetConfig(esmEntry)),
+  checkFlavour('esm', 'eslint.config.mjs', esmSource),
+  checkFlavour('cjs', 'eslint.config.cjs', cjsSource),
+  checkFlavour('esm-preset', 'eslint.config.mjs', esmPresetSource),
 ]);
 
 // A `.cjs` flat config gets the namespace from `require`, an ESM one the default: both must be a plugin.
-const cjsNamespace = await defaultExportOf(pathToFileURL(join(distDir, 'index.js')).href);
+const cjsEntry = pathToFileURL(cjsPath).href;
+const cjsNamespace = await defaultExportOf(cjsEntry);
 const esmDefault = await defaultExportOf(esmEntry);
 
 assert.ok(isPluginShape(cjsNamespace), 'cjs require(): no `rules` and `configs` on the default export');
@@ -242,7 +256,9 @@ for (const file of readdirSync(distDir)) {
   const reference = /sourceMappingURL=(\S+)/.exec(contents)?.[1];
 
   if (reference !== undefined && !file.endsWith('.map')) {
-    assert.ok(existsSync(join(distDir, reference)), `${file} points at ${reference}, which is not in the package`);
+    const mapPath = join(distDir, reference);
+
+    assert.ok(existsSync(mapPath), `${file} points at ${reference}, which is not in the package`);
   }
 
   assert.ok(!contents.includes('tslib'), `${file} references tslib, which is not a runtime dependency`);
@@ -255,7 +271,8 @@ for (const file of readdirSync(distDir)) {
 log('no dangling sourcemap, no runtime dependency, no API newer than the declared Node floor');
 
 // Every version has published this path, which the move into `src/rules/` once dropped.
-const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules'))
+const docsDir = join(pkgDir, 'docs', 'rules');
+const packedDocs = readdirSync(docsDir)
   .sort(alphabetically);
 
 const ruleDocs = Object.keys(esmDefault.rules)

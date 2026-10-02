@@ -124,6 +124,13 @@ export const TS_EXPECTED = [
   '@linteljs/union-newline',
 ];
 
+const tsRules = Object.fromEntries(TS_EXPECTED
+  .map((id) => {
+    const setting: [string, string] = [id, 'error'];
+
+    return setting;
+  }));
+
 export const tsLegacyConfig = JSON.stringify({
   root: true,
   parser: '@typescript-eslint/parser',
@@ -132,10 +139,7 @@ export const tsLegacyConfig = JSON.stringify({
     sourceType: 'module',
   },
   plugins: ['@linteljs'],
-  rules: Object.fromEntries(TS_EXPECTED
-    .map((id) => {
-      return [id, 'error'];
-    })),
+  rules: tsRules,
 }, null, 2);
 
 export const tsFlatConfig = [

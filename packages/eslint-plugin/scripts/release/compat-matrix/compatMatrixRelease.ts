@@ -67,8 +67,13 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
 
   writeFileSync(join(dir, 'fixture.js'), FIXTURE);
   writeFileSync(join(dir, 'fixture.ts'), TS_FIXTURE);
-  writeFileSync(join(dir, configName(major, false)), isFlat(major) ? flatConfig : legacyConfig);
-  writeFileSync(join(dir, configName(major, true)), isFlat(major) ? tsFlatConfig : tsLegacyConfig);
+  const configPath = join(dir, configName(major, false));
+
+  writeFileSync(configPath, isFlat(major) ? flatConfig : legacyConfig);
+
+  const tsConfigPath = join(dir, configName(major, true));
+
+  writeFileSync(tsConfigPath, isFlat(major) ? tsFlatConfig : tsLegacyConfig);
 
   // The 2019 parser's peers do not name this old ESLint on the nose; the pairing in TS_TOOLING is the check.
   await execFileAsync('npm', [
@@ -118,13 +123,13 @@ const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean
     throw new Error(`${typescript ? 'typescript ' : ''}fatal ${JSON.stringify(fatal)}`);
   }
 
-  return [
-    (fix ? [] : expectedFor(typescript))
-      .filter((id) => {
-        return !ruleIdsOf(result).includes(id);
-      }),
-    result.output ?? '',
-  ];
+  const missing = (fix ? [] : expectedFor(typescript))
+    .filter((id) => {
+      return !ruleIdsOf(result).includes(id);
+    });
+  const verdict: [string[], string] = [missing, result.output ?? ''];
+
+  return verdict;
 };
 
 // Each major is its own install, so all six run at once.
@@ -137,32 +142,38 @@ const check = async (major: Major, tarball: string): Promise<Outcome> => {
     const absent = [...missing, ...tsMissing];
 
     if (absent.length > 0) {
-      return {
+      const unreported: Outcome = {
         failures: [`eslint ${installed}: no report from ${absent.join(', ')}`],
         fixes: [undefined, undefined],
         line: `eslint ${installed}: missing ${absent.join(', ')}`,
       };
+
+      return unreported;
     }
 
     // The fixed text, not just the report: a rule rewriting differently on one major is the worse defect.
     const [[, fixed], [, tsFixed]] = await Promise.all([lint(major, dir, true, false), lint(major, dir, true, true)]);
 
-    return {
+    const passed: Outcome = {
       failures: [],
       fixes: [fixed, tsFixed],
       line: `eslint ${installed}: all ${String(EXPECTED.length + TS_EXPECTED.length)} rules reported, both languages`,
     };
+
+    return passed;
   }
   catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
 
-    return {
+    const broken: Outcome = {
       failures: [`eslint ${String(major)}: ${detail}`],
       fixes: [undefined, undefined],
       line: `eslint ${String(major)}: ${detail
         .split('\n', 1)
         .join('')}`,
     };
+
+    return broken;
   }
 };
 
@@ -179,7 +190,9 @@ const failures = outcomes
     return outcome.failures;
   });
 
-for (const [slot, label] of [[0, 'javascript'], [1, 'typescript']] as const) {
+const languages = [[0, 'javascript'], [1, 'typescript']] as const;
+
+for (const [slot, label] of languages) {
   const reference = outcomes.at(-1)?.fixes[slot];
 
   for (const [index, outcome] of outcomes.entries()) {
