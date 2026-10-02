@@ -19,9 +19,9 @@ describe('surfacesAnswer', () => {
       target: 'react',
     });
 
-    const actual = surfacesAnswer.slot(webextension);
-    expect(actual).toBe(true);
-    const actual2 = surfacesAnswer.slot(react);
-    expect(actual2).toBe(false);
+    const onExtension = surfacesAnswer.slot(webextension);
+    expect(onExtension).toBe(true);
+    const onReact = surfacesAnswer.slot(react);
+    expect(onReact).toBe(false);
   });
 });

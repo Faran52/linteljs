@@ -25,10 +25,11 @@ describe('languagesAnswer', () => {
   it('takes a slot on every target, and on an extension only where a popup has text to translate', () => {
     const slotted = TARGETS
       .filter((target) => {
-        return languagesAnswer.slot(targetFor({
+        const record = targetFor({
           ...DEFAULT_ANSWERS,
           target,
-        }));
+        });
+        return languagesAnswer.slot(record);
       });
     const background = targetFor({
       ...DEFAULT_ANSWERS,

@@ -24,9 +24,9 @@ describe('browserAnswer', () => {
       target: 'react',
     });
 
-    const actual = browserAnswer.slot(webextension);
-    expect(actual).toBe(true);
-    const actual2 = browserAnswer.slot(react);
-    expect(actual2).toBe(false);
+    const onExtension = browserAnswer.slot(webextension);
+    expect(onExtension).toBe(true);
+    const onReact = browserAnswer.slot(react);
+    expect(onReact).toBe(false);
   });
 });

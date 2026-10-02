@@ -19,9 +19,9 @@ describe('browsersAnswer', () => {
       target: 'react',
     });
 
-    const actual = browsersAnswer.slot(webextension);
-    expect(actual).toBe(true);
-    const actual2 = browsersAnswer.slot(react);
-    expect(actual2).toBe(false);
+    const onExtension = browsersAnswer.slot(webextension);
+    expect(onExtension).toBe(true);
+    const onReact = browsersAnswer.slot(react);
+    expect(onReact).toBe(false);
   });
 });

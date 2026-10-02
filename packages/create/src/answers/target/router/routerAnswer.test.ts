@@ -19,10 +19,10 @@ describe('routerAnswer', () => {
       target: 'vue',
     });
 
-    const actual = routerAnswer.slot(react);
-    expect(actual).toBe(true);
-    const actual2 = routerAnswer.slot(vue);
-    expect(actual2).toBe(false);
+    const onReact = routerAnswer.slot(react);
+    expect(onReact).toBe(true);
+    const onVue = routerAnswer.slot(vue);
+    expect(onVue).toBe(false);
   });
 
   it('offers each router only to a target that lists it', () => {
@@ -35,17 +35,17 @@ describe('routerAnswer', () => {
       routers: ['react-router'],
     } as const;
 
-    const actual = routerAnswer.values['react-router'].only(react);
-    expect(actual).toBe(true);
-    const actual2 = routerAnswer.values['tanstack-router'].only(react);
-    expect(actual2).toBe(true);
-    const actual3 = routerAnswer.values['react-router-framework'].only(react);
-    expect(actual3).toBe(true);
-    const actual4 = routerAnswer.values['react-router'].only(declarativeOnly);
-    expect(actual4).toBe(true);
-    const actual5 = routerAnswer.values['tanstack-router'].only(declarativeOnly);
-    expect(actual5).toBe(false);
-    const actual6 = routerAnswer.values['react-router-framework'].only(declarativeOnly);
-    expect(actual6).toBe(false);
+    const declarativeOnReact = routerAnswer.values['react-router'].only(react);
+    expect(declarativeOnReact).toBe(true);
+    const tanstackOnReact = routerAnswer.values['tanstack-router'].only(react);
+    expect(tanstackOnReact).toBe(true);
+    const frameworkOnReact = routerAnswer.values['react-router-framework'].only(react);
+    expect(frameworkOnReact).toBe(true);
+    const declarativeOnDeclarative = routerAnswer.values['react-router'].only(declarativeOnly);
+    expect(declarativeOnDeclarative).toBe(true);
+    const tanstackOnDeclarative = routerAnswer.values['tanstack-router'].only(declarativeOnly);
+    expect(tanstackOnDeclarative).toBe(false);
+    const frameworkOnDeclarative = routerAnswer.values['react-router-framework'].only(declarativeOnly);
+    expect(frameworkOnDeclarative).toBe(false);
   });
 });

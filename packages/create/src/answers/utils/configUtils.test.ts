@@ -111,7 +111,8 @@ describe('parseLinteljsConfig', () => {
     };
 
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify(config));
+      const configText = JSON.stringify(config);
+      return parseLinteljsConfig(configText);
     }).toThrow(new RegExp(`${field} must be one of`));
   });
 
@@ -152,12 +153,13 @@ describe('parseLinteljsConfig', () => {
     ['import', 'must be a non-empty array'],
   ])('rejects resolveConditions of %j', (resolveConditions, message) => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         resolveConditions,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(new RegExp(message));
   });
 
@@ -185,12 +187,13 @@ describe('parseLinteljsConfig', () => {
     ['@engine', 'aliases must be an object'],
   ])('rejects aliases of %j', (aliases, message) => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         aliases,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(new RegExp(message));
   });
 
@@ -215,12 +218,13 @@ describe('parseLinteljsConfig', () => {
     [['safari'], 'must be one of'],
   ])('rejects browsers of %j', (browsers, message) => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         browsers,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(new RegExp(message));
   });
 
@@ -245,12 +249,13 @@ describe('parseLinteljsConfig', () => {
     ['a', 'must be a non-empty array'],
   ])('rejects ignores of %j', (ignores, message) => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         ignores,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(new RegExp(message));
   });
 
@@ -268,29 +273,32 @@ describe('parseLinteljsConfig', () => {
 
   it('rejects a schema version that is not a number', () => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: '1',
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/schemaVersion must be 1 or 2/);
   });
 
   it('rejects a future schema version before the fields it carries', () => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: 3,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
   it('rejects a future schema version before inspecting new object-valued fields', () => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
+      const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: 3,
         future: { nested: true },
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
@@ -432,13 +440,14 @@ describe('the router and the form libraries', () => {
     const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
     const expected = { router: 'tanstack-router' };
     expect(actual).toMatchObject(expected);
-    const actual2 = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
-    expect(actual2).not.toHaveProperty('router');
+    const routerless = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(routerless).not.toHaveProperty('router');
   });
 
   it('rejects an unknown router', () => {
     expect(() => {
-      return parseLinteljsConfig(config({ router: 'wouter' }));
+      const configText = config({ router: 'wouter' });
+      return parseLinteljsConfig(configText);
     }).toThrow(/router must be one of: react-router, react-router-framework, tanstack-router/);
   });
 
@@ -493,38 +502,42 @@ describe('the router and the form libraries', () => {
     expect(parsed).toMatchObject(expected);
 
     expect(() => {
-      return parseLinteljsConfig(emitLinteljsConfig({
+      const configText = emitLinteljsConfig({
         ...DEFAULT_ANSWERS,
         store: 'zustand',
         data: 'rtk-query',
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/rtk-query is not an answer for react/);
   });
 
   it('refuses stylex on a target with no spread site for it', () => {
     expect(() => {
-      return parseLinteljsConfig(config({
+      const configText = config({
         target: 'angular',
         styling: 'stylex',
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/stylex is not an answer for angular/);
   });
 
   it('refuses a form library listed among the libraries', () => {
     expect(() => {
-      return parseLinteljsConfig(config({ libraries: ['zod', 'react-hook-form'] }));
+      const configText = config({ libraries: ['zod', 'react-hook-form'] });
+      return parseLinteljsConfig(configText);
     }).toThrow(/react-hook-form is a form library: name it in "form" rather than in "libraries"/);
   });
 
   it('rejects an unknown form', () => {
     expect(() => {
-      return parseLinteljsConfig(config({ form: 'formik' }));
+      const configText = config({ form: 'formik' });
+      return parseLinteljsConfig(configText);
     }).toThrow(/form must be one of: tanstack-form, react-hook-form/);
   });
 });
 
 describe('a version-one config', () => {
-  const v1 = (overrides: ConfigOverrides = {}): string => {
+  const versionOne = (overrides: ConfigOverrides = {}): string => {
     return JSON.stringify({
       $schema: CONFIG_SCHEMA_URL_V1,
       ...DEFAULT_ANSWERS,
@@ -538,21 +551,22 @@ describe('a version-one config', () => {
     ['angular', 'ngrx-signals'],
     ['vue', 'pinia'],
   ])('lands a yes on the first store %s offers', (target, store) => {
-    const landed = parseLinteljsConfig(v1({
+    const configText = versionOne({
       target,
       store: true,
-    })).store;
+    });
+    const { store: landed } = parseLinteljsConfig(configText);
 
     expect(landed).toBe(store);
   });
 
   it('carries no store where the config said no', () => {
-    const actual = parseLinteljsConfig(v1({ store: false }));
+    const actual = parseLinteljsConfig(versionOne({ store: false }));
     expect(actual).not.toHaveProperty('store');
   });
 
   it('carries no store where the target no longer offers one', () => {
-    const parsed = parseLinteljsConfig(v1({
+    const parsed = parseLinteljsConfig(versionOne({
       target: 'webextension',
       store: true,
     }));
@@ -561,14 +575,16 @@ describe('a version-one config', () => {
   });
 
   it('keeps a store a version-one file already names', () => {
-    expect(parseLinteljsConfig(v1({ store: 'redux-toolkit' })).store).toBe('redux-toolkit');
+    const configText = versionOne({ store: 'redux-toolkit' });
+    const { store } = parseLinteljsConfig(configText);
+    expect(store).toBe('redux-toolkit');
   });
 
   it.each([
     ['tanstack-form', 'vue'],
     ['react-hook-form', 'react'],
   ])('lifts %s out of libraries, and tailwind and tanstack-query with it', (form, target) => {
-    const parsed = parseLinteljsConfig(v1({
+    const parsed = parseLinteljsConfig(versionOne({
       target,
       libraries: [
         form,
@@ -584,7 +600,7 @@ describe('a version-one config', () => {
   });
 
   it('reports the current version and schema', () => {
-    const parsed = parseLinteljsConfig(v1({ libraries: ['tanstack-form'] }));
+    const parsed = parseLinteljsConfig(versionOne({ libraries: ['tanstack-form'] }));
 
     expect(parsed.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(parsed.$schema).toBe(CONFIG_SCHEMA_URL);
@@ -592,7 +608,7 @@ describe('a version-one config', () => {
   });
 
   it('leaves a config naming no form library alone', () => {
-    const parsed = parseLinteljsConfig(v1());
+    const parsed = parseLinteljsConfig(versionOne());
 
     expect(parsed).not.toHaveProperty('form');
     expect(parsed.libraries).toEqual(DEFAULT_ANSWERS.libraries);
@@ -600,16 +616,18 @@ describe('a version-one config', () => {
 
   it('still rejects both form libraries at once', () => {
     expect(() => {
-      return parseLinteljsConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
+      const configText = versionOne({ libraries: ['tanstack-form', 'react-hook-form'] });
+      return parseLinteljsConfig(configText);
     }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
   });
 
   it('holds a version-one file to the version-one schema url', () => {
     expect(() => {
-      return parseLinteljsConfig(JSON.stringify({
-        ...JSON.parse(v1()),
+      const configText = JSON.stringify({
+        ...JSON.parse(versionOne()),
         $schema: CONFIG_SCHEMA_URL,
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(/\$schema must be .*v1\.schema\.json/);
   });
 });
@@ -674,7 +692,8 @@ describe('answers a target never asks for', () => {
     ],
   ])('refuses %s', (_case, overrides, message) => {
     expect(() => {
-      return parseLinteljsConfig(config(overrides));
+      const configText = config(overrides);
+      return parseLinteljsConfig(configText);
     }).toThrow(message);
   });
 
@@ -694,10 +713,11 @@ describe('answers a target never asks for', () => {
     'angular',
   ])('still refuses react-hook-form on %s', (target) => {
     expect(() => {
-      return parseLinteljsConfig(config({
+      const configText = config({
         target,
         form: 'react-hook-form',
-      }));
+      });
+      return parseLinteljsConfig(configText);
     }).toThrow(`react-hook-form is not an answer for ${target}`);
   });
 
@@ -770,7 +790,8 @@ describe('the languages answer', () => {
     expect(popup.languages).toEqual(expected);
 
     expect(() => {
-      return parseLinteljsConfig(configWith('webextension', { surfaces: ['background'] }));
+      const configText = configWith('webextension', { surfaces: ['background'] });
+      return parseLinteljsConfig(configText);
     }).toThrow('languages is not an answer for webextension');
   });
 });

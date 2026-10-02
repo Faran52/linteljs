@@ -10,8 +10,10 @@ import { parseLinteljsConfig } from './utils/configUtils';
 
 import type { Answers } from '@config/types';
 
+const ANSWER_ENTRIES = Object.entries(ANSWERS);
+
 describe('ANSWERS', () => {
-  it.each(Object.entries(ANSWERS))('files %s under its own key', (key, record) => {
+  it.each(ANSWER_ENTRIES)('files %s under its own key', (key, record) => {
     expect(record.key).toBe(key);
   });
 

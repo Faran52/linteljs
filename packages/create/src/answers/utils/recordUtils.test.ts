@@ -14,10 +14,10 @@ describe('refusedValue', () => {
   });
 
   it('names the value its target refuses, and nothing where it fits', () => {
-    const actual = refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS);
-    expect(actual).toBe('react-hook-form');
-    const actual2 = refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS);
-    expect(actual2).toBeUndefined();
+    const refused = refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS);
+    expect(refused).toBe('react-hook-form');
+    const fitting = refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS);
+    expect(fitting).toBeUndefined();
   });
 
   it('refuses nothing that is not a string, however it reads', () => {

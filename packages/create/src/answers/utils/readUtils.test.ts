@@ -21,8 +21,8 @@ describe('readAnswer', () => {
   it('reads an optional choice', () => {
     const answer = readAnswer(ANSWERS.form, 'tanstack-form');
     expect(answer).toBe('tanstack-form');
-    const answer2 = readAnswer(ANSWERS.form, undefined);
-    expect(answer2).toBeUndefined();
+    const missing = readAnswer(ANSWERS.form, undefined);
+    expect(missing).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.form, 'formik');
@@ -47,8 +47,8 @@ describe('readAnswer', () => {
     const answer = readAnswer(ANSWERS.surfaces, ['popup']);
     const expected = ['popup'];
     expect(answer).toEqual(expected);
-    const answer2 = readAnswer(ANSWERS.surfaces, undefined);
-    expect(answer2).toBeUndefined();
+    const missing = readAnswer(ANSWERS.surfaces, undefined);
+    expect(missing).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.surfaces, ['sidebar']);
@@ -63,8 +63,8 @@ describe('readAnswer', () => {
     const answer = readAnswer(ANSWERS.ignores, ['generated/api.ts']);
     const expected = ['generated/api.ts'];
     expect(answer).toEqual(expected);
-    const answer2 = readAnswer(ANSWERS.ignores, undefined);
-    expect(answer2).toBeUndefined();
+    const missing = readAnswer(ANSWERS.ignores, undefined);
+    expect(missing).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.ignores, []);
@@ -82,8 +82,8 @@ describe('readAnswer', () => {
   it('reads a text', () => {
     const answer = readAnswer(ANSWERS.packageManagerVersion, '12.5.1');
     expect(answer).toBe('12.5.1');
-    const answer2 = readAnswer(ANSWERS.packageManagerVersion, undefined);
-    expect(answer2).toBeUndefined();
+    const missing = readAnswer(ANSWERS.packageManagerVersion, undefined);
+    expect(missing).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.packageManagerVersion, 12);
@@ -106,8 +106,8 @@ describe('readAnswer', () => {
     const answer = readAnswer(ANSWERS.aliases, { '@app/*': 'src/*' });
     const expected = { '@app/*': 'src/*' };
     expect(answer).toEqual(expected);
-    const answer2 = readAnswer(ANSWERS.aliases, undefined);
-    expect(answer2).toBeUndefined();
+    const missing = readAnswer(ANSWERS.aliases, undefined);
+    expect(missing).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.aliases, { 'app/*': 'src/*' });
@@ -165,31 +165,31 @@ describe('unaskedValueOf', () => {
   });
 
   it('answers nothing for a kind a target never asks', () => {
-    const unaskedValue = unaskedValueOf(ANSWERS.store);
-    expect(unaskedValue).toBeUndefined();
-    const unaskedValue2 = unaskedValueOf(ANSWERS.router);
-    expect(unaskedValue2).toBeUndefined();
+    const store = unaskedValueOf(ANSWERS.store);
+    expect(store).toBeUndefined();
+    const router = unaskedValueOf(ANSWERS.router);
+    expect(router).toBeUndefined();
   });
 
   it('answers the default for the two kinds required in Answers', () => {
-    const unaskedValue = unaskedValueOf(ANSWERS.testing);
-    expect(unaskedValue).toBe('vitest');
-    const unaskedValue2 = unaskedValueOf(ANSWERS.agents);
+    const testing = unaskedValueOf(ANSWERS.testing);
+    expect(testing).toBe('vitest');
+    const agents = unaskedValueOf(ANSWERS.agents);
     const expected = ['claude-code'];
-    expect(unaskedValue2).toEqual(expected);
+    expect(agents).toEqual(expected);
   });
 
   it('answers undefined for the five kinds optional in Answers', () => {
-    const unaskedValue = unaskedValueOf(ANSWERS.form);
-    expect(unaskedValue).toBeUndefined();
-    const unaskedValue2 = unaskedValueOf(ANSWERS.surfaces);
-    expect(unaskedValue2).toBeUndefined();
-    const unaskedValue3 = unaskedValueOf(ANSWERS.ignores);
-    expect(unaskedValue3).toBeUndefined();
-    const unaskedValue4 = unaskedValueOf(ANSWERS.aliases);
-    expect(unaskedValue4).toBeUndefined();
-    const unaskedValue5 = unaskedValueOf(ANSWERS.nodeVersion);
-    expect(unaskedValue5).toBeUndefined();
+    const form = unaskedValueOf(ANSWERS.form);
+    expect(form).toBeUndefined();
+    const surfaces = unaskedValueOf(ANSWERS.surfaces);
+    expect(surfaces).toBeUndefined();
+    const ignores = unaskedValueOf(ANSWERS.ignores);
+    expect(ignores).toBeUndefined();
+    const aliases = unaskedValueOf(ANSWERS.aliases);
+    expect(aliases).toBeUndefined();
+    const nodeVersion = unaskedValueOf(ANSWERS.nodeVersion);
+    expect(nodeVersion).toBeUndefined();
   });
 });
 

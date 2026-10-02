@@ -6,6 +6,8 @@ import { DEFAULT_ANSWERS } from '../../registry';
 
 import { storeAnswer } from './storeAnswer';
 
+const STORES = valuesOf(storeAnswer.values);
+
 describe('storeAnswer', () => {
   it('is keyed store', () => {
     expect(storeAnswer.key).toBe('store');
@@ -21,13 +23,13 @@ describe('storeAnswer', () => {
       target: 'webextension',
     });
 
-    const actual = storeAnswer.slot(react);
-    expect(actual).toBe(true);
-    const actual2 = storeAnswer.slot(extension);
-    expect(actual2).toBe(false);
+    const onReact = storeAnswer.slot(react);
+    expect(onReact).toBe(true);
+    const onExtension = storeAnswer.slot(extension);
+    expect(onExtension).toBe(false);
   });
 
-  it.each(valuesOf(storeAnswer.values))('offers %s only to a target that lists it', (store) => {
+  it.each(STORES)('offers %s only to a target that lists it', (store) => {
     const react = targetFor({
       ...DEFAULT_ANSWERS,
       target: 'react',

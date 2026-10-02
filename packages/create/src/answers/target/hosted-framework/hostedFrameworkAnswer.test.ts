@@ -19,9 +19,9 @@ describe('hostedFrameworkAnswer', () => {
       target: 'react',
     });
 
-    const actual = hostedFrameworkAnswer.slot(astro);
-    expect(actual).toBe(true);
-    const actual2 = hostedFrameworkAnswer.slot(react);
-    expect(actual2).toBe(false);
+    const onAstro = hostedFrameworkAnswer.slot(astro);
+    expect(onAstro).toBe(true);
+    const onReact = hostedFrameworkAnswer.slot(react);
+    expect(onReact).toBe(false);
   });
 });

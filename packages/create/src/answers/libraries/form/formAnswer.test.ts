@@ -19,9 +19,9 @@ describe('formAnswer', () => {
       target: 'vue',
     });
 
-    const actual = formAnswer.values['react-hook-form'].only(react);
-    expect(actual).toBe(true);
-    const actual2 = formAnswer.values['react-hook-form'].only(vue);
-    expect(actual2).toBe(false);
+    const onReact = formAnswer.values['react-hook-form'].only(react);
+    expect(onReact).toBe(true);
+    const onVue = formAnswer.values['react-hook-form'].only(vue);
+    expect(onVue).toBe(false);
   });
 });

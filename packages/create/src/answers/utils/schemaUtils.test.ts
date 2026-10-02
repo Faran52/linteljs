@@ -13,9 +13,11 @@ describe('schemaFor', () => {
   it('matches both checked-in copies of the v2 schema', async () => {
     const packageRoot = join(import.meta.dirname, '../../..');
     const workspaceRoot = join(packageRoot, '../..');
+    const canonicalPath = join(workspaceRoot, 'schemas/linteljs.config.v2.schema.json');
+    const packagedPath = join(packageRoot, 'templates/schemas/linteljs.config.v2.schema.json');
     const [canonical, packaged] = await Promise.all([
-      readFile(join(workspaceRoot, 'schemas/linteljs.config.v2.schema.json'), 'utf8'),
-      readFile(join(packageRoot, 'templates/schemas/linteljs.config.v2.schema.json'), 'utf8'),
+      readFile(canonicalPath, 'utf8'),
+      readFile(packagedPath, 'utf8'),
     ]);
 
     const generated = schemaFor(ANSWERS);

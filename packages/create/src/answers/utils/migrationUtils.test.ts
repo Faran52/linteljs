@@ -4,52 +4,52 @@ import { migratedStore, migrateLifted } from './migrationUtils';
 
 describe('migrateLifted', () => {
   it('lifts nothing out of a nested list, however its text reads', () => {
-    const migratedLifted = migrateLifted({ libraries: [['react-hook-form']] }, true, 'form', ANSWERS.form.values);
+    const lifted = migrateLifted({ libraries: [['react-hook-form']] }, true, 'form', ANSWERS.form.values);
     const expected = { libraries: [['react-hook-form']] };
 
-    expect(migratedLifted)
+    expect(lifted)
       .toStrictEqual(expected);
   });
 
   it('leaves a config alone where the lift does not apply', () => {
-    const migratedLifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values);
+    const lifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values);
     const expected = { libraries: ['zod', 'react-hook-form'] };
 
-    expect(migratedLifted)
+    expect(lifted)
       .toEqual(expected);
   });
 
   it('leaves a config alone when its libraries name none of the lifted values', () => {
-    const migratedLifted = migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values);
+    const lifted = migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values);
     const expected = { libraries: ['zod'] };
 
-    expect(migratedLifted)
+    expect(lifted)
       .toStrictEqual(expected);
   });
 
   it('lifts the one value listed out of libraries and into its own field', () => {
-    const migratedLifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, true, 'form', ANSWERS.form.values);
+    const lifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, true, 'form', ANSWERS.form.values);
     const expected = {
       libraries: ['zod'],
       form: 'react-hook-form',
     };
-    expect(migratedLifted).toEqual(expected);
+    expect(lifted).toEqual(expected);
   });
 
   it('lifts tailwind into styling and tanstack-query into data, which v2 lifts alongside the form library', () => {
-    const migratedLifted = migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values);
-    const expected = {
+    const stylingLifted = migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values);
+    const expectedStyling = {
       libraries: ['zod'],
       styling: 'tailwind',
     };
-    expect(migratedLifted).toEqual(expected);
+    expect(stylingLifted).toEqual(expectedStyling);
 
-    const migratedLifted2 = migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values);
-    const expected2 = {
+    const dataLifted = migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values);
+    const expectedData = {
       libraries: [],
       data: 'tanstack-query',
     };
-    expect(migratedLifted2).toEqual(expected2);
+    expect(dataLifted).toEqual(expectedData);
   });
 
   it('refuses a config listing two, which the field it lifts into has no room for', () => {
