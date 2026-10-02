@@ -51,7 +51,6 @@ export const svelteTarget: TargetRecord = {
   hooksAlias: HOOKS_ALIAS,
   // An extending config replaces `paths` rather than merging `.svelte-kit/tsconfig.json`'s.
   extraAliases: {
-    '$lib': './src/lib',
     '$lib/*': './src/lib/*',
   },
   styleEntry: 'src/app.css',
