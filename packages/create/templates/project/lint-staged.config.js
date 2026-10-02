@@ -4,11 +4,13 @@ const config = {
   '*.{ts,tsx,mts,cts,vue,svelte}': (stagedFiles) => {
     const files = stagedFiles.join(' ');
 
-    return [
+    const commands = [
       `node scripts/checkBannedPatterns.ts ${files}`,
       `eslint ${files} --fix`,
       `node scripts/typecheckStaged.ts ${files}`,
     ];
+
+    return commands;
   },
   '*.{css,scss,vue,svelte}': ['stylelint --fix'],
 };

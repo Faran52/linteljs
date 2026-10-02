@@ -128,7 +128,9 @@ const skipped: string[] = [...BASE_SKIPPED, ...PROJECT_SKIPPED];
 const isSkipped = (filePath: string): boolean => {
   return skipped
     .some((fragment) => {
-      return filePath.includes(fragment) || filePath.startsWith(fragment.replace(/^\//, ''));
+      const relativeFragment = fragment.replace(/^\//, '');
+
+      return filePath.includes(fragment) || filePath.startsWith(relativeFragment);
     });
 };
 
@@ -179,16 +181,22 @@ const scriptBlocksOnly = (content: string): string => {
       body = '',
     ] = match;
 
-    output += blankSpan(content.slice(cursor, match.index)) + blankSpan(open) + body;
+    const between = content.slice(cursor, match.index);
+
+    output += blankSpan(between) + blankSpan(open) + body;
     cursor = match.index + open.length + body.length;
   }
 
-  return output + blankSpan(content.slice(cursor));
+  const tail = content.slice(cursor);
+
+  return output + blankSpan(tail);
 };
 
 const filesUnder = (path: string): string[] => {
   if (statSync(path, { throwIfNoEntry: false })?.isDirectory() !== true) {
-    return [path];
+    const file = [path];
+
+    return file;
   }
 
   return readdirSync(path, { withFileTypes: true })
@@ -199,12 +207,18 @@ const filesUnder = (path: string): string[] => {
         return entry.name === 'node_modules' || entry.name.startsWith('.') ? [] : filesUnder(child);
       }
 
-      return SCANNED_EXTENSIONS
+      const isScanned = SCANNED_EXTENSIONS
         .some((extension) => {
           return entry.name.endsWith(extension);
-        })
-        ? [child]
-        : [];
+        });
+
+      if (!isScanned) {
+        return [];
+      }
+
+      const file = [child];
+
+      return file;
     });
 };
 

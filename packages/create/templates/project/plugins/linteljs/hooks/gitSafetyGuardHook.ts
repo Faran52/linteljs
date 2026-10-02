@@ -64,7 +64,8 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
   }
 
   const subcommand = tokens[index]?.toLowerCase();
-  const options = beforeSeparator(tokens.slice(index + 1));
+  const operands = tokens.slice(index + 1);
+  const options = beforeSeparator(operands);
 
   if (subcommand === 'stash') {
     return STASH;
@@ -82,7 +83,7 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
     return AMEND;
   }
 
-  if (subcommand === 'add' && addIsBanned(tokens.slice(index + 1))) {
+  if (subcommand === 'add' && addIsBanned(operands)) {
     return ADD_ALL;
   }
 

@@ -2,4 +2,7 @@
 import { badgeOf, mainContextOf } from './utils/contextUtils.ts';
 import { readPayload } from './utils/hostUtils.ts';
 
-process.stdout.write(badgeOf(mainContextOf(readPayload() ?? {})));
+const payload = readPayload() ?? {};
+const context = mainContextOf(payload);
+
+process.stdout.write(badgeOf(context));

@@ -22,14 +22,17 @@ const markerOf = (session: string): string => {
 };
 
 const warningOf = (tokens: number): object => {
-  const size = `${String(Math.floor(tokens / 1000))}K`;
-  return {
+  const thousands = Math.floor(tokens / 1000);
+  const size = `${String(thousands)}K`;
+  const warning = {
     systemMessage: `Context passed ${CEILING} (${size}). Consider /compact or a fresh session.`,
     hookSpecificOutput: {
       hookEventName: 'PostToolUse',
       additionalContext: `Context is ${size}, past ${CEILING}. Tell the user so in one line, and keep replies lean.`,
     },
   };
+
+  return warning;
 };
 
 const payload = readPayload();
@@ -44,6 +47,8 @@ if (input !== undefined) {
   }
   else if (!existsSync(marker)) {
     writeFileSync(marker, '');
-    process.stdout.write(`${JSON.stringify(warningOf(tokens))}\n`);
+    const warning = warningOf(tokens);
+
+    process.stdout.write(`${JSON.stringify(warning)}\n`);
   }
 }

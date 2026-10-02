@@ -36,7 +36,9 @@ const directRunnerVerdict = (tokens: string[], start: number): Verdict => {
     return 'unreadable';
   }
 
-  return isEslint(tokens[index] ?? '') ? fixVerdict(tokens.slice(index + 1)) : 'clear';
+  const eslintArguments = tokens.slice(index + 1);
+
+  return isEslint(tokens[index] ?? '') ? fixVerdict(eslintArguments) : 'clear';
 };
 
 const scriptRunnerVerdict = (
@@ -62,7 +64,9 @@ const scriptRunnerVerdict = (
     return 'unreadable';
   }
 
-  return isEslint(tokens[index] ?? '') ? fixVerdict(tokens.slice(index + 1)) : 'clear';
+  const eslintArguments = tokens.slice(index + 1);
+
+  return isEslint(tokens[index] ?? '') ? fixVerdict(eslintArguments) : 'clear';
 };
 
 const npmVerdict = (tokens: string[], start: number): Verdict => {
@@ -72,11 +76,13 @@ const npmVerdict = (tokens: string[], start: number): Verdict => {
     return 'unreadable';
   }
 
-  if (![
+  const runCommands = [
     'exec',
     'x',
     'run',
-  ].includes(tokens[index] ?? '')) {
+  ];
+
+  if (!runCommands.includes(tokens[index] ?? '')) {
     return 'clear';
   }
 
@@ -104,7 +110,9 @@ const eslintVerdict = (tokens: string[]): Verdict => {
   const executable = commandName(tokens[0] ?? '');
 
   if (executable === 'eslint') {
-    return fixVerdict(tokens.slice(1));
+    const eslintArguments = tokens.slice(1);
+
+    return fixVerdict(eslintArguments);
   }
 
   if (executable === 'npx' || executable === 'bunx') {
@@ -112,21 +120,19 @@ const eslintVerdict = (tokens: string[]): Verdict => {
   }
 
   if (executable === 'pnpm') {
-    return scriptRunnerVerdict(
-      tokens,
-      1,
-      new Set([
-        '-C',
-        '--dir',
-        '--filter',
-      ]),
-      [
-        'exec',
-        'dlx',
-        'run',
-      ],
-      new Set(['--package']),
-    );
+    const globalValued = new Set([
+      '-C',
+      '--dir',
+      '--filter',
+    ]);
+    const runCommands = [
+      'exec',
+      'dlx',
+      'run',
+    ];
+    const commandValued = new Set(['--package']);
+
+    return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, commandValued);
   }
 
   if (executable === 'npm') {
@@ -134,15 +140,21 @@ const eslintVerdict = (tokens: string[]): Verdict => {
   }
 
   if (executable === 'yarn') {
-    return scriptRunnerVerdict(tokens, 1, new Set(['--cwd']), [
+    const globalValued = new Set(['--cwd']);
+    const runCommands = [
       'exec',
       'dlx',
       'run',
-    ], NO_OPTIONS);
+    ];
+
+    return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, NO_OPTIONS);
   }
 
   if (executable === 'bun') {
-    return scriptRunnerVerdict(tokens, 1, new Set(['--cwd']), ['x', 'run'], NO_OPTIONS);
+    const globalValued = new Set(['--cwd']);
+    const runCommands = ['x', 'run'];
+
+    return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, NO_OPTIONS);
   }
 
   return 'clear';

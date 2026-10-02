@@ -48,7 +48,13 @@ const isFieldEntry = (entry: [string, unknown]): entry is [string, object | stri
 };
 
 const valueAt = (value: FieldValue, key: Field): FieldValue => {
-  return typeof value === 'object' ? new Map(Object.entries(value).filter(isFieldEntry)).get(key) : undefined;
+  if (typeof value !== 'object') {
+    return undefined;
+  }
+
+  const fields = new Map(Object.entries(value).filter(isFieldEntry));
+
+  return fields.get(key);
 };
 
 const stringAt = (value: FieldValue, key: Field): string | undefined => {
@@ -109,7 +115,8 @@ export const readCommand = (
     return undefined;
   }
 
-  const command = stringAt(toolInputOf(payload, host), 'command') ?? stringAt(payload, 'command');
+  const toolInput = toolInputOf(payload, host);
+  const command = stringAt(toolInput, 'command') ?? stringAt(payload, 'command');
 
   if (command === undefined) {
     return undefined;
@@ -117,11 +124,13 @@ export const readCommand = (
 
   const tool = stringAt(payload, 'tool_name') ?? stringAt(payload, 'toolName');
   const powershell = host === 'cursor' ? platform === 'win32' : tool?.toLowerCase() === 'powershell';
-  return {
+  const commandInput: CommandInput = {
     host,
     command,
     dialect: powershell ? 'powershell' : 'bash',
   };
+
+  return commandInput;
 };
 
 // Cursor documents no file path on the one edit event that can answer the agent.
@@ -133,10 +142,11 @@ export const readEdit = (payload: object): EditInput | undefined => {
   }
 
   const input = toolInputOf(payload, host);
+  const response = valueAt(payload, 'tool_response');
   const named = [
     stringAt(input, 'file_path'),
     stringAt(input, 'path'),
-    stringAt(valueAt(payload, 'tool_response'), 'filePath'),
+    stringAt(response, 'filePath'),
   ];
   const patch = stringAt(input, 'command') ?? stringAt(input, 'patch') ?? (typeof input === 'string' ? input : '');
   const patched = patch
@@ -145,14 +155,17 @@ export const readEdit = (payload: object): EditInput | undefined => {
       return PATCHED_FILE.exec(line)?.[1];
     });
 
-  return {
+  const paths = [...named, ...patched]
+    .filter((path) => {
+      return path !== undefined;
+    });
+  const editInput: EditInput = {
     host,
     cwd: stringAt(payload, 'cwd') ?? '',
-    paths: [...named, ...patched]
-      .filter((path) => {
-        return path !== undefined;
-      }),
+    paths,
   };
+
+  return editInput;
 };
 
 // Claude Code adds `agent_id` to a subagent's tool call, so only the main session's own calls are read.
@@ -164,42 +177,52 @@ export const readSession = (payload: object): SessionInput | undefined => {
     return undefined;
   }
 
-  return session !== undefined && SESSION_ID.test(session)
-    ? {
-        session,
-        transcript,
-      }
-    : undefined;
+  if (session === undefined || !SESSION_ID.test(session)) {
+    return undefined;
+  }
+
+  const sessionInput: SessionInput = {
+    session,
+    transcript,
+  };
+
+  return sessionInput;
 };
 
 const cursorDecision = (kind: DecisionKind, text: string): object => {
-  return kind === 'deny'
+  const decision = kind === 'deny'
     ? {
         permission: 'deny',
         user_message: text,
         agent_message: text,
       }
     : { additional_context: text };
+
+  return decision;
 };
 
 const copilotDecision = (kind: DecisionKind, text: string): object => {
-  return kind === 'deny'
+  const decision = kind === 'deny'
     ? {
         permissionDecision: 'deny',
         permissionDecisionReason: text,
       }
     : { additionalContext: text };
+
+  return decision;
 };
 
 const claudeDecision = (kind: DecisionKind, text: string): object => {
   if (kind === 'block') {
-    return {
+    const block = {
       decision: 'block',
       reason: text,
     };
+
+    return block;
   }
 
-  return {
+  const decision = {
     hookSpecificOutput: kind === 'deny'
       ? {
           hookEventName: 'PreToolUse',
@@ -211,12 +234,16 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
           additionalContext: text,
         },
   };
+
+  return decision;
 };
 
 // Cursor's shell gate answers a clear command too: its own examples print an explicit allow.
 export const decisionOf = (host: Host, kind: DecisionKind, text: string | undefined): object | undefined => {
   if (text === undefined) {
-    return host === 'cursor' && kind === 'deny' ? { permission: 'allow' } : undefined;
+    const allow = { permission: 'allow' };
+
+    return host === 'cursor' && kind === 'deny' ? allow : undefined;
   }
 
   if (host === 'cursor') {

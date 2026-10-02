@@ -48,6 +48,7 @@ type Step = NestedStep | NextStep | NoWrapperStep | UnreadableStep;
 
 const MAX_DEPTH = 8;
 const UNREADABLE: Step = { kind: 'unreadable' };
+const NO_WRAPPER: Step = { kind: 'none' };
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
 export const commandName = (token: string): string => {
@@ -175,7 +176,8 @@ const readQuotedCharacter = (source: string, index: number, state: TokenizerStat
 
 // An escaped line break continues the line, in bash by vanishing and in PowerShell as a space between tokens.
 const readEscaped = (source: string, index: number, state: TokenizerState): number => {
-  const lineBreak = /^(?:\r\n|\r|\n)/u.exec(source.slice(index, index + 2))?.[0];
+  const pair = source.slice(index, index + 2);
+  const lineBreak = /^(?:\r\n|\r|\n)/u.exec(pair)?.[0];
 
   if (lineBreak !== undefined) {
     if (state.dialect === 'powershell') {
@@ -241,7 +243,9 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
 };
 
 const readUnquotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
-  if (state.dialect === 'powershell' && POWERSHELL_GROUP.test(source.slice(index, index + 2))) {
+  const pair = source.slice(index, index + 2);
+
+  if (state.dialect === 'powershell' && POWERSHELL_GROUP.test(pair)) {
     return readPowerShellGroup(source, index, state);
   }
 
@@ -305,10 +309,12 @@ const skipAssignments = (tokens: string[], start: number): number => {
 };
 
 const next = (index: number): Step => {
-  return {
+  const step: Step = {
     kind: 'next',
     index,
   };
+
+  return step;
 };
 
 const valuedOperand = (tokens: string[], index: number): Step => {
@@ -318,7 +324,14 @@ const valuedOperand = (tokens: string[], index: number): Step => {
 // A split string is one command: none at all, or several, is not something env would run as this one.
 const splitEnvArguments = (splitString: string, trailing: string[]): string[] | undefined => {
   const [first, ...rest] = segmentsOf(splitString, 'bash') ?? [];
-  return first === undefined || rest.length > 0 || first.opaque ? undefined : [...first.tokens, ...trailing];
+
+  if (first === undefined || rest.length > 0 || first.opaque) {
+    return undefined;
+  }
+
+  const splitArguments = [...first.tokens, ...trailing];
+
+  return splitArguments;
 };
 
 const splitStringOf = (option: string, operand: string | undefined): string | undefined => {
@@ -336,22 +349,15 @@ const splitStringOf = (option: string, operand: string | undefined): string | un
 const envOption = (tokens: string[], index: number): Step => {
   const option = tokens[index] ?? '';
 
-  if (option === '-P' || [
+  const valuedOptions = [
     '-u',
     '--unset',
     '-C',
     '--chdir',
     '-a',
     '--argv0',
-  ].includes(option)) {
-    return valuedOperand(tokens, index);
-  }
-
-  if (option.startsWith('-P') && option.length > 2) {
-    return next(index + 1);
-  }
-
-  if ([
+  ];
+  const flagOptions = [
     '-',
     '-0',
     '--null',
@@ -359,7 +365,17 @@ const envOption = (tokens: string[], index: number): Step => {
     '--ignore-environment',
     '-v',
     '--debug',
-  ].includes(option)) {
+  ];
+
+  if (option === '-P' || valuedOptions.includes(option)) {
+    return valuedOperand(tokens, index);
+  }
+
+  if (option.startsWith('-P') && option.length > 2) {
+    return next(index + 1);
+  }
+
+  if (flagOptions.includes(option)) {
     return next(index + 1);
   }
 
@@ -414,11 +430,13 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
     index = step.index;
   }
 
-  return {
+  const step: Step = {
     kind: 'next',
     index: skipAssignments(tokens, index),
     tokens,
   };
+
+  return step;
 };
 
 const commandWrapper = (tokens: string[], start: number): Step => {
@@ -433,10 +451,12 @@ const commandWrapper = (tokens: string[], start: number): Step => {
 
     // `command -v` looks a name up rather than running it.
     if (option.includes('v') || option.includes('V')) {
-      return {
+      const lookup: Step = {
         kind: 'nested',
         commands: [],
       };
+
+      return lookup;
     }
 
     index += 1;
@@ -452,7 +472,9 @@ const execWrapper = (tokens: string[], start: number): Step => {
     const option = tokens[index] ?? '';
 
     if (option === '--') {
-      return next(skipAssignments(tokens, index + 1));
+      const commandIndex = skipAssignments(tokens, index + 1);
+
+      return next(commandIndex);
     }
 
     if (option === '-a' || option === '--argv0') {
@@ -467,22 +489,36 @@ const execWrapper = (tokens: string[], start: number): Step => {
     }
   }
 
-  return next(skipAssignments(tokens, index));
+  const commandIndex = skipAssignments(tokens, index);
+
+  return next(commandIndex);
 };
 
 const optionWrapper = (tokens: string[], start: number, valued: Set<string>): Step => {
   const index = skipOptions(tokens, start, valued);
-  return index === undefined ? UNREADABLE : next(skipAssignments(tokens, index));
+
+  if (index === undefined) {
+    return UNREADABLE;
+  }
+
+  const commandIndex = skipAssignments(tokens, index);
+
+  return next(commandIndex);
 };
 
 const nested = (source: string, dialect: Dialect, depth: number): Step => {
   const commands = commandsIn(source, dialect, depth + 1);
-  return commands === undefined
-    ? UNREADABLE
-    : {
-        kind: 'nested',
-        commands,
-      };
+
+  if (commands === undefined) {
+    return UNREADABLE;
+  }
+
+  const step: Step = {
+    kind: 'nested',
+    commands,
+  };
+
+  return step;
 };
 
 const NO_COMMAND: Step = {
@@ -605,11 +641,13 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
     const option = (tokens[index] ?? '').toLowerCase();
 
     if (option === '-filepath') {
-      return {
+      const step: Step = {
         kind: 'next',
         index: index + 1,
         opaque: true,
       };
+
+      return step;
     }
 
     if (!option.startsWith('-')) {
@@ -619,11 +657,13 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
     index += START_PROCESS_VALUED.has(option) ? 2 : 1;
   }
 
-  return {
+  const step: Step = {
     kind: 'next',
     index,
     opaque: true,
   };
+
+  return step;
 };
 
 const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
@@ -646,7 +686,7 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
   }
 
   if (name === 'sudo') {
-    return optionWrapper(tokens, index + 1, new Set([
+    const sudoValued = new Set([
       '-u',
       '--user',
       '-g',
@@ -661,25 +701,31 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
       '--role',
       '-t',
       '--type',
-    ]));
+    ]);
+
+    return optionWrapper(tokens, index + 1, sudoValued);
   }
 
   if (name === 'time') {
-    return optionWrapper(tokens, index + 1, new Set([
+    const timeValued = new Set([
       '-f',
       '--format',
       '-o',
       '--output',
-    ]));
+    ]);
+
+    return optionWrapper(tokens, index + 1, timeValued);
   }
 
-  if ([
+  const shells = [
     'sh',
     'bash',
     'zsh',
     'dash',
     'ksh',
-  ].includes(name)) {
+  ];
+
+  if (shells.includes(name)) {
     return shellWrapper(tokens, index + 1, depth);
   }
 
@@ -703,7 +749,7 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
     return startProcessWrapper(tokens, index + 1);
   }
 
-  return { kind: 'none' };
+  return NO_WRAPPER;
 };
 
 const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undefined => {
@@ -731,12 +777,17 @@ const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undef
   }
 
   const command = tokens.slice(index);
-  return command.length === 0
-    ? []
-    : [{
-        tokens: command,
-        opaque,
-      }];
+
+  if (command.length === 0) {
+    return [];
+  }
+
+  const unwrapped = [{
+    tokens: command,
+    opaque,
+  }];
+
+  return unwrapped;
 };
 
 const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedCommand[] | undefined => {

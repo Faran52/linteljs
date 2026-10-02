@@ -36,7 +36,13 @@ const isJsonEntry = (entry: [string, unknown]): entry is [string, Json] => {
 };
 
 const fieldAt = (value: Json | undefined, key: string): Json | undefined => {
-  return typeof value === 'object' ? new Map(Object.entries(value).filter(isJsonEntry)).get(key) : undefined;
+  if (typeof value !== 'object') {
+    return undefined;
+  }
+
+  const fields = new Map(Object.entries(value).filter(isJsonEntry));
+
+  return fields.get(key);
 };
 
 const objectAt = (value: Json | undefined, key: string): object | undefined => {
@@ -119,7 +125,9 @@ export const contextOf = (transcript: string): number => {
 };
 
 export const subagentTranscriptOf = (transcript: string, agentId: string): string => {
-  return join(transcript.replace(/\.jsonl$/u, ''), 'subagents', `agent-${agentId}.jsonl`);
+  const sessionDirectory = transcript.replace(/\.jsonl$/u, '');
+
+  return join(sessionDirectory, 'subagents', `agent-${agentId}.jsonl`);
 };
 
 // The number is always printed, so the colour is never the only cue.
@@ -133,14 +141,23 @@ export const badgeOf = (tokens: number): string => {
     colour = BADGE_COLOURS.near;
   }
 
-  return `\u001B[38;5;${String(colour)}m[CTX ${String(Math.floor(tokens / 1000))}K]\u001B[0m`;
+  const thousands = Math.floor(tokens / 1000);
+
+  return `\u001B[38;5;${String(colour)}m[CTX ${String(thousands)}K]\u001B[0m`;
 };
 
 // Claude Code sends the last API call's prompt size as `total_input_tokens`; an older one sends no
 // `context_window`, so the transcript answers instead.
 export const mainContextOf = (payload: object): number => {
-  return numberAt(objectAt(payload, 'context_window'), 'total_input_tokens')
-    ?? contextOf(stringAt(payload, 'transcript_path') ?? '');
+  const reported = numberAt(objectAt(payload, 'context_window'), 'total_input_tokens');
+
+  if (reported !== undefined) {
+    return reported;
+  }
+
+  const transcript = stringAt(payload, 'transcript_path') ?? '';
+
+  return contextOf(transcript);
 };
 
 // Only `local_agent` rows are subagents; any other row keeps Claude Code's own rendering.
@@ -158,11 +175,13 @@ export const subagentRowsOf = (payload: object): SubagentRow[] => {
       const read = contextOf(subagentTranscriptOf(transcript, id));
       const tokens = read === 0 ? numberAt(task, 'tokenCount') ?? 0 : read;
       const label = stringAt(task, 'label') ?? stringAt(task, 'description');
-      return [
+      const rows = [
         {
           id,
           content: label === undefined ? badgeOf(tokens) : `${badgeOf(tokens)} ${label}`,
         },
       ];
+
+      return rows;
     });
 };
