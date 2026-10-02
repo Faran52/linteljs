@@ -31,3 +31,7 @@ export const COVERED_BY_SHOWN = 10;
 
 // A single suite runs in seconds; ten minutes is a hang.
 export const TIMEOUT_SECONDS = 600;
+
+export const MS_PER_SECOND = 1000;
+
+export const PERCENT = 100;

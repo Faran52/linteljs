@@ -28,6 +28,7 @@ import { writtenOf } from '@pipeline/e2e/starter-cover/starterCover';
 import { packTarball, run } from '../../utils/processUtils.ts';
 import {
   CONFIG_SPEC,
+  HASH_PREFIX_LENGTH,
   KEPT,
   MAX_BUFFER,
   NOT_SLUG,
@@ -62,7 +63,7 @@ const sha = (bytes: Buffer | string): string => {
   return createHash('sha256')
     .update(bytes)
     .digest('hex')
-    .slice(0, 16);
+    .slice(0, HASH_PREFIX_LENGTH);
 };
 
 export const slugOf = (label: string): string => {

@@ -28,6 +28,7 @@ import {
   COVERED_BY_SHOWN,
   DATA_FILE,
   DOCUMENTED_SUITES,
+  MS_PER_SECOND,
   REPORTS_PREFIX,
   SOURCE_SUFFIX,
   TEST_SUFFIX,
@@ -100,7 +101,7 @@ try {
             relative(root, test),
             reportsDirectory,
             thresholdKeys,
-            timeoutSeconds * 1000,
+            timeoutSeconds * MS_PER_SECOND,
           );
 
           logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
@@ -139,7 +140,7 @@ finally {
   });
 }
 
-const seconds = Math.round((performance.now() - started) / 1000);
+const seconds = Math.round((performance.now() - started) / MS_PER_SECOND);
 
 // Three packages have a `meta.test.ts`.
 const labelOf = (test: string): string => {

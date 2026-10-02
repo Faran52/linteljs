@@ -1,3 +1,5 @@
+import { PERCENT } from '../constants.ts';
+
 // Maps are a fact of the source, so every run over one file carries the same ids.
 interface Position {
   line: number;
@@ -99,7 +101,7 @@ export const hitsOf = (file: FileCoverage): Set<string> => {
 };
 
 const percent = (hit: number, total: number): string => {
-  return `${String(total === 0 ? 100 : Math.floor(hit * 100 / total))}%`;
+  return `${String(total === 0 ? PERCENT : Math.floor(hit * PERCENT / total))}%`;
 };
 
 const linesOf = (file: FileCoverage, keys: Iterable<string>): Set<number> => {

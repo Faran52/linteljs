@@ -35,3 +35,5 @@ export const OVERRIDES_KEY = '\noverrides:\n';
 export const NOT_SLUG = /[^a-z0-9]+/gu;
 
 export const MAX_BUFFER = 256 * 1024 * 1024;
+
+export const HASH_PREFIX_LENGTH = 16;
