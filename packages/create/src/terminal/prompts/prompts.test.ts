@@ -865,6 +865,29 @@ describe('confirm', () => {
     const promise = confirm(recorded.prompter, 'Apply?');
     await expect(promise).rejects.toBeInstanceOf(RunCancelled);
   });
+
+  it('offers yes and no as the values it reads, with no preselected', async () => {
+    const recorded = scripted(['yes']);
+    const select = vi.spyOn(recorded.prompter, 'select');
+
+    await confirm(recorded.prompter, 'Apply?');
+
+    const expected = {
+      message: 'Apply?',
+      initialValue: 'no',
+      options: [
+        {
+          value: 'yes',
+          label: 'Yes',
+        },
+        {
+          value: 'no',
+          label: 'No',
+        },
+      ],
+    };
+    expect(select).toHaveBeenCalledWith(expected);
+  });
 });
 
 describe('inquirerPrompter', () => {
