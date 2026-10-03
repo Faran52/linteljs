@@ -58,8 +58,10 @@ when a version's change lives in a sibling it is described there instead:
   always shipped as the fallback. Every target reads one `common.json` per language from `src/i18n/`, which the
   `@i18n` alias reaches, and a suite holds every locale to the same keys. The header gains a language picker, and
   the header and every starter page are translated. The stored choice wins, then the browser
-  language, which is never stored; Arabic sets `dir="rtl"`. A server-rendered page renders English and switches
-  after hydration.
+  language, which is never stored; Arabic sets `dir="rtl"`. The server-rendered starters (Nuxt, Next, SvelteKit,
+  React Router's framework mode) keep the choice in a `language` cookie and render it, `lang` and `dir` included,
+  from the first byte, falling back to the request's `Accept-Language`; the Vue and React single-page starters
+  keep it in the same cookie.
 
   | Target | Through |
   | --- | --- |
