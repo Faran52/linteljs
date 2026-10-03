@@ -1,3 +1,5 @@
+import { hasForm } from '../../utils/gateUtils';
+
 import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../../types';
 
@@ -12,7 +14,7 @@ export const hasRouter = (answers: Answers): boolean => {
 
 // The header links every page `pages/routes.tsx` lists, so the route config lists the contact page with it.
 const withForm = (answers: Answers): boolean => {
-  return isFrameworkMode(answers) && answers.form !== undefined;
+  return isFrameworkMode(answers) && hasForm(answers);
 };
 
 const withoutForm = (answers: Answers): boolean => {

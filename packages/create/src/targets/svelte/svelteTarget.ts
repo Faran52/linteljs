@@ -66,9 +66,7 @@ export const svelteTarget: TargetBuilder = () => {
       './components/ui/button/Button.css',
       {
         path: './components/ui/text-input/TextInput.css',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
     ],
     tailwindTheme: './styles/theme.css',

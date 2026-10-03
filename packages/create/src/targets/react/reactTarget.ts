@@ -13,7 +13,7 @@ import {
   ROUTER_MOCK,
   STATUS_UTILS_TEST,
 } from '../constants';
-import { hasStore } from '../utils/gateUtils';
+import { hasForm, hasStore } from '../utils/gateUtils';
 import {
   localeFiles,
   LOCALES_TEST,
@@ -159,9 +159,7 @@ const baseReactTarget = (): TargetRecord => {
       './components/ui/button/Button.css',
       {
         path: './components/ui/text-input/TextInput.css',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
     ],
     tailwindTheme: './styles/theme.css',
@@ -211,9 +209,7 @@ const baseReactTarget = (): TargetRecord => {
       },
       {
         target: 'src/pages/routes.tsx',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
         variant: 'with-form',
       },
       {
@@ -236,35 +232,31 @@ const baseReactTarget = (): TargetRecord => {
       },
       {
         target: 'src/components/ui/index.ts',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
         variant: 'with-form',
         shared: true,
       },
       {
         target: 'src/components/ui/text-input/TextInput.tsx',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
       {
         target: 'src/lib/apis/contact/index.ts',
         when: (answers) => {
-          return answers.form !== undefined && answers.data !== 'rtk-query';
+          return hasForm(answers) && answers.data !== 'rtk-query';
         },
         shared: true,
       },
       {
         target: 'src/lib/apis/contact/contactApi.ts',
         when: (answers) => {
-          return answers.form !== undefined && answers.data === undefined;
+          return hasForm(answers) && answers.data === undefined;
         },
       },
       {
         target: 'src/lib/apis/contact/contactApi.ts',
         when: (answers) => {
-          return answers.form !== undefined && answers.data === 'tanstack-query';
+          return hasForm(answers) && answers.data === 'tanstack-query';
         },
         variant: 'tanstack-query',
       },
@@ -287,14 +279,14 @@ const baseReactTarget = (): TargetRecord => {
       {
         target: 'src/lib/apis/contact/schemas.ts',
         when: (answers) => {
-          return answers.form !== undefined && !hasLibrary(answers, 'zod');
+          return hasForm(answers) && !hasLibrary(answers, 'zod');
         },
         shared: true,
       },
       {
         target: 'src/lib/apis/contact/schemas.ts',
         when: (answers) => {
-          return answers.form !== undefined && hasLibrary(answers, 'zod');
+          return hasForm(answers) && hasLibrary(answers, 'zod');
         },
         variant: 'zod',
         shared: true,

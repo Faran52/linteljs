@@ -4,6 +4,7 @@ import {
   FOLDER_ROUTED,
 } from '../constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
+import { hasForm } from '../utils/gateUtils';
 import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
@@ -63,9 +64,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       '../components/ui/button/Button.css',
       {
         path: '../components/ui/text-input/TextInput.css',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
     ],
     tailwindTheme: './theme.css',

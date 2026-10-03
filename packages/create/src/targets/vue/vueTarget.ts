@@ -58,9 +58,7 @@ export const vueTarget: TargetBuilder = () => {
       '../components/ui/app-button/AppButton.css',
       {
         path: '../components/ui/text-input/TextInput.css',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
     ],
     tailwindTheme: '../styles/theme.css',

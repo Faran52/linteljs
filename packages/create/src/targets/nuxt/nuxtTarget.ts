@@ -5,7 +5,7 @@ import {
   PARTS,
   TRANSLATED_CONFIGS,
 } from '../constants';
-import { hasI18n } from '../utils/gateUtils';
+import { hasForm, hasI18n } from '../utils/gateUtils';
 import {
   localeFiles,
   LOCALES_TEST,
@@ -74,9 +74,7 @@ export const nuxtTarget: TargetBuilder = () => {
       '../components/ui/app-button/AppButton.css',
       {
         path: '../components/ui/text-input/TextInput.css',
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
+        when: hasForm,
       },
     ],
     tailwindTheme: '../styles/theme.css',
