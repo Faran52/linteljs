@@ -1,5 +1,4 @@
 import { languages, languageStorageKey } from './config';
-import { languageCookie, storedLanguage } from './utils/cookieUtils';
 import {
   applyDocumentDirection,
   chooseLanguage,
@@ -7,6 +6,7 @@ import {
   directionOf,
   subscribeLanguage,
 } from './index';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
 // A region on a regional tag such as zh-TW makes no tag, so the regional case takes a base one.
