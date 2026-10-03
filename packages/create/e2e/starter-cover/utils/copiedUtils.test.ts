@@ -9,7 +9,7 @@ import {
 
 import { TEMPLATES_ROOT } from '@disk';
 
-import { copiedOf } from './copiedUtils';
+import { copiedOf, templateOf } from './copiedUtils';
 
 const BASE = 'fragments/test-setup/setupTests.ts';
 const MSW = 'fragments/test-setup/setupTests.msw.ts';
@@ -69,5 +69,68 @@ describe('copiedOf', () => {
     const copied = copiedOf(artifact);
 
     expect(copied).toStrictEqual([]);
+  });
+});
+
+describe('templateOf', () => {
+  it('hands a fix back through a transform that leaves the fixed text as it is', () => {
+    const artifact = {
+      stage: 'standard' as const,
+      target: TARGET,
+      content: {
+        sources: [BASE],
+        transform: upper,
+      },
+    };
+    const source = templateOf(artifact, 'FIXED\n');
+
+    expect(source).toBe(BASE);
+  });
+
+  it('keeps a fix the transform would write differently', () => {
+    const artifact = {
+      stage: 'standard' as const,
+      target: TARGET,
+      content: {
+        sources: [BASE],
+        transform: upper,
+      },
+    };
+    const source = templateOf(artifact, 'fixed\n');
+
+    expect(source).toBeUndefined();
+  });
+
+  it('hands a fix back to a template copied with no transform', () => {
+    const artifact = {
+      stage: 'standard' as const,
+      target: TARGET,
+      content: { sources: [BASE] },
+    };
+    const source = templateOf(artifact, 'fixed\n');
+
+    expect(source).toBe(BASE);
+  });
+
+  it('keeps a fix to a file joined from several templates', () => {
+    const artifact = {
+      stage: 'standard' as const,
+      target: TARGET,
+      content: { sources: SOURCES },
+    };
+    const source = templateOf(artifact, 'fixed\n');
+
+    expect(source).toBeUndefined();
+  });
+
+  it('keeps a fix to a file written from no template', () => {
+    const artifact = {
+      stage: 'standard' as const,
+      target: TARGET,
+      content: { text: 'export {};\n' },
+    };
+    const source = templateOf(artifact, 'export {};\n');
+
+    expect(source).toBeUndefined();
   });
 });
