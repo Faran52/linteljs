@@ -79,7 +79,8 @@ typedRuleTester.run('prefer-alias', preferAlias, {
     {
       code: "import { value } from '../config/env';",
       filename: at('app/page.ts'),
-      options: [{ aliasExempt: ['src/app/**'] }],
+      // Any one glob exempts the file.
+      options: [{ aliasExempt: ['src/routes.ts', 'src/app/**'] }],
     },
     {
       code: "import { value } from '@config/env';",

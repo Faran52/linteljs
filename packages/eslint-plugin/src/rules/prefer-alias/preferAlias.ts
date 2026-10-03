@@ -118,7 +118,7 @@ export const preferAlias = createRule('prefer-alias', {
       pinned,
     } = project;
     // The schema default fills `enforceRelativeImports` whenever an options object exists.
-    const { aliasExempt = [], enforceRelativeImports } = optionsOf<Options>(context);
+    const { aliasExempt, enforceRelativeImports } = optionsOf<Options>(context);
     const checker = typed.program.getTypeChecker();
 
     const report = (node: SourceNode, messageId: string, specifier: string, replacement: string): void => {
@@ -143,9 +143,8 @@ export const preferAlias = createRule('prefer-alias', {
       const tsNode = typed.nodeOf(node);
       const file = tsNode.getSourceFile().fileName;
       // What tsc resolved the specifier to, or nothing to rewrite.
-      const resolved = checker
-        .getSymbolAtLocation(tsNode)?.declarations?.[0]
-        ?.getSourceFile().fileName;
+      const [declaration] = checker.getSymbolAtLocation(tsNode)?.declarations ?? [];
+      const resolved = declaration?.getSourceFile().fileName;
 
       if (resolved === undefined) {
         return;
@@ -153,11 +152,11 @@ export const preferAlias = createRule('prefer-alias', {
 
       const own = aliasHolding(aliases, file);
       const exempt = aliasExempt
-        .some((glob) => {
+        ?.some((glob) => {
           const relativePath = posix.relative(base, file);
 
           return matchesGlob(glob, relativePath);
-        });
+        }) === true;
 
       if (specifier.startsWith('.')) {
         const path = posix.join(posix.dirname(file), specifier);
@@ -201,8 +200,9 @@ export const preferAlias = createRule('prefer-alias', {
     };
 
     const check = ({ source }: SourceHolder): void => {
-      if (source?.type === 'Literal' && typeof source.value === 'string') {
-        checkSource(source, source.value);
+      // Only a string resolves, so a non-string literal is left to resolve to nothing.
+      if (source?.type === 'Literal') {
+        checkSource(source, String(source.value));
       }
     };
 

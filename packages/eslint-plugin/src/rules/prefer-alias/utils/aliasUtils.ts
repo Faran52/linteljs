@@ -27,8 +27,8 @@ const aliasesOf = (paths: Record<string, string[]>, base: string): Alias[] => {
   const entries = Object.entries(paths);
 
   return entries
-    .flatMap(([pattern, [substitution = '']]) => {
-      if (!endsInOneStar(pattern, '*') || !endsInOneStar(substitution, WILDCARD)) {
+    .flatMap(([pattern, [substitution]]) => {
+      if (substitution === undefined || !endsInOneStar(pattern, '*') || !endsInOneStar(substitution, WILDCARD)) {
         return [];
       }
 
