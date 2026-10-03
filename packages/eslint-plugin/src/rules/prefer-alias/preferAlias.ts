@@ -160,7 +160,7 @@ export const preferAlias = createRule('prefer-alias', {
 
       if (specifier.startsWith('.')) {
         const path = posix.join(posix.dirname(file), specifier);
-        const alias = exempt || !specifier.startsWith('../') ? undefined : aliasHolding(aliases, path);
+        const alias = exempt ? undefined : aliasHolding(aliases, path);
 
         if (!alias || alias === own) {
           return;

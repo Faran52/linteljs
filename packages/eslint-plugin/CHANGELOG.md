@@ -68,7 +68,8 @@ when a version's change lives in a sibling it is described there instead:
   type alias. `allowIn` names generics whose arguments may stay inline, such as `Extract`, matched by the last
   segment of a qualified name. Report-only, in `recommended`.
 - `prefer-alias` (TypeScript only, type-aware) imports across aliased directories through the tsconfig `paths`
-  alias and within one relatively. Without type information, or in a project that sets `baseUrl`, it reports
+  alias and within one relatively. A `./` or `../` import into an aliased directory the file is not inside is
+  fixed to the alias, so a root `src/App.tsx` reaches `./components/...` through `@components/...`. Without type information, or in a project that sets `baseUrl`, it reports
   nothing. `aliasExempt` silences files by glob, and `enforceRelativeImports` fixes every alias import in them
   to a relative one. Fixable, in `recommended`.
 - `react-no-global-namespace` reports `React.X` reached through `@types/react`'s global namespace, in a type, a

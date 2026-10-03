@@ -960,6 +960,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: join(ALIASED_PROJECT, 'src', 'app', 'page.ts'),
     project: ALIASED_PROJECT,
   },
+  {
+    name: 'child-relative imports into aliased directories',
+    code: "import { value } from './config/env';\nimport { value as ui } from './components/ui';\n\n"
+      + 'export { ui, value };\n',
+    typescript: true,
+    filename: join(ALIASED_PROJECT, 'src', 'routes.ts'),
+    project: ALIASED_PROJECT,
+  },
 ];
 
 const linter = new Linter();

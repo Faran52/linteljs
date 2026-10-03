@@ -11,10 +11,12 @@ import points at is the one tsc resolves it to. Without type information the rul
 does in a project that sets `baseUrl`, where any bare specifier may resolve from it and no rewrite can be
 proven to land on the same file.
 
-A parent-relative import (`../`) whose target sits in another aliased directory is fixed to the most specific
-alias: the one whose directory is deepest. An alias import pointing back into the importing file's own aliased
-directory is fixed to a relative one, so a directory never imports itself through its alias. An import stays as
-written when the alias would resolve somewhere else, or when tsc does not resolve it at all.
+A relative import (`./` or `../`) whose target sits in an aliased directory the importing file is not inside is
+fixed to the most specific alias: the one whose directory is deepest. A `src/App.tsx` importing
+`./components/features/header` is fixed to `@components/features/header`. An alias import pointing back into
+the importing file's own aliased directory is fixed to a relative one, so a directory never imports itself
+through its alias. An import stays as written when the alias would resolve somewhere else, or when tsc does not
+resolve it at all.
 
 Only `prefix/*` patterns onto `directory/*` count, by their first substitution. An exact key onto the same
 directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its index: `../ui` is fixed to
@@ -27,6 +29,9 @@ or a fix that would spell it, stays as written.
 // src/app/page.ts
 import { env } from '../config/env';
 
+// src/main.ts
+import { env } from './config/env';
+
 // src/config/theme.ts
 import { env } from '@config/env';
 ```
@@ -35,6 +40,9 @@ import { env } from '@config/env';
 
 ```ts
 // src/app/page.ts
+import { env } from '@config/env';
+
+// src/main.ts
 import { env } from '@config/env';
 
 // src/config/theme.ts
@@ -56,8 +64,7 @@ import { env } from './env';
 
 These stay relative by design:
 
-- An import down into the file's own directory (`./x/...`), even when `x` is another alias's directory. A
-  `src/App.tsx` importing `./components/features/...` stays as written.
+- An import that stays inside the file's own aliased directory, or between two directories no alias holds.
 - An import between two directories that only a catch-all alias holds, as Nuxt's `~/*` and `@/*` or Expo's `@/*`
   onto `src/`: both sit in that one alias, so the import is within one aliased directory.
 - An import tsc does not resolve, as a `.vue` component in a program without vue-tsc. A `.astro` file is linted

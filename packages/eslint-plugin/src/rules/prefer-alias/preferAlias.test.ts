@@ -98,9 +98,18 @@ typedRuleTester.run('prefer-alias', preferAlias, {
       filename: at('config/env.ts'),
     },
     {
-      // A sibling below the own directory, even inside another alias, stays relative.
-      code: "import { value } from './ui/button';",
-      filename: at('components/card.ts'),
+      code: "import { value } from './config/env';",
+      filename: at('routes.ts'),
+      options: [ROUTES_EXEMPT],
+    },
+    {
+      // `@config/flags/on` would resolve through `@config/flags/*` to `src/lib/`.
+      code: "import { value } from './config/flags/on';",
+      filename: at('routes.ts'),
+    },
+    {
+      code: "import { value } from './config/missing';",
+      filename: at('routes.ts'),
     },
     {
       // Neither a template nor a non-string literal is a specifier to read.
@@ -127,6 +136,25 @@ typedRuleTester.run('prefer-alias', preferAlias, {
     },
   ],
   invalid: [
+    {
+      code: "import { value } from './config/env';",
+      filename: at('routes.ts'),
+      output: "import { value } from '@config/env';",
+      errors: [{
+        messageId: 'preferAlias',
+        data: {
+          specifier: './config/env',
+          replacement: '@config/env',
+        },
+      }],
+    },
+    {
+      // Below the own directory, but inside a deeper alias the file is not in.
+      code: "import { value } from './ui/button';\nimport { value as ui } from './ui';",
+      filename: at('components/card.ts'),
+      output: "import { value } from '@ui/button';\nimport { value as ui } from '@ui';",
+      errors: [{ messageId: 'preferAlias' }, { messageId: 'preferAlias' }],
+    },
     {
       code: "import type { value } from '../config/env';\n"
         + "export type { value as other } from '../config/theme';",
