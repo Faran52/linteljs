@@ -16,19 +16,18 @@
   --foreground: light-dark(#1c1b19, #f0ede7);
   --foreground-2: light-dark(#3d3a35, #c9c5bd);
   --muted: light-dark(#f2f0ec, #2e313a);
-  --muted-foreground: light-dark(#6f6b64, #8e8a82);
-  --faint: light-dark(#8a857d, #78746d);
-  --dim: light-dark(#a8a29a, #5a5750);
+  --muted-foreground: light-dark(#63605a, #aca9a1);
+  --faint: light-dark(#6f6b64, #9d9a93);
   --border: light-dark(#e7e3dd, #32343c);
   --hair: light-dark(#f0ece7, #2a2c34);
-  --input: light-dark(#e7e3dd, #32343c);
+  --input: light-dark(#928f8b, #737376);
 
   /* The brand, and the three states that answer back. */
   --primary: light-dark(#a8541c, #e8a05c);
   --primary-foreground: light-dark(#fff, #241505);
   --ring: var(--primary);
-  --ok: light-dark(#1f7a6d, #2f9e8f);
-  --destructive: light-dark(#b23a32, #d2544b);
+  --ok: light-dark(#1f7a6d, #4aa99b);
+  --destructive: light-dark(#b23a32, #db827a);
 
   /* Radii, by role rather than by size. */
   --radius-xs: 4px;

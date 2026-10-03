@@ -12,7 +12,6 @@ export const tokens = stylex.defineVars({
   muted: 'var(--muted)',
   mutedForeground: 'var(--muted-foreground)',
   faint: 'var(--faint)',
-  dim: 'var(--dim)',
   border: 'var(--border)',
   hair: 'var(--hair)',
   input: 'var(--input)',

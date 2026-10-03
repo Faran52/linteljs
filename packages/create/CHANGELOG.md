@@ -182,6 +182,9 @@ when a version's change lives in a sibling it is described there instead:
   answer that fails its pattern says it must match the pattern, not that it must be a string.
 - The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
+- The starter palette meets WCAG AA in both schemes: every text token reads at 4.5:1 on the page, a card and a
+  muted surface, and a field's border at 3:1. `--dim`, which no starter read and no surface could carry as text,
+  is gone from `tokens.css` and the StyleX and Tailwind themes.
 
 ## 1.5.3
 

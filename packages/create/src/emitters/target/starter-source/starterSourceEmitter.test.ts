@@ -20,6 +20,8 @@ import { shippedAssetsReader } from '@disk';
 
 import { starterSourceEmitter } from './starterSourceEmitter';
 
+type Schemes = Record<string, readonly [string, string]>;
+
 const targetsFor = (overrides: Partial<Answers> = {}): string[] => {
   const artifacts = starterSourceEmitter(answersFor(overrides));
 
@@ -687,5 +689,118 @@ describe('a StyleX sheet', () => {
     }, 'src/components/ui/button/styles.ts');
 
     expect(text).toContain('button: stylex.attrs(sheet.button),');
+  });
+});
+
+// WCAG 2 relative luminance, so the shared palette is held to AA rather than to an eye.
+const luminanceOf = (hex: string): number => {
+  const full = hex.length === 4 ? hex.replaceAll(/[\da-f]/gv, '$&$&') : hex;
+  const [
+    red = 0,
+    green = 0,
+    blue = 0,
+  ] = [
+    1,
+    3,
+    5,
+  ]
+    .map((start) => {
+      const pair = full.slice(start, start + 2);
+      const channel = Number.parseInt(pair, 16) / 255;
+
+      return channel <= 0.040_45 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+
+  return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+};
+
+const contrastOf = (first: string, second: string): number => {
+  const [lighter = 0, darker = 0] = [luminanceOf(first), luminanceOf(second)]
+    .toSorted((left, right) => {
+      return right - left;
+    });
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const schemesOf = async (): Promise<Schemes> => {
+  const text = await textOf({}, 'src/styles/tokens.css');
+  const tokenLine = /--(?<name>[a-z\d\-]{1,40}): light-dark\((?<light>#[\da-f]{3,6}), (?<dark>#[\da-f]{3,6})\)/gv;
+  const pairs = [...text.matchAll(tokenLine)]
+    .map(({ groups }) => {
+      const entry: [string, readonly [string, string]] = [
+        groups?.['name'] ?? '',
+        [groups?.['light'] ?? '', groups?.['dark'] ?? ''],
+      ];
+
+      return entry;
+    });
+
+  return Object.fromEntries(pairs);
+};
+
+const shortfallsOf = (schemes: Schemes, foregrounds: string[], backgrounds: string[], floor: number): string[] => {
+  const indices = [0, 1];
+
+  return indices
+    .flatMap((scheme) => {
+      return foregrounds
+        .flatMap((foreground) => {
+          return backgrounds
+            .filter((background) => {
+              const fore = schemes[foreground]?.[scheme] ?? '';
+              const back = schemes[background]?.[scheme] ?? '';
+
+              return contrastOf(fore, back) < floor;
+            })
+            .map((background) => {
+              return `${String(scheme)} ${foreground} on ${background}`;
+            });
+        });
+    });
+};
+
+describe('the shared palette', () => {
+  it('reads every text token at 4.5:1 on every surface in both schemes', async () => {
+    const schemes = await schemesOf();
+    const texts = [
+      'foreground',
+      'foreground-2',
+      'muted-foreground',
+      'faint',
+      'primary',
+      'ok',
+      'destructive',
+    ];
+    const shortfalls = shortfallsOf(schemes, texts, [
+      'background',
+      'card',
+      'muted',
+    ], 4.5);
+    const onPrimary = shortfallsOf(schemes, ['primary-foreground'], ['primary'], 4.5);
+
+    const names = Object.keys(schemes);
+
+    expect(names).toEqual(expect.arrayContaining([
+      ...texts,
+      'background',
+      'card',
+      'muted',
+    ]));
+
+    expect(shortfalls).toStrictEqual([]);
+    expect(onPrimary).toStrictEqual([]);
+  });
+
+  // A field sits on a card in the card's own colour, so its border is all that marks it out.
+  it('draws every control edge at 3:1 on the surfaces it sits on', async () => {
+    const schemes = await schemesOf();
+    const shortfalls = shortfallsOf(schemes, [
+      'input',
+      'primary',
+      'destructive',
+    ], ['background', 'card'], 3);
+
+    expect(shortfalls).toStrictEqual([]);
   });
 });
