@@ -142,7 +142,7 @@ export interface TargetRecord {
   astro?: true;
   sfcExtension?: 'vue' | 'svelte';
   styleEntry: string;
-  // The first is what a config migrated from v2 lands on.
+  // The first is what a v1 config's yes migrates to.
   stores?: readonly Store[];
   // Absent, the question is not asked.
   routers?: readonly Router[];

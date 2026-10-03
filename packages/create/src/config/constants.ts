@@ -14,7 +14,7 @@ export const MANAGER_FLOORS: Record<PackageManager, string> = {
   bun: '1.2.0',
 };
 
-// 22.18.0 is the first release that strips types by default, which the shipped scripts and hooks need.
+// 22.18.0 is the first 22.x release that strips types by default, which the shipped scripts and hooks need.
 // The CLI and the project it writes share it, so a machine that runs `create` also runs the project.
 export const NODE_FLOOR = '22.18.0';
 

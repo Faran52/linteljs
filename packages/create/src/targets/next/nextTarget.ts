@@ -178,7 +178,6 @@ export const nextTarget: TargetBuilder = () => {
         '.next/dev/types/**/*.ts',
       ],
     },
-    // Its parts are covered where each renders.
     // The documents: what each renders is covered where it renders.
     coverageExclude: ['src/app/layout.tsx', 'src/app/global-error.tsx'],
     publicDirectory: 'public',

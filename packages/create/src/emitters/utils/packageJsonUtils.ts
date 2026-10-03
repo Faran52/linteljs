@@ -185,7 +185,7 @@ export const versioned = (names: string[], pins: Record<string, string> = {}): R
   return result;
 };
 
-// bun reads a scoped override from 1.4 only, below the 1.2 floor, so its pin stays global.
+// bun reads a scoped override from 1.4 only, above the 1.2 floor, so its pin stays global.
 const SCOPED_KEYS: Record<Exclude<PackageManager, 'npm'>, (parent: string, name: string) => string> = {
   pnpm: (parent, name) => {
     return `${parent}>${name}`;

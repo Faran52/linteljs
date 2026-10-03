@@ -2,7 +2,7 @@ import { type ProjectShape } from '@config/types';
 
 import { allPresent } from '../../utils/fsUtils';
 
-// Discovered rather than asked: writing the default beside a project's own left a second entry nothing imported.
+// Discovered rather than asked: writing the default beside a project's own would leave a second entry nothing imports.
 export const STYLE_ENTRY_CANDIDATES = [
   'src/styles/tailwind.css',
   'src/styles/global.css',

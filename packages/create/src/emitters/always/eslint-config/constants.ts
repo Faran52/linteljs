@@ -1,6 +1,6 @@
 import type { LibraryLayer } from '@config/types';
 
-// `as const`: annotating it `readonly LibraryLayer[]` widened the members away.
+// `as const`: annotating it `readonly LibraryLayer[]` would widen the members away.
 export const LIBRARY_LAYERS = [
   'tanstack-query',
   'tanstack-router',

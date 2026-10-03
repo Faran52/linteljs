@@ -61,7 +61,7 @@ export const nuxtTarget: TargetBuilder = () => {
     framework: 'nuxt',
     html: false,
     sfcExtension: 'vue',
-    // Installed with no counter module yet: the same recorded gap astro, webextension and angular carry on `form`.
+    // Installed with no counter module: Nuxt's starter has no store demo.
     stores: ['pinia', 'tanstack-store'],
     ignores: ['.nuxt/**', '.output/**'],
     naming: sfcNaming('vue'),

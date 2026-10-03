@@ -13,7 +13,7 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
   return source.replace(anchor, replacement);
 };
 
-// `.astro` is left out: the checker reads script and SFC files only, so listing it scanned nothing.
+// `.astro` is left out: the checker reads script and SFC files only, so listing it would scan nothing.
 const scannedExtensions = (answers: Answers): string[] => {
   const { sfcExtension } = targetFor(answers);
 

@@ -4,7 +4,7 @@ import {
   type Store,
 } from '@config/types';
 
-// Matches the emitted @stylistic/max-len; looser, React Native's ignores self-reported a finding.
+// The emitted `@stylistic/max-len`: any looser, and an inlined list like React Native's `ignores` fails its lint.
 export const MAX_LINE = 120;
 
 // Caret ranges; an entry this workspace also installs must be at least its `catalog:` version.
@@ -26,7 +26,7 @@ export const VERSIONS: Record<string, string> = {
   '@html-eslint/parser': '^0.66.1',
   '@inlang/paraglide-js': '^2.25.4',
   '@inlang/plugin-message-format': '^4.4.4',
-  // No `zone.js`: signals and `provideBrowserGlobalErrorListeners` are zoneless, Angular 20's default.
+  // No `zone.js`: signals and `provideBrowserGlobalErrorListeners` are zoneless, the default since Angular 21.
   '@angular/common': '^22.2.0',
   '@angular/compiler': '^22.2.0',
   '@angular/core': '^22.2.0',

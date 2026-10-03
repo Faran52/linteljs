@@ -113,7 +113,7 @@ export const inquirerPrompter: Prompter = {
     return await cancellable(select({
       message,
       default: initialValue,
-      // The default window is seven, which hid the last two frameworks behind a scroll.
+      // The default window is seven, which hides the last two frameworks behind a scroll.
       pageSize: Math.max(options.length, 1),
       choices: options
         .map((option) => {

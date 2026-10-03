@@ -150,7 +150,7 @@ export const reactNativeTarget: TargetBuilder = () => {
         variant: 'tailwind',
       },
     ],
-    // expo-router treats every file under the route root as a route; `expo export` died on a suite there.
+    // expo-router treats every file under the route root as a route; `expo export` fails on a suite there.
     starterTests: [
       ...mockTests(false),
       STATUS_UTILS_TEST,

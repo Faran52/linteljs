@@ -38,7 +38,7 @@ export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 
 export const ROUTER_MOCK = 'fragments/test-setup/setupTests.router.ts';
 
-// docs/DESIGN.md has why `oxc-transform-react` replaced the Babel pass.
+// docs/DESIGN.md says why `oxc-transform-react` rather than Babel.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: ["import react from '@vitejs/plugin-react';"],
   calls: [`react({ compiler: ${OUTSIDE_TESTS} })`],
