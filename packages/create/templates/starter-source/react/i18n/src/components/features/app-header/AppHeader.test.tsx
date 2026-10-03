@@ -11,6 +11,7 @@ import {
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { AppHeader } from './AppHeader';
 
@@ -38,7 +39,7 @@ describe('AppHeader', () => {
   });
 
   afterEach(async () => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
 
     await act(async () => {
       await i18n.changeLanguage('en');
@@ -87,7 +88,7 @@ describe('AppHeader', () => {
 
     const { home } = resources[last].common;
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     const element = screen.getByRole('button', { name: home });
     expect(element).toBeTruthy();

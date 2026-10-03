@@ -7,6 +7,7 @@ import {
 
 import { initI18n } from '@i18n';
 import { languages, languageStorageKey } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { LanguageSelect } from './LanguageSelect';
 
@@ -15,7 +16,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('LanguageSelect', () => {
   afterEach(async () => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
 
     await act(async () => {
       await i18n.changeLanguage('en');
@@ -47,7 +48,7 @@ describe('LanguageSelect', () => {
 
     const select = screen.getByRole<HTMLSelectElement>('combobox');
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(i18n.language).toBe(last);
     expect(select.value).toBe(last);

@@ -1,18 +1,26 @@
-import { type ReactNode, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { type ReactNode } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import {
   Links,
+  type LoaderFunctionArgs,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
 } from 'react-router';
 
 import { NAME } from '@config/linteljs';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
-import { initI18n } from '@i18n';
+import {
+  detectLanguage,
+  directionOf,
+  initI18n,
+} from '@i18n';
+import { fallbackLanguage } from '@i18n/config';
+import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 import { AppHeader } from '@features/app-header/AppHeader';
 import { RouteError } from '@features/route-error/RouteError';
@@ -23,56 +31,66 @@ interface LayoutProps {
   readonly children: ReactNode;
 }
 
-// The server cannot see the reader's languages, so both sides render English and the client detects after hydration.
-initI18n({ lng: 'en' });
+// The browser starts in the language the server rendered, so hydration agrees with it.
+const isServer = typeof document === 'undefined';
+const i18n = initI18n({ lng: isServer ? fallbackLanguage : document.documentElement.lang });
+
+// The stored choice, then Accept-Language, so the first byte is already in the reader's language.
+export const loader = ({ request }: LoaderFunctionArgs): string => {
+  const { headers } = request;
+  const cookies = headers.get('cookie') ?? '';
+  const preferred = acceptedTags(headers.get('accept-language') ?? '');
+
+  return detectLanguage(cookies, preferred);
+};
 
 export const Layout = ({ children }: LayoutProps): ReactNode => {
-  const { i18n } = useTranslation();
-
-  // No language named, so the detector reads the stored choice, then the browser; it stores nothing.
-  useEffect(() => {
-    void i18n.changeLanguage();
-  }, [i18n]);
+  // Absent only when the root loader itself failed.
+  const language = useRouteLoaderData<typeof loader>('root') ?? fallbackLanguage;
+  // The server serves many readers at once, so each render gets its own instance; the browser has one reader.
+  const instance = isServer ? i18n.cloneInstance({ lng: language }) : i18n;
 
   return (
-    <html lang="en" dir="ltr">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-          rel="icon"
-          type="image/svg+xml"
-          href="/favicon.svg"
-        />
-        <title>{NAME}</title>
-        <Meta />
-        <Links />
-        {/* StyleX injects its dev CSS into `index.html`, which framework mode does not have. */}
-        {import.meta.env.DEV
-          ? (
-              <>
-                <script type="module" src="/@id/virtual:stylex:runtime" />
-                {/* The runtime disables this link once it injects its own `<style>`, before hydration. */}
-                <link
-                  rel="stylesheet"
-                  href="/virtual:stylex.css"
-                  suppressHydrationWarning
-                />
-              </>
-            )
-          : null}
-      </head>
-      <body>
-        <StoreProvider>
-          <DataProvider>
-            <AppHeader name={NAME} />
-            {children}
-          </DataProvider>
-        </StoreProvider>
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
+    <I18nextProvider i18n={instance}>
+      <html lang={language} dir={directionOf(language)}>
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link
+            rel="icon"
+            type="image/svg+xml"
+            href="/favicon.svg"
+          />
+          <title>{NAME}</title>
+          <Meta />
+          <Links />
+          {/* StyleX injects its dev CSS into `index.html`, which framework mode does not have. */}
+          {import.meta.env.DEV
+            ? (
+                <>
+                  <script type="module" src="/@id/virtual:stylex:runtime" />
+                  {/* The runtime disables this link once it injects its own `<style>`, before hydration. */}
+                  <link
+                    rel="stylesheet"
+                    href="/virtual:stylex.css"
+                    suppressHydrationWarning
+                  />
+                </>
+              )
+            : null}
+        </head>
+        <body>
+          <StoreProvider>
+            <DataProvider>
+              <AppHeader name={NAME} />
+              {children}
+            </DataProvider>
+          </StoreProvider>
+          <ScrollRestoration />
+          <Scripts />
+        </body>
+      </html>
+    </I18nextProvider>
   );
 };
 

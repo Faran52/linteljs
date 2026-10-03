@@ -1,9 +1,11 @@
 import { languages, languageStorageKey } from './config';
 import {
   chooseLanguage,
+  detectLanguage,
   directionOf,
   initI18n,
 } from './index';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
 
@@ -22,7 +24,7 @@ const browserSpeaks = (tags: string[]): void => {
 
 describe('i18n', () => {
   afterEach(async () => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     vi.restoreAllMocks();
     await initI18n().changeLanguage('en');
   });
@@ -39,13 +41,13 @@ describe('i18n', () => {
 
     const actual = await detected();
     expect(actual).toBe(last);
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('puts a stored choice before the browser', async () => {
     browserSpeaks(['fr-FR']);
-    localStorage.setItem(languageStorageKey, last);
+    document.cookie = languageCookie(last);
 
     const actual = await detected();
     expect(actual).toBe(last);
@@ -60,10 +62,23 @@ describe('i18n', () => {
     initI18n();
     await chooseLanguage(last);
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
+  });
+
+  it('detects a request\'s stored choice before the languages it accepts', () => {
+    const actual = detectLanguage(`theme=dark; ${languageCookie(last)}`, ['en']);
+    expect(actual).toBe(last);
+  });
+
+  it('detects a request\'s accepted language when nothing is stored, and English when none is offered', () => {
+    const accepted = detectLanguage('', ['fr', last]);
+    expect(accepted).toBe(last);
+
+    const unoffered = detectLanguage(languageCookie('xx'), ['fr']);
+    expect(unoffered).toBe('en');
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {

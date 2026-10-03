@@ -2,6 +2,8 @@ import { hasLibrary } from '@utils/answerUtils';
 
 import {
   CONTACT_HOOK_FORMS,
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   COUNTER_MODULE_STORES,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
@@ -109,6 +111,7 @@ const baseReactTarget: TargetRecord = {
     ...componentStyleModules(),
     ...reactI18nFiles(),
     ...localeFiles(),
+    COOKIE_UTILS,
     {
       target: 'src/pages/routes.tsx',
       when: (answers) => {
@@ -390,6 +393,7 @@ const baseReactTarget: TargetRecord = {
     },
     ...reactI18nTests(),
     LOCALES_TEST,
+    COOKIE_UTILS_TEST,
     // Framework mode has no `App` to cover the header inside, so it stands alone in a memory router.
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',

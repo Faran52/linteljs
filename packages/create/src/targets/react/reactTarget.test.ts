@@ -259,6 +259,8 @@ const GATES: GateRow[] = [
   ['src/i18n/index.ts@i18n', WITH_I18N],
   ['src/i18n/index.test.ts@i18n', WITH_I18N],
   ['src/i18n/locales.test.ts@i18n', WITH_I18N],
+  ['src/i18n/utils/cookieUtils.ts@i18n', WITH_I18N],
+  ['src/i18n/utils/cookieUtils.test.ts@i18n', WITH_I18N],
   ...LANGUAGES
     .map((language): GateRow => {
       const row: GateRow = [`src/i18n/locales/${language}/common.json@i18n`, WITH_I18N];
