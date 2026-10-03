@@ -1,4 +1,4 @@
-import type { Router } from '@config/types';
+import type { AliasMap, Router } from '@config/types';
 import type { I18nParts } from '../types';
 import type { AccessorNames } from '../utils/mockUtils';
 
@@ -10,6 +10,11 @@ export const ROUTERS: readonly Router[] = [
 
 // Framework mode routes through React Router's own build, so it has no `App.tsx`.
 export const DECLARATIVE_ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];
+
+export const PAGES_ALIAS: AliasMap = { '@pages/*': './src/pages/*' };
+
+// Only data mode has a `src/routes/` it imports by path. Routes first: the router imports pages.
+export const DATA_ROUTES_ALIAS: AliasMap = { '@routes/*': './src/routes/*', ...PAGES_ALIAS };
 
 export const ALWAYS: readonly string[] = ['src/components/ui/mark/Mark.tsx'];
 

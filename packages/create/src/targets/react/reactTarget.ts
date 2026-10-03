@@ -37,7 +37,9 @@ import {
 
 import {
   ALWAYS,
+  DATA_ROUTES_ALIAS,
   DECLARATIVE_ROUTERS,
+  PAGES_ALIAS,
   REACT_ACCESSORS,
   REACT_I18N,
   ROOT_VARIANTS,
@@ -178,7 +180,7 @@ const baseReactTarget = (): TargetRecord => {
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,
-    routeAlias: { '@pages/*': './src/pages/*' },
+    routeAlias: PAGES_ALIAS,
     publicDirectory: 'public',
     styleEntry: 'src/index.css',
     vitePlugin: REACT_VITE_PLUGIN,
@@ -465,6 +467,7 @@ export const reactTarget: TargetBuilder = (answers) => {
   const record: TargetRecord = {
     ...baseReactTarget(),
     ...(isFrameworkMode(answers) ? frameworkMode() : {}),
+    ...(answers.router === 'react-router' ? { routeAlias: DATA_ROUTES_ALIAS } : {}),
     i18n: REACT_I18N,
   };
 

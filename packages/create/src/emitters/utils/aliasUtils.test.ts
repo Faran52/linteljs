@@ -74,6 +74,20 @@ describe('buildAliases', () => {
     expect(first).toEqual(expected);
   });
 
+  it('leads the react router data mode map with its routes, then the pages they import', () => {
+    const aliases = buildAliases(answersFor({ target: 'react', router: 'react-router' }));
+    const leading = Object.keys(aliases)
+      .slice(0, 4);
+
+    const expected = [
+      '@routes/*',
+      '@routes',
+      '@pages/*',
+      '@pages',
+    ];
+    expect(leading).toEqual(expected);
+  });
+
   it('gives a target with no route unit no route alias', () => {
     const aliases = buildAliases(answersFor({ target: 'next' }));
     const keys = Object.keys(aliases);

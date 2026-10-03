@@ -62,6 +62,16 @@ describe('reactTarget', () => {
     expect(probes).toContain('response.statusCode = 404;');
   });
 
+  it.each([
+    ['react-router', { '@routes/*': './src/routes/*', '@pages/*': './src/pages/*' }],
+    ['react-router-framework', { '@pages/*': './src/pages/*' }],
+    ['tanstack-router', { '@pages/*': './src/pages/*' }],
+  ] as const)('aliases src/routes/ only where the %s starter imports it by path', (router, expected) => {
+    const { routeAlias } = recordFor({ router });
+
+    expect(routeAlias).toEqual(expected);
+  });
+
   it('installs the compiler only where react() builds', () => {
     expect(recordFor().devDependencies).toContain('oxc-transform-react');
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).not.toContain('oxc-transform-react');
