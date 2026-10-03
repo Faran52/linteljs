@@ -186,6 +186,7 @@ when a version's change lives in a sibling it is described there instead:
   muted surface, and a field's border at 3:1. `--dim`, which no starter read and no surface could carry as text,
   is gone from `tokens.css` and the StyleX and Tailwind themes.
 - The Nuxt starter without translations sets `lang` on `<html>`, as every other target already does.
+- The web extension popup holds its content in a `<main>` landmark.
 
 ## 1.5.3
 

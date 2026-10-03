@@ -26,6 +26,7 @@ const nodeOf = (part: string, index: number): Node => {
 
 // Built node by node: a kept reference cannot be null, and an extension's CSP has no reason to trust markup.
 export const renderPopup = (root: HTMLElement): void => {
+  const main = document.createElement('main');
   const title = document.createElement('h1');
   const lede = document.createElement('p');
   const hint = document.createElement('p');
@@ -68,8 +69,9 @@ export const renderPopup = (root: HTMLElement): void => {
       paint(detectLanguage());
     });
 
-  root.className = 'hero';
-  root.innerHTML = markSvg;
-  root.append(title, lede, hint, picker);
+  main.className = 'hero';
+  main.innerHTML = markSvg;
+  main.append(title, lede, hint, picker);
+  root.append(main);
   paint(detectLanguage());
 };

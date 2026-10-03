@@ -11,6 +11,14 @@ describe('renderPopup', () => {
     return root;
   };
 
+  it('holds its content in the one main landmark', () => {
+    const root = open();
+
+    const heading = root.querySelector('main > h1');
+
+    expect(heading).not.toBeNull();
+  });
+
   it('carries the project name and the mark', () => {
     const root = open();
 

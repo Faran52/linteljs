@@ -34,13 +34,22 @@ describe('renderPopup', () => {
     vi.restoreAllMocks();
   });
 
+  it('holds its content in the one main landmark', () => {
+    const root = open();
+
+    const heading = root.querySelector('main > h1');
+
+    expect(heading).not.toBeNull();
+  });
+
   it('carries the project name and the mark', () => {
     const root = open();
 
     expect(root.querySelector('h1')?.textContent).toBe(NAME);
     const element = root.querySelector('svg[role="img"]');
     expect(element).not.toBeNull();
-    expect(root.className).toBe('hero');
+    const landmark = root.querySelector('main')?.className;
+    expect(landmark).toBe('hero');
   });
 
   it('points at the gate, as every home page does', () => {
