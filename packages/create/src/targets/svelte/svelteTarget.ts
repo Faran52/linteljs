@@ -124,6 +124,11 @@ export const svelteTarget: TargetBuilder = () => {
         source: 'public/favicon.svg',
       },
       {
+        target: 'static/robots.txt',
+        shared: true,
+        source: 'public/robots.txt',
+      },
+      {
         target: 'src/routes/+page.svelte',
         when: (answers) => {
           return !hasStore(answers);

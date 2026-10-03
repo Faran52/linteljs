@@ -218,6 +218,10 @@ export const nextTarget: TargetBuilder = () => {
         source: 'public/favicon.svg',
       },
       {
+        target: 'public/robots.txt',
+        shared: true,
+      },
+      {
         target: 'src/config/routes.ts',
         when: (answers) => {
           return !hasForm(answers);

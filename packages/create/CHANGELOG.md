@@ -190,6 +190,8 @@ when a version's change lives in a sibling it is described there instead:
 - The header reads the project name in full at any width: a name too long for the row moves the nav below it
   and wraps, where it used to end in an ellipsis at 360px.
 - Every starter document head carries a description meta, which Lighthouse's SEO audit asks for.
+- Every target that serves a public directory ships a `robots.txt`, so a single-page app no longer answers
+  `/robots.txt` with its HTML shell.
 
 ## 1.5.3
 

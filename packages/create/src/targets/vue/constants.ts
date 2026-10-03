@@ -14,6 +14,7 @@ export const SHARED: readonly string[] = [
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',
+  'public/robots.txt',
 ];
 
 // Each ships a translated twin.

@@ -447,6 +447,27 @@ describe('targetFor', () => {
   });
 });
 
+describe('robots.txt', () => {
+  it('ships wherever a target serves a public directory', () => {
+    const served = TARGET_IDS
+      .filter((id) => {
+        return recordFor(id).publicDirectory !== undefined;
+      });
+    const missing = served
+      .filter((id) => {
+        const { publicDirectory, starterFiles } = recordFor(id);
+
+        return !starterFiles
+          .some((file) => {
+            return file.target === `${String(publicDirectory)}/robots.txt`;
+          });
+      });
+
+    expect(served).toContain('react');
+    expect(missing).toStrictEqual([]);
+  });
+});
+
 const REACT_PLUGINS = [
   '@eslint-react/eslint-plugin',
   'eslint-plugin-react-hooks',
