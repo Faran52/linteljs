@@ -34,7 +34,7 @@ export const reactCore = (): Layer => {
     // `configs.flat.recommended`: the bare name is still the eslintrc form.
     ...presetOf(reactHooks.configs.flat.recommended, 'react-hooks/flat/recommended', SCRIPT_FILES),
 
-    // `@eslint-react` 5 republishes these under its own prefix, so both presets reported every hook defect twice.
+    // `@eslint-react` 5 republishes these under its own prefix, so both presets would report every hook defect twice.
     // `react-hooks` stays the owner: seven of its rules, `refs` among them, have no `@eslint-react` copy.
     {
       name: '@linteljs/react/hooks-one-owner',

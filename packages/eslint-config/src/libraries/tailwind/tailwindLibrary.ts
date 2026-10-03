@@ -17,7 +17,7 @@ export const tailwind = (entryPoint?: string): Layer => {
       files: TAILWIND_FILES,
       ...(entryPoint === undefined ? {} : { settings: { 'better-tailwindcss': { entryPoint } } }),
       rules: {
-        // create-vite's own template classes trip it. Measured.
+        // create-vite's own template classes trip it.
         'better-tailwindcss/no-unknown-classes': 'off',
       },
     },

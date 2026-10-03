@@ -32,7 +32,7 @@ export const NEXT_PROJECT: Layer = [
   },
 ];
 
-// On disk for the same reason.
+// On disk beside its own tsconfig, for `projectService`.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 
 export const LEAKED_RENDER_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Count.tsx');

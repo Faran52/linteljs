@@ -43,7 +43,7 @@ const NUMBER_EXEMPT_FILES = ['**/*.config.*', '**/constants.ts'];
 
 const MAX_COGNITIVE_COMPLEXITY = 15;
 
-// `process.cwd()` off the global so a test can replace it; this file resolves from `node_modules`.
+// The global `process.cwd()`, which a test can replace: this file sits in `node_modules`, not the project.
 const gitignored = (): Layer => {
   const path = join(process.cwd(), '.gitignore');
 
