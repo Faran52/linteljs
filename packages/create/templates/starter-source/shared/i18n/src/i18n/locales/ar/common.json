@@ -35,5 +35,6 @@
   "homeLedeNext": "Next و App Router، والمعيار مطبّق مسبقًا.",
   "homeLedeVue": "Vue و Vite، والمعيار مطبّق مسبقًا.",
   "homeLedeNuxt": "Nuxt و Vue، والمعيار مطبّق مسبقًا.",
-  "homeLedeSvelte": "Svelte و SvelteKit، والمعيار مطبّق مسبقًا."
+  "homeLedeSvelte": "Svelte و SvelteKit، والمعيار مطبّق مسبقًا.",
+  "homeLedeSolid": "Solid و Vite، والمعيار مطبّق مسبقًا."
 }

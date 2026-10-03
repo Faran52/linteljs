@@ -9,7 +9,11 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -38,7 +42,11 @@ import {
 import { solidI18nFiles, solidI18nTests } from './utils/translatedFileUtils';
 
 import type { TargetBuilder } from '../registry';
-import type { TargetRecord } from '../types';
+import type {
+  StarterFile,
+  StarterTest,
+  TargetRecord,
+} from '../types';
 
 export const solidTarget: TargetBuilder = () => {
   const record: TargetRecord = {
@@ -87,17 +95,17 @@ export const solidTarget: TargetBuilder = () => {
       ...filesAt(SHARED, {
         shared: true,
       }),
-      {
+      ...translated<StarterFile>({
         target: 'src/pages/home/HomePage.tsx',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterFile>({
         target: 'src/pages/home/HomePage.tsx',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       {
         target: 'src/components/ui/index.ts',
         when: (answers) => {
@@ -167,19 +175,19 @@ export const solidTarget: TargetBuilder = () => {
         covers: 'src/components/features/error-boundary/ErrorBoundary.tsx',
       },
       // Its button is a child of that page and nothing else renders it.
-      {
+      ...translated<StarterTest>({
         target: 'src/pages/home/HomePage.test.tsx',
         covers: 'src/pages/home/HomePage.tsx',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterTest>({
         target: 'src/pages/home/HomePage.test.tsx',
         covers: 'src/pages/home/HomePage.tsx',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       {
         target: 'src/pages/contact/ContactPage.test.tsx',
         covers: 'src/pages/contact/ContactPage.tsx',

@@ -35,5 +35,6 @@
   "homeLedeNext": "Next, App Router, 그리고 이미 적용된 표준.",
   "homeLedeVue": "Vue, Vite, 그리고 이미 적용된 표준.",
   "homeLedeNuxt": "Nuxt, Vue, 그리고 이미 적용된 표준.",
-  "homeLedeSvelte": "Svelte, SvelteKit, 그리고 이미 적용된 표준."
+  "homeLedeSvelte": "Svelte, SvelteKit, 그리고 이미 적용된 표준.",
+  "homeLedeSolid": "Solid, Vite, 그리고 이미 적용된 표준."
 }

@@ -5,6 +5,7 @@ import {
   type Condition,
   contactGates,
   type GateRow,
+  homeGates,
   mswGates,
   NOT_TANSTACK_QUERY,
   TAILWIND,
@@ -12,10 +13,8 @@ import {
   walkGates,
   WITH_FORM,
   WITH_I18N,
-  WITH_STORE,
   WITHOUT_FORM,
   WITHOUT_I18N,
-  WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -126,8 +125,7 @@ const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ['src/pages/routes.tsx', WITHOUT_FORM],
   ['src/pages/routes.tsx@with-form', WITH_FORM],
-  ['src/pages/home/HomePage.tsx', WITHOUT_STORE],
-  ['src/pages/home/HomePage.tsx@with-store', WITH_STORE],
+  ...homeGates('src/pages/home/HomePage.tsx'),
   ['src/pages/contact/useContactForm.ts', WITH_FORM],
   ['src/components/ui/index.ts', WITHOUT_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],
@@ -139,8 +137,7 @@ const GATES: GateRow[] = [
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['./components/ui/text-input/TextInput.css', WITH_FORM],
-  ['src/pages/home/HomePage.test.tsx', WITHOUT_STORE],
-  ['src/pages/home/HomePage.test.tsx@with-store', WITH_STORE],
+  ...homeGates('src/pages/home/HomePage.test.tsx'),
   ['src/lib/primitives/create-extended-query/createExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/primitives/create-extended-mutation/createExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
