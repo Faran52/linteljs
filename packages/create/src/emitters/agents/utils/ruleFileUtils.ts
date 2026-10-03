@@ -3,6 +3,7 @@ import { basename } from 'node:path';
 import { type Answers, type Artifact } from '@config/types';
 
 import { forAnswers, ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
+import { withoutClaudePaths } from '../../utils/frontmatterUtils';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 
@@ -37,12 +38,6 @@ export const globsOf = (source: string): string => {
         .join(',');
 };
 
-const withoutFrontmatter = (source: string): string => {
-  return source
-    .replace(PATHS, '')
-    .replace(/^\n+/u, '');
-};
-
 const named = (name: string, suffix: string): string => {
   return `${basename(name, '.md')}${suffix}`;
 };
@@ -63,7 +58,7 @@ export const ruleArtifacts = (
           sources,
           transform: (source: string) => {
             const header = frontmatter(source);
-            const body = withoutFrontmatter(forAnswers(answers, source));
+            const body = withoutClaudePaths(forAnswers(answers, source));
 
             return `${header}${body}`;
           },

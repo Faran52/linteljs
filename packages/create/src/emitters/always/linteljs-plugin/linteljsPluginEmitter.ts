@@ -15,8 +15,7 @@ import {
 import { targetFor } from '@targets';
 
 import { copied } from '../../utils/artifactUtils';
-
-import { withoutClaudePaths } from './utils/frontmatterUtils';
+import { withoutClaudePaths } from '../../utils/frontmatterUtils';
 
 export interface RuleSource {
   name: string;
