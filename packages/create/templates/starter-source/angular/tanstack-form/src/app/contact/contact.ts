@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
+import { useSubmitContact } from '@apis/contact/contact-api';
 import { type ContactValues, validateContact } from '@apis/contact/schemas';
 
 import { Button } from '@ui/button/button';
@@ -14,6 +15,8 @@ import { TextInput } from '@ui/text-input/text-input';
 })
 export class Contact {
   protected readonly sent = signal(false);
+
+  private readonly submit = useSubmitContact();
 
   protected readonly form = injectForm({
     defaultValues: {
@@ -29,7 +32,8 @@ export class Contact {
         return formErrors;
       },
     },
-    onSubmit: () => {
+    onSubmit: async ({ value }) => {
+      await this.submit(value);
       this.sent.set(true);
     },
   });

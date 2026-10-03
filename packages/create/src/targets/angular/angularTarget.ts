@@ -80,6 +80,11 @@ export const angularTarget: TargetBuilder = () => {
         source: 'src/lib/utils/statusUtils.ts',
         shared: true,
       },
+      {
+        target: 'src/lib/apis/contact/contact-api.ts',
+        source: 'src/lib/apis/contact/contactApi.ts',
+        shared: true,
+      },
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
       ...localeFiles(),
@@ -150,6 +155,10 @@ export const angularTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...angularI18nTests(),
       LOCALES_TEST,
+      {
+        target: 'src/lib/apis/contact/contact-api.spec.ts',
+        covers: 'src/lib/apis/contact/contact-api.ts',
+      },
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

@@ -118,6 +118,25 @@ describe('Contact', () => {
     expect(disabled).toBe(false);
   });
 
+  it('holds Send while the message is on its way', async () => {
+    const harness = await render();
+
+    await fill(harness, '#email', 'someone@example.com');
+    await fill(harness, '#message', 'Ten characters, at least.');
+
+    const root = harness.nativeElement as HTMLElement;
+
+    root
+      .querySelector('form')
+      ?.dispatchEvent(new Event('submit'));
+
+    harness.detectChanges();
+
+    const held = root.querySelector('button')?.disabled;
+
+    expect(held).toBe(true);
+  });
+
   it('sends once both fields are valid', async () => {
     const harness = await render();
 

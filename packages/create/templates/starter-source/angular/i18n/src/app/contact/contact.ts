@@ -5,6 +5,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 
+import { useSubmitContact } from '@apis/contact/contact-api';
 import { type ContactValues, validateContact } from '@apis/contact/schemas';
 import { t } from '@i18n';
 
@@ -30,6 +31,10 @@ export class Contact {
 
   protected readonly sent = signal(false);
 
+  protected readonly sending = signal(false);
+
+  private readonly submit = useSubmitContact();
+
   // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
   protected errorOf(name: keyof ContactValues): string | undefined {
     if (!this.form.controls[name].touched) {
@@ -49,13 +54,18 @@ export class Contact {
     this.form.controls[name].markAsTouched();
   }
 
-  protected send(): void {
+  protected async send(): Promise<void> {
     this.form.markAllAsTouched();
 
-    const found = validateContact(this.form.getRawValue());
+    const values = this.form.getRawValue();
+    const found = validateContact(values);
 
-    if (Object.keys(found).length === 0) {
-      this.sent.set(true);
+    if (Object.keys(found).length > 0) {
+      return;
     }
+
+    this.sending.set(true);
+    await this.submit(values);
+    this.sent.set(true);
   }
 }

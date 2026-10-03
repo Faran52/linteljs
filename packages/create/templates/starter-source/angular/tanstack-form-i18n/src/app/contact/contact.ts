@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
+import { useSubmitContact } from '@apis/contact/contact-api';
 import { type ContactValues, validateContact } from '@apis/contact/schemas';
 import { t } from '@i18n';
 
@@ -18,6 +19,8 @@ export class Contact {
 
   protected readonly sent = signal(false);
 
+  private readonly submit = useSubmitContact();
+
   protected readonly form = injectForm({
     defaultValues: {
       email: '',
@@ -32,7 +35,8 @@ export class Contact {
         return formErrors;
       },
     },
-    onSubmit: () => {
+    onSubmit: async ({ value }) => {
+      await this.submit(value);
       this.sent.set(true);
     },
   });
