@@ -1,6 +1,6 @@
 // `sync` restores this when missing but never overwrites your lists.
 import {
-  readdirSync,
+  globSync,
   readFileSync,
   statSync,
 } from 'node:fs';
@@ -199,26 +199,18 @@ const filesUnder = (path: string): string[] => {
     return file;
   }
 
-  return readdirSync(path, { withFileTypes: true })
-    .flatMap((entry) => {
-      const child = join(path, entry.name);
+  const patterns = SCANNED_EXTENSIONS
+    .map((extension) => {
+      return `**/*${extension}`;
+    });
 
-      if (entry.isDirectory()) {
-        return entry.name === 'node_modules' || entry.name.startsWith('.') ? [] : filesUnder(child);
-      }
-
-      const isScanned = SCANNED_EXTENSIONS
-        .some((extension) => {
-          return entry.name.endsWith(extension);
-        });
-
-      if (!isScanned) {
-        return [];
-      }
-
-      const file = [child];
-
-      return file;
+  // A glob skips dot-directories by default.
+  return globSync(patterns, {
+    cwd: path,
+    exclude: ['**/node_modules'],
+  })
+    .map((file) => {
+      return join(path, file);
     });
 };
 
