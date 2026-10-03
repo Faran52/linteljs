@@ -96,10 +96,10 @@ const toolInputOf = (payload: object, host: Host): Json | undefined => {
   return host === 'copilot' ? toolArgumentsOf(payload) : fieldAt(payload, 'tool_input');
 };
 
-// The process global, not `node:process`, which sets stdin non-blocking and fails a large read with EAGAIN.
-export const readPayload = (): object | undefined => {
+// Descriptor 0, not `node:process`'s stdin, which is set non-blocking and fails a large read with EAGAIN.
+export const readPayload = (source: number | string = 0): object | undefined => {
   try {
-    const payload: unknown = JSON.parse(readFileSync(0, 'utf8'));
+    const payload: unknown = JSON.parse(readFileSync(source, 'utf8'));
     return isObject(payload) ? payload : undefined;
   }
   catch {

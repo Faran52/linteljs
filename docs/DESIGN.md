@@ -1820,8 +1820,13 @@ file joins the gate the moment it is included.
 The end-to-end harness sits in `packages/create/e2e/`, outside every `src/`, so the include never reaches it: it
 spawns, publishes and needs the registry, and a helper there would land as a 0% file against a 100% threshold. Its
 pure suites (`matrix/`, `starter-cover/`) still run in the default suite, held by their assertions rather than the
-gate. Beyond each package's `src/`, the include names five `utils/` modules of the plugin's real-code
-audit, the pure half of a script that otherwise spawns, each with its own suite. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
+gate. Beyond each package's `src/`, the include names six `utils/` modules of the plugin's audits (five of
+real-code, one of mutation-summary), the pure half of a script that otherwise spawns, each with its own suite. It
+also takes every `utils/` file under `packages/create/templates/project/`: the parser and host readers behind the
+shipped hooks, and the shipped logger. They reach every generated project, and a guard there is security code. The
+hooks and gate scripts themselves stay out: their suites spawn them under `node`, where v8 sees nothing, so they
+are held by those suites' assertions, like the e2e harness. `readPayload` takes a path so its suite reads in
+process what a hook reads from stdin. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
 `process.argv` and sets `process.exitCode`, and `main` is a function from an argv array to an exit code that
 `cli.test.ts` calls directly.
 

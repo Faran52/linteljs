@@ -49,4 +49,13 @@ describe('loggerUtils', () => {
     expect(out).toHaveBeenCalledWith('[DEBUG] shown');
     expect(error).toHaveBeenCalledTimes(3);
   });
+
+  it('prints an error with no cause as its message alone', () => {
+    const error = vi.spyOn(console, 'error').mockReturnValue();
+
+    logError('failed');
+
+    const expected = [['[ERROR] failed']];
+    expect(error.mock.calls).toStrictEqual(expected);
+  });
 });

@@ -12,6 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: [
         'packages/*/src/**/*.ts',
+        'packages/create/templates/project/**/utils/*.ts',
         'packages/eslint-plugin/scripts/audit/real-code/utils/{attribution,finding,fix,fixPass,optionSweep}Utils.ts',
         'packages/eslint-plugin/scripts/audit/mutation-summary/utils/summaryUtils.ts',
       ],

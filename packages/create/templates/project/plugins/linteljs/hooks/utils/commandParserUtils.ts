@@ -52,20 +52,19 @@ const NO_WRAPPER: Step = { kind: 'none' };
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
 export const commandName = (token: string): string => {
-  return (token
-    .replaceAll('\\', '/')
-    .split('/')
-    .at(-1) ?? '')
+  const path = token.replaceAll('\\', '/');
+
+  return path
+    .slice(path.lastIndexOf('/') + 1)
     .toLowerCase()
     .replace(/\.(?:exe|cmd|bat)$/u, '');
 };
 
 export const skipOptions = (tokens: string[], start: number, valued: Set<string>): number | undefined => {
   let index = start;
+  let option = tokens[index];
 
-  while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index] ?? '';
-
+  while (option?.startsWith('-') === true) {
     if (option === '--') {
       return index + 1;
     }
@@ -80,6 +79,8 @@ export const skipOptions = (tokens: string[], start: number, valued: Set<string>
     else {
       index += 1;
     }
+
+    option = tokens[index];
   }
 
   return index;
@@ -343,12 +344,10 @@ const splitStringOf = (option: string, operand: string | undefined): string | un
     return option.slice('--split-string='.length);
   }
 
-  return option.startsWith('-S') && option.length > 2 ? option.slice(2) : undefined;
+  return option.startsWith('-S') ? option.slice(2) : undefined;
 };
 
-const envOption = (tokens: string[], index: number): Step => {
-  const option = tokens[index] ?? '';
-
+const envOption = (tokens: string[], index: number, option: string): Step => {
   const valuedOptions = [
     '-u',
     '--unset',
@@ -383,8 +382,7 @@ const envOption = (tokens: string[], index: number): Step => {
 };
 
 // `-S` splits its operand into the command env runs, so the command is read again from the split words.
-const envSplit = (tokens: string[], index: number, depth: number): Step | undefined => {
-  const option = tokens[index] ?? '';
+const envSplit = (tokens: string[], index: number, option: string, depth: number): Step | undefined => {
   const separate = option === '-S' || option === '--split-string';
   const splitString = splitStringOf(option, tokens[index + 1]);
 
@@ -402,10 +400,9 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
   }
 
   let index = start;
+  let option = tokens[index];
 
-  while (index < tokens.length) {
-    const option = tokens[index] ?? '';
-
+  while (option !== undefined) {
     if (option === '--') {
       index += 1;
       break;
@@ -415,19 +412,20 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
       break;
     }
 
-    const split = envSplit(tokens, index, depth);
+    const split = envSplit(tokens, index, option, depth);
 
     if (split !== undefined) {
       return split;
     }
 
-    const step = envOption(tokens, index);
+    const step = envOption(tokens, index, option);
 
     if (step.kind !== 'next') {
       return step;
     }
 
     index = step.index;
+    option = tokens[index];
   }
 
   const step: Step = {
@@ -441,10 +439,9 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
 
 const commandWrapper = (tokens: string[], start: number): Step => {
   let index = start;
+  let option = tokens[index];
 
-  while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index] ?? '';
-
+  while (option?.startsWith('-') === true) {
     if (option === '--') {
       return next(index + 1);
     }
@@ -460,6 +457,7 @@ const commandWrapper = (tokens: string[], start: number): Step => {
     }
 
     index += 1;
+    option = tokens[index];
   }
 
   return next(index);
@@ -467,10 +465,9 @@ const commandWrapper = (tokens: string[], start: number): Step => {
 
 const execWrapper = (tokens: string[], start: number): Step => {
   let index = start;
+  let option = tokens[index];
 
-  while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index] ?? '';
-
+  while (option?.startsWith('-') === true) {
     if (option === '--') {
       const commandIndex = skipAssignments(tokens, index + 1);
 
@@ -487,6 +484,8 @@ const execWrapper = (tokens: string[], start: number): Step => {
     else {
       index += 1;
     }
+
+    option = tokens[index];
   }
 
   const commandIndex = skipAssignments(tokens, index);
@@ -527,15 +526,15 @@ const NO_COMMAND: Step = {
 };
 
 const shellWrapper = (tokens: string[], start: number, depth: number): Step => {
-  for (let index = start; index < tokens.length; index += 1) {
-    const option = tokens[index] ?? '';
+  const rest = tokens.slice(start);
 
+  for (const [index, option] of rest.entries()) {
     if (option === '--') {
       continue;
     }
 
     if (/^-[^-]*c/u.test(option)) {
-      const command = tokens[index + 1];
+      const command = rest[index + 1];
       return command === undefined ? UNREADABLE : nested(command, 'bash', depth);
     }
 
@@ -569,8 +568,10 @@ const isPrefixOf = (option: string, name: string, shortest: number): boolean => 
 
 // A PowerShell host reads everything after `-Command` as the command; an encoded one cannot be read at all.
 const powerShellWrapper = (tokens: string[], start: number, depth: number): Step => {
-  for (let index = start; index < tokens.length; index += 1) {
-    const option = (tokens[index] ?? '').toLowerCase();
+  let index = start;
+
+  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
+    const option = token.toLowerCase();
 
     if (!option.startsWith('-')) {
       const command = tokens
@@ -594,20 +595,20 @@ const powerShellWrapper = (tokens: string[], start: number, depth: number): Step
       return NO_COMMAND;
     }
 
-    if (POWERSHELL_VALUED.has(option)) {
-      index += 1;
-    }
+    index += POWERSHELL_VALUED.has(option) ? 2 : 1;
   }
 
   return NO_COMMAND;
 };
 
 const cmdWrapper = (tokens: string[], start: number, depth: number): Step => {
-  for (let index = start; index < tokens.length; index += 1) {
-    const option = (tokens[index] ?? '').toLowerCase();
+  const rest = tokens.slice(start);
+
+  for (const [index, token] of rest.entries()) {
+    const option = token.toLowerCase();
 
     if (option === '/c' || option === '/k') {
-      const command = tokens
+      const command = rest
         .slice(index + 1)
         .join(' ');
       return nested(command, 'powershell', depth);
@@ -637,8 +638,8 @@ const START_PROCESS_VALUED = new Set([
 const startProcessWrapper = (tokens: string[], start: number): Step => {
   let index = start;
 
-  while (index < tokens.length) {
-    const option = (tokens[index] ?? '').toLowerCase();
+  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
+    const option = token.toLowerCase();
 
     if (option === '-filepath') {
       const step: Step = {
@@ -666,8 +667,8 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
   return step;
 };
 
-const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
-  const name = commandName(tokens[index] ?? '');
+const wrapperStep = (tokens: string[], index: number, token: string, depth: number): Step => {
+  const name = commandName(token);
 
   if (name === 'env') {
     return envWrapper(tokens, index + 1, depth);
@@ -756,8 +757,8 @@ const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undef
   let { tokens, opaque } = segment;
   let index = skipAssignments(tokens, tokens[0] === '!' ? 1 : 0);
 
-  while (index < tokens.length) {
-    const step = wrapperStep(tokens, index, depth);
+  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
+    const step = wrapperStep(tokens, index, token, depth);
 
     if (step.kind === 'none') {
       break;

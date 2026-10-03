@@ -18,11 +18,11 @@ const tokensOf = (source: string, dialect: Dialect = 'bash'): string[][] | undef
     });
 };
 
-const shellWrapped = (command: string, depth: number): string => {
+const shellWrapped = (command: string, depth: number, wrapper = 'bash -c'): string => {
   let wrapped = command;
 
   for (let index = 0; index < depth; index += 1) {
-    wrapped = `bash -c ${JSON.stringify(wrapped)}`;
+    wrapped = `${wrapper} ${JSON.stringify(wrapped)}`;
   }
 
   return wrapped;
@@ -102,6 +102,61 @@ describe('parseCommand', () => {
       'command -v git',
       [],
     ],
+    [
+      'env options, a joined -P and --',
+      'env -u HOME -i -P/usr/bin -- git log',
+      [['git', 'log']],
+    ],
+    [
+      'env alone',
+      'env',
+      [],
+    ],
+    [
+      'command options and --',
+      'command -p -- git log',
+      [['git', 'log']],
+    ],
+    [
+      'exec options, -a with its operand and --',
+      'exec -c -a name -- A=1 git log',
+      [['git', 'log']],
+    ],
+    [
+      'exec options with no --',
+      'exec --argv0 name -l git log',
+      [['git', 'log']],
+    ],
+    [
+      'a shell after --',
+      "bash -- -c 'git log'",
+      [['git', 'log']],
+    ],
+    [
+      'a shell option before -c',
+      "bash --login -c 'git log'",
+      [['git', 'log']],
+    ],
+    [
+      'a comment ending its line',
+      'git status # git stash\ngit log',
+      [['git', 'status'], ['git', 'log']],
+    ],
+    [
+      'a joined env split string',
+      "env '-Sgit log'",
+      [['git', 'log']],
+    ],
+    [
+      'nohup with --',
+      'nohup -- git log',
+      [['git', 'log']],
+    ],
+    [
+      'wrappers whose options run to the end',
+      'sudo -i; command -p; exec -c',
+      [],
+    ],
   ])('reads %s', (_label, source, expected) => {
     const tokens = tokensOf(source);
     expect(tokens).toEqual(expected);
@@ -115,6 +170,12 @@ describe('parseCommand', () => {
     ['env with an unknown option', 'env -Q /usr/bin git status'],
     ['a shell with no command after -c', 'bash -c'],
     ['shells nested past the depth limit', shellWrapped('echo safe', 20)],
+    ['split strings nested past the depth limit', `env ${shellWrapped('git log', 9, '-S')}`],
+    ['a trailing escape inside double quotes', 'echo "a\\'],
+    ['exec -a with no operand', 'exec -a'],
+    ['sudo with a missing operand', 'sudo -u'],
+    ['env -S with no operand', 'env -S'],
+    ['an env split string that cannot be read', 'env -S "\'git log"'],
   ])('cannot read %s', (_label, source) => {
     const actual = parseCommand(source, 'bash');
     expect(actual).toBeUndefined();
@@ -184,6 +245,56 @@ describe('parseCommand', () => {
     [
       'pwsh running a file',
       'pwsh -File build.ps1',
+      [],
+    ],
+    [
+      'a subexpression as the commands inside it',
+      'git $(Write-Output log)',
+      [['Write-Output', 'log'], ['git']],
+    ],
+    [
+      'pwsh with a bare command',
+      'pwsh git log',
+      [['git', 'log']],
+    ],
+    [
+      'pwsh with a valued option before -Command',
+      'pwsh -ExecutionPolicy Bypass -Command git log',
+      [['git', 'log']],
+    ],
+    [
+      'pwsh with options only',
+      'pwsh -NoProfile',
+      [],
+    ],
+    [
+      'cmd running no command',
+      'cmd /s build.cmd',
+      [],
+    ],
+    [
+      'cmd with options only',
+      'cmd /s',
+      [],
+    ],
+    [
+      'Start-Process with no -FilePath',
+      'Start-Process -Verb runas git',
+      [['git']],
+    ],
+    [
+      'Start-Process with options only',
+      'Start-Process -Wait',
+      [],
+    ],
+    [
+      'Invoke-Expression with no -Command',
+      "iex 'git log'",
+      [['git', 'log']],
+    ],
+    [
+      'Invoke-Expression with nothing to run',
+      'iex',
       [],
     ],
   ])('reads PowerShell %s', (_label, source, expected) => {

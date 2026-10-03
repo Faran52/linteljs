@@ -99,8 +99,8 @@ const tailOf = (path: string): string | undefined => {
 export const contextOf = (transcript: string): number => {
   const lines = (tailOf(transcript) ?? '').split('\n');
 
-  for (let index = lines.length - 1; index >= 0; index -= 1) {
-    const tokens = assistantTokensOf(lines[index] ?? '');
+  for (const line of lines.toReversed()) {
+    const tokens = assistantTokensOf(line);
 
     if (tokens !== undefined) {
       return tokens;

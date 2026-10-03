@@ -1,4 +1,10 @@
 import { spawnSync } from 'node:child_process';
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
@@ -19,6 +25,7 @@ import {
   hostOf,
   readCommand,
   readEdit,
+  readPayload,
   readSession,
   writeDecision,
 } from './hostUtils.ts';
@@ -317,16 +324,19 @@ describe('readPayload', () => {
   });
 
   it.each([
-    '{',
-    'null',
-    '"text"',
-  ])('reads %s as no payload', (input) => {
-    const result = spawnSync(process.execPath, [join(import.meta.dirname, '..', 'gitSafetyGuardHook.ts')], {
-      input,
-      encoding: 'utf8',
-      timeout: 30_000,
-    });
+    ['{"tool_name":"Bash"}', { tool_name: 'Bash' }],
+    ['{', undefined],
+    ['null', undefined],
+    ['"text"', undefined],
+  ])('reads %s', (input, expected) => {
+    const prefix = join(tmpdir(), 'linteljs-payload-');
+    const directory = mkdtempSync(prefix);
+    const source = join(directory, 'payload.json');
+    writeFileSync(source, input);
 
-    expect(result.stdout).toBe('');
+    const payload = readPayload(source);
+    rmSync(directory, { recursive: true });
+
+    expect(payload).toStrictEqual(expected);
   });
 });
