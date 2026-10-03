@@ -1,7 +1,6 @@
 import type { I18nParts } from '../types';
 
 export const ALWAYS: readonly string[] = [
-  'src/pages/index.astro',
   // Each a thin page over the status layout, so no translated twin.
   'src/pages/403.astro',
   'src/pages/404.astro',
@@ -21,6 +20,7 @@ export const SHARED: readonly string[] = [
 
 // Each ships a translated twin under `i18n`.
 export const TRANSLATED: readonly string[] = [
+  'src/pages/index.astro',
   'src/pages/about.astro',
   'src/pages/version.astro',
   'src/layouts/StatusLayout.astro',

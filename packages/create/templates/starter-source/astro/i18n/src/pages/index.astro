@@ -1,0 +1,25 @@
+---
+import { CHECK, NAME } from '@config/linteljs';
+
+import { t } from '@i18n';
+
+import CodeText from '@ui/code-text/CodeText.astro';
+import Mark from '@ui/mark/Mark.astro';
+
+import Layout from '@layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="hero">
+    <Mark />
+    <h1 class="title">{NAME}</h1>
+    <p class="lede" data-i18n="homeLedeAstro">{t('homeLedeAstro')}</p>
+    <p
+      class="hint"
+      data-i18n="gateHint"
+      data-command={CHECK}
+    >
+      <CodeText text={t('gateHint', { command: CHECK })} />
+    </p>
+  </main>
+</Layout>

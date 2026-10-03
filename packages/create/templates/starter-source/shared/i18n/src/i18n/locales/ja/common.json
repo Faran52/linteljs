@@ -37,5 +37,6 @@
   "homeLedeNuxt": "Nuxt、Vue、そしてあらかじめ適用された標準。",
   "homeLedeSvelte": "Svelte、SvelteKit、そしてあらかじめ適用された標準。",
   "homeLedeSolid": "Solid、Vite、そしてあらかじめ適用された標準。",
-  "homeLedeAngular": "Angular、スタンドアロンコンポーネント、そしてあらかじめ適用された標準。"
+  "homeLedeAngular": "Angular、スタンドアロンコンポーネント、そしてあらかじめ適用された標準。",
+  "homeLedeAstro": "Astro、サーバーでのレンダリング、そしてあらかじめ適用された標準。"
 }
