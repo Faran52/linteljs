@@ -1,5 +1,3 @@
-import { hasLibrary } from '@utils/answerUtils';
-
 import {
   FOLDER_ROUTED,
   OUTSIDE_TESTS,
@@ -19,7 +17,16 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import {
+  contactApiFiles,
+  contactSchemaFiles,
+  filesAt,
+} from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -31,7 +38,7 @@ import {
 import { solidI18nFiles, solidI18nTests } from './utils/translatedFileUtils';
 
 import type { TargetBuilder } from '../registry';
-import type { StarterFile, TargetRecord } from '../types';
+import type { TargetRecord } from '../types';
 
 export const solidTarget: TargetBuilder = () => {
   const record: TargetRecord = {
@@ -76,21 +83,10 @@ export const solidTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...solidI18nFiles(),
       ...localeFiles(),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       {
         target: 'src/pages/home/HomePage.tsx',
         when: (answers) => {
@@ -110,49 +106,11 @@ export const solidTarget: TargetBuilder = () => {
         shared: true,
       },
       { target: 'src/components/ui/button/Button.tsx' },
-      ...FORM_FILES
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: hasForm,
-          };
-
-          return file;
-        }),
-      {
-        target: 'src/lib/apis/contact/index.ts',
+      ...filesAt(FORM_FILES, {
         when: hasForm,
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === undefined;
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === 'tanstack-query';
-        },
-        variant: 'tanstack-query',
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && !hasLibrary(answers, 'zod');
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && hasLibrary(answers, 'zod');
-        },
-        variant: 'zod',
-        shared: true,
-      },
+      }),
+      ...contactApiFiles(),
+      ...contactSchemaFiles(),
       {
         target: 'src/components/ui/index.ts',
         when: hasForm,
@@ -188,14 +146,7 @@ export const solidTarget: TargetBuilder = () => {
         },
         variant: 'tanstack-query',
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
     ],
     starterTests: [
       ...mockTests(true),

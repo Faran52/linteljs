@@ -1,6 +1,8 @@
 import { answersFor } from '@mocks/answersFor';
+import { pickedBy } from '@mocks/starterGates';
 
 import {
+  i18nFiles,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -44,6 +46,92 @@ describe('translated', () => {
     const actual = [whenOf(base)(formless), whenOf(twin)(formless)];
     const expected = [false, false];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('i18nFiles', () => {
+  const files = (): StarterFile[] => {
+    return i18nFiles({
+      translated: ['src/App.tsx'],
+      pairs: [
+        {
+          target: 'src/Contact.tsx',
+          when: (answers) => {
+            return answers.form !== undefined;
+          },
+        },
+      ],
+      only: ['src/i18n/index.ts'],
+    });
+  };
+
+  it('writes the shared configs, the target\'s own files and its pairs without i18n', () => {
+    const actual = pickedBy(files(), { form: 'tanstack-form' });
+
+    const expected = [
+      'src/config/statuses.ts base',
+      'src/config/standard.ts base',
+      'src/App.tsx base',
+      'src/Contact.tsx base',
+    ];
+    expect(actual).toEqual(expected);
+  });
+
+  it('swaps each for its twin and adds the i18n-only files with i18n', () => {
+    const actual = pickedBy(files(), {
+      form: 'tanstack-form',
+      languages: ['ar'],
+    });
+
+    const expected = [
+      'src/config/statuses.ts i18n',
+      'src/config/standard.ts i18n',
+      'src/App.tsx i18n',
+      'src/Contact.tsx i18n',
+      'src/i18n/index.ts i18n',
+    ];
+    expect(actual).toEqual(expected);
+  });
+
+  it('keeps a pair\'s own condition', () => {
+    const actual = pickedBy(files(), { languages: ['ar'] });
+
+    const expected = [
+      'src/config/statuses.ts i18n',
+      'src/config/standard.ts i18n',
+      'src/App.tsx i18n',
+      'src/i18n/index.ts i18n',
+    ];
+    expect(actual).toEqual(expected);
+  });
+
+  it('reads the configs from the shared tree and the rest from the target', () => {
+    const shared = files()
+      .map(({ shared: tree }) => {
+        return tree;
+      });
+
+    const expected = [
+      true,
+      true,
+      true,
+      true,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ];
+    expect(shared).toEqual(expected);
+  });
+
+  it('writes no pairs when given none', () => {
+    const actual = i18nFiles({
+      translated: [],
+      only: [],
+    });
+
+    expect(actual).toHaveLength(4);
   });
 });
 

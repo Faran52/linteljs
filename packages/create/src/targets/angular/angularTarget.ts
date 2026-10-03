@@ -12,6 +12,8 @@ import {
   mockFiles,
   mockTests,
 } from '../utils/mockUtils';
+import { filesAt } from '../utils/starterUtils';
+import { tailwindThemeFile } from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -81,21 +83,10 @@ export const angularTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
       ...localeFiles(),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       {
         target: 'src/config/routes.ts',
         variant: 'with-form',
@@ -137,14 +128,7 @@ export const angularTarget: TargetBuilder = () => {
         variant: 'zod',
         shared: true,
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
       // The Angular builder runs Tailwind 4 only through a PostCSS config, and reads JSON alone.
       {
         target: '.postcssrc.json',

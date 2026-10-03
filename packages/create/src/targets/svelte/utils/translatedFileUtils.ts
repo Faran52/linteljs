@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import {
   I18N_ONLY,
   I18N_ONLY_SUITES,
@@ -31,35 +30,16 @@ const TRANSLATED_SUITES = [
 
 // What i18n rewrites in the Svelte starter, each as the pair `translated` makes.
 export const svelteI18nFiles = (): StarterFile[] => {
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...translated<StarterFile>({
-      target: 'src/routes/contact/+page.svelte',
-      when: hasForm,
-    }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+  return i18nFiles({
+    translated: TRANSLATED,
+    pairs: [
+      {
+        target: 'src/routes/contact/+page.svelte',
+        when: hasForm,
+      },
+    ],
+    only: I18N_ONLY_FILES,
+  });
 };
 
 // The layout mounts the header, so its twin proves the language is detected once mounted.

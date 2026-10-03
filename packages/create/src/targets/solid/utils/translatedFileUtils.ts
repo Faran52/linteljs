@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles } from '../../utils/i18nUtils';
 import {
   I18N_ONLY,
   I18N_ONLY_SUITES,
@@ -19,35 +18,16 @@ const I18N_ONLY_FILES = [
 
 // What i18n rewrites in the Solid starter, each as the pair `translated` makes.
 export const solidI18nFiles = (): StarterFile[] => {
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...translated<StarterFile>({
-      target: 'src/pages/contact/ContactPage.tsx',
-      when: hasForm,
-    }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+  return i18nFiles({
+    translated: TRANSLATED,
+    pairs: [
+      {
+        target: 'src/pages/contact/ContactPage.tsx',
+        when: hasForm,
+      },
+    ],
+    only: I18N_ONLY_FILES,
+  });
 };
 
 // `App`'s suite covers the English header; the translated one adds the switcher, so it takes its own.

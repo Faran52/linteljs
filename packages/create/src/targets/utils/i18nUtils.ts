@@ -2,10 +2,22 @@ import { LANGUAGES } from '@config/constants';
 
 import { localesOf } from '@utils/answerUtils';
 
+import { TRANSLATED_CONFIGS } from '../constants';
+
 import { hasI18n, starterApplies } from './gateUtils';
+import { filesAt } from './starterUtils';
 
 import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
+
+export interface I18nFileLists {
+  // Each rewritten by i18n, so each ships as the pair `translated` makes.
+  readonly translated: readonly string[];
+  // Pairs whose base carries its own condition, such as the contact page's form.
+  readonly pairs?: readonly StarterFile[];
+  // Written only when i18n is on.
+  readonly only: readonly string[];
+}
 
 // A file i18n rewrites ships as a pair that exclude each other, its `i18n` asset beside its base's.
 export const translated = <T extends StarterFile | StarterTest>(file: T): T[] => {
@@ -26,6 +38,37 @@ export const translated = <T extends StarterFile | StarterTest>(file: T): T[] =>
   ];
 
   return variants;
+};
+
+// What i18n rewrites in a starter: the shared configs, then the target's own lists.
+export const i18nFiles = ({
+  translated: own,
+  pairs = [],
+  only,
+}: I18nFileLists): StarterFile[] => {
+  const files: StarterFile[] = [
+    ...TRANSLATED_CONFIGS
+      .flatMap((target) => {
+        return translated<StarterFile>({
+          target,
+          shared: true,
+        });
+      }),
+    ...own
+      .flatMap((target) => {
+        return translated<StarterFile>({ target });
+      }),
+    ...pairs
+      .flatMap((file) => {
+        return translated(file);
+      }),
+    ...filesAt(only, {
+      when: hasI18n,
+      variant: 'i18n',
+    }),
+  ];
+
+  return files;
 };
 
 // Every target reads the same locales, so a key added once reaches all of them.

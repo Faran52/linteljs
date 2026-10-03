@@ -1,4 +1,4 @@
-import { hasLibrary, hasTests } from '@utils/answerUtils';
+import { hasTests } from '@utils/answerUtils';
 
 import {
   COOKIE_UTILS,
@@ -20,9 +20,15 @@ import {
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
 import {
+  contactApiFiles,
+  contactSchemaFiles,
+  filesAt,
+} from '../utils/starterUtils';
+import {
   componentStyleModules,
   componentStyles,
   stylexDocument,
+  tailwindThemeFile,
 } from '../utils/styleUtils';
 
 import {
@@ -37,7 +43,6 @@ import { svelteI18nFiles, svelteI18nTests } from './utils/translatedFileUtils';
 
 import type { TargetBuilder } from '../registry';
 import type {
-  StarterFile,
   TargetRecord,
 } from '../types';
 
@@ -103,33 +108,16 @@ export const svelteTarget: TargetBuilder = () => {
       ...localeFiles(),
       COOKIE_UTILS,
       // Svelte's query bindings read their client out of context, which needs a component.
-      ...QUERY_CONTEXT_MOCKS
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: (answers) => {
-              return answers.data === 'tanstack-query';
-            },
-            variant: 'tanstack-query',
-          };
-
-          return file;
-        }),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(QUERY_CONTEXT_MOCKS, {
+        when: (answers) => {
+          return answers.data === 'tanstack-query';
+        },
+        variant: 'tanstack-query',
+      }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       {
         target: 'static/favicon.svg',
         shared: true,
@@ -147,20 +135,10 @@ export const svelteTarget: TargetBuilder = () => {
         variant: 'with-store',
       },
       { target: 'src/components/ui/button/Button.svelte' },
-      ...FORM_FILES
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: hasForm,
-          };
-
-          return file;
-        }),
-      {
-        target: 'src/lib/apis/contact/index.ts',
+      ...filesAt(FORM_FILES, {
         when: hasForm,
-        shared: true,
-      },
+      }),
+      ...contactApiFiles(),
       // The data slot is a component here, so a suite needing it needs one too.
       {
         target: '__mocks__/WithData.svelte',
@@ -168,35 +146,7 @@ export const svelteTarget: TargetBuilder = () => {
           return hasForm(answers) && hasTests(answers);
         },
       },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === undefined;
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === 'tanstack-query';
-        },
-        variant: 'tanstack-query',
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && !hasLibrary(answers, 'zod');
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && hasLibrary(answers, 'zod');
-        },
-        variant: 'zod',
-        shared: true,
-      },
+      ...contactSchemaFiles(),
       {
         target: 'src/config/routes.ts',
         when: (answers) => {
@@ -226,14 +176,7 @@ export const svelteTarget: TargetBuilder = () => {
         },
         variant: 'tanstack-query',
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
     ],
     // SvelteKit reserves the `+` prefix, so a suite takes the rest of the name.
     starterTests: [

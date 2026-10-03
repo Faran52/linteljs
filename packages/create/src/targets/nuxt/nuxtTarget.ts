@@ -18,7 +18,12 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import { filesAt } from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 import {
   ACCESSORS as SOURCE_ACCESSORS,
   COMPONENTS,
@@ -101,30 +106,13 @@ export const nuxtTarget: TargetBuilder = () => {
         shared: 'vue',
         names: SOURCE_ACCESSORS,
       }),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
-      ...FROM_VUE
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: 'vue',
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
+      ...filesAt(FROM_VUE, {
+        shared: 'vue',
+      }),
       ...TRANSLATED_CONFIGS
         .flatMap((target) => {
           return translated<StarterFile>({
@@ -140,17 +128,11 @@ export const nuxtTarget: TargetBuilder = () => {
           });
         }),
       ...translated<StarterFile>({ target: 'src/components/features/app-header/AppHeader.vue' }),
-      ...I18N_ONLY_FILES
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: hasI18n,
-            variant: 'i18n',
-            shared: 'vue',
-          };
-
-          return file;
-        }),
+      ...filesAt(I18N_ONLY_FILES, {
+        when: hasI18n,
+        variant: 'i18n',
+        shared: 'vue',
+      }),
       {
         target: 'src/plugins/i18n.ts',
         when: hasI18n,
@@ -161,14 +143,7 @@ export const nuxtTarget: TargetBuilder = () => {
       {
         target: 'src/views/HomeView.vue',
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
     ],
     starterTests: [
       ...mockTests(false),

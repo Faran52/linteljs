@@ -17,6 +17,7 @@ import {
   rtkTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
+import { filesAt } from '../utils/starterUtils';
 
 import {
   ACCESSORS,
@@ -28,7 +29,7 @@ import { reactNativeI18nFiles, reactNativeI18nTests } from './utils/translatedFi
 
 import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { StarterFile, TargetRecord } from '../types';
+import type { TargetRecord } from '../types';
 
 // Metro has no Tailwind pipeline of its own.
 const isTailwind = (answers: Answers): boolean => {
@@ -122,21 +123,10 @@ export const reactNativeTarget: TargetBuilder = () => {
         names: SOURCE_ACCESSORS,
       }),
       ...rtkFiles(),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       ...reactNativeI18nFiles(),
       ...localeFiles(),
       {

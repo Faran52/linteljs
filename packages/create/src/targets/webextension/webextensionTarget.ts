@@ -4,6 +4,8 @@ import { DECLARATION_KEY, FOLDER } from '../constants';
 import { hostedNaming, hostedPartsFor } from '../utils/frameworkUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
+import { filesAt } from '../utils/starterUtils';
+import { tailwindThemeFile } from '../utils/styleUtils';
 
 import {
   BROWSERS,
@@ -21,33 +23,15 @@ import type { StarterFile, TargetRecord } from '../types';
 // The Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy both.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
-    ...SHARED
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          shared: true,
-        };
-
-        return file;
-      }),
-    {
-      target: 'src/styles/theme.css',
-      when: (current) => {
-        return current.styling === 'tailwind';
-      },
-      variant: 'tailwind',
+    ...filesAt(SHARED, {
       shared: true,
-    },
+    }),
+    tailwindThemeFile(),
   ];
 
   if (hasSurface(answers, 'popup')) {
     files.push(
-      ...POPUP
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
+      ...filesAt(POPUP),
       ...popupI18nFiles(),
       // No components here, so a stylesheet under `components/` would sit beside nothing.
       {

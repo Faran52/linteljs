@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import { stylexDocument } from '../../utils/styleUtils';
 import { TRANSLATED } from '../constants';
 
@@ -17,27 +16,10 @@ export const astroI18nFiles = (): StarterFile[] => {
       .flatMap((file) => {
         return translated(file);
       }),
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
+    ...i18nFiles({
+      translated: TRANSLATED,
+      only: I18N_ONLY_FILES,
+    }),
   ];
 
   return files;

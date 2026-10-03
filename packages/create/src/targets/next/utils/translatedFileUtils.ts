@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import {
   I18N_ONLY,
   STATUS_PAGE,
@@ -19,35 +18,16 @@ export const nextI18nFiles = (): StarterFile[] => {
       }),
     'src/i18n/index.ts',
   ];
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...translated<StarterFile>({
-      target: 'src/app/contact/page.tsx',
-      when: hasForm,
-    }),
-    ...i18nOnly
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+  return i18nFiles({
+    translated: TRANSLATED,
+    pairs: [
+      {
+        target: 'src/app/contact/page.tsx',
+        when: hasForm,
+      },
+    ],
+    only: i18nOnly,
+  });
 };
 
 export const nextI18nTests = (): StarterTest[] => {

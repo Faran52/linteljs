@@ -1,5 +1,3 @@
-import { hasLibrary } from '@utils/answerUtils';
-
 import {
   COOKIE_UTILS,
   COOKIE_UTILS_TEST,
@@ -19,7 +17,16 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import {
+  contactApiFiles,
+  contactSchemaFiles,
+  filesAt,
+} from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -79,21 +86,10 @@ export const vueTarget: TargetBuilder = () => {
       ...vueI18nFiles(),
       ...localeFiles(),
       COOKIE_UTILS,
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       {
         target: 'src/views/HomeView.vue',
         when: (answers) => {
@@ -106,49 +102,11 @@ export const vueTarget: TargetBuilder = () => {
         variant: 'with-store',
       },
       { target: 'src/components/ui/app-button/AppButton.vue' },
-      ...FORM_FILES
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: hasForm,
-          };
-
-          return file;
-        }),
-      {
-        target: 'src/lib/apis/contact/index.ts',
+      ...filesAt(FORM_FILES, {
         when: hasForm,
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === undefined;
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === 'tanstack-query';
-        },
-        variant: 'tanstack-query',
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && !hasLibrary(answers, 'zod');
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && hasLibrary(answers, 'zod');
-        },
-        variant: 'zod',
-        shared: true,
-      },
+      }),
+      ...contactApiFiles(),
+      ...contactSchemaFiles(),
       {
         target: 'src/views/routes.ts',
         when: (answers) => {
@@ -199,14 +157,7 @@ export const vueTarget: TargetBuilder = () => {
         },
         variant: 'tanstack-query',
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
     ],
     // Mounting `App` walks the real router, so that suite covers the header and every page.
     starterTests: [

@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import {
   I18N_ONLY_FILES,
   I18N_ONLY_SUITES,
@@ -12,45 +11,26 @@ import type { StarterFile, StarterTest } from '../../types';
 
 // What i18n rewrites in the React Native starter, each as the pair `translated` makes.
 export const reactNativeI18nFiles = (): StarterFile[] => {
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
+  return i18nFiles({
+    translated: TRANSLATED,
     // The root layout imports the stylesheet, which Metro reads only through NativeWind.
-    ...translated<StarterFile>({
-      target: 'src/app/_layout.tsx',
-      when: (answers) => {
-        return answers.styling !== 'tailwind';
+    pairs: [
+      {
+        target: 'src/app/_layout.tsx',
+        when: (answers) => {
+          return answers.styling !== 'tailwind';
+        },
       },
-    }),
-    ...translated<StarterFile>({
-      target: 'src/app/_layout.tsx',
-      when: (answers) => {
-        return answers.styling === 'tailwind';
+      {
+        target: 'src/app/_layout.tsx',
+        when: (answers) => {
+          return answers.styling === 'tailwind';
+        },
+        variant: 'tailwind',
       },
-      variant: 'tailwind',
-    }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+    ],
+    only: I18N_ONLY_FILES,
+  });
 };
 
 export const reactNativeI18nTests = (): StarterTest[] => {

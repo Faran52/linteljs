@@ -1,5 +1,3 @@
-import { hasLibrary } from '@utils/answerUtils';
-
 import {
   CONTACT_HOOK_FORMS,
   COOKIE_UTILS,
@@ -30,7 +28,12 @@ import {
   rtkTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import { contactSchemaFiles, filesAt } from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 
 import {
   ALWAYS,
@@ -181,21 +184,10 @@ const baseReactTarget = (): TargetRecord => {
     vitePlugin: REACT_VITE_PLUGIN,
     tsconfig: { jsx: 'react-jsx' },
     starterFiles: [
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
       // So `AppHeader.tsx` varies by router alone, not router times styling.
       ...componentStyleModules(),
       ...reactI18nFiles(),
@@ -276,21 +268,7 @@ const baseReactTarget = (): TargetRecord => {
         },
         variant: 'tanstack-query',
       },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && !hasLibrary(answers, 'zod');
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && hasLibrary(answers, 'zod');
-        },
-        variant: 'zod',
-        shared: true,
-      },
+      ...contactSchemaFiles(),
       ...CONTACT_HOOK_FORMS
         .map((form): StarterFile => {
           const file: StarterFile = {
@@ -341,14 +319,7 @@ const baseReactTarget = (): TargetRecord => {
       ...componentStyles(),
       ...rtkFiles(),
       ...accessorFiles(REACT_ACCESSORS),
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
       {
         target: 'src/lib/providers/store/StoreProvider.tsx',
         when: (answers) => {

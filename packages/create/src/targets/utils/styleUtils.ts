@@ -138,3 +138,16 @@ export const stylexDocument = (target: string): StarterFile[] => {
 
   return documents;
 };
+
+export const tailwindThemeFile = (): StarterFile => {
+  const file: StarterFile = {
+    target: 'src/styles/theme.css',
+    when: (answers) => {
+      return answers.styling === 'tailwind';
+    },
+    variant: 'tailwind',
+    shared: true,
+  };
+
+  return file;
+};

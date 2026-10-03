@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import {
   I18N_ONLY_FILES,
   I18N_ONLY_SUITES,
@@ -12,31 +11,10 @@ import type { StarterFile, StarterTest } from '../../types';
 
 // What i18n rewrites in the Angular starter, each as the pair `translated` makes.
 export const angularI18nFiles = (): StarterFile[] => {
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+  return i18nFiles({
+    translated: TRANSLATED,
+    only: I18N_ONLY_FILES,
+  });
 };
 
 // `App`'s suite covers the English header and pages; translated, each takes its own in another language.

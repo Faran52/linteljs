@@ -1,6 +1,5 @@
-import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { translated } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import { I18N_ONLY, TRANSLATED } from '../constants';
 
 import type { StarterFile, StarterTest } from '../../types';
@@ -17,35 +16,16 @@ const TRANSLATED_SUITES = ['src/App', 'src/components/features/status-page/Statu
 
 // What i18n rewrites in the Vue starter, each as the pair `translated` makes.
 export const vueI18nFiles = (): StarterFile[] => {
-  const files: StarterFile[] = [
-    ...TRANSLATED_CONFIGS
-      .flatMap((target) => {
-        return translated<StarterFile>({
-          target,
-          shared: true,
-        });
-      }),
-    ...TRANSLATED
-      .flatMap((target) => {
-        return translated<StarterFile>({ target });
-      }),
-    ...translated<StarterFile>({
-      target: 'src/views/ContactView.vue',
-      when: hasForm,
-    }),
-    ...I18N_ONLY_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasI18n,
-          variant: 'i18n',
-        };
-
-        return file;
-      }),
-  ];
-
-  return files;
+  return i18nFiles({
+    translated: TRANSLATED,
+    pairs: [
+      {
+        target: 'src/views/ContactView.vue',
+        when: hasForm,
+      },
+    ],
+    only: I18N_ONLY_FILES,
+  });
 };
 
 // Mounting `App` walks every page, so its twin switches each one from the header.

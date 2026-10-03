@@ -10,6 +10,7 @@ import {
   componentStyleModules,
   componentStyles,
   stylexDocument,
+  tailwindThemeFile,
 } from './styleUtils';
 
 import type { Answers } from '@config/types';
@@ -137,5 +138,18 @@ describe('stylexDocument', () => {
     expect(plain).toEqual(expected);
     const stylexLayout = ['src/layouts/Layout.astro stylex'];
     expect(stylex).toEqual(stylexLayout);
+  });
+});
+
+describe('tailwindThemeFile', () => {
+  it('writes the shared theme with tailwind alone', () => {
+    const plain = pickedBy([tailwindThemeFile()]);
+    const tailwind = pickedBy([tailwindThemeFile()], { styling: 'tailwind' });
+
+    expect(plain).toEqual([]);
+    const expected = ['src/styles/theme.css tailwind'];
+    expect(tailwind).toEqual(expected);
+    const { shared } = tailwindThemeFile();
+    expect(shared).toBe(true);
   });
 });

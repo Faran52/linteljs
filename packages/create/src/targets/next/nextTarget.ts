@@ -1,5 +1,3 @@
-import { hasLibrary } from '@utils/answerUtils';
-
 import {
   COMMON_REACT_PLUGINS,
   CONTACT_HOOK_FORMS,
@@ -27,7 +25,12 @@ import {
   rtkTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import { contactSchemaFiles, filesAt } from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -180,18 +183,12 @@ export const nextTarget: TargetBuilder = () => {
       ...mockFiles(true),
       ...componentStyles(),
       ...componentStyleModules('react'),
-      ...STYLEX_CONFIGS
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            when: (answers) => {
-              return answers.styling === 'stylex';
-            },
-            variant: 'stylex',
-          };
-
-          return file;
-        }),
+      ...filesAt(STYLEX_CONFIGS, {
+        when: (answers) => {
+          return answers.styling === 'stylex';
+        },
+        variant: 'stylex',
+      }),
       {
         target: 'postcss.config.mjs',
         when: (answers) => {
@@ -207,30 +204,13 @@ export const nextTarget: TargetBuilder = () => {
       ...nextI18nFiles(),
       ...localeFiles(),
       COOKIE_UTILS,
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
-      ...FROM_REACT
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: 'react',
-          };
-
-          return file;
-        }),
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
+        shared: true,
+      }),
+      ...filesAt(FROM_REACT, {
+        shared: 'react',
+      }),
       // Next links an `app/icon.svg` itself.
       {
         target: 'src/app/icon.svg',
@@ -320,21 +300,7 @@ export const nextTarget: TargetBuilder = () => {
         shared: 'react',
       },
       ...rtkContactFiles(),
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && !hasLibrary(answers, 'zod');
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/schemas.ts',
-        when: (answers) => {
-          return hasForm(answers) && hasLibrary(answers, 'zod');
-        },
-        variant: 'zod',
-        shared: true,
-      },
+      ...contactSchemaFiles(),
       {
         target: 'src/lib/providers/store/StoreProvider.tsx',
         when: (answers) => {
@@ -395,14 +361,7 @@ export const nextTarget: TargetBuilder = () => {
         variant: 'rtk-query',
         shared: 'react',
       },
-      {
-        target: 'src/styles/theme.css',
-        when: (answers) => {
-          return answers.styling === 'tailwind';
-        },
-        variant: 'tailwind',
-        shared: true,
-      },
+      tailwindThemeFile(),
     ],
     starterTests: nextStarterTests(),
     // `next typegen` first: route types are declared into `.next/types` only after a build.

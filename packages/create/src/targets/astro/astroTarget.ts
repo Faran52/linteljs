@@ -8,7 +8,12 @@ import { hasForm } from '../utils/gateUtils';
 import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import { filesAt } from '../utils/starterUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  tailwindThemeFile,
+} from '../utils/styleUtils';
 
 import {
   ALWAYS,
@@ -19,7 +24,7 @@ import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
 
 import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { StarterFile, TargetRecord } from '../types';
+import type { TargetRecord } from '../types';
 
 // `vite: false`: Astro's Vite options live in `astro.config.mjs`, borrowed through `getViteConfig`.
 
@@ -103,29 +108,11 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyleModules('solid'),
       ...astroI18nFiles(),
       ...localeFiles(),
-      ...ALWAYS
-        .map((target): StarterFile => {
-          const file: StarterFile = { target };
-
-          return file;
-        }),
-      ...SHARED
-        .map((target): StarterFile => {
-          const file: StarterFile = {
-            target,
-            shared: true,
-          };
-
-          return file;
-        }),
-      {
-        target: 'src/styles/theme.css',
-        when: (current) => {
-          return current.styling === 'tailwind';
-        },
-        variant: 'tailwind',
+      ...filesAt(ALWAYS),
+      ...filesAt(SHARED, {
         shared: true,
-      },
+      }),
+      tailwindThemeFile(),
     ],
     // Astro serves `/about` and `/about/` as one page, so the helper's comparison is real logic.
     starterTests: [
