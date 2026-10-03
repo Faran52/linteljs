@@ -1,4 +1,4 @@
-// Bare globals: the fragments appended below cannot import, and one file does not mix styles.
+// Bare globals: the setup blocks joined below this one cannot import, and one file keeps one style.
 
 // `expo-router`'s navigators reach for a native screen container at import; a view stands in.
 vi.mock('react-native-screens', async () => {

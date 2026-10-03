@@ -24,7 +24,7 @@ vi.mock('@react-native-async-storage/async-storage', () => {
 });
 
 // Every suite renders translated text, so each starts with i18n running in English.
-// Imported late: a setup fragment that imports React Native statically reaches it untransformed.
+// Imported late: a setup file that imports React Native statically reaches it untransformed.
 beforeAll(async () => {
   const { initI18n } = await import('@i18n');
 
