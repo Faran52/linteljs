@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 
 import { applyLanguage, directionOf } from '@i18n';
 import { languages, languageStorageKey } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import LanguageSelect from './LanguageSelect.vue';
 
@@ -9,7 +10,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('LanguageSelect', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     applyLanguage('en');
   });
 
@@ -44,7 +45,7 @@ describe('LanguageSelect', () => {
       .value;
 
     expect(chosen).toBe(last);
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });

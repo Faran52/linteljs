@@ -9,6 +9,7 @@ import {
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { ROUTES } from '@views/routes';
 
@@ -35,7 +36,7 @@ const open = async (path: string): Promise<ReturnType<typeof mount>> => {
 
 describe('App', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     applyLanguage('en');
   });
 
@@ -108,7 +109,7 @@ describe('App', () => {
       });
 
     expect(headings).toEqual(expected);
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });

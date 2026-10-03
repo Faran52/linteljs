@@ -1,31 +1,41 @@
-import { createApp, type Ref } from 'vue';
 import {
-  type NuxtApp,
-  onNuxtReady,
-} from 'nuxt/app';
+  type App,
+  createApp,
+  type Ref,
+  ref,
+} from 'vue';
 
 import {
   applyLanguage,
   i18n,
 } from '@i18n';
 import { languages, languageStorageKey } from '@i18n/config';
+import { languageCookie } from '@i18n/utils/cookieUtils';
 
 import './i18n';
 
-type Setup = (nuxtApp: Pick<NuxtApp, 'vueApp'>) => void;
+// The two fields the plugin reads: any `ssrContext` marks the render as the server's.
+interface PluginApp {
+  vueApp: App;
+  ssrContext: object | undefined;
+}
+
+type Setup = (nuxtApp: PluginApp) => void;
 
 interface Head {
   htmlAttrs: Record<'lang' | 'dir', Readonly<Ref<string>>>;
 }
 
-// The plugin's setup, kept to run against a real app in each case, and the head it hands Nuxt.
+// The plugin's setup, kept to run against a real app in each case, the head it hands Nuxt and the request it reads.
 const nuxt = vi.hoisted(() => {
   const setups: Setup[] = [];
   const heads: Head[] = [];
+  const request: Record<string, string> = {};
 
   const captured = {
     setups,
     heads,
+    request,
   };
 
   return captured;
@@ -36,9 +46,16 @@ vi.mock('nuxt/app', () => {
     defineNuxtPlugin: (setup: Setup) => {
       nuxt.setups.push(setup);
     },
-    onNuxtReady: vi.fn(),
     useHead: (head: Head) => {
       nuxt.heads.push(head);
+    },
+    useRequestHeaders: () => {
+      return nuxt.request;
+    },
+    useState: <T>(_key: string, init: () => T) => {
+      const value = init();
+
+      return ref(value);
     },
   };
 
@@ -47,45 +64,75 @@ vi.mock('nuxt/app', () => {
 
 const last = languages.at(-1)?.id ?? 'en';
 
-const install = (): ReturnType<typeof createApp>['use'] => {
+const install = (ssrContext?: object): App['use'] => {
   const vueApp = createApp({});
   const use = vi.spyOn(vueApp, 'use');
 
-  nuxt.setups[0]?.({ vueApp });
+  nuxt.setups[0]?.({
+    vueApp,
+    ssrContext,
+  });
 
   return use;
 };
 
-const ready = (): void => {
-  const [callback] = vi.mocked(onNuxtReady).mock.lastCall ?? [];
-
-  callback?.();
+const headLanguage = (): string | undefined => {
+  return nuxt.heads.at(-1)?.htmlAttrs.lang.value;
 };
+
+const SERVER = {};
 
 describe('the i18n plugin', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
+    delete nuxt.request.cookie;
+    delete nuxt.request['accept-language'];
     applyLanguage('en');
     vi.restoreAllMocks();
   });
 
-  it('installs the one i18n on the app', () => {
+  it('installs the one i18n in the stored language on the client', () => {
+    document.cookie = languageCookie(last);
+
     const use = install();
 
     expect(use).toHaveBeenCalledWith(i18n);
+    expect(i18n.global.locale.value).toBe(last);
   });
 
-  it('renders English until the app is ready, then the browser language, storing nothing', () => {
+  it('follows the browser on the client when nothing is stored, and stores nothing', () => {
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue([last]);
     install();
 
-    expect(i18n.global.locale.value).toBe('en');
-
-    ready();
-
     expect(i18n.global.locale.value).toBe(last);
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    expect(document.cookie).toBe('');
+  });
+
+  it('renders the stored language on the server, through an i18n of its own', () => {
+    nuxt.request.cookie = `theme=dark; ${languageCookie(last)}`;
+    nuxt.request['accept-language'] = 'en';
+
+    const use = install(SERVER);
+
+    expect(use).not.toHaveBeenCalledWith(i18n);
+    const language = headLanguage();
+    expect(language).toBe(last);
+    expect(i18n.global.locale.value).toBe('en');
+  });
+
+  it('follows Accept-Language on the server when nothing is stored', () => {
+    nuxt.request['accept-language'] = `fr;q=0.9, ${last}`;
+    install(SERVER);
+
+    const language = headLanguage();
+    expect(language).toBe(last);
+  });
+
+  it('renders English on the server for a request that names nothing', () => {
+    install(SERVER);
+
+    const language = headLanguage();
+    expect(language).toBe('en');
   });
 
   it.each(languages)('keeps the head lang and dir on $id', ({ id, dir }) => {

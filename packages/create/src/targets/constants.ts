@@ -4,9 +4,12 @@ import {
   type NamingMap,
 } from '@config/types';
 
+import { hasI18n } from './utils/gateUtils';
+
 import type {
   FrameworkParts,
   PluginSpec,
+  StarterFile,
   StarterTest,
 } from './types';
 
@@ -144,5 +147,21 @@ export const COUNTER_MODULE_STORES = ['zustand', 'tanstack-store'] as const;
 export const STATUS_UTILS_TEST: StarterTest = {
   target: 'src/lib/utils/statusUtils.test.ts',
   covers: 'src/lib/utils/statusUtils.ts',
+  shared: true,
+};
+
+// Where a web target's language choice is stored, read by its server too where it has one.
+export const COOKIE_UTILS: StarterFile = {
+  target: 'src/i18n/utils/cookieUtils.ts',
+  when: hasI18n,
+  variant: 'i18n',
+  shared: true,
+};
+
+export const COOKIE_UTILS_TEST: StarterTest = {
+  target: 'src/i18n/utils/cookieUtils.test.ts',
+  covers: COOKIE_UTILS.target,
+  when: hasI18n,
+  variant: 'i18n',
   shared: true,
 };

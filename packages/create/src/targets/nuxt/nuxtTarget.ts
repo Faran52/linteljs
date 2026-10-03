@@ -1,4 +1,6 @@
 import {
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   FOLDER_ROUTED,
   PARTS,
   TRANSLATED_CONFIGS,
@@ -155,6 +157,7 @@ export const nuxtTarget: TargetRecord = {
       variant: 'i18n',
     },
     ...localeFiles(),
+    COOKIE_UTILS,
     {
       target: 'src/views/HomeView.vue',
     },
@@ -241,6 +244,7 @@ export const nuxtTarget: TargetRecord = {
       variant: 'i18n',
     },
     LOCALES_TEST,
+    COOKIE_UTILS_TEST,
     {
       target: 'src/pages/version.test.ts',
       covers: 'src/pages/version.vue',

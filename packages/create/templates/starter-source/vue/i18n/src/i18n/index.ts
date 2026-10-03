@@ -1,16 +1,24 @@
-import { createI18n } from 'vue-i18n';
+import { createI18n, type I18n } from 'vue-i18n';
 
 import {
   fallbackLanguage,
   languages,
-  languageStorageKey,
   lookupTags,
   resources,
 } from './config';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 export type Language = (typeof languages)[number]['id'];
 
-const isLanguage = (tag: string | null): tag is Language => {
+type Messages = Record<string, Record<string, string>>;
+
+// No locale carries date or number formats.
+type Unformatted = Record<string, never>;
+
+// The composition API, which `i18n.global.locale.value` reads.
+export type LanguageI18n = I18n<Messages, Unformatted, Unformatted, Language, false>;
+
+const isLanguage = (tag: string | undefined): tag is Language => {
   return languages.some((option) => {
     return option.id === tag;
   });
@@ -21,7 +29,7 @@ const literal = (text: string): string => {
   return text.replaceAll('@', '{\'@\'}');
 };
 
-const messages = Object.fromEntries(languages
+const messages: Messages = Object.fromEntries(languages
   .map(({ id }) => {
     const bundle = Object.entries(resources[id].common)
       .map(([key, text]) => {
@@ -36,13 +44,18 @@ const messages = Object.fromEntries(languages
   }));
 
 // CodeText splits each `<code>` itself, so no message is rendered as HTML.
-export const i18n = createI18n({
-  legacy: false,
-  locale: fallbackLanguage,
-  fallbackLocale: fallbackLanguage,
-  messages,
-  warnHtmlMessage: false,
-});
+// A server renders each request through its own, so two readers never share a language.
+export const createLanguageI18n = (locale: Language): LanguageI18n => {
+  return createI18n({
+    legacy: false,
+    locale,
+    fallbackLocale: fallbackLanguage,
+    messages,
+    warnHtmlMessage: false,
+  });
+};
+
+export const i18n = createLanguageI18n(fallbackLanguage);
 
 export const directionOf = (language: string): 'ltr' | 'rtl' => {
   return languages
@@ -51,15 +64,19 @@ export const directionOf = (language: string): 'ltr' | 'rtl' => {
     })?.dir ?? 'ltr';
 };
 
-// The stored choice, then the browser's languages, then English. Nothing detected is stored.
-export const detectLanguage = (): Language => {
-  const stored = localStorage.getItem(languageStorageKey);
+// The stored choice, then the reader's languages, then English. Nothing detected is stored.
+// A server passes its request's `Cookie` and `Accept-Language`; the browser reads its own.
+export const detectLanguage = (
+  cookies: string = document.cookie,
+  preferred: readonly string[] = navigator.languages,
+): Language => {
+  const stored = storedLanguage(cookies);
 
   if (isLanguage(stored)) {
     return stored;
   }
 
-  return navigator.languages
+  return preferred
     .flatMap(lookupTags)
     .find(isLanguage) ?? fallbackLanguage;
 };
@@ -74,6 +91,6 @@ export const applyLanguage = (language: string): void => {
 
 // The one writer of the stored choice.
 export const chooseLanguage = (language: string): void => {
-  localStorage.setItem(languageStorageKey, language);
+  document.cookie = languageCookie(language);
   applyLanguage(language);
 };

@@ -1,6 +1,8 @@
 import { hasLibrary } from '@utils/answerUtils';
 
 import {
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   FOLDER,
   PARTS,
   STATUS_UTILS_TEST,
@@ -76,6 +78,7 @@ export const vueTarget: TargetRecord = {
     ...accessorFiles(ACCESSORS),
     ...vueI18nFiles(),
     ...localeFiles(),
+    COOKIE_UTILS,
     ...ALWAYS
       .map((target): StarterFile => {
         const file: StarterFile = { target };
@@ -212,6 +215,7 @@ export const vueTarget: TargetRecord = {
     ...accessorTests(ACCESSORS),
     ...vueI18nTests(),
     LOCALES_TEST,
+    COOKIE_UTILS_TEST,
     {
       target: 'src/components/ui/app-button/AppButton.test.ts',
       covers: 'src/components/ui/app-button/AppButton.vue',
