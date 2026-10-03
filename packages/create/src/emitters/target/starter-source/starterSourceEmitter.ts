@@ -16,13 +16,12 @@ import {
 } from '@targets';
 
 import {
-  CODE_EXTENSION,
-  NOT_DOTTED,
   RELATIVE_SPECIFIER,
   STYLEX_ATTRS,
   STYLEX_PROPS,
   USE_CLIENT,
 } from './constants';
+import { relativeSpecifier, stem } from './utils/starterPathUtils';
 
 type Starter = StarterFile | StarterTest;
 
@@ -47,10 +46,6 @@ const sourceOf = (id: TargetId, file: Starter): string => {
     .join('/');
 
   return sourcePath;
-};
-
-const stem = (path: string): string => {
-  return path.replace(CODE_EXTENSION, '');
 };
 
 // Asset stem to written stem, for each file this project writes under another name than its asset's.
@@ -82,9 +77,7 @@ const importsRewritten = (file: Starter, renames: Map<string, string>) => {
           return whole;
         }
 
-        const relative = posix
-          .relative(writtenDirectory, written)
-          .replace(NOT_DOTTED, './');
+        const relative = relativeSpecifier(writtenDirectory, written);
 
         return `${quote}${relative}${quote}`;
       });

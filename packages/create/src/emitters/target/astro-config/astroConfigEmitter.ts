@@ -58,13 +58,13 @@ export const emitAstroConfig = (answers: Answers): string | null => {
   // Vite plugins: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro one.
   const vite = styling.call === undefined ? '' : `  vite: { plugins: [${styling.call}] },\n`;
 
-  const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
+  const sections = [
+    imports,
+    ...styling.declarations,
+    `export default defineConfig({\n${integrations}${vite}});\n`,
+  ];
 
-  return `${imports}
-
-${declarations}export default defineConfig({
-${integrations}${vite}});
-`;
+  return sections.join('\n\n');
 };
 
 // `.mjs` is the name `astro check` looks for first.
