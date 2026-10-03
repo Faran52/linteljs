@@ -87,13 +87,13 @@ loads every framework and library layer, so it needs every optional peer install
 | `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
-| `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro`, `astro-eslint-parser` |
+| `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro` |
 | `react()` | `/react` | `@eslint-react` with its stricter rules, React Hooks, JSX accessibility, the four `@eslint-react` DOM rules (`<button>` type, `<iframe>` sandbox, unsafe `target="_blank"`, `javascript:` URLs), sonarjs's React rules, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |
 | `next()` | `/next` | Next's `core-web-vitals` rules, composed after `react()`, which brings the DOM rules. | `@next/eslint-plugin-next`, plus the peers of `react()`. |
 | `reactNative()` | `/react-native` | React and React Hooks as `react()` has them, with this plugin's five React Native accessibility rules in place of JSX accessibility and the four DOM rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks` |
 | `vue()` | `/vue` | Vue recommended rules and template accessibility, with TypeScript nested in the SFC parser. | `eslint-plugin-vue`, `vue-eslint-parser`, `eslint-plugin-vuejs-accessibility` |
 | `nuxt()` | `/nuxt` | The two conventions Nuxt's build imposes, composed after Vue. | Those of `vue()`. |
-| `svelte()` | `/svelte` | Svelte recommended rules with the same parser arrangement. Accessibility is the compiler's, reported by `svelte-check --fail-on-warnings`, not this layer's. | `eslint-plugin-svelte`, `svelte-eslint-parser` |
+| `svelte()` | `/svelte` | Svelte recommended rules with the same parser arrangement. Accessibility is the compiler's, reported by `svelte-check --fail-on-warnings`, not this layer's. | `eslint-plugin-svelte` |
 | `solid()` | `/solid` | Solid TypeScript rules, JSX accessibility, and `sonarjs/jsx-no-leaked-render`, which needs `typescript()` beside it. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y-x` |
 | `angular()` | `/angular` | Angular TypeScript rules, plus template rules and template accessibility. | `angular-eslint` |
 | `tanstackQuery()` | `/tanstack-query` | TanStack Query recommended rules. | `@tanstack/eslint-plugin-query` |
