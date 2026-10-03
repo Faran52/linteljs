@@ -26,42 +26,57 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { FOLDER_ROUTED } from '../constants';
 import { sfcNaming } from '../utils/namingUtils';
 
 import { svelteTarget } from './svelteTarget';
 
+const recordFor = (): ReturnType<typeof svelteTarget> => {
+  return svelteTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'svelte',
+  });
+};
+
 describe('svelteTarget', () => {
   it('is the record the svelte answer names', () => {
-    expect(svelteTarget.id).toBe('svelte');
+    const record = recordFor();
+    expect(record.id).toBe('svelte');
   });
 
   it('names the style entry the root layout imports', () => {
-    expect(svelteTarget.styleEntry).toBe('src/app.css');
+    const record = recordFor();
+    expect(record.styleEntry).toBe('src/app.css');
   });
 
   it('writes no html entry of its own', () => {
-    expect(svelteTarget.htmlEntry).toBeUndefined();
+    const record = recordFor();
+    expect(record.htmlEntry).toBeUndefined();
   });
 
   it('names files the way any SFC target does', () => {
-    expect(svelteTarget.naming).toEqual(sfcNaming('svelte', 'routes'));
+    const record = recordFor();
+    expect(record.naming).toEqual(sfcNaming('svelte', 'routes'));
   });
 
   it('translates through Paraglide, compiled into the kit\'s generated directory', () => {
-    expect(svelteTarget.i18n?.dependencies).toEqual([]);
-    expect(svelteTarget.i18n?.compiler?.command).toContain('--outdir ./.svelte-kit/paraglide');
+    const record = recordFor();
+    expect(record.i18n?.dependencies).toEqual([]);
+    expect(record.i18n?.compiler?.command).toContain('--outdir ./.svelte-kit/paraglide');
 
     const expected = [
       '@inlang/paraglide-js',
       '@inlang/plugin-message-format',
     ];
-    expect(svelteTarget.i18n?.compiler?.devDependencies).toEqual(expected);
+    expect(record.i18n?.compiler?.devDependencies).toEqual(expected);
   });
 
   it('admits the route segments a file-based router owns', () => {
+    const record = recordFor();
     const expected = { 'src/**/': FOLDER_ROUTED };
-    expect(svelteTarget.folderNaming).toEqual(expected);
+    expect(record.folderNaming).toEqual(expected);
   });
 });
 
@@ -161,24 +176,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return svelteTarget;
-    }, 'svelte');
+    const walk = walkGates(svelteTarget, 'svelte');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return svelteTarget;
-    }, 'svelte');
+    const walk = walkGates(svelteTarget, 'svelte');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return svelteTarget;
-    }, 'svelte');
+    const walk = walkGates(svelteTarget, 'svelte');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -186,9 +195,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = svelteTarget.starterFiles.find((file) => {
-      return file.target === 'static/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'static/favicon.svg';
+      });
 
     const expected = {
       target: 'static/favicon.svg',

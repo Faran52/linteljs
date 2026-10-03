@@ -18,24 +18,36 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { nuxtTarget } from './nuxtTarget';
+
+const recordFor = (): ReturnType<typeof nuxtTarget> => {
+  return nuxtTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'nuxt',
+  });
+};
 
 describe('nuxtTarget', () => {
   it('is the record the nuxt answer names', () => {
-    expect(nuxtTarget.id).toBe('nuxt');
+    const record = recordFor();
+    expect(record.id).toBe('nuxt');
   });
 
   it('writes no document and no vite config of its own', () => {
-    expect(nuxtTarget.html).toBe(false);
-    expect(nuxtTarget.vitePlugin).toBeUndefined();
+    const record = recordFor();
+    expect(record.html).toBe(false);
+    expect(record.vitePlugin).toBeUndefined();
   });
 
   it('translates through vue-i18n, as Vue does', () => {
+    const record = recordFor();
     const expected = {
       dependencies: ['vue-i18n'],
       testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
     };
-    expect(nuxtTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 });
 
@@ -98,24 +110,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return nuxtTarget;
-    }, 'nuxt');
+    const walk = walkGates(nuxtTarget, 'nuxt');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return nuxtTarget;
-    }, 'nuxt');
+    const walk = walkGates(nuxtTarget, 'nuxt');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return nuxtTarget;
-    }, 'nuxt');
+    const walk = walkGates(nuxtTarget, 'nuxt');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -123,9 +129,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = nuxtTarget.starterFiles.find((file) => {
-      return file.target === 'public/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
 
     const expected = {
       target: 'public/favicon.svg',

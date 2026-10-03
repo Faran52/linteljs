@@ -32,235 +32,240 @@ import {
 } from './constants';
 import { vueI18nFiles, vueI18nTests } from './utils/translatedFileUtils';
 
+import type { TargetBuilder } from '../registry';
 import type { StarterFile, TargetRecord } from '../types';
 
-export const vueTarget: TargetRecord = {
-  id: 'vue',
-  htmlEntry: 'src/main.ts',
-  framework: 'vue',
-  html: true,
-  sfcExtension: 'vue',
-  stores: ['pinia', 'tanstack-store'],
-  ignores: [],
-  naming: sfcNaming('vue'),
-  folderNaming: { 'src/**/': FOLDER },
-  hooksAlias: { '@composables/*': './src/lib/composables/*' },
-  routeAlias: { '@views/*': './src/views/*' },
-  publicDirectory: 'public',
-  styleEntry: 'src/styles/main.css',
-  starterStyles: [
-    '../styles/tokens.css',
-    '../styles/base.css',
-    '../components/features/app-header/AppHeader.css',
-    '../components/ui/app-mark/AppMark.css',
-    '../components/ui/app-button/AppButton.css',
-    {
-      path: '../components/ui/text-input/TextInput.css',
-      when: (answers) => {
-        return answers.form !== undefined;
+export const vueTarget: TargetBuilder = () => {
+  const record: TargetRecord = {
+    id: 'vue',
+    htmlEntry: 'src/main.ts',
+    framework: 'vue',
+    html: true,
+    sfcExtension: 'vue',
+    stores: ['pinia', 'tanstack-store'],
+    ignores: [],
+    naming: sfcNaming('vue'),
+    folderNaming: { 'src/**/': FOLDER },
+    hooksAlias: { '@composables/*': './src/lib/composables/*' },
+    routeAlias: { '@views/*': './src/views/*' },
+    publicDirectory: 'public',
+    styleEntry: 'src/styles/main.css',
+    starterStyles: [
+      '../styles/tokens.css',
+      '../styles/base.css',
+      '../components/features/app-header/AppHeader.css',
+      '../components/ui/app-mark/AppMark.css',
+      '../components/ui/app-button/AppButton.css',
+      {
+        path: '../components/ui/text-input/TextInput.css',
+        when: (answers) => {
+          return answers.form !== undefined;
+        },
       },
+    ],
+    tailwindTheme: '../styles/theme.css',
+    vitePlugin: {
+      imports: ["import vue from '@vitejs/plugin-vue';"],
+      calls: ['vue()'],
     },
-  ],
-  tailwindTheme: '../styles/theme.css',
-  vitePlugin: {
-    imports: ["import vue from '@vitejs/plugin-vue';"],
-    calls: ['vue()'],
-  },
-  tsconfig: {
-    jsx: 'preserve',
-    include: ['**/*.vue'],
-  },
-  starterFiles: [
-    ...mockFiles(true),
-    ...componentStyles(COMPONENTS),
-    // Vue renames two of the four, so each carries its own path.
-    ...componentStyleModules('solid', COMPONENTS),
-    ...accessorFiles(ACCESSORS),
-    ...vueI18nFiles(),
-    ...localeFiles(),
-    COOKIE_UTILS,
-    ...ALWAYS
-      .map((target): StarterFile => {
-        const file: StarterFile = { target };
+    tsconfig: {
+      jsx: 'preserve',
+      include: ['**/*.vue'],
+    },
+    starterFiles: [
+      ...mockFiles(true),
+      ...componentStyles(COMPONENTS),
+      // Vue renames two of the four, so each carries its own path.
+      ...componentStyleModules('solid', COMPONENTS),
+      ...accessorFiles(ACCESSORS),
+      ...vueI18nFiles(),
+      ...localeFiles(),
+      COOKIE_UTILS,
+      ...ALWAYS
+        .map((target): StarterFile => {
+          const file: StarterFile = { target };
 
-        return file;
-      }),
-    ...SHARED
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          shared: true,
-        };
+          return file;
+        }),
+      ...SHARED
+        .map((target): StarterFile => {
+          const file: StarterFile = {
+            target,
+            shared: true,
+          };
 
-        return file;
-      }),
-    {
-      target: 'src/views/HomeView.vue',
-      when: (answers) => {
-        return !hasStore(answers);
+          return file;
+        }),
+      {
+        target: 'src/views/HomeView.vue',
+        when: (answers) => {
+          return !hasStore(answers);
+        },
       },
-    },
-    {
-      target: 'src/views/HomeView.vue',
-      when: hasStore,
-      variant: 'with-store',
-    },
-    { target: 'src/components/ui/app-button/AppButton.vue' },
-    ...FORM_FILES
-      .map((target): StarterFile => {
-        const file: StarterFile = {
-          target,
-          when: hasForm,
-        };
+      {
+        target: 'src/views/HomeView.vue',
+        when: hasStore,
+        variant: 'with-store',
+      },
+      { target: 'src/components/ui/app-button/AppButton.vue' },
+      ...FORM_FILES
+        .map((target): StarterFile => {
+          const file: StarterFile = {
+            target,
+            when: hasForm,
+          };
 
-        return file;
-      }),
-    {
-      target: 'src/lib/apis/contact/index.ts',
-      when: hasForm,
-      shared: true,
-    },
-    {
-      target: 'src/lib/apis/contact/contactApi.ts',
-      when: (answers) => {
-        return hasForm(answers) && answers.data === undefined;
+          return file;
+        }),
+      {
+        target: 'src/lib/apis/contact/index.ts',
+        when: hasForm,
+        shared: true,
       },
-      shared: true,
-    },
-    {
-      target: 'src/lib/apis/contact/contactApi.ts',
-      when: (answers) => {
-        return hasForm(answers) && answers.data === 'tanstack-query';
+      {
+        target: 'src/lib/apis/contact/contactApi.ts',
+        when: (answers) => {
+          return hasForm(answers) && answers.data === undefined;
+        },
+        shared: true,
       },
-      variant: 'tanstack-query',
-    },
-    {
-      target: 'src/lib/apis/contact/schemas.ts',
-      when: (answers) => {
-        return hasForm(answers) && !hasLibrary(answers, 'zod');
+      {
+        target: 'src/lib/apis/contact/contactApi.ts',
+        when: (answers) => {
+          return hasForm(answers) && answers.data === 'tanstack-query';
+        },
+        variant: 'tanstack-query',
       },
-      shared: true,
-    },
-    {
-      target: 'src/lib/apis/contact/schemas.ts',
-      when: (answers) => {
-        return hasForm(answers) && hasLibrary(answers, 'zod');
+      {
+        target: 'src/lib/apis/contact/schemas.ts',
+        when: (answers) => {
+          return hasForm(answers) && !hasLibrary(answers, 'zod');
+        },
+        shared: true,
       },
-      variant: 'zod',
-      shared: true,
-    },
-    {
-      target: 'src/views/routes.ts',
-      when: (answers) => {
-        return !hasForm(answers);
+      {
+        target: 'src/lib/apis/contact/schemas.ts',
+        when: (answers) => {
+          return hasForm(answers) && hasLibrary(answers, 'zod');
+        },
+        variant: 'zod',
+        shared: true,
       },
-    },
-    {
-      target: 'src/views/routes.ts',
-      when: hasForm,
-      variant: 'with-form',
-    },
-    // Vue installs both as app plugins, so each slot is a function rather than a component.
-    {
-      target: 'src/lib/providers/store/storeProvider.ts',
-      when: (answers) => {
-        return answers.store !== 'pinia';
+      {
+        target: 'src/views/routes.ts',
+        when: (answers) => {
+          return !hasForm(answers);
+        },
       },
-    },
-    {
-      target: 'src/lib/providers/store/storeProvider.ts',
-      when: (answers) => {
-        return answers.store === 'pinia';
+      {
+        target: 'src/views/routes.ts',
+        when: hasForm,
+        variant: 'with-form',
       },
-      variant: 'pinia',
-    },
-    ...COUNTER_MODULE_STORES
-      .map((store): StarterFile => {
-        const file: StarterFile = {
-          target: 'src/lib/store/counter/counterStore.ts',
-          when: (answers) => {
-            return answers.store === store;
-          },
-          variant: store,
-        };
+      // Vue installs both as app plugins, so each slot is a function rather than a component.
+      {
+        target: 'src/lib/providers/store/storeProvider.ts',
+        when: (answers) => {
+          return answers.store !== 'pinia';
+        },
+      },
+      {
+        target: 'src/lib/providers/store/storeProvider.ts',
+        when: (answers) => {
+          return answers.store === 'pinia';
+        },
+        variant: 'pinia',
+      },
+      ...COUNTER_MODULE_STORES
+        .map((store): StarterFile => {
+          const file: StarterFile = {
+            target: 'src/lib/store/counter/counterStore.ts',
+            when: (answers) => {
+              return answers.store === store;
+            },
+            variant: store,
+          };
 
-        return file;
-      }),
-    {
-      target: 'src/lib/providers/data/dataProvider.ts',
-      when: (answers) => {
-        return answers.data !== 'tanstack-query';
+          return file;
+        }),
+      {
+        target: 'src/lib/providers/data/dataProvider.ts',
+        when: (answers) => {
+          return answers.data !== 'tanstack-query';
+        },
       },
-    },
-    {
-      target: 'src/lib/providers/data/dataProvider.ts',
-      when: (answers) => {
-        return answers.data === 'tanstack-query';
+      {
+        target: 'src/lib/providers/data/dataProvider.ts',
+        when: (answers) => {
+          return answers.data === 'tanstack-query';
+        },
+        variant: 'tanstack-query',
       },
-      variant: 'tanstack-query',
-    },
-    {
-      target: 'src/styles/theme.css',
-      when: (answers) => {
-        return answers.styling === 'tailwind';
+      {
+        target: 'src/styles/theme.css',
+        when: (answers) => {
+          return answers.styling === 'tailwind';
+        },
+        variant: 'tailwind',
+        shared: true,
       },
-      variant: 'tailwind',
-      shared: true,
+    ],
+    // Mounting `App` walks the real router, so that suite covers the header and every page.
+    starterTests: [
+      ...mockTests(true),
+      STATUS_UTILS_TEST,
+      ...accessorTests(ACCESSORS),
+      ...vueI18nTests(),
+      LOCALES_TEST,
+      COOKIE_UTILS_TEST,
+      {
+        target: 'src/components/ui/app-button/AppButton.test.ts',
+        covers: 'src/components/ui/app-button/AppButton.vue',
+      },
+      {
+        target: 'src/components/features/error-boundary/ErrorBoundary.test.ts',
+        covers: 'src/components/features/error-boundary/ErrorBoundary.vue',
+      },
+      {
+        target: 'src/views/ContactView.test.ts',
+        covers: 'src/views/ContactView.vue',
+      },
+      {
+        target: 'src/components/ui/text-input/TextInput.test.ts',
+        covers: 'src/components/ui/text-input/TextInput.vue',
+      },
+      {
+        target: 'src/lib/apis/contact/contactApi.test.ts',
+        covers: 'src/lib/apis/contact/contactApi.ts',
+      },
+      {
+        target: 'src/lib/providers/store/storeProvider.test.ts',
+        covers: 'src/lib/providers/store/storeProvider.ts',
+      },
+      {
+        target: 'src/lib/providers/data/dataProvider.test.ts',
+        covers: 'src/lib/providers/data/dataProvider.ts',
+      },
+      {
+        target: 'src/lib/store/counter/counterStore.test.ts',
+        covers: 'src/lib/store/counter/counterStore.ts',
+      },
+    ],
+    build: 'vite build',
+    extraScripts: {
+      dev: 'vite',
+      preview: 'vite preview',
     },
-  ],
-  // Mounting `App` walks the real router, so that suite covers the header and every page.
-  starterTests: [
-    ...mockTests(true),
-    STATUS_UTILS_TEST,
-    ...accessorTests(ACCESSORS),
-    ...vueI18nTests(),
-    LOCALES_TEST,
-    COOKIE_UTILS_TEST,
-    {
-      target: 'src/components/ui/app-button/AppButton.test.ts',
-      covers: 'src/components/ui/app-button/AppButton.vue',
-    },
-    {
-      target: 'src/components/features/error-boundary/ErrorBoundary.test.ts',
-      covers: 'src/components/features/error-boundary/ErrorBoundary.vue',
-    },
-    {
-      target: 'src/views/ContactView.test.ts',
-      covers: 'src/views/ContactView.vue',
-    },
-    {
-      target: 'src/components/ui/text-input/TextInput.test.ts',
-      covers: 'src/components/ui/text-input/TextInput.vue',
-    },
-    {
-      target: 'src/lib/apis/contact/contactApi.test.ts',
-      covers: 'src/lib/apis/contact/contactApi.ts',
-    },
-    {
-      target: 'src/lib/providers/store/storeProvider.test.ts',
-      covers: 'src/lib/providers/store/storeProvider.ts',
-    },
-    {
-      target: 'src/lib/providers/data/dataProvider.test.ts',
-      covers: 'src/lib/providers/data/dataProvider.ts',
-    },
-    {
-      target: 'src/lib/store/counter/counterStore.test.ts',
-      covers: 'src/lib/store/counter/counterStore.ts',
-    },
-  ],
-  build: 'vite build',
-  extraScripts: {
-    dev: 'vite',
-    preview: 'vite preview',
-  },
-  typecheck: 'vue-tsc --noEmit',
-  // The router is unconditional here, so it is a dependency rather than an answer's.
-  testDevDependencies: PARTS.vue.testDevDependencies,
-  dependencies: [...PARTS.vue.dependencies, 'vue-router'],
-  devDependencies: [...PARTS.vue.devDependencies, 'vite'],
-  // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
-  allowBuilds: ['vue-demi'],
-  stateRules: ['vue-reactivity.md'],
-  i18n: VUE_I18N,
+    typecheck: 'vue-tsc --noEmit',
+    // The router is unconditional here, so it is a dependency rather than an answer's.
+    testDevDependencies: PARTS.vue.testDevDependencies,
+    dependencies: [...PARTS.vue.dependencies, 'vue-router'],
+    devDependencies: [...PARTS.vue.devDependencies, 'vite'],
+    // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
+    allowBuilds: ['vue-demi'],
+    stateRules: ['vue-reactivity.md'],
+    i18n: VUE_I18N,
+  };
+
+  return record;
 };

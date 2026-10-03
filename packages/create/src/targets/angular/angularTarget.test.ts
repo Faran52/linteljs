@@ -17,20 +17,32 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { angularTarget } from './angularTarget';
 import { SHARED, TRANSLATED } from './constants';
 
+const recordFor = (): ReturnType<typeof angularTarget> => {
+  return angularTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'angular',
+  });
+};
+
 describe('angularTarget', () => {
   it('is the record the angular answer names', () => {
-    expect(angularTarget.id).toBe('angular');
+    const record = recordFor();
+    expect(record.id).toBe('angular');
   });
 
   it('has its project file written rather than copied', () => {
-    expect(angularTarget.angularProject).toBe(true);
-    expect(angularTarget.build).toBe('ng build');
+    const record = recordFor();
+    expect(record.angularProject).toBe(true);
+    expect(record.build).toBe('ng build');
   });
 
   it('imports every stylesheet it ships from the style entry, in the order they cascade', () => {
+    const record = recordFor();
     const shipped = SHARED
       .filter((path) => {
         return path.endsWith('.css');
@@ -39,11 +51,12 @@ describe('angularTarget', () => {
         return path.replace('src/', './');
       });
 
-    expect(angularTarget.starterStyles).toEqual(shipped);
+    expect(record.starterStyles).toEqual(shipped);
   });
 
   it('ships the route table with Contact in it, since the Contact page always ships', () => {
-    const routes = angularTarget.starterFiles
+    const record = recordFor();
+    const routes = record.starterFiles
       .find((file) => {
         return file.target === 'src/config/routes.ts';
       });
@@ -52,7 +65,8 @@ describe('angularTarget', () => {
   });
 
   it('writes the shared ForbiddenError suite under the kebab spec name the CLI would give it', () => {
-    const suite = angularTarget.starterTests
+    const record = recordFor();
+    const suite = record.starterTests
       .find((test) => {
         return test.covers === 'src/lib/utils/status-utils.ts';
       });
@@ -61,11 +75,12 @@ describe('angularTarget', () => {
   });
 
   it('points each camelCase alias at a kebab file it writes', () => {
-    const written = angularTarget.starterFiles
+    const record = recordFor();
+    const written = record.starterFiles
       .map((file) => {
         return `./${file.target}`;
       });
-    const aliased = Object.values(angularTarget.extraAliases ?? {});
+    const aliased = Object.values(record.extraAliases ?? {});
 
     const unwritten = aliased
       .filter((path) => {
@@ -76,14 +91,16 @@ describe('angularTarget', () => {
   });
 
   it('translates through a signal of its own, with no library, compiler or test setup', () => {
+    const record = recordFor();
     const expected = { dependencies: [] };
-    expect(angularTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 
   it('names every module the way the CLI would, and leaves declarations to their own key', () => {
-    expect(angularTarget.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
-    expect(angularTarget.naming).not.toHaveProperty('src/**/*.ts');
-    expect(angularTarget.naming['src/**/*.d.ts']).toBeDefined();
+    const record = recordFor();
+    expect(record.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
+    expect(record.naming).not.toHaveProperty('src/**/*.ts');
+    expect(record.naming['src/**/*.d.ts']).toBeDefined();
   });
 });
 
@@ -150,24 +167,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return angularTarget;
-    }, 'angular');
+    const walk = walkGates(angularTarget, 'angular');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return angularTarget;
-    }, 'angular');
+    const walk = walkGates(angularTarget, 'angular');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return angularTarget;
-    }, 'angular');
+    const walk = walkGates(angularTarget, 'angular');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -175,9 +186,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = angularTarget.starterFiles.find((file) => {
-      return file.target === 'public/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
 
     const expected = {
       target: 'public/favicon.svg',

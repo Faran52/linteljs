@@ -25,32 +25,46 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { FOLDER_ROUTED } from '../constants';
 import { componentNaming } from '../utils/namingUtils';
 
 import { solidTarget } from './solidTarget';
 
+const recordFor = (): ReturnType<typeof solidTarget> => {
+  return solidTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'solid',
+  });
+};
+
 describe('solidTarget', () => {
   it('is the record the solid answer names', () => {
-    expect(solidTarget.id).toBe('solid');
+    const record = recordFor();
+    expect(record.id).toBe('solid');
   });
 
   it('takes the solid framework layer', () => {
-    expect(solidTarget.framework).toBe('solid');
+    const record = recordFor();
+    expect(record.framework).toBe('solid');
   });
 
   it('names files the way any JSX target does', () => {
-    expect(solidTarget.naming).toEqual(componentNaming());
+    const record = recordFor();
+    expect(record.naming).toEqual(componentNaming());
   });
 
   it('admits the route segments a file-based router owns', () => {
+    const record = recordFor();
     const expected = { 'src/**/': FOLDER_ROUTED };
-    expect(solidTarget.folderNaming).toEqual(expected);
+    expect(record.folderNaming).toEqual(expected);
   });
 
   it('translates through the Solid primitive alone, with no compiler and no test setup', () => {
+    const record = recordFor();
     const expected = { dependencies: ['@solid-primitives/i18n'] };
-    expect(solidTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 });
 
@@ -133,24 +147,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return solidTarget;
-    }, 'solid');
+    const walk = walkGates(solidTarget, 'solid');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return solidTarget;
-    }, 'solid');
+    const walk = walkGates(solidTarget, 'solid');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return solidTarget;
-    }, 'solid');
+    const walk = walkGates(solidTarget, 'solid');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -158,9 +166,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = solidTarget.starterFiles.find((file) => {
-      return file.target === 'public/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
 
     const expected = {
       target: 'public/favicon.svg',

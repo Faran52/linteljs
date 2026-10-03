@@ -18,13 +18,23 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { FOLDER_ROUTED } from '../constants';
 import { componentNaming } from '../utils/namingUtils';
 
 import { reactNativeTarget } from './reactNativeTarget';
 
+const recordFor = (): ReturnType<typeof reactNativeTarget> => {
+  return reactNativeTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'react-native',
+  });
+};
+
 describe('reactNativeTarget', () => {
   it('translates through i18next, its choice kept in Expo\'s AsyncStorage, every suite set up in English', () => {
+    const record = recordFor();
     const expected = {
       dependencies: [
         'i18next',
@@ -33,29 +43,33 @@ describe('reactNativeTarget', () => {
       ],
       testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
     };
-    expect(reactNativeTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 
   it('is the record the react-native answer names', () => {
-    expect(reactNativeTarget.id).toBe('react-native');
+    const record = recordFor();
+    expect(record.id).toBe('react-native');
   });
 
   it('has its application metadata written rather than copied', () => {
-    expect(reactNativeTarget.expoProject).toBe(true);
-    expect(reactNativeTarget.build).toBe('expo export');
+    const record = recordFor();
+    expect(record.expoProject).toBe(true);
+    expect(record.build).toBe('expo export');
   });
 
   it('runs its suite the way Metro resolves', () => {
-    const [platform] = reactNativeTarget.testPlatforms ?? [];
+    const record = recordFor();
+    const [platform] = record.testPlatforms ?? [];
 
     expect(platform?.name).toBe('native');
     expect(platform?.extensions[0]).toBe('.ios.tsx');
   });
 
   it('names files the way any JSX target does, less the route root', () => {
-    expect(reactNativeTarget.naming).toEqual(componentNaming('app'));
+    const record = recordFor();
+    expect(record.naming).toEqual(componentNaming('app'));
     const expected = { 'src/**/': FOLDER_ROUTED };
-    expect(reactNativeTarget.folderNaming).toEqual(expected);
+    expect(record.folderNaming).toEqual(expected);
   });
 });
 
@@ -115,24 +129,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return reactNativeTarget;
-    }, 'react-native');
+    const walk = walkGates(reactNativeTarget, 'react-native');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return reactNativeTarget;
-    }, 'react-native');
+    const walk = walkGates(reactNativeTarget, 'react-native');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return reactNativeTarget;
-    }, 'react-native');
+    const walk = walkGates(reactNativeTarget, 'react-native');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -140,9 +148,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, in the public directory Expo serves on the web', () => {
-    const favicon = reactNativeTarget.starterFiles.find((file) => {
-      return file.target === 'public/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
 
     const expected = {
       target: 'public/favicon.svg',

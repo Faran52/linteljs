@@ -27,38 +27,53 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { FOLDER_ROUTED } from '../constants';
 import { componentNaming } from '../utils/namingUtils';
 
 import { nextTarget } from './nextTarget';
 
+const recordFor = (): ReturnType<typeof nextTarget> => {
+  return nextTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'next',
+  });
+};
+
 describe('nextTarget', () => {
   it('is the record the next answer names', () => {
-    expect(nextTarget.id).toBe('next');
+    const record = recordFor();
+    expect(record.id).toBe('next');
   });
 
   it('owns its document rather than writing one', () => {
-    expect(nextTarget.html).toBe(false);
-    expect(nextTarget.htmlEntry).toBeUndefined();
+    const record = recordFor();
+    expect(record.html).toBe(false);
+    expect(record.htmlEntry).toBeUndefined();
   });
 
   it('carries no vite build', () => {
-    expect(nextTarget.vitePlugin).toBeUndefined();
-    expect(nextTarget.build).toBe('next build');
+    const record = recordFor();
+    expect(record.vitePlugin).toBeUndefined();
+    expect(record.build).toBe('next build');
   });
 
   it('names files the way any JSX target does', () => {
-    expect(nextTarget.naming).toEqual(componentNaming('app'));
+    const record = recordFor();
+    expect(record.naming).toEqual(componentNaming('app'));
   });
 
   it('translates through next-intl, with no setup file: each suite wraps its own provider', () => {
+    const record = recordFor();
     const expected = { dependencies: ['next-intl'] };
-    expect(nextTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 
   it('admits the route segments a file-based router owns', () => {
+    const record = recordFor();
     const expected = { 'src/**/': FOLDER_ROUTED };
-    expect(nextTarget.folderNaming).toEqual(expected);
+    expect(record.folderNaming).toEqual(expected);
   });
 });
 
@@ -171,24 +186,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return nextTarget;
-    }, 'next');
+    const walk = walkGates(nextTarget, 'next');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return nextTarget;
-    }, 'next');
+    const walk = walkGates(nextTarget, 'next');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return nextTarget;
-    }, 'next');
+    const walk = walkGates(nextTarget, 'next');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -196,9 +205,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = nextTarget.starterFiles.find((file) => {
-      return file.target === 'src/app/icon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'src/app/icon.svg';
+      });
 
     const expected = {
       target: 'src/app/icon.svg',

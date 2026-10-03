@@ -31,6 +31,13 @@ import { vueTarget } from './vueTarget';
 
 import type { Answers } from '@config/types';
 
+const recordFor = (): ReturnType<typeof vueTarget> => {
+  return vueTarget({
+    ...DEFAULT_ANSWERS,
+    target: 'vue',
+  });
+};
+
 const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
   const answers: Answers = {
     ...DEFAULT_ANSWERS,
@@ -38,7 +45,7 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
     ...overrides,
   };
 
-  return vueTarget.starterFiles
+  return vueTarget(answers).starterFiles
     .filter((file) => {
       return file.when === undefined || file.when(answers);
     })
@@ -70,6 +77,8 @@ describe('vueTarget', () => {
   });
 
   it('installs a store plugin only for the store that needs one', () => {
+    const record = recordFor();
+
     const installs = (store: Answers['store']): string | undefined => {
       const answers: Answers = {
         ...DEFAULT_ANSWERS,
@@ -80,7 +89,7 @@ describe('vueTarget', () => {
         answers.store = store;
       }
 
-      return vueTarget.starterFiles
+      return record.starterFiles
         .find((file) => {
           return file.target === 'src/lib/providers/store/storeProvider.ts'
             && (file.when === undefined || file.when(answers));
@@ -101,15 +110,17 @@ describe('vueTarget', () => {
   });
 
   it('names a single-file component by its own extension', () => {
-    expect(vueTarget.sfcExtension).toBe('vue');
+    const record = recordFor();
+    expect(record.sfcExtension).toBe('vue');
   });
 
   it('translates through vue-i18n, installed on every mount by the test setup', () => {
+    const record = recordFor();
     const expected = {
       dependencies: ['vue-i18n'],
       testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
     };
-    expect(vueTarget.i18n).toEqual(expected);
+    expect(record.i18n).toEqual(expected);
   });
 });
 
@@ -195,24 +206,18 @@ const GATES: GateRow[] = [
 
 describe('the starter gates', () => {
   it('write at most one spelling of each destination under any answer set', () => {
-    const walk = walkGates(() => {
-      return vueTarget;
-    }, 'vue');
+    const walk = walkGates(vueTarget, 'vue');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
-    const walk = walkGates(() => {
-      return vueTarget;
-    }, 'vue');
+    const walk = walkGates(vueTarget, 'vue');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
   it('each write exactly under the conditions pinned below', () => {
-    const walk = walkGates(() => {
-      return vueTarget;
-    }, 'vue');
+    const walk = walkGates(vueTarget, 'vue');
     const mismatches = walk.mismatchesOf(GATES);
     expect(mismatches).toEqual([]);
   });
@@ -220,9 +225,11 @@ describe('the starter gates', () => {
 
 describe('the favicon', () => {
   it('is the shared Mark, served from where the framework serves a static icon', () => {
-    const favicon = vueTarget.starterFiles.find((file) => {
-      return file.target === 'public/favicon.svg';
-    });
+    const record = recordFor();
+    const favicon = record.starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
 
     const expected = {
       target: 'public/favicon.svg',

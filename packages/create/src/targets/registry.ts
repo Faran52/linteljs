@@ -12,26 +12,20 @@ import { webextensionTarget } from './webextension/webextensionTarget';
 import type { Answers, TargetId } from '@config/types';
 import type { TargetRecord } from './types';
 
-// The seven fixed records ignore the argument, so emitters read one shape.
+// Built on each call, so a record's helpers run only for the target asked; a builder may ignore the answers.
 export type TargetBuilder = (answers: Answers) => TargetRecord;
-
-const fixed = (record: TargetRecord): TargetBuilder => {
-  return () => {
-    return record;
-  };
-};
 
 export const TARGETS: Record<TargetId, TargetBuilder> = {
   'react': reactTarget,
-  'next': fixed(nextTarget),
-  'vue': fixed(vueTarget),
-  'nuxt': fixed(nuxtTarget),
-  'svelte': fixed(svelteTarget),
-  'solid': fixed(solidTarget),
-  'angular': fixed(angularTarget),
+  'next': nextTarget,
+  'vue': vueTarget,
+  'nuxt': nuxtTarget,
+  'svelte': svelteTarget,
+  'solid': solidTarget,
+  'angular': angularTarget,
   'astro': astroTarget,
   'webextension': webextensionTarget,
-  'react-native': fixed(reactNativeTarget),
+  'react-native': reactNativeTarget,
 };
 
 export const targetFor = (answers: Answers): TargetRecord => {
