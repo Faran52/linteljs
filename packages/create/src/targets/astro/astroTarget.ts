@@ -1,5 +1,7 @@
 import {
   COMPONENT,
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   DECLARATION_KEY,
   FOLDER_ROUTED,
 } from '../constants';
@@ -108,6 +110,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyleModules('solid'),
       ...astroI18nFiles(),
       ...localeFiles(),
+      COOKIE_UTILS,
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {
         shared: true,
@@ -119,6 +122,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...mockTests(false),
       ...astroI18nTests(),
       LOCALES_TEST,
+      COOKIE_UTILS_TEST,
       {
         target: 'src/lib/utils/currentPathUtils.test.ts',
         covers: 'src/lib/utils/currentPathUtils.ts',

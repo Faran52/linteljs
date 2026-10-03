@@ -16,6 +16,7 @@ import {
   t,
   translateId,
 } from './index';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
 // A region on a regional tag such as zh-TW makes no tag, so the regional case takes a base one.
@@ -67,7 +68,8 @@ describe('i18n', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
+    document.cookie = 'other=; max-age=-1; path=/';
     applyLanguage('en');
     vi.restoreAllMocks();
   });
@@ -85,8 +87,8 @@ describe('i18n', () => {
     const actual = boot();
     expect(actual).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('reads a regional browser language as its own language', () => {
@@ -113,12 +115,13 @@ describe('i18n', () => {
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
-    localStorage.setItem(languageStorageKey, last);
+    document.cookie = 'other=1; path=/';
+    document.cookie = languageCookie(last);
 
     const actual = boot();
     expect(actual).toBe(last);
 
-    localStorage.setItem(languageStorageKey, 'xx');
+    document.cookie = languageCookie('xx');
 
     const actual2 = boot();
     expect(actual2).toBe('en');
@@ -154,7 +157,7 @@ describe('i18n', () => {
     const title = marked('title')?.textContent;
     const picker = pickerOf();
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
@@ -177,8 +180,8 @@ describe('i18n', () => {
     chooseLanguage('xx');
 
     expect(document.documentElement.lang).toBe('en');
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('fills a value from the element, and renders a marked command as code', () => {
@@ -208,7 +211,7 @@ describe('i18n', () => {
     picker.value = 'en';
     picker.dispatchEvent(new Event('change'));
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe('en');
     expect(document.documentElement.lang).toBe('en');
   });

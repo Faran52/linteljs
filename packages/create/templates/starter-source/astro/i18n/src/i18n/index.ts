@@ -5,6 +5,7 @@ import {
   lookupTags,
   resources,
 } from './config';
+import { languageCookie } from './utils/cookieUtils';
 
 export type Language = (typeof languages)[number]['id'];
 
@@ -52,22 +53,31 @@ export const directionOf = (tag: string): 'ltr' | 'rtl' => {
     })?.dir ?? 'ltr';
 };
 
-// The stored choice, then the browser's languages, then English. Nothing detected is stored.
-// Self-contained, `prefixesOf` included: the layout inlines its source, so lang and dir are set before the first paint.
+// The stored cookie, then the browser's languages, then English. Nothing detected is stored. Self-contained, cookie
+// parse and `prefixesOf` included: the pages are static, so this inlined script sets lang and dir before first paint.
 export const bootLanguage = (
   options: readonly LanguageOption[],
   storageKey: string,
   fallback: string,
   prefixesOf: (tag: string) => string[],
 ): void => {
-  const offered = (tag: string | null): tag is string => {
+  const offered = (tag: string | undefined): tag is string => {
     return options
       .some((option) => {
         return option.id === tag;
       });
   };
 
-  const stored = localStorage.getItem(storageKey);
+  const prefix = `${storageKey}=`;
+  const stored = document.cookie
+    .split(';')
+    .map((pair) => {
+      return pair.trim();
+    })
+    .find((pair) => {
+      return pair.startsWith(prefix);
+    })
+    ?.slice(prefix.length);
   const id = offered(stored)
     ? stored
     : navigator.languages
@@ -155,7 +165,7 @@ export const chooseLanguage = (tag: string): void => {
     return;
   }
 
-  localStorage.setItem(languageStorageKey, tag);
+  document.cookie = languageCookie(tag);
   applyLanguage(tag);
 };
 

@@ -214,6 +214,8 @@ const I18N_ONLY_PATHS = [
   'src/i18n/index.ts',
   'src/i18n/index.test.ts',
   'src/i18n/locales.test.ts',
+  'src/i18n/utils/cookieUtils.ts',
+  'src/i18n/utils/cookieUtils.test.ts',
   'src/components/ui/code-text/CodeText.astro',
   ...LANGUAGES
     .map((language) => {
