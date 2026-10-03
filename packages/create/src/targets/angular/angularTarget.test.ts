@@ -122,6 +122,7 @@ const I18N_ONLY_PATHS = [
   'src/components/ui/code-text/code-text.html',
   'src/components/ui/code-text/code-text.spec.ts',
   'src/components/features/app-header/app-header.spec.ts',
+  'src/app/home/home.spec.ts',
   'src/app/about/about.spec.ts',
   'src/app/version/version.spec.ts',
   ...LANGUAGES

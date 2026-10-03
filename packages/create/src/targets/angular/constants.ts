@@ -9,8 +9,6 @@ export const ALWAYS: readonly string[] = [
   'src/app/app.html',
   'src/app/app.config.ts',
   'src/app/app.routes.ts',
-  'src/app/home/home.ts',
-  'src/app/home/home.html',
   'src/components/ui/mark/mark.ts',
   'src/components/ui/mark/mark.html',
   'src/components/ui/button/button.ts',
@@ -43,6 +41,8 @@ export const ACCESSORS: AccessorNames = {
 // Each ships a translated twin under `i18n`.
 export const TRANSLATED: readonly string[] = [
   'src/main.ts',
+  'src/app/home/home.ts',
+  'src/app/home/home.html',
   'src/app/about/about.ts',
   'src/app/about/about.html',
   'src/app/version/version.ts',
@@ -68,6 +68,7 @@ export const I18N_ONLY_SUITES = [
   'src/i18n/index',
   CODE_TEXT,
   'src/components/features/app-header/app-header',
+  'src/app/home/home',
   'src/app/about/about',
   'src/app/version/version',
 ];

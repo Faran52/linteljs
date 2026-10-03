@@ -36,5 +36,6 @@
   "homeLedeVue": "Vue、Vite，以及已经应用的标准。",
   "homeLedeNuxt": "Nuxt、Vue，以及已经应用的标准。",
   "homeLedeSvelte": "Svelte、SvelteKit，以及已经应用的标准。",
-  "homeLedeSolid": "Solid、Vite，以及已经应用的标准。"
+  "homeLedeSolid": "Solid、Vite，以及已经应用的标准。",
+  "homeLedeAngular": "Angular、独立组件，以及已经应用的标准。"
 }

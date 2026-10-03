@@ -36,5 +36,6 @@
   "homeLedeVue": "Vue, Vite and the standard already applied.",
   "homeLedeNuxt": "Nuxt, Vue and the standard already applied.",
   "homeLedeSvelte": "Svelte, SvelteKit and the standard already applied.",
-  "homeLedeSolid": "Solid, Vite and the standard already applied."
+  "homeLedeSolid": "Solid, Vite and the standard already applied.",
+  "homeLedeAngular": "Angular, standalone components and the standard already applied."
 }

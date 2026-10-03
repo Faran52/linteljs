@@ -36,5 +36,6 @@
   "homeLedeVue": "Vue و Vite، والمعيار مطبّق مسبقًا.",
   "homeLedeNuxt": "Nuxt و Vue، والمعيار مطبّق مسبقًا.",
   "homeLedeSvelte": "Svelte و SvelteKit، والمعيار مطبّق مسبقًا.",
-  "homeLedeSolid": "Solid و Vite، والمعيار مطبّق مسبقًا."
+  "homeLedeSolid": "Solid و Vite، والمعيار مطبّق مسبقًا.",
+  "homeLedeAngular": "Angular والمكوّنات المستقلة، والمعيار مطبّق مسبقًا."
 }
