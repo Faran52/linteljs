@@ -24,15 +24,16 @@ for (const sibling of SIBLINGS) {
 
 // A cold run outlasts a hosted runner's six hours. A file goes to the first part matching it.
 const PARTS = {
-  'targets-a': 'src/targets/{react,next}/**',
-  'targets-b': 'src/targets/{svelte,vue}/**',
-  'targets-c': 'src/targets/{solid,webextension}/**',
-  'targets-d': 'src/targets/{react-native,astro,angular}/**',
-  'targets-e': 'src/targets/**',
-  'emitters-a': 'src/emitters/{always,agents}/**',
-  'emitters-b': 'src/emitters/**',
-  'terminal-answers': 'src/{terminal,answers}/**',
-  'rest': 'src/**',
+  'targets-a': 'src/targets/{react,next}/**/*.ts',
+  'targets-b': 'src/targets/{svelte,vue}/**/*.ts',
+  'targets-c': 'src/targets/{solid,webextension}/**/*.ts',
+  'targets-d': 'src/targets/{react-native,astro,angular}/**/*.ts',
+  'targets-e': 'src/targets/**/*.ts',
+  'emitters-a': 'src/emitters/{always,agents}/**/*.ts',
+  'emitters-b': 'src/emitters/**/*.ts',
+  'terminal-answers': 'src/{terminal,answers}/**/*.ts',
+  'config-utils-rings': 'src/{config/**/*,utils/**/*,rings}.ts',
+  'rest': 'src/**/*.ts',
 };
 const PART_NAMES = Object.keys(PARTS);
 
@@ -42,7 +43,7 @@ if (part && !PART_NAMES.includes(part)) {
   throw new Error(`STRYKER_PART "${part}" is not one of ${PART_NAMES.join(', ')}.`);
 }
 
-const partGlob = part ? PARTS[part] : 'src/**';
+const partGlob = part ? PARTS[part] : 'src/**/*.ts';
 const earlierParts = [];
 
 for (const name of PART_NAMES.slice(0, part ? PART_NAMES.indexOf(part) : 0)) {
@@ -69,9 +70,9 @@ const config = {
   coverageAnalysis: 'perTest',
   disableBail: !process.env.CI,
 
-  // All of `src` is 7168 mutants; `--mutate` narrows a run.
+  // All of `src` is 8134 mutants; `--mutate` narrows a run.
   mutate: [
-    `${partGlob}/*.ts`,
+    partGlob,
     '!src/**/*.test.ts',
     '!src/**/types.ts',
     ...earlierParts,

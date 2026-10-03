@@ -144,6 +144,12 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [layers, frameworks, rest]
+    env:
+      STRYKER_PART: ${{ matrix.part }}
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -163,12 +169,12 @@ jobs:
       # Names every mutant not killed, so a timeout is fixable from the run page without the artifact.
       - name: List the mutants not killed
         if: always()
-        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/eslint-config/reports/mutation/mutation.json" "eslint-config"
+        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/eslint-config/reports/mutation/mutation.json" "eslint-config ${{ matrix.part }}"
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: eslint-config-logs
+          name: eslint-config-${{ matrix.part }}-logs
           path: |
             mutation.log
             packages/eslint-config/reports/mutation/mutation.json
@@ -184,7 +190,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [targets-a, targets-b, targets-c, targets-d, targets-e, emitters-a, emitters-b, terminal-answers, rest]
+        part: [targets-a, targets-b, targets-c, targets-d, targets-e, emitters-a, emitters-b, terminal-answers, config-utils-rings, rest]
     env:
       STRYKER_PART: ${{ matrix.part }}
     steps:
