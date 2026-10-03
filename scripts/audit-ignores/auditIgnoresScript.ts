@@ -1,4 +1,4 @@
-// An ignore claims a branch cannot be reached, and two of the first ones written here were wrong.
+// An ignore claims a branch cannot be reached, and the claim can be wrong.
 import { execFileSync } from 'node:child_process';
 import {
   globSync,
