@@ -123,6 +123,11 @@ jobs:
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run mutation --concurrency 2 2>&1 | tee mutation.log
 
+      # Names every mutant not killed, so a timeout is fixable from the run page without the artifact.
+      - name: List the mutants not killed
+        if: always()
+        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/eslint-plugin/reports/mutation/mutation.json" "eslint-plugin ${{ matrix.part }}"
+
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
@@ -138,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -154,6 +159,11 @@ jobs:
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/eslint-config run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      # Names every mutant not killed, so a timeout is fixable from the run page without the artifact.
+      - name: List the mutants not killed
+        if: always()
+        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/eslint-config/reports/mutation/mutation.json" "eslint-config"
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -191,6 +201,11 @@ jobs:
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/create run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      # Names every mutant not killed, so a timeout is fixable from the run page without the artifact.
+      - name: List the mutants not killed
+        if: always()
+        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/create/reports/mutation/mutation.json" "create ${{ matrix.part }}"
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

@@ -40,6 +40,7 @@
     "audit:real": "tsx scripts/audit/real-code/realCodeAudit.ts",
     "audit:options": "tsx scripts/audit/real-code/realCodeAudit.ts --options",
     "audit:negatives": "tsx scripts/audit/false-negatives/falseNegativesAudit.ts",
+    "audit:mutants": "tsx scripts/audit/mutation-summary/mutationSummaryAudit.ts",
     "audit:security": "tsx scripts/audit/security/securityAudit.ts",
     "mutation": "stryker run",
     "compat": "tsx scripts/release/compat-matrix/compatMatrixRelease.ts",
