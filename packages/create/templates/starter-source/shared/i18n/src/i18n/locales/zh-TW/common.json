@@ -34,5 +34,6 @@
   "homeCaption": "保存在 store 中，跨所有頁面共用。",
   "homeLedeNext": "Next、App Router，以及已經套用的標準。",
   "homeLedeVue": "Vue、Vite，以及已經套用的標準。",
-  "homeLedeNuxt": "Nuxt、Vue，以及已經套用的標準。"
+  "homeLedeNuxt": "Nuxt、Vue，以及已經套用的標準。",
+  "homeLedeSvelte": "Svelte、SvelteKit，以及已經套用的標準。"
 }

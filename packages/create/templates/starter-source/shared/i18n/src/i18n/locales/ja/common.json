@@ -34,5 +34,6 @@
   "homeCaption": "ストアに保持され、どのページでも共有されます。",
   "homeLedeNext": "Next、App Router、そしてあらかじめ適用された標準。",
   "homeLedeVue": "Vue、Vite、そしてあらかじめ適用された標準。",
-  "homeLedeNuxt": "Nuxt、Vue、そしてあらかじめ適用された標準。"
+  "homeLedeNuxt": "Nuxt、Vue、そしてあらかじめ適用された標準。",
+  "homeLedeSvelte": "Svelte、SvelteKit、そしてあらかじめ適用された標準。"
 }

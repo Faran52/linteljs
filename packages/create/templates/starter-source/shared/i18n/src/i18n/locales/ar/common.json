@@ -34,5 +34,6 @@
   "homeCaption": "محفوظ في مخزن، عبر كل الصفحات.",
   "homeLedeNext": "Next و App Router، والمعيار مطبّق مسبقًا.",
   "homeLedeVue": "Vue و Vite، والمعيار مطبّق مسبقًا.",
-  "homeLedeNuxt": "Nuxt و Vue، والمعيار مطبّق مسبقًا."
+  "homeLedeNuxt": "Nuxt و Vue، والمعيار مطبّق مسبقًا.",
+  "homeLedeSvelte": "Svelte و SvelteKit، والمعيار مطبّق مسبقًا."
 }

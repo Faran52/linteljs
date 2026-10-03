@@ -11,7 +11,11 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -43,6 +47,8 @@ import { svelteI18nFiles, svelteI18nTests } from './utils/translatedFileUtils';
 
 import type { TargetBuilder } from '../registry';
 import type {
+  StarterFile,
+  StarterTest,
   TargetRecord,
 } from '../types';
 
@@ -128,17 +134,17 @@ export const svelteTarget: TargetBuilder = () => {
         shared: true,
         source: 'public/robots.txt',
       },
-      {
+      ...translated<StarterFile>({
         target: 'src/routes/+page.svelte',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterFile>({
         target: 'src/routes/+page.svelte',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       { target: 'src/components/ui/button/Button.svelte' },
       ...filesAt(FORM_FILES, {
         when: hasForm,
@@ -190,20 +196,20 @@ export const svelteTarget: TargetBuilder = () => {
       ...svelteI18nTests(),
       LOCALES_TEST,
       COOKIE_UTILS_TEST,
-      {
+      ...translated<StarterTest>({
         target: 'src/routes/page.test.ts',
         covers: 'src/routes/+page.svelte',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
+      }),
       // The selector is an `$effect`, which runs only while a component initialises.
-      {
+      ...translated<StarterTest>({
         target: 'src/routes/page.test.ts',
         covers: 'src/routes/+page.svelte',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       {
         target: 'src/routes/about/page.test.ts',
         covers: 'src/routes/about/+page.svelte',

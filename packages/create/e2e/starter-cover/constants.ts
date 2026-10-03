@@ -37,6 +37,8 @@ export const STARTER_CASES: readonly string[] = [
   'next pnpm vitest redux-toolkit tanstack-query zod+es-toolkit+ts-pattern+t3-env',
   'next pnpm vitest tanstack-form tanstack-store zod+es-toolkit+ts-pattern+t3-env',
   'next pnpm vitest languages zod+es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest languages zod+es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest tanstack-store zod+es-toolkit+ts-pattern+t3-env',
   'angular pnpm vitest tanstack-form msw zod+es-toolkit+ts-pattern+t3-env',
   'angular pnpm vitest tanstack-form tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
   'astro pnpm vitest host-none tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
