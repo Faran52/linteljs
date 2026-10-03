@@ -311,10 +311,11 @@ module is a drawer of small helpers rather than one subject, which is why it get
 `composeConfig` passes through), because naming it unasked would make ESLint lint `.astro` files in a project that
 has no parser for them.
 
-The numbers govern this workspace too. Measured on 2026-10-02 the way the rules count, in non-test source: the
-longest file is `create/src/targets/react/reactTarget.ts` at 461 lines, the longest `utils/` module
+The numbers govern this workspace too. Measured on 2026-10-03 the way the rules count, in non-test source: the
+longest file is `create/src/targets/react/reactTarget.ts` at 479 lines, the longest `utils/` module
 `create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 626, and the longest function
-`chain-call-newline`'s `create` at 286, with `base` itself at 278. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
+`create/src/targets/next/nextTarget.ts`'s builder at 299, with `chain-call-newline`'s `create` at 286 and `base`
+itself at 278. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
 the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
 does not state.
 
@@ -435,6 +436,13 @@ extension renders whatever its surfaces are written in. Both take the same `host
 app-shaped (their route unit, typecheck and aliases describe a standalone app) and a host needs the narrow set that
 varies. Svelte's entry there is the bare `@sveltejs/vite-plugin-svelte`, not `sveltekit()`, since a host owns its
 own entry.
+
+Every target exports a builder, `(answers: Answers) => TargetRecord`, that builds its record on each call, even
+where it reads no answer; `targets/registry.ts` maps each id to its builder and emitters reach it only through
+`targetFor`. A record held as a module constant ran its helpers (`translated`, `componentStyles`, `mockTests` and
+the rest) at import, which Stryker counts as static, running every test for each such mutant. Measured on
+2026-10-03 with `--dryRunOnly` over the five `targets-*` parts: 2175 of 3162 mutants static as constants, 509 of
+3171 as builders. What stays static is module-level data.
 
 ### The extension target has three axes, and none is a second target
 

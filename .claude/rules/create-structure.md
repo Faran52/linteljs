@@ -14,7 +14,7 @@ paths:
 
 ```
 answers/    what the user chose. Reads targets/ for the slot check.
-targets/    what linteljs knows: one record per target, the registry, the naming policy. Reads utils/, config/.
+targets/    what linteljs knows: one record builder per target, the registry, the naming policy. Reads utils/, config/.
 utils/      what more than one ring reads. Reads config/'s types.
 config/     data only: the types, constants and tables no ring owns. Reads nothing.
 emitters/   answers + targets into file text. Reaches inward only.
@@ -34,6 +34,9 @@ pipeline/   the stage machine, sync, and the passes over written source.
   `answers/registry.test.ts` holds `Answers` to one field per record.
 - **The emitters hold no `switch (target)`**: the target record carries the difference, so
   `targets/<id>/<id>Target.ts` is the file that grows.
+- **A target is a builder**, `(answers: Answers) => TargetRecord`, that builds its record on each call, never a
+  module-level record: `targets/registry.ts` maps each id to it and emitters read it through `targetFor`. Its
+  suite calls it inside each `it`. `docs/DESIGN.md` (Targets) carries why.
 
 ## One shape for every ring
 
