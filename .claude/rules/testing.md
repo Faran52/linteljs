@@ -16,6 +16,9 @@ workspace differs.
 - **Comments are minimal.** A short why, or none, where the reason is not on the screen. Never narrate.
 - **No DOM, no jest-dom, no RTL.** A test asserts what a rule reports, what a fixer emits, and what an
   emitter writes.
+- **A suite builds its subject inside `it` or `beforeEach`**, never at file top level, in a `describe` body or
+  in a `beforeAll`. Stryker counts code that runs outside a test as static and runs every test for each such
+  mutant. An `it.each` table holds data, not a call into `src`; a `src` module-level constant is data, not a call.
 - **Coverage is 100** on statements, branches, functions and lines in all three packages, set in the root
   `vitest.config.ts`. Never lower a threshold. A branch a type demands and reality cannot reach is dead code:
   delete it rather than cover it.
