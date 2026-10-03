@@ -48,7 +48,7 @@ const freePort = async (): Promise<string> => {
 };
 
 // `check` built it. The servers without a port flag (next, nuxt, react-router-serve) read `PORT`.
-export const serveArgs = (project: string, port: string): string[] => {
+const serveArgs = (project: string, port: string): string[] => {
   const manifest = readFileSync(join(project, 'package.json'), 'utf8');
   const { scripts = {} } = parsePackageJson(manifest);
   const script = scripts['preview'] ?? scripts['start'] ?? scripts['dev'] ?? '';

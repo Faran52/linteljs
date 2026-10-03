@@ -174,9 +174,8 @@ const publishedAs = (version: string, publish: () => void): void => {
   }
 };
 
-// Exported apart from `setup`: `collectBuildsScript.ts` needs the same registry and CLI.
 // `E2E_UPSTREAM` stands in for npmjs where only a mirror is reachable.
-export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
+const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
   const lines = [
     `storage: ${storage}`,
     'uplinks:',

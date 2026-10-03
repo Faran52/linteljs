@@ -49,7 +49,7 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
   return source;
 };
 
-export const RECORD_MODULE = 'src/config/linteljs.ts';
+const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
   const record = emitLinteljsRecord(answers, name);

@@ -12,8 +12,8 @@ import { emitted } from '../../utils/artifactUtils';
 
 import { LANGUAGE_NAMES, LOOKUP_TAGS } from './constants';
 
-export const I18N_CONFIG = 'src/i18n/config.ts';
-export const INLANG_SETTINGS = 'project.inlang/settings.json';
+const I18N_CONFIG = 'src/i18n/config.ts';
+const INLANG_SETTINGS = 'project.inlang/settings.json';
 
 const identifierOf = (language: Language): string => {
   return language

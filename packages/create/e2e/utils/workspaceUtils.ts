@@ -32,7 +32,7 @@ const agentOf = (pm: PackageManager, version: string): string => {
   return `${pm}/${version} npm/? node/? e2e`;
 };
 
-export const versionFrom = (pm: PackageManager, output: string): string => {
+const versionFrom = (pm: PackageManager, output: string): string => {
   // The first line: npm appends a new-version notice on stderr.
   const [version = ''] = output
     .trim()
