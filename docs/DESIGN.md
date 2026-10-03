@@ -1691,7 +1691,7 @@ an inner ring importing it is a cycle, which `import-x/no-cycle` in `base` alrea
 workspace config rather than a layer because the ring names are this package's, not the standard's, and it is scoped
 to source: a test arranges and asserts across rings by nature. The inner order alone also holds in the suites,
 through `@linteljs/workspace/create-rings-tests`, with one exemption: a `targets/` suite may take its answer fixtures
-(`DEFAULT_ANSWERS`, `ANSWERS`) from the `answers/` barrel and nothing deeper. Five suites do; the records under test
+(`DEFAULT_ANSWERS`, `ANSWERS`) from the `answers/` barrel and nothing deeper. Eleven suites do; the records under test
 are built from answers, and a copy of the defaults in `__mocks__/` would be a second spelling of them.
 
 ### `@linteljs/workspace/create-worlds`
