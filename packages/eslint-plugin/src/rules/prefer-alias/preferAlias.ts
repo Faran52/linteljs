@@ -1,3 +1,4 @@
+import { statSync } from 'node:fs';
 import { posix } from 'node:path';
 
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
@@ -51,6 +52,11 @@ interface Typed {
 interface SourceHolder {
   source?: SourceNode | null | undefined;
 }
+
+// tsc resolves no `.vue` file without vue-tsc, so a file at the exact path stands in for its resolution.
+const landingOf = (resolved: string | undefined, path: string): string | undefined => {
+  return resolved ?? (statSync(path, { throwIfNoEntry: false })?.isFile() === true ? path : undefined);
+};
 
 const typedOf = ({ parserServices }: ServicesHost): Typed | undefined => {
   const { program } = parserServices;
@@ -142,14 +148,9 @@ export const preferAlias = createRule('prefer-alias', {
     const checkSource = (node: SourceNode, specifier: string): void => {
       const tsNode = typed.nodeOf(node);
       const file = tsNode.getSourceFile().fileName;
-      // What tsc resolved the specifier to, or nothing to rewrite.
+      // What tsc resolved the specifier to, if anything.
       const [declaration] = checker.getSymbolAtLocation(tsNode)?.declarations ?? [];
       const resolved = declaration?.getSourceFile().fileName;
-
-      if (resolved === undefined) {
-        return;
-      }
-
       const own = aliasHolding(aliases, file);
       const exempt = aliasExempt
         ?.some((glob) => {
@@ -162,7 +163,7 @@ export const preferAlias = createRule('prefer-alias', {
         const path = posix.join(posix.dirname(file), specifier);
         const alias = exempt ? undefined : aliasHolding(aliases, path);
 
-        if (!alias || alias === own) {
+        if (!alias || alias === own || landingOf(resolved, path) === undefined) {
           return;
         }
 
@@ -178,12 +179,18 @@ export const preferAlias = createRule('prefer-alias', {
 
       const alias: Alias | undefined = pinned.includes(specifier) ? undefined : aliasMatching(aliases, specifier);
 
-      // A later fallback in the `paths` entry resolved it, so the first one is not where it points.
-      if (!alias || !resolved.startsWith(`${alias.directory}/`)) {
+      if (!alias) {
         return;
       }
 
       const path = pathOf(alias, specifier);
+      const landed = landingOf(resolved, path);
+
+      // A later fallback in the `paths` entry resolved it, so the first one is not where it points.
+      if (landed?.startsWith(`${alias.directory}/`) !== true) {
+        return;
+      }
+
       const replacement = relativeBetween(file, path);
 
       if (exempt) {

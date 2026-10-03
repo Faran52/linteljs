@@ -968,6 +968,13 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: join(ALIASED_PROJECT, 'src', 'routes.ts'),
     project: ALIASED_PROJECT,
   },
+  {
+    name: 'a .vue import tsc does not resolve, across aliased directories',
+    code: "import Badge from '../components/ui/Badge.vue';\n\nexport { Badge };\n",
+    typescript: true,
+    filename: join(ALIASED_PROJECT, 'src', 'app', 'page.ts'),
+    project: ALIASED_PROJECT,
+  },
 ];
 
 const linter = new Linter();

@@ -112,6 +112,16 @@ typedRuleTester.run('prefer-alias', preferAlias, {
       filename: at('routes.ts'),
     },
     {
+      // Unresolved by tsc and on no disk, so nothing proves where it lands.
+      code: "import Missing from '../components/ui/Missing.vue';",
+      filename: at('app/page.ts'),
+    },
+    {
+      // A directory with no index tsc reads is not a file to stand in for one.
+      code: "import { value } from '../lib/utils';",
+      filename: at('app/page.ts'),
+    },
+    {
       // Neither a template nor a non-string literal is a specifier to read.
       code: 'export const load = () => [import(`../config/env`), import(42)];',
       filename: at('app/page.ts'),
@@ -136,6 +146,19 @@ typedRuleTester.run('prefer-alias', preferAlias, {
     },
   ],
   invalid: [
+    {
+      // tsc resolves no `.vue` without vue-tsc: the file on disk stands in.
+      code: "import Badge from '../components/ui/Badge.vue';",
+      filename: at('app/page.ts'),
+      output: "import Badge from '@ui/Badge.vue';",
+      errors: [{ messageId: 'preferAlias' }],
+    },
+    {
+      code: "import Badge from '@ui/Badge.vue';",
+      filename: at('components/ui/button.ts'),
+      output: "import Badge from './Badge.vue';",
+      errors: [{ messageId: 'preferRelative' }],
+    },
     {
       code: "import { value } from './config/env';",
       filename: at('routes.ts'),
