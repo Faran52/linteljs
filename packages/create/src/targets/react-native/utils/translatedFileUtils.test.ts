@@ -26,6 +26,7 @@ const STATUS_PAGE = 'src/components/features/status-page/StatusPage';
 const ENGLISH_FILES = [
   'true:src/config/statuses.ts',
   'true:src/config/standard.ts',
+  'src/app/index.tsx',
   'src/app/about.tsx',
   'src/app/version.tsx',
   `${STATUS_PAGE}.tsx`,
@@ -89,6 +90,7 @@ describe('reactNativeI18nFiles', () => {
 
 describe('reactNativeI18nTests', () => {
   const SUITES = [
+    'src/app-index.test.tsx',
     'src/app-about.test.tsx',
     'src/app-version.test.tsx',
     'src/app-not-found.test.tsx',
@@ -114,6 +116,8 @@ describe('reactNativeI18nTests', () => {
     expect(written).toEqual(expected);
 
     const coveredFiles = [
+      'src/app/index.tsx',
+      'src/app/index.tsx',
       'src/app/about.tsx',
       'src/app/about.tsx',
       'src/app/version.tsx',

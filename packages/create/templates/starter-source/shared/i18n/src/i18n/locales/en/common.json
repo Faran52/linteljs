@@ -38,5 +38,6 @@
   "homeLedeSvelte": "Svelte, SvelteKit and the standard already applied.",
   "homeLedeSolid": "Solid, Vite and the standard already applied.",
   "homeLedeAngular": "Angular, standalone components and the standard already applied.",
-  "homeLedeAstro": "Astro, rendered on the server, and the standard already applied."
+  "homeLedeAstro": "Astro, rendered on the server, and the standard already applied.",
+  "homeLedeExpo": "Expo, expo-router and the standard already applied."
 }

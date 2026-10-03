@@ -76,8 +76,10 @@ describe('reactNativeTarget', () => {
 const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
+  'src/app/index.tsx',
   'src/app/about.tsx',
   'src/app/version.tsx',
+  'src/app-index.test.tsx',
   'src/app-about.test.tsx',
   'src/app-version.test.tsx',
   'src/app-not-found.test.tsx',

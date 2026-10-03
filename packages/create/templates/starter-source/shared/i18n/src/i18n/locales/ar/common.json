@@ -38,5 +38,6 @@
   "homeLedeSvelte": "Svelte و SvelteKit، والمعيار مطبّق مسبقًا.",
   "homeLedeSolid": "Solid و Vite، والمعيار مطبّق مسبقًا.",
   "homeLedeAngular": "Angular والمكوّنات المستقلة، والمعيار مطبّق مسبقًا.",
-  "homeLedeAstro": "Astro والعرض على الخادم، والمعيار مطبّق مسبقًا."
+  "homeLedeAstro": "Astro والعرض على الخادم، والمعيار مطبّق مسبقًا.",
+  "homeLedeExpo": "Expo و expo-router، والمعيار مطبّق مسبقًا."
 }

@@ -38,5 +38,6 @@
   "homeLedeSvelte": "Svelte、SvelteKit，以及已经应用的标准。",
   "homeLedeSolid": "Solid、Vite，以及已经应用的标准。",
   "homeLedeAngular": "Angular、独立组件，以及已经应用的标准。",
-  "homeLedeAstro": "Astro、服务器端渲染，以及已经应用的标准。"
+  "homeLedeAstro": "Astro、服务器端渲染，以及已经应用的标准。",
+  "homeLedeExpo": "Expo、expo-router，以及已经应用的标准。"
 }

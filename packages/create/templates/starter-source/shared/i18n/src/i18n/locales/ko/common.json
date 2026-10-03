@@ -38,5 +38,6 @@
   "homeLedeSvelte": "Svelte, SvelteKit, 그리고 이미 적용된 표준.",
   "homeLedeSolid": "Solid, Vite, 그리고 이미 적용된 표준.",
   "homeLedeAngular": "Angular, 독립형 컴포넌트, 그리고 이미 적용된 표준.",
-  "homeLedeAstro": "Astro, 서버에서 렌더링, 그리고 이미 적용된 표준."
+  "homeLedeAstro": "Astro, 서버에서 렌더링, 그리고 이미 적용된 표준.",
+  "homeLedeExpo": "Expo, expo-router, 그리고 이미 적용된 표준."
 }

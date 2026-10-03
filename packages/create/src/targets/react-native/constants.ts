@@ -5,7 +5,6 @@ import type { AccessorNames } from '../utils/mockUtils';
 export const ALWAYS: readonly string[] = [
   'expo-env.d.ts',
   'src/typings/assets.d.ts',
-  'src/app/index.tsx',
   'src/app/+not-found.tsx',
   'src/components/features/crash-page/CrashPage.tsx',
   'src/components/ui/mark/Mark.tsx',
@@ -40,6 +39,7 @@ const LANGUAGE_SELECT = 'src/components/features/language-select/LanguageSelect'
 const STATUS_PAGE = 'src/components/features/status-page/StatusPage';
 
 export const TRANSLATED = [
+  'src/app/index.tsx',
   'src/app/about.tsx',
   'src/app/version.tsx',
   `${STATUS_PAGE}.tsx`,
@@ -49,6 +49,7 @@ export const I18N_ONLY_FILES = ['src/i18n/index.ts', `${LANGUAGE_SELECT}.tsx`];
 
 // Each suite, and the file it covers.
 export const TRANSLATED_SUITES = [
+  ['src/app-index.test.tsx', 'src/app/index.tsx'],
   ['src/app-about.test.tsx', 'src/app/about.tsx'],
   ['src/app-version.test.tsx', 'src/app/version.tsx'],
   ['src/app-not-found.test.tsx', 'src/app/+not-found.tsx'],

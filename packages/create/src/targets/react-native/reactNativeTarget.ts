@@ -158,10 +158,6 @@ export const reactNativeTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...rtkTests(),
       {
-        target: 'src/app-index.test.tsx',
-        covers: 'src/app/index.tsx',
-      },
-      {
         target: 'src/components/features/crash-page/CrashPage.test.tsx',
         covers: 'src/components/features/crash-page/CrashPage.tsx',
       },
