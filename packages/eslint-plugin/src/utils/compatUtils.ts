@@ -27,10 +27,6 @@ export interface CompatSourceCode {
   getDeclaredVariables?(node: RuleNode): Scope.Variable[];
 }
 
-const compatCode = (sourceCode: SourceCode): CompatSourceCode => {
-  return sourceCode;
-};
-
 const required = <T>(value: T | undefined, name: string): T => {
   if (value === undefined) {
     throw new Error(`@linteljs/eslint-plugin needs ${name}, which this version of ESLint does not provide`);
@@ -83,19 +79,19 @@ export const declaredVariablesIn = (
 };
 
 export const scopeOf = (context: CompatContext, node: RuleNode): Scope.Scope => {
-  const code = compatCode(sourceCodeOf(context));
+  const code: CompatSourceCode = sourceCodeOf(context);
 
   return scopeIn(code, context, node);
 };
 
 export const ancestorsOf = (context: CompatContext, node: Ancestor): Ancestor[] => {
-  const code = compatCode(sourceCodeOf(context));
+  const code: CompatSourceCode = sourceCodeOf(context);
 
   return ancestorsIn(code, context, node);
 };
 
 export const declaredVariablesOf = (context: CompatContext, node: RuleNode): Scope.Variable[] => {
-  const code = compatCode(sourceCodeOf(context));
+  const code: CompatSourceCode = sourceCodeOf(context);
 
   return declaredVariablesIn(code, context, node);
 };
