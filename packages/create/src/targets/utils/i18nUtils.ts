@@ -2,30 +2,24 @@ import { LANGUAGES } from '@config/constants';
 
 import { localesOf } from '@utils/answerUtils';
 
-import { hasI18n } from './gateUtils';
+import { hasI18n, starterApplies } from './gateUtils';
 
 import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
 
-const always = (): boolean => {
-  return true;
-};
-
 // A file i18n rewrites ships as a pair that exclude each other, its `i18n` asset beside its base's.
 export const translated = <T extends StarterFile | StarterTest>(file: T): T[] => {
-  const when = file.when ?? always;
-
   const variants: T[] = [
     {
       ...file,
       when: (answers: Answers) => {
-        return when(answers) && !hasI18n(answers);
+        return starterApplies(file, answers) && !hasI18n(answers);
       },
     },
     {
       ...file,
       when: (answers: Answers) => {
-        return when(answers) && hasI18n(answers);
+        return starterApplies(file, answers) && hasI18n(answers);
       },
       variant: file.variant === undefined ? 'i18n' : `${file.variant}-i18n`,
     },

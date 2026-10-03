@@ -9,6 +9,7 @@ import {
 import {
   frameworkRouteFiles,
   frameworkRouteTests,
+  hasRouter,
   isFrameworkMode,
 } from './frameworkRouteUtils';
 
@@ -41,6 +42,16 @@ describe('isFrameworkMode', () => {
 
     expect(framework).toBe(true);
     expect(declarative).toBe(false);
+  });
+});
+
+describe('hasRouter', () => {
+  it('is any router at all', () => {
+    const routed = hasRouter(answersFor(FRAMEWORK));
+    const unrouted = hasRouter(answersFor({ target: 'react' }));
+
+    expect(routed).toBe(true);
+    expect(unrouted).toBe(false);
   });
 });
 

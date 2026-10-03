@@ -45,21 +45,17 @@ import {
 import {
   frameworkRouteFiles,
   frameworkRouteTests,
+  hasRouter,
   isFrameworkMode,
 } from './utils/frameworkRouteUtils';
 import { reactI18nFiles, reactI18nTests } from './utils/translatedFileUtils';
 
-import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type {
   StarterFile,
   StarterTest,
   TargetRecord,
 } from '../types';
-
-const hasRouter = (answers: Answers): boolean => {
-  return answers.router !== undefined;
-};
 
 const reactStarterTests = (): StarterTest[] => {
   const tests: StarterTest[] = [

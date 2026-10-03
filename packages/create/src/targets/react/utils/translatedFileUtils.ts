@@ -1,22 +1,13 @@
-import { hasI18n } from '../../utils/gateUtils';
+import { hasForm, hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
 import { ALWAYS_PAGES, CONTACT_PAGE } from '../constants';
 
-import { isFrameworkMode } from './frameworkRouteUtils';
+import { hasRouter, isFrameworkMode } from './frameworkRouteUtils';
 
-import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../../types';
 
 const HEADER = 'src/components/features/app-header/AppHeader.tsx';
 const LANGUAGE_SELECT = 'src/components/features/language-select/LanguageSelect.tsx';
-
-const hasRouter = (answers: Answers): boolean => {
-  return answers.router !== undefined;
-};
-
-const hasForm = (answers: Answers): boolean => {
-  return answers.form !== undefined;
-};
 
 // What i18n rewrites in the React starter, each as the pair `translated` makes.
 export const reactI18nFiles = (): StarterFile[] => {
