@@ -24,6 +24,7 @@ const writtenUnder = (files: (StarterFile | StarterTest)[], answers: Answers): s
 const ENGLISH_FILES = [
   'true:src/config/statuses.ts',
   'true:src/config/standard.ts',
+  'src/app.d.ts',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',
   'src/components/features/app-header/AppHeader.svelte',
@@ -51,6 +52,8 @@ describe('svelteI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.svelte@i18n',
       'src/components/ui/code-text/CodeText.svelte@i18n',
       'src/i18n/index.ts@i18n',
+      'src/hooks.server.ts@i18n',
+      'src/routes/+layout.server.ts@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -114,12 +117,16 @@ describe('svelteI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.ts@i18n',
       'src/components/ui/code-text/CodeText.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
+      'src/hooks.server.test.ts@i18n',
+      'src/routes/layout.server.test.ts@i18n',
     ];
     expect(written).toEqual(expected);
 
     expect(covers).toContain('src/routes/+layout.svelte');
     expect(covers).toContain('src/components/ui/code-text/CodeText.svelte');
     expect(covers).toContain('src/i18n/index.ts');
+    expect(covers).toContain('src/hooks.server.ts');
+    expect(covers).toContain('src/routes/+layout.server.ts');
   });
 
   it('keeps the English suites otherwise', () => {

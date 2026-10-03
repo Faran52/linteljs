@@ -1,15 +1,12 @@
 import { createRawSnippet } from 'svelte';
+import { page } from '$app/state';
 
 import { render, screen } from '@testing-library/svelte';
 
 import { NAME } from '@config/linteljs';
 
 import { applyLanguage } from '@i18n';
-import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '@i18n/config';
+import { languages, resources } from '@i18n/config';
 
 import Layout from './+layout.svelte';
 
@@ -27,9 +24,7 @@ const routed = createRawSnippet(() => {
 
 describe('layout', () => {
   afterEach(() => {
-    localStorage.clear();
     applyLanguage('en');
-    vi.restoreAllMocks();
   });
 
   it('names the project and links every page, around what it routes', () => {
@@ -57,24 +52,12 @@ describe('layout', () => {
     expect(ariaCurrentAttribute).toBeNull();
   });
 
-  it('switches to a stored choice once mounted', async () => {
-    localStorage.setItem(languageStorageKey, last);
+  it('renders the language the server detected', () => {
+    Object.assign(page, { data: { language: last } });
     render(Layout, { children: routed });
 
-    const about = await screen.findByRole('link', { name: resources[last].common.about });
+    const about = screen.getByRole('link', { name: resources[last].common.about });
 
     expect(about).toBeTruthy();
-    expect(document.documentElement.lang).toBe(last);
-  });
-
-  it('follows the browser once mounted, and stores nothing', async () => {
-    vi.spyOn(navigator, 'languages', 'get').mockReturnValue([last]);
-    render(Layout, { children: routed });
-
-    const label = await screen.findByText(resources[last].common.starterLabel);
-
-    expect(label).toBeTruthy();
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
   });
 });

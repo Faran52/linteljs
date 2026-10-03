@@ -1,14 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { page } from '$app/state';
 
   import { PAGES } from '@config/routes';
 
-  import {
-    applyLanguage,
-    detectLanguage,
-    m,
-  } from '@i18n';
+  import { locale, m } from '@i18n';
+  import { fallbackLanguage } from '@i18n/config';
 
   import LanguageSelect from '../language-select/LanguageSelect.svelte';
 
@@ -20,10 +16,8 @@
 
   const { name }: Props = $props();
 
-  // After hydration, so the server's English and the first client render agree.
-  onMount(() => {
-    applyLanguage(detectLanguage());
-  });
+  // Before the first message renders, on the server and in hydration alike, so the two agree.
+  locale.set(page.data.language ?? fallbackLanguage);
 </script>
 
 <!-- Real links: SvelteKit routes by URL. -->

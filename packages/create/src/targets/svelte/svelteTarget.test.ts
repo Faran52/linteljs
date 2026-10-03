@@ -77,6 +77,7 @@ const FORM_I18N: readonly Condition[] = [{
 const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
+  'src/app.d.ts',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',
   'src/routes/layout.test.ts',
@@ -94,6 +95,12 @@ const I18N_ONLY_PATHS = [
   'src/i18n/index.ts',
   'src/i18n/index.test.ts',
   'src/i18n/locales.test.ts',
+  'src/i18n/utils/cookieUtils.ts',
+  'src/i18n/utils/cookieUtils.test.ts',
+  'src/hooks.server.ts',
+  'src/hooks.server.test.ts',
+  'src/routes/+layout.server.ts',
+  'src/routes/layout.server.test.ts',
   ...LANGUAGES
     .map((language) => {
       return `src/i18n/locales/${language}/common.json`;

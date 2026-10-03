@@ -6,21 +6,21 @@ import { overwriteGetLocale } from '../../.svelte-kit/paraglide/runtime.js';
 import {
   fallbackLanguage,
   languages,
-  languageStorageKey,
   lookupTags,
 } from './config';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 export type Language = (typeof languages)[number]['id'];
 
 export { m };
 
-const isLanguage = (tag: string | null): tag is Language => {
+const isLanguage = (tag: string | undefined): tag is Language => {
   return languages.some((option) => {
     return option.id === tag;
   });
 };
 
-// English on the server and through hydration, so the first client render matches the server's.
+// Set from the request's language before each render, on the server and in hydration alike.
 export const locale = writable<Language>(fallbackLanguage);
 
 // Read as a signal, so every rendered message follows the language.
@@ -37,15 +37,19 @@ export const directionOf = (language: string): 'ltr' | 'rtl' => {
     })?.dir ?? 'ltr';
 };
 
-// The stored choice, then the browser's languages, then English. Nothing detected is stored.
-export const detectLanguage = (): Language => {
-  const stored = localStorage.getItem(languageStorageKey);
+// The stored choice, then the reader's languages, then English. Nothing detected is stored.
+// The server passes its request's `Cookie` and `Accept-Language`; the browser reads its own.
+export const detectLanguage = (
+  cookies: string = document.cookie,
+  preferred: readonly string[] = navigator.languages,
+): Language => {
+  const stored = storedLanguage(cookies);
 
   if (isLanguage(stored)) {
     return stored;
   }
 
-  return navigator.languages
+  return preferred
     .flatMap(lookupTags)
     .find(isLanguage) ?? fallbackLanguage;
 };
@@ -64,6 +68,6 @@ export const chooseLanguage = (language: string): void => {
     return;
   }
 
-  localStorage.setItem(languageStorageKey, language);
+  document.cookie = languageCookie(language);
   applyLanguage(language);
 };

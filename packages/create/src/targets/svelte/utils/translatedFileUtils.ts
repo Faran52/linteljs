@@ -1,7 +1,11 @@
 import { TRANSLATED_CONFIGS } from '../../constants';
 import { hasForm, hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
-import { I18N_ONLY, TRANSLATED } from '../constants';
+import {
+  I18N_ONLY,
+  I18N_ONLY_SUITES,
+  TRANSLATED,
+} from '../constants';
 
 import type { StarterFile, StarterTest } from '../../types';
 
@@ -11,6 +15,8 @@ const I18N_ONLY_FILES = [
       return `${component}.svelte`;
     }),
   'src/i18n/index.ts',
+  'src/hooks.server.ts',
+  'src/routes/+layout.server.ts',
 ];
 
 // Each translated suite and the component it covers.
@@ -77,12 +83,17 @@ export const svelteI18nTests = (): StarterTest[] => {
 
         return test;
       }),
-    {
-      target: 'src/i18n/index.test.ts',
-      covers: 'src/i18n/index.ts',
-      when: hasI18n,
-      variant: 'i18n',
-    },
+    ...I18N_ONLY_SUITES
+      .map(([target, covers]): StarterTest => {
+        const test: StarterTest = {
+          target,
+          covers,
+          when: hasI18n,
+          variant: 'i18n',
+        };
+
+        return test;
+      }),
   ];
 
   return tests;

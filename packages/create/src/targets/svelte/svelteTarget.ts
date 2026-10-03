@@ -1,6 +1,8 @@
 import { hasLibrary, hasTests } from '@utils/answerUtils';
 
 import {
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
   PARTS,
@@ -99,6 +101,7 @@ export const svelteTarget: TargetRecord = {
     ...accessorFiles(ACCESSORS),
     ...svelteI18nFiles(),
     ...localeFiles(),
+    COOKIE_UTILS,
     // Svelte's query bindings read their client out of context, which needs a component.
     ...QUERY_CONTEXT_MOCKS
       .map((target): StarterFile => {
@@ -238,6 +241,7 @@ export const svelteTarget: TargetRecord = {
     ...accessorTests(ACCESSORS),
     ...svelteI18nTests(),
     LOCALES_TEST,
+    COOKIE_UTILS_TEST,
     {
       target: 'src/routes/page.test.ts',
       covers: 'src/routes/+page.svelte',

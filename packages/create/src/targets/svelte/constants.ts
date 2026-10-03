@@ -3,7 +3,6 @@ import type { AccessorNames } from '../utils/mockUtils';
 
 export const ALWAYS: readonly string[] = [
   'src/app.html',
-  'src/app.d.ts',
   'src/routes/+error.svelte',
   'src/components/ui/mark/Mark.svelte',
 ];
@@ -15,6 +14,7 @@ export const SHARED: readonly string[] = [
 
 // Each ships a translated twin.
 export const TRANSLATED: readonly string[] = [
+  'src/app.d.ts',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',
   'src/components/features/app-header/AppHeader.svelte',
@@ -26,6 +26,13 @@ export const I18N_ONLY: readonly string[] = [
   'src/components/features/language-select/LanguageSelect',
   'src/components/ui/code-text/CodeText',
 ];
+
+// The request's language, detected on the server, and the suite of each.
+export const I18N_ONLY_SUITES = [
+  ['src/i18n/index.test.ts', 'src/i18n/index.ts'],
+  ['src/hooks.server.test.ts', 'src/hooks.server.ts'],
+  ['src/routes/layout.server.test.ts', 'src/routes/+layout.server.ts'],
+] as const;
 
 export const ACCESSORS: AccessorNames = {
   directory: 'src/lib/hooks',

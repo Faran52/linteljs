@@ -8,6 +8,7 @@ import {
 
 import { applyLanguage, directionOf } from '@i18n';
 import { languages, languageStorageKey } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import LanguageSelect from './LanguageSelect.svelte';
 
@@ -15,7 +16,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('LanguageSelect', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     applyLanguage('en');
   });
 
@@ -56,7 +57,7 @@ describe('LanguageSelect', () => {
 
     expect(select.value).toBe(last);
     expect(select.className).toBe('tab');
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
