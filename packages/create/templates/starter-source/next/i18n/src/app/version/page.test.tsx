@@ -8,7 +8,11 @@ import { ANSWERS, STACK } from '@config/linteljs';
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 import { chooseLanguage } from '@i18n';
-import { languages, resources } from '@i18n/config';
+import {
+  languages,
+  languageStorageKey,
+  resources,
+} from '@i18n/config';
 
 import VersionPage from './page';
 
@@ -16,7 +20,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('the version route', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
   });
 
   it('renders every recorded row of the stack', () => {

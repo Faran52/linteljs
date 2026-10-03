@@ -11,22 +11,23 @@ import { NextIntlClientProvider } from 'next-intl';
 import {
   applyDocumentDirection,
   detectLanguage,
+  type Language,
   subscribeLanguage,
 } from '@i18n';
 import { fallbackLanguage, resources } from '@i18n/config';
 
 export interface I18nProviderProps {
   readonly children: ReactNode;
+  // What the server detected from the request, so hydration renders what it rendered.
+  readonly language?: Language;
 }
 
-const serverLanguage = (): typeof fallbackLanguage => {
-  return fallbackLanguage;
-};
-
-// The server has neither the reader's storage nor their browser, so it renders English and the client
-// switches once hydrated, which React does without a mismatch.
-export const I18nProvider = ({ children }: I18nProviderProps): ReactNode => {
-  const language = useSyncExternalStore(subscribeLanguage, detectLanguage, serverLanguage);
+export const I18nProvider = ({ children, language: initial = fallbackLanguage }: I18nProviderProps): ReactNode => {
+  const language = useSyncExternalStore(subscribeLanguage, () => {
+    return detectLanguage();
+  }, () => {
+    return initial;
+  });
 
   useEffect(() => {
     applyDocumentDirection(language);

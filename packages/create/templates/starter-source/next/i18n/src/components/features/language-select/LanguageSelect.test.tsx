@@ -7,6 +7,7 @@ import {
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 import { languages, languageStorageKey } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { LanguageSelect } from './LanguageSelect';
 
@@ -14,7 +15,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('LanguageSelect', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
   });
 
   it('offers every language under its own name', () => {
@@ -41,7 +42,7 @@ describe('LanguageSelect', () => {
 
     const select = screen.getByRole<HTMLSelectElement>('combobox');
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     expect(select.value).toBe(last);
     expect(select.className).toBe('tab');

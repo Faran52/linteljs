@@ -13,6 +13,7 @@ import {
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { languageCookie } from '@i18n/utils/cookieUtils';
 
 import { I18nProvider } from './I18nProvider';
 
@@ -28,11 +29,11 @@ const Home = (): ReactNode => {
 
 describe('I18nProvider', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
   });
 
   it('renders the stored choice in the browser, and follows a new one', () => {
-    localStorage.setItem(languageStorageKey, last);
+    document.cookie = languageCookie(last);
     render(<I18nProvider><Home /></I18nProvider>);
 
     const element = screen.getByText(resources[last].common.home);
@@ -48,8 +49,16 @@ describe('I18nProvider', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
-  it('renders English on the server, whatever the reader stored', () => {
-    localStorage.setItem(languageStorageKey, last);
+  it('renders the language the server detected, whatever the browser stored', () => {
+    document.cookie = languageCookie('en');
+
+    const html = renderToString(<I18nProvider language={last}><Home /></I18nProvider>);
+
+    expect(html).toBe(`<p>${resources[last].common.home}</p>`);
+  });
+
+  it('renders English on the server when it is given no language', () => {
+    document.cookie = languageCookie(last);
 
     const html = renderToString(<I18nProvider><Home /></I18nProvider>);
 

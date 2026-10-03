@@ -1,4 +1,5 @@
 import { languages, languageStorageKey } from './config';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 import {
   applyDocumentDirection,
   chooseLanguage,
@@ -20,7 +21,7 @@ const browserSpeaks = (tags: string[]): void => {
 
 describe('i18n', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     vi.restoreAllMocks();
   });
 
@@ -36,8 +37,8 @@ describe('i18n', () => {
 
     const language = detectLanguage();
     expect(language).toBe(last);
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('reads a regional browser language as its own language', () => {
@@ -56,15 +57,26 @@ describe('i18n', () => {
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
-    localStorage.setItem(languageStorageKey, last);
+    document.cookie = languageCookie(last);
 
     const language = detectLanguage();
     expect(language).toBe(last);
 
-    localStorage.setItem(languageStorageKey, 'xx');
+    document.cookie = languageCookie('xx');
 
     const language2 = detectLanguage();
     expect(language2).toBe('en');
+  });
+
+  it('reads a request cookie and languages in place of the browser', () => {
+    browserSpeaks(['fr-FR']);
+    const cookies = languageCookie(base);
+
+    const language = detectLanguage(cookies, []);
+    expect(language).toBe(base);
+
+    const language2 = detectLanguage('', [last]);
+    expect(language2).toBe(last);
   });
 
   it('stores a choice and tells each listener, until it unsubscribes', () => {
@@ -79,7 +91,7 @@ describe('i18n', () => {
 
     const expected = [last];
     expect(heard).toEqual(expected);
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe('en');
   });
 

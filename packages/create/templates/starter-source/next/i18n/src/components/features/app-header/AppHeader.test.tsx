@@ -13,6 +13,7 @@ import {
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { pathnameMock } from '@mocks/setupTests';
 
@@ -22,7 +23,7 @@ const last = languages.at(-1)?.id ?? 'en';
 
 describe('AppHeader', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
   });
 
   it('names the project and links every page the route list names', () => {
@@ -58,7 +59,7 @@ describe('AppHeader', () => {
 
     const { common } = resources[last];
 
-    const item = localStorage.getItem(languageStorageKey);
+    const item = storedLanguage(document.cookie);
     expect(item).toBe(last);
     const element = screen.getByRole('link', { name: common.home });
     expect(element).toBeTruthy();

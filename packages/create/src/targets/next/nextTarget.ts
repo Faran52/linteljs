@@ -3,6 +3,8 @@ import { hasLibrary } from '@utils/answerUtils';
 import {
   COMMON_REACT_PLUGINS,
   CONTACT_HOOK_FORMS,
+  COOKIE_UTILS,
+  COOKIE_UTILS_TEST,
   COUNTER_MODULE_STORES,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
@@ -134,6 +136,7 @@ export const nextTarget: TargetRecord = {
     ...rtkFiles(),
     ...nextI18nFiles(),
     ...localeFiles(),
+    COOKIE_UTILS,
     ...ALWAYS
       .map((target): StarterFile => {
         const file: StarterFile = { target };
@@ -341,6 +344,7 @@ export const nextTarget: TargetRecord = {
     ...rtkTests(),
     ...nextI18nTests(),
     LOCALES_TEST,
+    COOKIE_UTILS_TEST,
     {
       target: 'src/app/page.test.tsx',
       covers: 'src/app/page.tsx',
