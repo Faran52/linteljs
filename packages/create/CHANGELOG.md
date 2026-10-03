@@ -185,6 +185,7 @@ when a version's change lives in a sibling it is described there instead:
 - The starter palette meets WCAG AA in both schemes: every text token reads at 4.5:1 on the page, a card and a
   muted surface, and a field's border at 3:1. `--dim`, which no starter read and no surface could carry as text,
   is gone from `tokens.css` and the StyleX and Tailwind themes.
+- The Nuxt starter without translations sets `lang` on `<html>`, as every other target already does.
 
 ## 1.5.3
 

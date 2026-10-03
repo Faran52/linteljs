@@ -52,6 +52,8 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     '  devtools: { enabled: false },',
     '  app: {',
     '    head: {',
+    // The i18n plugin's `useHead` replaces it with the reader's language.
+    "      htmlAttrs: { lang: 'en' },",
     `      title: ${quote(name)},`,
     '      link: [{',
     "        rel: 'icon',",

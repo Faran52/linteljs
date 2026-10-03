@@ -30,6 +30,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       title: 'demo-app',
       link: [{
         rel: 'icon',
@@ -86,6 +87,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       title: 'demo-app',
       link: [{
         rel: 'icon',
