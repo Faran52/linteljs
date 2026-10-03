@@ -31,5 +31,6 @@
   "gateHint": "전체 게이트를 실행하려면 <code>{command}</code>를 실행하세요.",
   "homeLedeReact": "React, Vite, 그리고 이미 적용된 표준.",
   "homeAdd": "하나 더하기",
-  "homeCaption": "스토어에 보관되어 모든 페이지에서 유지됩니다."
+  "homeCaption": "스토어에 보관되어 모든 페이지에서 유지됩니다.",
+  "homeLedeNext": "Next, App Router, 그리고 이미 적용된 표준."
 }

@@ -13,7 +13,11 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -69,19 +73,19 @@ const nextStarterTests = (): StarterTest[] => {
     ...nextI18nTests(),
     LOCALES_TEST,
     COOKIE_UTILS_TEST,
-    {
+    ...translated<StarterTest>({
       target: 'src/app/page.test.tsx',
       covers: 'src/app/page.tsx',
       when: (answers) => {
         return !hasStore(answers);
       },
-    },
-    {
+    }),
+    ...translated<StarterTest>({
       target: 'src/app/page.test.tsx',
       covers: 'src/app/page.tsx',
       when: hasStore,
       variant: 'with-store',
-    },
+    }),
     {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
@@ -234,17 +238,17 @@ export const nextTarget: TargetBuilder = () => {
         variant: 'with-form',
         shared: true,
       },
-      {
+      ...translated<StarterFile>({
         target: 'src/app/page.tsx',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterFile>({
         target: 'src/app/page.tsx',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       {
         target: 'src/components/ui/button/Button.tsx',
         shared: 'react',
