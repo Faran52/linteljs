@@ -21,3 +21,6 @@ export const OK_STATUS = 200;
 export const STARTER_LINKS = 'a[href^="/"]';
 
 export const ROUTE_SUFFIX = /[?#]/;
+
+// The header tabs of a starter without a router.
+export const VIEW_CONTROLS = 'nav[aria-label="Main"] button';

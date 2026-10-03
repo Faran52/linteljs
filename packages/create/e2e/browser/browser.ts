@@ -20,6 +20,7 @@ import {
   ROUTE_SUFFIX,
   SERVER_TIMEOUT,
   STARTER_LINKS,
+  VIEW_CONTROLS,
 } from './constants';
 
 import type { PackageManager } from '@config/types';
@@ -105,6 +106,43 @@ const linksOn = async (page: Page): Promise<string[]> => {
     });
 };
 
+const headed = async (page: Page): Promise<boolean> => {
+  const heading = page
+    .locator('h1')
+    .first()
+    .waitFor({ timeout: HEADING_TIMEOUT });
+
+  return settles(heading);
+};
+
+// A starter without a router swaps views from buttons, so each view is reached by a click.
+const clickThrough = async (page: Page, origin: string): Promise<string[]> => {
+  await page.goto(origin);
+
+  const controls = await page
+    .locator(VIEW_CONTROLS)
+    .all();
+  const problems: string[] = [];
+
+  if (controls.length === 0) {
+    problems.push('/: links no route and has no view controls, so the pass checked one page');
+  }
+
+  for (const control of controls) {
+    const label = await control.textContent();
+
+    await control.click();
+
+    const hasHeading = await headed(page);
+
+    if (!hasHeading) {
+      problems.push(`/ ${String(label)} view: no h1`);
+    }
+  }
+
+  return problems;
+};
+
 // Every route the starter links from its first page, each loaded fresh so the server answers it too.
 const crawl = async (origin: string): Promise<string[]> => {
   const browser = await chromium.launch(BROWSER_OPTIONS);
@@ -135,11 +173,7 @@ const crawl = async (origin: string): Promise<string[]> => {
         problems.push(`${route}: status ${String(status)}`);
       }
 
-      const heading = page
-        .locator('h1')
-        .first()
-        .waitFor({ timeout: HEADING_TIMEOUT });
-      const hasHeading = await settles(heading);
+      const hasHeading = await headed(page);
 
       if (!hasHeading) {
         problems.push(`${route}: no h1`);
@@ -154,11 +188,12 @@ const crawl = async (origin: string): Promise<string[]> => {
       }
     }
 
-    // A starter that links nothing passes having checked one page.
     const linkedNothing = routes.length === 1;
 
     if (linkedNothing) {
-      problems.push('/: links no route, so the pass checked one page');
+      const viewProblems = await clickThrough(page, origin);
+
+      problems.push(...viewProblems);
     }
   }
   finally {
