@@ -153,22 +153,27 @@ const GATES: GateRow[] = [
 ];
 
 describe('the starter gates', () => {
-  const walk = walkGates(() => {
-    return svelteTarget;
-  }, 'svelte');
-
   it('write at most one spelling of each destination under any answer set', () => {
+    const walk = walkGates(() => {
+      return svelteTarget;
+    }, 'svelte');
     expect(walk.twice).toEqual([]);
   });
 
   it('are each pinned below, and nothing else is', () => {
+    const walk = walkGates(() => {
+      return svelteTarget;
+    }, 'svelte');
     const actual = byKey(GATES);
     expect(actual).toEqual(walk.gated);
   });
 
-  it.each(GATES)('%s', (key, conditions) => {
-    const mismatch = walk.mismatchOf(key, conditions);
-    expect(mismatch).toBeUndefined();
+  it('each write exactly under the conditions pinned below', () => {
+    const walk = walkGates(() => {
+      return svelteTarget;
+    }, 'svelte');
+    const mismatches = walk.mismatchesOf(GATES);
+    expect(mismatches).toEqual([]);
   });
 });
 

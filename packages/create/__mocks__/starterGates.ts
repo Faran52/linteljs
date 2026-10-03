@@ -25,7 +25,7 @@ export type GateRow = readonly [key: string, conditions: readonly Condition[]];
 export interface GateWalk {
   gated: string[];
   twice: string[];
-  mismatchOf: (key: string, conditions: readonly Condition[]) => string | undefined;
+  mismatchesOf: (rows: readonly GateRow[]) => string[];
 }
 
 type Gate = (answers: Answers) => boolean;
@@ -397,16 +397,24 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
   const walk: GateWalk = {
     gated,
     twice: [...twice],
-    mismatchOf: (key, conditions) => {
-      for (const { answers, gates } of walked) {
-        const actual = gates.get(key)?.(answers) ?? false;
+    mismatchesOf: (rows) => {
+      const lines: string[] = [];
 
-        if (actual !== holds(conditions, answers)) {
-          return `${actual ? 'written' : 'not written'} under ${describeAnswers(answers)}`;
+      for (const [key, conditions] of rows) {
+        const mismatch = walked
+          .find(({ answers, gates }) => {
+            const actual = gates.get(key)?.(answers) ?? false;
+
+            return actual !== holds(conditions, answers);
+          });
+
+        if (mismatch !== undefined) {
+          const written = mismatch.gates.get(key)?.(mismatch.answers) ?? false;
+          lines.push(`${key} ${written ? 'written' : 'not written'} under ${describeAnswers(mismatch.answers)}`);
         }
       }
 
-      return undefined;
+      return lines;
     },
   };
 
