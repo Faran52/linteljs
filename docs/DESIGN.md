@@ -1199,10 +1199,10 @@ pinned to one machine's patch release. `devEngines.packageManager` with `onFail:
 refuses a different manager outright. Bun gets no `packageManager`, since neither corepack nor pnpm knows it, and
 `engines.bun` says what the field would have.
 
-Node is `>=22.18` in a generated project (`NODE_ENGINE`) and `>=22.13.0` as this CLI's own floor. The project's
-floor is type stripping on by default: the shipped `scripts/*.ts` and the plugin's hooks run as plain
-`node file.ts`, from lint-staged and from hosts that pass no Node flags. The CLI's is `@inquirer/prompts` 8, which
-declares `^22.13.0 || >=23.5.0`. Pinned tools that want more say so themselves as `EBADENGINE` warnings. CI runs on
+Node is `>=22.18.0` in a generated project and as this CLI's own floor, one `NODE_FLOOR`. The floor is type
+stripping on by default: the shipped `scripts/*.ts` and the plugin's hooks run as plain `node file.ts`, from
+lint-staged and from hosts that pass no Node flags. The CLI alone could run on 22.13.0 (`@inquirer/prompts` 8), but
+a machine that runs `create` should run the project it writes. Pinned tools that want more say so themselves as `EBADENGINE` warnings. CI runs on
 the major that ran `create`, read off the recorded `nodeVersion`.
 
 ### Yarn 1 is not supported
@@ -1723,7 +1723,7 @@ probing: a compat import and a `node:fs` import in an emitter are each reported.
 function that builds one of them goes to a `utils/` at the level of its readers, which is the rule that decides
 where a helper sits anywhere else: `emitted`, `copied` and `merged` are in `emitters/utils/artifactUtils.ts` and the
 managed-record builders in `emitters/utils/managedUtils.ts`, because only emitters read them, while `Artifact`,
-`MANAGED_PATH`, `RUN_PREFIX` and `NODE_ENGINE` are read by several rings and stay. The gain is that `src/config/`
+`MANAGED_PATH`, `RUN_PREFIX` and `NODE_FLOOR` are read by several rings and stay. The gain is that `src/config/`
 carries no suite and no coverage: asserting a table equals itself proves nothing, and what is worth checking about a
 table is a fact about the code that reads it. `src/types.test.ts` pins the types this package redeclares from
 `@linteljs/eslint-config` to that package's own, at the package root because it is a fact about two packages.

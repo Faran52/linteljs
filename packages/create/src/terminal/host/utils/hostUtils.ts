@@ -66,7 +66,6 @@ export const managerRefusal = (pm: PackageManager, version: string): string | un
     + 'newer. Upgrade it and run this again.';
 };
 
-// `NODE_FLOOR` carries why this differs from the `>=22.18` a project declares.
 export const nodeRefusal = (running: string): string | undefined => {
   return rankOf(running) < rankOf(NODE_FLOOR)
     ? `Node ${running} is running this, and @linteljs/create needs Node ${NODE_FLOOR} or newer. `

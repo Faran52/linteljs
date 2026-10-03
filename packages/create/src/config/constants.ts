@@ -15,10 +15,8 @@ export const MANAGER_FLOORS: Record<PackageManager, string> = {
 };
 
 // 22.18.0 is the first release that strips types by default, which the shipped scripts and hooks need.
-export const NODE_ENGINE = '>=22.18';
-
-// `@inquirer/prompts` 8 declares `^22.13.0 || >=23.5.0`; nothing the CLI runs strips types.
-export const NODE_FLOOR = '22.13.0';
+// The CLI and the project it writes share it, so a machine that runs `create` also runs the project.
+export const NODE_FLOOR = '22.18.0';
 
 export const RUN_PREFIX: Record<PackageManager, string> = {
   pnpm: 'pnpm',

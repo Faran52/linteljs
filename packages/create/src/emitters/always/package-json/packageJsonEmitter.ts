@@ -1,6 +1,6 @@
 import {
   MANAGER_FLOORS,
-  NODE_ENGINE,
+  NODE_FLOOR,
 } from '@config/constants';
 import {
   type Answers,
@@ -77,7 +77,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     // No bun field: neither corepack nor pnpm's switch knows bun.
     ...(pm === 'bun' ? {} : { packageManager: `${pm}@${version}` }),
     engines: {
-      node: NODE_ENGINE,
+      node: `>=${NODE_FLOOR}`,
       // The floor, which is what was tested; the exact version is in `packageManager`.
       [pm]: `>=${MANAGER_FLOORS[pm]}`,
     },

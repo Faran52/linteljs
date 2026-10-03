@@ -8,7 +8,7 @@ import {
 import {
   EMPTY_PROJECT,
   MANAGER_FLOORS,
-  NODE_ENGINE,
+  NODE_FLOOR,
 } from '@config/constants';
 
 import { DEFAULT_ANSWERS } from '@answers';
@@ -139,7 +139,7 @@ describe('patchPackageJson', () => {
     expect(patched.packageManager).toBe('pnpm@12.5.1');
 
     const expected = {
-      node: '>=22.18',
+      node: '>=22.18.0',
       pnpm: `>=${MANAGER_FLOORS.pnpm}`,
     };
     expect(patched.engines).toEqual(expected);
@@ -162,7 +162,7 @@ describe('patchPackageJson', () => {
     expect(patched).not.toHaveProperty('packageManager');
 
     const expected = {
-      node: NODE_ENGINE,
+      node: `>=${NODE_FLOOR}`,
       bun: `>=${MANAGER_FLOORS.bun}`,
     };
     expect(patched.engines).toEqual(expected);

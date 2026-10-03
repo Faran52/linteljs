@@ -130,17 +130,17 @@ describe('unversionedRefusal', () => {
 
 describe('nodeRefusal', () => {
   it('says nothing on the floor this CLI runs on, or above it', () => {
-    const floorRefusal = nodeRefusal('22.13.0');
+    const floorRefusal = nodeRefusal('22.18.0');
     expect(floorRefusal).toBeUndefined();
     const currentRefusal = nodeRefusal('26.9.0');
     expect(currentRefusal).toBeUndefined();
   });
 
   it('names both versions and where to get one', () => {
-    const refusal = nodeRefusal('22.12.0') ?? '';
+    const refusal = nodeRefusal('22.17.0') ?? '';
 
-    expect(refusal).toContain('Node 22.12.0 is running this');
-    expect(refusal).toContain('needs Node 22.13.0 or newer');
+    expect(refusal).toContain('Node 22.17.0 is running this');
+    expect(refusal).toContain('needs Node 22.18.0 or newer');
     expect(refusal).toContain('https://nodejs.org');
   });
 

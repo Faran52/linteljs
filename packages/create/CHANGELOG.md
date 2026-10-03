@@ -134,8 +134,8 @@ when a version's change lives in a sibling it is described there instead:
   names pass the target's own `naming` map. The fix stage stays, to bring an existing project into line.
 - The fix stage reports per tool: `eslint --fix: 3 files changed` or `eslint --fix: nothing to fix`, and the same for
   `stylelint --fix`, which said nothing unless it could not run.
-- A generated project's Node floor is `>=22.18`, down from `>=26.8.1`: the first release that runs its TypeScript
-  scripts and hooks with plain `node`. The CLI's own is `22.13.0`.
+- Node `>=22.18.0`, down from `>=26.8.1`, for both the CLI and the project it writes: the first release that runs the
+  project's TypeScript scripts and hooks with plain `node`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
   React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and declares
   `@react-native/metro-config`. A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only; the

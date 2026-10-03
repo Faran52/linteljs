@@ -17,8 +17,8 @@ Then `cd my-app` and run `check` (`pnpm check`, `npm run check`, and so on).
 
 ## Requirements
 
-- Node 22.13.0 or newer to run `create`. The project it writes needs Node 22.18 or newer, the first release that
-  runs its TypeScript scripts and hooks with plain `node`.
+- Node 22.18.0 or newer, both to run `create` and in the project it writes: the first release that runs the
+  project's TypeScript scripts and hooks with plain `node`.
 - The manager that runs `create` becomes the project's, at its exact version: pnpm 10.26+, npm 9.6.5+, Yarn 4+,
   or Bun 1.2+. A manager below its floor is refused, never upgraded; Yarn 1 is refused as not supported.
 - With pnpm's `minimumReleaseAge` set, the project starts on the newest versions older than the window. To start
