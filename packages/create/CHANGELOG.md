@@ -189,6 +189,7 @@ when a version's change lives in a sibling it is described there instead:
 - The web extension popup holds its content in a `<main>` landmark.
 - The header reads the project name in full at any width: a name too long for the row moves the nav below it
   and wraps, where it used to end in an ellipsis at 360px.
+- Every starter document head carries a description meta, which Lighthouse's SEO audit asks for.
 
 ## 1.5.3
 
