@@ -76,11 +76,7 @@ export const reactCore = (): Layer => {
         '@eslint-react/no-misused-capture-owner-stack': 'error',
         '@eslint-react/no-unstable-context-value': 'error',
         '@eslint-react/no-unstable-default-props': ['error', { safeDefaultProps: [] }],
-        '@eslint-react/use-state': ['error', {
-          enforceAssignment: true,
-          enforceLazyInitialization: true,
-          enforceSetterName: true,
-        }],
+        '@eslint-react/use-state': 'error',
         'react-hooks/void-use-memo': 'error',
       },
     },

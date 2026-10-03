@@ -3,6 +3,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import base from '../layers/base/baseLayer';
@@ -92,5 +93,25 @@ describe('sonarjsRules', () => {
     const config = [...base(), ...mutating()];
     const ruleIds = await ruleIdsFor(config, code, 'src/card.ts');
     expect(ruleIds).toContain(rule);
+  });
+
+  it('names the preset when sonarjs publishes no configs', async () => {
+    vi.resetModules();
+
+    const unpublishing = { default: {} };
+
+    vi.doMock('eslint-plugin-sonarjs', () => {
+      return unpublishing;
+    });
+
+    const unpublished = await import('./presetUtils');
+    const files = ['**/*.ts'];
+    const message = '@linteljs/eslint-config: sonarjs/recommended is not published by its plugin';
+
+    expect(() => {
+      return unpublished.sonarjsRules('test/sonarjs', {}, files);
+    }).toThrow(message);
+
+    vi.doUnmock('eslint-plugin-sonarjs');
   });
 });

@@ -112,13 +112,28 @@ describe('reactCore', () => {
 
   it.each([
     ['@stylistic/jsx-self-closing-comp', '<div></div>'],
+    ['@stylistic/jsx-self-closing-comp', '<Box></Box>'],
     ['@stylistic/jsx-pascal-case', '<My_Box />'],
-  ])('reports %s', async (rule, element) => {
+    ['@stylistic/jsx-pascal-case', '<BOX_ROW />'],
+    ['@stylistic/jsx-pascal-case', '<_Box />'],
+    ['@stylistic/jsx-pascal-case', '<Box.my_item />'],
+    ['@stylistic/jsx-curly-brace-presence', '<Box slot=<span /> />'],
+    ['@stylistic/jsx-tag-spacing', '<Box ></Box>'],
+    ['@stylistic/jsx-wrap-multilines', '(<div>\n    <span />\n  </div>)'],
+  ])('reports %s on %s', async (rule, element) => {
     const code = `export const Chip = () => {\n  return ${element};\n};\n`;
     const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain(rule);
+  });
+
+  it('keeps a single child on its parent line', async () => {
+    const code = 'export const Chip = ({ label }) => {\n  return <span>{label}</span>;\n};\n';
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).not.toContain('@stylistic/jsx-one-expression-per-line');
   });
 
   it('reports a single-quoted jsx attribute', async () => {
@@ -311,6 +326,26 @@ describe('reactCore', () => {
       '  return <span onClick={() => change(!open)} />;',
       '};',
     ]],
+    ['@eslint-react/use-state', [
+      "import { useState } from 'react';",
+      '',
+      'export const Chip = () => {',
+      '  useState(false);',
+      '',
+      '  return <span />;',
+      '};',
+    ]],
+    ['@eslint-react/use-state', [
+      "import { useState } from 'react';",
+      '',
+      'const initial = (): boolean => false;',
+      '',
+      'export const Chip = () => {',
+      '  const [open, setOpen] = useState(initial());',
+      '',
+      '  return <span onClick={() => setOpen(!open)} />;',
+      '};',
+    ]],
     ['react-hooks/void-use-memo', [
       "import { useMemo } from 'react';",
       '',
@@ -340,11 +375,7 @@ describe('reactCore', () => {
     ['@eslint-react/no-misused-capture-owner-stack', [2]],
     ['@eslint-react/no-unstable-context-value', [2]],
     ['@eslint-react/no-unstable-default-props', [2, { safeDefaultProps: [] }]],
-    ['@eslint-react/use-state', [2, {
-      enforceAssignment: true,
-      enforceLazyInitialization: true,
-      enforceSetterName: true,
-    }]],
+    ['@eslint-react/use-state', [2]],
     ['react-hooks/void-use-memo', [2]],
   ];
 

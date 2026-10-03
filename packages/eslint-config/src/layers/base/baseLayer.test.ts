@@ -248,10 +248,29 @@ describe('base: stylistic', () => {
       'const a = 1;\n\nexport const o = { a: a };\n',
       TS_FILE,
     ],
-  ])('reports %s', async (rule, code, file) => {
+    [
+      'object-shorthand',
+      'export const o = { Box: function () {\n  return 1;\n} };\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/switch-colon-spacing',
+      'export const pick = (v) => {\n  switch (v) {\n    case 1:return 1;\n  }\n\n  return 2;\n};\n',
+      TS_FILE,
+    ],
+  ])('reports %s on %j', async (rule, code, file) => {
     const ids = await ruleIdsFor(base(), code, file);
 
     expect(ids).toContain(rule);
+  });
+
+  it.each([
+    ['a quoted key', "const id = 1;\n\nexport const o = { 'id': id };\n"],
+    ['an arrow with a block body', 'export const o = { a: () => {\n  return 1;\n} };\n'],
+  ])('leaves object-shorthand quiet on %s', async (_shape, code) => {
+    const ids = await ruleIdsFor(base(), code, TS_FILE);
+
+    expect(ids).not.toContain('object-shorthand');
   });
 
   it('leaves a barrel of re-exports packed, since a blank line between them never settles', async () => {
@@ -866,6 +885,7 @@ describe('base: magic numbers', () => {
     ['an object property', 'export const widths = { label: 14 };\n'],
     ['an enum member', 'export enum Code { Interrupted = 130 }\n'],
     ['a numeric literal type', 'export type Port = 80 | 443;\n'],
+    ['a class field initial value', 'export class Box {\n  size = 64;\n}\n'],
     ['a readonly class property', 'export class Box {\n  readonly size = 64;\n}\n'],
     ['a type index', "export type Fourth = ['a', 'b', 'c', 'd'][3];\n"],
   ])('accepts %s', async (_shape, code) => {

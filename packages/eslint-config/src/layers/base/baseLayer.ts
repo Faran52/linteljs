@@ -172,10 +172,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         ],
         '@stylistic/semi-style': ['error', 'last'],
         '@stylistic/no-extra-semi': 'error',
-        '@stylistic/switch-colon-spacing': ['error', {
-          after: true,
-          before: false,
-        }],
+        '@stylistic/switch-colon-spacing': 'error',
         '@stylistic/function-call-spacing': ['error', 'never'],
         '@stylistic/linebreak-style': ['error', 'unix'],
         'no-debugger': 'error',
@@ -394,7 +391,7 @@ export const base = (options: BaseOptions = {}): Layer => {
       files: scriptFiles,
       ignores: TEST_FILES,
       rules: {
-        'sonarjs/expression-complexity': ['error', { max: 3 }],
+        'sonarjs/expression-complexity': 'error',
       },
     },
 

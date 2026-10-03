@@ -50,13 +50,6 @@ export const JSX_LAYOUT_RULES = {
 // The JSX frameworks' own, not `base`'s: a `.vue`, `.svelte` or `.astro` template is not JSX.
 export const JSX_STYLE_RULES = {
   ...JSX_LAYOUT_RULES,
-  '@stylistic/jsx-self-closing-comp': ['error', {
-    component: true,
-    html: true,
-  }],
-  '@stylistic/jsx-pascal-case': ['error', {
-    allowAllCaps: false,
-    allowLeadingUnderscore: false,
-    allowNamespace: false,
-  }],
+  '@stylistic/jsx-self-closing-comp': 'error',
+  '@stylistic/jsx-pascal-case': 'error',
 } satisfies Linter.RulesRecord;
