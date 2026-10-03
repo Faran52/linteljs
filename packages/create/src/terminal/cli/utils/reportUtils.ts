@@ -16,9 +16,10 @@ import {
   SPINNER_FRAMES,
   SPINNER_INTERVAL,
   STAGE_LABELS,
-  STAGE_WIDTH,
   SYNC_ACTIONS,
 } from '../constants';
+
+import { widthOf } from './flagUtils';
 
 import type { MissingDependencies } from '@emitters';
 import type { PipelineOptions, SyncPlan } from '@pipeline';
@@ -55,7 +56,9 @@ export const stageLine = (stage: Stage, writes: number, notice: string, millisec
     })
     .join(', ');
 
-  return `${stage.padEnd(STAGE_WIDTH)}  ${summary}`.trimEnd();
+  const width = widthOf(STAGES);
+
+  return `${stage.padEnd(width)}  ${summary}`.trimEnd();
 };
 
 export const nextSteps = (name: string, options: CliOptions, packageManager: PackageManager): string => {

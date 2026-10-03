@@ -1,22 +1,11 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
-import { STAGES } from '@config/constants';
 import { type PackageManager, type Stage } from '@config/types';
 
 import { type PendingStatus } from '@pipeline';
 
-import {
-  answerOptions,
-  answerUsage,
-  flaggedAnswers,
-  widthOf,
-} from './utils/flagUtils';
-
-export const FLAGGED_ANSWERS = flaggedAnswers();
-
-const ANSWER_OPTIONS = answerOptions(FLAGGED_ANSWERS);
-
-export const USAGE = `@linteljs/create [name] [options]
+// The answer lines go between the two halves, built from the records when the usage is printed.
+export const USAGE_HEAD = `@linteljs/create [name] [options]
 @linteljs/create sync [options]
 
   --existing        run in this directory, which already exists, rather than making <name>/
@@ -28,7 +17,9 @@ export const USAGE = `@linteljs/create [name] [options]
   --help, -h
 
 Answers, for a run that asks nothing (unset ones take the defaults):
-${answerUsage(FLAGGED_ANSWERS)}
+`;
+
+export const USAGE_TAIL = `
 A list is comma-separated or the flag repeated.
 
 Without a terminal, create needs --yes or an answer flag; a name alone exits 1.
@@ -87,7 +78,6 @@ export const CLI_OPTIONS = {
     short: 'v',
     default: false,
   },
-  ...ANSWER_OPTIONS,
 } satisfies ParseArgsOptionsConfig;
 
 export const STAGE_LABELS: Record<Stage, string> = {
@@ -103,7 +93,5 @@ export const SPINNER_FRAMES = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
 
 // Slow enough to read a stage's name, fast enough to look alive.
 export const SPINNER_INTERVAL = 80;
-
-export const STAGE_WIDTH = widthOf(STAGES);
 
 export const MS_PER_SECOND = 1000;

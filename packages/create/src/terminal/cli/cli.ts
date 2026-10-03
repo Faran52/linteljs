@@ -36,13 +36,14 @@ import {
   RunCancelled,
 } from '../prompts/prompts';
 
-import { SYNC_NEEDS_YES, USAGE } from './constants';
+import { SYNC_NEEDS_YES } from './constants';
 import {
   type AnswerFlags,
   argumentError,
   type CliOptions,
   parseCliArgs,
 } from './utils/argvUtils';
+import { usage } from './utils/flagUtils';
 import {
   installCommands,
   nextSteps,
@@ -213,7 +214,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
   }
 
   if (options.help) {
-    say(USAGE);
+    say(usage());
     return 0;
   }
 

@@ -8,7 +8,13 @@ import { type AnswerKey, type JsonValue } from '@answers';
 
 import { PROJECT_NAME_RULE } from '../../constants';
 import { isValidProjectName } from '../../utils/nameUtils';
-import { CLI_OPTIONS, FLAGGED_ANSWERS } from '../constants';
+import { CLI_OPTIONS } from '../constants';
+
+import {
+  answerOptions,
+  type FlaggedAnswer,
+  flaggedAnswers,
+} from './flagUtils';
 
 // Validated by the config parser, so a wrong value names its choices.
 export type AnswerFlags = Partial<Record<AnswerKey, JsonValue>>;
@@ -40,14 +46,14 @@ const list = (flag: string[]): string[] => {
     });
 };
 
-// `CLI_OPTIONS` declares list flags `multiple`, so an array is a list to comma-split.
-const answerFlagsFrom = (values: Record<string, boolean
+// `answerOptions` declares list flags `multiple`, so an array is a list to comma-split.
+const answerFlagsFrom = (flagged: readonly FlaggedAnswer[], values: Record<string, boolean
   | string
   | string[]
   | undefined>): AnswerFlags => {
   const flags: AnswerFlags = {};
 
-  for (const { key, flag } of FLAGGED_ANSWERS) {
+  for (const { key, flag } of flagged) {
     const value = values[flag];
 
     if (value !== undefined) {
@@ -66,13 +72,18 @@ const isStage = (value: string): value is Stage => {
 };
 
 export const parseCliArgs = (argv: string[]): CliOptions => {
+  const answers = flaggedAnswers();
+  const declared = {
+    ...CLI_OPTIONS,
+    ...answerOptions(answers),
+  };
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: CLI_OPTIONS,
+    options: declared,
   });
 
-  const flagged = answerFlagsFrom(values);
+  const flagged = answerFlagsFrom(answers, values);
   const answered = Object.keys(flagged).length > 0;
 
   const [first = '', ...unexpectedArguments] = positionals;

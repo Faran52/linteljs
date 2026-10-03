@@ -8,17 +8,20 @@ import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
+import { USAGE_HEAD, USAGE_TAIL } from '../constants';
+
 import {
   answerOptions,
   answerUsage,
   flaggedAnswers,
+  usage,
   widthOf,
 } from './flagUtils';
 
-const FLAGGED = flaggedAnswers();
-
 const lineFor = (flag: string): string => {
-  return answerUsage(FLAGGED)
+  const flagged = flaggedAnswers();
+
+  return answerUsage(flagged)
     .split('\n')
     .find((line) => {
       return line.startsWith(`  --${flag} `);
@@ -27,14 +30,15 @@ const lineFor = (flag: string): string => {
 
 describe('flaggedAnswers', () => {
   it('carries every answer with a flag, under its own key, and none without', () => {
-    const typeSafetyFlag = FLAGGED
+    const flagged = flaggedAnswers();
+    const typeSafetyFlag = flagged
       .find(({ key }) => {
         return key === 'typeSafety';
       })?.flag;
 
     expect(typeSafetyFlag).toBe('type-safety');
 
-    const keys = FLAGGED
+    const keys = flagged
       .map(({ key }) => {
         return key;
       });
@@ -45,7 +49,8 @@ describe('flaggedAnswers', () => {
 
 describe('answerOptions', () => {
   it('declares a list answer repeatable and a single one not', () => {
-    const options = answerOptions(FLAGGED);
+    const flagged = flaggedAnswers();
+    const options = answerOptions(flagged);
 
     const librariesFlag = {
       type: 'string',
@@ -91,5 +96,15 @@ describe('answerUsage', () => {
   it('lines up every answer description on one column, store included', () => {
     const index = lineFor('store').indexOf('zustand');
     expect(index).toBe(lineFor('type-safety').indexOf('strict'));
+  });
+});
+
+describe('usage', () => {
+  it('puts the answer lines between the fixed head and tail', () => {
+    const flagged = flaggedAnswers();
+    const lines = answerUsage(flagged);
+    const expected = `${USAGE_HEAD}${lines}${USAGE_TAIL}`;
+    const text = usage();
+    expect(text).toBe(expected);
   });
 });

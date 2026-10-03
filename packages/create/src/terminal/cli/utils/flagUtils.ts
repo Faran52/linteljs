@@ -9,6 +9,8 @@ import {
   type TextRecord,
 } from '@answers';
 
+import { USAGE_HEAD, USAGE_TAIL } from '../constants';
+
 type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord | TextRecord>;
 
 interface FlagField {
@@ -93,4 +95,12 @@ export const answerUsage = (flagged: readonly FlaggedAnswer[]): string => {
       return `  ${labelOf(answer).padEnd(width)}  ${valuesOf(answer.record.values).join(', ')}${noteOf(answer.record)}`;
     })
     .join('\n');
+};
+
+export const usage = (): string => {
+  const flagged = flaggedAnswers();
+  const lines = answerUsage(flagged);
+  const text = `${USAGE_HEAD}${lines}${USAGE_TAIL}`;
+
+  return text;
 };
