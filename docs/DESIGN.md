@@ -1783,6 +1783,16 @@ named one by one, so another site has to be added on purpose.
 `test` call. It finds none and calls the file empty: forced on, it reports 25 of the 26 rule suites. Measured too: wrapping `tsRuleTester.run(...)` in an explicit
 `describe(...)` does not silence it either, so no shape of the file satisfies it. Scoped to the rule suites alone.
 
+### `@linteljs/workspace/e2e-source`
+
+An inclusion rather than an exemption. `base` treats every `e2e/` as a suite, which is right for a generated project's
+Playwright folder and stays as shipped. This workspace's one `e2e/` is the create harness, `packages/create/e2e/`,
+which is source that happens to drive a suite, so the root config maps `base`'s output and drops `**/e2e/**` from
+every block's `files` and `ignores`. Its `*.test.ts` stay suites through `**/*.{test,spec}.*`. Measured on 2026-10-03,
+when the harness left `src/`: the source-only blocks then reached its 15 non-test modules and found five
+`no-magic-numbers` (a 200 status, the ping's 100 attempts and 200ms interval, a milliseconds divisor, the three parts
+of a version) and nothing from `expression-complexity`, `max-lines` or `max-lines-per-function`.
+
 ### `@linteljs/workspace/e2e-test`
 
 `targets.e2e.test.ts` under `packages/create/e2e/targets/` is `it.concurrent.each(cases)(label, runE2eCase)` per target,

@@ -16,6 +16,8 @@ export const HEADING_TIMEOUT = 10_000;
 // The system Chrome: a CDN browser download can be blocked.
 export const BROWSER_OPTIONS = { channel: 'chrome' };
 
+export const OK_STATUS = 200;
+
 export const STARTER_LINKS = 'a[href^="/"]';
 
 export const ROUTE_SUFFIX = /[?#]/;

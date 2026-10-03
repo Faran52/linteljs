@@ -12,7 +12,8 @@ paths:
 everything below.
 
 - **Layout**: the harness is `packages/create/e2e/`, beside `__mocks__/` and outside `src/`, so it never ships
-  and is held to lint and typecheck but not to coverage, `test:isolated` or Stryker. `matrix/matrix.ts` enumerates the cases (`targetCases`), `registry/registry.ts` is the
+  and is held to lint as source (`@linteljs/workspace/e2e-source`) and to typecheck, but not to coverage,
+  `test:isolated` or Stryker. `matrix/matrix.ts` enumerates the cases (`targetCases`), `registry/registry.ts` is the
   `globalSetup`, `runner/runner.ts` runs one case, `targets/targets.e2e.test.ts` is the one file every target's
   cases run from. The `.e2e.` infix keeps it out of the default run. `starter-cover/` names the cases
   `pnpm lint:starters` installs (`STARTER_CASES`) and holds that they write every starter text; it runs in the

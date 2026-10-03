@@ -14,6 +14,7 @@ import { launcherFreeEnv } from '../utils/processUtils';
 import {
   BROWSER_OPTIONS,
   HEADING_TIMEOUT,
+  OK_STATUS,
   POLL_INTERVAL,
   PORT_FLAGGED,
   ROUTE_SUFFIX,
@@ -130,7 +131,7 @@ const crawl = async (origin: string): Promise<string[]> => {
       const response = await page.goto(`${origin}${route}`);
       const status = response?.status();
 
-      if (status !== 200) {
+      if (status !== OK_STATUS) {
         problems.push(`${route}: status ${String(status)}`);
       }
 

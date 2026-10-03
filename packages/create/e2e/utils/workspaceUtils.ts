@@ -6,7 +6,7 @@ import {
 
 import { MANAGER_FLOORS } from '@config/constants';
 
-import { WORKSPACE_PREFIX } from '../constants';
+import { VERSION_PARTS, WORKSPACE_PREFIX } from '../constants';
 import { PACKAGE_MANAGERS } from '../matrix/constants';
 
 import {
@@ -39,7 +39,7 @@ export const versionFrom = (pm: PackageManager, output: string): string => {
     .split('\n');
 
   // A missing manager answers with its spawn error, which as a version fails three stages later.
-  if (version.split('.').length !== 3) {
+  if (version.split('.').length !== VERSION_PARTS) {
     throw new Error(`${pm} --version answered ${output}`);
   }
 

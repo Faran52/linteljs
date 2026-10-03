@@ -10,6 +10,8 @@ import base from './packages/eslint-config/src/layers/base/baseLayer';
 import typescript from './packages/eslint-config/src/layers/typescript/typescriptLayer';
 import vitest from './packages/eslint-config/src/layers/vitest/vitestLayer';
 
+import type { Linter } from 'eslint';
+
 interface Zone {
   target: string;
   from: string[];
@@ -32,6 +34,30 @@ const aliases = Object.fromEntries(RINGS
 
     return entries;
   }));
+
+// `base` exempts every `e2e/` as a suite; this one is the create harness, so only its suites keep the exemption.
+// docs/DESIGN.md: `@linteljs/workspace/e2e-source`
+const E2E_GLOB = '**/e2e/**';
+
+const withoutE2e = <Glob>(globs: Glob[] | undefined): Glob[] | undefined => {
+  return globs
+    ?.filter((glob) => {
+      return glob !== E2E_GLOB;
+    });
+};
+
+const e2eAsSource = (block: Linter.Config): Linter.Config => {
+  const files = withoutE2e(block.files);
+  const ignores = withoutE2e(block.ignores);
+
+  const sourceBlock = {
+    ...block,
+    ...(files && { files }),
+    ...(ignores && { ignores }),
+  };
+
+  return sourceBlock;
+};
 
 const innerZones = (exceptBarrel: boolean): Zone[] => {
   return INNER_RINGS
@@ -92,7 +118,8 @@ const config = [
       project: 'packages/*/tsconfig.json',
       noWarnOnMultipleProjects: true,
     },
-  }),
+  })
+    .map(e2eAsSource),
   ...typescript(),
   ...vitest(),
 

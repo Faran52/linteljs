@@ -27,4 +27,7 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
   ] },
 };
 
+// major.minor.patch
+export const VERSION_PARTS = 3;
+
 export const WORKSPACE_PREFIX = join(tmpdir(), 'linteljs-e2e-');

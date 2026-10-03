@@ -19,6 +19,9 @@ import { parsePackageJson } from '@emitters';
 
 import {
   CACHE_DIR,
+  MS_PER_SECOND,
+  PING_ATTEMPTS,
+  PING_INTERVAL,
   PORT,
   ROOT,
   RUN_DIR,
@@ -88,7 +91,7 @@ const requireFreePort = async (port: number): Promise<void> => {
 };
 
 const waitForPing = async (url: string, child: ChildProcess): Promise<void> => {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  for (let attempt = 0; attempt < PING_ATTEMPTS; attempt += 1) {
     if (child.exitCode !== null) {
       throw new Error(`verdaccio exited with ${String(child.exitCode)} before serving ${url}`);
     }
@@ -104,7 +107,7 @@ const waitForPing = async (url: string, child: ChildProcess): Promise<void> => {
       // Not listening yet.
     }
 
-    await sleep(200);
+    await sleep(PING_INTERVAL);
   }
 
   throw new Error(`verdaccio did not answer at ${url} within 20 seconds`);
@@ -140,7 +143,7 @@ const runVersion = (base: string): string => {
     throw new Error(`packages/create/package.json carries no major.minor: ${base}`);
   }
 
-  const epochSeconds = Math.floor(Date.now() / 1000);
+  const epochSeconds = Math.floor(Date.now() / MS_PER_SECOND);
 
   return `${major}.${minor}.${String(epochSeconds)}`;
 };
