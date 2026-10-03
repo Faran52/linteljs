@@ -5,7 +5,7 @@ export type FixShape = (typeof FIX_SHAPES)[number];
 
 export type RuleLanguage = (typeof RULE_LANGUAGES)[number];
 
-export interface LintelRuleDocs {
+interface LintelRuleDocs {
   description: string;
   language: RuleLanguage;
   // Whether `configs.recommended` enables it. `configs.all` carries it either way.
