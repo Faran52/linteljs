@@ -59,6 +59,30 @@ export const RTK_QUERY: readonly Condition[] = [{ data: ['rtk-query'] }];
 export const TAILWIND: readonly Condition[] = [{ styling: ['tailwind'] }];
 export const STYLEX: readonly Condition[] = [{ styling: ['stylex'] }];
 
+// A home page that has a store variant, each shipped in English and translated.
+export const homeGates = (target: string): GateRow[] => {
+  const gates: GateRow[] = [
+    [target, [{
+      store: [undefined],
+      languages: [undefined],
+    }]],
+    [`${target}@i18n`, [{
+      store: [undefined],
+      languages: ANSWERED,
+    }]],
+    [`${target}@with-store`, [{
+      store: ANSWERED,
+      languages: [undefined],
+    }]],
+    [`${target}@with-store-i18n`, [{
+      store: ANSWERED,
+      languages: ANSWERED,
+    }]],
+  ];
+
+  return gates;
+};
+
 export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
   const msw: readonly Condition[] = [{ mocking: ['msw'] }];
   const bare: readonly Condition[] = [{

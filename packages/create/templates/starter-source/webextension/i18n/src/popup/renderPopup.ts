@@ -37,7 +37,7 @@ export const renderPopup = (root: HTMLElement): void => {
     document.documentElement.dir = directionOf(language);
     lede.textContent = t('popupLede', language);
 
-    const gate = t('popupGate', language, { command: CHECK });
+    const gate = t('gateHint', language, { command: CHECK });
     const gateNodes = partsOf(gate)
       .map(nodeOf);
 

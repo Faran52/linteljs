@@ -100,8 +100,8 @@ describe('i18n', () => {
   });
 
   it('fills a single-brace value, and leaves one it was not given in place', () => {
-    const filled = t('popupGate', 'en', { command: 'pnpm check' });
-    const unfilled = t('popupGate', 'en');
+    const filled = t('gateHint', 'en', { command: 'pnpm check' });
+    const unfilled = t('gateHint', 'en');
 
     expect(filled).toBe('Run <code>pnpm check</code> for the full gate.');
     expect(unfilled).toContain('{command}');

@@ -28,5 +28,8 @@
   "contactSent": "ありがとうございます。これはスターターなので、何も送信されていません。",
   "contactSend": "送信",
   "popupLede": "Vite でビルドされ、標準があらかじめ適用された拡張機能です。",
-  "popupGate": "<code>{command}</code> を実行すると、ゲート全体が走ります。"
+  "gateHint": "<code>{command}</code> を実行すると、ゲート全体が走ります。",
+  "homeLedeReact": "React、Vite、そしてあらかじめ適用された標準。",
+  "homeAdd": "1 つ増やす",
+  "homeCaption": "ストアに保持され、どのページでも共有されます。"
 }

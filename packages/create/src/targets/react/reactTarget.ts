@@ -82,10 +82,10 @@ const reactStarterTests = (): StarterTest[] => {
       variant: 'with-router',
     },
     ...frameworkRouteTests(),
-    {
+    ...translated<StarterTest>({
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
-    },
+    }),
     {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
@@ -204,17 +204,17 @@ const baseReactTarget = (): TargetRecord => {
         when: hasForm,
         variant: 'with-form',
       },
-      {
+      ...translated<StarterFile>({
         target: 'src/pages/home/HomePage.tsx',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterFile>({
         target: 'src/pages/home/HomePage.tsx',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       {
         target: 'src/components/ui/index.ts',
         when: (answers) => {

@@ -28,5 +28,8 @@
   "contactSent": "謝謝。這是一個入門專案，沒有傳送任何內容。",
   "contactSend": "傳送",
   "popupLede": "一個由 Vite 建置、已套用標準的擴充功能。",
-  "popupGate": "執行 <code>{command}</code> 以進行完整的檢查關卡。"
+  "gateHint": "執行 <code>{command}</code> 以進行完整的檢查關卡。",
+  "homeLedeReact": "React、Vite，以及已經套用的標準。",
+  "homeAdd": "加一",
+  "homeCaption": "保存在 store 中，跨所有頁面共用。"
 }

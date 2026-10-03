@@ -28,5 +28,8 @@
   "contactSent": "감사합니다. 스타터이므로 아무것도 전송되지 않았습니다.",
   "contactSend": "보내기",
   "popupLede": "Vite로 빌드되고 표준이 이미 적용된 확장 프로그램입니다.",
-  "popupGate": "전체 게이트를 실행하려면 <code>{command}</code>를 실행하세요."
+  "gateHint": "전체 게이트를 실행하려면 <code>{command}</code>를 실행하세요.",
+  "homeLedeReact": "React, Vite, 그리고 이미 적용된 표준.",
+  "homeAdd": "하나 더하기",
+  "homeCaption": "스토어에 보관되어 모든 페이지에서 유지됩니다."
 }
