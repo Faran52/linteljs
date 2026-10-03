@@ -5,6 +5,7 @@ import {
   type Condition,
   contactGates,
   type GateRow,
+  homeGates,
   mswGates,
   NOT_TANSTACK_QUERY,
   TAILWIND,
@@ -12,10 +13,8 @@ import {
   walkGates,
   WITH_FORM,
   WITH_I18N,
-  WITH_STORE,
   WITHOUT_FORM,
   WITHOUT_I18N,
-  WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -185,8 +184,7 @@ const GATES: GateRow[] = [
   ...contactGates(['tanstack-query']),
   ['src/views/routes.ts', WITHOUT_FORM],
   ['src/views/routes.ts@with-form', WITH_FORM],
-  ['src/views/HomeView.vue', WITHOUT_STORE],
-  ['src/views/HomeView.vue@with-store', WITH_STORE],
+  ...homeGates('src/views/HomeView.vue'),
   ['src/views/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

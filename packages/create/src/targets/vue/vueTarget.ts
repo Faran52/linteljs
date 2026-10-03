@@ -9,7 +9,11 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -90,17 +94,17 @@ export const vueTarget: TargetBuilder = () => {
       ...filesAt(SHARED, {
         shared: true,
       }),
-      {
+      ...translated<StarterFile>({
         target: 'src/views/HomeView.vue',
         when: (answers) => {
           return !hasStore(answers);
         },
-      },
-      {
+      }),
+      ...translated<StarterFile>({
         target: 'src/views/HomeView.vue',
         when: hasStore,
         variant: 'with-store',
-      },
+      }),
       { target: 'src/components/ui/app-button/AppButton.vue' },
       ...filesAt(FORM_FILES, {
         when: hasForm,

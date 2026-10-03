@@ -32,5 +32,6 @@
   "homeLedeReact": "React و Vite، والمعيار مطبّق مسبقًا.",
   "homeAdd": "أضف واحدًا",
   "homeCaption": "محفوظ في مخزن، عبر كل الصفحات.",
-  "homeLedeNext": "Next و App Router، والمعيار مطبّق مسبقًا."
+  "homeLedeNext": "Next و App Router، والمعيار مطبّق مسبقًا.",
+  "homeLedeVue": "Vue و Vite، والمعيار مطبّق مسبقًا."
 }

@@ -114,6 +114,19 @@ describe('App', () => {
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
 
+  it('speaks the language chosen on the home page', async () => {
+    const app = await open('/');
+
+    await app
+      .find('header select')
+      .setValue(last);
+
+    const lede = app
+      .find('.lede')
+      .text();
+    expect(lede).toBe(chosen.homeLedeVue);
+  });
+
   it('shows the 404 page, under the header, for a path no route matches', async () => {
     const app = await open('/missing');
 

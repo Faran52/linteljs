@@ -192,8 +192,8 @@ when a version's change lives in a sibling it is described there instead:
 - Every starter document head carries a description meta, which Lighthouse's SEO audit asks for.
 - Every target that serves a public directory ships a `robots.txt`, so a single-page app no longer answers
   `/robots.txt` with its HTML shell.
-- A translated React or Next home page speaks the chosen language: its lede, the store's button and caption, and the
-  gate hint, where they were English. The popup's `popupGate` key is now `gateHint`, which both read.
+- A translated React, Next or Vue home page speaks the chosen language: its lede, the store's button and caption, and
+  the gate hint, where they were English. The popup's `popupGate` key is now `gateHint`, which both read.
 
 ## 1.5.3
 

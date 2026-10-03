@@ -32,5 +32,6 @@
   "homeLedeReact": "React、Vite，以及已经应用的标准。",
   "homeAdd": "加一",
   "homeCaption": "保存在 store 中，跨所有页面共享。",
-  "homeLedeNext": "Next、App Router，以及已经应用的标准。"
+  "homeLedeNext": "Next、App Router，以及已经应用的标准。",
+  "homeLedeVue": "Vue、Vite，以及已经应用的标准。"
 }
