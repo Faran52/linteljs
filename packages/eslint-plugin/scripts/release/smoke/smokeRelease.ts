@@ -272,7 +272,7 @@ for (const file of readdirSync(distDir)) {
 
 log('no dangling sourcemap, no runtime dependency, no API newer than the declared Node floor');
 
-// Every version has published this path, which the move into `src/rules/` once dropped.
+// Every version has published this path.
 const docsDir = join(pkgDir, 'docs', 'rules');
 const packedDocs = readdirSync(docsDir)
   .sort(alphabetically);

@@ -141,7 +141,7 @@ const nameAfter = (tokens: Token[], from: number): Token | undefined => {
   return undefined;
 };
 
-// Text alone cannot see a note that moved, which is how a 1.0.1 fix walked every trailing note down a line.
+// Text alone cannot see a trailing note that moved down a line.
 const commentAnchors = ({ tokens, comments }: Parsed): string[] => {
   let index = 0;
 

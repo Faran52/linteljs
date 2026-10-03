@@ -402,7 +402,7 @@ export const asyncReturnHandlerCase: Build = (state) => {
   });
 };
 
-// Textual and over-skipping: `const [monaco, setMonaco]` was once reported as a rule defect.
+// Textual and over-skipping: a missed shadow, such as `const [monaco, setMonaco]`, reads as a rule defect.
 const shadowsName = (state: State, node: AstNode, name: string): boolean => {
   const escaped = escapeName(name);
   const declares = new RegExp(String.raw`\b(?:const|let|var|function|class)\b[^;=]*\b${escaped}\b`);
@@ -433,7 +433,7 @@ const namespaceImportOf = (node: AstNode): AstNode | undefined => {
     : undefined;
 };
 
-// Three depths: the ported rule resolved names in the immediate scope only.
+// Three depths: a rule that resolves names in the immediate scope only passes one.
 export const namespaceDestructureCase = (place: 'block' | 'function' | 'module'): Build => {
   return (state) => {
     if (state.source.includes(PROBE_BINDING)) {
