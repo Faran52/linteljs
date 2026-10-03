@@ -30,7 +30,7 @@ it('gives every outer ring but the pipeline a world', () => {
 const importsBySource = (): [string, string[]][] => {
   return modulesIn(import.meta.dirname)
     .filter((path) => {
-      return path.endsWith('.ts') && !path.endsWith('.test.ts') && !path.startsWith('pipeline/e2e/');
+      return path.endsWith('.ts') && !path.endsWith('.test.ts');
     })
     .map((path) => {
       const text = readFileSync(join(import.meta.dirname, path), 'utf8');

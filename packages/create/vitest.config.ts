@@ -13,6 +13,7 @@ export default defineConfig({
     testTimeout: 30000,
     include: [
       'src/**/*.test.ts',
+      'e2e/**/*.test.ts',
       'templates/project/scripts/**/*.test.ts',
       'templates/project/plugins/**/*.test.ts',
     ],

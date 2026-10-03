@@ -1026,7 +1026,7 @@ describe('base: size', () => {
     '__mocks__/handlers.ts',
     'src/__mocks__/fixtures/big.ts',
     'e2e/checkout.ts',
-    'packages/create/src/pipeline/e2e/runner/runner.ts',
+    'packages/create/e2e/runner/runner.ts',
   ])('holds neither limit on the test file %s', async (path) => {
     const code = `${codeLines(900)}${functionOf(400)}`;
     const ruleIds = await ruleIdsFor(base(), code, path);

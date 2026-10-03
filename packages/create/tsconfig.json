@@ -12,6 +12,7 @@
 
     "paths": {
       "@mocks/*": ["./__mocks__/*"],
+      "@e2e/*": ["./e2e/*"],
       "@answers": ["./src/answers/index.ts"],
       "@answers/*": ["./src/answers/*"],
       "@config/*": ["./src/config/*"],
@@ -34,6 +35,7 @@
     "bin/**/*.ts",
     "src/**/*.ts",
     "__mocks__/**/*.ts",
+    "e2e/**/*.ts",
     "scripts/**/*.ts",
     "templates/project/scripts/**/*.ts",
     "templates/project/plugins/**/*.ts",

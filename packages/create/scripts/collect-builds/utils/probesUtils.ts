@@ -8,7 +8,7 @@ import type {
   HostedFramework,
   TargetId,
 } from '@config/types';
-import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
+import type { E2eCase } from '@e2e/matrix/matrix';
 
 // Everything on, so one run per target covers it.
 const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined): Answers => {

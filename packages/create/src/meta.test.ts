@@ -49,7 +49,7 @@ interface Subject {
 
 const srcDir = join(import.meta.dirname);
 
-const SHARED = new Set(['utils', 'e2e']);
+const SHARED = new Set(['utils']);
 
 const kebab = (key: string): string => {
   return key

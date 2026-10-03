@@ -13,8 +13,8 @@ import { parseArgs } from 'node:util';
 
 import PQueue from 'p-queue';
 
-import { STARTER_CASES } from '@pipeline/e2e/starter-cover/constants';
-import { starterCases } from '@pipeline/e2e/starter-cover/starterCover';
+import { STARTER_CASES } from '@e2e/starter-cover/constants';
+import { starterCases } from '@e2e/starter-cover/starterCover';
 
 import {
   log,
@@ -41,7 +41,7 @@ import {
   writeAgreed,
 } from './utils/caseUtils.ts';
 
-import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
+import type { E2eCase } from '@e2e/matrix/matrix';
 
 type Outcome = 'linted' | 'unchanged' | 'failed';
 

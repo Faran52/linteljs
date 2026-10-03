@@ -1453,7 +1453,7 @@ each framework import reads as an error type. The walk that preceded this one li
 rules off by name, so a `safeParse` read as `{ issues }` against Zod 4, a props type resolved to `any` across a
 component boundary or a promise dropped from a blur handler reached the end-to-end suite before anything saw it.
 
-Its scope is the template texts: `STARTER_CASES` in `packages/create/src/pipeline/e2e/starter-cover/` names 62 e2e
+Its scope is the template texts: `STARTER_CASES` in `packages/create/e2e/starter-cover/` names 62 e2e
 cases that between them write every distinct text a starter template can become (781 on 2026-10-02, per target and destination,
 the joined test setup included), and `starterCover.test.ts` fails when a template, a transform or a new answer
 leaves a text no case writes, naming the labels that would reach it. What the emitters write themselves is left to
@@ -1691,9 +1691,9 @@ are built from answers, and a copy of the defaults in `__mocks__/` would be a se
 Which folder a module belongs to is read off its import lines: `node:fs` means `disk/`, `node:child_process` means
 `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may reach a world, so the only route to a
 disk is a function that can be substituted, and `answers/`, `targets/` and `emitters/` are provably pure. The
-patterns and the exemptions are built from `WORLDS` in `rings.ts`: a ring is exempt from the world it owns, and
-`pipeline/e2e/` is exempt besides, because it is the harness rather than the package and spawning real managers is
-all it does. `pipeline/` owns no world, so the rest of it is held like any inner ring.
+patterns and the exemptions are built from `WORLDS` in `rings.ts`: a ring is exempt from the world it owns. The e2e
+harness spawns real managers and nothing else, so it lives outside `src/` in `packages/create/e2e/` and the block
+never reaches it. `pipeline/` owns no world, so it is held like any inner ring.
 
 `node:path`, `node:os` and `node:url` are not restricted: path arithmetic touches nothing. `spawns/` reaches `disk/`
 for one thing, `isExecutableFile`, which is how a binary on `PATH` is resolved: a filesystem question only a spawner
@@ -1785,7 +1785,7 @@ named one by one, so another site has to be added on purpose.
 
 ### `@linteljs/workspace/e2e-test`
 
-`targets.e2e.test.ts` under `pipeline/e2e/targets/` is `it.concurrent.each(cases)(label, runE2eCase)` per target,
+`targets.e2e.test.ts` under `packages/create/e2e/targets/` is `it.concurrent.each(cases)(label, runE2eCase)` per target,
 and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body for `expect` calls and
 finds no body, since the helper is passed by reference. Measured: `assertFunctionNames: ['runE2eCase']` does not help,
 because it matches calls inside the body and there is no call. Off for that directory alone.
@@ -1799,10 +1799,10 @@ One global block at 100% rather than a key per package. A glob key takes its fil
 with keys a folder nobody named stays ungated; with one global block every file in `coverage.include` is held, and a
 file joins the gate the moment it is included.
 
-The end-to-end harness (`e2e/browser/`, `e2e/registry/`, `e2e/runner/`, `e2e/targets/`, `e2e/utils/` and the files
-at `e2e/`'s top level) is excluded: it spawns, publishes and needs the registry, so it runs only under `test:e2e`, and a helper there
-would land as a 0% file against a 100% threshold. `e2e/matrix/` and `e2e/starter-cover/` are pure and run in the default suite, so they are
-held to the gate. Beyond each package's `src/`, the include names five `utils/` modules of the plugin's real-code
+The end-to-end harness sits in `packages/create/e2e/`, outside every `src/`, so the include never reaches it: it
+spawns, publishes and needs the registry, and a helper there would land as a 0% file against a 100% threshold. Its
+pure suites (`matrix/`, `starter-cover/`) still run in the default suite, held by their assertions rather than the
+gate. Beyond each package's `src/`, the include names five `utils/` modules of the plugin's real-code
 audit, the pure half of a script that otherwise spawns, each with its own suite. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
 `process.argv` and sets `process.exitCode`, and `main` is a function from an argv array to an exit code that
 `cli.test.ts` calls directly.

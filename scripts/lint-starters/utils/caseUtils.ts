@@ -21,9 +21,9 @@ import { versions } from 'node:process';
 import { promisify } from 'node:util';
 
 import { TEMPLATES_ROOT } from '@disk';
+import { writtenOf } from '@e2e/starter-cover/starterCover';
 import { starterSourceEmitter } from '@emitters';
 import { pipelineRun } from '@pipeline';
-import { writtenOf } from '@pipeline/e2e/starter-cover/starterCover';
 
 import { packTarball, run } from '../../utils/processUtils.ts';
 import {
@@ -39,7 +39,7 @@ import {
   UNSTAMPED,
 } from '../constants.ts';
 
-import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
+import type { E2eCase } from '@e2e/matrix/matrix';
 import type { PipelineOptions } from '@pipeline/runs/pipeline/pipelineRun';
 
 export interface Tarballs {

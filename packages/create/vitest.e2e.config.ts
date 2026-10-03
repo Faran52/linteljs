@@ -9,8 +9,8 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    include: ['src/**/*.e2e.test.ts'],
-    globalSetup: ['src/pipeline/e2e/registry/registry.ts'],
+    include: ['e2e/**/*.e2e.test.ts'],
+    globalSetup: ['e2e/registry/registry.ts'],
     // `createProject` holds one install per binary at a time, so no manager's cache meets a second writer.
     fileParallelism: false,
     // `ng build` measured 65s alone against over fifteen minutes with three siblings.

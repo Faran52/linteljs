@@ -10,8 +10,8 @@ import process, { env, execPath } from 'node:process';
 
 import { Semaphore } from 'es-toolkit';
 
-import { type E2eRegistry, startRegistry } from '@pipeline/e2e/registry/registry';
-import { answerFlags } from '@pipeline/e2e/utils/workspaceUtils';
+import { type E2eRegistry, startRegistry } from '@e2e/registry/registry';
+import { answerFlags } from '@e2e/utils/workspaceUtils';
 
 import {
   log,
@@ -28,7 +28,7 @@ import {
 } from './utils/passesUtils.ts';
 import { probes } from './utils/probesUtils.ts';
 
-import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
+import type { E2eCase } from '@e2e/matrix/matrix';
 
 const MANAGERS: Collected[] = ['pnpm', 'npm'];
 const CONCURRENCY = Number(env['COLLECT_CONCURRENCY'] ?? DEFAULT_CONCURRENCY);

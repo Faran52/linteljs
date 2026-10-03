@@ -59,6 +59,7 @@
       "@config/*": ["./packages/create/src/config/*"],
       "@disk": ["./packages/create/src/disk/index.ts"],
       "@disk/*": ["./packages/create/src/disk/*"],
+      "@e2e/*": ["./packages/create/e2e/*"],
       "@emitters": ["./packages/create/src/emitters/index.ts"],
       "@emitters/*": ["./packages/create/src/emitters/*"],
       "@pipeline": ["./packages/create/src/pipeline/index.ts"],

@@ -27,7 +27,8 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - **Membership is the world a module reaches**, readable off its imports: `node:fs` means `disk/`,
   `node:child_process` means `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may
   reach a world, so the inner rings stay pure. Caught by `no-restricted-imports`
-  (`@linteljs/workspace/create-worlds`); `pipeline/e2e/` is exempt, since it spawns real package managers.
+  (`@linteljs/workspace/create-worlds`). The e2e harness, which spawns real package managers, lives outside
+  `src/` in `packages/create/e2e/`.
 - **The inner four point one way**: `answers/` to `targets/` to `utils/` to `config/`. That is why the answer
   unions and `Answers` live in `config/types.ts`, with each record `satisfies` its own union.
   `answers/registry.test.ts` holds `Answers` to one field per record.

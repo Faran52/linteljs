@@ -74,11 +74,6 @@ const config = {
     `${partGlob}/*.ts`,
     '!src/**/*.test.ts',
     '!src/**/types.ts',
-    '!src/pipeline/e2e/*.ts',
-    '!src/pipeline/e2e/registry/**',
-    '!src/pipeline/e2e/runner/**',
-    '!src/pipeline/e2e/targets/**',
-    '!src/pipeline/e2e/utils/**',
     ...earlierParts,
   ],
 

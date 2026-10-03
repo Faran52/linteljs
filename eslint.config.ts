@@ -74,14 +74,19 @@ const config = [
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
+      'packages/create/e2e/**/*.ts': 'CAMEL_CASE',
       'packages/create/templates/project/{scripts,plugins}/**/*.ts': 'CAMEL_CASE',
       // docs/DESIGN.md: `'**/utils/*.ts': '*Utils'`
       '**/utils/*.ts': '*Utils',
     },
     folderNaming: {
       'packages/*/src/**/': 'KEBAB_CASE',
+      'packages/create/e2e/**/': 'KEBAB_CASE',
     },
-    aliases,
+    aliases: {
+      ...aliases,
+      '@e2e/*': 'packages/create/e2e/*',
+    },
     // docs/DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
     resolver: {
       project: 'packages/*/tsconfig.json',
@@ -132,7 +137,6 @@ const config = [
         .map((name) => {
           return `${ring(name)}/**`;
         }),
-      'packages/create/src/pipeline/e2e/**',
       '**/*.test.ts',
     ],
     rules: {
@@ -206,7 +210,7 @@ const config = [
   // `runE2eCase` is passed by reference, out of the rule's reach. docs/DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
-    files: ['packages/create/src/pipeline/e2e/targets/*.e2e.test.ts'],
+    files: ['packages/create/e2e/targets/*.e2e.test.ts'],
     rules: { 'vitest/expect-expect': 'off' },
   },
 ];

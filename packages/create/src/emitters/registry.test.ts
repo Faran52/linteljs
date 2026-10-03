@@ -51,7 +51,7 @@ import {
   shippedAssetsReader,
   TEMPLATES_ROOT,
 } from '@disk';
-import { targetCases } from '@pipeline/e2e/matrix/matrix';
+import { targetCases } from '@e2e/matrix/matrix';
 import { targetFor } from '@targets';
 
 import { buildArtifacts, seedArtifacts } from './registry';

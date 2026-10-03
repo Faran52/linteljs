@@ -11,7 +11,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"packages/*/src/**/*.css\" \"packages/create/templates/**/*.css\" --allow-empty-input",
-    "lint:types": "node scripts/checkBannedPatterns.ts packages/*/src packages/*/__mocks__",
+    "lint:types": "node scripts/checkBannedPatterns.ts packages/*/src packages/*/__mocks__ packages/create/e2e",
     "audit:ignores": "tsx scripts/audit-ignores/auditIgnoresScript.ts",
     "lint:starters": "tsx scripts/lint-starters/lintStartersScript.ts",
     "lint:starters:fix": "tsx scripts/lint-starters/lintStartersScript.ts --fix",
