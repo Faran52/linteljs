@@ -100,11 +100,12 @@ describe('linteljsConfigReader', () => {
   });
 
   it.each([
-    ['live', emitLinteljsConfig(DEFAULT_ANSWERS)],
+    ['live', DEFAULT_ANSWERS],
     ['dangling', null],
-  ])('rejects a %s symbolic-link config without touching its target', async (_case, original) => {
+  ])('rejects a %s symbolic-link config without touching its target', async (_case, answers) => {
     const target = join(external, 'actual-config.json');
     const path = join(cwd, CONFIG_PATH);
+    const original = answers === null ? null : emitLinteljsConfig(answers);
 
     if (original !== null) {
       await writeFile(target, original, 'utf8');

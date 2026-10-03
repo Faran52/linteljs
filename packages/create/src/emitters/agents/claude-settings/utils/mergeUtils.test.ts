@@ -38,8 +38,6 @@ interface MergedSettings {
   extraKnownMarketplaces: Record<string, MergedMarketplace>;
 }
 
-const OURS = emitClaudeSettings(['context7']);
-
 const THEIRS = `${JSON.stringify({
   includeCoAuthoredBy: false,
   hooks: {
@@ -69,7 +67,8 @@ const isMergedSettings = (value: unknown): value is MergedSettings => {
 };
 
 const parsedMerge = (current: string | null): MergedSettings => {
-  const value: unknown = JSON.parse(mergeClaudeSettings(OURS, current));
+  const ours = emitClaudeSettings(['context7']);
+  const value: unknown = JSON.parse(mergeClaudeSettings(ours, current));
 
   if (!isMergedSettings(value)) {
     throw new Error('merged settings are not an object with enabledPlugins');
@@ -80,8 +79,9 @@ const parsedMerge = (current: string | null): MergedSettings => {
 
 describe('mergeClaudeSettings', () => {
   it('writes the emitted file unchanged when there is nothing on disk', () => {
-    const mergedClaudeSettings = mergeClaudeSettings(OURS, null);
-    expect(mergedClaudeSettings).toBe(OURS);
+    const ours = emitClaudeSettings(['context7']);
+    const mergedClaudeSettings = mergeClaudeSettings(ours, null);
+    expect(mergedClaudeSettings).toBe(ours);
   });
 
   it('leaves a project that wants the trailer alone', () => {
@@ -153,11 +153,12 @@ describe('mergeClaudeSettings', () => {
   });
 
   it('falls back to the emitted file when what is there is not usable', () => {
-    const overMalformed = mergeClaudeSettings(OURS, '{ not json');
-    expect(overMalformed).toBe(OURS);
-    const overArray = mergeClaudeSettings(OURS, '["an array"]');
-    expect(overArray).toBe(OURS);
-    const overNull = mergeClaudeSettings(OURS, 'null');
-    expect(overNull).toBe(OURS);
+    const ours = emitClaudeSettings(['context7']);
+    const overMalformed = mergeClaudeSettings(ours, '{ not json');
+    expect(overMalformed).toBe(ours);
+    const overArray = mergeClaudeSettings(ours, '["an array"]');
+    expect(overArray).toBe(ours);
+    const overNull = mergeClaudeSettings(ours, 'null');
+    expect(overNull).toBe(ours);
   });
 });

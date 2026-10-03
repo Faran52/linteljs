@@ -40,6 +40,15 @@ const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
 const SURFACES = valuesOf(ANSWERS.surfaces.values);
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
+// Pinned so the axis table is built without a record at collection; the first suite holds it to the records.
+const HOSTS: Partial<Record<TargetId, Pick<TargetRecord, 'hostsBrowser' | 'hostsFramework'>>> = {
+  astro: { hostsFramework: true },
+  webextension: {
+    hostsBrowser: true,
+    hostsFramework: true,
+  },
+};
+
 const recordFor = (target: TargetId): TargetRecord => {
   return targetFor({
     ...DEFAULT_ANSWERS,
@@ -100,7 +109,7 @@ const caseFor = (
 };
 
 const axesOf = (base: Answers): Axes => {
-  const { hostsBrowser, hostsFramework } = targetFor(base);
+  const { hostsBrowser, hostsFramework } = HOSTS[base.target] ?? {};
 
   const axes: Axes = {
     browsers: [undefined],
@@ -120,10 +129,10 @@ const axesOf = (base: Answers): Axes => {
   return axes;
 };
 
-const axisCases = (): [string, Answers][] => {
+const axisCases = (targets: readonly TargetId[] = TARGET_IDS): [string, Answers][] => {
   const cases: [string, Answers][] = [];
 
-  for (const target of TARGET_IDS) {
+  for (const target of targets) {
     const base: Answers = {
       ...DEFAULT_ANSWERS,
       target,
@@ -153,6 +162,30 @@ describe('TARGETS', () => {
     for (const id of TARGET_IDS) {
       expect(recordFor(id).id).toBe(id);
     }
+  });
+
+  it('hosts a browser or a framework exactly where the axis table expects', () => {
+    const hosting = TARGET_IDS
+      .map((id) => {
+        const { hostsBrowser, hostsFramework } = recordFor(id);
+        const row = {
+          id,
+          hostsBrowser,
+          hostsFramework,
+        };
+
+        return row;
+      });
+    const expected = TARGET_IDS
+      .map((id) => {
+        const row = {
+          id,
+          ...HOSTS[id],
+        };
+
+        return row;
+      });
+    expect(hosting).toEqual(expected);
   });
 
   it('holds exactly the nine known targets, no more and no fewer', () => {
@@ -457,15 +490,17 @@ describe('a framework layer and the plugins it loads', () => {
 });
 
 describe('the emitted naming map on a utils file', () => {
-  const namingCases = axisCases()
-    .filter(([, answers], index, cases) => {
-      const naming = JSON.stringify(targetFor(answers).naming);
+  const namingCasesOf = (target: TargetId): [string, Answers][] => {
+    return axisCases([target])
+      .filter(([, answers], index, cases) => {
+        const naming = JSON.stringify(targetFor(answers).naming);
 
-      return cases
-        .findIndex(([, other]) => {
-          return JSON.stringify(targetFor(other).naming) === naming;
-        }) === index;
-    });
+        return cases
+          .findIndex(([, other]) => {
+            return JSON.stringify(targetFor(other).naming) === naming;
+          }) === index;
+      });
+  };
 
   const findingsOn = async (answers: Answers, path: string): Promise<string[]> => {
     const { naming, folderNaming } = targetFor(answers);
@@ -489,7 +524,7 @@ describe('the emitted naming map on a utils file', () => {
       });
   };
 
-  it.each(namingCases)('holds %s to the Utils suffix, in its own case', async (_label, answers) => {
+  const utilsFindingsOn = async (answers: Answers): Promise<string[][]> => {
     const suffixed = answers.target === 'angular' ? 'fetch-extended-utils' : 'fetchExtendedUtils';
     const bare = answers.target === 'angular' ? 'fetch-extended' : 'fetchExtended';
     const suffixedFindings = await findingsOn(answers, `src/lib/utils/${suffixed}.ts`);
@@ -503,12 +538,24 @@ describe('the emitted naming map on a utils file', () => {
       bareFindings,
     ];
 
-    const expected = [
-      [],
-      [],
-      [],
-      ['check-file/filename-naming-convention'],
-    ];
-    expect(findings).toEqual(expected);
+    return findings;
+  };
+
+  it.each(TARGET_IDS)('holds each naming map %s emits to the Utils suffix, in its own case', async (target) => {
+    const actual: Record<string, string[][]> = {};
+    const expected: Record<string, string[][]> = {};
+
+    for (const [label, answers] of namingCasesOf(target)) {
+      actual[label] = await utilsFindingsOn(answers);
+
+      expected[label] = [
+        [],
+        [],
+        [],
+        ['check-file/filename-naming-convention'],
+      ];
+    }
+
+    expect(actual).toEqual(expected);
   });
 });

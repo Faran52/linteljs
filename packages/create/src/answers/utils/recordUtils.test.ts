@@ -1,4 +1,4 @@
-import { targetFor } from '@targets';
+import { targetFor, type TargetRecord } from '@targets';
 
 import { dataAnswer } from '../libraries/data/dataAnswer';
 import { formAnswer } from '../libraries/form/formAnswer';
@@ -7,13 +7,16 @@ import { DEFAULT_ANSWERS } from '../registry';
 
 import { onlyFor, refusedValue } from './recordUtils';
 
-describe('refusedValue', () => {
-  const vue = targetFor({
+const vueRecord = (): TargetRecord => {
+  return targetFor({
     ...DEFAULT_ANSWERS,
     target: 'vue',
   });
+};
 
+describe('refusedValue', () => {
   it('names the value its target refuses, and nothing where it fits', () => {
+    const vue = vueRecord();
     const refused = refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS);
     expect(refused).toBe('react-hook-form');
     const fitting = refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS);
@@ -21,6 +24,7 @@ describe('refusedValue', () => {
   });
 
   it('refuses nothing that is not a string, however it reads', () => {
+    const vue = vueRecord();
     const actual = refusedValue(formAnswer, ['react-hook-form'], vue, DEFAULT_ANSWERS);
     expect(actual).toBeUndefined();
   });
