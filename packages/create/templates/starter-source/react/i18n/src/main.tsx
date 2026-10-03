@@ -1,10 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { applyDocumentDirection, initI18n } from '@i18n';
+
 import { App } from './App';
-import { applyDocumentDirection, initI18n } from './i18n';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
 
 import './index.css';
 

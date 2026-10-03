@@ -4,10 +4,12 @@ import {
   Show,
 } from 'solid-js';
 
-import { AppHeader } from './components/features/app-header/AppHeader';
-import { ErrorBoundary } from './components/features/error-boundary/ErrorBoundary';
-import { NAME } from './config/linteljs';
-import { ROUTES } from './pages/routes';
+import { NAME } from '@config/linteljs';
+
+import { AppHeader } from '@features/app-header/AppHeader';
+import { ErrorBoundary } from '@features/error-boundary/ErrorBoundary';
+
+import { ROUTES } from '@pages/routes';
 
 export interface AppProps {
   readonly initialPage?: string;

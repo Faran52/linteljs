@@ -4,9 +4,10 @@ import {
   screen,
 } from '@testing-library/react';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
 import { App } from './App';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
 
 import type { ReactNode } from 'react';
 

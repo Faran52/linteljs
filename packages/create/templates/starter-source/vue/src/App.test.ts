@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils';
 
+import { dataProvider } from '@lib/providers/data/dataProvider';
+import { storeProvider } from '@lib/providers/store/storeProvider';
+
+import { ROUTES } from '@views/routes';
+
 import App from './App.vue';
-import { dataProvider } from './lib/providers/data/dataProvider';
-import { storeProvider } from './lib/providers/store/storeProvider';
 import { router } from './router';
-import { ROUTES } from './views/routes';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   await router.push(path);

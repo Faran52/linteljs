@@ -1,8 +1,9 @@
 import { render } from 'solid-js/web';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
 import { App } from './App';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
 
 import './index.css';
 

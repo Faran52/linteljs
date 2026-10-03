@@ -8,12 +8,14 @@ import {
   ScrollRestoration,
 } from 'react-router';
 
-import { AppHeader } from './components/features/app-header/AppHeader';
-import { RouteError } from './components/features/route-error/RouteError';
-import { NAME } from './config/linteljs';
-import { initI18n } from './i18n';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
+import { NAME } from '@config/linteljs';
+
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { initI18n } from '@i18n';
+
+import { AppHeader } from '@features/app-header/AppHeader';
+import { RouteError } from '@features/route-error/RouteError';
 
 import './index.css';
 

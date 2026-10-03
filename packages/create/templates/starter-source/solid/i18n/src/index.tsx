@@ -1,9 +1,10 @@
 import { render } from 'solid-js/web';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { applyLanguage, detectLanguage } from '@i18n';
+
 import { App } from './App';
-import { applyLanguage, detectLanguage } from './i18n';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
 
 import './index.css';
 

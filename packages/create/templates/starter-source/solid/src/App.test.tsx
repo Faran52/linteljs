@@ -4,11 +4,14 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
+import { CHECK } from '@config/linteljs';
+
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
+import { ROUTES } from '@pages/routes';
+
 import { App } from './App';
-import { CHECK } from './config/linteljs';
-import { DataProvider } from './lib/providers/data/DataProvider';
-import { StoreProvider } from './lib/providers/store/StoreProvider';
-import { ROUTES } from './pages/routes';
 
 import type { JSX } from 'solid-js';
 

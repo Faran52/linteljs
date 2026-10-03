@@ -6,12 +6,14 @@ import {
   RouterProvider,
 } from '@tanstack/react-router';
 
-import { AppHeader } from './components/features/app-header/AppHeader';
-import { RouteError } from './components/features/route-error/RouteError';
-import { StatusPage } from './components/features/status-page/StatusPage';
-import { NAME } from './config/linteljs';
-import { STATUSES } from './config/statuses';
-import { ROUTES } from './pages/routes';
+import { NAME } from '@config/linteljs';
+import { STATUSES } from '@config/statuses';
+
+import { AppHeader } from '@features/app-header/AppHeader';
+import { RouteError } from '@features/route-error/RouteError';
+import { StatusPage } from '@features/status-page/StatusPage';
+
+import { ROUTES } from '@pages/routes';
 
 import type { FC } from 'react';
 

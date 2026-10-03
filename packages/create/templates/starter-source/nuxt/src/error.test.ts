@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { clearError, type NuxtError } from 'nuxt/app';
 
-import { STATUSES } from './config/statuses';
+import { STATUSES } from '@config/statuses';
+
 import ErrorPage from './error.vue';
 
 vi.mock('nuxt/app', () => {

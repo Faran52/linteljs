@@ -1,17 +1,19 @@
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import App from './App.vue';
-import { applyLanguage, directionOf } from './i18n';
+import { dataProvider } from '@lib/providers/data/dataProvider';
+import { storeProvider } from '@lib/providers/store/storeProvider';
+import { applyLanguage, directionOf } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
-} from './i18n/config';
-import { dataProvider } from './lib/providers/data/dataProvider';
-import { storeProvider } from './lib/providers/store/storeProvider';
+} from '@i18n/config';
+
+import { ROUTES } from '@views/routes';
+
+import App from './App.vue';
 import { router } from './router';
-import { ROUTES } from './views/routes';
 
 type Bundle = Readonly<Record<string, string>>;
 
