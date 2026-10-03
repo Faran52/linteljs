@@ -30,44 +30,48 @@ export interface SessionInput {
 type Field = 'command' | 'cursor_version' | 'cwd' | 'file_path' | 'filePath' | 'hook_event_name' | 'patch' | 'path'
   | 'session_id' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
 
-type FieldValue = object | string | undefined;
+export type Json = number | object | string;
 
 // A session id names a state file, so nothing but a plain token is accepted.
 const SESSION_ID = /^[\w-]+$/u;
 
 const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)$/u;
 
-const isObject = (value: unknown): value is object => {
+export const isObject = (value: unknown): value is object => {
   return typeof value === 'object' && value !== null;
 };
 
-// A payload is whatever the host sent, so a field is read only once it proves to be a string or an object.
-const isFieldEntry = (entry: [string, unknown]): entry is [string, object | string] => {
+// A payload is whatever the host sent, so a field is read only once it proves to be JSON its readers can narrow.
+const isJsonEntry = (entry: [string, unknown]): entry is [string, Json] => {
   const [, field] = entry;
-  return typeof field === 'string' || isObject(field);
+  return typeof field === 'number' || typeof field === 'string' || isObject(field);
 };
 
-const valueAt = (value: FieldValue, key: Field): FieldValue => {
+export const fieldAt = (value: Json | undefined, key: string): Json | undefined => {
   if (typeof value !== 'object') {
     return undefined;
   }
 
-  const fields = new Map(Object.entries(value).filter(isFieldEntry));
+  const field = Object.entries(value)
+    .filter(isJsonEntry)
+    .find(([name]) => {
+      return name === key;
+    });
 
-  return fields.get(key);
+  return field?.[1];
 };
 
-const stringAt = (value: FieldValue, key: Field): string | undefined => {
-  const field = valueAt(value, key);
+const stringAt = (value: Json | undefined, key: Field): string | undefined => {
+  const field = fieldAt(value, key);
   return typeof field === 'string' ? field : undefined;
 };
 
 // Copilot CLI sends `toolArgs` as JSON text and its SDK as an object, so both read as the object.
 const toolArgumentsOf = (payload: object): object | undefined => {
-  const toolArguments = valueAt(payload, 'toolArgs');
+  const toolArguments = fieldAt(payload, 'toolArgs');
 
   if (typeof toolArguments !== 'string') {
-    return toolArguments;
+    return typeof toolArguments === 'object' ? toolArguments : undefined;
   }
 
   try {
@@ -88,8 +92,8 @@ export const hostOf = (payload: object): Host => {
   return 'toolName' in payload ? 'copilot' : 'claude';
 };
 
-const toolInputOf = (payload: object, host: Host): FieldValue => {
-  return host === 'copilot' ? toolArgumentsOf(payload) : valueAt(payload, 'tool_input');
+const toolInputOf = (payload: object, host: Host): Json | undefined => {
+  return host === 'copilot' ? toolArgumentsOf(payload) : fieldAt(payload, 'tool_input');
 };
 
 // The process global, not `node:process`, which sets stdin non-blocking and fails a large read with EAGAIN.
@@ -142,7 +146,7 @@ export const readEdit = (payload: object): EditInput | undefined => {
   }
 
   const input = toolInputOf(payload, host);
-  const response = valueAt(payload, 'tool_response');
+  const response = fieldAt(payload, 'tool_response');
   const named = [
     stringAt(input, 'file_path'),
     stringAt(input, 'path'),

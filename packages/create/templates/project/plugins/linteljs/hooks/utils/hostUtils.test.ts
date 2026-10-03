@@ -78,6 +78,7 @@ describe('readCommand', () => {
   it.each([
     ['text that is not JSON', 'git status'],
     ['JSON that is no object', '42'],
+    ['neither text nor an object', 42],
   ])('reads nothing from Copilot arguments that are %s', (_label, toolArgs) => {
     const command = readCommand({
       toolName: 'bash',

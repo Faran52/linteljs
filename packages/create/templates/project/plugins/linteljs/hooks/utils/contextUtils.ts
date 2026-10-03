@@ -14,7 +14,11 @@ import {
   TRANSCRIPT_TAIL_BYTES,
 } from '../constants.ts';
 
-type Json = number | object | string;
+import {
+  fieldAt,
+  isObject,
+  type Json,
+} from './hostUtils.ts';
 
 export interface SubagentRow {
   id: string;
@@ -26,25 +30,6 @@ const USAGE_KEYS = [
   'cache_read_input_tokens',
   'cache_creation_input_tokens',
 ];
-
-const isObject = (value: unknown): value is object => {
-  return typeof value === 'object' && value !== null;
-};
-
-const isJsonEntry = (entry: [string, unknown]): entry is [string, Json] => {
-  const [, field] = entry;
-  return typeof field === 'number' || typeof field === 'string' || isObject(field);
-};
-
-const fieldAt = (value: Json | undefined, key: string): Json | undefined => {
-  if (typeof value !== 'object') {
-    return undefined;
-  }
-
-  const fields = new Map(Object.entries(value).filter(isJsonEntry));
-
-  return fields.get(key);
-};
 
 const objectAt = (value: Json | undefined, key: string): object | undefined => {
   const field = fieldAt(value, key);
