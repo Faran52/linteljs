@@ -5,12 +5,11 @@ import {
   it,
 } from 'vitest';
 
+import { type Layer, type NamingMap } from '../../../types';
 import html from '../../html/htmlLayer';
 import base from '../baseLayer';
 
 import { buildNaming } from './checkFileUtils';
-
-import type { NamingMap } from '../../../types';
 
 const NAMING: NamingMap = {
   'src/components/**/*.tsx': 'PASCAL_CASE',
@@ -19,10 +18,14 @@ const NAMING: NamingMap = {
 
 const FOLDER_NAMING: NamingMap = { 'src/**/': 'KEBAB_CASE' };
 
-const layer = base({
-  naming: NAMING,
-  folderNaming: FOLDER_NAMING,
-});
+const layer = (): Layer => {
+  const built = base({
+    naming: NAMING,
+    folderNaming: FOLDER_NAMING,
+  });
+
+  return built;
+};
 
 const SOURCE = 'export const value = 1;\n';
 
@@ -62,30 +65,30 @@ describe('buildNaming', () => {
 
 describe('base: check-file', () => {
   it('accepts a PascalCase component and a camelCase module', async () => {
-    const ruleIds = await ruleIdsFor(layer, SOURCE, 'src/components/ui/Widget.tsx');
+    const ruleIds = await ruleIdsFor(layer(), SOURCE, 'src/components/ui/Widget.tsx');
     expect(ruleIds).not.toContain('check-file/filename-naming-convention');
 
-    const layerRuleIds = await ruleIdsFor(layer, SOURCE, 'src/lib/utils/formatDate.ts');
+    const layerRuleIds = await ruleIdsFor(layer(), SOURCE, 'src/lib/utils/formatDate.ts');
     expect(layerRuleIds).not.toContain('check-file/filename-naming-convention');
   });
 
   it('reports a kebab-case module where camelCase is configured', async () => {
-    const ruleIds = await ruleIdsFor(layer, SOURCE, 'src/lib/utils/format-date.ts');
+    const ruleIds = await ruleIdsFor(layer(), SOURCE, 'src/lib/utils/format-date.ts');
     expect(ruleIds).toContain('check-file/filename-naming-convention');
   });
 
   it('judges a test file on the name before the middle extension', async () => {
-    const ruleIds = await ruleIdsFor(layer, SOURCE, 'src/lib/utils/formatDate.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), SOURCE, 'src/lib/utils/formatDate.test.ts');
     expect(ruleIds).not.toContain('check-file/filename-naming-convention');
   });
 
   it('reports a folder that is not kebab-case', async () => {
-    const ruleIds = await ruleIdsFor(layer, SOURCE, 'src/lib/dateUtils/formatDate.ts');
+    const ruleIds = await ruleIdsFor(layer(), SOURCE, 'src/lib/dateUtils/formatDate.ts');
     expect(ruleIds).toContain('check-file/folder-naming-convention');
   });
 
   it('judges a file outside the script globs without losing the plugin', async () => {
-    const withHtml = [...layer, ...html()];
+    const withHtml = [...layer(), ...html()];
 
     const ruleIds = await ruleIdsFor(withHtml, '<!doctype html>\n', 'src/themeTokens/index.html');
     expect(ruleIds).toContain('check-file/folder-naming-convention');

@@ -9,6 +9,8 @@ import base from '../layers/base/baseLayer';
 
 import { presetOf, sonarjsRules } from './presetUtils';
 
+import type { Layer } from '../types';
+
 describe('presetOf', () => {
   it('wraps a single flat config in an array', () => {
     const config = {
@@ -71,17 +73,23 @@ describe('presetOf', () => {
 
 describe('sonarjsRules', () => {
   const rule = 'sonarjs/no-mutate-reactive-state-in-updated-hook';
-  const mutating = sonarjsRules('test/sonarjs', { [rule]: 'error' }, ['**/*.ts']);
+
+  const mutating = (): Layer => {
+    const built = sonarjsRules('test/sonarjs', { [rule]: 'error' }, ['**/*.ts']);
+
+    return built;
+  };
+
   const code = "import { ref } from 'vue';\n\nconst count = ref(0);\n\n"
     + 'export default { updated() { count.value++; } };\n';
 
   it('turns a sonarjs rule on with no other layer beneath it', async () => {
-    const ruleIds = await ruleIdsFor(mutating, code, 'src/card.ts');
+    const ruleIds = await ruleIdsFor(mutating(), code, 'src/card.ts');
     expect(ruleIds).toContain(rule);
   });
 
   it('registers the plugin object base registers, so the two compose', async () => {
-    const config = [...base(), ...mutating];
+    const config = [...base(), ...mutating()];
     const ruleIds = await ruleIdsFor(config, code, 'src/card.ts');
     expect(ruleIds).toContain(rule);
   });

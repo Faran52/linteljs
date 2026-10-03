@@ -20,17 +20,23 @@ import vue from '../vue/vueFramework';
 
 import nuxt, { nuxtGroup } from './nuxtFramework';
 
-const layer = [
-  ...base(),
-  ...typescript(),
-  ...vue(),
-  ...nuxt(),
-];
+import type { Layer } from '../../types';
+
+const layer = (): Layer => {
+  const built = [
+    ...base(),
+    ...typescript(),
+    ...vue(),
+    ...nuxt(),
+  ];
+
+  return built;
+};
 
 describe('nuxt', () => {
   it('lets a route file be one word, and still refuses one anywhere else', async () => {
-    const page = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'pages/about.vue'));
-    const component = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'badge.vue'));
+    const page = await ruleIdsForFile(layer(), join(SFC_FIXTURES, 'pages/about.vue'));
+    const component = await ruleIdsForFile(layer(), join(SFC_FIXTURES, 'badge.vue'));
 
     expect(page).not.toContain(null);
     expect(page).not.toContain('vue/multi-word-component-names');
@@ -38,7 +44,7 @@ describe('nuxt', () => {
   });
 
   it('keeps the vue layer underneath it', async () => {
-    const ruleIds = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
+    const ruleIds = await ruleIdsForFile(layer(), join(SFC_FIXTURES, 'Inaccessible.vue'));
 
     expect(ruleIds).not.toContain(null);
     const pluginReported = ruleIds.some(startsWith('vue'));
@@ -52,9 +58,9 @@ describe('nuxt', () => {
   ])('lets the route file %s be one word', async (path) => {
     const rule = 'vue/multi-word-component-names';
 
-    const enabledRuleIds = await enabledRuleIdsFor(layer, 'src/components/badge.vue');
+    const enabledRuleIds = await enabledRuleIdsFor(layer(), 'src/components/badge.vue');
     expect(enabledRuleIds).toContain(rule);
-    const layerEnabledRuleIds = await enabledRuleIdsFor(layer, path);
+    const layerEnabledRuleIds = await enabledRuleIdsFor(layer(), path);
     expect(layerEnabledRuleIds).not.toContain(rule);
   });
 

@@ -20,12 +20,16 @@ const CWD_SETTINGS: Layer = [{
   settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../../..') } },
 }];
 
-const layer = [
-  ...base(),
-  ...react(),
-  ...tailwind(),
-  ...CWD_SETTINGS,
-];
+const layer = (): Layer => {
+  const built = [
+    ...base(),
+    ...react(),
+    ...tailwind(),
+    ...CWD_SETTINGS,
+  ];
+
+  return built;
+};
 
 const ownBlockOf = (built: Layer): Layer[number] => {
   const block = built
@@ -49,7 +53,7 @@ describe('tailwind', () => {
       '',
     ];
     const code = lines.join('\n');
-    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/components/Card.tsx');
 
     expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');
   });
@@ -75,7 +79,7 @@ describe('tailwind', () => {
       '',
     ];
     const code = lines.join('\n');
-    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/components/Card.tsx');
 
     expect(ruleIds).toContain('better-tailwindcss/enforce-consistent-class-order');
   });
@@ -103,7 +107,7 @@ describe('tailwind', () => {
       '',
     ];
     const code = lines.join('\n');
-    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/components/Card.tsx');
 
     const pluginReported = ruleIds.some(startsWith('better-tailwindcss/'));
     expect(pluginReported).toBe(false);
@@ -118,7 +122,7 @@ describe('tailwind', () => {
     ];
     const code = lines.join('\n');
 
-    const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/components/Card.tsx');
     expect(ruleIds).not.toContain('better-tailwindcss/no-unknown-classes');
   });
 

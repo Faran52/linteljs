@@ -14,26 +14,32 @@ import base from '../base/baseLayer';
 
 import vitest from './vitestLayer';
 
+import type { Layer } from '../../types';
+
 const FOCUSED = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
 
 const TYPED = "import { expectTypeOf, it } from 'vitest';\n\n"
   + "it('mirrors', () => {\n  expectTypeOf<string>().toEqualTypeOf<string>();\n});\n";
 
 describe('vitest', () => {
-  const layer = [...base(), ...vitest()];
+  const layer = (): Layer => {
+    const built = [...base(), ...vitest()];
+
+    return built;
+  };
 
   it('reports a focused test', async () => {
-    const ruleIds = await ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), FOCUSED, 'src/lib/utils/sample.test.ts');
     expect(ruleIds).toContain('vitest/no-focused-tests');
   });
 
   it('counts a type assertion as an assertion', async () => {
-    const ruleIds = await ruleIdsFor(layer, TYPED, 'src/lib/utils/sample.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), TYPED, 'src/lib/utils/sample.test.ts');
     expect(ruleIds).not.toContain('vitest/expect-expect');
   });
 
   it('leaves a non-test file alone', async () => {
-    const ruleIds = await ruleIdsFor(layer, FOCUSED, 'src/lib/utils/sample.ts');
+    const ruleIds = await ruleIdsFor(layer(), FOCUSED, 'src/lib/utils/sample.ts');
     expect(ruleIds).not.toContain('vitest/no-focused-tests');
   });
 
@@ -41,14 +47,14 @@ describe('vitest', () => {
     ['expect', "import { expect, it } from 'vitest';\n\nit('adds', () => {\n  expect(1 + 1).toBe(2);\n});\n"],
     ['assertType', "import { assertType, it } from 'vitest';\n\nit('types', () => {\n  assertType<number>(1);\n});\n"],
   ])('counts %s as an assertion', async (_name, code) => {
-    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/lib/utils/sample.test.ts');
     expect(ruleIds).not.toContain('vitest/expect-expect');
   });
 
   it('accepts the message vitest takes as a second argument to expect', async () => {
     const code = "import { expect, it } from 'vitest';\n\nit('adds', () => {\n  expect(1 + 1, 'sum').toBe(2);\n});\n";
 
-    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/lib/utils/sample.test.ts');
     expect(ruleIds).not.toContain('vitest/valid-expect');
   });
 
@@ -56,12 +62,12 @@ describe('vitest', () => {
     const code = "import { expect, it } from 'vitest';\n\nconst label = 'sum';\n\n"
       + "it('adds', () => {\n  expect(1 + 1, label).toBe(2);\n});\n";
 
-    const ruleIds = await ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts');
+    const ruleIds = await ruleIdsFor(layer(), code, 'src/lib/utils/sample.test.ts');
     expect(ruleIds).not.toContain('vitest/valid-expect');
   });
 
   it('enables no framework rule on a suite', async () => {
-    const leaked = await frameworkRuleIdsFor(layer, 'src/lib/utils/sample.test.ts');
+    const leaked = await frameworkRuleIdsFor(layer(), 'src/lib/utils/sample.test.ts');
 
     expect(leaked).toStrictEqual([]);
   });
