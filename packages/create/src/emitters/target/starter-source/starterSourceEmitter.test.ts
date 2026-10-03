@@ -804,3 +804,18 @@ describe('the shared palette', () => {
     expect(shortfalls).toStrictEqual([]);
   });
 });
+
+// The name is whatever was typed: at a 360px popup it wraps rather than hiding behind an ellipsis.
+describe('the header brand', () => {
+  it('wraps the name in the plain sheet and in StyleX', async () => {
+    const sheet = await textOf({}, 'src/components/features/app-header/AppHeader.css');
+    const stylex = await textOf({ styling: 'stylex' }, 'src/components/features/app-header/styles.ts');
+    const plainBrand = /\.brand \{[^\}]*\}/v.exec(sheet)?.[0] ?? '';
+    const stylexBrand = /brand: \{[^\}]*\}/v.exec(stylex)?.[0] ?? '';
+
+    expect(plainBrand).toContain('overflow-wrap: anywhere;');
+    expect(plainBrand).not.toMatch(/nowrap|ellipsis/v);
+    expect(stylexBrand).toContain("overflowWrap: 'anywhere',");
+    expect(stylexBrand).not.toMatch(/nowrap|ellipsis/v);
+  });
+});

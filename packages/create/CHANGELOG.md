@@ -187,6 +187,8 @@ when a version's change lives in a sibling it is described there instead:
   is gone from `tokens.css` and the StyleX and Tailwind themes.
 - The Nuxt starter without translations sets `lang` on `<html>`, as every other target already does.
 - The web extension popup holds its content in a `<main>` landmark.
+- The header reads the project name in full at any width: a name too long for the row moves the nav below it
+  and wraps, where it used to end in an ellipsis at 360px.
 
 ## 1.5.3
 

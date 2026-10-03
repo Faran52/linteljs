@@ -20,17 +20,15 @@
   white-space: nowrap;
 }
 
-/* The name is whatever was typed, so it truncates rather than pushing the nav off. */
+/* The name is whatever was typed: one too long for the row sends the nav below it and wraps, never truncates. */
 .brand {
-  flex: 1;
+  flex: auto;
   min-width: 0;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: var(--text-ui);
   font-weight: 600;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .tabs {

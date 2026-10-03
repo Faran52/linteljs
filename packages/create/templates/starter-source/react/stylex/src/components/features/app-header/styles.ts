@@ -34,17 +34,15 @@ const sheet = stylex.create({
     whiteSpace: 'nowrap',
   },
 
-  // The name is whatever was typed, so it truncates rather than pushing the nav off.
+  // The name is whatever was typed: one too long for the row sends the nav below it and wraps, never truncates.
   brand: {
-    flex: '1',
+    flex: 'auto',
     minWidth: 0,
     margin: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
     fontSize: tokens.textUi,
     fontWeight: 600,
+    overflowWrap: 'anywhere',
     letterSpacing: '-0.01em',
-    whiteSpace: 'nowrap',
   },
 
   tabs: {
