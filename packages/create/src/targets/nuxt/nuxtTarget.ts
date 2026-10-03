@@ -140,9 +140,7 @@ export const nuxtTarget: TargetBuilder = () => {
       },
       ...localeFiles(),
       COOKIE_UTILS,
-      {
-        target: 'src/views/HomeView.vue',
-      },
+      ...translated<StarterFile>({ target: 'src/views/HomeView.vue' }),
       tailwindThemeFile(),
     ],
     starterTests: [
@@ -151,10 +149,10 @@ export const nuxtTarget: TargetBuilder = () => {
         shared: 'vue',
         names: SOURCE_ACCESSORS,
       }),
-      {
+      ...translated<StarterTest>({
         target: 'src/views/HomeView.test.ts',
         covers: 'src/views/HomeView.vue',
-      },
+      }),
       {
         target: 'src/views/AboutView.test.ts',
         covers: 'src/views/AboutView.vue',

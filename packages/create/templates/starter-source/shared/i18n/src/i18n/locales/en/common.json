@@ -33,5 +33,6 @@
   "homeAdd": "Add one",
   "homeCaption": "Held in a store, across every page.",
   "homeLedeNext": "Next, the App Router and the standard already applied.",
-  "homeLedeVue": "Vue, Vite and the standard already applied."
+  "homeLedeVue": "Vue, Vite and the standard already applied.",
+  "homeLedeNuxt": "Nuxt, Vue and the standard already applied."
 }

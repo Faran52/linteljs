@@ -55,6 +55,8 @@ const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
   'src/error.test.ts',
+  'src/views/HomeView.vue',
+  'src/views/HomeView.test.ts',
   'src/views/AboutView.vue',
   'src/views/VersionView.vue',
   'src/components/features/app-header/AppHeader.vue',
