@@ -1,7 +1,7 @@
 import routes from './routes';
 
 describe('routes', () => {
-  it('routes every page the starter ships, with home at the index', () => {
+  it('routes every page the starter ships, with home at the index and every other path last', () => {
     const files = routes.map((entry) => {
       return entry.file;
     });
@@ -11,6 +11,7 @@ describe('routes', () => {
       'routes/contact.tsx',
       'routes/about.tsx',
       'routes/version.tsx',
+      'routes/not-found.tsx',
     ];
     expect(files).toEqual(expected);
   });

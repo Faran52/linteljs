@@ -70,7 +70,7 @@ const Root = (): ReactNode => {
   return <Outlet />;
 };
 
-// A path nothing matches, a refused loader and a crash all land here, inside the layout.
+// A refused loader and a crash land here, inside the layout; a path no page claims is `routes/not-found.tsx`.
 export const ErrorBoundary = RouteError;
 
 export default Root;

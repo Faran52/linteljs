@@ -21,18 +21,19 @@ const withoutForm = (answers: Answers): boolean => {
   return isFrameworkMode(answers) && answers.form === undefined;
 };
 
-const PAGES = [
+const ROUTE_MODULES = [
   'home',
   'about',
   'version',
+  'not-found',
 ] as const;
 
 export const frameworkRouteFiles = (): StarterFile[] => {
   const files: StarterFile[] = [
-    ...PAGES
-      .map((page): StarterFile => {
+    ...ROUTE_MODULES
+      .map((module): StarterFile => {
         const file: StarterFile = {
-          target: `src/routes/${page}.tsx`,
+          target: `src/routes/${module}.tsx`,
           when: isFrameworkMode,
           variant: 'react-router-framework',
         };
@@ -61,11 +62,11 @@ export const frameworkRouteFiles = (): StarterFile[] => {
 
 export const frameworkRouteTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
-    ...PAGES
-      .map((page): StarterTest => {
+    ...ROUTE_MODULES
+      .map((module): StarterTest => {
         const test: StarterTest = {
-          target: `src/routes/${page}.test.tsx`,
-          covers: `src/routes/${page}.tsx`,
+          target: `src/routes/${module}.test.tsx`,
+          covers: `src/routes/${module}.tsx`,
           when: isFrameworkMode,
           variant: 'react-router-framework',
         };
