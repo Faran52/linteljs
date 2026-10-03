@@ -16,6 +16,10 @@ interface CallMatch {
   type: 'CallExpression' | 'NewExpression';
 }
 
+interface MemberMatch {
+  type: 'MemberExpression';
+}
+
 interface LiteralMatch {
   type: 'ArrayExpression' | 'ObjectExpression';
 }
@@ -23,6 +27,8 @@ interface LiteralMatch {
 type CallNode = Extract<RuleNode, CallMatch>;
 
 type LiteralNode = Extract<RuleNode, LiteralMatch>;
+
+type MemberNode = Extract<RuleNode, MemberMatch>;
 
 type PassesPosition = (parent: RuleNode, child: RuleNode) => boolean;
 
@@ -50,6 +56,9 @@ const CALL_TYPES = new Set(['CallExpression', 'NewExpression']);
 
 const LITERAL_TYPES = new Set(['ArrayExpression', 'ObjectExpression']);
 
+// A set, not `===`: only a member has an `object`, so a mutated comparison would change nothing.
+const MEMBER_TYPES = new Set(['MemberExpression']);
+
 const isWrapper = (parent: RuleNode): boolean => {
   return TRANSPARENT_TYPES.has(parent.type);
 };
@@ -70,15 +79,13 @@ const isBranch: PassesPosition = (parent, child) => {
 
 // The first parent that does not pass the position through, with the node it holds.
 const usingParentOf = (node: RuleNode, passesPosition: PassesPosition): [RuleNode, RuleNode] => {
-  let child = node;
-  let parent = mustFind(node.parent);
+  const parent = mustFind(node.parent);
 
-  while (passesPosition(parent, child)) {
-    child = parent;
-    parent = mustFind(child.parent);
+  if (passesPosition(parent, node)) {
+    return usingParentOf(parent, passesPosition);
   }
 
-  const pair: [RuleNode, RuleNode] = [child, parent];
+  const pair: [RuleNode, RuleNode] = [node, parent];
 
   return pair;
 };
@@ -113,7 +120,7 @@ const isInsideLiteral = (node: RuleNode): boolean => {
 const chainEndOf = (node: RuleNode): RuleNode => {
   const [child, member] = usingParentOf(node, isWrapper);
 
-  if (member.type !== 'MemberExpression' || !Object.is(member.object, child)) {
+  if (!isMemberNode(member) || !Object.is(member.object, child)) {
     return node;
   }
 
@@ -121,6 +128,10 @@ const chainEndOf = (node: RuleNode): RuleNode => {
   const isReceiver = call.type === 'CallExpression' && Object.is(call.callee, member);
 
   return isReceiver ? chainEndOf(call) : node;
+};
+
+const isMemberNode = (node: RuleNode): node is MemberNode => {
+  return MEMBER_TYPES.has(node.type);
 };
 
 const isEmptyLiteral = (node: LiteralNode): boolean => {
