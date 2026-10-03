@@ -107,4 +107,10 @@ describe('usage', () => {
     const text = usage();
     expect(text).toBe(expected);
   });
+
+  it('ends on the sync note', () => {
+    const text = usage();
+    const endsOnSync = text.endsWith('A missing dependency is printed as a command, never written.\n');
+    expect(endsOnSync).toBe(true);
+  });
 });
