@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import type { PackageManager } from '@config/types';
 
-// Not handed on: a config asking `process.env.VITEST === undefined` took its test branch under the harness.
+// Not handed on: a config asking `process.env.VITEST === undefined` would take its test branch under the harness.
 export const LAUNCHER_KEYS = new Set([
   'npm_execpath',
   'npm_node_execpath',

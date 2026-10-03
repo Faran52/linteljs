@@ -71,7 +71,6 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
 };
 
 const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
-  // One `why` per package.
   const version = registry.version.replaceAll('.', String.raw`\.`);
   const configPackages = ['@linteljs/eslint-plugin', '@linteljs/eslint-config'];
 

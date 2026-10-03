@@ -51,7 +51,7 @@ declare module 'vitest' {
   }
 }
 
-// bun's cache cannot tell these bytes from these versions exist, and only `@linteljs/*` is republished.
+// bun keeps bytes and its record of which versions exist in one cache, so only the republished `@linteljs/*` goes.
 const pruneBunCache = (): void => {
   const cache = join(CACHE_DIR, 'bun');
 

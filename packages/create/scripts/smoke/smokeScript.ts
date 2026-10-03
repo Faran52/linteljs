@@ -14,7 +14,7 @@ import { log } from '../../templates/project/scripts/utils/loggerUtils.ts';
 const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
 
-// At a word boundary: `--skip` was once a prefix of another flag.
+// At a word boundary, so a longer flag it prefixes cannot stand in for it.
 const FLAGS = [
   '--existing',
   '--no-install',
