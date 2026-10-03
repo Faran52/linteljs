@@ -1044,7 +1044,17 @@ describe('buildDependencies with languages', () => {
       target: 'webextension',
       languages: ['ja'],
     }));
+    const background = buildDevDependencies(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ja'],
+    }));
+    const backgroundInEnglish = buildDevDependencies(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+    }));
 
+    expect(background).toEqual(backgroundInEnglish);
     expect(translated).toHaveProperty('@inlang/paraglide-js');
     expect(translated).toHaveProperty('@inlang/plugin-message-format');
     expect(english).not.toHaveProperty('@inlang/paraglide-js');
@@ -1079,7 +1089,23 @@ describe('dependencyDrift', () => {
       name: '@linteljs/eslint-config',
       to: VERSIONS['@linteljs/eslint-config'],
     }];
-    expect(fresh.upgrades).toEqual(upgrades);
+    expect(fresh.upgrades).toStrictEqual(upgrades);
+  });
+
+  it('reads an exact version and any operator prefix as the version behind it', () => {
+    const exact = dependencyDrift({ devDependencies: { '@linteljs/eslint-config': '1.5.0' } }, DEFAULT_ANSWERS);
+    const atLeast = dependencyDrift({ devDependencies: { '@linteljs/eslint-config': '>=1.5.0' } }, DEFAULT_ANSWERS);
+
+    const fromExact = exact.upgrades
+      .map(({ from }) => {
+        return from;
+      });
+    const fromAtLeast = atLeast.upgrades
+      .map(({ from }) => {
+        return from;
+      });
+    expect(fromExact).toEqual(['1.5.0']);
+    expect(fromAtLeast).toEqual(['>=1.5.0']);
   });
 
   it('never moves a newer range, or one that is not a version', () => {

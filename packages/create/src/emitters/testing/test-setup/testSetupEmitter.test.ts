@@ -87,6 +87,18 @@ describe('testSetupEmitter', () => {
     expect(vue?.content).toHaveProperty('sources', expect.not.arrayContaining(i18nSetup));
   });
 
+  it('adds nothing for a language on an extension with no popup to translate', () => {
+    const [translated] = testSetupEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ar'],
+    }, FRESH);
+
+    const expected = ['fragments/test-setup/setupTests.ts'];
+    expect(translated?.content).toHaveProperty('sources', expected);
+  });
+
   it('adds nothing for a target whose suites wrap their own provider', () => {
     const [next] = testSetupEmitter({
       ...DEFAULT_ANSWERS,

@@ -17,6 +17,7 @@ import type {
   Library,
   Router,
   Styling,
+  Surface,
   TargetId,
 } from '@config/types';
 
@@ -28,6 +29,7 @@ interface AnswerOverrides {
   styling?: Styling;
   data?: Data;
   languages?: Language[];
+  surfaces?: Surface[];
 }
 
 const configFor = (overrides: AnswerOverrides): string | null => {
@@ -178,6 +180,20 @@ describe('emitViteConfig', () => {
       languages: ['ja'],
     });
     const english = configFor({ target: 'solid' });
+
+    expect(translated).toBe(english);
+  });
+
+  it('adds no compiler plugin for a language on an extension with no popup to translate', () => {
+    const translated = configFor({
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ja'],
+    });
+    const english = configFor({
+      target: 'webextension',
+      surfaces: ['background'],
+    });
 
     expect(translated).toBe(english);
   });

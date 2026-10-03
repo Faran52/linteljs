@@ -60,6 +60,21 @@ describe('angularTarget', () => {
     expect(suite?.target).toBe('src/lib/utils/status-utils.spec.ts');
   });
 
+  it('points each camelCase alias at a kebab file it writes', () => {
+    const written = angularTarget.starterFiles
+      .map((file) => {
+        return `./${file.target}`;
+      });
+    const aliased = Object.values(angularTarget.extraAliases ?? {});
+
+    const unwritten = aliased
+      .filter((path) => {
+        return !written.includes(path);
+      });
+    expect(aliased).toHaveLength(2);
+    expect(unwritten).toEqual([]);
+  });
+
   it('translates through a signal of its own, with no library, compiler or test setup', () => {
     const expected = { dependencies: [] };
     expect(angularTarget.i18n).toEqual(expected);

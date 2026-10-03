@@ -75,7 +75,7 @@ describe('merged', () => {
       target: 'package.json',
       content: { merge },
     };
-    expect(actual).toEqual(expected);
+    expect(actual).toStrictEqual(expected);
   });
 });
 
