@@ -15,7 +15,7 @@ import {
 import process, { cwd } from 'node:process';
 import { parseArgs } from 'node:util';
 
-import PQueue from 'p-queue';
+import { Semaphore } from 'es-toolkit';
 
 import {
   log,
@@ -83,7 +83,7 @@ const tests = listTests(root)
 const reportsPrefix = join(tmpdir(), REPORTS_PREFIX);
 const reports = mkdtempSync(reportsPrefix);
 const started = performance.now();
-const queue = new PQueue({ concurrency });
+const semaphore = new Semaphore(concurrency);
 
 const hitsByTest = new Map<string, Map<string, Set<string>>>();
 const maps = new Map<string, FileCoverage>();
@@ -93,42 +93,46 @@ const timedOut: string[] = [];
 try {
   const runs = tests
     .map(async (test, index) => {
-      return queue
-        .add(async () => {
-          const reportsDirectory = join(reports, String(index));
-          const report = await coverageRun(
-            root,
-            relative(root, test),
-            reportsDirectory,
-            thresholdKeys,
-            timeoutSeconds * MS_PER_SECOND,
-          );
+      await semaphore.acquire();
 
-          logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
+      try {
+        const reportsDirectory = join(reports, String(index));
+        const report = await coverageRun(
+          root,
+          relative(root, test),
+          reportsDirectory,
+          thresholdKeys,
+          timeoutSeconds * MS_PER_SECOND,
+        );
 
-          if (report === 'timed out') {
-            timedOut.push(test);
+        logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
 
-            return;
-          }
+        if (report === 'timed out') {
+          timedOut.push(test);
 
-          if (report === 'failed') {
-            failed.push(test);
+          return;
+        }
 
-            return;
-          }
+        if (report === 'failed') {
+          failed.push(test);
 
-          const hits = new Map(Object.entries(report)
-            .map(([file, coverage]) => {
-              maps.set(file, coverage);
+          return;
+        }
 
-              const fileHits = [file, hitsOf(coverage)] as const;
+        const hits = new Map(Object.entries(report)
+          .map(([file, coverage]) => {
+            maps.set(file, coverage);
 
-              return fileHits;
-            }));
+            const fileHits = [file, hitsOf(coverage)] as const;
 
-          hitsByTest.set(test, hits);
-        });
+            return fileHits;
+          }));
+
+        hitsByTest.set(test, hits);
+      }
+      finally {
+        semaphore.release();
+      }
     });
 
   await Promise.all(runs);

@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 
-import PQueue from 'p-queue';
+import { Semaphore } from 'es-toolkit';
 
 import { STARTER_CASES } from '@e2e/starter-cover/constants';
 import { starterCases } from '@e2e/starter-cover/starterCover';
@@ -154,14 +154,18 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 };
 
 const concurrency = Math.max(1, Math.floor(availableParallelism() / 2));
-const queue = new PQueue({ concurrency });
+const semaphore = new Semaphore(concurrency);
 const cases = starterCases(STARTER_CASES);
 const runs = cases
   .map(async (item) => {
-    return await queue
-      .add(async () => {
-        return await lintCase(item);
-      });
+    await semaphore.acquire();
+
+    try {
+      return await lintCase(item);
+    }
+    finally {
+      semaphore.release();
+    }
   });
 const outcomes = await Promise.all(runs);
 
