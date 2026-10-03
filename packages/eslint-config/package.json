@@ -211,7 +211,7 @@
     "eslint-plugin-svelte": ">=3",
     "eslint-plugin-vue": ">=10",
     "eslint-plugin-vuejs-accessibility": ">=2",
-    "typescript": ">=5",
+    "typescript": ">=5 <6.1.0",
     "vue-eslint-parser": ">=10"
   },
   "peerDependenciesMeta": {

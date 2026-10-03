@@ -13,7 +13,8 @@ when a version's change lives in a sibling it is described there instead:
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
   subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the
   import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`; the options are the same.
-- **`typescript` `>=5` is a required peer.**
+- **`typescript` `>=5 <6.1.0` is a required peer.** The ceiling is the bundled `typescript-eslint`'s, so a fresh
+  install no longer resolves a TypeScript 7 that every typed layer would refuse.
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
   `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
 - **`base` carries no framework rule.** `@stylistic`'s fourteen JSX layout rules move to `react()`,
