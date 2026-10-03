@@ -153,6 +153,13 @@ const crawl = async (origin: string): Promise<string[]> => {
         }
       }
     }
+
+    // A starter that links nothing passes having checked one page.
+    const linkedNothing = routes.length === 1;
+
+    if (linkedNothing) {
+      problems.push('/: links no route, so the pass checked one page');
+    }
   }
   finally {
     await browser.close();
