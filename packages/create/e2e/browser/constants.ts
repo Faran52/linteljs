@@ -24,3 +24,16 @@ export const ROUTE_SUFFIX = /[?#]/;
 
 // The header tabs of a starter without a router.
 export const VIEW_CONTROLS = 'nav[aria-label="Main"] button';
+
+// The targets whose server renders every request, so a stored language reaches the first byte.
+export const SERVER_RENDERED: ReadonlySet<string> = new Set([
+  'next',
+  'nuxt',
+  'svelte',
+]);
+
+export const LANGUAGE_PICKER = 'select';
+
+export const OTHER_LANGUAGE = 'option:not([value="en"])';
+
+export const HTML_LANG = /<html[^>]*\slang="(?<lang>[^"]*)"/u;

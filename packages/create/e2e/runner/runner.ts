@@ -211,7 +211,7 @@ export const runE2eCase = async ({
   }
 
   if (variant === 'browser') {
-    const seen = await browserProblems(answers.packageManager, project);
+    const seen = await browserProblems(answers, project);
 
     expect(seen).toEqual([]);
   }

@@ -14,16 +14,20 @@ import { launcherFreeEnv } from '../utils/processUtils';
 import {
   BROWSER_OPTIONS,
   HEADING_TIMEOUT,
+  HTML_LANG,
+  LANGUAGE_PICKER,
   OK_STATUS,
+  OTHER_LANGUAGE,
   POLL_INTERVAL,
   PORT_FLAGGED,
   ROUTE_SUFFIX,
+  SERVER_RENDERED,
   SERVER_TIMEOUT,
   STARTER_LINKS,
   VIEW_CONTROLS,
 } from './constants';
 
-import type { PackageManager } from '@config/types';
+import type { Answers } from '@config/types';
 
 const freePort = async (): Promise<string> => {
   return new Promise((settle) => {
@@ -143,8 +147,40 @@ const clickThrough = async (page: Page, origin: string): Promise<string[]> => {
   return problems;
 };
 
+// A language chosen in the page reaches the server, so the raw HTML of another route already carries it.
+const languageProblems = async (page: Page, origin: string, route: string): Promise<string[]> => {
+  await page.goto(origin, { waitUntil: 'networkidle' });
+
+  const picker = page
+    .locator(LANGUAGE_PICKER)
+    .first();
+  const offered = await picker
+    .locator(OTHER_LANGUAGE)
+    .first()
+    .getAttribute('value');
+  const language = String(offered);
+
+  await picker.selectOption(language);
+
+  await page
+    .locator(`html[lang="${language}"]`)
+    .waitFor({ state: 'attached', timeout: HEADING_TIMEOUT });
+
+  const response = await page.request.get(`${origin}${route}`);
+  const html = await response.text();
+  const served = HTML_LANG.exec(html)?.groups?.['lang'];
+
+  if (served === language) {
+    return [];
+  }
+
+  const wrong = [`${route}: served lang ${String(served)} after choosing ${language}`];
+
+  return wrong;
+};
+
 // Every route the starter links from its first page, each loaded fresh so the server answers it too.
-const crawl = async (origin: string): Promise<string[]> => {
+const crawl = async (origin: string, servesLanguage: boolean): Promise<string[]> => {
   const browser = await chromium.launch(BROWSER_OPTIONS);
   const problems: string[] = [];
 
@@ -195,6 +231,14 @@ const crawl = async (origin: string): Promise<string[]> => {
 
       problems.push(...viewProblems);
     }
+
+    const [, route = '/'] = routes;
+
+    if (servesLanguage) {
+      const languageProblemsSeen = await languageProblems(page, origin, route);
+
+      problems.push(...languageProblemsSeen);
+    }
   }
   finally {
     await browser.close();
@@ -203,7 +247,10 @@ const crawl = async (origin: string): Promise<string[]> => {
   return problems;
 };
 
-export const browserProblems = async (pm: PackageManager, project: string): Promise<string[]> => {
+export const browserProblems = async (chosen: Answers, project: string): Promise<string[]> => {
+  const pm = chosen.packageManager;
+  const servesLanguage = chosen.languages !== undefined
+    && (SERVER_RENDERED.has(chosen.target) || chosen.router === 'react-router-framework');
   const port = await freePort();
   const origin = `http://localhost:${port}`;
   const args = serveArgs(project, port);
@@ -230,7 +277,7 @@ export const browserProblems = async (pm: PackageManager, project: string): Prom
       return noServer;
     }
 
-    const problems = await crawl(origin);
+    const problems = await crawl(origin, servesLanguage);
 
     return problems;
   }
