@@ -1,6 +1,6 @@
 import { env } from 'node:process';
 
-// Destructured: the project reads `env.DEBUG` and this workspace `env['DEBUG']`, each under its own tsconfig.
+// Destructured, so it compiles whether the tsconfig wants `env.DEBUG` or `env['DEBUG']`.
 const isDebug = (): boolean => {
   const { DEBUG: debug } = env;
 

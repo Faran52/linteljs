@@ -1,4 +1,4 @@
-// `sync` restores this when missing but never overwrites your lists.
+// `sync` rewrites this file but carries over your `PROJECT_BANNED` and `PROJECT_SKIPPED` lists.
 import {
   globSync,
   readFileSync,

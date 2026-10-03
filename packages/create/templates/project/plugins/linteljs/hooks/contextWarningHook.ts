@@ -14,7 +14,7 @@ import { readPayload, readSession } from './utils/hostUtils.ts';
 
 const CEILING = `${String(CONTEXT_CEILING_TOKENS / TOKENS_PER_K)}K`;
 
-// The plugin data directory outlives an update; the workspace runs this outside a plugin, where tmp serves.
+// The plugin data directory outlives an update; outside a plugin, tmp serves.
 const markerOf = (session: string): string => {
   const directory = process.env['CLAUDE_PLUGIN_DATA'] ?? tmpdir();
   mkdirSync(directory, { recursive: true });
