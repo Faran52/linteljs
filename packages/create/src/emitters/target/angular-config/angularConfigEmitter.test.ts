@@ -32,6 +32,10 @@ describe('emitAngularConfig', () => {
               builder: '@angular/build:application',
               options: {
                 browser: 'src/main.ts',
+                outputPath: {
+                  base: 'dist',
+                  browser: '',
+                },
                 tsConfig: 'tsconfig.app.json',
                 index: 'src/index.html',
                 assets: [{

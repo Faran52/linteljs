@@ -176,6 +176,7 @@ describe('buildScripts', () => {
       typecheck: 'tsc --noEmit',
       build: 'ng build',
       dev: 'ng serve',
+      preview: 'vite preview',
       prepare: 'husky',
     }],
     ['astro', {

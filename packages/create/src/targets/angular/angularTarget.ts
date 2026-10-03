@@ -179,12 +179,17 @@ export const angularTarget: TargetBuilder = () => {
     typecheck: 'tsc --noEmit',
     // `ng test` is declined: this standard's runner is vitest.
     build: 'ng build',
-    extraScripts: { dev: 'ng serve' },
+    // `ng serve` is a dev server even under the production configuration; `vite preview` serves what `ng build` wrote.
+    extraScripts: {
+      dev: 'ng serve',
+      preview: 'vite preview',
+    },
     devDependencies: [
       'angular-eslint',
       '@angular/cli',
       '@angular/build',
       '@angular/compiler-cli',
+      'vite',
     ],
     dependencies: [
       '@angular/common',

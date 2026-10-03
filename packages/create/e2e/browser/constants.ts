@@ -2,10 +2,9 @@
 export const PORT_FLAGGED = new Set([
   'vite',
   'astro',
-  'ng',
 ]);
 
-// `ng serve` compiles before it answers.
+// A cold server can take a while to answer its first request.
 export const SERVER_TIMEOUT = 120_000;
 
 export const POLL_INTERVAL = 500;

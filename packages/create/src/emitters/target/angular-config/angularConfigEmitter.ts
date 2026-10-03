@@ -23,6 +23,11 @@ export const emitAngularConfig = (name: string, packageManager: string): string 
             builder: '@angular/build:application',
             options: {
               browser: 'src/main.ts',
+              // Straight into `dist/`, where `vite preview` serves from.
+              outputPath: {
+                base: 'dist',
+                browser: '',
+              },
               tsConfig: 'tsconfig.app.json',
               index: 'src/index.html',
               assets: [{
