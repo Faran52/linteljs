@@ -64,7 +64,7 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  // Not `findLastIndex`: it needs Node 18 and this package's floor is 14.
+  // Not `findLastIndex`: `src/` is held to the ES2022 built-ins.
   const fromEnd = [...body]
     .reverse()
     .findIndex((statement) => {

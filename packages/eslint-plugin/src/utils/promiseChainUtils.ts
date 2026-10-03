@@ -14,7 +14,6 @@ const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
   return 'async' in node && node.async === true;
 };
 
-// The `.then` of `promise.then(parse)`, whose parent is the call.
 const isCalledMember = (node: RuleNode): node is MemberExpressionNode => {
   return node.type === 'MemberExpression'
     && node.parent.type === 'CallExpression'
@@ -55,7 +54,7 @@ export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): 
   }
 
   if (parent.type === 'ReturnStatement') {
-    // Not `findLast`, newer than this package's Node floor.
+    // Not `findLast`: `src/` is held to the ES2022 built-ins.
     const enclosing = [...reader.getAncestors(node)]
       .reverse()
       .find((ancestor) => {
