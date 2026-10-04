@@ -110,13 +110,17 @@ const printable = (value: Answers[AnswerKey]): string | undefined => {
   return undefined;
 };
 
+// An answer the target never asks still holds its default, so it is left out with the prompts that skip it.
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
+  const target = targetFor(answers);
+
   return valuesOf(records)
     .flatMap((key: AnswerKey) => {
       const record = records[key];
       const printed = printable(answers[key]);
+      const unasked = record.slot?.(target) === false;
 
-      const entryRows: [string, string][] = record.prompt === undefined || printed === undefined
+      const entryRows: [string, string][] = record.prompt === undefined || printed === undefined || unasked
         ? []
         : [[`label: '${record.prompt}'`, `value: '${printed}'`]];
 

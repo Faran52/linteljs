@@ -156,7 +156,6 @@ describe('answerRows', () => {
     const actual = answerRows(hostedAnswersFor({ store: 'zustand' }), ANSWERS);
     const expected = [
       ["label: 'Framework'", "value: 'react'"],
-      ["label: 'Browser'", "value: 'chrome'"],
       ["label: 'Testing'", "value: 'vitest'"],
       ["label: 'Libraries'", "value: 'es-toolkit'"],
       ["label: 'State store'", "value: 'zustand'"],
@@ -165,6 +164,19 @@ describe('answerRows', () => {
       ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
     ];
     expect(actual).toEqual(expected);
+  });
+
+  it.each([
+    ['react-native', false],
+    ['react', false],
+    ['webextension', true],
+  ] as const)('prints the browser for %s only where it is asked: %s', (target, expected) => {
+    const rows = answerRows(hostedAnswersFor({ target }), ANSWERS);
+    const hasBrowser = rows
+      .some(([label]) => {
+        return label === "label: 'Browser'";
+      });
+    expect(hasBrowser).toBe(expected);
   });
 
   it('prints a list answer joined, and no row for an empty one', () => {

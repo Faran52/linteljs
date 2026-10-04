@@ -76,10 +76,6 @@ export const ANSWERS = [
     value: 'react',
   },
   {
-    label: 'Browser',
-    value: 'chrome',
-  },
-  {
     label: 'Testing',
     value: 'vitest',
   },

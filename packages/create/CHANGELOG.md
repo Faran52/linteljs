@@ -164,6 +164,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The starter's Version page lists only the answers its target asks: every target showed the web extension's
+  Browser answer, since each holds its default.
 - `scripts/checkBannedPatterns.ts` reports a directive written as a block comment, such as
   `/* eslint-disable */`. It blanked every block comment before matching, so only the `//` form was caught, and a
   `/*` inside a template literal could blank the lines after it. Its logic now lives in
