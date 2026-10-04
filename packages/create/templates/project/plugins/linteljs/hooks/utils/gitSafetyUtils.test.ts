@@ -198,7 +198,7 @@ const UNREADABLE_COMMANDS: CommandProbe[] = [
   },
   {
     label: 'recursion depth exhaustion',
-    command: shellWrapped('echo safe', 20),
+    command: shellWrapped('echo safe', 9),
   },
   {
     label: 'computed command name',

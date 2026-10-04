@@ -41,24 +41,19 @@ interface TokenizerState {
   tokens: string[];
 }
 
-// `undefined` commands mean the command could not be read.
+// The commands a wrapper runs itself, or the command a token that is no wrapper is. No commands means they could
+// not be read.
 interface NestedStep {
-  kind: 'nested';
-  commands: ParsedCommand[] | undefined;
+  commands?: ParsedCommand[] | undefined;
 }
 
 interface NextStep {
-  kind: 'next';
   index: number;
   opaque?: boolean;
   tokens?: string[];
 }
 
-interface NoWrapperStep {
-  kind: 'none';
-}
-
-type Step = NestedStep | NextStep | NoWrapperStep;
+type Step = NestedStep | NextStep;
 
 // Shells and wrappers nested past this are not read.
 const MAX_DEPTH = 8;
@@ -82,15 +77,8 @@ const RESERVED = new Set([
   'while',
   'until',
 ]);
-const UNREADABLE: Step = {
-  kind: 'nested',
-  commands: undefined,
-};
-const NO_COMMAND: Step = {
-  kind: 'nested',
-  commands: [],
-};
-const NO_WRAPPER: Step = { kind: 'none' };
+const UNREADABLE: Step = {};
+const NO_COMMAND: Step = { commands: [] };
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
 export const commandName = (token: string): string => {
@@ -213,11 +201,6 @@ const substitute = (source: string, index: number, state: TokenizerState): numbe
 
   openSubstitution(state, backtick ? '`' : ')');
   return backtick ? index : index + 1;
-};
-
-const openSubshell = (state: TokenizerState): void => {
-  emitToken(state);
-  pushGroup(state, ')', state.opaque);
 };
 
 // Closes the innermost group, if `character` is what closes it.
@@ -387,8 +370,9 @@ const readBashGroup = (source: string, index: number, state: TokenizerState): nu
     return index;
   }
 
+  // A subshell opens only where no token is pending, so there is none to emit.
   if (character === '(') {
-    openSubshell(state);
+    pushGroup(state, ')', state.opaque);
     return index;
   }
 
@@ -517,10 +501,7 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
 };
 
 const next = (index: number): Step => {
-  const step: Step = {
-    kind: 'next',
-    index,
-  };
+  const step: Step = { index };
 
   return step;
 };
@@ -541,7 +522,6 @@ const splitEnvArguments = (splitString: string, trailing: string[]): string[] | 
 // The split words are read as a command env runs.
 const envCommand = (words: string[]): Step => {
   const step: Step = {
-    kind: 'next',
     index: 0,
     tokens: ['env', ...words],
   };
@@ -653,7 +633,6 @@ const optionWrapper = (tokens: string[], start: number, valued: Set<string>): St
 
 const nested = (source: string, dialect: Dialect, depth: number): Step => {
   const step: Step = {
-    kind: 'nested',
     commands: commandsIn(source, dialect, depth + 1),
   };
 
@@ -787,7 +766,6 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
   }
 
   const step: Step = {
-    kind: 'next',
     index,
     opaque: true,
   };
@@ -826,7 +804,8 @@ const SHELLS = new Set([
   'ksh',
 ]);
 
-const wrapperStep = (tokens: string[], index: number, token: string, depth: number): Step => {
+// A token that is no wrapper is the command itself.
+const wrapperStep = (tokens: string[], index: number, token: string, depth: number, opaque: boolean): Step => {
   const name = commandName(token);
 
   if (name === 'env') {
@@ -877,7 +856,14 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
     return startProcessWrapper(tokens, index + 1);
   }
 
-  return NO_WRAPPER;
+  const command: Step = {
+    commands: [{
+      tokens: [token, ...tokens.slice(index + 1)],
+      opaque,
+    }],
+  };
+
+  return command;
 };
 
 // Each wrapper is one level deeper, so a chain of them ends at the depth limit.
@@ -892,22 +878,13 @@ const unwrap = (tokens: string[], index: number, opaque: boolean, depth: number)
     return [];
   }
 
-  const step = wrapperStep(tokens, index, token, depth);
+  const step = wrapperStep(tokens, index, token, depth, opaque);
 
-  if (step.kind === 'next') {
+  if ('index' in step) {
     return unwrap(step.tokens ?? tokens, step.index, opaque || step.opaque === true, depth + 1);
   }
 
-  if (step.kind === 'nested') {
-    return step.commands;
-  }
-
-  const unwrapped: ParsedCommand[] = [{
-    tokens: [token, ...tokens.slice(index + 1)],
-    opaque,
-  }];
-
-  return unwrapped;
+  return step.commands;
 };
 
 const isPrefixWord = (token: string): boolean => {

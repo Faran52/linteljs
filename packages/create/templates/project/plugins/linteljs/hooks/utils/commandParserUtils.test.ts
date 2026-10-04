@@ -279,6 +279,100 @@ describe('parseCommand', () => {
         ['esac'],
       ],
     ],
+    [
+      'a doubled single quote as two quotes',
+      "echo 'it''s'",
+      [['echo', 'its']],
+    ],
+    [
+      'an escape inside single quotes as text',
+      "echo 'a\\b'",
+      [['echo', 'a\\b']],
+    ],
+    [
+      'a substitution inside single quotes as text',
+      "echo '$(git stash)'",
+      [['echo', '$(git stash)']],
+    ],
+    [
+      'an escaped character before a line break',
+      'echo a\\b\nc',
+      [['echo', 'ab'], ['c']],
+    ],
+    [
+      'a line continuation inside a token',
+      'a\\\nb',
+      [['ab']],
+    ],
+    [
+      'an escaped separator as a token',
+      'echo \\;',
+      [['echo', ';']],
+    ],
+    [
+      'a heredoc redirect ending the token before it',
+      'cat<<EOF>out',
+      [['cat', '>out']],
+    ],
+    [
+      'a tab-indented delimiter inside a plain heredoc',
+      'cat <<EOF\n\tEOF\n$(x)\nEOF',
+      [['cat'], ['x']],
+    ],
+    [
+      'a delimiter after a carriage return inside a line',
+      'cat <<EOF\nE\rOF\n$(x)\nEOF',
+      [['cat'], ['x']],
+    ],
+    [
+      'a delimiter at the end of a body line',
+      'cat <<EOF\nxEOF\n$(x)\nEOF',
+      [['cat'], ['x']],
+    ],
+    [
+      'a tab-stripped heredoc closed by two tabs',
+      'cat <<-EOF\n\t\tEOF\ngit log',
+      [['cat'], ['git', 'log']],
+    ],
+    [
+      'a tab-stripped heredoc with a tab inside a line',
+      'cat <<-EOF\nEO\tF\n$(x)\nEOF',
+      [['cat'], ['x']],
+    ],
+    [
+      'a quoted heredoc body ending the source',
+      "cat <<'EOF'\nx$(git stash)",
+      [['cat']],
+    ],
+    [
+      'an option inside a shell argument',
+      "bash x-c 'git log'",
+      [],
+    ],
+    [
+      'a shell option joined to -c',
+      "bash -xc 'git log'",
+      [['git', 'log']],
+    ],
+    [
+      'a shell running a script with -c after it',
+      'bash s.sh -c x',
+      [],
+    ],
+    [
+      'command running a name after --',
+      'command -- -v',
+      [['-v']],
+    ],
+    [
+      'a word that is no assignment',
+      '1A=1 git log',
+      [[
+        '1A=1',
+        'git',
+        'log',
+      ]],
+    ],
   ])('reads %s', (_label, source, expected) => {
     const tokens = tokensOf(source);
     expect(tokens).toEqual(expected);
@@ -291,7 +385,6 @@ describe('parseCommand', () => {
     ['env with an empty split string', 'env --split-string='],
     ['env with an unknown option', 'env -Q /usr/bin git status'],
     ['a shell with no command after -c', 'bash -c'],
-    ['shells nested past the depth limit', shellWrapped('echo safe', 20)],
     ['split strings nested past the depth limit', `env ${shellWrapped('git log', 9, '-S')}`],
     ['a trailing escape inside double quotes', 'echo "a\\'],
     ['exec -a with no operand', 'exec -a'],
@@ -302,9 +395,90 @@ describe('parseCommand', () => {
     ['a heredoc delimiter run into a quote', 'cat <<EOF"x"'],
     ['an unclosed substitution', 'echo "$(git log"'],
     ['an unclosed subshell', '(git log'],
+    ['a heredoc delimiter with an unclosed quote', 'cat <<"x <<EOF'],
+    ['an env split string of two commands', "env -S 'git log; git stash'"],
+    ['an env option holding -S', 'env --x-Sgit log'],
   ])('cannot read %s', (_label, source) => {
     const actual = parseCommand(source, 'bash');
     expect(actual).toBeUndefined();
+  });
+
+  it.each([
+    [
+      'env',
+      [
+        '-u',
+        '--unset',
+        '-C',
+        '--chdir',
+        '-a',
+        '--argv0',
+        '-P',
+      ],
+    ],
+    [
+      'sudo',
+      [
+        '-u',
+        '--user',
+        '-g',
+        '--group',
+        '-h',
+        '--host',
+        '-p',
+        '--prompt',
+        '-C',
+        '--close-from',
+        '-r',
+        '--role',
+        '-t',
+        '--type',
+      ],
+    ],
+    [
+      'time',
+      [
+        '-f',
+        '--format',
+        '-o',
+        '--output',
+      ],
+    ],
+  ])('skips the operand of every valued %s option', (wrapper, valued) => {
+    const readings = valued
+      .map((option) => {
+        return tokensOf(`${wrapper} ${option} x git log`);
+      });
+    const command = [['git', 'log']];
+    const expected = valued
+      .map(() => {
+        return command;
+      });
+    expect(readings).toEqual(expected);
+  });
+
+  it.each([
+    '-',
+    '-0',
+    '--null',
+    '-i',
+    '--ignore-environment',
+    '-v',
+    '--debug',
+  ])('reads env past the flag %s', (flag) => {
+    const tokens = tokensOf(`env ${flag} git log`);
+    expect(tokens).toEqual([['git', 'log']]);
+  });
+
+  it.each([
+    'sh',
+    'bash',
+    'zsh',
+    'dash',
+    'ksh',
+  ])('reads the command %s -c runs', (shell) => {
+    const tokens = tokensOf(`${shell} -c 'git log'`);
+    expect(tokens).toEqual([['git', 'log']]);
   });
 
   it('reads eight nested shells and no more', () => {
@@ -423,9 +597,107 @@ describe('parseCommand', () => {
       'iex',
       [],
     ],
+    [
+      'a subexpression ending the token before it',
+      'git$(Write-Output x)log',
+      [['Write-Output', 'x'], ['git', 'log']],
+    ],
+    [
+      'a group opening right after one closes',
+      '(a)(b)',
+      [['a'], ['b']],
+    ],
+    [
+      'a line continuation inside a token',
+      'a`\nb',
+      [['a', 'b']],
+    ],
+    [
+      'a parameter abbreviated to -com',
+      'pwsh -com -File x',
+      [['-File', 'x']],
+    ],
+    [
+      'a lone dash as no parameter',
+      'pwsh - -File x',
+      [],
+    ],
+    [
+      'a group inside a bare pwsh command',
+      "pwsh '{ git log }'",
+      [['git', 'log']],
+    ],
+    [
+      'a group inside pwsh -Command',
+      "pwsh -Command '{ git log }'",
+      [['git', 'log']],
+    ],
+    [
+      'a group inside cmd /c',
+      "cmd /c '{ git log }'",
+      [['git', 'log']],
+    ],
+    [
+      'a group inside Invoke-Expression',
+      "iex '{ git log }'",
+      [['git', 'log']],
+    ],
+    [
+      'cmd running a script with /c after it',
+      'cmd build.cmd /c x',
+      [],
+    ],
+    [
+      'Invoke-Expression with separate words',
+      'iex git log',
+      [['git', 'log']],
+    ],
+    [
+      'saps',
+      'saps -Wait git',
+      [['git']],
+    ],
+    [
+      'start',
+      'start -Wait git',
+      [['git']],
+    ],
   ])('reads PowerShell %s', (_label, source, expected) => {
     const tokens = tokensOf(source, 'powershell');
     expect(tokens).toEqual(expected);
+  });
+
+  it.each([
+    '-ConfigurationName',
+    '-CustomPipeName',
+    '-ExecutionPolicy',
+    '-ex',
+    '-ep',
+    '-InputFormat',
+    '-OutputFormat',
+    '-SettingsFile',
+    '-WindowStyle',
+    '-WorkingDirectory',
+    '-wd',
+    '-Version',
+  ])('skips the operand of pwsh %s', (option) => {
+    const tokens = tokensOf(`pwsh ${option} x git log`, 'powershell');
+    expect(tokens).toEqual([['git', 'log']]);
+  });
+
+  it.each([
+    '-ArgumentList',
+    '-Args',
+    '-Credential',
+    '-RedirectStandardError',
+    '-RedirectStandardInput',
+    '-RedirectStandardOutput',
+    '-Verb',
+    '-WindowStyle',
+    '-WorkingDirectory',
+  ])('skips the operand of Start-Process %s', (option) => {
+    const tokens = tokensOf(`Start-Process ${option} x git`, 'powershell');
+    expect(tokens).toEqual([['git']]);
   });
 
   it('marks a command with an unquoted substitution as opaque, and a quoted one as readable', () => {
@@ -509,6 +781,7 @@ describe('commandName', () => {
     ['C:\\Program Files\\Git\\cmd\\git.exe', 'git'],
     ['node_modules/.bin/eslint.cmd', 'eslint'],
     ['GIT', 'git'],
+    ['run.cmd.js', 'run.cmd.js'],
   ])('reads %s as %s', (token, name) => {
     const actual = commandName(token);
     expect(actual).toBe(name);
