@@ -308,8 +308,10 @@ describe('lines where `as` is not an assertion', () => {
     ['an import alias', "import { value as never } from './value';\n"],
     ['an indented import alias', "  import { value as never } from './value';\n"],
     ['a type re-export spaced any way', "  export  type  { Value as never } from './value';\n"],
-    ['a type alias line spaced any way', '  type  value  as  never\n'],
     ['an alias line with trailing space', '  value as never, \n'],
+    ['an unindented alias line with no comma', 'value as never\n'],
+    ['a type alias line spaced before the name', '  type  Value as never\n'],
+    ['an alias line spaced before its as', '  value  as never\n'],
   ])('says nothing about %s', async (_label, source) => {
     const actual = await check(source);
     expect(actual).toBe('');

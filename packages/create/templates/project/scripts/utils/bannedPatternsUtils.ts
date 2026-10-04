@@ -122,12 +122,12 @@ const isSkipped = (filePath: string, skipped: string[]): boolean => {
     });
 };
 
-// Import and alias `as` are not assertions.
+// Import and alias `as` are not assertions. One space after `as`, as in every banned `as` pattern.
 const isAliasOrImportLine = (line: string): boolean => {
   return line.includes('* as ')
     || /^\s*import\b/.test(line)
     || /^\s*export\s+(?:type\s+)?\{/.test(line)
-    || /^\s*(?:type\s+)?[A-Za-z_]\w*\s+as\s+[A-Za-z_]\w*,?\s*$/.test(line);
+    || /^\s*(?:type\s+)?[A-Za-z_]\w*\s+as\s[A-Za-z_]\w*,?\s*$/.test(line);
 };
 
 // Offsets preserved so reported lines stay correct.
