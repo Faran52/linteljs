@@ -6,7 +6,7 @@ import { t } from '@i18n';
 
 import { CodeText } from '@ui/code-text/code-text';
 
-// What was recorded at birth: a browser cannot read its machine's Node or package manager.
+// Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
 @Component({
   imports: [CodeText],
   selector: 'app-version',
