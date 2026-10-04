@@ -43,6 +43,85 @@ describe('sortedImports', () => {
     expect(sorted).toBe(expected);
   });
 
+  // Each framework group is a static mutant, rerun with the whole suite; failing here kills it before the suite ends.
+  it.each([
+    ['react', [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react-router',
+      '@react-aria/focus',
+    ]],
+    ['next', [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react-router',
+      '@react-aria/focus',
+      'next',
+      'next/link',
+    ]],
+    ['react-native', [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react-native',
+      '@react-navigation/native',
+    ]],
+    ['vue', [
+      'vue',
+      'vue-router',
+      'pinia',
+      '@vue/test-utils',
+    ]],
+    ['nuxt', [
+      'vue',
+      'vue-router',
+      'pinia',
+      '@vue/test-utils',
+      'nuxt',
+      'nuxt/config',
+      '#imports',
+    ]],
+    ['svelte', [
+      'svelte',
+      'svelte/store',
+      '@sveltejs/kit',
+      '$app/state',
+      '$env/static/public',
+    ]],
+    ['solid', [
+      'solid-js',
+      'solid-js/web',
+      '@solidjs/router',
+    ]],
+    ['angular', [
+      '@angular/core',
+      'rxjs',
+      'rxjs/operators',
+    ]],
+  ] as const)('leads with every %s group specifier, and with nothing else', (framework, specifiers) => {
+    const lines = [...specifiers, 'zod']
+      .map((specifier) => {
+        return `import '${specifier}';`;
+      });
+
+    const [leading, rest] = sortedImports(lines, framework).split('\n\n');
+
+    const leadingLines = leading
+      ?.split('\n')
+      .toSorted((left, right) => {
+        return left.localeCompare(right);
+      });
+    const expected = lines
+      .slice(0, -1)
+      .toSorted((left, right) => {
+        return left.localeCompare(right);
+      });
+    expect(leadingLines).toStrictEqual(expected);
+    expect(rest).toBe("import 'zod';");
+  });
+
   it('sorts a name before a longer one it prefixes, as simple-import-sort does', () => {
     const sorted = sortedImports([
       "import solid from 'vite-plugin-solid';",
