@@ -66,7 +66,7 @@ export const initI18n = (options: Pick<InitOptions, 'lng'> = {}): typeof i18next
           }),
         defaultNS: 'common',
         initAsync: false,
-        // Single braces, as every other target's library reads the same locales.
+        // Single braces, the placeholder style the locale files use, not i18next's default double.
         interpolation: {
           escapeValue: false,
           prefix: '{',

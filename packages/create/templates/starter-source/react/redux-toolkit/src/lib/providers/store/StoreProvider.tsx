@@ -8,7 +8,6 @@ export interface StoreProviderProps {
   readonly children: ReactNode;
 }
 
-// Redux is the one store here that needs an ancestor.
 export const StoreProvider: FC<StoreProviderProps> = ({ children }) => {
   return <Provider store={store}>{children}</Provider>;
 };
