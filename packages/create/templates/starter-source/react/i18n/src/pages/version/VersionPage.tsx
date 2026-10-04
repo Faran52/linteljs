@@ -52,6 +52,7 @@ export const VersionPage: FC = () => {
             i18nKey="versionRecorded"
             values={RECORDED_VALUES}
             components={CODE}
+            t={t}
           />
         </p>
       </section>

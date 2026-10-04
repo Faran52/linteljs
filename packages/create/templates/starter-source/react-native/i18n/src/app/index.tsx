@@ -26,6 +26,7 @@ const HomeScreen = (): ReactNode => {
           i18nKey="gateHint"
           values={CHECK_VALUES}
           components={CODE}
+          t={t}
         />
       </Text>
     </View>

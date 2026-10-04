@@ -13,6 +13,15 @@ import { languages, resources } from '@i18n/config';
 
 import { HomePage } from './HomePage';
 
+// The build's React Compiler skips a child whose props never change, and it is off under Vitest: this does the same.
+vi.mock('react-i18next', async () => {
+  const { memo } = await vi.importActual<typeof import('react')>('react');
+  const actual = await vi.importActual<typeof import('react-i18next')>('react-i18next');
+  const reactI18next = { ...actual, Trans: memo(actual.Trans) };
+
+  return reactI18next;
+});
+
 const i18n = initI18n();
 const last = languages.at(-1)?.id ?? 'en';
 
@@ -57,5 +66,20 @@ describe('HomePage', () => {
     const { common } = resources[last];
     const element = screen.getByText(common.homeLedeReact);
     expect(element).toBeTruthy();
+  });
+
+  it('speaks the chosen language in the gate hint', async () => {
+    renderPage();
+
+    await act(async () => {
+      await i18n.changeLanguage(last);
+    });
+
+    const { common } = resources[last];
+    const hint = common.gateHint
+      .replace('<code>{command}</code>', CHECK);
+    const text = screen.getByText(CHECK)
+      .closest('p')?.textContent;
+    expect(text).toBe(hint);
   });
 });

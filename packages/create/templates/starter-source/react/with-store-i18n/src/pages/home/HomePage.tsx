@@ -37,6 +37,7 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
           i18nKey="gateHint"
           values={CHECK_VALUES}
           components={CODE}
+          t={t}
         />
       </p>
     </main>

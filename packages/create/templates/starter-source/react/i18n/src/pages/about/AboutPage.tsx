@@ -35,6 +35,7 @@ export const AboutPage: FC = () => {
             i18nKey="aboutCheck"
             values={CHECK_VALUES}
             components={CODE}
+            t={t}
           />
         </p>
       </section>
@@ -61,6 +62,7 @@ export const AboutPage: FC = () => {
             i18nKey="aboutSync"
             values={SYNC_VALUES}
             components={CODE}
+            t={t}
           />
         </p>
       </section>
