@@ -14,20 +14,17 @@ import { cursorHooksEmitter } from './agents/cursor-hooks/cursorHooksEmitter';
 import { cursorRulesEmitter } from './agents/cursor-rules/cursorRulesEmitter';
 import { bannedPatternsEmitter } from './always/banned-patterns/bannedPatternsEmitter';
 import { ciWorkflowEmitter } from './always/ci-workflow/ciWorkflowEmitter';
-import { commitlintEmitter } from './always/commitlint/commitlintEmitter';
+import { commitGateEmitter } from './always/commit-gate/commitGateEmitter';
 import { eslintConfigEmitter } from './always/eslint-config/eslintConfigEmitter';
 import { gitignoreEmitter } from './always/gitignore/gitignoreEmitter';
 import { huskyEmitter } from './always/husky/huskyEmitter';
-import { lintStagedEmitter } from './always/lint-staged/lintStagedEmitter';
 import { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 import { linteljsPluginEmitter } from './always/linteljs-plugin/linteljsPluginEmitter';
 import { linteljsRecordEmitter } from './always/linteljs-record/linteljsRecordEmitter';
-import { loggerUtilsEmitter } from './always/logger-utils/loggerUtilsEmitter';
 import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigEmitter } from './always/tsconfig/tsconfigEmitter';
-import { typecheckStagedEmitter } from './always/typecheck-staged/typecheckStagedEmitter';
 import { i18nConfigEmitter } from './libraries/i18n-config/i18nConfigEmitter';
 import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
 import { bunfigEmitter } from './manager/bunfig/bunfigEmitter';
@@ -61,11 +58,8 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'agents/cursor-hooks': cursorHooksEmitter,
   'always/banned-patterns': bannedPatternsEmitter,
   'always/husky': huskyEmitter,
-  'always/lint-staged': lintStagedEmitter,
-  'always/commitlint': commitlintEmitter,
+  'always/commit-gate': commitGateEmitter,
   'always/tsconfig': tsconfigEmitter,
-  'always/typecheck-staged': typecheckStagedEmitter,
-  'always/logger-utils': loggerUtilsEmitter,
   'always/ci-workflow': ciWorkflowEmitter,
   'typesafety/custom-types': customTypesEmitter,
   'libraries/style-entry': styleEntryEmitter,
