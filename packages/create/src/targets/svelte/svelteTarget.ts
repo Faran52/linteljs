@@ -29,6 +29,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -234,10 +235,15 @@ export const svelteTarget: TargetBuilder = () => {
         target: 'src/components/ui/text-input/TextInput.test.ts',
         covers: 'src/components/ui/text-input/TextInput.svelte',
       },
+      // The TanStack Query wrapper needs a component to run in, so the Contact page's suite covers it.
       {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
+        when: (answers) => {
+          return answers.data === undefined;
+        },
       },
+      submissionTest(),
     ],
     build: 'vite build',
     // The kit's plugin owns the dev server.

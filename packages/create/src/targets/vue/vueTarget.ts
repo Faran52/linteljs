@@ -27,6 +27,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -195,6 +196,7 @@ export const vueTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
+      submissionTest(),
       {
         target: 'src/lib/providers/store/storeProvider.test.ts',
         covers: 'src/lib/providers/store/storeProvider.ts',

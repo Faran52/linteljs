@@ -519,10 +519,11 @@ and a target id is that target's tree, so Next reads `shared: 'react'` for the p
 api modules it renders identically. Logic with no framework in it is shared even where the module around it is
 not: a framework's i18n module keeps its reactive state and its `t`, and reads language matching, direction,
 detection order and placeholder filling from `shared/i18n/src/i18n/utils/languageUtils.ts`, whose one suite ships
-beside it. A copy of framework-free logic in two targets is a defect, caught by `fallow dupes` over
-`starter-source/`; the shell that imports it stays per target. Anything with a framework in it is not shared:
-React's `className` is not
-Vue's `class`, React destructures props and Solid may not, and React's route element is a node where Solid's has to
+beside it, and every contact api wrapper, plain or a TanStack Query mutation, reads `submitContact` from
+`shared/src/lib/apis/contact/submission.ts`. A copy of framework-free logic in two targets is a defect, caught by
+`fallow dupes` over `starter-source/`; the shell that imports it stays per target. Anything with a framework in it
+is not shared: React's `className` is not Vue's `class`, React destructures props and Solid may not, and React's
+route element is a node where Solid's has to
 be a function. A target that writes a shared file under its own naming (Angular's `status-utils.ts`) keeps the one
 source: the starter emitter rewrites a shared file's relative imports to the names the target writes, so a
 difference in file naming alone is never a reason for a copy.

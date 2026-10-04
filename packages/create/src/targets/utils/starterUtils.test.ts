@@ -9,6 +9,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  submissionTest,
 } from './starterUtils';
 
 describe('filesAt', () => {
@@ -48,10 +49,14 @@ describe('contactApiFiles', () => {
     expect(actual).toEqual([]);
   });
 
-  it('writes the barrel and the plain wrapper with a form alone', () => {
+  it('writes the barrel, the plain wrapper and the submission with a form alone', () => {
     const actual = pickedBy(contactApiFiles(), { form: 'tanstack-form' });
 
-    const expected = ['src/lib/apis/contact/index.ts base', 'src/lib/apis/contact/contactApi.ts base'];
+    const expected = [
+      'src/lib/apis/contact/index.ts base',
+      'src/lib/apis/contact/contactApi.ts base',
+      'src/lib/apis/contact/submission.ts base',
+    ];
     expect(actual).toEqual(expected);
   });
 
@@ -61,11 +66,15 @@ describe('contactApiFiles', () => {
       data: 'tanstack-query',
     });
 
-    const expected = ['src/lib/apis/contact/index.ts base', 'src/lib/apis/contact/contactApi.ts tanstack-query'];
+    const expected = [
+      'src/lib/apis/contact/index.ts base',
+      'src/lib/apis/contact/contactApi.ts tanstack-query',
+      'src/lib/apis/contact/submission.ts base',
+    ];
     expect(actual).toEqual(expected);
   });
 
-  it('reads the barrel and the plain wrapper from the shared tree, the TanStack one from the target', () => {
+  it('reads all but the TanStack wrapper from the shared tree, that one from the target', () => {
     const shared = contactApiFiles()
       .map(({ shared: tree }) => {
         return tree;
@@ -75,11 +84,12 @@ describe('contactApiFiles', () => {
       true,
       true,
       undefined,
+      true,
     ];
     expect(shared).toEqual(expected);
   });
 
-  it('reads both wrappers from the named tree, the barrel still from the shared one', () => {
+  it('reads both wrappers from the named tree, the barrel and the submission still from the shared one', () => {
     const shared = contactApiFiles({ shared: 'react' })
       .map(({ shared: tree }) => {
         return tree;
@@ -89,6 +99,7 @@ describe('contactApiFiles', () => {
       true,
       'react',
       'react',
+      true,
     ];
     expect(shared).toStrictEqual(expected);
   });
@@ -137,5 +148,21 @@ describe('contactSchemaFiles', () => {
 
     const expected = [true, true];
     expect(shared).toEqual(expected);
+  });
+});
+
+describe('submissionTest', () => {
+  it('suffixes the shared suite as the target names its tests', () => {
+    const plain = submissionTest();
+    const spec = submissionTest('spec');
+
+    const expected = {
+      target: 'src/lib/apis/contact/submission.test.ts',
+      covers: 'src/lib/apis/contact/submission.ts',
+      source: 'src/lib/apis/contact/submission.test.ts',
+      shared: true,
+    };
+    expect(plain).toStrictEqual(expected);
+    expect(spec.target).toBe('src/lib/apis/contact/submission.spec.ts');
   });
 });

@@ -35,6 +35,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -128,6 +129,7 @@ const nextStarterTests = (): StarterTest[] => {
       covers: 'src/lib/apis/contact/contactApi.ts',
       shared: 'react',
     },
+    submissionTest(),
     ...rtkContactTests(),
   ];
 

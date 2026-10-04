@@ -27,6 +27,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -204,6 +205,7 @@ export const solidTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
+      submissionTest(),
       {
         target: 'src/components/ui/button/Button.test.tsx',
         covers: 'src/components/ui/button/Button.tsx',

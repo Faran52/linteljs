@@ -14,7 +14,7 @@ import {
   mockFiles,
   mockTests,
 } from '../utils/mockUtils';
-import { filesAt } from '../utils/starterUtils';
+import { filesAt, submissionTest } from '../utils/starterUtils';
 import { tailwindThemeFile } from '../utils/styleUtils';
 
 import {
@@ -85,6 +85,10 @@ export const angularTarget: TargetBuilder = () => {
       {
         target: 'src/lib/apis/contact/contact-api.ts',
         source: 'src/lib/apis/contact/contactApi.ts',
+        shared: true,
+      },
+      {
+        target: 'src/lib/apis/contact/submission.ts',
         shared: true,
       },
       ...accessorFiles(ACCESSORS),
@@ -163,6 +167,7 @@ export const angularTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contact-api.spec.ts',
         covers: 'src/lib/apis/contact/contact-api.ts',
       },
+      submissionTest('spec'),
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

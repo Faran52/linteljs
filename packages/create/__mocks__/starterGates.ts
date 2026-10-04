@@ -157,6 +157,10 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
 
         return row;
       }),
+    ['src/lib/apis/contact/submission.ts', [{
+      form: ANSWERED,
+      data: [undefined, ...wrapped],
+    }]],
     ['src/lib/apis/contact/schemas.ts', [{
       form: ANSWERED,
       libraries: [[]],

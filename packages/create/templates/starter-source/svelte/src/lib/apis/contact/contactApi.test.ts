@@ -1,20 +1,10 @@
-import { submitContact } from './contactApi';
+import { useSubmitContact } from './contactApi';
+import { submitContact } from './submission';
 
-describe('submitContact', () => {
-  it('answers 200 for details the rules accept', async () => {
-    const submittedContact = await submitContact({
-      email: 'someone@example.com',
-      message: 'Ten characters, at least.',
-    });
-    const expected = { status: 200 };
-    expect(submittedContact).toEqual(expected);
-  });
+describe('useSubmitContact', () => {
+  it('sends through submitContact with no data layer', () => {
+    const submit = useSubmitContact();
 
-  it('refuses details the rules refuse', async () => {
-    const submittedContactPromise = submitContact({
-      email: 'not-an-address',
-      message: 'short',
-    });
-    await expect(submittedContactPromise).rejects.toThrow('Contact details are not valid');
+    expect(submit).toBe(submitContact);
   });
 });
