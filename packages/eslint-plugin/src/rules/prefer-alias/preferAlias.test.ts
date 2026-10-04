@@ -112,6 +112,11 @@ typedRuleTester.run('prefer-alias', preferAlias, {
       filename: at('routes.ts'),
     },
     {
+      // An alias tsc resolves nowhere, onto no file on disk, so there is no path to swap in.
+      code: "import { value } from '@config/missing';",
+      filename: at('app/page.ts'),
+    },
+    {
       // Unresolved by tsc and on no disk, so nothing proves where it lands.
       code: "import Missing from '../components/ui/Missing.vue';",
       filename: at('app/page.ts'),
