@@ -1824,10 +1824,10 @@ file joins the gate the moment it is included.
 The end-to-end harness sits in `packages/create/e2e/`, outside every `src/`, so the include never reaches it: it
 spawns, publishes and needs the registry, and a helper there would land as a 0% file against a 100% threshold. Its
 pure suites (`matrix/`, `starter-cover/`) still run in the default suite, held by their assertions rather than the
-gate. Beyond each package's `src/`, the include names six `utils/` modules of the plugin's audits (five of
-real-code, one of mutation-summary), the pure half of a script that otherwise spawns, each with its own suite. It
-also takes every `utils/` file under `packages/create/templates/project/`: the logic of every shipped hook and gate
-script, and the shipped logger. They reach every generated project, and a guard there is security code. Each hook
+gate. Beyond each package's `src/`, the include names eight `utils/` modules of the plugin's audits (five of
+real-code, one of mutation-summary, two of false-negatives), the pure half of a script that otherwise spawns,
+each with its own suite. It also takes every `utils/` file under `packages/create/templates/project/`: the logic
+of every shipped hook and gate script, and the shipped logger. They reach every generated project, and a guard there is security code. Each hook
 and gate script is a thin entry over its `utils/` module: it reads stdin or argv, calls one function and exits, so
 every decision it makes is in the gate. The entries stay out of the include, since their suites spawn them under
 `node`, where v8 sees nothing; those suites hold the wiring end to end. `readPayload` takes a path so its suite reads in
