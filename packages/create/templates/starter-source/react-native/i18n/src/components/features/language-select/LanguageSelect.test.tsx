@@ -15,7 +15,26 @@ import { languages, languageStorageKey } from '@/i18n/config';
 
 import { LanguageSelect } from './LanguageSelect';
 
+import type { TestInstance } from 'test-renderer';
+
 const last = languages.at(-1) ?? languages[0];
+
+// An accessible ancestor folds its children into one element, so a screen reader could not reach them.
+const accessibleAncestorOf = (element: TestInstance): TestInstance | null => {
+  let current = element.parent;
+
+  while (current !== null && current.props.accessible !== true) {
+    current = current.parent;
+  }
+
+  return current;
+};
+
+const menu = (): TestInstance | null => {
+  const [option] = screen.getAllByRole('radio');
+
+  return option?.parent ?? null;
+};
 
 const open = async (): Promise<void> => {
   await renderScreen(<LanguageSelect />);
@@ -67,6 +86,20 @@ describe('LanguageSelect', () => {
     expect(element).toBeTruthy();
   });
 
+  it('groups the languages under its name, each one reachable by a screen reader', async () => {
+    await open();
+
+    const group = menu();
+
+    expect(group?.props.accessibilityRole).toBe('radiogroup');
+    expect(group?.props.accessibilityLabel).toBe('Language');
+
+    for (const option of screen.getAllByRole('radio')) {
+      const ancestor = accessibleAncestorOf(option);
+      expect(ancestor).toBeNull();
+    }
+  });
+
   it('switches the language, stores the choice and closes', async () => {
     await open();
     await fireEvent.press(screen.getByRole('radio', { name: last.label }));
@@ -84,7 +117,11 @@ describe('LanguageSelect', () => {
 
   it.each(['press', 'requestClose'])('closes on %s outside a language, choosing nothing', async (event) => {
     await open();
-    await fireEvent(screen.getByRole('radiogroup', { name: 'Language' }), event);
+    const group = menu();
+
+    if (group !== null) {
+      await fireEvent(group, event);
+    }
 
     const stored = await AsyncStorage.getItem(languageStorageKey);
 

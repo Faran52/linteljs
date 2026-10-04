@@ -68,8 +68,10 @@ export const LanguageSelect = (): ReactNode => {
           setOpen(false);
         }}
       >
+        {/* Not an accessibility element: one would fold the languages into itself, out of a screen reader's reach. */}
         <Pressable
           style={styles.backdrop}
+          accessible={false}
           onPress={() => {
             setOpen(false);
           }}
