@@ -6,7 +6,6 @@ import {
   openSync,
   readSync,
   rmSync,
-  writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
 
@@ -20,8 +19,8 @@ import {
 
 import {
   fieldAt,
-  isObject,
   type Json,
+  jsonObjectOf,
   type SessionInput,
 } from './hostUtils.ts';
 
@@ -59,20 +58,12 @@ const usageTokensOf = (usage: object): number => {
     }, 0);
 };
 
-const entryOf = (line: string): object | undefined => {
-  try {
-    const entry: unknown = JSON.parse(line);
-    return isObject(entry) ? entry : undefined;
-  }
-  catch {
-    return undefined;
-  }
-};
-
 const assistantTokensOf = (line: string): number | undefined => {
-  const entry = entryOf(line);
+  const entry = jsonObjectOf(() => {
+    return line;
+  });
 
-  if (entry === undefined || stringAt(entry, 'type') !== 'assistant') {
+  if (stringAt(entry, 'type') !== 'assistant') {
     return undefined;
   }
 
@@ -80,36 +71,36 @@ const assistantTokensOf = (line: string): number | undefined => {
   return usage === undefined ? undefined : usageTokensOf(usage);
 };
 
-const tailOf = (path: string): string | undefined => {
-  try {
-    const descriptor = openSync(path, 'r');
+const tailOf = (path: string, tailBytes: number): string => {
+  const descriptor = openSync(path, 'r');
 
-    try {
-      const { size } = fstatSync(descriptor);
-      const length = Math.min(size, TRANSCRIPT_TAIL_BYTES);
-      const buffer = Buffer.alloc(length);
-      readSync(descriptor, buffer, 0, length, size - length);
-      return buffer.toString('utf8');
-    }
-    finally {
-      closeSync(descriptor);
-    }
+  try {
+    const { size } = fstatSync(descriptor);
+    const length = Math.min(size, tailBytes);
+    const buffer = Buffer.alloc(length);
+    readSync(descriptor, buffer, 0, length, size - length);
+    return buffer.toString('utf8');
   }
-  catch {
-    return undefined;
+  finally {
+    closeSync(descriptor);
   }
 };
 
 // Live context is the last assistant entry's prompt size; a line the tail cut in half fails to parse and is skipped.
-export const contextOf = (transcript: string): number => {
-  const lines = (tailOf(transcript) ?? '').split('\n');
+export const contextOf = (transcript: string, tailBytes = TRANSCRIPT_TAIL_BYTES): number => {
+  try {
+    for (const line of tailOf(transcript, tailBytes)
+      .split('\n')
+      .toReversed()) {
+      const tokens = assistantTokensOf(line);
 
-  for (const line of lines.toReversed()) {
-    const tokens = assistantTokensOf(line);
-
-    if (tokens !== undefined) {
-      return tokens;
+      if (tokens !== undefined) {
+        return tokens;
+      }
     }
+  }
+  catch {
+    // An unreadable transcript holds no context.
   }
 
   return 0;
@@ -137,6 +128,19 @@ export const badgeOf = (tokens: number): string => {
   return `\u001B[38;5;${String(colour)}m[CTX ${String(thousands)}K]\u001B[0m`;
 };
 
+// No transcript named, none is read.
+const namedContextOf = (payload: object, pathOf: (transcript: string) => string): number => {
+  const transcript = stringAt(payload, 'transcript_path');
+
+  if (transcript === undefined) {
+    return 0;
+  }
+
+  const path = pathOf(transcript);
+
+  return contextOf(path);
+};
+
 // Claude Code sends the last API call's prompt size as `total_input_tokens`; an older one sends no
 // `context_window`, so the transcript answers instead.
 export const mainContextOf = (payload: object): number => {
@@ -146,24 +150,27 @@ export const mainContextOf = (payload: object): number => {
     return reported;
   }
 
-  const transcript = stringAt(payload, 'transcript_path') ?? '';
-
-  return contextOf(transcript);
+  return namedContextOf(payload, (transcript) => {
+    return transcript;
+  });
 };
 
 // Only `local_agent` rows are subagents; any other row keeps Claude Code's own rendering.
 export const subagentRowsOf = (payload: object): SubagentRow[] => {
-  const transcript = stringAt(payload, 'transcript_path') ?? '';
-  return Object.values(objectAt(payload, 'tasks') ?? {})
-    .filter(isObject)
-    .flatMap((task) => {
+  const tasks = objectAt(payload, 'tasks') ?? {};
+
+  return Object.keys(tasks)
+    .flatMap((key) => {
+      const task = fieldAt(tasks, key);
       const id = stringAt(task, 'id');
 
       if (id === undefined || stringAt(task, 'type') !== 'local_agent') {
         return [];
       }
 
-      const read = contextOf(subagentTranscriptOf(transcript, id));
+      const read = namedContextOf(payload, (transcript) => {
+        return subagentTranscriptOf(transcript, id);
+      });
       const tokens = read === 0 ? numberAt(task, 'tokenCount') ?? 0 : read;
       const label = stringAt(task, 'label') ?? stringAt(task, 'description');
       const rows = [
@@ -208,7 +215,7 @@ export const contextWarningOf = (input: SessionInput, directory: string): object
   }
 
   mkdirSync(directory, { recursive: true });
-  writeFileSync(marker, '');
+  closeSync(openSync(marker, 'w'));
 
   return warningOf(tokens);
 };

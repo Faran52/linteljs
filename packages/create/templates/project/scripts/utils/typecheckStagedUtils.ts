@@ -16,12 +16,9 @@ const failedOutput = (command: string): string | null => {
     status,
     stdout,
     stderr,
-  } = spawnSync(command, {
-    encoding: 'utf8',
-    shell: true,
-  });
+  } = spawnSync(command, { shell: true });
 
-  return status === 0 ? null : `${stdout}\n${stderr}`;
+  return status === 0 ? null : `${String(stdout)}\n${String(stderr)}`;
 };
 
 // Keeps only the errors in the staged files.

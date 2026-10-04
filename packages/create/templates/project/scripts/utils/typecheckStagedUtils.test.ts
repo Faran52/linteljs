@@ -85,7 +85,8 @@ describe('typecheckStaged', () => {
   it('reports the errors in a staged file, in either tsc format and through colour codes', async () => {
     const output = [
       'src/broken.ts(1,14): error TS2322: wrong',
-      '\u001b[96msrc/broken.ts\u001b[0m:2:3 - error TS2304: missing',
+      '\u001b[96msrc/broken.ts\u001b[0m:\u001b[93m2\u001b[0m:\u001b[93m3\u001b[0m'
+      + ' - \u001b[91merror\u001b[0m\u001b[90m TS2304: \u001b[0mmissing',
       'src/other.ts(1,1): error TS2322: elsewhere',
       'src/broken.ts: a line with no diagnostic',
       '',
@@ -95,8 +96,8 @@ describe('typecheckStaged', () => {
     const { code, logged } = run([String.raw`C:\repo\src\broken.ts`], command);
 
     expect(code).toBe(1);
-    expect(logged).toContain('error TS2322: wrong');
-    expect(logged).toContain('error TS2304: missing');
+    expect(logged).toContain('TypeScript errors in staged files:\nsrc/broken.ts(1,14): error TS2322: wrong');
+    expect(logged).toContain('wrong\n\u001b[96msrc/broken.ts');
     expect(logged).not.toContain('elsewhere');
     expect(logged).not.toContain('no diagnostic');
   });
@@ -107,6 +108,30 @@ describe('typecheckStaged', () => {
     const { code } = run(['lib/tool.ts'], command);
 
     expect(code).toBe(1);
+  });
+
+  it('does not match a path with no src segment against any other file', async () => {
+    const command = await failingWith('lib/other.ts(1,1): error TS2322: elsewhere\n');
+
+    const { code } = run(['lib/tool.ts'], command);
+
+    expect(code).toBe(0);
+  });
+
+  it('reports an error in any one of several staged files', async () => {
+    const command = await failingWith('src/a.ts(1,1): error TS2322: wrong\n');
+
+    const { code } = run(['src/a.ts', 'src/b.ts'], command);
+
+    expect(code).toBe(1);
+  });
+
+  it('trusts a passing exit status over what the command prints', () => {
+    const command = `"${execPath}" -e "console.log('src/a.ts(1,1): error TS2322: wrong')"`;
+
+    const { code } = run(['src/a.ts'], command);
+
+    expect(code).toBe(0);
   });
 
   it('passes when every error belongs to an unstaged file', async () => {

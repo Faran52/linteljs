@@ -26,6 +26,38 @@ const UNREADABLE = /^The git safety guard could not read this command/u;
 
 const DENIED: CommandProbe[] = [
   {
+    label: 'global -c before stash',
+    command: 'git -c core.pager=cat stash',
+  },
+  {
+    label: 'global --git-dir before stash',
+    command: 'git --git-dir .git stash',
+  },
+  {
+    label: 'global --work-tree before stash',
+    command: 'git --work-tree . stash',
+  },
+  {
+    label: 'global --namespace before stash',
+    command: 'git --namespace lintel stash',
+  },
+  {
+    label: 'global --exec-path before stash',
+    command: 'git --exec-path /usr/lib/git-core stash',
+  },
+  {
+    label: 'global --super-prefix before stash',
+    command: 'git --super-prefix sub/ stash',
+  },
+  {
+    label: 'global --config-env before stash',
+    command: 'git --config-env core.pager=PAGER stash',
+  },
+  {
+    label: 'add with A inside combined short options',
+    command: 'git add -vA',
+  },
+  {
     label: 'direct stash',
     command: 'git stash',
   },
@@ -177,6 +209,10 @@ const DENIED: CommandProbe[] = [
 
 const UNREADABLE_COMMANDS: CommandProbe[] = [
   {
+    label: 'a computed operand holding -m past its start',
+    command: 'git checkout "feat-m$(date)"',
+  },
+  {
     label: 'env missing path operand',
     command: 'env -P',
   },
@@ -219,6 +255,30 @@ const UNREADABLE_COMMANDS: CommandProbe[] = [
 ];
 
 const CLEARED: CommandProbe[] = [
+  {
+    label: 'git with no subcommand',
+    command: 'git --version',
+  },
+  {
+    label: 'add of a path holding -A',
+    command: 'git add my-App.ts',
+  },
+  {
+    label: 'add with a short option and no A',
+    command: 'git add -v file.ts',
+  },
+  {
+    label: 'add after a global -C dot',
+    command: 'git -C . add file.ts',
+  },
+  {
+    label: '--amend on a subcommand other than commit',
+    command: 'git notes --amend',
+  },
+  {
+    label: 'dot on a subcommand other than add',
+    command: 'git diff .',
+  },
   {
     label: 'status',
     command: 'git status',
@@ -501,15 +561,49 @@ describe('gitSafetyReason', () => {
   });
 
   it.each([
-    ['git stash', '`git worktree add`'],
-    ['git reset --hard HEAD', '`git restore --staged <path>`'],
-    ['git commit --no-verify', 'without it'],
-    ['git commit --amend', 'Make a new commit instead'],
-    ['git add -A', '`git add <path>...`'],
-  ])('tells the agent what to do instead of %s', (command, advice) => {
+    [
+      'git stash',
+      'a concurrent session',
+      '`git worktree add`',
+    ],
+    [
+      'git reset --hard HEAD',
+      'rewrites the index',
+      '`git restore --staged <path>`',
+    ],
+    [
+      'git commit --no-verify',
+      'skips the hooks',
+      'without it',
+    ],
+    [
+      'git commit --amend',
+      'rewrites the last commit',
+      'Make a new commit instead',
+    ],
+    [
+      'git add -A',
+      'stage files that are not yours',
+      '`git add <path>...`',
+    ],
+  ])('tells the agent why %s is banned and what to do instead', (command, why, advice) => {
     const reason = gitSafetyReason(command, 'bash');
 
     expect(reason).toContain(`Blocked \`${command}\``);
+    expect(reason).toContain(why);
     expect(reason).toContain(advice);
+  });
+
+  it('tells the agent why it cannot read a command and how to run git instead', () => {
+    const reason = gitSafetyReason('git status $(date)', 'bash');
+
+    expect(reason).toContain('could not read this command');
+    expect(reason).toContain('(stash, reset, --no-verify, --amend, add -A)');
+    expect(reason).toContain('PowerShell subexpressions');
+  });
+
+  it('shows a computed token in a blocked command as a substitution', () => {
+    const reason = gitSafetyReason('git commit --amend -m "$(date)"', 'bash');
+    expect(reason).toContain('Blocked `git commit --amend -m $(...)`.');
   });
 });

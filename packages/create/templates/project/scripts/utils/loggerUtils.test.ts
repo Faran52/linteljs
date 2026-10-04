@@ -44,10 +44,26 @@ describe('loggerUtils', () => {
     vi.stubEnv('DEBUG', 'true');
     error.mockClear();
     logDebug('shown');
-    logError('failed', new Error('boom'));
+    const boom = new Error('boom');
+    logError('failed', boom);
 
     expect(out).toHaveBeenCalledWith('[DEBUG] shown');
-    expect(error).toHaveBeenCalledTimes(3);
+    const debugExpected = [
+      ['[ERROR] failed'],
+      ['Error details: boom'],
+      [`Stack trace:\n${String(boom.stack)}`],
+    ];
+    expect(error.mock.calls).toStrictEqual(debugExpected);
+  });
+
+  it('prints no stack trace under DEBUG=true for an error that carries none', () => {
+    vi.stubEnv('DEBUG', 'true');
+    const error = vi.spyOn(console, 'error').mockReturnValue();
+
+    logError('failed');
+
+    const expected = [['[ERROR] failed']];
+    expect(error.mock.calls).toStrictEqual(expected);
   });
 
   it('prints an error with no cause as its message alone', () => {

@@ -35,7 +35,7 @@ export type Json = number | object | string;
 // A session id names a state file, so nothing but a plain token is accepted.
 const SESSION_ID = /^[\w-]+$/u;
 
-const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)$/u;
+const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)/u;
 
 export const isObject = (value: unknown): value is object => {
   return typeof value === 'object' && value !== null;
@@ -45,6 +45,19 @@ export const isObject = (value: unknown): value is object => {
 const isJsonEntry = (entry: [string, unknown]): entry is [string, Json] => {
   const [, field] = entry;
   return typeof field === 'number' || typeof field === 'string' || isObject(field);
+};
+
+// Unreadable, or JSON that is not an object, reads as nothing.
+export const jsonObjectOf = (read: () => string): object | undefined => {
+  try {
+    const parsed: unknown = JSON.parse(read());
+    return isObject(parsed) ? parsed : undefined;
+  }
+  catch {
+    // Falls through to nothing.
+  }
+
+  return undefined;
 };
 
 export const fieldAt = (value: Json | undefined, key: string): Json | undefined => {
@@ -67,20 +80,14 @@ const stringAt = (value: Json | undefined, key: Field): string | undefined => {
 };
 
 // Copilot CLI sends `toolArgs` as JSON text and its SDK as an object, so both read as the object.
-const toolArgumentsOf = (payload: object): object | undefined => {
+const toolArgumentsOf = (payload: object): Json | undefined => {
   const toolArguments = fieldAt(payload, 'toolArgs');
 
-  if (typeof toolArguments !== 'string') {
-    return typeof toolArguments === 'object' ? toolArguments : undefined;
-  }
-
-  try {
-    const parsed: unknown = JSON.parse(toolArguments);
-    return isObject(parsed) ? parsed : undefined;
-  }
-  catch {
-    return undefined;
-  }
+  return typeof toolArguments === 'string'
+    ? jsonObjectOf(() => {
+        return toolArguments;
+      })
+    : toolArguments;
 };
 
 // Every Cursor payload carries `cursor_version`, and only Copilot's camelCase payload names its tool `toolName`.
@@ -98,13 +105,10 @@ const toolInputOf = (payload: object, host: Host): Json | undefined => {
 
 // Descriptor 0, not `node:process`'s stdin, which is set non-blocking and fails a large read with EAGAIN.
 export const readPayload = (source: number | string = 0): object | undefined => {
-  try {
-    const payload: unknown = JSON.parse(readFileSync(source, 'utf8'));
-    return isObject(payload) ? payload : undefined;
-  }
-  catch {
-    return undefined;
-  }
+  return jsonObjectOf(() => {
+    const text = String(readFileSync(source));
+    return text;
+  });
 };
 
 // Cursor also runs Claude Code's hooks, so a payload for any other event is that second copy and stays silent.
@@ -152,12 +156,14 @@ export const readEdit = (payload: object): EditInput | undefined => {
     stringAt(input, 'path'),
     stringAt(response, 'filePath'),
   ];
-  const patch = stringAt(input, 'command') ?? stringAt(input, 'patch') ?? (typeof input === 'string' ? input : '');
-  const patched = patch
-    .split(/\r?\n/u)
-    .map((line) => {
-      return PATCHED_FILE.exec(line)?.[1];
-    });
+  const patch = stringAt(input, 'command') ?? stringAt(input, 'patch') ?? input;
+  const patched = typeof patch === 'string'
+    ? patch
+        .split(/\r?\n/u)
+        .map((line) => {
+          return PATCHED_FILE.exec(line)?.[1];
+        })
+    : [];
 
   const paths = [...named, ...patched]
     .filter((path) => {

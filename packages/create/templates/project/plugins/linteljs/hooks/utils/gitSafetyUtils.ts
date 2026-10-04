@@ -42,13 +42,11 @@ const addIsBanned = (arguments_: string[]): boolean => {
   const options = beforeSeparator(arguments_);
   return arguments_.includes('.') || options
     .some((argument) => {
-      return argument === '-A' || argument === '--all' || (/^-[^-]/u.test(argument) && argument
-        .slice(1)
-        .includes('A'));
+      return argument === '--all' || (/^-[^-]/u.test(argument) && argument.includes('A'));
     });
 };
 
-const MESSAGE_VALUED = new Set([
+const MESSAGE_VALUED = new Set<string | undefined>([
   '-m',
   '--message',
   '-F',
@@ -60,7 +58,7 @@ const hasComputedOperand = (operands: string[]): boolean => {
   return operands
     .some((operand, index) => {
       return operand.includes(COMPUTED)
-        && !MESSAGE_VALUED.has(operands[index - 1] ?? '')
+        && !MESSAGE_VALUED.has(operands[index - 1])
         && !/^(?:-m|--message=)/u.test(operand);
     });
 };

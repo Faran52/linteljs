@@ -22,13 +22,68 @@ import {
 
 import {
   decisionOf,
+  fieldAt,
   hostOf,
+  jsonObjectOf,
   readCommand,
   readEdit,
   readPayload,
   readSession,
   writeDecision,
 } from './hostUtils.ts';
+
+describe('jsonObjectOf', () => {
+  const unreadable = (): string => {
+    throw new Error('unreadable');
+  };
+
+  it.each([
+    [
+      'an object',
+      () => {
+        return '{"a":1}';
+      },
+      { a: 1 },
+    ],
+    [
+      'text that is not JSON',
+      () => {
+        return '{';
+      },
+      undefined,
+    ],
+    [
+      'JSON null',
+      () => {
+        return 'null';
+      },
+      undefined,
+    ],
+    [
+      'a read that throws',
+      unreadable,
+      undefined,
+    ],
+  ])('reads %s', (_label, read, expected) => {
+    const parsed = jsonObjectOf(read);
+    expect(parsed).toStrictEqual(expected);
+  });
+});
+
+describe('fieldAt', () => {
+  it('reads a field that is JSON its readers can narrow', () => {
+    const field = fieldAt({ a: 'x' }, 'a');
+    expect(field).toBe('x');
+  });
+
+  it.each([
+    ['null', null],
+    ['a boolean', true],
+  ])('reads nothing from a field that is %s', (_label, value) => {
+    const field = fieldAt({ a: value }, 'a');
+    expect(field).toBeUndefined();
+  });
+});
 
 describe('hostOf', () => {
   it.each([
@@ -121,6 +176,16 @@ describe('readCommand', () => {
     expect(command).toBeUndefined();
   });
 
+  it('reads a command sent with no tool name as bash', () => {
+    const command = readCommand({ tool_input: { command: 'ls' } }, 'beforeShellExecution');
+    const expected = {
+      host: 'claude',
+      command: 'ls',
+      dialect: 'bash',
+    };
+    expect(command).toEqual(expected);
+  });
+
   it('reads nothing where there is no command', () => {
     const emptyInputCommand = readCommand({ tool_input: {} }, 'beforeShellExecution');
     expect(emptyInputCommand).toBeUndefined();
@@ -153,6 +218,7 @@ describe('readSession', () => {
     ['no session', { transcript_path: '/p/t.jsonl' }],
     ['a session that is not a plain token', { ...main, session_id: '../x' }],
     ['an empty session', { ...main, session_id: '' }],
+    ['a session with a path after its token', { ...main, session_id: 'abc/../x' }],
   ])('reads nothing from %s', (_label, payload) => {
     const session = readSession(payload);
     expect(session).toBeUndefined();
@@ -190,6 +256,12 @@ describe('readEdit', () => {
   ])('reads every Add and Update header of apply_patch text under %s', (_key, input) => {
     const expected = ['src/a.ts', 'src/b.ts'];
     expect(readEdit({ tool_input: input })?.paths).toEqual(expected);
+  });
+
+  it('reads a header only at the start of a line', () => {
+    const edit = readEdit({ tool_input: { patch: '*** Add File: src/a.ts\n+*** Add File: src/c.ts' } });
+    const expected = ['src/a.ts'];
+    expect(edit?.paths).toEqual(expected);
   });
 
   it('reads raw apply_patch text, and an empty cwd where none was sent', () => {

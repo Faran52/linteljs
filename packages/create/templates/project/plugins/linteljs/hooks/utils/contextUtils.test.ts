@@ -1,7 +1,9 @@
 import {
+  closeSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  openSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -15,8 +17,6 @@ import {
   expect,
   it,
 } from 'vitest';
-
-import { TRANSCRIPT_TAIL_BYTES } from '../constants.ts';
 
 import {
   badgeOf,
@@ -90,6 +90,33 @@ describe('contextOf', () => {
     expect(tokens).toBe(42);
   });
 
+  it('skips an assistant entry whose usage is no object', () => {
+    const path = transcriptOf([
+      assistant(5, 0, 0),
+      JSON.stringify({ type: 'assistant', message: { usage: 'x' } }),
+    ]);
+
+    const tokens = contextOf(path);
+
+    expect(tokens).toBe(5);
+  });
+
+  it('closes the transcript it reads', () => {
+    const path = transcriptOf([assistant(1, 0, 0)]);
+
+    const nextDescriptor = (): number => {
+      const descriptor = openSync(path, 'r');
+      closeSync(descriptor);
+      return descriptor;
+    };
+
+    const before = nextDescriptor();
+    contextOf(path);
+    const after = nextDescriptor();
+
+    expect(after).toBe(before);
+  });
+
   it('answers zero for a missing file or one with no assistant entry', () => {
     const empty = transcriptOf([JSON.stringify({ type: 'user' })]);
 
@@ -101,21 +128,24 @@ describe('contextOf', () => {
     expect(directoryContext).toBe(0);
   });
 
+  // A small tail keeps the fixtures small.
+  const tailBytes = 200;
+
   it('reads only the tail, so an entry further back is not seen', () => {
-    const filler = JSON.stringify({ type: 'user', text: 'x'.repeat(TRANSCRIPT_TAIL_BYTES) });
+    const filler = JSON.stringify({ type: 'user', text: 'x'.repeat(tailBytes) });
     const path = transcriptOf([assistant(1, 0, 0), filler]);
 
-    const tokens = contextOf(path);
+    const tokens = contextOf(path, tailBytes);
 
     expect(tokens).toBe(0);
   });
 
   it('reads an entry that ends exactly at the tail', () => {
     const line = assistant(5, 0, 0);
-    const filler = JSON.stringify({ type: 'user', text: 'x'.repeat(TRANSCRIPT_TAIL_BYTES - line.length - 40) });
+    const filler = JSON.stringify({ type: 'user', text: 'x'.repeat(tailBytes - line.length - 40) });
     const path = transcriptOf([filler, line]);
 
-    const tokens = contextOf(path);
+    const tokens = contextOf(path, tailBytes);
 
     expect(tokens).toBe(5);
   });
@@ -125,6 +155,12 @@ it('finds a subagent\'s transcript beside the main one', () => {
   const path = subagentTranscriptOf('/p/session.jsonl', 'a1b2');
 
   expect(path).toBe(join('/p/session', 'subagents', 'agent-a1b2.jsonl'));
+});
+
+it('strips only the transcript\'s own extension', () => {
+  const path = subagentTranscriptOf('/p/old.jsonl/session.jsonl', 'a1b2');
+  const expected = join('/p/old.jsonl/session', 'subagents', 'agent-a1b2.jsonl');
+  expect(path).toBe(expected);
 });
 
 describe('badgeOf', () => {
@@ -230,7 +266,11 @@ describe('subagentRowsOf', () => {
           description: 'Explore',
           tokenCount: 151_000,
         },
-        { id: 'a2', type: 'local_agent' },
+        {
+          id: 'a2',
+          type: 'local_agent',
+          label: 7,
+        },
       ],
     });
 
@@ -238,6 +278,16 @@ describe('subagentRowsOf', () => {
       { id: 'a1', content: `${badgeOf(151_000)} Explore` },
       { id: 'a2', content: badgeOf(0) },
     ];
+    expect(rows).toEqual(expected);
+  });
+
+  it('reads no subagent transcript when the payload names no transcript', () => {
+    const rows = subagentRowsOf({ tasks: [{
+      id: 'a1',
+      type: 'local_agent',
+      tokenCount: 7,
+    }] });
+    const expected = [{ id: 'a1', content: badgeOf(7) }];
     expect(rows).toEqual(expected);
   });
 
