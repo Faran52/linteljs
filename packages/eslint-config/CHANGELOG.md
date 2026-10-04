@@ -65,7 +65,7 @@ when a version's change lives in a sibling it is described there instead:
   do array indexes, default values, class field initial values, object property values, enum members, numeric
   literal types, readonly class properties and type indexes. Anything else wants a named `const`. Core
   `no-magic-numbers` is off, so the two never double-report.
-- **`base` caps the operators in one expression.** `sonarjs/expression-complexity` runs at error with `max: 3` on
+- **`base` caps the operators in one expression.** `sonarjs/expression-complexity` runs at error, at its default `max` of 3, on
   every script and SFC file except suites, `__mocks__/` and `e2e/`. A condition joining four or more `&&`, `||`
   and `?:` wants its parts named in `const`s or a small predicate first.
 - **`base` asks for values to be named before use.** `@linteljs/name-before-use` runs on every script and SFC
@@ -99,7 +99,7 @@ when a version's change lives in a sibling it is described there instead:
 ### Changed
 
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
-- `typescript-eslint` moves to ^8.70.1 and `eslint-plugin-sonarjs` to ^4.2.1.
+- `typescript-eslint` moves to ^8.71.0 and `eslint-plugin-sonarjs` to ^4.2.2.
 - `astro-eslint-parser` and `svelte-eslint-parser` are no longer optional peers: `eslint-plugin-astro` and
   `eslint-plugin-svelte` depend on them, so installing the plugin is enough.
 

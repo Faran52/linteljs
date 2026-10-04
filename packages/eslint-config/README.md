@@ -10,6 +10,9 @@ layer order without hand-writing the stack.
 npm install --save-dev @linteljs/eslint-config eslint typescript
 ```
 
+It needs Node 18.18 or later, ESLint 9 or later, and TypeScript 5.0 up to 6.0, the range the bundled
+typescript-eslint supports.
+
 ```js
 // eslint.config.js
 import { composeConfig } from '@linteljs/eslint-config/compose-config';
@@ -55,8 +58,8 @@ Framework layers override shared layers. Vue and Svelte must come after TypeScri
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
 `.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
 
-`next()` and `nuxt()` stack on another layer: React comes first, then Next, and Vue first, then Nuxt. Angular owns its template
-processing, so a generated Angular project does not add `html()`.
+`next()` and `nuxt()` stack on another layer: React comes first, then Next, and Vue first, then Nuxt. Angular
+owns its template processing, so a generated Angular project does not add `html()`.
 
 ## Compose layers yourself
 
