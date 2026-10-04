@@ -60,8 +60,8 @@ when a version's change lives in a sibling it is described there instead:
   the header and every starter page are translated. The stored choice wins, then the browser
   language, which is never stored; Arabic sets `dir="rtl"`. The server-rendered starters (Nuxt, Next, SvelteKit,
   React Router's framework mode) keep the choice in a `language` cookie and render it, `lang` and `dir` included,
-  from the first byte, falling back to the request's `Accept-Language`; the Vue and React single-page starters
-  keep it in the same cookie.
+  from the first byte, falling back to the request's `Accept-Language`; the Vue, React and Astro starters keep it
+  in the same cookie.
 
   | Target | Through |
   | --- | --- |
@@ -79,7 +79,11 @@ when a version's change lives in a sibling it is described there instead:
   About and Version pages; React, Next, Vue, Svelte and Solid add Contact with a form library. Angular renders it under every
   answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. A Contact field shows its
   error once it is left or a send is tried, and clears it as soon as the value passes. About lists every script
-  `check` chains, with what each runs and the manager's own prefix. The page title is the project's name.
+  `check` chains, with what each runs and the manager's own prefix. The page title is the project's name, and the
+  header wraps a name too long for its row rather than cutting it off.
+- **Accessibility and SEO.** Every starter document sets `lang` on `<html>` and carries a description meta, the
+  extension popup holds its content in a `<main>` landmark, and every target that serves a public directory ships
+  a `robots.txt`, so a single-page app does not answer `/robots.txt` with its HTML shell.
 - **Status pages.** Every starter but the extension ships 403, 404 and 500 pages over one `StatusPage` per
   framework, read from `src/config/statuses.ts`. A crash shows the 500 page with "Try again", through the
   framework's own boundary, and a path nothing routes the 404. A `ForbiddenError`, the class
@@ -87,13 +91,15 @@ when a version's change lives in a sibling it is described there instead:
   Router, Nuxt and SvelteKit. Astro, rendered at build, writes its three pages over one `StatusLayout.astro`.
 - **The starter follows the system colour scheme.** Each colour token is `light-dark()` under
   `color-scheme: light dark`, a `.light` or `.dark` class pins either, and Tailwind's `dark:` variant matches the
-  same condition. React Native reads the same token values through `useColorScheme`.
+  same condition. React Native reads the same token values through `useColorScheme`. Every text token meets
+  WCAG AA in both schemes, 4.5:1 on the page, a card and a muted surface, and a field's border 3:1.
 - Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme. React Native's mark
   animates like the web one, through Reanimated, and holds still under reduced motion.
 - **Aliases.** Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside
   `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
   is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one
-  too, first in `paths`: `@pages` on React and Solid, `@views` on Vue and Nuxt, `@layouts` on Astro. With
+  too, first in `paths`: `@pages` on React and Solid, with `@routes` before it under React Router in code, `@views`
+  on Vue and Nuxt, `@layouts` on Astro. With
   `react-router-framework`, `eslint.config.js` sets `aliasExempt: ['src/routes.ts']` and
   `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
   the aliases.
@@ -136,8 +142,8 @@ when a version's change lives in a sibling it is described there instead:
   names pass the target's own `naming` map. The fix stage stays, to bring an existing project into line.
 - The fix stage reports per tool: `eslint --fix: 3 files changed` or `eslint --fix: nothing to fix`, and the same for
   `stylelint --fix`, which said nothing unless it could not run.
-- Node `>=22.18.0`, down from `>=26.8.1`, for both the CLI and the project it writes: the first release that runs the
-  project's TypeScript scripts and hooks with plain `node`.
+- Node `>=22.18.0`, down from `>=26.8.1`, for both the CLI and the project it writes: the first 22.x release that
+  strips types by default, so the project's TypeScript scripts and hooks run with plain `node`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
   React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and declares
   `@react-native/metro-config`. A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only; the
@@ -170,7 +176,9 @@ when a version's change lives in a sibling it is described there instead:
 - On Yarn, the first install in CI writes its lockfile, which Yarn 4's immutable CI installs refused. Husky and a
   target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs `prepare`.
 - `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.
-- An Astro project gets `dev` and `preview` scripts, like every other target.
+- An Astro project gets `dev` and `preview` scripts, like every other target. Angular's `preview` serves the
+  production build through `vite preview`, where `ng serve` stays a dev server, and `ng build` writes straight
+  into `dist/`.
 - An extension without the popup surface writes no `index.html`, `src/main.ts`, `src/popup/` or `src/lib/mark/`,
   since its manifest names no popup; one with no page at all gets no html layer.
 - Emitted files stay within `max-len` and still parse on unusual values: a long project name, a long gate command
@@ -182,19 +190,6 @@ when a version's change lives in a sibling it is described there instead:
   answer that fails its pattern says it must match the pattern, not that it must be a string.
 - The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
-- The starter palette meets WCAG AA in both schemes: every text token reads at 4.5:1 on the page, a card and a
-  muted surface, and a field's border at 3:1. `--dim`, which no starter read and no surface could carry as text,
-  is gone from `tokens.css` and the StyleX and Tailwind themes.
-- The Nuxt starter without translations sets `lang` on `<html>`, as every other target already does.
-- The web extension popup holds its content in a `<main>` landmark.
-- The header reads the project name in full at any width: a name too long for the row moves the nav below it
-  and wraps, where it used to end in an ellipsis at 360px.
-- Every starter document head carries a description meta, which Lighthouse's SEO audit asks for.
-- Every target that serves a public directory ships a `robots.txt`, so a single-page app no longer answers
-  `/robots.txt` with its HTML shell.
-- A translated React, Next, Vue, Nuxt, Svelte, Solid, Angular, Astro or React Native home page speaks the chosen
-  language: its lede, the store's button and caption, and the gate hint, where they were English. The popup's
-  `popupGate` key is now `gateHint`, which the popup and every home page read.
 
 ## 1.5.3
 

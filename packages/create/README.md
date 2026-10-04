@@ -17,8 +17,8 @@ Then `cd my-app` and run `check` (`pnpm check`, `npm run check`, and so on).
 
 ## Requirements
 
-- Node 22.18.0 or newer, both to run `create` and in the project it writes: the first release that runs the
-  project's TypeScript scripts and hooks with plain `node`.
+- Node 22.18.0 or newer, both to run `create` and in the project it writes: the first 22.x release that strips
+  types by default, so the project's TypeScript scripts and hooks run with plain `node`.
 - The manager that runs `create` becomes the project's, at its exact version: pnpm 10.26+, npm 9.6.5+, Yarn 4+,
   or Bun 1.2+. A manager below its floor is refused, never upgraded; Yarn 1 is refused as not supported.
 - With pnpm's `minimumReleaseAge` set, the project starts on the newest versions older than the window. To start
@@ -42,8 +42,10 @@ the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typ
 `--testing none`), and the build.
 
 The starter is linteljs's own, not a framework scaffolder's. Every target but the web extension gets a header with
-tabs, Home, About and Version pages, and 403, 404 and 500 pages. It follows the system colour scheme, ships the
-chosen languages, and passes its own `check` before you change a line.
+tabs, Home, About and Version pages, and 403, 404 and 500 pages. It follows the system colour scheme at WCAG AA
+contrast in both, carries a description meta and, where a public directory is served, a `robots.txt`. It ships
+the chosen languages and remembers the choice; the server-rendered targets read it from a `language` cookie and
+render it from the first byte. It passes its own `check` before you change a line.
 
 ## Questions and options
 
