@@ -113,10 +113,12 @@ describe('emitYarnrc', () => {
     expect(native).not.toContain('"@react-native/metro-config"');
     expect(native).toContain('  "expo-linking@*":\n    peerDependencies:\n      expo: "*"\n');
     expect(native).not.toContain('react-native-css');
+    expect(native).toContain('  "jest-expo@*":\n    dependencies:\n      "@babel/core": "^7"\n    peerDependencies:\n');
     expect(styled).toContain(css);
     const plain = emitYarnrc(answersFor({}));
     expect(plain).not.toContain('react-native-worklets');
     expect(plain).not.toContain('@expo/cli');
+    expect(plain).not.toContain('jest-expo');
   });
 
   it('walks the peers up that the router plugin and nuxt leave short', () => {

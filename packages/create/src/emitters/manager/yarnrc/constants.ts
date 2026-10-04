@@ -76,6 +76,17 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     dependencies:
       "@babel/core": "^7"
 `,
+  // jest-expo 57 and the React Native preset beneath it pass none of babel, jest or react to what they install.
+  'jest-expo': `  "jest-expo@*":
+    dependencies:
+      "@babel/core": "^7"
+    peerDependencies:
+      jest: "*"
+      react: "*"
+  "@react-native/jest-preset@*":
+    dependencies:
+      "@babel/core": "^7"
+`,
   // `react-native-css` comes with the tailwind answer on react-native, and hard-peers two packages nothing declares.
   'react-native-css': `  "react-native-css@*":
     dependencies:
