@@ -333,7 +333,7 @@ every one already a named entry. `1000` is not allowed, and is `MS_PER_SECOND` i
 except suites, `__mocks__/` and e2e: a case may spell out the condition it pins, while source names the parts of a
 long condition in `const`s or a small predicate. Config files and `constants.ts` stay in scope, since the rule is
 about reading a condition rather than naming a number. Measured on 2026-10-02: 18 findings in 8 files, all under
-`eslint-plugin/scripts/` and `eslint-config/scripts/`, and none in the suites or the 62 starters. Every one was
+`eslint-plugin/scripts/` and `eslint-config/scripts/`, and none in the suites or the starters. Every one was
 fixed in the code, so the root config carries no exemption for it.
 
 ### `name-before-use` reports and never fixes
@@ -497,7 +497,7 @@ and `appDirectory` on React Router, and both are set, so every glob in this repo
 ### How a template is laid out
 
 **One file per axis, never per combination.** React's Contact demo crosses a form library, a data layer and Zod,
-which is twelve combinations, and is nine files. The joins do it: `useSubmitContact()` has one signature in all
+which is eighteen combinations, and is one file per axis. The joins do it: `useSubmitContact()` has one signature in all
 three api spellings, so the form never learns which layer runs it; `ROUTES` is one array the header, the route
 table and the no-router switch all read; the entry is one file because the router lives in `App` and the store and
 data layer live in providers beside it. `starterSourceEmitter` refuses two starter files for one destination under
@@ -955,8 +955,8 @@ vocabulary for the same job.
 
 Only the React target has a `routers` slot: `react-router`, declarative, with its route table in
 `src/routes/router.tsx`; `react-router-framework`, see [Targets](#react-router-framework-mode-is-a-router-value-nuxt-is-a-target);
-and `tanstack-router`. Next, SvelteKit, Nuxt, Expo and Astro route by file; Vue installs its router
-unconditionally, because a Vue application routes; Solid and Angular are a `pnpm add`.
+and `tanstack-router`. Next, SvelteKit, Nuxt, Expo and Astro route by file; Vue and Angular install their
+router unconditionally, because an application on either routes; Solid's is a `pnpm add`.
 
 ### The languages answer
 
