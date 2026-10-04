@@ -94,7 +94,7 @@ export const solidTarget: TargetBuilder = () => {
       ...componentStyleModules('solid'),
       ...accessorFiles(ACCESSORS),
       ...solidI18nFiles(),
-      ...localeFiles(),
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {

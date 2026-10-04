@@ -21,7 +21,10 @@ export const popupI18nFiles = (): StarterFile[] => {
       when: hasI18n,
       variant: 'i18n',
     },
-    ...localeFiles(),
+    // No contact page.
+    ...localeFiles(() => {
+      return false;
+    }),
     languageUtilsFile(),
   ];
 

@@ -42,6 +42,8 @@ export interface StarterFile {
   source?: string;
   // React's StyleX sheet, spread with `attrs` for the `class` every other framework reads.
   stylexAttrs?: true;
+  // Rewrites the asset for the answers, such as a locale file dropping the keys of a page the project lacks.
+  transform?: (source: string, answers: Answers) => string;
 }
 
 // Compiles the catalog from the inlang project the i18n config emitter writes. `prepare` and `typecheck` run its

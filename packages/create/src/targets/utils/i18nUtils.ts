@@ -1,6 +1,7 @@
 import { LANGUAGES } from '@config/constants';
 
 import { localesOf } from '@utils/answerUtils';
+import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 import { TRANSLATED_CONFIGS } from '../constants';
 
@@ -71,8 +72,34 @@ export const i18nFiles = ({
   return files;
 };
 
-// Every target reads the same locales, so a key added once reaches all of them.
-export const localeFiles = (): StarterFile[] => {
+const isLocale = (value: unknown): value is Record<string, string> => {
+  return isJsonObject(value)
+    && Object.values(value)
+      .every((text) => {
+        return typeof text === 'string';
+      });
+};
+
+// A locale it cannot read is left as written, for the project's own check to refuse.
+const withoutContact = (source: string): string => {
+  const locale = parsedAs(source, isLocale);
+
+  if (locale === null) {
+    return source;
+  }
+
+  const entries = Object.entries(locale)
+    .filter(([key]) => {
+      return !key.startsWith('contact');
+    });
+  const kept = Object.fromEntries(entries);
+
+  return `${JSON.stringify(kept, null, 2)}\n`;
+};
+
+// Every target reads the same locales, so a key added once reaches all of them; a project with no contact page
+// gets none of its keys.
+export const localeFiles = (hasContact: (answers: Answers) => boolean): StarterFile[] => {
   return LANGUAGES
     .map((language): StarterFile => {
       const localeFile: StarterFile = {
@@ -82,6 +109,9 @@ export const localeFiles = (): StarterFile[] => {
         },
         variant: 'i18n',
         shared: true,
+        transform: (source, answers) => {
+          return hasContact(answers) ? source : withoutContact(source);
+        },
       };
 
       return localeFile;

@@ -171,6 +171,8 @@ when a version's change lives in a sibling it is described there instead:
 - The contact form speaks the chosen language. Its labels and validation messages were English in every language;
   the rules now return a `contact*` locale key, every contact hook takes the page's `translate`, and the six
   locale files carry the four new keys.
+- A project with no contact page gets no `contact*` locale keys. Every target wrote the shared locale files
+  whole, so React Native, Astro, Nuxt, the web extension and a target with no form carried keys nothing read.
 - The starter's Version page lists only the answers its target asks: every target showed the web extension's
   Browser answer, since each holds its default.
 - `scripts/checkBannedPatterns.ts` reports a directive written as a block comment, such as

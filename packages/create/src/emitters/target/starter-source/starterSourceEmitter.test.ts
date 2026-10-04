@@ -561,6 +561,28 @@ describe('the starter source', () => {
   });
 });
 
+describe('a locale file', () => {
+  it.each<[Partial<Answers>, boolean]>([
+    [{ target: 'react', form: 'tanstack-form' }, true],
+    [{ target: 'react' }, false],
+    [{ target: 'angular' }, true],
+    [{ target: 'astro' }, false],
+    [{ target: 'react-native' }, false],
+    [{ target: 'nuxt' }, false],
+    [{ target: 'webextension' }, false],
+  ])('carries the contact keys under %o only where a contact page is written: %s', async (overrides, carried) => {
+    const text = await textOf({
+      ...overrides,
+      languages: ['ar'],
+    }, 'src/i18n/locales/ar/common.json');
+
+    const keys = Object.keys(JSON.parse(text) as Record<string, string>);
+    expect(keys).toContain('home');
+    const contact = keys.includes('contactEmail');
+    expect(contact).toBe(carried);
+  });
+});
+
 describe('a shared file written under the target naming', () => {
   it.each([
     ['src/lib/utils/status-utils.spec.ts', "from './status-utils'"],

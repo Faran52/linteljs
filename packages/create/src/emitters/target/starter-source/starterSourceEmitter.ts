@@ -113,10 +113,16 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const artifactOf = (file: Starter): Artifact => {
     const sources = [sourceOf(target.id, file)];
     const rewritten = importsRewritten(file, renames);
+    const transform = 'transform' in file ? file.transform : undefined;
     const steps = [
       ...renames.size === 0 ? [] : [rewritten],
       ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
+      ...transform === undefined
+        ? []
+        : [(source: string) => {
+            return transform(source, answers);
+          }],
     ];
 
     const artifact: Artifact = {

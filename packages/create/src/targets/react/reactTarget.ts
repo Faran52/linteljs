@@ -204,7 +204,7 @@ const baseReactTarget = (): TargetRecord => {
       // So `AppHeader.tsx` varies by router alone, not router times styling.
       ...componentStyleModules(),
       ...reactI18nFiles(),
-      ...localeFiles(),
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
       {

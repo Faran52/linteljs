@@ -115,7 +115,7 @@ export const svelteTarget: TargetBuilder = () => {
       ...stylexDocument('src/routes/+layout.svelte'),
       ...accessorFiles(ACCESSORS),
       ...svelteI18nFiles(),
-      ...localeFiles(),
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
       // Svelte's query bindings read their client out of context, which needs a component.

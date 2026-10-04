@@ -216,7 +216,7 @@ export const nextTarget: TargetBuilder = () => {
       }),
       ...rtkFiles(),
       ...nextI18nFiles(),
-      ...localeFiles(),
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),

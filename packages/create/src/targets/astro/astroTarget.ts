@@ -114,7 +114,10 @@ export const astroTarget: TargetBuilder = (answers) => {
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
       ...componentStyleModules('solid'),
       ...astroI18nFiles(),
-      ...localeFiles(),
+      // No contact page.
+      ...localeFiles(() => {
+        return false;
+      }),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),

@@ -92,7 +92,7 @@ export const vueTarget: TargetBuilder = () => {
       ...componentStyleModules('solid', COMPONENTS),
       ...accessorFiles(ACCESSORS),
       ...vueI18nFiles(),
-      ...localeFiles(),
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),

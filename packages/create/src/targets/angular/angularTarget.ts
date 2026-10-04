@@ -100,7 +100,10 @@ export const angularTarget: TargetBuilder = () => {
       formValidatorFile(FORM_VALIDATOR),
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
-      ...localeFiles(),
+      // Reactive Forms ship with Angular, so every project has the Contact page.
+      ...localeFiles(() => {
+        return true;
+      }),
       languageUtilsFile('language-utils'),
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {

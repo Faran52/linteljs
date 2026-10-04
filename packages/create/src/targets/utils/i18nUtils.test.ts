@@ -1,6 +1,7 @@
 import { answersFor } from '@mocks/answersFor';
 import { pickedBy } from '@mocks/starterGates';
 
+import { hasForm } from './gateUtils';
 import {
   i18nFiles,
   languageUtilsFile,
@@ -140,7 +141,7 @@ describe('i18nFiles', () => {
 describe('localeFiles', () => {
   it('writes English and each chosen locale, and no other', () => {
     const japanese = answersFor({ languages: ['ja'] });
-    const written = localeFiles()
+    const written = localeFiles(hasForm)
       .filter((file) => {
         return whenOf(file)(japanese);
       })
@@ -153,13 +154,50 @@ describe('localeFiles', () => {
   });
 
   it('reads each from the shared i18n tree', () => {
-    const [english] = localeFiles();
+    const [english] = localeFiles(hasForm);
 
     const expected = {
       variant: 'i18n',
       shared: true,
     };
     expect(english).toMatchObject(expected);
+  });
+
+  it('keeps a locale whole where the project has a contact page', () => {
+    const [english] = localeFiles(() => {
+      return true;
+    });
+    const source = '{\n  "contact": "Contact",\n  "home": "Home"\n}\n';
+
+    const written = english?.transform?.(source, ARABIC);
+
+    expect(written).toBe(source);
+  });
+
+  it('drops every contact key, and only those, where the project has no contact page', () => {
+    const [english] = localeFiles(() => {
+      return false;
+    });
+    const source = '{\n  "contact": "Contact",\n  "home": "Home",\n  "contactSend": "Send"\n}\n';
+
+    const written = english?.transform?.(source, ARABIC);
+
+    const expected = '{\n  "home": "Home"\n}\n';
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    '[]',
+    '{ "count": 1 }',
+    'not json',
+  ])('leaves a locale it cannot read, %s, as written', (source) => {
+    const [english] = localeFiles(() => {
+      return false;
+    });
+
+    const written = english?.transform?.(source, ARABIC);
+
+    expect(written).toBe(source);
   });
 });
 
