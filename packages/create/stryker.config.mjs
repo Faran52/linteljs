@@ -30,6 +30,10 @@ const PARTS = {
   'targets-b': ['src/targets/{svelte,vue}/**/*.ts'],
   'targets-c': ['src/targets/{solid,webextension}/**/*.ts'],
   'targets-d': ['src/targets/{react-native,astro,angular}/**/*.ts'],
+  // The shared target utils are what every target suite reads, so they split from the rest: one part held them all
+  // and ran 1h54m (audit 37215418274) against under an hour for every other part.
+  'targets-utils-a': ['src/targets/utils/{mockUtils,starterUtils}.ts'],
+  'targets-utils-b': ['src/targets/utils/*.ts'],
   'targets-e': ['src/targets/**/*.ts'],
   'emitters-a': ['src/emitters/{always,agents}/**/*.ts'],
   'emitters-b': ['src/emitters/**/*.ts'],

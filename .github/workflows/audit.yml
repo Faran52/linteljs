@@ -190,7 +190,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [targets-a, targets-b, targets-c, targets-d, targets-e, emitters-a, emitters-b, terminal-answers, config-utils-rings, rest, templates]
+        part: [targets-a, targets-b, targets-c, targets-d, targets-utils-a, targets-utils-b, targets-e, emitters-a, emitters-b, terminal-answers, config-utils-rings, rest, templates]
     env:
       STRYKER_PART: ${{ matrix.part }}
     steps:
