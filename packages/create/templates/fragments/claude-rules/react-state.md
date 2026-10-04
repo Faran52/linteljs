@@ -12,8 +12,8 @@ removing a `useEffect`.
 ## Props
 
 - **Destructure props in the signature.** A React component function re-runs on every render, so a
-  destructured prop is re-read each time. This is the opposite of Solid and Vue, where the same
-  line reads once and then freezes; do not carry the habit across. Never read `props.x` in the
+  destructured prop is re-read each time. This is the opposite of Solid, where the same line
+  reads once and then freezes; do not carry the habit across. Never read `props.x` in the
   body of a React component.
 - Never spread `{...props}` into a component. It makes the accepted prop set unknowable at the
   call site.

@@ -31,7 +31,8 @@ state rule.
     names a throw conventionally carries (`error`, `cause`, `reason`) and for one argument only,
     because a caught value is the whole input or it is not this case. This is the one carve-out
     keyed on a name rather than a shape, for the reason that TypeScript gives a caught value no
-    type of its own to key on.
+    type of its own to key on. A `.catch((value: unknown) => ...)` callback is granted under any
+    name, because the chain binds it the same way.
 - **No casts to satisfy a type, anywhere, including tests.** No `as X`, no `as unknown as X`, no
   `as never`. A type you can only satisfy with a cast means the fixture or the design is wrong.
   Casting to a bare generic parameter (`as T`) inside the generic that declares it is exempt.

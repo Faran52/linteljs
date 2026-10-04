@@ -2,6 +2,7 @@
 paths:
   - "**/*.vue"
   - "src/lib/composables/**/*.ts"
+  - "src/**/use*.ts"
 ---
 
 # Vue Reactivity Rules
@@ -34,8 +35,9 @@ Use the first option that fits.
   setter over `defineModel`, never a `ref` initialised from the prop and then diverging.
 - **Reactivity is asynchronous.** The DOM updates on the next tick. Anything that must read the
   updated DOM goes in `await nextTick()` or `onUpdated`, never straight after the mutation.
-- A `watch` on a deep object without `{ deep: true }` fires on replacement only. If you meant deep,
-  say so; if you meant a specific field, watch a getter for that field instead.
+- A `watch` on a ref or a getter holding an object fires on replacement only without `{ deep: true }`;
+  a `reactive` source is deep already. If you meant deep, say so; if you meant a specific field,
+  watch a getter for that field instead.
 - Every `watch` and `watchEffect` created outside `setup` must be stopped. Inside `setup` the
   component scope owns it; in a composable called from elsewhere, return the stop handle or use
   `effectScope`.

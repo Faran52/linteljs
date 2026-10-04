@@ -21,7 +21,7 @@ lib/apis/
   <domain>/<entity>/
     <entity>Api.ts      the endpoint objects, with typed error variants
     schemas.ts          request and response schemas, one pair per endpoint
-    index.ts            export * from './<entity>Api'
+    index.ts            re-exports <entity>Api and its schema types, by name
 ```
 
 `apis/` is the only place that knows about HTTP. `services/` holds domain logic and may never

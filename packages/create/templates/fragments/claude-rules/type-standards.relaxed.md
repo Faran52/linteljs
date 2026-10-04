@@ -17,7 +17,7 @@ What is allowed here that the strict floor bans:
 - A single `as X`. tsc rejects casts between non-overlapping types on its own; a cast that
   compiles is one it has already checked.
 - `as never`, `@ts-ignore` and `@ts-expect-error`. Each is visible in review and in a diff.
-- `Partial<T>`, index signatures, and `Record<string, unknown>`.
+- Index signatures and `Record<string, unknown>`.
 
 Prefer the named shapes in `src/typings/customTypes.d.ts` over spelling them out, so a reader sees
 the intent rather than the primitive:
