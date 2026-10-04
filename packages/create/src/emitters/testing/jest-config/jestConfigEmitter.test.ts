@@ -75,7 +75,7 @@ describe('jestConfigEmitter', () => {
     const opensWithPreset = text.startsWith("import expo from 'jest-expo/jest-preset.js';\n\nimport tsconfig");
     expect(opensWithPreset).toBe(true);
     expect(text).toContain("customExportConditions: [\n    'node',\n    'require',\n    'react-native',\n  ] },");
-    expect(text).toContain("const esmOnly = '|rettime|until-async|@open-draft';");
+    expect(text).toContain("const esmOnly = '|msw|rettime|until-async|@open-draft';");
     expect(text).toContain('transformIgnorePatterns: [modules.replace(/\\)\\)$/u, `${esmOnly}))`), ...ignored],');
   });
 
@@ -111,7 +111,7 @@ describe('jestConfigEmitter', () => {
     });
     const text = emitJestConfig(answers, '__mocks__/setupTests.tsx');
 
-    expect(text).toContain("const esmOnly = '|rettime|until-async|@open-draft|immer|react-redux';");
+    expect(text).toContain("const esmOnly = '|msw|rettime|until-async|@open-draft|immer|react-redux';");
   });
 
   it.each<[string, Partial<Answers>]>([
