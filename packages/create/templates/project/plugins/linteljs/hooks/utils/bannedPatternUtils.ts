@@ -4,6 +4,7 @@ import {
   dirname,
   join,
   resolve,
+  sep,
 } from 'node:path';
 
 import type { EditInput } from './hostUtils.ts';
@@ -12,28 +13,29 @@ const CHECKED = /\.(?:ts|tsx|mts|cts|vue|svelte)$/u;
 const CHECKER = join('scripts', 'checkBannedPatterns.ts');
 
 // The payload's `cwd` need not be the project root, so the checker is searched for upwards.
+// One candidate per path segment bounds the walk, which ends at the root.
 const checkerAbove = (start: string): string | undefined => {
   let directory = start;
+  const candidates = start
+    .split(sep)
+    .map(() => {
+      const candidate = join(directory, CHECKER);
+      directory = dirname(directory);
 
-  for (;;) {
-    const candidate = join(directory, CHECKER);
-
-    if (existsSync(candidate)) {
       return candidate;
-    }
+    });
 
-    const parent = dirname(directory);
-
-    if (parent === directory) {
-      return undefined;
-    }
-
-    directory = parent;
-  }
+  return candidates
+    .find((candidate) => {
+      return existsSync(candidate);
+    });
 };
 
+// `resolve` reads an empty `projectDir` as the cwd itself.
 const findChecker = (cwd: string, projectDir: string | undefined): string | undefined => {
-  return (projectDir === undefined || projectDir === '' ? undefined : checkerAbove(projectDir)) ?? checkerAbove(cwd);
+  const root = resolve(cwd, projectDir ?? cwd);
+
+  return checkerAbove(root) ?? checkerAbove(cwd);
 };
 
 // `projectDir` is the host's `CLAUDE_PROJECT_DIR`, searched before the payload's `cwd`.
@@ -57,10 +59,13 @@ export const bannedPatternReason = (input: EditInput, projectDir: string | undef
       return undefined;
     }
 
-    const result = spawnSync(process.execPath, [checker, file], { encoding: 'utf8' });
+    const result = spawnSync(process.execPath, [checker, file]);
 
     if (result.status !== 0) {
-      const findings = `${result.stdout}${result.stderr}`.trim();
+      // stdout then stderr; `join` decodes each as UTF-8.
+      const findings = result.output
+        .join('')
+        .trim();
       return `${file} now holds a banned pattern, so the edit was blocked. Build the real type instead of casting `
         + `or suppressing, then write the file again.\n${findings}`;
     }

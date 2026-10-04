@@ -45,7 +45,7 @@ describe('bannedPatternReason', () => {
       "const output = text.includes('escape')",
       "  ? 'bad \"cast\"\\nline\\\\slash\\tend'",
       "  : 'bad cast';",
-      "if (text.includes('fail')) { process.stderr.write(output); process.exitCode = 1; }",
+      "if (text.includes('fail')) { process.stderr.write(`${output}\\n`); process.exitCode = 1; }",
       '',
     ].join('\n');
     writeFileSync(join(cwd, 'scripts/checkBannedPatterns.ts'), checker);
@@ -127,6 +127,17 @@ describe('bannedPatternReason', () => {
     expect(reason).toContain('bad cast');
   });
 
+  it('finds the checker under the project directory when the cwd is outside the project', () => {
+    const prefix = join(tmpdir(), 'linteljs-hook-outside-');
+    const outside = mkdtempSync(prefix);
+    const file = join(cwd, 'src/app.ts');
+
+    const reason = bannedPatternReason(edit([file], outside), cwd);
+    rmSync(outside, { recursive: true });
+
+    expect(reason).toContain('bad cast');
+  });
+
   it('falls back to the cwd when the project directory holds no checker', () => {
     const prefix = join(tmpdir(), 'linteljs-hook-elsewhere-');
     const elsewhere = mkdtempSync(prefix);
@@ -168,7 +179,13 @@ describe('bannedPatternReason', () => {
   });
 
   it('ignores missing files and irrelevant extensions', () => {
-    const reason = bannedPatternReason(edit(['src/missing.ts', 'src/app.md']), undefined);
+    writeFileSync(join(cwd, 'src/app.ts.md'), 'fail\n');
+
+    const reason = bannedPatternReason(edit([
+      'src/missing.ts',
+      'src/app.md',
+      'src/app.ts.md',
+    ]), undefined);
 
     expect(reason).toBeUndefined();
     const actual = checkedPaths();
