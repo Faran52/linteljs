@@ -7,7 +7,12 @@ import {
   STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  languageUtilsFile,
+  languageUtilsTest,
+  localeFiles,
+  LOCALES_TEST,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -129,6 +134,7 @@ export const reactNativeTarget: TargetBuilder = () => {
       }),
       ...reactNativeI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       {
         target: '__mocks__/renderScreen.tsx',
         // `testing: none` never installs `@testing-library/react-native` or writes `@mocks/*`.
@@ -171,6 +177,7 @@ export const reactNativeTarget: TargetBuilder = () => {
       },
       ...reactNativeI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest(),
     ],
     typecheck: 'tsc --noEmit',
     // `eas build` needs a remote account; an export of every platform needs no Xcode or Android SDK.

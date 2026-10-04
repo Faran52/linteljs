@@ -10,6 +10,8 @@ import {
   hasStore,
 } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -89,6 +91,7 @@ export const vueTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...vueI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {
@@ -170,6 +173,7 @@ export const vueTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...vueI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest(),
       COOKIE_UTILS_TEST,
       {
         target: 'src/components/ui/app-button/AppButton.test.ts',

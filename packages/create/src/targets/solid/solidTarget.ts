@@ -10,6 +10,8 @@ import {
   hasStore,
 } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -91,6 +93,7 @@ export const solidTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...solidI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {
         shared: true,
@@ -162,6 +165,7 @@ export const solidTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...solidI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest(),
       {
         target: 'src/App.test.tsx',
         covers: 'src/App.tsx',

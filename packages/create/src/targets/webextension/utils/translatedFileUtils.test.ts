@@ -28,7 +28,7 @@ const withLanguages = answersFor({
 const english = answersFor({ target: 'webextension' });
 
 describe('popupI18nFiles', () => {
-  it('writes the translated popup, its resolver and the chosen locales once a language is chosen', () => {
+  it('writes the translated popup, its resolver, its helpers and the chosen locales once one is chosen', () => {
     const written = writtenUnder(popupI18nFiles(), withLanguages);
 
     const expected = [
@@ -36,6 +36,7 @@ describe('popupI18nFiles', () => {
       'src/i18n/index.ts@i18n',
       'true:src/i18n/locales/en/common.json@i18n',
       'true:src/i18n/locales/ar/common.json@i18n',
+      'true:src/i18n/utils/languageUtils.ts@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -49,13 +50,14 @@ describe('popupI18nFiles', () => {
 });
 
 describe('popupI18nTests', () => {
-  it('covers the popup, the resolver and the locales once a language is chosen', () => {
+  it('covers the popup, the resolver, the language helpers and the locales once a language is chosen', () => {
     const written = writtenUnder(popupI18nTests(), withLanguages);
 
     const expected = [
       'src/popup/renderPopup.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
       'true:src/i18n/locales.test.ts@i18n',
+      'true:src/i18n/utils/languageUtils.test.ts@i18n',
     ];
     expect(written).toEqual(expected);
   });

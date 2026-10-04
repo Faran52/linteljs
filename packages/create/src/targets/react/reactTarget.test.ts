@@ -268,6 +268,8 @@ const GATES: GateRow[] = [
   ['src/i18n/index.ts@i18n', WITH_I18N],
   ['src/i18n/index.test.ts@i18n', WITH_I18N],
   ['src/i18n/locales.test.ts@i18n', WITH_I18N],
+  ['src/i18n/utils/languageUtils.ts@i18n', WITH_I18N],
+  ['src/i18n/utils/languageUtils.test.ts@i18n', WITH_I18N],
   ['src/i18n/utils/cookieUtils.ts@i18n', WITH_I18N],
   ['src/i18n/utils/cookieUtils.test.ts@i18n', WITH_I18N],
   ...LANGUAGES

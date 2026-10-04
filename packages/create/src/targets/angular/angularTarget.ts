@@ -2,6 +2,8 @@ import { hasLibrary } from '@utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -88,6 +90,7 @@ export const angularTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile('language-utils'),
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {
         shared: true,
@@ -155,6 +158,7 @@ export const angularTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...angularI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest('language-utils', 'spec'),
       {
         target: 'src/lib/apis/contact/contact-api.spec.ts',
         covers: 'src/lib/apis/contact/contact-api.ts',

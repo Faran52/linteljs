@@ -6,31 +6,19 @@ import i18next from 'i18next';
 
 import {
   fallbackLanguage,
-  languages,
   languageStorageKey,
   lookupTags,
   resources,
 } from './config';
+import { directionOf, isLanguage } from './utils/languageUtils';
 
-export const directionOf = (language: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === language;
-    })?.dir ?? 'ltr';
-};
+export { directionOf };
 
 // The exact tag, then each shorter prefix: `zh-TW-XX` reads as `zh-TW`, `ja-JP` as `ja`.
 export const matchLanguage = (tag: string | null): string | undefined => {
-  const ids: readonly string[] = languages
-    .map((option) => {
-      return option.id;
-    });
   const candidates = tag === null ? [] : lookupTags(tag);
 
-  return candidates
-    .find((candidate) => {
-      return ids.includes(candidate);
-    });
+  return candidates.find(isLanguage);
 };
 
 // Native lays out its direction at launch, so a switch there shows from the next one on.

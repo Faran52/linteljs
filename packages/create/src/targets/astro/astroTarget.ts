@@ -7,7 +7,12 @@ import {
 } from '../constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
 import { hasForm } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  languageUtilsFile,
+  languageUtilsTest,
+  localeFiles,
+  LOCALES_TEST,
+} from '../utils/i18nUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
 import { filesAt } from '../utils/starterUtils';
@@ -110,6 +115,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyleModules('solid'),
       ...astroI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {
@@ -122,6 +128,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...mockTests(false),
       ...astroI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest(),
       COOKIE_UTILS_TEST,
       {
         target: 'src/lib/utils/currentPathUtils.test.ts',

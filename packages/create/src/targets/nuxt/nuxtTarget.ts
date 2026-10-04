@@ -7,6 +7,8 @@ import {
 } from '../constants';
 import { hasForm, hasI18n } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -139,6 +141,7 @@ export const nuxtTarget: TargetBuilder = () => {
         variant: 'i18n',
       },
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       ...translated<StarterFile>({ target: 'src/views/HomeView.vue' }),
       tailwindThemeFile(),
@@ -217,6 +220,7 @@ export const nuxtTarget: TargetBuilder = () => {
         variant: 'i18n',
       },
       LOCALES_TEST,
+      languageUtilsTest(),
       COOKIE_UTILS_TEST,
       {
         target: 'src/pages/version.test.ts',

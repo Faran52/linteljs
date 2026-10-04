@@ -6,8 +6,13 @@ import {
   resources,
 } from './config';
 import { languageCookie } from './utils/cookieUtils';
-
-export type Language = (typeof languages)[number]['id'];
+import {
+  directionOf,
+  formatMessage,
+  isLanguage,
+  type Language,
+  partsOf,
+} from './utils/languageUtils';
 
 export type MessageKey = keyof (typeof resources)[Language]['common'];
 
@@ -18,39 +23,18 @@ interface LanguageOption {
   readonly dir: string;
 }
 
-const isLanguage = (tag: string | null): tag is Language => {
-  return languages.some((option) => {
-    return option.id === tag;
-  });
-};
-
 const isMessageKey = (key: string | undefined): key is MessageKey => {
   return key !== undefined && key in resources[fallbackLanguage].common;
 };
 
 // Pages render English at build time; the client renders each marked element again in the chosen language.
 export const t = (key: MessageKey, values?: Values, language: Language = fallbackLanguage): string => {
-  return resources[language].common[key]
-    .replace(/\{(\w+)\}/gu, (match, name: string) => {
-      return values?.[name] ?? match;
-    });
+  return formatMessage(resources[language].common[key], values);
 };
 
 // A page id is its own key, so one no locale names yet shows as the id.
 export const translateId = (id: string): string => {
   return isMessageKey(id) ? t(id) : id;
-};
-
-// The odd parts sit inside `<code>`.
-export const partsOf = (text: string): string[] => {
-  return text.split(/<\/?code>/u);
-};
-
-export const directionOf = (tag: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === tag;
-    })?.dir ?? 'ltr';
 };
 
 // The stored cookie, then the browser's languages, then English. Nothing detected is stored. Self-contained, cookie
@@ -180,4 +164,10 @@ export const startLanguage = (): void => {
     });
 
   applyLanguage(isLanguage(lang) ? lang : fallbackLanguage);
+};
+
+export {
+  directionOf,
+  type Language,
+  partsOf,
 };

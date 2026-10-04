@@ -4,21 +4,17 @@ import { type TemplateResolver, translator as createTranslator } from '@solid-pr
 
 import {
   fallbackLanguage,
-  languages,
   languageStorageKey,
-  lookupTags,
   resources,
 } from './config';
-
-export type Language = (typeof languages)[number]['id'];
+import {
+  directionOf,
+  isLanguage,
+  type Language,
+  pickLanguage,
+} from './utils/languageUtils';
 
 export type MessageKey = keyof (typeof resources)[Language]['common'];
-
-const isLanguage = (tag: string | null): tag is Language => {
-  return languages.some((option) => {
-    return option.id === tag;
-  });
-};
 
 const [language, setLanguage] = createSignal<Language>(fallbackLanguage);
 
@@ -49,24 +45,10 @@ export const translateId = (id: string): string => {
   return isMessageKey(id) ? t(id) : id;
 };
 
-export const directionOf = (tag: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === tag;
-    })?.dir ?? 'ltr';
-};
-
-// The stored choice, then the browser's languages, then English. Nothing detected is stored.
 export const detectLanguage = (): Language => {
   const stored = localStorage.getItem(languageStorageKey);
 
-  if (isLanguage(stored)) {
-    return stored;
-  }
-
-  return navigator.languages
-    .flatMap(lookupTags)
-    .find(isLanguage) ?? fallbackLanguage;
+  return pickLanguage(stored, navigator.languages);
 };
 
 export const applyLanguage = (next: Language): void => {
@@ -89,3 +71,5 @@ export const chooseLanguage = (tag: string): void => {
   localStorage.setItem(languageStorageKey, tag);
   applyLanguage(tag);
 };
+
+export { directionOf, type Language };

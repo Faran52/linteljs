@@ -7,17 +7,12 @@ import {
   fallbackLanguage,
   languages,
   languageStorageKey,
-  lookupTags,
   resources,
 } from './config';
 import { languageCookie, storedLanguage } from './utils/cookieUtils';
+import { directionOf, pickLanguage } from './utils/languageUtils';
 
-export const directionOf = (language: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === language;
-    })?.dir ?? 'ltr';
-};
+export { directionOf };
 
 export const applyDocumentDirection = (language: string): void => {
   const root = document.documentElement;
@@ -26,22 +21,12 @@ export const applyDocumentDirection = (language: string): void => {
   root.dir = directionOf(language);
 };
 
-const isOffered = (tag: string): boolean => {
-  return languages.some((option) => {
-    return option.id === tag;
-  });
-};
-
-// A server's detection from its request's `Cookie` and `Accept-Language` tags: the stored choice, then the reader's
-// languages, then English. The browser's detector reads the same cookie.
+// A server's detection from its request's `Cookie` and `Accept-Language` tags. The browser's detector reads the same
+// cookie.
 export const detectLanguage = (cookies: string, preferred: readonly string[]): string => {
-  const stored = storedLanguage(cookies) ?? '';
+  const stored = storedLanguage(cookies);
 
-  const tags = [stored, ...preferred];
-
-  return tags
-    .flatMap(lookupTags)
-    .find(isOffered) ?? fallbackLanguage;
+  return pickLanguage(stored, preferred);
 };
 
 // The one writer of the stored choice.

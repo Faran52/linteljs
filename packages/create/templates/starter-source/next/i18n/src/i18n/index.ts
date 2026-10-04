@@ -1,26 +1,13 @@
-import {
-  fallbackLanguage,
-  languages,
-  lookupTags,
-} from './config';
 import { languageCookie, storedLanguage } from './utils/cookieUtils';
+import {
+  directionOf,
+  type Language,
+  pickLanguage,
+} from './utils/languageUtils';
 
-export type Language = (typeof languages)[number]['id'];
+export { directionOf, type Language };
 
 const listeners = new Set<() => void>();
-
-const isLanguage = (tag: string | undefined): tag is Language => {
-  return languages.some((option) => {
-    return option.id === tag;
-  });
-};
-
-export const directionOf = (language: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === language;
-    })?.dir ?? 'ltr';
-};
 
 export const applyDocumentDirection = (language: string): void => {
   const root = document.documentElement;
@@ -29,7 +16,6 @@ export const applyDocumentDirection = (language: string): void => {
   root.dir = directionOf(language);
 };
 
-// The stored choice, then the reader's languages, then English. Nothing detected is stored.
 // The server passes its request's `Cookie` and `Accept-Language`; the browser reads its own.
 export const detectLanguage = (
   cookies: string = document.cookie,
@@ -37,13 +23,7 @@ export const detectLanguage = (
 ): Language => {
   const stored = storedLanguage(cookies);
 
-  if (isLanguage(stored)) {
-    return stored;
-  }
-
-  return preferred
-    .flatMap(lookupTags)
-    .find(isLanguage) ?? fallbackLanguage;
+  return pickLanguage(stored, preferred);
 };
 
 export const subscribeLanguage = (listener: () => void): (() => void) => {

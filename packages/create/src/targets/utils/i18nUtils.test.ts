@@ -3,6 +3,8 @@ import { pickedBy } from '@mocks/starterGates';
 
 import {
   i18nFiles,
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -167,5 +169,47 @@ describe('LOCALES_TEST', () => {
     expect(actual).toBe(false);
     const inArabic = LOCALES_TEST.when?.(ARABIC);
     expect(inArabic).toBe(true);
+  });
+});
+
+describe('languageUtilsFile', () => {
+  it('writes the shared helpers under the default name, only in a translated project', () => {
+    const file = languageUtilsFile();
+    const expected = {
+      target: 'src/i18n/utils/languageUtils.ts',
+      source: 'src/i18n/utils/languageUtils.ts',
+      variant: 'i18n',
+      shared: true,
+    };
+    expect(file).toMatchObject(expected);
+    const inEnglish = file.when?.(ENGLISH);
+    expect(inEnglish).toBe(false);
+  });
+
+  it('writes them under the name a target gives', () => {
+    const { target } = languageUtilsFile('language-utils');
+
+    expect(target).toBe('src/i18n/utils/language-utils.ts');
+  });
+});
+
+describe('languageUtilsTest', () => {
+  it('covers the helpers under the default name and suffix', () => {
+    const test = languageUtilsTest();
+    const expected = {
+      target: 'src/i18n/utils/languageUtils.test.ts',
+      covers: 'src/i18n/utils/languageUtils.ts',
+      source: 'src/i18n/utils/languageUtils.test.ts',
+    };
+    expect(test).toMatchObject(expected);
+    const inArabic = test.when?.(ARABIC);
+    expect(inArabic).toBe(true);
+  });
+
+  it('covers them under the name and suffix a target gives', () => {
+    const { target, covers } = languageUtilsTest('language-utils', 'spec');
+
+    expect(target).toBe('src/i18n/utils/language-utils.spec.ts');
+    expect(covers).toBe('src/i18n/utils/language-utils.ts');
   });
 });

@@ -95,3 +95,31 @@ export const LOCALES_TEST: StarterTest = {
   variant: 'i18n',
   shared: true,
 };
+
+const LANGUAGE_UTILS = 'src/i18n/utils/languageUtils';
+
+// The framework-free language helpers every i18n module reads, under the name the target writes.
+export const languageUtilsFile = (name = 'languageUtils'): StarterFile => {
+  const file: StarterFile = {
+    target: `src/i18n/utils/${name}.ts`,
+    source: `${LANGUAGE_UTILS}.ts`,
+    when: hasI18n,
+    variant: 'i18n',
+    shared: true,
+  };
+
+  return file;
+};
+
+export const languageUtilsTest = (name = 'languageUtils', suffix = 'test'): StarterTest => {
+  const test: StarterTest = {
+    target: `src/i18n/utils/${name}.${suffix}.ts`,
+    covers: `src/i18n/utils/${name}.ts`,
+    source: `${LANGUAGE_UTILS}.test.ts`,
+    when: hasI18n,
+    variant: 'i18n',
+    shared: true,
+  };
+
+  return test;
+};

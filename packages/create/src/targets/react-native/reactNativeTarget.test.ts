@@ -91,6 +91,8 @@ const I18N_ONLY_PATHS = [
   'src/i18n/index.ts',
   'src/i18n/index.test.ts',
   'src/i18n/locales.test.ts',
+  'src/i18n/utils/languageUtils.ts',
+  'src/i18n/utils/languageUtils.test.ts',
   'src/components/features/language-select/LanguageSelect.tsx',
   'src/components/features/language-select/LanguageSelect.test.tsx',
   ...LANGUAGES

@@ -14,6 +14,8 @@ import {
   hasStore,
 } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -76,6 +78,7 @@ const nextStarterTests = (): StarterTest[] => {
     ...rtkTests(),
     ...nextI18nTests(),
     LOCALES_TEST,
+    languageUtilsTest(),
     COOKIE_UTILS_TEST,
     ...translated<StarterTest>({
       target: 'src/app/page.test.tsx',
@@ -210,6 +213,7 @@ export const nextTarget: TargetBuilder = () => {
       ...rtkFiles(),
       ...nextI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {

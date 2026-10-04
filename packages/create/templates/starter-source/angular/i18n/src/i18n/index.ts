@@ -2,21 +2,18 @@ import { signal } from '@angular/core';
 
 import {
   fallbackLanguage,
-  languages,
   languageStorageKey,
-  lookupTags,
   resources,
 } from './config';
-
-export type Language = (typeof languages)[number]['id'];
+import {
+  directionOf,
+  formatMessage,
+  isLanguage,
+  type Language,
+  pickLanguage,
+} from './utils/language-utils';
 
 export type MessageKey = keyof (typeof resources)[Language]['common'];
-
-const isLanguage = (tag: string | null): tag is Language => {
-  return languages.some((option) => {
-    return option.id === tag;
-  });
-};
 
 const current = signal<Language>(fallbackLanguage);
 
@@ -24,10 +21,7 @@ export const language = current.asReadonly();
 
 // Read in a template, so every rendered message follows the language signal.
 export const t = (key: MessageKey, values?: Readonly<Record<string, string>>): string => {
-  return resources[current()].common[key]
-    .replace(/\{(\w+)\}/gu, (match, name: string) => {
-      return values?.[name] ?? match;
-    });
+  return formatMessage(resources[current()].common[key], values);
 };
 
 const isMessageKey = (key: string): key is MessageKey => {
@@ -39,24 +33,10 @@ export const translateId = (id: string): string => {
   return isMessageKey(id) ? t(id) : id;
 };
 
-export const directionOf = (tag: string): 'ltr' | 'rtl' => {
-  return languages
-    .find((option) => {
-      return option.id === tag;
-    })?.dir ?? 'ltr';
-};
-
-// The stored choice, then the browser's languages, then English. Nothing detected is stored.
 export const detectLanguage = (): Language => {
   const stored = localStorage.getItem(languageStorageKey);
 
-  if (isLanguage(stored)) {
-    return stored;
-  }
-
-  return navigator.languages
-    .flatMap(lookupTags)
-    .find(isLanguage) ?? fallbackLanguage;
+  return pickLanguage(stored, navigator.languages);
 };
 
 export const applyLanguage = (next: Language): void => {
@@ -76,3 +56,5 @@ export const chooseLanguage = (tag: string): void => {
   localStorage.setItem(languageStorageKey, tag);
   applyLanguage(tag);
 };
+
+export { directionOf, type Language };

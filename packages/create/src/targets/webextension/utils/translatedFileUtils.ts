@@ -1,5 +1,7 @@
 import { hasI18n } from '../../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -20,6 +22,7 @@ export const popupI18nFiles = (): StarterFile[] => {
       variant: 'i18n',
     },
     ...localeFiles(),
+    languageUtilsFile(),
   ];
 
   return files;
@@ -38,6 +41,7 @@ export const popupI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
     LOCALES_TEST,
+    languageUtilsTest(),
   ];
 
   return tests;

@@ -13,6 +13,8 @@ import {
 } from '../constants';
 import { hasForm, hasStore } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -126,6 +128,7 @@ const reactStarterTests = (): StarterTest[] => {
     },
     ...reactI18nTests(),
     LOCALES_TEST,
+    languageUtilsTest(),
     COOKIE_UTILS_TEST,
     // Framework mode has no `App` to cover the header inside, so it stands alone in a memory router.
     {
@@ -198,6 +201,7 @@ const baseReactTarget = (): TargetRecord => {
       ...componentStyleModules(),
       ...reactI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       {
         target: 'src/pages/routes.tsx',

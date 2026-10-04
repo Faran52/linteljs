@@ -118,6 +118,8 @@ const I18N_ONLY_PATHS = [
   'src/i18n/index.ts',
   'src/i18n/index.spec.ts',
   'src/i18n/locales.test.ts',
+  'src/i18n/utils/language-utils.ts',
+  'src/i18n/utils/language-utils.spec.ts',
   'src/components/ui/code-text/code-text.ts',
   'src/components/ui/code-text/code-text.html',
   'src/components/ui/code-text/code-text.spec.ts',

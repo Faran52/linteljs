@@ -12,6 +12,8 @@ import {
   hasStore,
 } from '../utils/gateUtils';
 import {
+  languageUtilsFile,
+  languageUtilsTest,
   localeFiles,
   LOCALES_TEST,
   translated,
@@ -112,6 +114,7 @@ export const svelteTarget: TargetBuilder = () => {
       ...accessorFiles(ACCESSORS),
       ...svelteI18nFiles(),
       ...localeFiles(),
+      languageUtilsFile(),
       COOKIE_UTILS,
       // Svelte's query bindings read their client out of context, which needs a component.
       ...filesAt(QUERY_CONTEXT_MOCKS, {
@@ -195,6 +198,7 @@ export const svelteTarget: TargetBuilder = () => {
       ...accessorTests(ACCESSORS),
       ...svelteI18nTests(),
       LOCALES_TEST,
+      languageUtilsTest(),
       COOKIE_UTILS_TEST,
       ...translated<StarterTest>({
         target: 'src/routes/page.test.ts',
