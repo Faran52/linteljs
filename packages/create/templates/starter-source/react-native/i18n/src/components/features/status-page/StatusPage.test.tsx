@@ -12,15 +12,6 @@ import { languages, resources } from '@/i18n/config';
 
 import { StatusPage } from './StatusPage';
 
-// expo-router's entry reaches Expo's TypeScript source, which no test transform strips; a text stands in.
-vi.mock('expo-router', async () => {
-  const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
-
-  const expoRouter = { Link: Text };
-
-  return expoRouter;
-});
-
 const { code, message } = STATUSES.serverError;
 const last = languages.at(-1)?.id ?? 'en';
 
@@ -46,7 +37,7 @@ describe('StatusPage', () => {
   });
 
   it('offers a retry when it is given one', async () => {
-    const retry = vi.fn();
+    const retry = jest.fn();
 
     await renderScreen(
       <StatusPage
@@ -58,7 +49,7 @@ describe('StatusPage', () => {
 
     await fireEvent.press(screen.getByRole('button'));
 
-    expect(retry).toHaveBeenCalledOnce();
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 
   it('speaks the language chosen, the message and both actions', async () => {
@@ -66,7 +57,7 @@ describe('StatusPage', () => {
       <StatusPage
         code={code}
         message={message}
-        onRetry={vi.fn()}
+        onRetry={jest.fn()}
       />,
     );
 

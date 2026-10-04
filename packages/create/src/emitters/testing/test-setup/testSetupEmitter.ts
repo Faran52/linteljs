@@ -8,6 +8,7 @@ import { hasTests, localesOf } from '@utils/answerUtils';
 
 import { targetFor, type TargetRecord } from '@targets';
 
+import { TEST_RUNNERS } from '../../constants';
 import { joined } from '../../utils/artifactUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 
@@ -19,7 +20,7 @@ const setupSources = (answers: Answers, target: TargetRecord): string[] => {
     ...(answers.data === 'tanstack-query' ? ['fragments/test-setup/setupTests.tanstackQuery.ts'] : []),
     ...(localesOf(answers).length === 0 || target.i18n?.testSetup === undefined ? [] : [target.i18n.testSetup]),
     // Last, so the interceptor is listening by the time anything else in the setup makes a request.
-    ...(answers.mocking === 'msw' ? ['fragments/test-setup/setupTests.msw.ts'] : []),
+    ...(answers.mocking === 'msw' ? [TEST_RUNNERS[target.testRunner ?? 'vitest'].mswSetup] : []),
   ];
 
   return sources;

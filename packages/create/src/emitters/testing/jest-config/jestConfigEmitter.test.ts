@@ -21,7 +21,6 @@ const moduleNameMapper = Object.fromEntries(
 
 export default {
   preset: 'jest-expo',
-  resolver: 'react-native-worklets/jest/resolver.js',
   moduleNameMapper,
   setupFilesAfterEnv: ['<rootDir>/__mocks__/setupTests.tsx'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
@@ -58,6 +57,17 @@ describe('jestConfigEmitter', () => {
       preserve: true,
     }];
     expect(artifacts).toEqual(expected);
+  });
+
+  it('resolves msw on Node and transforms its ES-module dependencies', () => {
+    const answers = answersFor({ target: 'react-native', mocking: 'msw' });
+    const text = emitJestConfig(answers, '__mocks__/setupTests.tsx');
+
+    const opensWithPreset = text.startsWith("import expo from 'jest-expo/jest-preset.js';\n");
+    expect(opensWithPreset).toBe(true);
+    expect(text).toContain("customExportConditions: ['node', 'require', 'react-native']");
+    expect(text).toContain("const esmOnly = '|rettime|until-async|@open-draft';");
+    expect(text).toContain('transformIgnorePatterns: [modules.replace(/\\)\\)$/u, `${esmOnly}))`), ...ignored],');
   });
 
   it('names the setup file the project already has', () => {

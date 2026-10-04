@@ -23,7 +23,7 @@ describe('Mark', () => {
   });
 
   it('holds still when the reader asks for reduced motion', async () => {
-    vi.mocked(useReducedMotion).mockReturnValueOnce(true);
+    jest.mocked(useReducedMotion).mockReturnValueOnce(true);
 
     await renderScreen(<Mark />);
 

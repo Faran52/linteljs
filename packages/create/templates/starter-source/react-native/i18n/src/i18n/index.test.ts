@@ -41,14 +41,15 @@ const localeOf = (languageTag: string): Locale => {
 const devicePrefers = (first: string, ...rest: string[]): void => {
   const locales: [Locale, ...Locale[]] = [localeOf(first), ...rest.map(localeOf)];
 
-  vi.mocked(getLocales).mockReturnValueOnce(locales);
+  jest.mocked(getLocales).mockReturnValueOnce(locales);
 };
 
 describe('i18n', () => {
   afterEach(async () => {
     await AsyncStorage.clear();
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
+    // Jest's native environment has no `document`; the web branch reads one.
+    Reflect.deleteProperty(globalThis, 'document');
     await i18next.changeLanguage('en');
   });
 
@@ -85,7 +86,7 @@ describe('i18n', () => {
   });
 
   it('initialises once, in English, so the first render matches the web export', () => {
-    const init = vi.spyOn(i18next, 'init');
+    const init = jest.spyOn(i18next, 'init');
     const i18n = initI18n();
 
     const actual = initI18n();
@@ -112,8 +113,8 @@ describe('i18n', () => {
   });
 
   it('leaves the native direction to the device, which app.json lets lay out right to left', () => {
-    const forceRTL = vi.spyOn(I18nManager, 'forceRTL');
-    const allowRTL = vi.spyOn(I18nManager, 'allowRTL');
+    const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
+    const allowRTL = jest.spyOn(I18nManager, 'allowRTL');
 
     for (const { id } of languages) {
       applyDirection(id);
@@ -126,10 +127,10 @@ describe('i18n', () => {
   it('sets the document language and direction on the web', () => {
     const documentElement = { lang: '', dir: '' };
 
-    const forceRTL = vi.spyOn(I18nManager, 'forceRTL');
+    const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
 
-    vi.spyOn(Platform, 'OS', 'get').mockReturnValue('web');
-    vi.stubGlobal('document', { documentElement });
+    jest.replaceProperty(Platform, 'OS', 'web');
+    Object.assign(globalThis, { document: { documentElement } });
 
     for (const { id, dir } of languages) {
       applyDirection(id);
@@ -144,8 +145,8 @@ describe('i18n', () => {
   it('applies the direction on every switch', async () => {
     const documentElement = { lang: '', dir: '' };
 
-    vi.spyOn(Platform, 'OS', 'get').mockReturnValue('web');
-    vi.stubGlobal('document', { documentElement });
+    jest.replaceProperty(Platform, 'OS', 'web');
+    Object.assign(globalThis, { document: { documentElement } });
 
     await i18next.changeLanguage(last);
 

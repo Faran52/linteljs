@@ -9,9 +9,9 @@ import { languages, resources } from '@/i18n/config';
 import HomeScreen from './app/index';
 
 // The build's React Compiler skips a child whose props never change, and it is off under Vitest: this does the same.
-vi.mock('react-i18next', async () => {
-  const { memo } = await vi.importActual<typeof import('react')>('react');
-  const actual = await vi.importActual<typeof import('react-i18next')>('react-i18next');
+jest.mock('react-i18next', () => {
+  const { memo } = jest.requireActual<typeof import('react')>('react');
+  const actual = jest.requireActual<typeof import('react-i18next')>('react-i18next');
   const reactI18next = { ...actual, Trans: memo(actual.Trans) };
 
   return reactI18next;

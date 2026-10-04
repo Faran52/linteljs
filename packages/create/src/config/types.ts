@@ -30,6 +30,8 @@ export interface TestRunnerParts {
   coverage: string;
   // The tsconfig `types` entry that declares the globals.
   types: string;
+  // The msw setup fragment: Jest's CommonJS cannot run Vitest's top-level `await import`.
+  mswSetup: string;
 }
 
 export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';

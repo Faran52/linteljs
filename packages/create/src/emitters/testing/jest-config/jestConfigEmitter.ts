@@ -9,6 +9,12 @@ import { testRunnerOf } from '../../utils/runnerUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 import { coverageExclude, coverageInclude } from '../utils/coverageUtils';
 
+import {
+  MSW_IMPORT,
+  MSW_OPTIONS,
+  MSW_PARTS,
+} from './constants';
+
 // One entry per line: `max-len` has no fixer.
 const globList = (globs: string[]): string => {
   return globs
@@ -20,7 +26,8 @@ const globList = (globs: string[]): string => {
 
 /**
  * The default `jest-expo` preset needs no babel config; its `jest-expo/<platform>` presets do.
- * The worklets resolver lets Reanimated run for real, so a suite mocks only what it asserts on.
+ * No worklets resolver: under pnpm it strips native extensions from any path naming worklets, peer-hashed
+ * `.pnpm` directories included, so expo-modules-core loads its throwing web adapter.
  * Jest reads no tsconfig, so the aliases map from its `paths`.
  */
 export const emitJestConfig = (answers: Answers, setup: string): string => {
@@ -28,19 +35,19 @@ export const emitJestConfig = (answers: Answers, setup: string): string => {
     .map((glob) => {
       return `!${glob}`;
     });
+  const hasMsw = answers.mocking === 'msw';
 
-  return `import tsconfig from './tsconfig.json' with { type: 'json' };
+  return `${hasMsw ? MSW_IMPORT : ''}import tsconfig from './tsconfig.json' with { type: 'json' };
 
 const moduleNameMapper = Object.fromEntries(
   Object.entries(tsconfig.compilerOptions.paths).map(([alias, [location]]) => {
     return [\`^\${alias.replace('*', '(.*)')}$\`, location.replace('.', '<rootDir>').replace('*', '$1')];
   }),
 );
-
+${hasMsw ? MSW_PARTS : ''}
 export default {
   preset: 'jest-expo',
-  resolver: 'react-native-worklets/jest/resolver.js',
-  moduleNameMapper,
+  moduleNameMapper,${hasMsw ? MSW_OPTIONS : ''}
   setupFilesAfterEnv: ['<rootDir>/${setup}'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   collectCoverageFrom: [${globList([coverageInclude(answers), ...exclude])}

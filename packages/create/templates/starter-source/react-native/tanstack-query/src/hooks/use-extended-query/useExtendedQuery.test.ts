@@ -6,15 +6,6 @@ import {
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
-
 import { useExtendedQuery } from './useExtendedQuery';
 
 interface Version {
@@ -25,7 +16,7 @@ interface WrapperProps {
   readonly children: ReactNode;
 }
 
-const fetchMock = vi.fn();
+const fetchMock = jest.fn();
 
 const answering = (body: Version, status = 200): void => {
   fetchMock
@@ -44,17 +35,17 @@ const wrapperFor = (client: QueryClient): FC<WrapperProps> => {
 };
 
 const freshClient = (): QueryClient => {
-  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
 };
 
 describe('useExtendedQuery', () => {
   beforeEach(() => {
     fetchMock.mockReset();
-    vi.stubGlobal('fetch', fetchMock);
+    jest.spyOn(globalThis, 'fetch').mockImplementation(fetchMock);
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it('answers the parsed response once the request settles', async () => {

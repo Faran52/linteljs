@@ -6,15 +6,6 @@ import { STATUSES } from '@/config/statuses';
 
 import { StatusPage } from './StatusPage';
 
-// expo-router's entry reaches Expo's TypeScript source, which no test transform strips; a text stands in.
-vi.mock('expo-router', async () => {
-  const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
-
-  const expoRouter = { Link: Text };
-
-  return expoRouter;
-});
-
 const { code, message } = STATUSES.serverError;
 
 describe('StatusPage', () => {
@@ -33,7 +24,7 @@ describe('StatusPage', () => {
   });
 
   it('offers a retry when it is given one', async () => {
-    const retry = vi.fn();
+    const retry = jest.fn();
 
     await renderScreen(
       <StatusPage
@@ -45,7 +36,7 @@ describe('StatusPage', () => {
 
     await fireEvent.press(screen.getByRole('button'));
 
-    expect(retry).toHaveBeenCalledOnce();
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 
   it('is the one main landmark on the page', async () => {

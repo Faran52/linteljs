@@ -1,28 +1,14 @@
 // Bare globals: the setup blocks joined below this one cannot import, and one file keeps one style.
 
-// `expo-router`'s navigators reach for a native screen container at import; a view stands in.
-vi.mock('react-native-screens', async () => {
-  const actual = await vi.importActual<typeof import('react-native-screens')>('react-native-screens');
-  const { View } = await vi.importActual<typeof import('react-native')>('react-native');
-
-  const reactNativeScreens = {
-    ...actual,
-    Screen: View,
-    ScreenContainer: View,
-    enableScreens: vi.fn(),
-  };
-
-  return reactNativeScreens;
-});
-
 // Reanimated reaches its native worklets at import, and so does the mock it ships; a view stands in.
-vi.mock('react-native-reanimated', async () => {
-  const { View } = await vi.importActual<typeof import('react-native')>('react-native');
+jest.mock('react-native-reanimated', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
   const reanimated = {
+    __esModule: true,
     default: { View },
-    cubicBezier: vi.fn(),
-    useReducedMotion: vi.fn(() => {
+    cubicBezier: jest.fn(),
+    useReducedMotion: jest.fn(() => {
       return false;
     }),
   };

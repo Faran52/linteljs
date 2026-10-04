@@ -1,8 +1,9 @@
 // AsyncStorage is a native module, so a map stands in; a suite that writes it clears it.
-vi.mock('@react-native-async-storage/async-storage', () => {
+jest.mock('@react-native-async-storage/async-storage', () => {
   const items = new Map<string, string>();
 
   const asyncStorage = {
+    __esModule: true,
     default: {
       getItem: (key: string): Promise<string | null> => {
         return Promise.resolve(items.get(key) ?? null);
@@ -24,9 +25,9 @@ vi.mock('@react-native-async-storage/async-storage', () => {
 });
 
 // expo-localization is a native module; the device prefers English unless a suite says otherwise.
-vi.mock('expo-localization', () => {
+jest.mock('expo-localization', () => {
   const localization = {
-    getLocales: vi.fn(() => {
+    getLocales: jest.fn(() => {
       const english = [{ languageTag: 'en-US' }];
 
       return english;
@@ -37,9 +38,8 @@ vi.mock('expo-localization', () => {
 });
 
 // Every suite renders translated text, so each starts with i18n running in English.
-// Imported late: a setup file that imports React Native statically reaches it untransformed.
-beforeAll(async () => {
-  const { initI18n } = await import('@i18n');
+beforeAll(() => {
+  const { initI18n } = jest.requireActual<typeof import('@i18n')>('@i18n');
 
   initI18n();
 });

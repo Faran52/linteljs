@@ -236,6 +236,7 @@ export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
     test: 'vitest run --passWithNoTests',
     coverage: 'vitest run --coverage',
     types: 'vitest/globals',
+    mswSetup: 'fragments/test-setup/setupTests.msw.ts',
   },
   jest: {
     devDependencies: [
@@ -247,6 +248,7 @@ export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
     test: 'jest --passWithNoTests',
     coverage: 'jest --coverage',
     types: 'jest',
+    mswSetup: 'fragments/test-setup/setupTests.mswJest.ts',
   },
 };
 
