@@ -40,12 +40,19 @@ export const emitJestConfig = (answers: Answers, setup: string): string => {
   return `${hasMsw ? MSW_IMPORT : ''}import tsconfig from './tsconfig.json' with { type: 'json' };
 
 const moduleNameMapper = Object.fromEntries(
-  Object.entries(tsconfig.compilerOptions.paths).map(([alias, [location]]) => {
-    return [\`^\${alias.replace('*', '(.*)')}$\`, location.replace('.', '<rootDir>').replace('*', '$1')];
-  }),
+  Object.entries(tsconfig.compilerOptions.paths)
+    .map(([alias, [location]]) => {
+      const pattern = \`^\${alias.replace('*', '(.*)')}$\`;
+      const target = location
+        .replace('.', '<rootDir>')
+        .replace('*', '$1');
+      const entry = [pattern, target];
+
+      return entry;
+    }),
 );
 ${hasMsw ? MSW_PARTS : ''}
-export default {
+const config = {
   preset: 'jest-expo',
   moduleNameMapper,${hasMsw ? MSW_OPTIONS : ''}
   setupFilesAfterEnv: ['<rootDir>/${setup}'],
@@ -61,6 +68,8 @@ export default {
     },
   },
 };
+
+export default config;
 `;
 };
 

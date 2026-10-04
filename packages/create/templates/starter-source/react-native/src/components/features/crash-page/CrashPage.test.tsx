@@ -8,7 +8,7 @@ import { CrashPage } from './CrashPage';
 
 describe('CrashPage', () => {
   it('shows the 500 page for a crash, and retries the route when asked', async () => {
-    const retry = jest.fn<() => Promise<void>>()
+    const retry = jest.fn<Promise<void>, []>()
       .mockResolvedValue(undefined);
 
     await renderScreen(<CrashPage error={new Error('render failed')} retry={retry} />);
@@ -22,7 +22,7 @@ describe('CrashPage', () => {
   });
 
   it('shows the 403 page, with no retry, for a ForbiddenError', async () => {
-    await renderScreen(<CrashPage error={new ForbiddenError()} retry={jest.fn<() => Promise<void>>()} />);
+    await renderScreen(<CrashPage error={new ForbiddenError()} retry={jest.fn<Promise<void>, []>()} />);
 
     const element = screen.getByText('403');
     expect(element).toBeTruthy();

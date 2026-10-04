@@ -14,12 +14,19 @@ import type { Answers } from '@config/types';
 const NATIVE = `import tsconfig from './tsconfig.json' with { type: 'json' };
 
 const moduleNameMapper = Object.fromEntries(
-  Object.entries(tsconfig.compilerOptions.paths).map(([alias, [location]]) => {
-    return [\`^\${alias.replace('*', '(.*)')}$\`, location.replace('.', '<rootDir>').replace('*', '$1')];
-  }),
+  Object.entries(tsconfig.compilerOptions.paths)
+    .map(([alias, [location]]) => {
+      const pattern = \`^\${alias.replace('*', '(.*)')}$\`;
+      const target = location
+        .replace('.', '<rootDir>')
+        .replace('*', '$1');
+      const entry = [pattern, target];
+
+      return entry;
+    }),
 );
 
-export default {
+const config = {
   preset: 'jest-expo',
   moduleNameMapper,
   setupFilesAfterEnv: ['<rootDir>/__mocks__/setupTests.tsx'],
@@ -44,6 +51,8 @@ export default {
     },
   },
 };
+
+export default config;
 `;
 
 describe('jestConfigEmitter', () => {
@@ -63,9 +72,9 @@ describe('jestConfigEmitter', () => {
     const answers = answersFor({ target: 'react-native', mocking: 'msw' });
     const text = emitJestConfig(answers, '__mocks__/setupTests.tsx');
 
-    const opensWithPreset = text.startsWith("import expo from 'jest-expo/jest-preset.js';\n");
+    const opensWithPreset = text.startsWith("import expo from 'jest-expo/jest-preset.js';\n\nimport tsconfig");
     expect(opensWithPreset).toBe(true);
-    expect(text).toContain("customExportConditions: ['node', 'require', 'react-native']");
+    expect(text).toContain("customExportConditions: [\n    'node',\n    'require',\n    'react-native',\n  ] },");
     expect(text).toContain("const esmOnly = '|rettime|until-async|@open-draft';");
     expect(text).toContain('transformIgnorePatterns: [modules.replace(/\\)\\)$/u, `${esmOnly}))`), ...ignored],');
   });
