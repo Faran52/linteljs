@@ -111,16 +111,16 @@ describe('i18n', () => {
     expect(i18next.language).toBe(last);
   });
 
-  it('asks native for each language direction, which it lays out from the next launch', () => {
+  it('leaves the native direction to the device, which app.json lets lay out right to left', () => {
     const forceRTL = vi.spyOn(I18nManager, 'forceRTL');
     const allowRTL = vi.spyOn(I18nManager, 'allowRTL');
 
-    for (const { id, dir } of languages) {
+    for (const { id } of languages) {
       applyDirection(id);
-
-      expect(forceRTL).toHaveBeenLastCalledWith(dir === 'rtl');
-      expect(allowRTL).toHaveBeenLastCalledWith(dir === 'rtl');
     }
+
+    expect(forceRTL).not.toHaveBeenCalled();
+    expect(allowRTL).not.toHaveBeenCalled();
   });
 
   it('sets the document language and direction on the web', () => {
@@ -142,11 +142,15 @@ describe('i18n', () => {
   });
 
   it('applies the direction on every switch', async () => {
-    const forceRTL = vi.spyOn(I18nManager, 'forceRTL');
+    const documentElement = { lang: '', dir: '' };
+
+    vi.spyOn(Platform, 'OS', 'get').mockReturnValue('web');
+    vi.stubGlobal('document', { documentElement });
 
     await i18next.changeLanguage(last);
 
-    expect(forceRTL).toHaveBeenLastCalledWith(directionOf(last) === 'rtl');
+    const expected = { lang: last, dir: directionOf(last) };
+    expect(documentElement).toEqual(expected);
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {

@@ -1071,10 +1071,13 @@ webextension popup.
   the root layout once the stored or detected language is read.
 - **The picker is a button opening a `Modal`.** React Native has no select: the header's button names the
   language in use and opens a radiogroup of every language under its own name, the one in use checked.
-- **Native direction takes effect on the next launch.** On the web `<html lang dir>` is set on every switch.
-  Native lays out its direction at launch, so `I18nManager.allowRTL` and `forceRTL` are called on every switch
-  and show from the next launch on. Reloading at once would take expo-updates' `reloadAsync`, a new
-  dependency for one call, so there is no reload.
+- **Native direction follows the device's language.** On the web `<html lang dir>` is set on every switch.
+  Native lays out its direction at launch. Expo Go on SDK 57 lays it out right to left only where app.json sets
+  `extra.supportsRTL`, read from the manifest, and the expo-localization plugin writes the same setting into a
+  build; it is emitted when a chosen language is right to left. Expo's guide rules out mixing that with
+  `I18nManager.allowRTL` and `forceRTL` from code: Expo Go resets them on every open, and on iOS the plugin sets
+  them from the device's language at every launch. So a stored choice changes the text at once and never the
+  layout direction, on both systems alike.
 - **The webextension popup takes no library, not `chrome.i18n`.** `chrome.i18n` follows the browser's UI
   language and cannot switch at runtime, and its `_locales/*/messages.json` would duplicate the shared
   locales. The popup is plain DOM under every host, so it reads the shared locales through the same

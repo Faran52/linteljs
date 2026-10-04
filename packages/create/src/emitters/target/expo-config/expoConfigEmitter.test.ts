@@ -47,6 +47,15 @@ describe('emitExpoConfig', () => {
     };
     expect(parsed).toMatchObject(expected);
   });
+
+  it('turns on native right to left with a right-to-left language, and only then', () => {
+    const arabic: unknown = JSON.parse(emitExpoConfig('demo', ['en', 'ar']));
+    const japanese: unknown = JSON.parse(emitExpoConfig('demo', ['en', 'ja']));
+
+    const expected = { expo: { extra: { supportsRTL: true } } };
+    expect(arabic).toMatchObject(expected);
+    expect(japanese).not.toHaveProperty('expo.extra');
+  });
 });
 
 describe('expoConfigEmitter', () => {

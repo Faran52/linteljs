@@ -164,6 +164,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A React Native project with a right-to-left language lays out right to left on a device in that language, in
+  Expo Go and in a build, on Android and iOS. `app.json` now sets `extra.supportsRTL`, SDK 57's switch for native
+  RTL, which Expo Go reads and the expo-localization plugin writes into a build. The starter no longer calls
+  `I18nManager.allowRTL` and `forceRTL` on a switch: Expo Go reset them, and Expo rules out mixing them with the
+  static setting.
 - A React Native project opens in the device's language on iOS. It read the language from `Intl`, which iOS
   resolves against the app's own localizations, so a device in Arabic read as `en-SA` and the app opened in
   English. It now reads the device's preferred languages from expo-localization, in order, and `app.json` declares

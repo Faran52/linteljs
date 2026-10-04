@@ -1,5 +1,5 @@
 import { initReactI18next } from 'react-i18next';
-import { I18nManager, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { getLocales } from 'expo-localization';
@@ -14,19 +14,14 @@ import { directionOf, pickLanguage } from './utils/languageUtils';
 
 export { directionOf };
 
-// Native lays out its direction at launch, so a switch there shows from the next one on.
+// The web only: native lays out by the device's language at launch, as `extra.supportsRTL` in app.json asks.
 export const applyDirection = (language: string): void => {
-  const rtl = directionOf(language) === 'rtl';
-
-  if (Platform.OS === 'web') {
-    document.documentElement.lang = language;
-    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
-
+  if (Platform.OS !== 'web') {
     return;
   }
 
-  I18nManager.allowRTL(rtl);
-  I18nManager.forceRTL(rtl);
+  document.documentElement.lang = language;
+  document.documentElement.dir = directionOf(language);
 };
 
 // The one writer of the stored choice.
