@@ -10,7 +10,7 @@ import { useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 
-// What was recorded at birth: a device cannot read the machine that generated the project.
+// Recorded when the project was generated: a device cannot read that machine.
 const VersionScreen = (): ReactNode => {
   const { t } = useTranslation();
   const { layout, text } = useStarterStyles();

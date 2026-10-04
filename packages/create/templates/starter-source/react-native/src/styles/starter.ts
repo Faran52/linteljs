@@ -16,7 +16,6 @@ export interface Palette {
 
 export type StarterStyles = ReturnType<typeof sheetsFor>;
 
-// The values of the web targets' `tokens.css`, so a native screen matches them in either scheme.
 const PALETTES = {
   light: {
     background: '#faf9f7',
@@ -65,7 +64,6 @@ const sheetsFor = (colors: Palette) => {
       backgroundColor: colors.card,
       borderTopColor: colors.border,
     },
-    // The web status page's measures: 38 high, `--radius-md`, 12 apart.
     status: {
       flex: 1,
       alignItems: 'center',
@@ -190,7 +188,6 @@ export const stylesFor = (scheme: ColorSchemeName): StarterStyles => {
   return scheme === 'dark' ? SHEETS.dark : SHEETS.light;
 };
 
-// Follows the system scheme, as the web targets' `prefers-color-scheme` does.
 export const useStarterStyles = (): StarterStyles => {
   const scheme = useColorScheme();
 

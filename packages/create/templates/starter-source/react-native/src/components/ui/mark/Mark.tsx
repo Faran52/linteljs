@@ -9,7 +9,7 @@ import { useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 
-// Views rather than SVG: React Native has no SVG without a dependency. The web's `cascade` keyframes, in Reanimated.
+// Views rather than SVG: React Native has no SVG without a dependency.
 const LINES = [
   {
     width: 72,
