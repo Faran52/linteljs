@@ -28,7 +28,11 @@ import {
   rtkTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
-import { contactSchemaFiles, filesAt } from '../utils/starterUtils';
+import {
+  contactApiFiles,
+  contactSchemaFiles,
+  filesAt,
+} from '../utils/starterUtils';
 import {
   componentStyleModules,
   componentStyles,
@@ -234,26 +238,10 @@ const baseReactTarget = (): TargetRecord => {
         target: 'src/components/ui/text-input/TextInput.tsx',
         when: hasForm,
       },
-      {
-        target: 'src/lib/apis/contact/index.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data !== 'rtk-query';
-        },
-        shared: true,
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === undefined;
-        },
-      },
-      {
-        target: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === 'tanstack-query';
-        },
-        variant: 'tanstack-query',
-      },
+      ...contactApiFiles({
+        rtk: true,
+        shared: 'react',
+      }),
       // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
       ...rtkContactFiles(),
       // TanStack Query needs an ancestor; RTK Query rides the Redux provider.

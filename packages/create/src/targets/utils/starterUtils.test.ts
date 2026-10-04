@@ -78,6 +78,35 @@ describe('contactApiFiles', () => {
     ];
     expect(shared).toEqual(expected);
   });
+
+  it('reads both wrappers from the named tree, the barrel still from the shared one', () => {
+    const shared = contactApiFiles({ shared: 'react' })
+      .map(({ shared: tree }) => {
+        return tree;
+      });
+
+    const expected = [
+      true,
+      'react',
+      'react',
+    ];
+    expect(shared).toStrictEqual(expected);
+  });
+
+  it('writes nothing with RTK Query where the target offers it, which keeps its own barrel', () => {
+    const rtk = {
+      form: 'tanstack-form',
+      store: 'redux-toolkit',
+      data: 'rtk-query',
+    } as const;
+
+    const offered = pickedBy(contactApiFiles({ rtk: true }), rtk);
+    const unoffered = pickedBy(contactApiFiles(), rtk);
+
+    expect(offered).toEqual([]);
+    const expected = ['src/lib/apis/contact/index.ts base'];
+    expect(unoffered).toEqual(expected);
+  });
 });
 
 describe('contactSchemaFiles', () => {
