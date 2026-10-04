@@ -2,12 +2,12 @@ const ARRAY_CLOSE = '\n];';
 
 // Merged, so the shipped patterns update and the project's own blocks survive.
 
-// Anchored to a whole line: a comment or a longer name can hold the same text.
-const blockOf = (source: string, name: string): string | null => {
+// Anchored to a whole line: a comment or a longer name can hold the same text. Empty where there is none.
+const blockOf = (source: string, name: string): string => {
   const opening = new RegExp(`^const ${name}\\b.*$`, 'mu').exec(source);
 
   if (opening === null) {
-    return null;
+    return '';
   }
 
   const [declaration] = opening;
@@ -19,14 +19,14 @@ const blockOf = (source: string, name: string): string | null => {
   const rest = source.slice(opening.index);
   const closing = rest.indexOf(ARRAY_CLOSE);
 
-  return closing === -1 ? null : rest.slice(0, closing + ARRAY_CLOSE.length);
+  return closing === -1 ? '' : rest.slice(0, closing + ARRAY_CLOSE.length);
 };
 
 const carriedOver = (shipped: string, current: string, name: string): string => {
   const theirs = blockOf(current, name);
   const ours = blockOf(shipped, name);
 
-  if (theirs === null || ours === null) {
+  if (theirs === '' || ours === '') {
     return shipped;
   }
 
@@ -45,7 +45,7 @@ export const mergeChecker = (shipped: string, current: string | null): string =>
 
   const withSkipped = carriedOver(shipped, existing, 'PROJECT_SKIPPED');
   const merged = carriedOver(withSkipped, existing, 'PROJECT_BANNED');
-  const banned = blockOf(merged, 'PROJECT_BANNED') ?? '';
+  const banned = blockOf(merged, 'PROJECT_BANNED');
 
   // A checker from before 2.0 declared `directive` itself; the entry no longer does, so a block calling it gets
   // the import from the util.
