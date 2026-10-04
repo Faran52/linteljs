@@ -1,8 +1,12 @@
 import {
   closeSync,
+  existsSync,
   fstatSync,
+  mkdirSync,
   openSync,
   readSync,
+  rmSync,
+  writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
 
@@ -18,6 +22,7 @@ import {
   fieldAt,
   isObject,
   type Json,
+  type SessionInput,
 } from './hostUtils.ts';
 
 export interface SubagentRow {
@@ -170,4 +175,40 @@ export const subagentRowsOf = (payload: object): SubagentRow[] => {
 
       return rows;
     });
+};
+
+const CEILING = `${String(CONTEXT_CEILING_TOKENS / TOKENS_PER_K)}K`;
+
+const warningOf = (tokens: number): object => {
+  const thousands = Math.floor(tokens / TOKENS_PER_K);
+  const size = `${String(thousands)}K`;
+  const warning = {
+    systemMessage: `Context passed ${CEILING} (${size}). Consider /compact or a fresh session.`,
+    hookSpecificOutput: {
+      hookEventName: 'PostToolUse',
+      additionalContext: `Context is ${size}, past ${CEILING}. Tell the user so in one line, and keep replies lean.`,
+    },
+  };
+
+  return warning;
+};
+
+// Once past the ceiling, and again only after the context drops back under, which clears the marker.
+export const contextWarningOf = (input: SessionInput, directory: string): object | undefined => {
+  const tokens = contextOf(input.transcript);
+  const marker = join(directory, `linteljs-context-${input.session}`);
+
+  if (tokens < CONTEXT_CEILING_TOKENS) {
+    rmSync(marker, { force: true });
+    return undefined;
+  }
+
+  if (existsSync(marker)) {
+    return undefined;
+  }
+
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(marker, '');
+
+  return warningOf(tokens);
 };

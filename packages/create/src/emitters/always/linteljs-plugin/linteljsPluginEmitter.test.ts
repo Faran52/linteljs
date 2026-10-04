@@ -251,8 +251,11 @@ describe('linteljsPluginEmitter', () => {
       ['plugins/linteljs/hooks/mainStatusLine.ts', undefined],
       ['plugins/linteljs/hooks/subagentStatusLine.ts', undefined],
       ['plugins/linteljs/hooks/constants.ts', undefined],
+      ['plugins/linteljs/hooks/utils/bannedPatternUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/commandParserUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/contextUtils.ts', undefined],
+      ['plugins/linteljs/hooks/utils/eslintFixUtils.ts', undefined],
+      ['plugins/linteljs/hooks/utils/gitSafetyUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/hostUtils.ts', undefined],
     ];
     expect(hooks).toEqual(expected);

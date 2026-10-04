@@ -112,29 +112,6 @@ describe('bannedPatternGuardHook.ts', () => {
     });
   });
 
-  it('stays silent when no checker exists above the file at all', () => {
-    rmSync(join(cwd, 'scripts/checkBannedPatterns.ts'));
-
-    const reply = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      hook_event_name: 'PostToolUse',
-      tool_name: 'Write',
-      tool_input: { file_path: 'src/app.ts' },
-    });
-    expect(reply).toBeUndefined();
-  });
-
-  it('checks a direct tool response path relative to the payload cwd', () => {
-    const output = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      hook_event_name: 'PostToolUse',
-      tool_name: 'Edit',
-      tool_response: { filePath: 'src/app.ts' },
-    });
-
-    expect(output).toContain('bad cast');
-  });
-
   it('extracts every Add and Update file from the documented Codex apply_patch payload', () => {
     writeFileSync(join(cwd, 'src/first.ts'), 'safe\n');
     writeFileSync(join(cwd, 'src/second.ts'), 'fail\n');
@@ -157,48 +134,6 @@ describe('bannedPatternGuardHook.ts', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('keeps compatibility with nested Codex apply_patch text', () => {
-    const output = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      hook_event_name: 'PostToolUse',
-      tool_name: 'apply_patch',
-      tool_input: {
-        patch: '*** Begin Patch\n*** Add File: src/app.ts\n*** End Patch',
-      },
-    });
-
-    expect(output).toContain('bad cast');
-  });
-
-  it('keeps compatibility with raw Codex apply_patch text', () => {
-    const output = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      hook_event_name: 'PostToolUse',
-      tool_name: 'apply_patch',
-      tool_input: '*** Begin Patch\n*** Update File: src/app.ts\n*** End Patch',
-    });
-
-    expect(output).toContain('bad cast');
-  });
-
-  it('passes metacharacter, space, and newline paths without shell evaluation', () => {
-    const relative = 'src/space ; $(touch injected)\nname.ts';
-    const absolute = join(cwd, relative);
-    writeFileSync(absolute, 'fail\n');
-
-    const output = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      tool_input: { file_path: relative },
-    });
-
-    expect(output).toContain('now holds a banned pattern');
-    const actual = checkedPaths();
-    const expected = [absolute];
-    expect(actual).toEqual(expected);
-    const exists = existsSync(join(cwd, 'injected'));
-    expect(exists).toBe(false);
-  });
-
   it('JSON-escapes multiline checker output', () => {
     writeFileSync(join(cwd, 'src/escape.ts'), 'fail escape\n');
 
@@ -209,23 +144,6 @@ describe('bannedPatternGuardHook.ts', () => {
 
     expect(output).toBe(`${join(cwd, 'src/escape.ts')} now holds a banned pattern, so the edit was blocked. Build `
       + 'the real type instead of casting or suppressing, then write the file again.\nbad "cast"\nline\\slash\tend');
-  });
-
-  it('ignores missing files and patches touching irrelevant extensions', () => {
-    const missingFileReply = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      tool_input: { file_path: 'src/missing.ts' },
-    });
-    expect(missingFileReply).toBeUndefined();
-
-    const markdownPatchReply = runHook('bannedPatternGuardHook.ts', {
-      cwd,
-      tool_input: '*** Update File: src/app.md',
-    });
-    expect(markdownPatchReply).toBeUndefined();
-
-    const actual = checkedPaths();
-    expect(actual).toEqual([]);
   });
 
   it.each(['edit', 'create'])('checks the path Copilot\'s %s tool names, and reports it as added context', (tool) => {

@@ -2,7 +2,7 @@
 export type Dialect = 'bash' | 'powershell';
 
 export interface ParsedCommand {
-  tokens: string[];
+  tokens: [string, ...string[]];
   // Part of the command is computed where it runs (a PowerShell subexpression or `Start-Process`), so no guard can
   // vouch for what it is.
   opaque: boolean;
@@ -777,14 +777,14 @@ const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undef
     opaque ||= step.opaque === true;
   }
 
-  const command = tokens.slice(index);
+  const [executable, ...arguments_] = tokens.slice(index);
 
-  if (command.length === 0) {
+  if (executable === undefined) {
     return [];
   }
 
-  const unwrapped = [{
-    tokens: command,
+  const unwrapped: ParsedCommand[] = [{
+    tokens: [executable, ...arguments_],
     opaque,
   }];
 

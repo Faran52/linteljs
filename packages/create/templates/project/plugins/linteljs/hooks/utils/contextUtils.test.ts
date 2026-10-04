@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
@@ -20,10 +21,13 @@ import { TRANSCRIPT_TAIL_BYTES } from '../constants.ts';
 import {
   badgeOf,
   contextOf,
+  contextWarningOf,
   mainContextOf,
   subagentRowsOf,
   subagentTranscriptOf,
 } from './contextUtils.ts';
+
+import type { SessionInput } from './hostUtils.ts';
 
 const assistant = (input: number, read: number, created: number): string => {
   return JSON.stringify({
@@ -242,5 +246,75 @@ describe('subagentRowsOf', () => {
     expect(noTasksRows).toEqual([]);
     const textTasksRows = subagentRowsOf({ tasks: 'none' });
     expect(textTasksRows).toEqual([]);
+  });
+});
+
+describe('contextWarningOf', () => {
+  const warning = (size: string): object => {
+    const expected = {
+      systemMessage: `Context passed 150K (${size}). Consider /compact or a fresh session.`,
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        additionalContext: `Context is ${size}, past 150K. Tell the user so in one line, and keep replies lean.`,
+      },
+    };
+
+    return expected;
+  };
+
+  const inputAt = (tokens: number): SessionInput => {
+    const entry = assistant(0, tokens, 0);
+    const transcript = transcriptOf([entry]);
+    const input: SessionInput = {
+      session: 's12a',
+      transcript,
+    };
+
+    return input;
+  };
+
+  it('warns once past the ceiling, and again only after the context drops back under', () => {
+    const over = inputAt(188_000);
+    const first = contextWarningOf(over, directory);
+    const second = contextWarningOf(over, directory);
+    const under = contextWarningOf(inputAt(40_000), directory);
+    const again = contextWarningOf(inputAt(188_000), directory);
+
+    const actual = [
+      first,
+      second,
+      under,
+      again,
+    ];
+    const expected = [
+      warning('188K'),
+      undefined,
+      undefined,
+      warning('188K'),
+    ];
+    expect(actual).toEqual(expected);
+  });
+
+  it('stays silent under the ceiling and leaves no marker', () => {
+    const output = contextWarningOf(inputAt(149_999), directory);
+
+    expect(output).toBeUndefined();
+    const exists = existsSync(join(directory, 'linteljs-context-s12a'));
+    expect(exists).toBe(false);
+  });
+
+  it('warns at exactly the ceiling', () => {
+    const output = contextWarningOf(inputAt(150_000), directory);
+
+    expect(output).toEqual(warning('150K'));
+  });
+
+  it('creates a marker directory that does not exist yet', () => {
+    const data = join(directory, 'data');
+    const output = contextWarningOf(inputAt(188_000), data);
+
+    expect(output).toEqual(warning('188K'));
+    const exists = existsSync(join(data, 'linteljs-context-s12a'));
+    expect(exists).toBe(true);
   });
 });

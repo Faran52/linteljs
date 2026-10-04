@@ -180,8 +180,11 @@ export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
     copied('plugins/linteljs/hooks/mainStatusLine.ts'),
     copied('plugins/linteljs/hooks/subagentStatusLine.ts'),
     copied('plugins/linteljs/hooks/constants.ts'),
+    copied('plugins/linteljs/hooks/utils/bannedPatternUtils.ts'),
     copied('plugins/linteljs/hooks/utils/commandParserUtils.ts'),
     copied('plugins/linteljs/hooks/utils/contextUtils.ts'),
+    copied('plugins/linteljs/hooks/utils/eslintFixUtils.ts'),
+    copied('plugins/linteljs/hooks/utils/gitSafetyUtils.ts'),
     copied('plugins/linteljs/hooks/utils/hostUtils.ts'),
   ];
 

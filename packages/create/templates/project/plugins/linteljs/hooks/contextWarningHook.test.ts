@@ -89,24 +89,6 @@ describe('contextWarningHook.ts', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('stays silent under the ceiling and leaves no marker', () => {
-    writeContext(149_999);
-
-    const output = run();
-
-    expect(output).toBe('');
-    const exists = existsSync(join(directory, 'linteljs-context-s12a'));
-    expect(exists).toBe(false);
-  });
-
-  it('warns at exactly the ceiling', () => {
-    writeContext(150_000);
-
-    const output = run();
-
-    expect(output).toContain('Context passed 150K (150K).');
-  });
-
   it('does nothing for a subagent\'s tool call', () => {
     writeContext(188_000);
 
@@ -132,16 +114,6 @@ describe('contextWarningHook.ts', () => {
 
     expect(output).toBe(WARNING);
     expect(marked).toBe(true);
-  });
-
-  it('creates a plugin data directory that does not exist yet', () => {
-    writeContext(188_000);
-
-    const output = run({}, join(directory, 'data'));
-
-    expect(output).toBe(WARNING);
-    const exists = existsSync(join(directory, 'data', 'linteljs-context-s12a'));
-    expect(exists).toBe(true);
   });
 
   it('stays silent on a payload it cannot read', () => {
