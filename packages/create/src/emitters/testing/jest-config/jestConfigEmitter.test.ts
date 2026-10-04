@@ -92,6 +92,28 @@ describe('jestConfigEmitter', () => {
     expect(artifacts).toEqual(expected);
   });
 
+  it('un-ignores immer for redux-toolkit, with no msw conditions', () => {
+    const answers = answersFor({ target: 'react-native', store: 'redux-toolkit' });
+    const text = emitJestConfig(answers, '__mocks__/setupTests.tsx');
+
+    const opensWithPreset = text.startsWith("import expo from 'jest-expo/jest-preset.js';\n\nimport tsconfig");
+    expect(opensWithPreset).toBe(true);
+    expect(text).toContain("const esmOnly = '|immer';");
+    expect(text).toContain('transformIgnorePatterns: [modules.replace(/\\)\\)$/u, `${esmOnly}))`), ...ignored],');
+    expect(text).not.toContain('customExportConditions');
+  });
+
+  it('un-ignores both lists when msw meets redux-toolkit', () => {
+    const answers = answersFor({
+      target: 'react-native',
+      store: 'redux-toolkit',
+      mocking: 'msw',
+    });
+    const text = emitJestConfig(answers, '__mocks__/setupTests.tsx');
+
+    expect(text).toContain("const esmOnly = '|rettime|until-async|@open-draft|immer';");
+  });
+
   it.each<[string, Partial<Answers>]>([
     ['a target whose suites run on vitest', { target: 'react' }],
     [

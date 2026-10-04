@@ -10,9 +10,11 @@ import { setupTestsPath } from '../../utils/shapeUtils';
 import { coverageExclude, coverageInclude } from '../utils/coverageUtils';
 
 import {
-  MSW_IMPORT,
+  MSW_ESM_ONLY,
   MSW_OPTIONS,
-  MSW_PARTS,
+  PRESET_IMPORT,
+  REDUX_ESM_ONLY,
+  UNIGNORE_OPTION,
 } from './constants';
 
 // One entry per line: `max-len` has no fixer.
@@ -36,8 +38,16 @@ export const emitJestConfig = (answers: Answers, setup: string): string => {
       return `!${glob}`;
     });
   const hasMsw = answers.mocking === 'msw';
+  const esmOnly = [
+    ...hasMsw ? MSW_ESM_ONLY : [],
+    ...answers.store === 'redux-toolkit' ? REDUX_ESM_ONLY : [],
+  ];
+  const unignores = esmOnly.length > 0;
+  const unignoreParts = unignores
+    ? `\nconst [modules, ...ignored] = expo.transformIgnorePatterns;\nconst esmOnly = '|${esmOnly.join('|')}';\n`
+    : '';
 
-  return `${hasMsw ? MSW_IMPORT : ''}import tsconfig from './tsconfig.json' with { type: 'json' };
+  return `${unignores ? PRESET_IMPORT : ''}import tsconfig from './tsconfig.json' with { type: 'json' };
 
 const moduleNameMapper = Object.fromEntries(
   Object.entries(tsconfig.compilerOptions.paths)
@@ -51,10 +61,10 @@ const moduleNameMapper = Object.fromEntries(
       return entry;
     }),
 );
-${hasMsw ? MSW_PARTS : ''}
+${unignoreParts}
 const config = {
   preset: 'jest-expo',
-  moduleNameMapper,${hasMsw ? MSW_OPTIONS : ''}
+  moduleNameMapper,${hasMsw ? MSW_OPTIONS : ''}${unignores ? UNIGNORE_OPTION : ''}
   setupFilesAfterEnv: ['<rootDir>/${setup}'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   collectCoverageFrom: [${globList([coverageInclude(answers), ...exclude])}
