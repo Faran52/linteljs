@@ -120,6 +120,44 @@ describe('the carve-out the rule file grants', () => {
   });
 });
 
+describe('each pattern, reported under its own name', () => {
+  it.each([
+    ['as unknown as', 'const value = input as unknown as Target;'],
+    ['as unknown', 'const value = input as unknown;'],
+    [': unknown', 'const value:unknown = load();'],
+    ['=> unknown', 'type Load = () =>unknown;'],
+    ['=> unknown', 'type Load = () => unknown;'],
+    ['unknown[]', 'type List = unknown[];'],
+    ['<unknown>', 'const cache = new Set<unknown>();'],
+    ['@ts-ignore', '// @ts-ignore'],
+    ['@ts-expect-error', '// @ts-expect-error wrong on purpose'],
+    ['Record<string, unknown>', 'type Bag = Record<string,unknown>;'],
+    ['Record<string, unknown>', 'type Bag = Record<string, unknown>;'],
+    ['index signature', 'interface Bag { [key:string]: number }'],
+    ['index signature', 'interface Bag { [key: string] : number }'],
+    ['as never', 'const value = input as never'],
+    ['as never', 'input as never;'],
+    ['as never', "const value = (await import('./value.ts')) as never;"],
+    ['as never', 'const value = input as never; export { value };'],
+    ['as never', 'const value = input as never// a flush comment'],
+    ['as never', 'const a = `\\\\\\ `; const value = input as never; const b = `x`;'],
+  ])('reports [%s] on %s', async (name, line) => {
+    const actual = await check(`${line}\n`);
+    expect(actual).toContain(`1: ${line}  [${name}]`);
+  });
+
+  it.each([
+    'const isTarget = (value:unknown ) :value  is Target => {',
+    'const parsed:unknown  =JSON.parse(text);',
+    "const loaded:unknown  =await import('./value.ts');",
+    'const messageOf = ( reason :unknown ): string => {',
+    'run().catch( async( err :unknown ) => {',
+  ])('allows the carve-out spaced as in %s', async (line) => {
+    const actual = await check(`${line}\n`);
+    expect(actual).toBe('');
+  });
+});
+
 describe('mentions rather than directives', () => {
   it.each([
     ['a line comment naming a disable', 'const value = 1; // an `eslint-disable-next-line` here would be wrong\n'],
@@ -140,6 +178,11 @@ describe('mentions rather than directives', () => {
       'a directive inside a multiline template',
       'const fixture = `\n// @ts-ignore\nconst value = 1;\n`;\n',
     ],
+    ['a directive inside a one-line template', 'const fixture = `// @ts-ignore`;\n'],
+    ['a pattern inside a double-quoted string', 'const fixture = "input as never";\n'],
+    ['a pattern after an escaped quote', "const fixture = 'it\\' as never';\n"],
+    ['a pattern inside a line comment', 'const value = 1; // never write input as never\n'],
+    ['a directive on a later line of a block comment', '/**\n * // eslint-disable-next-line\n */\nconst value = 1;\n'],
   ])('says nothing about %s', async (_label, source) => {
     const actual = await check(source);
     expect(actual).toBe('');
@@ -261,6 +304,12 @@ describe('lines where `as` is not an assertion', () => {
     ['a named import alias', "import { join as joined } from 'node:path';\n"],
     ['a re-export alias', "export { value as never } from './value';\n"],
     ['an alias line in a list', '  value as never,\n'],
+    ['a namespace re-export', "export * as never from './never';\n"],
+    ['an import alias', "import { value as never } from './value';\n"],
+    ['an indented import alias', "  import { value as never } from './value';\n"],
+    ['a type re-export spaced any way', "  export  type  { Value as never } from './value';\n"],
+    ['a type alias line spaced any way', '  type  value  as  never\n'],
+    ['an alias line with trailing space', '  value as never, \n'],
   ])('says nothing about %s', async (_label, source) => {
     const actual = await check(source);
     expect(actual).toBe('');
@@ -271,6 +320,14 @@ describe('block comments', () => {
   it('reports a directive written as a block comment', async () => {
     const actual = await check('/* eslint-disable no-console */\nconsole.log(1);\n');
     expect(actual).toContain('1: /* eslint-disable no-console */  [eslint-disable]');
+  });
+
+  it('reports each hit on its own line, and only there', async () => {
+    const source = '/* eslint-disable no-console */\nconsole.log(1);\nconst value = input as never;\n';
+    const actual = await check(source);
+    const expected = ':\n  1: /* eslint-disable no-console */  [eslint-disable]\n'
+      + '  3: const value = input as never;  [as never]\n';
+    expect(actual).toContain(expected);
   });
 
   it('reads a directive only on the first line of a block comment', async () => {
@@ -320,8 +377,44 @@ describe('the floor and the skips', () => {
     const missing = reportOf([join(cwd, 'missing.ts')]);
     expect(missing).toBe('');
 
-    const notes = await checkFile('notes.md', 'x as never\n');
+    const notes = await checkFile('notes.md', 'const value = input as never;\n');
     expect(notes).toBe('');
+    const tsv = await checkFile('data.tsv', 'const value = input as never;\n');
+    expect(tsv).toBe('');
+  });
+
+  it.each(['module.mts', 'shim.vue.ts'])('reads %s as TypeScript', async (name) => {
+    const actual = await checkFile(name, 'const value = input as never;\n');
+    expect(actual).toContain('1: const value = input as never;  [as never]');
+  });
+
+  it('skips a path under any of several fragments', async () => {
+    await mkdir(join(cwd, 'scripts'));
+    const scan: BannedScan = {
+      ...STRICT,
+      skipped: ['/generated/', ...BASE_SKIPPED],
+    };
+    const actual = await checkFile('scripts/tool.ts', 'const value = input as never;\n', scan);
+    expect(actual).toBe('');
+  });
+
+  it('reads a relative path from the working directory, and skips it under scripts', async () => {
+    await mkdir(join(cwd, 'scripts'));
+    await mkdir(join(cwd, 'src'));
+    await writeFile(join(cwd, 'scripts/tool.ts'), 'const value = input as never;\n', 'utf8');
+    await writeFile(join(cwd, 'src/tool.ts'), 'const value = input as never;\n', 'utf8');
+    const previous = process.cwd();
+    process.chdir(cwd);
+
+    try {
+      const skipped = reportOf(['scripts/tool.ts']);
+      expect(skipped).toBe('');
+      const checked = reportOf(['src/tool.ts']);
+      expect(checked).toContain('Banned pattern in src/tool.ts');
+    }
+    finally {
+      process.chdir(previous);
+    }
   });
 
   it('prints the fix hint once after the reports', async () => {

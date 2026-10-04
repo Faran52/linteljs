@@ -114,12 +114,11 @@ export const FLOORS: Record<TypeSafety, BannedPattern[]> = {
 
 export const BASE_SKIPPED = ['/scripts/'];
 
+// The leading slash lets `/scripts/` match a relative `scripts/tool.ts` as well as an absolute path.
 const isSkipped = (filePath: string, skipped: string[]): boolean => {
   return skipped
     .some((fragment) => {
-      const relativeFragment = fragment.replace(/^\//, '');
-
-      return filePath.includes(fragment) || filePath.startsWith(relativeFragment);
+      return `/${filePath}`.includes(fragment);
     });
 };
 
@@ -147,26 +146,14 @@ const blankMultilineSpans = (content: string): string => {
 const keepBlockCommentHeads = (content: string): string => {
   return content
     .replace(MULTILINE_SPAN, (match) => {
-      if (!match.startsWith('/*')) {
-        return blankSpan(match);
-      }
-
-      const headEnd = match.indexOf('\n');
-
-      if (headEnd === -1) {
-        return match;
-      }
-
-      const body = blankSpan(match.slice(headEnd));
-
-      return match.slice(0, headEnd) + body;
+      return match.startsWith('/*') ? match.replace(/\n[\s\S]*/, blankSpan) : blankSpan(match);
     });
 };
 
 // Strings blanked, comments kept: stripping comments hides every directive.
 const stripStrings = (line: string): string => {
   return line
-    .replace(/\\['"]/g, '  ')
+    .replace(/\\['"]/g, blankSpan)
     .replace(/'[^']*'|"[^"]*"/g, blankSpan);
 };
 
@@ -176,29 +163,20 @@ const stripStringsAndComments = (line: string): string => {
 
 const SCRIPT_FILE = /\.[cm]?tsx?$/;
 const SFC_FILE = /\.(?:vue|svelte)$/;
-const SFC_SCRIPT_BLOCK = /(<script\b[^>]*>)([\s\S]*?)<\/script>/gi;
+const SFC_SCRIPT_BLOCK = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/i;
+
+// What split answers per block: the text before it, its open tag, its body, its close tag.
+const SFC_PARTS = 4;
+const SFC_BODY = 2;
 
 // Line numbers preserved.
 const scriptBlocksOnly = (content: string): string => {
-  let output = '';
-  let cursor = 0;
-
-  for (const match of content.matchAll(SFC_SCRIPT_BLOCK)) {
-    const [
-      ,
-      open = '',
-      body = '',
-    ] = match;
-
-    const between = content.slice(cursor, match.index);
-
-    output += blankSpan(between) + blankSpan(open) + body;
-    cursor = match.index + open.length + body.length;
-  }
-
-  const tail = content.slice(cursor);
-
-  return output + blankSpan(tail);
+  return content
+    .split(SFC_SCRIPT_BLOCK)
+    .map((part, index) => {
+      return index % SFC_PARTS === SFC_BODY ? part : blankSpan(part);
+    })
+    .join('');
 };
 
 const filesUnder = (path: string, extensions: string[]): string[] => {
