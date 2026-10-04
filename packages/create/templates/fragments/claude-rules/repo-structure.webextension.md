@@ -71,7 +71,7 @@ job is undoing it.
 - **`lib/` is the framework-free, platform-free core.** No `chrome.*`, no `document`, no
   `import.meta.env`. That is what makes it testable without a browser and reusable across surfaces
   that do not share a realm.
-- `src/extension`-facing code (anything touching `chrome.*` or `browser.*`) stays in the surface
+- Extension API code (anything touching `chrome.*` or `browser.*`) stays in the surface
   folders. One adapter per surface, not a platform call scattered through `lib/`.
 - A component here is a DOM-building module or a custom element. `components/ui/` takes anything
   reusable by nature even with one consumer today; a component bound to its parent's data lives in
