@@ -4,7 +4,7 @@ import { NAME } from '@config/linteljs';
 import AppHeader from '@features/app-header/AppHeader.vue';
 </script>
 
-<!-- `NuxtPage` and the header are Nuxt's global components, which is why neither is imported. -->
+<!-- `NuxtPage` is a Nuxt global component, so it needs no import. -->
 <template>
   <AppHeader :name="NAME" />
   <NuxtPage />

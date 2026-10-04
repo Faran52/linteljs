@@ -26,7 +26,7 @@ interface Head {
   htmlAttrs: Record<'lang' | 'dir', Readonly<Ref<string>>>;
 }
 
-// The plugin's setup, kept to run against a real app in each case, the head it hands Nuxt and the request it reads.
+// Captures the plugin's setup, run against a real app in each case, the heads it hands Nuxt and the request it reads.
 const nuxt = vi.hoisted(() => {
   const setups: Setup[] = [];
   const heads: Head[] = [];
