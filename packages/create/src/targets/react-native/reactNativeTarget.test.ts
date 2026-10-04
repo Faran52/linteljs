@@ -125,9 +125,11 @@ const GATES: GateRow[] = [
     }),
   ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
   ['src/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],
   ['src/lib/apis/base/baseApi.test.ts@rtk-query', RTK_QUERY],
 ];
 

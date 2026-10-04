@@ -159,6 +159,7 @@ describe('accessorFiles', () => {
     const expected = [
       'src/lib/hooks/use-extended-query/useExtendedQuery.ts tanstack-query',
       'src/lib/hooks/use-extended-mutation/useExtendedMutation.ts tanstack-query',
+      'src/lib/utils/queryOptionsUtils.ts base',
     ];
     expect(actual).toEqual(expected);
 
@@ -183,6 +184,20 @@ describe('accessorFiles', () => {
     };
     expect(files).toMatchObject(expected);
   });
+
+  it('writes the shared option builders under the target\'s own name, from the one source', () => {
+    const builders = accessorFiles({
+      ...HOOKS,
+      optionsUtils: 'src/lib/utils/query-options-utils',
+    })[2];
+
+    const expected = {
+      target: 'src/lib/utils/query-options-utils.ts',
+      source: 'src/lib/utils/queryOptionsUtils.ts',
+      shared: true,
+    };
+    expect(builders).toMatchObject(expected);
+  });
 });
 
 describe('accessorTests', () => {
@@ -201,12 +216,23 @@ describe('accessorTests', () => {
       query: 'extended-query',
       mutation: 'extended-mutation',
       testSuffix: '.spec.ts',
-    })[1];
+      optionsUtils: 'src/lib/utils/query-options-utils',
+    });
 
-    const expected = {
-      target: 'src/lib/services/extended-mutation/extended-mutation.spec.ts',
-      covers: 'src/lib/services/extended-mutation/extended-mutation.ts',
-    };
+    const expected = [
+      {
+        target: 'src/lib/services/extended-query/extended-query.spec.ts',
+      },
+      {
+        target: 'src/lib/services/extended-mutation/extended-mutation.spec.ts',
+        covers: 'src/lib/services/extended-mutation/extended-mutation.ts',
+      },
+      {
+        target: 'src/lib/utils/query-options-utils.spec.ts',
+        covers: 'src/lib/utils/query-options-utils.ts',
+        source: 'src/lib/utils/queryOptionsUtils.test.ts',
+      },
+    ];
     expect(tests).toMatchObject(expected);
   });
 
@@ -219,23 +245,32 @@ describe('accessorTests', () => {
       names: HOOKS,
     });
 
-    const expected = [{
-      target: 'src/hooks/use-extended-query/useExtendedQuery.test.ts',
-      covers: 'src/hooks/use-extended-query/useExtendedQuery.ts',
-      shared: 'react',
-      source: 'src/lib/hooks/use-extended-query/useExtendedQuery.test.ts',
-    }, {
-      target: 'src/hooks/use-extended-mutation/useExtendedMutation.test.ts',
-      covers: 'src/hooks/use-extended-mutation/useExtendedMutation.ts',
-      shared: 'react',
-      source: 'src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts',
-    }];
+    const expected = [
+      {
+        target: 'src/hooks/use-extended-query/useExtendedQuery.test.ts',
+        covers: 'src/hooks/use-extended-query/useExtendedQuery.ts',
+        shared: 'react',
+        source: 'src/lib/hooks/use-extended-query/useExtendedQuery.test.ts',
+      },
+      {
+        target: 'src/hooks/use-extended-mutation/useExtendedMutation.test.ts',
+        covers: 'src/hooks/use-extended-mutation/useExtendedMutation.ts',
+        shared: 'react',
+        source: 'src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts',
+      },
+      {
+        target: 'src/lib/utils/queryOptionsUtils.test.ts',
+        covers: 'src/lib/utils/queryOptionsUtils.ts',
+        shared: true,
+        source: 'src/lib/utils/queryOptionsUtils.test.ts',
+      },
+    ];
     expect(tests).toMatchObject(expected);
   });
 
   it('writes both suites under tanstack query alone', () => {
     const actual = pickedBy(accessorTests(HOOKS), { data: 'tanstack-query' });
-    expect(actual).toHaveLength(2);
+    expect(actual).toHaveLength(3);
     const unanswered = pickedBy(accessorTests(HOOKS));
     expect(unanswered).toEqual([]);
   });

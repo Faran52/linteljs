@@ -13,9 +13,10 @@ import {
 
 import {
   createExtendedQuery,
-  type ExtendedQueryOptions,
   type ExtendedQueryResult,
 } from './createExtendedQuery';
+
+import type { ExtendedQueryOptions } from '@utils/queryOptionsUtils';
 
 interface Version {
   readonly status: string;

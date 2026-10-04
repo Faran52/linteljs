@@ -1,3 +1,5 @@
+import { OPTIONS_UTILS } from '../constants';
+
 import { hasForm } from './gateUtils';
 
 import type { Answers, TargetId } from '@config/types';
@@ -9,6 +11,8 @@ export interface AccessorNames {
   readonly query: string;
   readonly mutation: string;
   readonly testSuffix: string;
+  // The shared option builders, under the target's own file naming.
+  readonly optionsUtils?: string;
 }
 
 export interface AccessorSource {
@@ -139,7 +143,16 @@ export const accessorFiles = (
       return file;
     });
 
-  return files;
+  const builders: StarterFile = {
+    target: `${names.optionsUtils ?? OPTIONS_UTILS}.ts`,
+    source: `${OPTIONS_UTILS}.ts`,
+    when: usesQueryLibrary,
+    shared: true,
+  };
+
+  const withBuilders = [...files, builders];
+
+  return withBuilders;
 };
 
 export const accessorTests = (
@@ -166,7 +179,19 @@ export const accessorTests = (
       return test;
     });
 
-  return tests;
+  const stem = names.optionsUtils ?? OPTIONS_UTILS;
+
+  const builders: StarterTest = {
+    target: `${stem}${names.testSuffix}`,
+    covers: `${stem}.ts`,
+    source: `${OPTIONS_UTILS}.test.ts`,
+    when: usesQueryLibrary,
+    shared: true,
+  };
+
+  const withBuilders = [...tests, builders];
+
+  return withBuilders;
 };
 
 // `rtk-query` is `@reduxjs/toolkit`, and needs that store's reducer and middleware.

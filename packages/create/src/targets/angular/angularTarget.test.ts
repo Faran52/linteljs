@@ -137,6 +137,7 @@ const GATES: GateRow[] = [
   ...mswGates(false),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/query-options-utils.ts', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['.postcssrc.json@tailwind', TAILWIND],
   ...CONTACT_PATHS
@@ -166,6 +167,7 @@ const GATES: GateRow[] = [
   ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.spec.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/query-options-utils.spec.ts', TANSTACK_QUERY],
 ];
 
 describe('the starter gates', () => {

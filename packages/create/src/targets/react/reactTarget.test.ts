@@ -350,6 +350,7 @@ const GATES: GateRow[] = [
   ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
   ['src/lib/providers/store/StoreProvider.tsx', [{ store: [
@@ -384,6 +385,7 @@ const GATES: GateRow[] = [
   ['src/lib/apis/base/baseApi.test.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],
 ];
 
 describe('the starter gates', () => {

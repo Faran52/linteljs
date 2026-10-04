@@ -12,10 +12,11 @@ import {
 } from 'vitest';
 
 import {
-  type ExtendedQueryOptions,
   type ExtendedQueryResult,
   useExtendedQuery,
 } from './useExtendedQuery';
+
+import type { ExtendedQueryOptions } from '@utils/queryOptionsUtils';
 
 interface Version {
   readonly status: string;

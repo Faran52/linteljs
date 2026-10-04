@@ -165,3 +165,6 @@ export const COOKIE_UTILS_TEST: StarterTest = {
   variant: 'i18n',
   shared: true,
 };
+
+// The shared TanStack Query option builders every adapter reads, with no extension.
+export const OPTIONS_UTILS = 'src/lib/utils/queryOptionsUtils';

@@ -1,18 +1,9 @@
 import { useQuery } from '@tanstack/vue-query';
 
-import {
-  type ApiError,
-  type QueryValue,
-  request,
-} from '@utils/fetchExtendedUtils';
+import { type ExtendedQueryOptions, extendedQueryOptions } from '@utils/queryOptionsUtils';
 
+import type { ApiError } from '@utils/fetchExtendedUtils';
 import type { Ref } from 'vue';
-
-export interface ExtendedQueryOptions {
-  readonly query?: Readonly<Record<string, QueryValue>>;
-  readonly enabled?: boolean;
-  readonly staleTime?: number;
-}
 
 export interface ExtendedQueryResult<TResponse> {
   readonly response: Ref<TResponse | undefined>;
@@ -28,28 +19,12 @@ export const useExtendedQuery = <TResponse>(
   options: ExtendedQueryOptions = {},
 ): ExtendedQueryResult<TResponse> => {
   const {
-    query,
-    enabled = true,
-    staleTime = 30_000,
-  } = options;
-
-  const {
     data,
     error,
     isFetching,
     status,
     refetch,
-  } = useQuery<TResponse, ApiError>({
-    queryKey: [path, query],
-    queryFn: ({ signal }) => {
-      return request<TResponse>(path, {
-        ...(query === undefined ? {} : { query }),
-        signal,
-      });
-    },
-    enabled,
-    staleTime,
-  });
+  } = useQuery<TResponse, ApiError>(extendedQueryOptions<TResponse>(path, options));
 
   const extendedQuery: ExtendedQueryResult<TResponse> = {
     response: data,

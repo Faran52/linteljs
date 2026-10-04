@@ -1,41 +1,15 @@
-import { type CreateQueryOptions, injectQuery } from '@tanstack/angular-query-experimental';
+import { injectQuery } from '@tanstack/angular-query-experimental';
 
-import {
-  type ApiError,
-  type QueryValue,
-  request,
-} from '@utils/fetchExtendedUtils';
+import { type ExtendedQueryOptions, extendedQueryOptions } from '@utils/query-options-utils';
 
-export interface ExtendedQueryOptions {
-  readonly query?: Readonly<Record<string, QueryValue>>;
-  readonly enabled?: boolean;
-  readonly staleTime?: number;
-}
+import type { ApiError } from '@utils/fetchExtendedUtils';
 
 // Call it from a field initialiser or another injectable: anywhere else Angular throws.
 export const injectExtendedQuery = <TResponse>(
   path: string,
   options: ExtendedQueryOptions = {},
 ) => {
-  const {
-    query,
-    enabled = true,
-    staleTime = 30_000,
-  } = options;
-
   return injectQuery<TResponse, ApiError>(() => {
-    const queryOptions: CreateQueryOptions<TResponse, ApiError> = {
-      queryKey: [path, query],
-      queryFn: ({ signal }) => {
-        return request<TResponse>(path, {
-          ...(query === undefined ? {} : { query }),
-          signal,
-        });
-      },
-      enabled,
-      staleTime,
-    };
-
-    return queryOptions;
+    return extendedQueryOptions<TResponse>(path, options);
   });
 };

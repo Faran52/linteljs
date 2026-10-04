@@ -134,6 +134,7 @@ const GATES: GateRow[] = [
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
   ['src/lib/primitives/create-extended-query/createExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/primitives/create-extended-mutation/createExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
@@ -142,6 +143,7 @@ const GATES: GateRow[] = [
   ...homeGates('src/pages/home/HomePage.test.tsx'),
   ['src/lib/primitives/create-extended-query/createExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/primitives/create-extended-mutation/createExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],
 ];
 
 describe('the starter gates', () => {

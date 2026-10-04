@@ -13,9 +13,10 @@ import {
 
 import {
   createExtendedMutation,
-  type ExtendedMutationOptions,
   type ExtendedMutationResult,
 } from './createExtendedMutation';
+
+import type { ExtendedMutationOptions } from '@utils/queryOptionsUtils';
 
 interface Accepted {
   readonly status: string;

@@ -106,10 +106,12 @@ const GATES: GateRow[] = [
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],
 ];
 
 describe('the starter gates', () => {

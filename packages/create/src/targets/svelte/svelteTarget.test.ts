@@ -164,6 +164,7 @@ const GATES: GateRow[] = [
   ['src/components/ui/text-input/types.ts', WITH_FORM],
   ['src/lib/hooks/create-extended-query/createExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/create-extended-mutation/createExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.svelte', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.svelte@tanstack-query', TANSTACK_QUERY],
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
@@ -172,6 +173,7 @@ const GATES: GateRow[] = [
   ...homeGates('src/routes/page.test.ts'),
   ['src/lib/hooks/create-extended-query/createExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/create-extended-mutation/createExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],
 ];
 
 describe('the starter gates', () => {

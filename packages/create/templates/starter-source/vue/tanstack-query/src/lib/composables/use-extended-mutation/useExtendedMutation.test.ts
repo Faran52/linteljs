@@ -12,10 +12,11 @@ import {
 } from 'vitest';
 
 import {
-  type ExtendedMutationOptions,
   type ExtendedMutationResult,
   useExtendedMutation,
 } from './useExtendedMutation';
+
+import type { ExtendedMutationOptions } from '@utils/queryOptionsUtils';
 
 interface Accepted {
   readonly status: string;

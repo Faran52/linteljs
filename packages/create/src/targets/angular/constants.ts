@@ -36,6 +36,7 @@ export const ACCESSORS: AccessorNames = {
   query: 'extended-query',
   mutation: 'extended-mutation',
   testSuffix: '.spec.ts',
+  optionsUtils: 'src/lib/utils/query-options-utils',
 };
 
 // Each ships a translated twin under `i18n`.

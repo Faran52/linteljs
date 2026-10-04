@@ -1,18 +1,9 @@
-import { type QueryOptions, useQuery } from '@tanstack/solid-query';
+import { useQuery } from '@tanstack/solid-query';
 
-import {
-  type ApiError,
-  type QueryValue,
-  request,
-} from '@utils/fetchExtendedUtils';
+import { type ExtendedQueryOptions, extendedQueryOptions } from '@utils/queryOptionsUtils';
 
+import type { ApiError } from '@utils/fetchExtendedUtils';
 import type { Accessor } from 'solid-js';
-
-export interface ExtendedQueryOptions {
-  readonly query?: Readonly<Record<string, QueryValue>>;
-  readonly enabled?: boolean;
-  readonly staleTime?: number;
-}
 
 export interface ExtendedQueryResult<TResponse> {
   readonly response: Accessor<TResponse | undefined>;
@@ -27,26 +18,8 @@ export const createExtendedQuery = <TResponse>(
   path: string,
   options: ExtendedQueryOptions = {},
 ): ExtendedQueryResult<TResponse> => {
-  const {
-    query,
-    enabled = true,
-    staleTime = 30_000,
-  } = options;
-
   const result = useQuery<TResponse, ApiError>(() => {
-    const queryOptions = {
-      queryKey: [path, query],
-      queryFn: ({ signal }) => {
-        return request<TResponse>(path, {
-          ...(query === undefined ? {} : { query }),
-          signal,
-        });
-      },
-      enabled,
-      staleTime,
-    } satisfies QueryOptions<TResponse, ApiError>;
-
-    return queryOptions;
+    return extendedQueryOptions<TResponse>(path, options);
   });
 
   const extendedQuery: ExtendedQueryResult<TResponse> = {
