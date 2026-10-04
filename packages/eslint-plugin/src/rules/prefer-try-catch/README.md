@@ -72,6 +72,15 @@ const transform = async () => {
 
 None.
 
+## What it leaves alone
+
+Only `.catch(handler)` and `.then(onFulfilled, onRejected)` hand a rejection to a callback. These do
+not, so even awaited they pass:
+
+- `.finally(cleanup)`, which runs on both paths and handles neither
+- `.catch()` with no argument
+- `.then(parse)` with no rejection handler
+
 ## Why there is no autofix
 
 Rewriting a callback into a `try` block restructures control flow, and the two forms are not

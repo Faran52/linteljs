@@ -91,8 +91,16 @@ still reported:
 type Wrapped = Extract<Node, { inner: { id: string } }>;
 ```
 
+A union written as the argument is the argument, so neither arm is allowed:
+
+```ts
+// both arms are reported
+type Either = Extract<Node, { a: 'x' } | { b: 'y' }>;
+```
+
 A qualified name is matched by its last segment, so `allowIn: ['PropsWithChildren']` allows
-`React.PropsWithChildren<{ a: string }>`.
+`React.PropsWithChildren<{ a: string }>`. The qualifier itself is not matched: `allowIn: ['React']` allows
+nothing there.
 
 It is per generic, so `allowIn: ['Extract']` says nothing about `Exclude`.
 
@@ -116,8 +124,9 @@ is not: the alias names the outer shape, and the inner one is still anonymous.
 **An empty literal.** `{}` has nothing in it to name, and `string & {}` is the idiom that keeps a
 union of string literals open to any other string while an editor still offers the named ones.
 
-A mapped type (`{ [K in keyof T]: boolean }`) and an index signature are different nodes and are
-not this rule's business.
+**A mapped type.** `{ [K in keyof T]: boolean }` is a different node and is not this rule's
+business, though a shape written inside one is reported. An index signature is not exempt: it is a
+member like any other, so `nested: { [key: string]: string }` is reported.
 
 ## Why there is no autofix
 

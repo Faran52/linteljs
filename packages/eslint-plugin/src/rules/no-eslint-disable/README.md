@@ -70,7 +70,9 @@ allowed: it is the form that turns the whole file off.
 ```
 
 With that, `// eslint-disable-next-line no-console` passes and
-`// eslint-disable-next-line no-console, no-alert` does not.
+`// eslint-disable-next-line no-console, no-alert` does not. Inline configuration is held to the same list
+by the rules it turns off: `/* eslint no-console: "off" */` passes, and
+`/* eslint no-console: "off", no-alert: "off" */` does not.
 
 ## What it leaves alone
 

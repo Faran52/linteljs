@@ -73,15 +73,20 @@ interface Holder {
 
 ## Options
 
-```jsonc
+### `maxGenericMembers`
+
+How many members a union written directly as a generic argument may hold on one line: an integer,
+at least 1. Defaults to `3`. It has no effect on a union containing an object, function,
+constructor or mapped type: that one always splits, whatever this is set to. A type parameter's
+constraint or default, `<T extends 'a' | 'b' | 'c' | 'd'>`, is not a generic argument.
+
+```js
 {
-  "@linteljs/union-newline": ["error", { "maxGenericMembers": 3 }]
+  rules: {
+    '@linteljs/union-newline': ['error', { maxGenericMembers: 1 }],
+  },
 }
 ```
-
-- `maxGenericMembers`: integer, minimum 1, `3` by default. A union inside a generic argument splits
-  once it has more members than this. It has no effect on a union containing an object, function,
-  constructor or mapped type: that one always splits, whatever this is set to.
 
 ## What it leaves alone
 

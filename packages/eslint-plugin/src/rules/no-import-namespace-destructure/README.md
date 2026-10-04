@@ -59,6 +59,16 @@ const run = (namespace: { alpha: string }) => {
 
 None.
 
+## What it leaves alone
+
+Only an object pattern declared straight off the namespace binding is reported, with `const`, `let`
+or `var`, exported or not. These pass:
+
+- an array pattern, `const [alpha] = namespace`
+- a member of the namespace, `const { alpha } = namespace.nested`
+- an alias, `const alias = namespace` and then `const { alpha } = alias`
+- the default import of `import defaultExport, * as namespace from 'mod'`
+
 ## Why there is no autofix
 
 Turning `const { alpha } = namespace` into `import { alpha } from 'mod'` means editing a statement

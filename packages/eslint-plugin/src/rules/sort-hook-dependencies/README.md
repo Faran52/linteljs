@@ -60,19 +60,26 @@ useSomethingElse(() => {}, [bravo, alpha]);
 
 ## Options
 
-```jsonc
+### `order`
+
+`"asc"` or `"desc"`. Defaults to `"asc"`.
+
+The comparison is natural and puts case second: `[alpha, Bravo]` is sorted, and so is
+`[alpha, Alpha, bravo, Bravo]`.
+
+### `hooks`
+
+The call names to check, matched exactly: an array of strings, at least one, no duplicates. Defaults
+to `["useEffect", "useCallback", "useMemo"]`. Setting it replaces the defaults rather than adding to
+them, so list every hook you want checked.
+
+```js
 {
-  "@linteljs/sort-hook-dependencies": ["error", {
-    "order": "asc",
-    "hooks": ["useEffect", "useCallback", "useMemo"]
-  }]
+  rules: {
+    '@linteljs/sort-hook-dependencies': ['error', { order: 'desc', hooks: ['useEffect', 'useLayoutEffect'] }],
+  },
 }
 ```
-
-- `order`: `"asc"` or `"desc"`, `"asc"` by default.
-- `hooks`: array of strings, at least one, no duplicates. Defaults to
-  `["useEffect", "useCallback", "useMemo"]`. These are the call names to check, matched exactly.
-  Setting it replaces the defaults rather than adding to them, so list every hook you want checked.
 
 ## What it leaves alone
 

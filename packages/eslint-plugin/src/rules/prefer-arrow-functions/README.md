@@ -12,7 +12,7 @@ explicit `return`.
 
 The second half of the title is the important half. A conversion that would change what the program
 does is not offered, and the list of those cases is long and specific. Read
-[What it declines to convert](#what-it-leaves-alone) before wondering why a particular
+[What it leaves alone](#what-it-leaves-alone) before wondering why a particular
 function was left alone.
 
 ## Examples of incorrect code for this rule
@@ -61,16 +61,20 @@ notify();
 
 ## Options
 
-```jsonc
+### `forceHoisted`
+
+Whether a function used above its own declaration is converted anyway. Defaults to `false`. When
+`true`, it is reported under the ordinary message with the ordinary fix. The output can throw
+`ReferenceError`, which is the whole reason it is off by default. Read [Hoisting](#hoisting) before
+turning it on.
+
+```js
 {
-  "@linteljs/prefer-arrow-functions": ["error", { "forceHoisted": false }]
+  rules: {
+    '@linteljs/prefer-arrow-functions': ['error', { forceHoisted: true }],
+  },
 }
 ```
-
-- `forceHoisted`: boolean, `false` by default. When `true`, a function used above its own
-  declaration is converted anyway, under the ordinary message and with the ordinary fix. The output
-  can throw `ReferenceError`, which is the whole reason it is off by default. Read
-  [Hoisting](#hoisting) before turning it on.
 
 ## What it leaves alone
 
@@ -154,7 +158,14 @@ Also left alone, for the same reason in each case:
   a statement of its own and the export would have to be rewritten to name it, which is two edits to
   the module rather than one to the function. The anonymous form, `export default function () {}`,
   has no name to keep and does convert.
+- a class method or constructor. An object method converts, `send() {}` becoming `send: () => {}`.
 - a getter or setter
+- a function that reads `super` or `new.target`, neither of which an arrow has of its own
+- a function expression anywhere but a variable initialiser, an assignment, a call argument, an
+  array element, a spread, a `return`, an object property, a JSX expression, a
+  default export or a statement of its own. Elsewhere (`fn as Handler`, `fn satisfies Handler`,
+  `void`, `await`, `!`, an operand, a tagged template) a block-bodied arrow needs parentheses the fix
+  does not write, so the rule declines rather than guess.
 - a declaration whose name is bound twice, which includes an overload implementation. In a function
   body or a script, `function x() {}` is var-scoped and may be declared again. Two `const x` in one
   scope is a syntax error, so neither declaration converts.
@@ -167,8 +178,8 @@ Also left alone, for the same reason in each case:
   Only a non-strict script reaches this: a module and a `.ts` file are both strict, where the input
   is already a syntax error.
 
-A statement carrying a comment inside the range the fix would rewrite is reported without a fix,
-since the rebuilt arrow has nowhere to put it.
+A function with a comment outside its body, among the parameters for instance, is reported without
+a fix, since the arrow is rebuilt from the parameter and body text and has nowhere to put it.
 
 The explicit-return half leaves an arrow alone when it is a property value inside `stylex.create()`.
 StyleX compiles that call at build time and takes a dynamic style only as `(width) => ({ width })`,

@@ -84,14 +84,18 @@ const handover = async () => {
 
 ## Options
 
-```jsonc
+### `strict`
+
+Whether the exemptions in the Notes are dropped, all but the top level. Defaults to `false`. When
+`true`, the handover to `prefer-try-catch` goes too, so the two rules deliberately overlap.
+
+```js
 {
-  "@linteljs/prefer-await-to-then": ["error", { "strict": false }]
+  rules: {
+    '@linteljs/prefer-await-to-then': ['error', { strict: true }],
+  },
 }
 ```
-
-- `strict`: boolean, `false` by default. When `true`, every exemption in the Notes but the top level
-  is dropped, including the handover to `prefer-try-catch`, so the two rules deliberately overlap.
 
 ## Why there is no autofix
 
@@ -107,7 +111,8 @@ Exempt at the default setting, and the first under `strict: true` too:
   is a scope of its own and reports
 - anywhere under a `yield` or an `await`, which is already the shape being asked for
 - inside a constructor, which cannot be async
-- a value returned from an async function, so the caller's `await` settles it
+- a value returned from an async function, so the caller's `await` settles it; an async arrow's
+  expression body, `async () => promise.then(parse)`, counts as returned
 
 The second is the whole subtree, not the awaited value alone. In
 `await Promise.all(items.map((item) => item.load().then(parse)))` the chain is two callbacks down
@@ -118,4 +123,5 @@ An `await` and an async return are where `prefer-try-catch` picks up. With the d
 report the same line. Under `strict: true` they do, which is the point of the option.
 
 A computed access is not a promise method. In `promise[then](parse)` the property is an identifier
-named `then`, but it is a variable holding whatever it holds, so nothing is reported.
+named `then`, but it is a variable holding whatever it holds, so nothing is reported. The string
+form, `promise['then'](parse)`, is computed too and is not reported either.

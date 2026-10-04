@@ -99,6 +99,9 @@ access would quietly mean something else.
 A reach with a comment inside it, such as `React./* why */useState`, reports without a fix too: the
 rewrite would drop the comment.
 
+In a Svelte component a reach inside a `<script>` takes its import in that script. A reach in the
+markup reports without a fix, since there is no script there to take one.
+
 ### When not to use it
 
 A codebase that prefers `React.FC` and `React.ReactNode` as a house style. This rule is off in
