@@ -37,7 +37,11 @@ export const LANGUAGE_NAMES: Record<Language, LanguageName> = {
 export const LOOKUP_TAGS = [
   '// The tag, then each shorter prefix of it: `zh-TW-x-hk` reads as `zh-TW`, then `zh`.',
   'export const lookupTags = (tag: string): string[] => {',
-  '  const subtags = tag.split(\'-\');',
+  '  // iOS names Chinese by script, `zh-Hans-CN`: the script stands for the region the codes carry.',
+  '  const subtags = tag',
+  '    .replace(/^zh-hans\\b/iu, \'zh-CN\')',
+  '    .replace(/^zh-hant\\b/iu, \'zh-TW\')',
+  '    .split(\'-\');',
   '',
   '  return subtags',
   '    .map((_subtag, index) => {',

@@ -164,6 +164,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A device that names Chinese by script, as iOS does with `zh-Hans-CN` and `zh-Hant-TW`, opens a project in `zh-CN`
+  or `zh-TW` rather than in English, on every target. A React Native project declares Chinese to iOS as `zh-Hans`
+  and `zh-Hant`, the designators iOS matches, and keeps `zh-CN` and `zh-TW` for Android.
 - The language label in a React Native project's header stays on one line on a narrow screen, where it broke
   inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
 - A React Native project with a right-to-left language lays out right to left on a device in that language, in

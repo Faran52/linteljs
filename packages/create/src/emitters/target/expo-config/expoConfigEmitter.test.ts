@@ -42,7 +42,28 @@ describe('emitExpoConfig', () => {
 
     const expected = {
       expo: {
-        plugins: ['expo-router', ['expo-localization', { supportedLocales: ['en', 'ar'] }]],
+        plugins: ['expo-router', ['expo-localization', {
+          supportedLocales: {
+            ios: ['en', 'ar'],
+            android: ['en', 'ar'],
+          },
+        }]],
+      },
+    };
+    expect(parsed).toMatchObject(expected);
+  });
+
+  it('declares Chinese to iOS by its script', () => {
+    const parsed: unknown = JSON.parse(emitExpoConfig('demo', ['zh-CN', 'zh-TW']));
+
+    const expected = {
+      expo: {
+        plugins: ['expo-router', ['expo-localization', {
+          supportedLocales: {
+            ios: ['zh-Hans', 'zh-Hant'],
+            android: ['zh-CN', 'zh-TW'],
+          },
+        }]],
       },
     };
     expect(parsed).toMatchObject(expected);

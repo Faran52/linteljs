@@ -12,10 +12,20 @@ import { targetFor } from '@targets';
 import { LANGUAGE_NAMES } from '../../libraries/i18n-config/constants';
 import { emitted } from '../../utils/artifactUtils';
 
+import { IOS_LOCALES } from './constants';
+
 // No icons: the starter ships no images, and a path to a missing file fails the first `expo export`.
 // Declared locales are what iOS reports the device's language against, and what each system's per-app setting lists.
 export const emitExpoConfig = (name: string, locales: Language[]): string => {
-  const localization = locales.length === 0 ? [] : [['expo-localization', { supportedLocales: locales }]];
+  const ios = locales
+    .map((language) => {
+      return IOS_LOCALES[language] ?? language;
+    });
+  const supportedLocales = {
+    ios,
+    android: locales,
+  };
+  const localization = locales.length === 0 ? [] : [['expo-localization', { supportedLocales }]];
   // SDK 57's native RTL switch, read by Expo Go and by the plugin in a build; both lay out by the device's language.
   const rtl = locales
     .some((language) => {

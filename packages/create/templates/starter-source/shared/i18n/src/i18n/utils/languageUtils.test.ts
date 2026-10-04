@@ -1,4 +1,8 @@
-import { fallbackLanguage, languages } from '../config';
+import {
+  fallbackLanguage,
+  languages,
+  lookupTags,
+} from '../config';
 
 import {
   directionOf,
@@ -69,6 +73,14 @@ describe('languageUtils', () => {
     ]);
 
     expect(language).toBe(base);
+  });
+
+  it('reads a Chinese script tag as the region the language codes carry', () => {
+    const simplified = lookupTags('zh-Hans-CN');
+    const traditional = lookupTags('zh-Hant-HK');
+
+    expect(simplified).toContain('zh-CN');
+    expect(traditional).toContain('zh-TW');
   });
 
   it('falls back when neither the stored choice nor the reader is offered', () => {
