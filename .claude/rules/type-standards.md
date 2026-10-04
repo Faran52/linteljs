@@ -11,8 +11,6 @@ copy. Below is only where this workspace differs.
 ## Deviations
 
 - **Components.** That section describes an application; these are three libraries. The rest applies unchanged.
-- **`Partial<T>`** is fine where it is the real shape (`optionsOf<T>` before schema defaults apply, a rule record
-  ESLint types that way), never to paper over a type you have not built.
 - **`node:fs/promises` over sync `node:fs`** wherever the caller is or can be async. Sync stays only where the
   contract is synchronous: a resolver feeding `spawnSync`, ESLint layer construction, the spawned gate scripts.
 - **`unknown`** only where the standard grants it: a narrowing guard's input (and the guard type a helper such as
