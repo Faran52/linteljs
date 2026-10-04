@@ -1,4 +1,5 @@
 // `.mjs`: Stryker 10's config lookup carries no `.ts`, so a `stryker.config.ts` is silently not found.
+import { STRYKER_BASE, strykerPart } from '../../stryker.parts.mjs';
 
 const MUTATED = [
   'src/rules/**/*.ts',
@@ -6,7 +7,6 @@ const MUTATED = [
   'src/plugin.ts',
 ];
 
-// CI splits the run by `STRYKER_PART` into parallel jobs. A file goes to the first part matching it.
 const PARTS = {
   'rules-a': ['src/rules/{prefer-arrow-functions,react-no-global-namespace,interface-order}/**/*.ts'],
   'rules-b': ['src/rules/chain-call-newline/**/*.ts', 'src/utils/**/*.ts'],
@@ -16,36 +16,14 @@ const PARTS = {
   ],
   'rest': MUTATED,
 };
-const PART_NAMES = Object.keys(PARTS);
-
-const part = process.env.STRYKER_PART;
-
-if (part && !PART_NAMES.includes(part)) {
-  throw new Error(`STRYKER_PART "${part}" is not one of ${PART_NAMES.join(', ')}.`);
-}
-
-const partGlobs = part ? PARTS[part] : MUTATED;
-const earlierParts = [];
-
-for (const name of PART_NAMES.slice(0, part ? PART_NAMES.indexOf(part) : 0)) {
-  for (const glob of PARTS[name]) {
-    earlierParts.push(`!${glob}`);
-  }
-}
-
-const incrementalSuffix = part ? `-${part}` : '';
+const {
+  globs,
+  excluded,
+  incrementalFile,
+} = strykerPart(PARTS, MUTATED);
 
 const config = {
-  packageManager: 'pnpm',
-  testRunner: 'vitest',
-  // pnpm's strict layout keeps the runner out of Stryker's own node_modules, so scanning misses it.
-  plugins: ['@stryker-mutator/vitest-runner'],
-  reporters: [
-    'html',
-    'json',
-    'clear-text',
-    'progress',
-  ],
+  ...STRYKER_BASE,
   // `all`: a rule is built at module load, so per-test attribution scores caught mutants as survivors.
   coverageAnalysis: 'all',
 
@@ -53,10 +31,10 @@ const config = {
   ignorePatterns: ['/scripts/**/*.test.ts'],
 
   mutate: [
-    ...partGlobs,
+    ...globs,
     '!src/**/*.test.ts',
     '!src/rules/index.ts',
-    ...earlierParts,
+    ...excluded,
   ],
 
   // `break` fails the command; `high`/`low` only colour the report.
@@ -70,8 +48,7 @@ const config = {
   timeoutMS: 20000,
   concurrency: 4,
 
-  incremental: true,
-  incrementalFile: `node_modules/.cache/stryker-incremental${incrementalSuffix}.json`,
+  incrementalFile,
 };
 
 export default config;

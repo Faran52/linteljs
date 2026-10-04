@@ -84,4 +84,5 @@ frameworks this workspace does not install and files named `*.test.ts`.
 - Root config: `eslint.config.ts` (the workspace's own lint, built from the layers' source), `vitest.config.ts`
   (one project per package, the coverage thresholds), `tsconfig.json` and `tsconfig.root.json`,
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,
-  `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`).
+  `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
+  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split).
