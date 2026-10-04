@@ -481,8 +481,8 @@ describe('targetCases', () => {
         });
       const widest = Math.max(...counts);
       const others = pairedCases(target)
-        .filter(({ answers }) => {
-          return answers.packageManager !== 'pnpm';
+        .filter(({ answers, variant }) => {
+          return answers.packageManager !== 'pnpm' && variant === undefined;
         });
       const managers = others
         .map(({ answers }) => {
@@ -526,12 +526,39 @@ describe('targetCases', () => {
       });
     const expected = [
       ...browsed,
+      'react npm browser',
       'react pnpm no-install',
       'react pnpm skip-fix',
     ];
     const sorted = expected.toSorted(byLabel);
 
     expect(variants).toEqual(sorted);
+  });
+
+  it('serves the widest framework-mode case, languages and every library on, in the browser on npm', () => {
+    const framework = pairedCases('react')
+      .filter(({ answers }) => {
+        return answers.router === 'react-router-framework' && answers.packageManager === 'npm';
+      });
+    const shapes = framework
+      .map(({ answers, variant }) => {
+        const shape = {
+          languages: answers.languages,
+          libraries: answers.libraries,
+          variant,
+        };
+
+        return shape;
+      });
+    const [first] = framework;
+    const expected = [{
+      languages: valuesOf(ANSWERS.languages.values),
+      libraries: valuesOf(ANSWERS.libraries.values),
+      variant: 'browser',
+    }];
+
+    expect(shapes).toEqual(expected);
+    expect(first?.label).toMatch(/^react npm .*react-router-framework .*languages .* browser$/u);
   });
 
   it('runs every target on every package manager', () => {

@@ -35,4 +35,13 @@ export const LANGUAGE_PICKER = 'select';
 
 export const OTHER_LANGUAGE = 'option:not([value="en"])';
 
-export const HTML_LANG = /<html[^>]*\slang="(?<lang>[^"]*)"/u;
+export const HTML_TAG = /<html[^>]*>/u;
+
+export const HTML_LANG = /\slang="(?<value>[^"]*)"/u;
+
+export const HTML_DIR = /\sdir="(?<value>[^"]*)"/u;
+
+export const NOT_FOUND_STATUS = 404;
+
+// No starter routes it, so a framework-mode build answers it from its catch-all.
+export const MISSING_ROUTE = '/linteljs-missing-route';

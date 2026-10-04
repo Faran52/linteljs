@@ -987,9 +987,9 @@ webextension popup.
   the recorded answer labels on the About and Version pages, since the generator emits them as facts about the
   project; and the home page, not yet translated.
 - **Direction follows the language.** `<html lang dir>` is set on init and on every change, so Arabic turns the
-  page `rtl`; the starter CSS uses logical properties only. React Router framework mode renders `lang="en"
-  dir="ltr"` on the server, which has neither storage nor the browser, and detects in a `Layout` effect after
-  hydration, so the first client render matches the server's.
+  page `rtl`; the starter CSS uses logical properties only. React Router framework mode detects in the root
+  `loader`, from the stored cookie and then `Accept-Language`, so the server renders `<html lang dir>` in the
+  reader's language and the browser starts in the language the server rendered.
 - **Next translates on the client only.** No next-intl plugin, no `request.ts` and no locale segment in the URL:
   the language is the reader's choice, not a route. The root layout renders `<html lang="en" dir="ltr">`, and
   `I18nProvider` reads the language through `useSyncExternalStore` with an English server snapshot, so hydration
@@ -1511,7 +1511,7 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer that changes emitted code is covered, in 184 cases rather than the whole product. `matrix.ts`
+Every answer that changes emitted code is covered, in 185 cases rather than the whole product. `matrix.ts`
 enumerates them; nothing is listed by hand. Per target, every legal combination of the varying axes is enumerated
 under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 144
 cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
@@ -1521,13 +1521,15 @@ loosens rules over the same files. `languages` is none or all six, since a proje
 one generated before it and must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
 an exact-tag match.
 
-On top of the pairs, 40 more. Per target, the first case answering the most (every library, every optional answer
+On top of the pairs, 41 more. Per target, the first case answering the most (every library, every optional answer
 the target offers) runs once on each other manager, npm, Yarn 4 and bun: 30 smoke cases. A smoke is the whole case,
 so it holds each manager's config files, the husky install script under the lifecycle husky documents for it
 (`prepare` for npm, pnpm and bun, `postinstall` for Yarn 4), the layout Metro has to read through symlinks, npm's
 `npm ls --all`, and `INSTALL_NOISE` at the same strictness as pnpm. On React, the same case runs again with
 `--skip fix` and with `--no-install`, after which the harness installs and runs `check` itself. On every target a
-browser serves, the same case runs a browser pass after `check`: 8 cases.
+browser serves, the same case runs a browser pass after `check`: 8 cases. React's widest case takes the
+declarative router, so the widest React Router framework-mode case runs a ninth browser pass, on npm, the one
+server-rendered React.
 
 An install is around 60% of a case, 19.7 to 30.5 seconds of a 39 to 52 second one, so the full product is days of
 machine time and splitting it across machines divides that rather than reducing it. Installing once per distinct
@@ -1565,7 +1567,10 @@ same-origin link the page holds, each loaded fresh so the server answers it too.
 error, a status other than 200 or a page without an `h1` fails the case. `channel: 'chrome'` rather than a
 downloaded browser, because the CDN playwright downloads from can be blocked where npm is not. The extension and
 React Native have no pass: an extension's pages are loaded by the browser from `dist/`, not served, and React
-Native's web build is not what ships. Measured: 1.8 s on Next, 3.7 s on React, 5.6 s on Angular, on top of a 50 to 60 second case.
+Native's web build is not what ships. On a server-rendered target with `languages`, the pass picks a language in
+the page and holds that the raw HTML of the next route already carries its `lang` and `dir`. Framework mode also
+requests a path no route claims and holds that its catch-all answers 404 with an `h1`, in the chosen `lang` and
+`dir`. Measured: 1.8 s on Next, 3.7 s on React, 5.6 s on Angular, on top of a 50 to 60 second case.
 
 ### One registry on a fixed port
 
@@ -1584,7 +1589,7 @@ names one manager, and the suite runs its cases on whatever binary of it is on P
 manager. Unset, a run takes every manager whose binary answers with a version this suite would record as that
 manager.
 
-The jobs are not even and do not need to be: pnpm carries 154 cases and npm, Yarn 4 and bun 10 each.
+The jobs are not even and do not need to be: pnpm carries 154 cases, npm 11, and Yarn 4 and bun 10 each.
 Measured on one machine at concurrency two, a 16-case subset (12 pnpm, 4 smokes) took 980 seconds, about 61
 seconds a case; a React Native smoke on npm took 197.
 

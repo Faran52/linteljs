@@ -8,14 +8,19 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, type Page } from 'playwright-core';
 
 import { parsePackageJson } from '@emitters';
+import { LANGUAGE_NAMES } from '@emitters/libraries/i18n-config/constants';
 
 import { launcherFreeEnv } from '../utils/processUtils';
 
 import {
   BROWSER_OPTIONS,
   HEADING_TIMEOUT,
+  HTML_DIR,
   HTML_LANG,
+  HTML_TAG,
   LANGUAGE_PICKER,
+  MISSING_ROUTE,
+  NOT_FOUND_STATUS,
   OK_STATUS,
   OTHER_LANGUAGE,
   POLL_INTERVAL,
@@ -27,7 +32,7 @@ import {
   VIEW_CONTROLS,
 } from './constants';
 
-import type { Answers } from '@config/types';
+import type { Answers, Language } from '@config/types';
 
 const freePort = async (): Promise<string> => {
   return new Promise((settle) => {
@@ -148,7 +153,12 @@ const clickThrough = async (page: Page, origin: string): Promise<string[]> => {
 };
 
 // A language chosen in the page reaches the server, so the raw HTML of another route already carries it.
-const languageProblems = async (page: Page, origin: string, route: string): Promise<string[]> => {
+const languageProblems = async (
+  page: Page,
+  origin: string,
+  route: string,
+  hasCatchAll: boolean,
+): Promise<string[]> => {
   await page.goto(origin, { waitUntil: 'networkidle' });
 
   const picker = page
@@ -166,21 +176,46 @@ const languageProblems = async (page: Page, origin: string, route: string): Prom
     .locator(`html[lang="${language}"]`)
     .waitFor({ state: 'attached', timeout: HEADING_TIMEOUT });
 
-  const response = await page.request.get(`${origin}${route}`);
-  const html = await response.text();
-  const served = HTML_LANG.exec(html)?.groups?.['lang'];
+  const { dir } = LANGUAGE_NAMES[language as Language];
+  const routes = hasCatchAll ? [route, MISSING_ROUTE] : [route];
+  const problems: string[] = [];
 
-  if (served === language) {
-    return [];
+  for (const path of routes) {
+    const response = await page.request.get(`${origin}${path}`);
+    const html = await response.text();
+    const [tag = ''] = HTML_TAG.exec(html) ?? [];
+    const lang = HTML_LANG.exec(tag)?.groups?.['value'];
+    const dirServed = HTML_DIR.exec(tag)?.groups?.['value'];
+    const served = `${String(lang)} ${String(dirServed)}`;
+
+    if (served !== `${language} ${dir}`) {
+      problems.push(`${path}: served lang and dir ${served} after choosing ${language}`);
+    }
   }
 
-  const wrong = [`${route}: served lang ${String(served)} after choosing ${language}`];
+  return problems;
+};
 
-  return wrong;
+// A path no route claims reaches the catch-all, which answers 404 with its own heading.
+const notFoundProblems = async (page: Page, origin: string): Promise<string[]> => {
+  const response = await page.request.get(`${origin}${MISSING_ROUTE}`);
+  const status = response.status();
+  const html = await response.text();
+  const problems: string[] = [];
+
+  if (status !== NOT_FOUND_STATUS) {
+    problems.push(`${MISSING_ROUTE}: status ${String(status)}`);
+  }
+
+  if (!html.includes('<h1')) {
+    problems.push(`${MISSING_ROUTE}: no h1`);
+  }
+
+  return problems;
 };
 
 // Every route the starter links from its first page, each loaded fresh so the server answers it too.
-const crawl = async (origin: string, servesLanguage: boolean): Promise<string[]> => {
+const crawl = async (origin: string, servesLanguage: boolean, hasCatchAll: boolean): Promise<string[]> => {
   const browser = await chromium.launch(BROWSER_OPTIONS);
   const problems: string[] = [];
 
@@ -235,9 +270,15 @@ const crawl = async (origin: string, servesLanguage: boolean): Promise<string[]>
     const [, route = '/'] = routes;
 
     if (servesLanguage) {
-      const languageProblemsSeen = await languageProblems(page, origin, route);
+      const languageProblemsSeen = await languageProblems(page, origin, route, hasCatchAll);
 
       problems.push(...languageProblemsSeen);
+    }
+
+    if (hasCatchAll) {
+      const notFoundSeen = await notFoundProblems(page, origin);
+
+      problems.push(...notFoundSeen);
     }
   }
   finally {
@@ -249,8 +290,8 @@ const crawl = async (origin: string, servesLanguage: boolean): Promise<string[]>
 
 export const browserProblems = async (chosen: Answers, project: string): Promise<string[]> => {
   const pm = chosen.packageManager;
-  const servesLanguage = chosen.languages !== undefined
-    && (SERVER_RENDERED.has(chosen.target) || chosen.router === 'react-router-framework');
+  const hasCatchAll = chosen.router === 'react-router-framework';
+  const servesLanguage = chosen.languages !== undefined && (SERVER_RENDERED.has(chosen.target) || hasCatchAll);
   const port = await freePort();
   const origin = `http://localhost:${port}`;
   const args = serveArgs(project, port);
@@ -277,7 +318,7 @@ export const browserProblems = async (chosen: Answers, project: string): Promise
       return noServer;
     }
 
-    const problems = await crawl(origin, servesLanguage);
+    const problems = await crawl(origin, servesLanguage, hasCatchAll);
 
     return problems;
   }

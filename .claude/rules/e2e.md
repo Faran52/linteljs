@@ -7,7 +7,7 @@ paths:
 
 # The end-to-end suite
 
-`pnpm --filter @linteljs/create test:e2e` runs 214 cases, each a real generate, install and `check`, and is outside
+`pnpm --filter @linteljs/create test:e2e` runs 185 cases, each a real generate, install and `check`, and is outside
 `pnpm check` because every case hits the network. `docs/DESIGN.md`, "The end-to-end matrix", carries the why of
 everything below.
 
@@ -19,14 +19,15 @@ everything below.
   `pnpm lint:starters` installs (`STARTER_CASES`) and holds that they write every starter text; it runs in the
   default suite, and the root script lints those cases outside this harness.
 - **Every pair, not every combination, under pnpm**: per target, a greedy cover keeps enough pnpm combinations
-  that every pair of answer values appears once (174), each library its own on/off axis, `agents`, `plugins` and
+  that every pair of answer values appears once (144), each library its own on/off axis, `agents`, `plugins` and
   `surfaces` at their full value, `typeSafety` strict. `matrix.test.ts` holds that no reachable pair is lost and
   that each past defect's combination survives.
 - **One smoke per other manager**: each target's widest case runs once on npm, Yarn 4 and bun (30), so every
   manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case.
 - **Browser pass**: on the eight served targets the widest pnpm case also serves its build, loads every linked
   route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200 or a
-  missing `h1`. Skipped on webextension (its pages are loaded from `dist/`, not served) and React Native (its web
+  missing `h1`. A ninth runs the widest React Router framework-mode case on npm, and adds a 404 from its
+  catch-all. With `languages`, a server-rendered pass holds that the raw HTML carries the chosen `lang` and `dir`. Skipped on webextension (its pages are loaded from `dist/`, not served) and React Native (its web
   build is not what ships).
 - **It installs the checkout, never npm**: a local Verdaccio on one fixed port publishes the three packages and
   installs the CLI from them. `E2E_UPSTREAM` replaces npmjs as its uplink; start such a run on an empty

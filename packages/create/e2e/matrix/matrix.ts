@@ -387,7 +387,31 @@ export const targetCases = (target: TargetId): E2eCase[] => {
     .flatMap((item) => {
       return fullCases(target, item);
     });
-  const cases = [...paired, ...extra];
+  // Framework mode server-renders where the widest React case does not, so it gets a browser pass of its own.
+  const framework = every
+    .filter(({ answers }) => {
+      return answers.router === 'react-router-framework';
+    })
+    .toSorted(byWidth)
+    .slice(0, 1)
+    .map(({ answers }): E2eCase => {
+      const onNpm = asCase({
+        ...answers,
+        packageManager: 'npm',
+      });
+      const browsed: E2eCase = {
+        ...onNpm,
+        label: `${onNpm.label} browser`,
+        variant: 'browser',
+      };
+
+      return browsed;
+    });
+  const cases = [
+    ...paired,
+    ...extra,
+    ...framework,
+  ];
 
   return cases;
 };
