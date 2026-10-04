@@ -41,9 +41,10 @@ interface TokenizerState {
   tokens: string[];
 }
 
+// `undefined` commands mean the command could not be read.
 interface NestedStep {
   kind: 'nested';
-  commands: ParsedCommand[];
+  commands: ParsedCommand[] | undefined;
 }
 
 interface NextStep {
@@ -57,12 +58,9 @@ interface NoWrapperStep {
   kind: 'none';
 }
 
-interface UnreadableStep {
-  kind: 'unreadable';
-}
+type Step = NestedStep | NextStep | NoWrapperStep;
 
-type Step = NestedStep | NextStep | NoWrapperStep | UnreadableStep;
-
+// Shells and wrappers nested past this are not read.
 const MAX_DEPTH = 8;
 
 // Stands in for the output of a bash command substitution inside a token.
@@ -84,7 +82,14 @@ const RESERVED = new Set([
   'while',
   'until',
 ]);
-const UNREADABLE: Step = { kind: 'unreadable' };
+const UNREADABLE: Step = {
+  kind: 'nested',
+  commands: undefined,
+};
+const NO_COMMAND: Step = {
+  kind: 'nested',
+  commands: [],
+};
 const NO_WRAPPER: Step = { kind: 'none' };
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
@@ -98,33 +103,43 @@ export const commandName = (token: string): string => {
 };
 
 export const skipOptions = (tokens: string[], start: number, valued: Set<string>): number | undefined => {
-  let index = start;
-  let option = tokens[index];
+  let operand = false;
 
-  while (option?.startsWith('-') === true) {
+  for (const [offset, option] of tokens
+    .slice(start)
+    .entries()) {
+    if (operand) {
+      operand = false;
+      continue;
+    }
+
     if (option === '--') {
-      return index + 1;
+      return start + offset + 1;
     }
 
-    if (valued.has(option)) {
-      if (index + 1 >= tokens.length) {
-        return undefined;
-      }
-
-      index += 2;
-    }
-    else {
-      index += 1;
+    if (!option.startsWith('-')) {
+      return start + offset;
     }
 
-    option = tokens[index];
+    operand = valued.has(option);
   }
 
-  return index;
+  return operand ? undefined : tokens.length;
 };
 
 const isAssignment = (token: string): boolean => {
   return /^[A-Za-z_]\w*=/u.test(token);
+};
+
+// The first index from `start` whose token is not skipped, or the end.
+const indexAfter = (tokens: string[], start: number, skipped: (token: string) => boolean): number => {
+  const offset = tokens
+    .slice(start)
+    .findIndex((token) => {
+      return !skipped(token);
+    });
+
+  return offset === -1 ? tokens.length : start + offset;
 };
 
 const emitToken = (state: TokenizerState): void => {
@@ -150,9 +165,17 @@ const emitSegment = (state: TokenizerState): void => {
   state.opaque = false;
 };
 
-// A PowerShell group is read as the commands inside it, and the command it sits in cannot be vouched for.
-const pushGroup = (state: TokenizerState, group: Group): void => {
-  state.groups.push(group);
+const pushGroup = (state: TokenizerState, closer: string, opaque: boolean): void => {
+  state.groups.push({
+    active: state.active,
+    body: state.body,
+    closer,
+    opaque,
+    quote: state.quote,
+    token: state.token,
+    tokens: state.tokens,
+  });
+
   state.active = false;
   state.body = undefined;
   state.opaque = false;
@@ -161,18 +184,10 @@ const pushGroup = (state: TokenizerState, group: Group): void => {
   state.tokens = [];
 };
 
-const openGroup = (state: TokenizerState): void => {
+// A PowerShell group is read as the commands inside it, and the command it sits in cannot be vouched for.
+const openGroup = (state: TokenizerState, closer: string): void => {
   emitToken(state);
-
-  pushGroup(state, {
-    active: false,
-    body: undefined,
-    closer: '',
-    opaque: true,
-    quote: '',
-    token: '',
-    tokens: state.tokens,
-  });
+  pushGroup(state, closer, true);
 };
 
 /**
@@ -182,16 +197,14 @@ const openGroup = (state: TokenizerState): void => {
  */
 const openSubstitution = (state: TokenizerState, closer: string): void => {
   const inToken = state.body === undefined;
+  const opaque = state.opaque || (inToken && state.quote === '');
 
-  pushGroup(state, {
-    active: inToken,
-    body: state.body,
-    closer,
-    opaque: state.opaque || (inToken && state.quote === ''),
-    quote: state.quote,
-    token: inToken ? state.token + COMPUTED : '',
-    tokens: state.tokens,
-  });
+  if (inToken) {
+    state.token += COMPUTED;
+    state.active = true;
+  }
+
+  pushGroup(state, closer, opaque);
 };
 
 // Opens the substitution at `$(` or a backtick, and answers the last character it consumed.
@@ -204,26 +217,19 @@ const substitute = (source: string, index: number, state: TokenizerState): numbe
 
 const openSubshell = (state: TokenizerState): void => {
   emitToken(state);
-
-  pushGroup(state, {
-    active: false,
-    body: undefined,
-    closer: ')',
-    opaque: state.opaque,
-    quote: '',
-    token: '',
-    tokens: state.tokens,
-  });
+  pushGroup(state, ')', state.opaque);
 };
 
-const closeGroup = (state: TokenizerState): boolean => {
-  emitSegment(state);
-  const outer = state.groups.pop();
+// Closes the innermost group, if `character` is what closes it.
+const closeGroup = (state: TokenizerState, character: string): boolean => {
+  const outer = state.groups.at(-1);
 
-  if (outer === undefined) {
+  if (outer?.closer !== character) {
     return false;
   }
 
+  emitSegment(state);
+  state.groups.pop();
   state.active = outer.active;
   state.body = outer.body;
   state.opaque = outer.opaque;
@@ -237,6 +243,7 @@ const escapeCharacter = (state: TokenizerState): string => {
   return state.dialect === 'bash' ? '\\' : '`';
 };
 
+// An escape that ends the source reads as nothing, and leaves the quote open.
 const readQuotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
   const character = source.charAt(index);
 
@@ -251,11 +258,6 @@ const readQuotedCharacter = (source: string, index: number, state: TokenizerStat
   }
   else if (character === escapeCharacter(state) && state.quote === '"') {
     index += 1;
-
-    if (index >= source.length) {
-      return undefined;
-    }
-
     state.token += source.charAt(index);
   }
   else if (state.quote === '"' && (source.startsWith('$(', index) || character === '`')) {
@@ -293,33 +295,26 @@ const readEscaped = (source: string, index: number, state: TokenizerState): numb
 
 const POWERSHELL_GROUP = /^(?:<#|@["'({]|\$\(|[(){}])/u;
 
+// A here-string, a block comment and a closer that closes nothing open are not read.
 const readPowerShellGroup = (source: string, index: number, state: TokenizerState): number | undefined => {
   const character = source.charAt(index);
   const pair = source.slice(index, index + 2);
+  const opener = /^(?:[$@]\(|@\{|[({])/u.exec(pair)?.[0];
 
-  if (pair === '<#' || pair === '@"' || pair === "@'") {
-    return undefined;
+  if (opener !== undefined) {
+    openGroup(state, opener.endsWith('(') ? ')' : '}');
+    return index + opener.length - 1;
   }
 
-  if (pair === '$(' || pair === '@(' || pair === '@{') {
-    openGroup(state);
-    return index + 1;
-  }
-
-  if (character === '(' || character === '{') {
-    openGroup(state);
-    return index;
-  }
-
-  return closeGroup(state) ? index : undefined;
+  return closeGroup(state, character) ? index : undefined;
 };
 
 const readPlainCharacter = (source: string, index: number, state: TokenizerState): number => {
   const character = source.charAt(index);
 
+  // The line break that ends a comment ends its command.
   if (character === '#' && !state.active) {
     const lineEnd = source.indexOf('\n', index);
-    emitSegment(state);
     return lineEnd === -1 ? source.length : lineEnd - 1;
   }
 
@@ -332,7 +327,6 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
   }
   else if (';|&'.includes(character)) {
     emitSegment(state);
-    return source[index + 1] === character ? index + 1 : index;
   }
   else {
     state.token += character;
@@ -389,8 +383,7 @@ const readBashGroup = (source: string, index: number, state: TokenizerState): nu
     return readHeredoc(source, index, state);
   }
 
-  if (character === state.groups.at(-1)?.closer) {
-    closeGroup(state);
+  if (closeGroup(state, character)) {
     return index;
   }
 
@@ -431,7 +424,6 @@ const readUnquotedCharacter = (source: string, index: number, state: TokenizerSt
 
   if (character === '"' || character === "'") {
     state.quote = character;
-    state.active = true;
     return index;
   }
 
@@ -449,7 +441,7 @@ const readBody = (source: string, index: number, state: TokenizerState, body: He
     const end = lineEnd === -1 ? source.length : lineEnd;
     const line = source
       .slice(index, end)
-      .replace(body.strip ? /^\t*/u : /^/u, '')
+      .replace(body.strip ? /^\t+/u : /^/u, '')
       .replace(/\r$/u, '');
 
     if (line === body.delimiter) {
@@ -485,6 +477,7 @@ const readCharacter = (source: string, index: number, state: TokenizerState): nu
     : readQuotedCharacter(source, index, state);
 };
 
+// Each read answers the last character it consumed. The walk visits each index once, so it always ends.
 const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => {
   const state: TokenizerState = {
     active: false,
@@ -499,16 +492,20 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
     tokens: [],
   };
 
-  let index = 0;
+  let resume = 0;
 
-  while (index < source.length) {
-    const next = readCharacter(source, index, state);
+  for (const index of source
+    .split('')
+    .keys()) {
+    if (index >= resume) {
+      const consumed = readCharacter(source, index, state);
 
-    if (next === undefined) {
-      return undefined;
+      if (consumed === undefined) {
+        return undefined;
+      }
+
+      resume = consumed + 1;
     }
-
-    index = next + 1;
   }
 
   if (state.quote !== '' || state.groups.length > 0) {
@@ -519,16 +516,6 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
   return state.segments;
 };
 
-const skipAssignments = (tokens: string[], start: number): number => {
-  let index = start;
-
-  while (isAssignment(tokens[index] ?? '')) {
-    index += 1;
-  }
-
-  return index;
-};
-
 const next = (index: number): Step => {
   const step: Step = {
     kind: 'next',
@@ -536,10 +523,6 @@ const next = (index: number): Step => {
   };
 
   return step;
-};
-
-const valuedOperand = (tokens: string[], index: number): Step => {
-  return index + 1 >= tokens.length ? UNREADABLE : next(index + 2);
 };
 
 // A split string is one command: none at all, or several, is not something env would run as this one.
@@ -555,162 +538,106 @@ const splitEnvArguments = (splitString: string, trailing: string[]): string[] | 
   return splitArguments;
 };
 
-const splitStringOf = (option: string, operand: string | undefined): string | undefined => {
-  if (option === '-S' || option === '--split-string') {
-    return operand;
-  }
-
-  if (option.startsWith('--split-string=')) {
-    return option.slice('--split-string='.length);
-  }
-
-  return option.startsWith('-S') ? option.slice(2) : undefined;
-};
-
-const envOption = (tokens: string[], index: number, option: string): Step => {
-  const valuedOptions = [
-    '-u',
-    '--unset',
-    '-C',
-    '--chdir',
-    '-a',
-    '--argv0',
-  ];
-  const flagOptions = [
-    '-',
-    '-0',
-    '--null',
-    '-i',
-    '--ignore-environment',
-    '-v',
-    '--debug',
-  ];
-
-  if (option === '-P' || valuedOptions.includes(option)) {
-    return valuedOperand(tokens, index);
-  }
-
-  if (option.startsWith('-P') && option.length > 2) {
-    return next(index + 1);
-  }
-
-  if (flagOptions.includes(option)) {
-    return next(index + 1);
-  }
-
-  return UNREADABLE;
-};
-
-// `-S` splits its operand into the command env runs, so the command is read again from the split words.
-const envSplit = (tokens: string[], index: number, option: string, depth: number): Step | undefined => {
-  const separate = option === '-S' || option === '--split-string';
-  const splitString = splitStringOf(option, tokens[index + 1]);
-
-  if (splitString === undefined) {
-    return separate ? UNREADABLE : undefined;
-  }
-
-  const effective = splitEnvArguments(splitString, tokens.slice(index + (separate ? 2 : 1)));
-  return effective === undefined ? UNREADABLE : envWrapper(effective, 0, depth + 1);
-};
-
-const envWrapper = (tokens: string[], start: number, depth: number): Step => {
-  if (depth > MAX_DEPTH) {
-    return UNREADABLE;
-  }
-
-  let index = start;
-  let option = tokens[index];
-
-  while (option !== undefined) {
-    if (option === '--') {
-      index += 1;
-      break;
-    }
-
-    if (isAssignment(option) || !option.startsWith('-')) {
-      break;
-    }
-
-    const split = envSplit(tokens, index, option, depth);
-
-    if (split !== undefined) {
-      return split;
-    }
-
-    const step = envOption(tokens, index, option);
-
-    if (step.kind !== 'next') {
-      return step;
-    }
-
-    index = step.index;
-    option = tokens[index];
-  }
-
+// The split words are read as a command env runs.
+const envCommand = (words: string[]): Step => {
   const step: Step = {
     kind: 'next',
-    index: skipAssignments(tokens, index),
-    tokens,
+    index: 0,
+    tokens: ['env', ...words],
   };
 
   return step;
 };
 
-const commandWrapper = (tokens: string[], start: number): Step => {
-  let index = start;
-  let option = tokens[index];
+const ENV_VALUED = new Set([
+  '-u',
+  '--unset',
+  '-C',
+  '--chdir',
+  '-a',
+  '--argv0',
+  '-P',
+]);
+const ENV_FLAGS = new Set([
+  '-',
+  '-0',
+  '--null',
+  '-i',
+  '--ignore-environment',
+  '-v',
+  '--debug',
+]);
+const JOINED_SPLIT = /^(?:-S|--split-string=)(.*)/su;
 
-  while (option?.startsWith('-') === true) {
-    if (option === '--') {
-      return next(index + 1);
-    }
+// `-S` splits its operand into the command env runs, so that is read again as an env command, one level deeper.
+const envSplit = (tokens: string[], index: number, option: string): Step | undefined => {
+  const separate = option === '-S' || option === '--split-string';
+  const splitString = separate ? tokens[index + 1] : JOINED_SPLIT.exec(option)?.[1];
 
-    // `command -v` looks a name up rather than running it.
-    if (option.includes('v') || option.includes('V')) {
-      const lookup: Step = {
-        kind: 'nested',
-        commands: [],
-      };
-
-      return lookup;
-    }
-
-    index += 1;
-    option = tokens[index];
+  if (splitString === undefined) {
+    return undefined;
   }
 
-  return next(index);
+  const words = splitEnvArguments(splitString, tokens.slice(index + (separate ? 2 : 1)));
+  return words === undefined ? UNREADABLE : envCommand(words);
 };
 
-const execWrapper = (tokens: string[], start: number): Step => {
-  let index = start;
-  let option = tokens[index];
+const isEnvOption = (option: string): boolean => {
+  return ENV_VALUED.has(option) || ENV_FLAGS.has(option) || option.startsWith('-P');
+};
 
-  while (option?.startsWith('-') === true) {
-    if (option === '--') {
-      const commandIndex = skipAssignments(tokens, index + 1);
+// An option env does not know might take an operand, so the command cannot be found.
+const envWrapper = (tokens: string[], start: number): Step => {
+  let operand = false;
 
+  for (const [offset, option] of tokens
+    .slice(start)
+    .entries()) {
+    const index = start + offset;
+
+    if (operand) {
+      operand = false;
+      continue;
+    }
+
+    if (option === '--' || !option.startsWith('-')) {
+      const commandIndex = indexAfter(tokens, option === '--' ? index + 1 : index, isAssignment);
       return next(commandIndex);
     }
 
-    if (option === '-a' || option === '--argv0') {
-      if (index + 1 >= tokens.length) {
-        return UNREADABLE;
-      }
+    const split = envSplit(tokens, index, option);
 
-      index += 2;
-    }
-    else {
-      index += 1;
+    if (split !== undefined) {
+      return split;
     }
 
-    option = tokens[index];
+    if (!isEnvOption(option)) {
+      return UNREADABLE;
+    }
+
+    operand = ENV_VALUED.has(option);
   }
 
-  const commandIndex = skipAssignments(tokens, index);
+  return operand ? UNREADABLE : NO_COMMAND;
+};
 
-  return next(commandIndex);
+// `command -v` looks a name up rather than running it.
+const commandWrapper = (tokens: string[], start: number): Step => {
+  const commandIndex = indexAfter(tokens, start, (option) => {
+    return option.startsWith('-') && option !== '--';
+  });
+
+  const isLookup = tokens
+    .slice(start, commandIndex)
+    .some((option) => {
+      return /v/iu.test(option);
+    });
+
+  if (isLookup) {
+    return NO_COMMAND;
+  }
+
+  return next(tokens[commandIndex] === '--' ? commandIndex + 1 : commandIndex);
 };
 
 const optionWrapper = (tokens: string[], start: number, valued: Set<string>): Step => {
@@ -720,39 +647,23 @@ const optionWrapper = (tokens: string[], start: number, valued: Set<string>): St
     return UNREADABLE;
   }
 
-  const commandIndex = skipAssignments(tokens, index);
-
+  const commandIndex = indexAfter(tokens, index, isAssignment);
   return next(commandIndex);
 };
 
 const nested = (source: string, dialect: Dialect, depth: number): Step => {
-  const commands = commandsIn(source, dialect, depth + 1);
-
-  if (commands === undefined) {
-    return UNREADABLE;
-  }
-
   const step: Step = {
     kind: 'nested',
-    commands,
+    commands: commandsIn(source, dialect, depth + 1),
   };
 
   return step;
-};
-
-const NO_COMMAND: Step = {
-  kind: 'nested',
-  commands: [],
 };
 
 const shellWrapper = (tokens: string[], start: number, depth: number): Step => {
   const rest = tokens.slice(start);
 
   for (const [index, option] of rest.entries()) {
-    if (option === '--') {
-      continue;
-    }
-
     if (/^-[^-]*c/u.test(option)) {
       const command = rest[index + 1];
       return command === undefined ? UNREADABLE : nested(command, 'bash', depth);
@@ -782,16 +693,24 @@ const POWERSHELL_VALUED = new Set([
 ]);
 
 // `-c`, `-com` and `-Command` alike: PowerShell accepts any prefix of a parameter name.
-const isPrefixOf = (option: string, name: string, shortest: number): boolean => {
-  return option.length > shortest && name.startsWith(option);
+const isPrefixOf = (option: string, name: string): boolean => {
+  return option.length > 1 && name.startsWith(option);
 };
 
 // A PowerShell host reads everything after `-Command` as the command; an encoded one cannot be read at all.
 const powerShellWrapper = (tokens: string[], start: number, depth: number): Step => {
-  let index = start;
+  let operand = false;
 
-  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
+  for (const [offset, token] of tokens
+    .slice(start)
+    .entries()) {
     const option = token.toLowerCase();
+    const index = start + offset;
+
+    if (operand) {
+      operand = false;
+      continue;
+    }
 
     if (!option.startsWith('-')) {
       const command = tokens
@@ -800,22 +719,22 @@ const powerShellWrapper = (tokens: string[], start: number, depth: number): Step
       return nested(command, 'powershell', depth);
     }
 
-    if (isPrefixOf(option, '-command', 1)) {
+    if (isPrefixOf(option, '-command')) {
       const command = tokens
         .slice(index + 1)
         .join(' ');
       return nested(command, 'powershell', depth);
     }
 
-    if (isPrefixOf(option, '-encodedcommand', 1) || option === '-ec') {
+    if (isPrefixOf(option, '-encodedcommand') || option === '-ec') {
       return UNREADABLE;
     }
 
-    if (isPrefixOf(option, '-file', 1)) {
+    if (isPrefixOf(option, '-file')) {
       return NO_COMMAND;
     }
 
-    index += POWERSHELL_VALUED.has(option) ? 2 : 1;
+    operand = POWERSHELL_VALUED.has(option);
   }
 
   return NO_COMMAND;
@@ -854,28 +773,17 @@ const START_PROCESS_VALUED = new Set([
   '-workingdirectory',
 ]);
 
-// The program is named, but its arguments arrive as a PowerShell array, so the command is opaque.
+// The program is the first word no option takes, but its arguments arrive as a PowerShell array, so the command
+// is opaque.
 const startProcessWrapper = (tokens: string[], start: number): Step => {
-  let index = start;
+  const lowered = tokens
+    .map((token) => {
+      return token.toLowerCase();
+    });
+  const index = skipOptions(lowered, start, START_PROCESS_VALUED);
 
-  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
-    const option = token.toLowerCase();
-
-    if (option === '-filepath') {
-      const step: Step = {
-        kind: 'next',
-        index: index + 1,
-        opaque: true,
-      };
-
-      return step;
-    }
-
-    if (!option.startsWith('-')) {
-      break;
-    }
-
-    index += START_PROCESS_VALUED.has(option) ? 2 : 1;
+  if (index === undefined) {
+    return UNREADABLE;
   }
 
   const step: Step = {
@@ -887,11 +795,42 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
   return step;
 };
 
+const EXEC_VALUED = new Set(['-a', '--argv0']);
+const SUDO_VALUED = new Set([
+  '-u',
+  '--user',
+  '-g',
+  '--group',
+  '-h',
+  '--host',
+  '-p',
+  '--prompt',
+  '-C',
+  '--close-from',
+  '-r',
+  '--role',
+  '-t',
+  '--type',
+]);
+const TIME_VALUED = new Set([
+  '-f',
+  '--format',
+  '-o',
+  '--output',
+]);
+const SHELLS = new Set([
+  'sh',
+  'bash',
+  'zsh',
+  'dash',
+  'ksh',
+]);
+
 const wrapperStep = (tokens: string[], index: number, token: string, depth: number): Step => {
   const name = commandName(token);
 
   if (name === 'env') {
-    return envWrapper(tokens, index + 1, depth);
+    return envWrapper(tokens, index + 1);
   }
 
   if (name === 'command') {
@@ -899,7 +838,7 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
   }
 
   if (name === 'exec') {
-    return execWrapper(tokens, index + 1);
+    return optionWrapper(tokens, index + 1, EXEC_VALUED);
   }
 
   if (name === 'nohup') {
@@ -907,46 +846,14 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
   }
 
   if (name === 'sudo') {
-    const sudoValued = new Set([
-      '-u',
-      '--user',
-      '-g',
-      '--group',
-      '-h',
-      '--host',
-      '-p',
-      '--prompt',
-      '-C',
-      '--close-from',
-      '-r',
-      '--role',
-      '-t',
-      '--type',
-    ]);
-
-    return optionWrapper(tokens, index + 1, sudoValued);
+    return optionWrapper(tokens, index + 1, SUDO_VALUED);
   }
 
   if (name === 'time') {
-    const timeValued = new Set([
-      '-f',
-      '--format',
-      '-o',
-      '--output',
-    ]);
-
-    return optionWrapper(tokens, index + 1, timeValued);
+    return optionWrapper(tokens, index + 1, TIME_VALUED);
   }
 
-  const shells = [
-    'sh',
-    'bash',
-    'zsh',
-    'dash',
-    'ksh',
-  ];
-
-  if (shells.includes(name)) {
+  if (SHELLS.has(name)) {
     return shellWrapper(tokens, index + 1, depth);
   }
 
@@ -959,7 +866,7 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
   }
 
   if (name === 'iex' || name === 'invoke-expression') {
-    const start = (tokens[index + 1] ?? '').toLowerCase() === '-command' ? index + 2 : index + 1;
+    const start = tokens[index + 1]?.toLowerCase() === '-command' ? index + 2 : index + 1;
     const command = tokens
       .slice(start)
       .join(' ');
@@ -973,53 +880,41 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
   return NO_WRAPPER;
 };
 
-const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undefined => {
-  let { tokens, opaque } = segment;
-  let index = 0;
+// Each wrapper is one level deeper, so a chain of them ends at the depth limit.
+const unwrap = (tokens: string[], index: number, opaque: boolean, depth: number): ParsedCommand[] | undefined => {
+  const token = tokens[index];
 
-  while (RESERVED.has(tokens[index] ?? '') || isAssignment(tokens[index] ?? '')) {
-    index += 1;
+  if (depth > MAX_DEPTH) {
+    return undefined;
   }
 
-  for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
-    const step = wrapperStep(tokens, index, token, depth);
-
-    if (step.kind === 'none') {
-      break;
-    }
-
-    if (step.kind === 'unreadable') {
-      return undefined;
-    }
-
-    if (step.kind === 'nested') {
-      return step.commands;
-    }
-
-    tokens = step.tokens ?? tokens;
-    index = step.index;
-    opaque ||= step.opaque === true;
-  }
-
-  const [executable, ...arguments_] = tokens.slice(index);
-
-  if (executable === undefined) {
+  if (token === undefined) {
     return [];
   }
 
+  const step = wrapperStep(tokens, index, token, depth);
+
+  if (step.kind === 'next') {
+    return unwrap(step.tokens ?? tokens, step.index, opaque || step.opaque === true, depth + 1);
+  }
+
+  if (step.kind === 'nested') {
+    return step.commands;
+  }
+
   const unwrapped: ParsedCommand[] = [{
-    tokens: [executable, ...arguments_],
+    tokens: [token, ...tokens.slice(index + 1)],
     opaque,
   }];
 
   return unwrapped;
 };
 
-const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedCommand[] | undefined => {
-  if (depth > MAX_DEPTH) {
-    return undefined;
-  }
+const isPrefixWord = (token: string): boolean => {
+  return RESERVED.has(token) || isAssignment(token);
+};
 
+const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedCommand[] | undefined => {
   const segments = segmentsOf(source, dialect);
 
   if (segments === undefined) {
@@ -1028,8 +923,8 @@ const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedComm
 
   const commands: ParsedCommand[] = [];
 
-  for (const segment of segments) {
-    const unwrapped = unwrapSegment(segment, depth);
+  for (const { tokens, opaque } of segments) {
+    const unwrapped = unwrap(tokens, indexAfter(tokens, 0, isPrefixWord), opaque, depth);
 
     if (unwrapped === undefined) {
       return undefined;

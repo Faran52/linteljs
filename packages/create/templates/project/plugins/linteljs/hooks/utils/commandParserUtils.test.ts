@@ -496,6 +496,7 @@ describe('parseCommand', () => {
     ['an unclosed group', 'Invoke-Command { git log'],
     ['an unopened group', 'git log }'],
     ['an encoded command', 'powershell -ec ZwBpAHQA'],
+    ['Start-Process with a valued option and no value', 'Start-Process -Verb'],
   ])('cannot read PowerShell with %s', (_label, source) => {
     const actual = parseCommand(source, 'powershell');
     expect(actual).toBeUndefined();
