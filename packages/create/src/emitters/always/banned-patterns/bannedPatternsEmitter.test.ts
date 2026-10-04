@@ -31,14 +31,14 @@ const transformOf = (answers: Answers): ((source: string, current: string | null
 };
 
 describe('bannedPatternsEmitter', () => {
-  it('writes the checker and nothing else', () => {
+  it('writes the checker and its utils, and nothing else', () => {
     const artifacts = bannedPatternsEmitter(answersFor({}));
     const targets = artifacts
       .map(({ target }) => {
         return target;
       });
 
-    const expected = ['scripts/checkBannedPatterns.ts'];
+    const expected = ['scripts/checkBannedPatterns.ts', 'scripts/utils/bannedPatternsUtils.ts'];
     expect(targets).toEqual(expected);
   });
 });
@@ -124,6 +124,6 @@ describe('the checker merge', () => {
 
     expect(merged).toContain(ENTRY);
     expect(merged).toContain('the wire vocabulary, argued in type-standards.md');
-    expect(merged).toContain('CAUGHT_VALUE');
+    expect(merged).toContain('...FLOORS[TYPE_SAFETY]');
   });
 });

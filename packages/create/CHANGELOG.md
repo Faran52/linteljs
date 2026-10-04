@@ -162,6 +162,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `scripts/checkBannedPatterns.ts` reports a directive written as a block comment, such as
+  `/* eslint-disable */`. It blanked every block comment before matching, so only the `//` form was caught, and a
+  `/*` inside a template literal could blank the lines after it. Its logic now lives in
+  `scripts/utils/bannedPatternsUtils.ts`, and `typecheckStaged.ts`'s in `scripts/utils/typecheckStagedUtils.ts`;
+  the entries keep the lines `sync` writes and carries over.
 - An Angular project's `tsconfig.json` sets `erasableSyntaxOnly` like every other target's. Its starter injects
   with `inject()`, and `typescript()` already refuses the parameter properties the flag was dropped for.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every

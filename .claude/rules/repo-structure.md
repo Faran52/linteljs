@@ -69,8 +69,8 @@ frameworks this workspace does not install and files named `*.test.ts`.
 
 - `__mocks__/` sits at each package root, aliased `@mocks/*` in that package's tsconfig.
   `packages/eslint-config/__mocks__/fixtures/` holds the defective input the layer tests lint.
-- The shipped scripts' suites (`checkBannedPatterns.test.ts`, `typecheckStaged.test.ts`) and the hook suites
-  sit beside what they test under `templates/project/`, one per shipped file, excluded from the tarball by
+- The shipped scripts' suites (`checkBannedPatterns.test.ts`, `typecheckStaged.test.ts`, and each of their
+  `utils/`) and the hook suites sit beside what they test under `templates/project/`, one per shipped file, excluded from the tarball by
   `package.json`. The hook suites share `packages/create/__mocks__/runHook.ts`.
 - Suites named for what they cover rather than one file: `meta.test.ts` in each package (the tree, and in the
   plugin the published surface against `__mocks__/ruleMetadata.json`), the plugin's `ruleModules.test.ts` and

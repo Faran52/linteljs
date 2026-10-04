@@ -2,6 +2,8 @@ import { type Answers, type Artifact } from '@config/types';
 
 import { targetFor } from '@targets';
 
+import { copied } from '../../utils/artifactUtils';
+
 import { mergeChecker } from './utils/mergeUtils';
 
 // Throws: a silent miss on a drifted anchor would ship the strict floor to a relaxed project.
@@ -76,7 +78,10 @@ export const checkerArtifact = (answers: Answers): Artifact => {
 };
 
 export const bannedPatternsEmitter = (answers: Answers): Artifact[] => {
-  const artifacts = [checkerArtifact(answers)];
+  const artifacts = [
+    checkerArtifact(answers),
+    copied('scripts/utils/bannedPatternsUtils.ts'),
+  ];
 
   return artifacts;
 };
