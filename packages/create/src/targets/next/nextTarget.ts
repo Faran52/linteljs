@@ -296,10 +296,7 @@ export const nextTarget: TargetBuilder = () => {
         when: hasForm,
         shared: 'react',
       },
-      ...contactApiFiles({
-        rtk: true,
-        shared: 'react',
-      }),
+      ...contactApiFiles({ shared: 'react' }),
       ...rtkContactFiles(),
       ...contactSchemaFiles(),
       {

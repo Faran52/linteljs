@@ -137,12 +137,11 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
     : [];
 
   const gates: GateRow[] = [
-    ['src/lib/apis/contact/index.ts', hasRtkQuery
-      ? [{
-          form: ANSWERED,
-          data: [undefined, ...wrapped],
-        }]
-      : WITH_FORM],
+    // Never under RTK Query, which keeps its own barrel.
+    ['src/lib/apis/contact/index.ts', [{
+      form: ANSWERED,
+      data: [undefined, ...wrapped],
+    }]],
     ...rtkQuery,
     ['src/lib/apis/contact/contactApi.ts', [{
       form: ANSWERED,

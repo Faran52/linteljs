@@ -246,10 +246,7 @@ const baseReactTarget = (): TargetRecord => {
         target: 'src/components/ui/text-input/TextInput.tsx',
         when: hasForm,
       },
-      ...contactApiFiles({
-        rtk: true,
-        shared: 'react',
-      }),
+      ...contactApiFiles({ shared: 'react' }),
       // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
       ...rtkContactFiles(),
       // TanStack Query needs an ancestor; RTK Query rides the Redux provider.
