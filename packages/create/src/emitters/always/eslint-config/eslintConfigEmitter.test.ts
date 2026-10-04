@@ -171,6 +171,7 @@ describe('emitEslintConfig', () => {
 
     expect(output).not.toContain('vitest');
     expect(output).not.toContain('@mocks/*');
+    expect(output).not.toContain('undefined');
   });
 
   it('asks for the vitest layer only where a suite was chosen', () => {

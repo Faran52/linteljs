@@ -47,6 +47,13 @@ describe('inJestDialect', () => {
     expect(actual).toBe(JEST_SUITE);
   });
 
+  it('leaves a vitest import that does not start its line', () => {
+    const text = "// was import { it } from 'vitest';\nconst a = 1;\n";
+
+    const actual = inJestDialect(text);
+    expect(actual).toBe(text);
+  });
+
   it('keeps the blank line between the import groups either side of the vitest one', () => {
     const source = [
       "import { configureStore } from '@reduxjs/toolkit';",

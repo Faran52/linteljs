@@ -687,7 +687,12 @@ describe('main: sync', () => {
 
     expect(code).toBe(1);
     const joined = errors.join('\n');
-    expect(joined).toContain('this project runs its suites on vitest, and linteljs now runs them on jest');
+    const message = [
+      'Nothing was written: this project runs its suites on vitest, and linteljs now runs them on jest.',
+      'sync changes no runner, since the suites, setup and test scripts are the project\'s.',
+      'Port them to jest, swap the dependencies, and run sync again.',
+    ].join(' ');
+    expect(joined).toBe(message);
     expect(after).toBe(before);
     expect(hasJestConfig).toBe(false);
   });
