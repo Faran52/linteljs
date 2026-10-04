@@ -58,7 +58,7 @@ export const LanguageSelect = (): ReactNode => {
           setOpen(true);
         }}
       >
-        <Text style={currentLabelStyle}>{current?.label}</Text>
+        <Text style={currentLabelStyle} numberOfLines={1}>{current?.label}</Text>
       </Pressable>
       <Modal
         transparent

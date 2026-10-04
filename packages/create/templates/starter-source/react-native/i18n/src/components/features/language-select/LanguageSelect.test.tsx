@@ -42,6 +42,14 @@ describe('LanguageSelect', () => {
     expect(elements).toHaveLength(0);
   });
 
+  // A narrow header would otherwise break the label inside a word.
+  it('keeps the label on one line', async () => {
+    await renderScreen(<LanguageSelect />);
+
+    const label = screen.getByText('English');
+    expect(label.props.numberOfLines).toBe(1);
+  });
+
   it('offers every language under its own name, the one in use checked', async () => {
     await open();
 
