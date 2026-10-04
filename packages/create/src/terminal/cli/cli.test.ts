@@ -66,6 +66,28 @@ vi.mock('./utils/argvUtils', async (importOriginal) => {
   return argvUtils;
 });
 
+// The real prompter waits on stdin, so a run that reaches it fails at once rather than hanging.
+vi.mock('../prompts/prompts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../prompts/prompts')>();
+
+  const reached = (): Promise<never> => {
+    const error = new Error('the inquirer prompter was reached');
+
+    return Promise.reject(error);
+  };
+
+  const prompts = {
+    ...actual,
+    inquirerPrompter: {
+      ...actual.inquirerPrompter,
+      select: reached,
+      multiselect: reached,
+      text: reached,
+    },
+  };
+  return prompts;
+});
+
 const RULE = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 
 let project = '';
