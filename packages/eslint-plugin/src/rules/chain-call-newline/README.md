@@ -119,8 +119,8 @@ what that rule asks for everywhere but inside a multi-line ternary, where it set
 
 `@stylistic/newline-per-chained-call` counts differently: it counts the head's own call, so at depth
 one it splits every `expect(x).toBe(y)`, at depth two it misses a two-call chain, and its fix leaves
-a chain half split. Of the 76 suite cases the rule had on 2026-10-02, it gives this rule's fixed output
-on 24 at depth one, and on 33 at any depth from two to five.
+a chain half split. Of the 78 suite cases that set no options, run with `@stylistic/indent` at 2 beside it, it gives this
+rule's fixed output on 24 at depth one, and on 33 at any depth from two to five.
 
 Depth two and up accepts everything this rule writes and misses most of what it asks for: it leaves
 `items.map(fn).filter(keep)` on one line, leaves `items.map((item) => {...})` with the call on the
