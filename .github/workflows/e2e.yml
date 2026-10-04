@@ -19,14 +19,22 @@ concurrency:
 
 jobs:
   generate:
-    name: answers pass their own gate (${{ matrix.pm }})
+    name: answers pass their own gate (${{ matrix.pm }} ${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       # Every manager reports: one failing answer must not hide a second on another manager.
       fail-fast: false
       matrix:
-        pm: [pnpm, npm, bun, yarn]
+        # pnpm runs every case, 154 of them in 82 minutes on one runner, so it splits four ways.
+        include:
+          - { pm: pnpm, shard: 1/4 }
+          - { pm: pnpm, shard: 2/4 }
+          - { pm: pnpm, shard: 3/4 }
+          - { pm: pnpm, shard: 4/4 }
+          - { pm: npm, shard: 1/1 }
+          - { pm: bun, shard: 1/1 }
+          - { pm: yarn, shard: 1/1 }
     steps:
       - uses: actions/checkout@v7
 
@@ -67,4 +75,5 @@ jobs:
       - run: pnpm --filter @linteljs/create test:e2e
         env:
           E2E_PM: ${{ matrix.pm }}
+          E2E_SHARD: ${{ matrix.shard }}
           E2E_CONCURRENCY: 2

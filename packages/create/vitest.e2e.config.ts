@@ -2,7 +2,7 @@ import { env } from 'node:process';
 
 import { defineConfig } from 'vitest/config';
 
-// Split by `E2E_PM` rather than `--shard`: vitest splits by file, and one file holds every target.
+// Split by `E2E_PM` and `E2E_SHARD` rather than `--shard`: vitest splits by file, and one file holds every target.
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
