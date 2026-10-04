@@ -41,12 +41,15 @@ export const validateContact = (values: ContactValues): ContactErrors => {
     return {};
   }
 
+  // An issue's message is a string; the filter narrows it to the key each rule above sets.
   const entries = parsed.error.issues
-    .flatMap((issue) => {
-      const field = String(issue.path[0]);
-      const entry: [string, ContactKey][] = isContactKey(issue.message) ? [[field, issue.message]] : [];
+    .map((issue): [string, string] => {
+      const entry: [string, string] = [String(issue.path[0]), issue.message];
 
       return entry;
+    })
+    .filter((entry): entry is [string, ContactKey] => {
+      return isContactKey(entry[1]);
     });
 
   return Object.fromEntries(entries);
