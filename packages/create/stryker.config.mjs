@@ -70,8 +70,9 @@ const config = {
     break: 95,
   },
 
-  // Suites spawn git and node, which a loaded machine slows past the default.
-  timeoutMS: 30000,
+  // Suites spawn git and node, which a loaded machine slows past the default. A static mutant in `config/constants.ts`
+  // reruns the whole suite: at 30s audit 37215418274 timed out 16 that a local run kills in 7s.
+  timeoutMS: 120000,
   // Measured on ten cores: six is as fast as nine, and nine turned kills into timeouts.
   concurrency: 6,
 
