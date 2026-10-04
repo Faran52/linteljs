@@ -1,6 +1,7 @@
 import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { getLocales, type Locale } from 'expo-localization';
 import i18next from 'i18next';
 
 import { languages, languageStorageKey } from './config';
@@ -10,17 +11,37 @@ import {
   detectLanguage,
   directionOf,
   initI18n,
-  matchLanguage,
   restoreLanguage,
 } from './index';
 
 const last = languages.at(-1)?.id ?? 'en';
 
-const deviceSpeaks = (locale: string): void => {
-  vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
-    ...new Intl.DateTimeFormat().resolvedOptions(),
-    locale,
-  });
+const localeOf = (languageTag: string): Locale => {
+  const locale: Locale = {
+    languageTag,
+    languageCode: null,
+    languageScriptCode: null,
+    regionCode: null,
+    languageRegionCode: null,
+    currencyCode: null,
+    currencySymbol: null,
+    languageCurrencyCode: null,
+    languageCurrencySymbol: null,
+    decimalSeparator: null,
+    digitGroupingSeparator: null,
+    textDirection: 'ltr',
+    measurementSystem: null,
+    temperatureUnit: null,
+  };
+
+  return locale;
+};
+
+// The device's preferred languages, most preferred first, for the next read.
+const devicePrefers = (first: string, ...rest: string[]): void => {
+  const locales: [Locale, ...Locale[]] = [localeOf(first), ...rest.map(localeOf)];
+
+  vi.mocked(getLocales).mockReturnValueOnce(locales);
 };
 
 describe('i18n', () => {
@@ -31,28 +52,22 @@ describe('i18n', () => {
     await i18next.changeLanguage('en');
   });
 
-  it('matches the exact tag, then its base language, and nothing it does not offer', () => {
-    const actual = matchLanguage(last);
-    expect(actual).toBe(last);
-    const actual2 = matchLanguage(`${last}-XX`);
-    expect(actual2).toBe(last);
-    const actual3 = matchLanguage('en-GB');
-    expect(actual3).toBe('en');
-    const actual4 = matchLanguage('fr-FR');
-    expect(actual4).toBeUndefined();
-    const actual5 = matchLanguage(null);
-    expect(actual5).toBeUndefined();
+  it('follows the first language the device prefers that it offers, with or without a region', async () => {
+    devicePrefers('fr-FR', `${last}-SA`, 'en-SA');
+
+    const language = await detectLanguage();
+    expect(language).toBe(last);
   });
 
   it('falls back to English for a device language it does not offer', async () => {
-    deviceSpeaks('fr-FR');
+    devicePrefers('fr-FR');
 
     const language = await detectLanguage();
     expect(language).toBe('en');
   });
 
   it('follows the device, and stores nothing it detected', async () => {
-    deviceSpeaks(last);
+    devicePrefers(last);
     await restoreLanguage();
 
     const stored = await AsyncStorage.getItem(languageStorageKey);
@@ -62,7 +77,7 @@ describe('i18n', () => {
   });
 
   it('puts a stored choice before the device', async () => {
-    deviceSpeaks('fr-FR');
+    devicePrefers('fr-FR');
     await AsyncStorage.setItem(languageStorageKey, last);
 
     const language = await detectLanguage();

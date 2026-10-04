@@ -11,7 +11,7 @@ import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
 describe('emitExpoConfig', () => {
   it('names the app, its slug and its scheme after the project', () => {
-    const parsed: unknown = JSON.parse(emitExpoConfig('Demo-App'));
+    const parsed: unknown = JSON.parse(emitExpoConfig('Demo-App', []));
 
     expect(parsed).toStrictEqual({
       expo: {
@@ -36,6 +36,17 @@ describe('emitExpoConfig', () => {
       },
     });
   });
+
+  it('declares the locales to expo-localization', () => {
+    const parsed: unknown = JSON.parse(emitExpoConfig('demo', ['en', 'ar']));
+
+    const expected = {
+      expo: {
+        plugins: ['expo-router', ['expo-localization', { supportedLocales: ['en', 'ar'] }]],
+      },
+    };
+    expect(parsed).toMatchObject(expected);
+  });
 });
 
 describe('expoConfigEmitter', () => {
@@ -48,7 +59,26 @@ describe('expoConfigEmitter', () => {
     const expected = [{
       stage: 'standard',
       target: 'app.json',
-      content: { text: emitExpoConfig('demo-app') },
+      content: { text: emitExpoConfig('demo-app', []) },
+    }];
+    expect(artifacts).toEqual(expected);
+  });
+
+  it('declares every chosen language, English first', () => {
+    const artifacts = expoConfigEmitter({
+      ...HOSTED_DEFAULTS,
+      target: 'react-native',
+      languages: ['ar', 'ja'],
+    }, EMPTY_PROJECT, 'demo-app');
+
+    const expected = [{
+      stage: 'standard',
+      target: 'app.json',
+      content: { text: emitExpoConfig('demo-app', [
+        'en',
+        'ar',
+        'ja',
+      ]) },
     }];
     expect(artifacts).toEqual(expected);
   });

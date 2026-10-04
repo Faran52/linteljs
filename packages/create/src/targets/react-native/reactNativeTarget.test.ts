@@ -40,6 +40,7 @@ describe('reactNativeTarget', () => {
         'i18next',
         'react-i18next',
         '@react-native-async-storage/async-storage',
+        'expo-localization',
       ],
       testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
     };

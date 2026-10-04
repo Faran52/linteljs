@@ -164,6 +164,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A React Native project opens in the device's language on iOS. It read the language from `Intl`, which iOS
+  resolves against the app's own localizations, so a device in Arabic read as `en-SA` and the app opened in
+  English. It now reads the device's preferred languages from expo-localization, in order, and `app.json` declares
+  the chosen languages through the expo-localization plugin's `supportedLocales`.
 - The logo mark stands still under `prefers-reduced-motion: reduce` on every web target. The reduce rule sat in
   `base.css`, and the mark's own sheet, loaded later at the same weight, restarted the animation; the mark now
   animates only under `no-preference`, in its CSS and in its StyleX sheet. The end-to-end browser pass fails on an

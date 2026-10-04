@@ -23,6 +23,19 @@ vi.mock('@react-native-async-storage/async-storage', () => {
   return asyncStorage;
 });
 
+// expo-localization is a native module; the device prefers English unless a suite says otherwise.
+vi.mock('expo-localization', () => {
+  const localization = {
+    getLocales: vi.fn(() => {
+      const english = [{ languageTag: 'en-US' }];
+
+      return english;
+    }),
+  };
+
+  return localization;
+});
+
 // Every suite renders translated text, so each starts with i18n running in English.
 // Imported late: a setup file that imports React Native statically reaches it untransformed.
 beforeAll(async () => {

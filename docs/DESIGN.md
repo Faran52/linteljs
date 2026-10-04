@@ -1058,10 +1058,14 @@ webextension popup.
   SDK 57's `bundledNativeModules.json` pins, so Expo Go and `expo install` agree with it; it is 381 KB unpacked,
   runs no install script and is `localStorage` on the web. 3.1.1 is 52 MB unpacked and IndexedDB on the web;
   expo-sqlite 57.0.3, whose `kv-store` reads the same, is 78 MB. An `allowBuilds` entry is not needed.
-- **The device language comes from `Intl`, not expo-localization.** `Intl.DateTimeFormat().resolvedOptions()`
-  gives the locale Hermes and the browser already hold, so no package is added. The order is the stored
-  choice, then the exact tag, then its base language, then English, and nothing detected is stored. iOS
-  resolves `Intl` against the app's own localizations, so a device in Japanese reads as `en-JP` in Expo Go.
+- **The device language comes from expo-localization, not `Intl`.** iOS resolves `Intl` against the app's own
+  localizations, so a device in Arabic reads as `en-SA` in Expo Go, which has no Arabic. `getLocales()` is the
+  device's own list of preferred languages, in order, so the starter reads it through the shared `pickLanguage`:
+  the stored choice, then the first preferred language it offers, by its exact tag or a shorter prefix, then
+  English, and nothing detected is stored. expo-localization 57.0.2 is what SDK 57's `bundledNativeModules.json`
+  pins and is in Expo Go. Its config plugin also takes the chosen languages as `supportedLocales`, which a built
+  app needs: iOS resolves the app's language from `CFBundleLocalizations`, and both systems list them in the
+  per-app language setting.
 - **The first render is English.** The static web export (`web.output: static`) is rendered in English, and
   hydration has to match it, so `initI18n` starts in English and `restoreLanguage` switches in an effect of
   the root layout once the stored or detected language is read.

@@ -2,24 +2,17 @@ import { initReactI18next } from 'react-i18next';
 import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 
 import {
   fallbackLanguage,
   languageStorageKey,
-  lookupTags,
   resources,
 } from './config';
-import { directionOf, isLanguage } from './utils/languageUtils';
+import { directionOf, pickLanguage } from './utils/languageUtils';
 
 export { directionOf };
-
-// The exact tag, then each shorter prefix: `zh-TW-XX` reads as `zh-TW`, `ja-JP` as `ja`.
-export const matchLanguage = (tag: string | null): string | undefined => {
-  const candidates = tag === null ? [] : lookupTags(tag);
-
-  return candidates.find(isLanguage);
-};
 
 // Native lays out its direction at launch, so a switch there shows from the next one on.
 export const applyDirection = (language: string): void => {
@@ -42,12 +35,16 @@ export const chooseLanguage = async (language: string): Promise<void> => {
   await i18next.changeLanguage(language);
 };
 
-// The stored choice, then the device's language, then English; nothing detected is stored.
+// The stored choice, then each language the device prefers, in its order, then English; nothing detected is stored.
+// Not `Intl`: iOS resolves it against the app's own localizations, so a device in Arabic reads as `en-SA` in Expo Go.
 export const detectLanguage = async (): Promise<string> => {
-  const storedTag = await AsyncStorage.getItem(languageStorageKey);
-  const stored = matchLanguage(storedTag);
+  const stored = await AsyncStorage.getItem(languageStorageKey);
+  const preferred = getLocales()
+    .map(({ languageTag }) => {
+      return languageTag;
+    });
 
-  return stored ?? matchLanguage(Intl.DateTimeFormat().resolvedOptions().locale) ?? fallbackLanguage;
+  return pickLanguage(stored, preferred);
 };
 
 // After the first render: the web export is rendered in English, and hydration has to match it.

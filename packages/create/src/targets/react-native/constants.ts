@@ -25,12 +25,14 @@ export const ACCESSORS: AccessorNames = {
   testSuffix: '.test.ts',
 };
 
-// React's i18next, less its browser detector: Expo SDK 57's own AsyncStorage keeps the choice.
+// React's i18next, less its browser detector: Expo SDK 57's own AsyncStorage keeps the choice, and expo-localization
+// reads the device's languages.
 export const REACT_NATIVE_I18N: I18nParts = {
   dependencies: [
     'i18next',
     'react-i18next',
     '@react-native-async-storage/async-storage',
+    'expo-localization',
   ],
   testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
 };

@@ -1,5 +1,10 @@
-import { type Artifact, type Emitter } from '@config/types';
+import {
+  type Artifact,
+  type Emitter,
+  type Language,
+} from '@config/types';
 
+import { localesOf } from '@utils/answerUtils';
 import { unscopedName } from '@utils/nameUtils';
 
 import { targetFor } from '@targets';
@@ -7,7 +12,9 @@ import { targetFor } from '@targets';
 import { emitted } from '../../utils/artifactUtils';
 
 // No icons: the starter ships no images, and a path to a missing file fails the first `expo export`.
-export const emitExpoConfig = (name: string): string => {
+// Declared locales are what iOS reports the device's language against, and what each system's per-app setting lists.
+export const emitExpoConfig = (name: string, locales: Language[]): string => {
+  const localization = locales.length === 0 ? [] : [['expo-localization', { supportedLocales: locales }]];
   const config = {
     expo: {
       name,
@@ -26,7 +33,7 @@ export const emitExpoConfig = (name: string): string => {
         bundler: 'metro',
         output: 'static',
       },
-      plugins: ['expo-router'],
+      plugins: ['expo-router', ...localization],
       // `typedRoutes` is what makes `Href` a union of this project's own routes rather than a string.
       experiments: {
         typedRoutes: true,
@@ -46,7 +53,7 @@ export const expoConfigEmitter: Emitter = (answers, _project, name): Artifact[] 
     return [];
   }
 
-  const config = emitExpoConfig(unscopedName(name));
+  const config = emitExpoConfig(unscopedName(name), localesOf(answers));
   const artifacts = [emitted('standard', 'app.json', config)];
 
   return artifacts;
