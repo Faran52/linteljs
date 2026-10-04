@@ -24,7 +24,7 @@ const MIN_LIST_LENGTH = 3;
 const PROBE_ALIAS = 'linteljsProbeAlias';
 
 const namedImports = (node: AstNode): AstNode[] => {
-  return (node.specifiers ?? [])
+  return listOf(node.specifiers)
     .filter((specifier) => {
       return specifier.type === 'ImportSpecifier';
     });
@@ -55,11 +55,11 @@ export const importJoinedCase = importCase((node, named, state) => {
 export const importTailJoinedCase = importCase((_, named, state) => {
   const [previous, last] = named.slice(named.length - 2);
 
-  if (named.length < MIN_LIST_LENGTH || !fullySplit(named)) {
+  if (named.length < MIN_LIST_LENGTH || !fullySplit(named) || !previous || !last) {
     return undefined;
   }
 
-  return previous === undefined || last === undefined ? undefined : joinRange(state, previous.range[1], last.range[0]);
+  return joinRange(state, previous.range[1], last.range[0]);
 });
 
 export const importBlankLineCase = importCase((_, named, state) => {
@@ -74,7 +74,7 @@ export const patternJoinedCase: Build = (state) => {
   const patterns = nodesOf(state, 'ObjectPattern');
 
   return pickFirst(patterns, (node) => {
-    const properties = node.properties ?? [];
+    const properties = listOf(node.properties);
     const [first] = properties;
     const last = properties.at(-1);
 
@@ -91,14 +91,14 @@ export const patternBlankLineCase: Build = (state) => {
   const patterns = nodesOf(state, 'ObjectPattern');
 
   return pickFirst(patterns, (node) => {
-    const properties = node.properties ?? [];
+    const properties = listOf(node.properties);
     const [first, second] = properties;
 
-    if (properties.length <= DEFAULT_MAX_PROPERTIES || !fullySplit(properties)) {
+    if (properties.length <= DEFAULT_MAX_PROPERTIES || !fullySplit(properties) || !first || !second) {
       return undefined;
     }
 
-    return first && second ? insertBlankLine(state, first, second) : undefined;
+    return insertBlankLine(state, first, second);
   });
 };
 
@@ -131,7 +131,7 @@ export const interfaceMembers = (node: AstNode): AstNode[] => {
 };
 
 export const literalMembers = (node: AstNode): AstNode[] => {
-  return node.members ?? [];
+  return listOf(node.members);
 };
 
 // Array holes are out: a hole has no tokens to measure.
@@ -140,7 +140,7 @@ export const patternGapCase = (type: string, fromStart: boolean): Build => {
     const patterns = nodesOf(state, type);
 
     return pickFirst(patterns, (node) => {
-      const raw = node.properties ?? node.elements ?? [];
+      const raw = node.elements ?? listOf(node.properties);
       const members = raw
         .filter((member) => {
           return member !== null;
@@ -163,7 +163,7 @@ export const exportJoinedCase: Build = (state) => {
   const namedExports = nodesOf(state, 'ExportNamedDeclaration');
 
   return pickFirst(namedExports, (node) => {
-    const specifiers = node.specifiers ?? [];
+    const specifiers = listOf(node.specifiers);
     const [first] = specifiers;
     const last = specifiers.at(-1);
 
@@ -193,7 +193,7 @@ export const exportTripleCase = (kind: string): Build => {
     const namedExports = nodesOf(state, 'ExportNamedDeclaration');
 
     return pickFirst(namedExports, (node) => {
-      const [only] = node.specifiers ?? [];
+      const [only] = listOf(node.specifiers);
       const local = only?.local;
 
       // `export { default }` needs a `from`, and the keyword cannot be aliased into a local binding.
@@ -215,7 +215,7 @@ export const exportTripleCase = (kind: string): Build => {
 };
 
 // A bare `extends` accepts no union, and an array or indexed-access parent would take the member with it.
-const UNION_SAFE_PARENTS = new Set([
+const UNION_SAFE_PARENTS = new Set<string | undefined>([
   'TSTypeAliasDeclaration',
   'TSTypeAnnotation',
   'TSTypeParameterInstantiation',
@@ -238,7 +238,7 @@ export const unionWithMemberCase = (member: string): Build => {
       });
 
     return pickFirst(candidates, (node) => {
-      return UNION_SAFE_PARENTS.has(node.parent?.type ?? '')
+      return UNION_SAFE_PARENTS.has(node.parent?.type)
         ? replaced(state, node.range[0], node.range[1], `${textOf(state, node)} | ${member}`)
         : undefined;
     });
@@ -249,7 +249,7 @@ export const unionGenericCase: Build = (state) => {
   const typeArguments = nodesOf(state, 'TSTypeParameterInstantiation');
 
   return pickFirst(typeArguments, (node) => {
-    const [first] = node.params ?? [];
+    const [first] = listOf(node.params);
 
     if (!first || !PLAIN_TYPES.has(first.type) || spansLines(first, first)) {
       return undefined;

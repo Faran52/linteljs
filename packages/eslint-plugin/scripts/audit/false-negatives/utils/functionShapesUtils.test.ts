@@ -92,6 +92,12 @@ describe('functionExpressionCase', () => {
     expect(output).toBe('const run = async function (a: number): Promise<number> {\n  return a;\n};\n');
   });
 
+  it('passes over a declaration that holds no arrow', () => {
+    const { output } = runBuild(functionExpressionCase, `const a = 1;\n${ARROW}`);
+
+    expect(output).toBe('const a = 1;\nconst run = async function (a: number): Promise<number> {\n  return a;\n};\n');
+  });
+
   it('skips a body using `arguments`', () => {
     const source = 'const run = () => {\n  return arguments;\n};\n';
     const { output, skips } = runBuild(functionExpressionCase, source, 'file.js');
@@ -140,6 +146,13 @@ describe('defaultExportFunctionCase', () => {
 
     expect(expression.output).toBeUndefined();
     expect(hazard.skips).toStrictEqual(['body uses this/arguments/super/new.target, which the rule declines']);
+  });
+
+  it('skips an arrow with type parameters', () => {
+    const { output, skips } = runBuild(defaultExportFunctionCase, 'export default <T,>(a: T) => {\n  return a;\n};\n');
+
+    expect(output).toBeUndefined();
+    expect(skips).toStrictEqual(['arrow carries type parameters, which the rebuild does not reproduce']);
   });
 });
 
@@ -205,6 +218,14 @@ describe('strictAwaitedHandlerCase', () => {
 
     expect(skips).toStrictEqual(['await at module top level, which the rule exempts under strict too']);
   });
+
+  it('skips a comment after `await`', () => {
+    const source = 'async function run() {\n  const a = await /* a */ go();\n}\n';
+    const { output, skips } = runBuild(strictAwaitedHandlerCase, source);
+
+    expect(output).toBeUndefined();
+    expect(skips).toStrictEqual(['comment between `await` and its operand']);
+  });
 });
 
 describe('awaitedHandlerCase', () => {
@@ -260,6 +281,19 @@ describe('namespaceDestructureCase', () => {
     expect(output).toBe(`${NAMESPACE}function run() {}\nif (ok) {\nconst { linteljsNamespaceProbe } = ns;}\n`);
   });
 
+  it('takes a function whose parameters do not shadow the name', () => {
+    const { output } = runBuild(namespaceDestructureCase('function'), `${NAMESPACE}function run(a) {}\n`, 'file.js');
+
+    expect(output).toBe(`${NAMESPACE}function run(a) {\nconst { linteljsNamespaceProbe } = ns;}\n`);
+  });
+
+  it('leaves a namespace import inside a module declaration', () => {
+    const source = "declare module 'm' {\n  import * as ns from 'x';\n}\n";
+    const { output } = runBuild(namespaceDestructureCase('module'), source);
+
+    expect(output).toBeUndefined();
+  });
+
   it('leaves a function that shadows the name, and a file already probed', () => {
     const shadowed = runBuild(namespaceDestructureCase('function'), `${NAMESPACE}function run(ns) {}\n`, 'file.js');
     const probed = runBuild(namespaceDestructureCase('module'), `${NAMESPACE}// linteljsNamespaceProbe\n`);
@@ -300,6 +334,7 @@ describe('hookOrderCase', () => {
       'useState(() => {}, [beta, alpha]);\n',
       'useEffect(() => {}, [beta]);\n',
       'useEffect(() => {}, [beta, a.b]);\n',
+      'useEffect(go);\n',
     ];
     const outputs = sources
       .map((source) => {
@@ -309,6 +344,7 @@ describe('hookOrderCase', () => {
       });
 
     expect(outputs).toStrictEqual([
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -343,11 +379,42 @@ describe('arrowComponentCase', () => {
     expect(exported.skips).toStrictEqual(['a prop name is also an export specifier']);
   });
 
+  it.each([
+    ['a const', 'const title = 1;'],
+    ['a class', 'class title {}'],
+    ['a class expression', 'const A = class title {};'],
+    ['an array element', 'const [title] = list;'],
+    ['a rest element', 'const [...title] = list;'],
+    ['a defaulted element', 'const [title = 1] = list;'],
+    ['a catch parameter', 'try {} catch (title) {}'],
+    ['a function', 'function title() {}'],
+    ['a function expression parameter', 'const f = function (title) {};'],
+  ])('skips a prop redeclared as %s', (_, statement) => {
+    const source = `const Card = ({ title }) => {\n  { ${statement} }\n  return 1;\n};\n`;
+    const { output, skips } = runBuild(arrowComponentCase, source, 'file.js');
+
+    expect(output).toBeUndefined();
+    expect(skips).toStrictEqual(['a prop name is redeclared or shadowed inside the function']);
+  });
+
+  it('rewrites past other export specifiers and leaves a label', () => {
+    const source = "const other = 1;\nexport { other };\nexport { 'a b' as 'c d' } from 'x';\n"
+      + 'const Card = ({ title }) => {\n  title: {\n    break title;\n  }\n  return title;\n};\n';
+    const { output } = runBuild(arrowComponentCase, source, 'file.js');
+
+    expect(output).toBe("const other = 1;\nexport { other };\nexport { 'a b' as 'c d' } from 'x';\n"
+      + 'const Card = (linteljsProbeProps) => {\n  title: {\n    break title;\n  }\n'
+      + '  return linteljsProbeProps.title;\n};\n');
+  });
+
   it('leaves a lower-case name, a renamed prop and a body with no reference', () => {
     const sources = [
       'const card = ({ title }) => {\n  return title;\n};\n',
       'const Card = ({ title: heading }) => {\n  return heading;\n};\n',
       'const Card = ({ title }) => {\n  return 1;\n};\n',
+      'const Card = (props) => {\n  return props;\n};\n',
+      'const Card = ({ title = 1 }) => {\n  return title;\n};\n',
+      'const Card = ({ title }) => {\n  return title + linteljsProbeProps;\n};\n',
     ];
     const outputs = sources
       .map((source) => {
@@ -355,6 +422,9 @@ describe('arrowComponentCase', () => {
       });
 
     expect(outputs).toStrictEqual([
+      undefined,
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -372,6 +442,13 @@ describe('functionDeclarationComponentCase', () => {
 
   it('leaves a lower-case function', () => {
     const source = 'function card({ title }) {\n  return title;\n}\n';
+    const { output } = runBuild(functionDeclarationComponentCase, source, 'file.js');
+
+    expect(output).toBeUndefined();
+  });
+
+  it('leaves an anonymous default export', () => {
+    const source = 'export default function ({ title }) {\n  return title;\n}\n';
     const { output } = runBuild(functionDeclarationComponentCase, source, 'file.js');
 
     expect(output).toBeUndefined();

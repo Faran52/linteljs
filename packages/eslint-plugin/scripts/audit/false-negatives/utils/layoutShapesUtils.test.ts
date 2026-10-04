@@ -250,6 +250,12 @@ describe('typeBelowRuntimeCase', () => {
     expect(output).toBe('const a = 1;\n\nexport interface A {\n  a: string;\n}\n');
   });
 
+  it('takes a type on the last line with no newline after it', () => {
+    const { output } = runBuild(typeBelowRuntimeCase('none'), 'const a = 1;\ntype A = string;');
+
+    expect(output).toBe('const a = 1;\n\ntype A = string;\n');
+  });
+
   it('writes a directive above a file that has none', () => {
     const source = 'type A = string;\nconst a = 1;\n';
     const { offset, output } = runBuild(typeBelowRuntimeCase('directive'), source);

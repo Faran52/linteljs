@@ -15,7 +15,7 @@ export default defineConfig({
         'packages/create/templates/project/**/utils/*.ts',
         'packages/eslint-plugin/scripts/audit/real-code/utils/{attribution,finding,fix,fixPass,optionSweep}Utils.ts',
         'packages/eslint-plugin/scripts/audit/mutation-summary/utils/summaryUtils.ts',
-        'packages/eslint-plugin/scripts/audit/false-negatives/utils/{edit,shapes}Utils.ts',
+        'packages/eslint-plugin/scripts/audit/false-negatives/utils/{edit,functionShapes,layoutShapes,shapes}Utils.ts',
       ],
       exclude: [
         '**/*.test.ts',
