@@ -205,12 +205,6 @@ const config = [
     files: ['packages/create/templates/project/scripts/utils/loggerUtils.ts'],
     rules: { 'no-console': 'off' },
   },
-  // docs/DESIGN.md: `@linteljs/workspace/audit-ignores`
-  {
-    name: '@linteljs/workspace/audit-ignores',
-    files: ['scripts/audit-ignores/auditIgnoresScript.ts'],
-    rules: { 'sonarjs/no-os-command-from-path': 'off' },
-  },
 
   // sonarjs cannot read an AST identity check. docs/DESIGN.md: `@linteljs/workspace/ast-identity`
   {

@@ -1763,15 +1763,6 @@ rule down under `scripts/` for a consumer, a published default that is not this 
 `release/run-rules/runRulesRelease.ts` writes to `process.stdout` instead: it runs in a container holding only the
 plugin's own `dist/` and `scripts/`, with no logger above them.
 
-### `@linteljs/workspace/audit-ignores`
-
-`sonarjs/no-os-command-from-path` is off for `scripts/audit-ignores/auditIgnoresScript.ts` alone. Measured on
-2026-10-02 with the rule on across the workspace: one finding, that file's `execFileSync('pnpm', ...)`. The rule
-wants an absolute path because a writeable `PATH` entry could shadow the name. That is a real hazard for a program
-a user runs, not for one a maintainer runs in this checkout, where resolving `pnpm` to an absolute path would read
-the same `PATH`. `npm_execpath` is no cleaner: it is set only under a package manager, and may name a script rather
-than a binary.
-
 ### `@linteljs/workspace/ast-identity`
 
 `sonarjs/different-types-comparison` cannot read an AST identity check. ESLint brands every node it hands a rule:
@@ -1822,10 +1813,11 @@ spawns, publishes and needs the registry, and a helper there would land as a 0% 
 pure suites (`matrix/`, `starter-cover/`) still run in the default suite, held by their assertions rather than the
 gate. Beyond each package's `src/`, the include names six `utils/` modules of the plugin's audits (five of
 real-code, one of mutation-summary), the pure half of a script that otherwise spawns, each with its own suite. It
-also takes every `utils/` file under `packages/create/templates/project/`: the parser and host readers behind the
-shipped hooks, and the shipped logger. They reach every generated project, and a guard there is security code. The
-hooks and gate scripts themselves stay out: their suites spawn them under `node`, where v8 sees nothing, so they
-are held by those suites' assertions, like the e2e harness. `readPayload` takes a path so its suite reads in
+also takes every `utils/` file under `packages/create/templates/project/`: the logic of every shipped hook and gate
+script, and the shipped logger. They reach every generated project, and a guard there is security code. Each hook
+and gate script is a thin entry over its `utils/` module: it reads stdin or argv, calls one function and exits, so
+every decision it makes is in the gate. The entries stay out of the include, since their suites spawn them under
+`node`, where v8 sees nothing; those suites hold the wiring end to end. `readPayload` takes a path so its suite reads in
 process what a hook reads from stdin. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
 `process.argv` and sets `process.exitCode`, and `main` is a function from an argv array to an exit code that
 `cli.test.ts` calls directly.

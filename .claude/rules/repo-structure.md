@@ -41,9 +41,9 @@ before that package publishes. The types it redeclares are held equal by `packag
   component file (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.astro`) 350, a file under `utils/` 800. Tests, `__mocks__/`
   and e2e are exempt. Caught by `max-lines` and `max-lines-per-function` in the `base` layer, the same limits a
   generated project gets; `docs/DESIGN.md` carries the measurement.
-- **Coverage is 100% on all four metrics** in all three packages. Delete an unreachable line rather than
-  ignore it; the one exception is a `/* v8 ignore */` on a defensive branch argued in the comment beside it,
-  audited by `pnpm audit:ignores`.
+- **Coverage is 100% on all four metrics** in all three packages, with no ignore comment. Delete an unreachable
+  line rather than ignore it. Caught by `scripts/checkBannedPatterns.ts`, which bans every `v8`, `c8` and
+  `istanbul` ignore in `packages/*/src`.
 
 ## Scripts
 
