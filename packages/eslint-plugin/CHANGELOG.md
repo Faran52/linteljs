@@ -52,8 +52,8 @@ when a version's change lives in a sibling it is described there instead:
 - `name-before-use` reports an await, a call that takes a call, or an inline array or object anywhere but the
   right side of a declaration or assignment, a bare statement or `export default`. A ternary's branches, the right
   side of `&&`, `||` and `??`, and a call chain on a literal take the position of the whole expression, and a
-  `return` names the await it holds whole. `ignoreEmptyLiterals` and
-  `ignoreLiteralArguments` relax the literal half. Report-only, not in `recommended`.
+  `return` names the await it holds whole. `ignoreEmptyLiterals` and `ignoreLiteralArguments` relax the literal
+  half. Report-only, not in `recommended`; the base layer of `@linteljs/eslint-config` enables it.
 - Five React Native accessibility rules: `native-accessible-name`, `native-no-nested-touchables`,
   `native-valid-accessibility-actions`, `native-valid-accessibility-role` and
   `native-valid-accessibility-state`. Report-only, not in `recommended`; the React Native layer of
@@ -69,8 +69,9 @@ when a version's change lives in a sibling it is described there instead:
   segment of a qualified name. Report-only, in `recommended`.
 - `prefer-alias` (TypeScript only, type-aware) imports across aliased directories through the tsconfig `paths`
   alias and within one relatively. A `./` or `../` import into an aliased directory the file is not inside is
-  fixed to the alias, so a root `src/App.tsx` reaches `./components/...` through `@components/...`. Without type information, or in a project that sets `baseUrl`, it reports
-  nothing. `aliasExempt` silences files by glob, and `enforceRelativeImports` fixes every alias import in them
+  fixed to the alias, so a root `src/App.tsx` reaches `./components/...` through `@components/...`. Where tsc
+  resolves nothing, as for a `.vue` file without vue-tsc, the file at the exact path the import spells counts.
+  Without type information, or in a project that sets `baseUrl`, it reports nothing. `aliasExempt` silences files by glob, and `enforceRelativeImports` fixes every alias import in them
   to a relative one. Fixable, in `recommended`.
 - `react-no-global-namespace` reports `React.X` reached through `@types/react`'s global namespace, in a type, a
   value or a JSX tag, and in a Svelte `<script>`. Fixable: it imports the name from `react`. Not in

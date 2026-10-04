@@ -3,8 +3,8 @@
 [![npm](https://img.shields.io/npm/v/@linteljs/eslint-plugin.svg)](https://www.npmjs.com/package/@linteljs/eslint-plugin)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
 
-ESLint rules for TypeScript and React code. The plugin covers layout, imports, functions, promises, and
-member ordering with a small set of opinionated rules designed to stay consistent across projects.
+ESLint rules for TypeScript and React code: layout, comments, imports, functions, promises, declaration
+order and React Native accessibility.
 
 ```bash
 npm install --save-dev @linteljs/eslint-plugin
@@ -148,14 +148,17 @@ The package supports ESLint `>=6.0.0` and Node `>=18.0.0`.
 The package has no runtime dependencies. Its compatibility matrix packs the tarball, runs it with ESLint 6
 through 10, and checks that fixed output stays identical across those versions. Compatibility helpers cover
 ESLint APIs that moved between releases. A fixer must preserve behaviour, so a rule that cannot prove a
-rewrite is safe reports without fixing. Rules are framework-agnostic: TypeScript-only rules are scoped away
-from JavaScript files.
+rewrite is safe reports without fixing. The bundle targets Node 18 and the source uses only ES2022 built-ins,
+so nothing in it needs a newer runtime than the floor.
 
 ## Adding a rule
 
 Each rule owns one directory under `src/rules/`, holding its implementation, its tests and its README. The
 steps for adding one are in
 [`.claude/skills/add-eslint-rule/SKILL.md`](https://github.com/Faran52/linteljs/blob/main/.claude/skills/add-eslint-rule/SKILL.md).
+
+Beyond its own suite, a rule runs through two audits: `pnpm audit:real` runs every fixer over third-party
+code, and `pnpm audit:negatives` breaks code a rule is silent on and checks that it then reports.
 
 ## License
 
