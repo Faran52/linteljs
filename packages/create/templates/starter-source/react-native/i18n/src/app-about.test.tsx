@@ -55,4 +55,13 @@ describe('the about screen', () => {
       expect(element).toBeTruthy();
     }
   });
+
+  it('is the one main landmark on the page', async () => {
+    await renderScreen(<AboutScreen />);
+
+    const landmarks = screen.container.queryAll((node) => {
+      return node.props.role === 'main';
+    });
+    expect(landmarks).toHaveLength(1);
+  });
 });

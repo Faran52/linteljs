@@ -12,7 +12,7 @@ const HomeScreen = (): ReactNode => {
   const heroStyle = [layout.screen, layout.hero];
 
   return (
-    <View style={heroStyle}>
+    <View style={heroStyle} role="main">
       <Mark />
       <Text style={text.title}>{NAME}</Text>
       <Text style={text.lede}>Expo, expo-router and the standard already applied.</Text>

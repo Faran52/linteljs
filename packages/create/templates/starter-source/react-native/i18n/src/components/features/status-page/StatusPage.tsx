@@ -35,7 +35,7 @@ export const StatusPage = ({
       ];
 
   return (
-    <View style={layout.status}>
+    <View style={layout.status} role="main">
       <Text style={text.statusCode}>{code}</Text>
       <Text style={text.statusMessage} accessibilityRole="alert">{t(message)}</Text>
       <View style={layout.actions}>

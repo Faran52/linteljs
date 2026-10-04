@@ -56,4 +56,13 @@ describe('the version screen', () => {
       expect(element).toBeTruthy();
     }
   });
+
+  it('is the one main landmark on the page', async () => {
+    await renderScreen(<VersionScreen />);
+
+    const landmarks = screen.container.queryAll((node) => {
+      return node.props.role === 'main';
+    });
+    expect(landmarks).toHaveLength(1);
+  });
 });

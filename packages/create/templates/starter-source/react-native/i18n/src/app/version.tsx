@@ -16,7 +16,7 @@ const VersionScreen = (): ReactNode => {
   const { layout, text } = useStarterStyles();
 
   return (
-    <ScrollView style={layout.screen}>
+    <ScrollView style={layout.screen} role="main">
       <Text style={text.pageTitle}>{t('version')}</Text>
       <Text style={text.lede}>{t('versionLede')}</Text>
 

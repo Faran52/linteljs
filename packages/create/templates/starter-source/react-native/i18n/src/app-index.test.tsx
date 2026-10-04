@@ -67,4 +67,13 @@ describe('the home screen', () => {
     const element = screen.getByText(hint);
     expect(element).toBeTruthy();
   });
+
+  it('is the one main landmark on the page', async () => {
+    await renderScreen(<HomeScreen />);
+
+    const landmarks = screen.container.queryAll((node) => {
+      return node.props.role === 'main';
+    });
+    expect(landmarks).toHaveLength(1);
+  });
 });

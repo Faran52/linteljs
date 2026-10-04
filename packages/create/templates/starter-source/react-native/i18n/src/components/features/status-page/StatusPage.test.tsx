@@ -84,4 +84,13 @@ describe('StatusPage', () => {
     expect(retry).toBeTruthy();
     expect(home).toBeTruthy();
   });
+
+  it('is the one main landmark on the page', async () => {
+    await renderScreen(<StatusPage code={code} message={message} />);
+
+    const landmarks = screen.container.queryAll((node) => {
+      return node.props.role === 'main';
+    });
+    expect(landmarks).toHaveLength(1);
+  });
 });
