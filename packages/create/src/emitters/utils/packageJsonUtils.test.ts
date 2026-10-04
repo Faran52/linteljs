@@ -1202,6 +1202,42 @@ describe('upgradedPackageJson', () => {
     const emptied = { devDependencies: {} };
     expect(bare).toEqual(emptied);
   });
+
+  it('moves a present dev dependency in place, adds an absent one in sorted place, and keeps the order', () => {
+    const upgraded = upgradedPackageJson({
+      devDependencies: {
+        eslint: '^10.0.0',
+        vitest: '^5.0.0',
+        astro: '^5.0.0',
+      },
+    }, [
+      {
+        name: 'eslint-plugin-react-hooks',
+        to: '^7.1.1',
+      },
+      {
+        name: 'zod',
+        to: '^4.0.0',
+      },
+      {
+        name: 'vitest',
+        from: '^5.0.0',
+        to: '^6.0.0',
+      },
+    ]);
+    const devDependencies = upgraded.devDependencies ?? {};
+    const names = Object.keys(devDependencies);
+
+    const expected = [
+      'eslint',
+      'eslint-plugin-react-hooks',
+      'vitest',
+      'astro',
+      'zod',
+    ];
+    expect(names).toEqual(expected);
+    expect(devDependencies).toHaveProperty('vitest', '^6.0.0');
+  });
 });
 
 describe('serializedPackageJson', () => {

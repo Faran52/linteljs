@@ -401,17 +401,32 @@ export const serializedPackageJson = (packageJson: PackageJson): string => {
   return `${JSON.stringify(packageJson, null, 2)}\n`;
 };
 
-// Only the `@linteljs/*` entries move, each in the field the project keeps it in.
+// Before the first name that sorts after it, so a sorted list stays sorted and an unsorted one keeps its order.
+// A name already there keeps its place, since `fromEntries` overwrites a repeated key where it first stood.
+const withRange = (record: Record<string, string>, name: string, range: string): Record<string, string> => {
+  const entries = Object.entries(record);
+  const after = entries
+    .findIndex(([key]) => {
+      return key.localeCompare(name, 'en') > 0;
+    });
+  const at = after === -1 ? entries.length : after;
+
+  const added = entries.toSpliced(at, 0, [name, range]);
+
+  return Object.fromEntries(added);
+};
+
+// Only the named entries move, each in the field the project keeps it in.
 export const upgradedPackageJson = (existing: PackageJson, upgrades: Upgrade[]): PackageJson => {
   const dependencies = { ...existing.dependencies };
-  const devDependencies = { ...existing.devDependencies };
+  let devDependencies = { ...existing.devDependencies };
 
   for (const { name, to } of upgrades) {
     if (name in dependencies) {
       dependencies[name] = to;
     }
     else {
-      devDependencies[name] = to;
+      devDependencies = withRange(devDependencies, name, to);
     }
   }
 
