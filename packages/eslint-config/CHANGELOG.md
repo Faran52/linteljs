@@ -86,6 +86,9 @@ when a version's change lives in a sibling it is described there instead:
     CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
     pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts`
     file.
+  - `jest()` at `./jest` (`jest: true`), over the optional peer `eslint-plugin-jest` `>=29`: its
+    `flat/recommended` rules on test files, the counterpart of `vitest` for a project on Jest, such as React
+    Native on `jest-expo`.
 - `nuxtGroup`, `reactNativeGroup`, `tailwind` and the `TypescriptOptions` type join the barrel.
 - `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, and
   takes `aliasExempt` and `enforceRelativeImports` for it, as does `composeConfig`.

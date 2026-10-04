@@ -70,7 +70,16 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - `emitters/utils/`: `artifactUtils.ts` (the content shapes), `managedUtils.ts` (the managed record),
   `shapeUtils.ts` (a project's own spelling of a file), `importUtils.ts` (import order), `stylingUtils.ts`,
   `aliasUtils.ts`, `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
-  literal), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and `pnpm-workspace/`). What only `package-json/` reads, `SUPERSEDED`, stays in that subject's `constants.ts`.
+  literal), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and `pnpm-workspace/`),
+  `runnerUtils.ts` (`testRunnerOf`, the runner a project's suites run on, from the record's `testRunner`, read by
+  every subject that writes a runner's config, scripts, types or lint layer, and by `sync`'s runner-switch guard).
+  What only `package-json/` reads, `SUPERSEDED`, stays in that subject's `constants.ts`.
+- `testing/` writes one runner's config: `vitest-config/` or `jest-config/` (`jest.config.js`, for a record whose
+  `testRunner` is `jest`; its `constants.ts` holds the msw and redux-toolkit ES-module fixes), each emitting
+  nothing for the other runner. `testing/utils/coverageUtils.ts` holds the coverage include and exclude both read.
+- `target/starter-source/utils/jestDialectUtils.ts` (`inJestDialect`) rewrites a shared suite written for Vitest
+  into Jest's dialect when the runner is `jest`: the `vitest` import dropped, `vi.` to `jest.`, and the global
+  stubs to `jest.spyOn` and `jest.restoreAllMocks`.
 
 ## `config/` and `utils/`
 

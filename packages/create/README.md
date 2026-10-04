@@ -59,7 +59,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Browser | `--browser` | `chrome`, `firefox` (webextension) | `chrome` |
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
-| Testing | `--testing` | `vitest`, `none` | `vitest` |
+| Testing | `--testing` | `vitest`, `none` (react-native runs the suites on Jest, through `jest-expo`) | `vitest` |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native) | none |
 | Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only) | none |
@@ -110,10 +110,12 @@ never guesses a framework.
 and the versions to upgrade, then asks once. `--yes` applies without asking; without a terminal and without
 `--yes` it writes nothing and exits 1. A dependency the project lacks is printed as an install command for its
 package manager, never written. After its first write, `sync` never rewrites your other dependencies or
-`package.json` scripts, `.github/workflows/ci.yml`, `vite.config.ts`, `vitest.config.ts`, `astro.config.mjs`,
+`package.json` scripts, `.github/workflows/ci.yml`, `vite.config.ts`, `vitest.config.ts`, `jest.config.js`, `astro.config.mjs`,
 `angular.json`, Expo's `app.json`, `linteljs.config.json`, your README, the starter source, or an agent's
 instruction file. Removing an agent from the config removes only the exact paths linteljs wrote for it, and
-dropping any other answer removes what it alone wrote.
+dropping any other answer removes what it alone wrote. Nor does `sync` switch a test runner: where `package.json`
+installs one runner and the target now runs another, as a React Native project from before 2.0 does, it writes
+nothing and exits 1, since the suites, setup and test scripts it would strand are yours to port.
 
 ## Agents
 

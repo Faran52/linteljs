@@ -2,7 +2,7 @@
 paths:
   - "**/*.{test,spec}.{ts,tsx}"
   - "__mocks__/**/*"
-  - "vitest.config.ts"
+  - "jest.config.js"
 ---
 
 # Testing Rules
@@ -11,24 +11,21 @@ Use these rules when touching tests, mocks, or test setup.
 
 ## Infrastructure
 
-- **Vitest, the same runner as every other target.** React Native ships untranspiled source
-  inside `node_modules`, so a runner has to strip the Flow types before it can load any of it;
-  `@srsholmes/vitest-react-native` is the plugin that does, and it stands in for the native
-  modules underneath.
-- **Two projects, native and web.** A module with a `.web` variant is resolved differently on each
-  platform, so a single run loads one and never executes the other. `vitest.config.ts` declares a
-  project per platform, and a suite against the web variant takes that variant's name:
-  `AnimatedIcon.web.tsx` is pinned by `AnimatedIcon.web.test.tsx`, and only the web project picks
-  it up. A test written against the native implementation fails when the web variant resolves under
-  it, which is why the two run different files rather than the same ones twice.
+- **Jest, through `jest-expo`'s default preset.** It is the runner Expo ships and tests against.
+  Babel compiles every suite to CommonJS, so a top-level `await` cannot run: reach a module through
+  `jest.requireActual` or a plain `import`, and keep a `jest.mock` factory synchronous.
+- **One project, the native one.** The preset resolves as iOS. A branch on the platform is reached
+  by replacing the value it reads, `jest.replaceProperty(Platform, 'OS', 'web')`, not by a second
+  run. Should a module gain a `.web` variant, it needs a second project whose resolver prefers the
+  `.web` sibling, or that variant stays at 0%.
 - React Native Testing Library. Query by what a user or a screen reader reaches: `getByRole`,
   `getByLabelText`, `getByText`. Never by `testID` where a role or a label exists.
 - Test globals are available without import. Do not mix bare and imported styles in one file.
-- `__mocks__/setupTests.tsx` is the run's `setupFiles`, wired from `vitest.config.ts`. It carries
+- `__mocks__/setupTests.tsx` is the run's `setupFilesAfterEnv`, wired from `jest.config.js`. It carries
   the stand-ins for the native modules the template imports: nothing native runs under a unit
   test, so each of those throws at import time rather than returning something wrong.
 - Coverage is 100% on statements, branches, functions and lines, the same bar every other target
-  carries. `vitest.config.ts` holds the thresholds; never lower one to make a run pass.
+  carries. `jest.config.js` holds the thresholds; never lower one to make a run pass.
 
 ## Mocking the platform
 
@@ -52,8 +49,8 @@ notes: each one is the difference between a test that runs and one that dies at 
   hits the spread problem above and replaces far more than the test needs.
 - **`Platform.select` is read once, at module load.** A module that branches on the platform has
   already chosen by the time a test imports it, so reassigning `Platform.OS` afterwards reaches
-  nothing. `vi.resetModules()` with a `vi.doMock` per platform, then a fresh dynamic `import()`, is
-  the only way to execute a second arm, and an `afterEach` that unmocks and resets keeps one case
+  nothing. `jest.resetModules()` with a `jest.doMock` per platform, then a fresh `require`, is the
+  only way to execute a second arm, and an `afterEach` that unmocks and resets keeps one case
   out of the next.
 - **A `useSyncExternalStore` hook needs all three of its callbacks run.** Stub the hook so the test
   drives them: React only reaches `getServerSnapshot` during hydration, and the unsubscribe that
@@ -80,12 +77,12 @@ branch you cannot reach by rendering alone:
 
 ## Writing the mock itself
 
-- **`vi.hoisted` for anything a factory reads.** A `vi.mock` factory is lifted above every other
-  binding in the file, so a plain `const` it closes over is still undefined when it runs.
-- **A plain property is served from a mutable, not spied on.** `Device.isDevice` and
-  `process.env.EXPO_OS` are values rather than functions, so there is nothing to spy: hold them in a
-  hoisted object the tests write, and the module reads whatever the current case set. `EXPO_OS`
-  stays a runtime read under Vitest, where `babel-preset-expo` would have inlined it at build time.
+- **A factory closes over `mock*` names only.** Jest lifts every `jest.mock` call above the
+  imports, and refuses a factory that reads any other outer binding, since it would still be
+  undefined when the factory runs. Name what it reads `mockSomething`, and read it lazily.
+- **A plain property is replaced, not spied on.** `Platform.OS` and `Device.isDevice` are values
+  rather than functions, so there is nothing to spy: `jest.replaceProperty` swaps the value for one
+  case, and `jest.restoreAllMocks()` puts it back.
 
 ## What a component test asserts
 

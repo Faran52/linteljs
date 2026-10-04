@@ -136,6 +136,15 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- **React Native runs its suites on Jest, through `jest-expo`, not Vitest.** The project gets `jest.config.js`
+  (the `jest-expo` preset, a module mapper from `tsconfig.json`'s paths, 100% thresholds on all four metrics),
+  `jest`, `@types/jest`, `eslint-plugin-jest`, `jest-expo` and `@react-native/jest-preset`, the `jest` lint layer and
+  Jest's types, and drops the Vitest plugin that stood in for the native renderer, `@vitejs/plugin-react` and the
+  `esbuild` build approval. Coverage stays at 100%, and RNTL's `hostComponentNames` warning is gone. Jest is held
+  to 29, jest-expo 57's own major; suites compile through Babel to CommonJS, and a run takes about 3.6 s where
+  Vitest took 1.4 s. With msw, the config resolves `msw/node` and transforms its ES-only dependencies; with
+  redux-toolkit, it transforms `immer` and `react-redux`. A React Native project from before 2.0 keeps its suites
+  on Vitest until they are ported: `sync` writes nothing there and exits 1, naming both runners.
 - **A new project passes its own `check` with nothing from the fix stage.** Every emitted file lands as
   `eslint --fix` and `stylelint --fix` would leave it, under the layers' layout rules: one call per line in a chain,
   one item per line in a list of three or more, imports grouped by framework and by the project's own aliases, one

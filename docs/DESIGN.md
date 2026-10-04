@@ -1126,16 +1126,58 @@ which runs no compiler. React Native keeps Expo's path through `babel-preset-exp
 
 ## React Native
 
-### Vitest, like every other target
+### Jest and jest-expo, not Vitest
 
-One runner across all ten, so `testing` is a yes or no rather than a choice of runner. `jest-expo` reaches 71%
-coverage and stops: modules that exist only as `.web` are never loaded by a native run, and jest-expo's web project
-does not survive Reanimated's web build. Two vitest projects with different `resolve.extensions` load both, and
-with `babel-preset-expo` out of the path `Platform.OS` and `process.env.EXPO_OS` stay runtime reads. That is the
-difference between 71% and 100%. The cost is `@srsholmes/vitest-react-native`, at 0.1.x and one maintainer, in the
-path of the gate; if it goes unmaintained the way back is `jest-expo` and a lower ceiling, not a lower threshold.
-It passes `hostComponentNames` to `@testing-library/react-native` 14, which dropped the option and warns per suite;
-measured harmless, and pinning back a major to silence a warning is the wrong trade.
+React Native is the one target whose suites run on Jest, through `jest-expo`'s default preset: the runner Expo
+ships and tests against, rather than a Vitest plugin at 0.1.x with one maintainer standing in for the native
+renderer. The trade is stability. The gate holds: a generated project reaches 100% on statements, branches,
+functions and lines (measured 2026-10-04 on a tanstack-query, zustand, i18n project: 179 statements, 58 branches,
+53 functions, 80 of 80 tests; 83 of 83 once the LanguageSelect radiogroup case was added). `testing` stays a yes or
+no: the target picks the runner, through the record's `testRunner`.
+
+This section used to say jest-expo stops at 71%. The spike refuted that: 71% was a half-finished port, 73% with 9 of
+17 suites failing to load on port errors (`Vitest cannot be imported in a CommonJS module`, `toHaveBeenCalledOnce is
+not a function`, ``Property `OS` does not have access type get``). Every uncovered line needed a test or a mock, none
+was unreachable. `Platform.OS` stays a runtime read under jest-expo, so `jest.replaceProperty(Platform, 'OS', 'web')`
+covers a web branch. No target writes a `.web` module, so one native project is all it takes; were one added, a
+second project on the native preset with a resolver preferring the `.web` sibling measured 100% again.
+
+The cost, measured:
+
+- Babel compiles every suite to CommonJS, not native ESM. A top-level `await` cannot run, so the setup and the msw
+  fragment (`setupTests.mswJest.ts`) take modules through `jest.requireActual`, and a `jest.mock` factory is sync.
+- Jest is pinned to `^29.7.0`, jest-expo 57's own major: jest-expo 57.0.5 depends on Jest 29 packages (`babel-jest`,
+  `jest-environment-jsdom`, `@jest/globals`). Under the Jest 30 runner it works, but with two Jest majors in the
+  tree, and `node_modules` grew from 587M to 745M.
+- Slower: a warm run with coverage takes about 3.6 s against Vitest's 1.4 s (7.3 s with `--no-cache`).
+
+No worklets resolver. `react-native-worklets/jest/resolver.js` lets the real Reanimated load, but under pnpm it
+strips the native extensions from any `basedir` naming `react-native-worklets`, and expo-modules-core's `.pnpm`
+directory carries that peer in its name. `NativeViewManagerAdapter` then resolves to its web file, which throws
+`requireNativeViewManager is not available on ios` (from expo-glass-effect, through expo-router). The spike ran on
+npm and never saw it. Reanimated keeps the View stand-in mock.
+
+The `react-native` export condition jest-expo resolves takes a fix in `jest.config.js` for two answers. msw's `msw/node`
+exports `"react-native": null`, so with msw the config sets `customExportConditions` to `node`, `require`,
+`react-native`, and its CommonJS build requires three ES-only dependencies (`rettime`, `until-async`,
+`@open-draft/deferred-promise`), two as `.mjs`, which the preset neither un-ignores nor transforms: the config
+un-ignores them and adds a `.mjs` transform reusing the preset's own `babel-jest` entry. With redux-toolkit the
+condition picks `immer` and `react-redux`'s `legacy-esm` builds, which the preset ignores, so both are un-ignored.
+The un-ignore list is built from the answers.
+
+No `babel.config.js`. The default preset carries its own Babel transform; only the `jest-expo/<platform>` presets
+pass `babel-jest` a bare `caller` and fail without one (`SyntaxError: .../@react-native/jest-preset/jest/setup.js:
+Unexpected token`). Measured at 100% on all four metrics without it, under Jest 30 and 29.7.
+
+The `hostComponentNames` warning is gone. The Vitest plugin passed that option to `@testing-library/react-native`
+14, which dropped it and printed `Unknown option(s) passed to configure: hostComponentNames` 17 times a run; Jest
+prints none, and the end-to-end run of `react-native pnpm` passed 16 of 16 with no such line.
+
+`sync` changes no runner. A project generated while React Native ran on Vitest keeps its suites, its setup and its
+`test` scripts, none of which `sync` owns, so a sync writing the Jest configs would strand them: measured on such a
+project, it rewrote `tsconfig.json` and `eslint.config.js` for Jest and left every suite unresolved, `eslint .`
+failing. Where `package.json` installs one runner and the target now runs another, `sync` writes nothing and exits 1
+naming both; the project ports its suites, swaps the dependencies, and syncs again.
 
 ### `build` is `expo export`, and it takes a layout rule
 
@@ -1672,13 +1714,17 @@ unawaited promise, and an SFC pair. Linting them reports the defect each exists 
 `.svelte` pair cannot parse without the layers those tests compose.
 
 `templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts`,
-`setupTests.i18n.ts`, `setupTests.reactNativeI18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
+`setupTests.mswJest.ts`, `setupTests.i18n.ts`, `setupTests.reactNativeI18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
 what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setups
 reach for `@i18n` alike, an alias only that project declares. They are data here
 and code only in a generated project, where that project's own `eslint .` judges them; `pnpm lint:starters` and the
 end-to-end suite are what prove it.
+
+Measured on 2026-10-05 for `setupTests.mswJest.ts`, the Jest twin of the MSW setup: without its entry, `eslint` on
+it reports 9 errors, every one `no-unsafe-call`, `no-unsafe-member-access` or `no-unsafe-assignment`, because the
+`jest` global and `./msw/node` resolve to nothing here.
 
 ### `'**/utils/*.ts': '*Utils'`
 
