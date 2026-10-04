@@ -164,6 +164,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `linteljs.config.json` records only the answers its target asks. Every target but a web extension recorded
+  `"browser": "chrome"`, an answer it never prompts for; reading a config fills it back in, so an existing one
+  still loads.
 - A device that names Chinese by script, as iOS does with `zh-Hans-CN` and `zh-Hant-TW`, opens a project in `zh-CN`
   or `zh-TW` rather than in English, on every target. A React Native project declares Chinese to iOS as `zh-Hans`
   and `zh-Hant`, the designators iOS matches, and keeps `zh-CN` and `zh-TW` for Android.

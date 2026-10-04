@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+import { omit } from 'es-toolkit';
 import {
   afterEach,
   beforeEach,
@@ -367,7 +368,7 @@ describe('applySync', () => {
     const configText = await readFile(join(cwd, CONFIG_PATH), 'utf8');
     const config: unknown = JSON.parse(configText);
 
-    expect(config).toMatchObject(HOSTED_DEFAULTS);
+    expect(config).toMatchObject(omit(HOSTED_DEFAULTS, ['browser']));
   });
 
   it('keeps a 1.x config it is told to remove while the current name is unwritten', async () => {
