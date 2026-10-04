@@ -32,8 +32,9 @@ npx @linteljs/create --existing
 npx @linteljs/create sync
 ```
 
-`--existing` applies the standard in place. `sync` lists every linteljs-owned file and `@linteljs/*` version it
-would change in one table and asks once, or applies with `--yes`. It plans from `linteljs.config.json`, so it never
+`--existing` applies the standard in place. `sync` rewrites `plugins/linteljs/`, then asks before each
+other step: the `@linteljs/*` versions, the ESLint config's peers, and a changed ESLint config, which it backs up
+to `.bak` first. `--yes` accepts every step. It plans from `linteljs.config.json`, so it never
 guesses a framework or overrides a recorded choice.
 
 ## Why

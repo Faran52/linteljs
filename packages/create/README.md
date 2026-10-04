@@ -86,7 +86,7 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --no-install      skip the install and the eslint --fix pass that needs it
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
-  --yes, -y         accept the defaults, ask nothing; sync: apply without asking
+  --yes, -y         accept the defaults, ask nothing; sync: accept every step
   --version, -v
   --help, -h
 ```
@@ -105,17 +105,25 @@ npx @linteljs/create sync --yes
 `--existing` applies the standard in place, reading `linteljs.config.json` if it exists and asking otherwise; it
 never guesses a framework.
 
-`sync` updates only what linteljs owns: its hooks, scripts and configs, and the `@linteljs/*` versions in
-`package.json`, which it moves only when they are behind. It shows one table of the files to add, update or delete
-and the versions to upgrade, then asks once. `--yes` applies without asking; without a terminal and without
-`--yes` it writes nothing and exits 1. A dependency the project lacks is printed as an install command for its
-package manager, never written. After its first write, `sync` never rewrites your other dependencies or
-`package.json` scripts, `.github/workflows/ci.yml`, `vite.config.ts`, `vitest.config.ts`, `jest.config.js`, `astro.config.mjs`,
-`angular.json`, Expo's `app.json`, `linteljs.config.json`, your README, the starter source, or an agent's
-instruction file. Removing an agent from the config removes only the exact paths linteljs wrote for it, and
-dropping any other answer removes what it alone wrote. Nor does `sync` switch a test runner: where `package.json`
-installs one runner and the target now runs another, as a React Native project from before 2.0 does, it writes
-nothing and exits 1, since the suites, setup and test scripts it would strand are yours to port.
+`sync` refuses first where `package.json` installs one test runner and the target now runs another, as a React
+Native project from before 2.0 does: it writes nothing and exits 1, since the suites, setup and test scripts it
+would strand are yours to port. Otherwise it takes four steps:
+
+1. `plugins/linteljs/` is linteljs's whole, so it is rewritten without asking. A path linteljs recorded there and
+   no longer writes, such as a dropped agent's, is deleted, and the directories that leaves empty go with it.
+   Nothing outside `plugins/linteljs/` is ever deleted.
+2. The `@linteljs/*` versions in `package.json` that are behind are shown as a table, then a y/N. A range that is
+   not a version, such as `workspace:*`, is never moved.
+3. The peers `@linteljs/eslint-config` needs that are missing or behind get their own y/N; on yes they are
+   written to `package.json` and the `<pm> install` to run is printed.
+4. A missing ESLint config is written without asking. One that differs from what linteljs would write gets a
+   y/N; on yes it moves to the first free `.bak`, `.bak.1` and so on, and a fresh `eslint.config.js` is written.
+
+`--yes` accepts every step. Without a terminal and without `--yes`, a step that would ask writes nothing, says so
+on stderr, and the run exits 1. Declining a step exits 0. Nothing else is touched: your other dependencies and
+scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs, the agent files outside
+`plugins/linteljs/`, `linteljs.config.json`, your README and the starter source are yours after `create`. A
+project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to move them.
 
 ## Agents
 

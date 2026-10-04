@@ -15,7 +15,7 @@
   "aboutCheck": "<code>{command}</code>가 이것들을 순서대로 실행하며, CI도 이것을 실행합니다.",
   "aboutStandard": "표준이 있는 곳",
   "aboutCurrent": "최신 상태 유지",
-  "aboutSync": "<code>{command}</code>는 업데이트 후 표준을 다시 적용합니다. 도구 체인만 다시 쓰고 소스 코드는 절대 건드리지 않습니다.",
+  "aboutSync": "<code>{command}</code>는 업데이트 후 표준을 다시 적용합니다. 에이전트 플러그인을 다시 쓰고, ESLint 설정이나 package.json을 바꾸기 전에 먼저 확인하며, 소스 코드는 절대 건드리지 않습니다.",
   "standardEslint": "@linteljs/eslint-config에서 가져온 레이어",
   "standardSkills": "코딩 에이전트가 코드를 쓰기 전에 읽는 규칙",
   "standardConfig": "이 프로젝트를 생성할 때 사용한 답변",

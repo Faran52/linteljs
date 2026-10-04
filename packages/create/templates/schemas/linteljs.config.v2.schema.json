@@ -68,7 +68,7 @@
       ]
     },
     "packageManager": {
-      "description": "The package manager that ran create, recorded so sync runs the same one.",
+      "description": "The package manager that ran create, recorded so sync names the same one in the install it prints.",
       "enum": [
         "pnpm",
         "npm",

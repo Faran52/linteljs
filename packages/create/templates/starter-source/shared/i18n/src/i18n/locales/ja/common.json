@@ -15,7 +15,7 @@
   "aboutCheck": "<code>{command}</code> がこれらを順に実行します。CI が実行するのもこれです。",
   "aboutStandard": "標準の置き場所",
   "aboutCurrent": "最新に保つ",
-  "aboutSync": "<code>{command}</code> は更新後に標準を適用し直します。ツールチェーンを書き換えますが、ソースには一切触れません。",
+  "aboutSync": "<code>{command}</code> は更新後に標準を適用し直します。エージェントプラグインを書き換え、ESLint の設定や package.json は変更前に確認し、ソースには一切触れません。",
   "standardEslint": "@linteljs/eslint-config から読み込むレイヤー",
   "standardSkills": "コーディングエージェントが書く前に読むルール",
   "standardConfig": "このプロジェクトの生成に使われた回答",

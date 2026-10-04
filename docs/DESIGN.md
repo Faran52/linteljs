@@ -1091,7 +1091,7 @@ webextension popup.
 
 `aliases`, `ignores`, `resolveConditions` and `browsers` are recorded, not asked: facts about a project, discovered
 after generation and edited into `linteljs.config.json` by hand. `aliases` exists because `eslint.config.js` is
-emitted whole, so an alias added there would be gone on the next sync; recorded, one line reaches the ESLint config,
+emitted whole, so an alias added there would be lost to the next config linteljs writes; recorded, one line reaches the ESLint config,
 the tsconfig paths and the resolver together. `browsers` is separate from `browser` because `browser` decides the
 background shape, ambient types and starter code, while `browsers` decides how many manifests come out: a project
 shipping to both stores builds one bundle and swaps the manifest at package time, since the two differ only in
@@ -1174,10 +1174,11 @@ The `hostComponentNames` warning is gone. The Vitest plugin passed that option t
 prints none, and the end-to-end run of `react-native pnpm` passed 16 of 16 with no such line.
 
 `sync` changes no runner. A project generated while React Native ran on Vitest keeps its suites, its setup and its
-`test` scripts, none of which `sync` owns, so a sync writing the Jest configs would strand them: measured on such a
-project, it rewrote `tsconfig.json` and `eslint.config.js` for Jest and left every suite unresolved, `eslint .`
-failing. Where `package.json` installs one runner and the target now runs another, `sync` writes nothing and exits 1
-naming both; the project ports its suites, swaps the dependencies, and syncs again.
+`test` scripts, none of which `sync` owns, so a sync writing the Jest lint config would strand them: measured on
+such a project, rewriting `tsconfig.json` and `eslint.config.js` for Jest left every suite unresolved, `eslint .`
+failing. So the refusal runs before any other step: where `package.json` installs one runner and the target now runs
+another, `sync` writes nothing and exits 1 naming both; the project ports its suites, swaps the dependencies, and
+syncs again.
 
 ### `build` is `expo export`, and it takes a layout rule
 
@@ -1285,54 +1286,68 @@ Every file this CLI owns reaches disk as an `Artifact` through `artifactWriter`;
 `projectFileWriter` call, which its suite pins by reading its own source. Adding a conditional file is an emitter,
 never an orchestrator edit, which would move up a level the `switch (target)` the emitters are barred from.
 
-### Two artifact lists, and why `sync` sees only one
+### Two artifact lists, and why `sync` sees only part of one
 
-- `buildArtifacts` is the toolchain linteljs maintains. `create` and `sync` both write from it, which is what lets
-  `sync` re-apply a changed standard to an existing project.
+- `buildArtifacts` is the toolchain linteljs maintains, and `create` writes all of it. `sync` writes only its
+  `plugins/linteljs/` entries, plus the ESLint config and the `@linteljs/*` dependencies, each behind its own y/N.
 - `seedArtifacts` is what a `create` run plants and `sync` never touches: `linteljs.config.json`, the README, the
   manifest and the starter source.
 
 `sync` reads `linteljs.config.json` rather than writing it, so a project that reformatted its config keeps those
-bytes through `sync`. The one exception is a 1.x project, whose answers sit in `lintel.config.json`. `sync` and
-`create --existing` both write `linteljs.config.json` first and remove the old file only after, because until the
-new name is on disk the old one is the only copy of the answers. Two properties carry what would otherwise be branches in the pipeline: `seed: true`
-is birth only (`create`, and `--existing --seed`), and `requires` names a path that has to exist, which skips a
-starter test whose file a rearranged starter moved. A `preserve` file that already exists is the project's on
-every run, born or not.
+bytes. A 1.x project, whose answers sit in `lintel.config.json`, moves them with `create --existing`, which writes
+`linteljs.config.json` first and removes the old file only after, because until the new name is on disk the old
+one is the only copy of the answers. Two properties carry what would otherwise be branches in the pipeline:
+`seed: true` is birth only (`create`, and `--existing --seed`), and `requires` names a path that has to exist,
+which skips a starter test whose file a rearranged starter moved. A `preserve` file that already exists is the
+project's on every `create --existing` run.
+
+### What `sync` writes, and what it asks first
+
+The runner-switch refusal runs first (see the Jest section). Then:
+
+- **`plugins/linteljs/` is written without asking.** The folder is linteljs's whole, the one tree no project edits.
+- **The `@linteljs/*` versions behind** are shown as a table, then a y/N. Only those entries of `package.json`
+  move; a range that is not a version, such as `workspace:*`, never does.
+- **The `@linteljs/eslint-config` peers missing or behind** get their own y/N, after which the `<pm> install` to
+  run is printed. Every other dependency, the framework included, stays the project's.
+- **The ESLint config** is written without asking when none exists. One that differs gets a y/N, which moves the
+  first spelling ESLint would load to the first free `.bak`, `.bak.1` and so on, then writes `eslint.config.js`.
+  A moved file is never lost, so the project can diff the two and carry its additions over.
+
+`--yes` accepts every step. With no terminal and no `--yes`, a step that would ask writes nothing, says so on
+stderr, and the run exits 1, so CI cannot read a skipped step as a pass. Declining exits 0.
 
 ### Birth-only and merged files
+
+Every file outside `plugins/linteljs/` and the ESLint config is the project's once `create` has written it, and
+`sync` writes none of them. The reasons each one is the project's still decide what `create --existing` does over
+an existing file.
 
 **The build configs are birth-only.** `vite.config.ts`, `vitest.config.ts`, `astro.config.mjs` and the test setup
 carry `preserve`. What this CLI writes is a starting point every real project outgrows inside its first feature:
 one reference extension builds an IIFE bundle per content script plus a native messaging host, another a second
 mode for a preview page, and the emitted vitest excludes name this CLI's guesses at a layout where a project excludes
-the entry points it has. Re-emitting would flatten that, and reporting it as `changed` invites a `sync` that
-does.
+the entry points it has.
 
-**`.github/workflows/ci.yml` is birth-only too.** It carries `preserve`: `create` writes it, and `sync` writes it
-only when it is missing. A project's CI grows its own jobs (a deploy, a matrix), and `sync` no longer writes
-`package.json` scripts either, so the workflow and the scripts it calls stay the project's together. The command is
-still derived from `buildScripts` at birth, since a workflow cannot name a script `package.json` does not define.
+**`.github/workflows/ci.yml` is birth-only too.** A project's CI grows its own jobs (a deploy, a matrix), and the
+workflow and the scripts it calls stay the project's together. The command is derived from `buildScripts` at
+birth, since a workflow cannot name a script `package.json` does not define.
 
-**`package.json` is a merged artifact**, like `.gitignore` and `pnpm-workspace.yaml`. `create` writes the full patch
-through `patchPackageJson`. `sync` goes through `MergedText.resync` (`config/types.ts`), which a merge supplies
-when the project owns more of an existing file than the merge leaves: it moves only the `@linteljs/*` versions, and
-only when they are behind. A range that is not a version, such as `workspace:*`, is never moved. Any other
-dependency the answers imply and the project lacks is printed as an install command for the project's manager,
-never written, so the framework and every other version stay the project's.
-
-**`.gitignore` needs no `resync`.** Its merge only appends the lines it lacks under `# linteljs`, and never removes
-or reorders one, so `sync` cannot undo a project's edit.
-
-**`pnpm-workspace.yaml` keeps `ignoredBuiltDependencies` on `sync`.** Its merge only adds a block that is absent,
-except that at birth it drops the scaffolder's `ignoredBuiltDependencies`, which opts out of exactly the builds
-linteljs opts into. On `sync` its `resync` keeps that block, since by then it is the project's own.
+**`package.json`, `.gitignore` and `pnpm-workspace.yaml` are merged artifacts.** `create` writes them through a
+merge that adds what is missing and keeps the rest. At birth the `pnpm-workspace.yaml` merge drops the
+scaffolder's `ignoredBuiltDependencies`, which opts out of exactly the builds linteljs opts into.
 
 ### What `sync` may delete, and why the project holds the list
 
-A project records what this CLI wrote in `plugins/linteljs/managed.json`, and `sync` deletes what is in that
-record and no longer expected. It lives in linteljs's own tree rather than in `linteljs.config.json`, which is the
-project's to reformat.
+A project records what this CLI wrote under `plugins/linteljs/` in `plugins/linteljs/managed.json`, and `sync`
+deletes what is in that record and no longer expected. It lives in linteljs's own tree rather than in
+`linteljs.config.json`, which is the project's to reformat.
+
+A recorded path is deleted only when it starts with `plugins/linteljs/`, does not end in `/`, and is unchanged by
+`posix.normalize`, so a hand-edited record cannot reach outside the folder or take a directory. The directories
+the deletions leave empty are removed after, since an empty `.claude-plugin/` reads as if the host were still
+configured. Nothing outside the folder is ever deleted: a host file such as `.cursor/hooks.json` may hold the
+project's own entries.
 
 The record exists because there is no other way to know. Answers change by hand-editing the config, so by the time
 `sync` reads it the previous answers are gone. A hand-written list of paths drifts the moment a rule file is added,
@@ -1405,7 +1420,7 @@ subcommand and a `case` body still pass.
 silent), reads the transcript's last usage, and warns once past 150K: the marker lives in `CLAUDE_PLUGIN_DATA`, and
 dropping back under the ceiling, as a compact does, clears it. Since a plugin cannot set `statusLine`, both badges
 are written into the generated `.claude/settings.json` and run the plugin's scripts through
-`${CLAUDE_PROJECT_DIR}`. A project's own `statusLine` or `subagentStatusLine` wins on a sync. The main badge reads
+`${CLAUDE_PROJECT_DIR}`. A project's own `statusLine` or `subagentStatusLine` wins on a `create --existing` run. The main badge reads
 the payload's token count and falls back to the transcript; a subagent row reads its own transcript under
 `subagents/` and falls back to `tokenCount`, since the two are not the same measure. The main badge refreshes every
 5 seconds, so it moves while a long tool call runs. The number is always printed, so colour is never the only cue.
@@ -1443,11 +1458,11 @@ answers under Cursor on the one event `.cursor/hooks.json` gives it, and Claude 
 `preToolUse` and `postToolUse` on `Write`, which are not those, and prints nothing. That is decided from the
 payload rather than a flag, so it holds however Cursor loaded the copy.
 
-`.cursor/hooks.json` is merged, since every Cursor project hook shares it: a sync replaces the entries naming
-`plugins/linteljs/hooks/` and keeps the rest, and dropping Cursor removes the file. `.github/hooks/linteljs.json` is
-linteljs's own name in a directory Copilot reads whole, so it is owned outright. VS Code's Local agent also reads
-`.github/hooks/*.json` but sends its own payloads with tool names it leaves to the debug log, so nothing relies on
-it.
+`.cursor/hooks.json` is merged, since every Cursor project hook shares it: a `create --existing` run replaces the
+entries naming `plugins/linteljs/hooks/` and keeps the rest, and `sync` never touches it.
+`.github/hooks/linteljs.json` is linteljs's own name in a directory Copilot reads whole, so it is owned outright. VS
+Code's Local agent also reads `.github/hooks/*.json` but sends its own payloads with tool names it leaves to the
+debug log, so nothing relies on it.
 
 ## Comments
 

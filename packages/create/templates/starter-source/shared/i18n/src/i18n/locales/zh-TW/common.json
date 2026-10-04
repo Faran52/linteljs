@@ -15,7 +15,7 @@
   "aboutCheck": "<code>{command}</code> 會依序執行它們，CI 執行的也是它。",
   "aboutStandard": "標準存放在哪裡",
   "aboutCurrent": "保持最新",
-  "aboutSync": "<code>{command}</code> 會在更新後重新套用標準。它會改寫工具鏈，但從不更動你的原始碼。",
+  "aboutSync": "<code>{command}</code> 會在更新後重新套用標準。它會改寫代理外掛，修改 ESLint 設定或 package.json 前會先詢問，且從不更動你的原始碼。",
   "standardEslint": "各層設定，從 @linteljs/eslint-config 匯入",
   "standardSkills": "程式設計代理在撰寫程式碼前閱讀的規則",
   "standardConfig": "產生本專案時使用的回答",

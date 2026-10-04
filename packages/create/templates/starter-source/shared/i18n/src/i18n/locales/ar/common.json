@@ -15,7 +15,7 @@
   "aboutCheck": "يشغّلها <code>{command}</code> بالترتيب، وهو ما يشغّله CI.",
   "aboutStandard": "أين يوجد المعيار",
   "aboutCurrent": "إبقاؤه محدّثًا",
-  "aboutSync": "يعيد <code>{command}</code> تطبيق المعيار بعد التحديث. يعيد كتابة أدوات البناء ولا يمسّ شيفرتك المصدرية أبدًا.",
+  "aboutSync": "يعيد <code>{command}</code> تطبيق المعيار بعد التحديث. يعيد كتابة إضافة الوكيل، ويسأل قبل تغيير إعدادات ESLint أو package.json، ولا يمسّ شيفرتك المصدرية أبدًا.",
   "standardEslint": "الطبقات، مستوردة من @linteljs/eslint-config",
   "standardSkills": "القواعد التي يقرؤها وكيل البرمجة قبل أن يكتب",
   "standardConfig": "الإجابات التي أُنشئ منها هذا المشروع",

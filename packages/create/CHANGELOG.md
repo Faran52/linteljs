@@ -18,22 +18,27 @@ when a version's change lives in a sibling it is described there instead:
   `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
   below its floor is refused, never upgraded: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is refused too.
 - **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read by
-  `create --existing` and `sync`, which write its answers under the new name and then remove the old one. A v1 file
+  `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not. A v1 file
   is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into `form`,
   `styling` and `data`, and `store: true` becomes the target's first store.
 - **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
-  `sync` rewrites the file.
+  `sync` offers to move the old file to `.bak` and write the new one.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
-- **`sync` changes only what linteljs owns, and asks once.** It shows one table of the files to add, update or
-  delete and the `@linteljs/*` versions to upgrade, then asks; `--yes` applies without asking, and without a
-  terminal and without `--yes` it writes nothing and exits 1. `--force` is gone, and `sync` no longer prints a
-  diff per file.
-  - In `package.json` it moves only the `@linteljs/*` versions, and only when they are behind. Any other
-    dependency the project lacks is printed as an install command, never written.
-  - `.github/workflows/ci.yml` is written only when a project is created, or by `sync` when it is missing.
-  - It keeps `ignoredBuiltDependencies` in `pnpm-workspace.yaml`. Only `create` drops it.
+- **`sync` writes only `plugins/linteljs/` without asking, and asks before each other step.** `--force` is gone,
+  and `sync` no longer prints a diff per file.
+  - A test-runner switch is refused first: it writes nothing and exits 1.
+  - `plugins/linteljs/` is rewritten. A path recorded there and no longer written is deleted, and the directories
+    left empty with it. Nothing outside `plugins/linteljs/` is deleted.
+  - The `@linteljs/*` versions behind are shown as a table, then a y/N. The `@linteljs/eslint-config` peers
+    missing or behind get their own y/N, then the `<pm> install` to run is printed.
+  - A missing ESLint config is written. One that differs gets a y/N that moves it to the first free `.bak`,
+    `.bak.1` and so on, then writes `eslint.config.js`.
+  - `--yes` accepts every step. Without a terminal and without `--yes`, a step writes nothing, says so on stderr,
+    and the run exits 1. Declining exits 0.
+  - Every other file, `.github/workflows/ci.yml`, `.claude/settings.json`, the agent files, `scripts/` and the
+    manager files included, is the project's after `create`; `create --existing` reapplies them.
 
 ### Added
 
@@ -105,13 +110,14 @@ when a version's change lives in a sibling it is described there instead:
   `react-router-framework`, `eslint.config.js` sets `aliasExempt: ['src/routes.ts']` and
   `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
   the aliases.
-- `sync` removes what a deselected answer left behind, from the record in `plugins/linteljs/managed.json`.
+- `sync` removes what a deselected answer left behind in `plugins/linteljs/`, from the record in
+  `plugins/linteljs/managed.json`.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
-  `.github/hooks/linteljs.json`, both removed by `sync` when the agent is dropped. The command guards read
+  `.github/hooks/linteljs.json`. The command guards read
   PowerShell as well as Bash, and `--no-verify` is denied on any git subcommand.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
-  130K, red past 150K. A project's own status lines are kept on a `sync`.
+  130K, red past 150K. A project's own status lines are kept on `create --existing`.
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
   `onFail: "error"`; Bun gets `engines.bun` only. CI runs the Node major that ran `create`.
 - New releases wait two days before they install, so a half-published version is not picked up the minute it
@@ -208,7 +214,7 @@ when a version's change lives in a sibling it is described there instead:
   `/* eslint-disable */`. It blanked every block comment before matching, so only the `//` form was caught, and a
   `/*` inside a template literal could blank the lines after it. Its logic now lives in
   `scripts/utils/bannedPatternsUtils.ts`, and `typecheckStaged.ts`'s in `scripts/utils/typecheckStagedUtils.ts`;
-  the entries keep the lines `sync` writes and carries over. A carried-over `PROJECT_BANNED` that calls
+  the entries keep the lines `create --existing` writes and carries over. A carried-over `PROJECT_BANNED` that calls
   `directive()` gets the import from the util.
 - The git safety hook reads heredocs, command substitutions, subshells and compound commands in bash. A heredoc
   body was read as shell, so one apostrophe in it denied the command as unreadable, and `$(git stash)`, a

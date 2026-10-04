@@ -1,4 +1,4 @@
-// `sync` rewrites this file but carries over your `PROJECT_BANNED` and `PROJECT_SKIPPED` lists.
+// `create --existing` rewrites this file but carries over your `PROJECT_BANNED` and `PROJECT_SKIPPED` lists.
 import { argv, exit } from 'node:process';
 
 import {

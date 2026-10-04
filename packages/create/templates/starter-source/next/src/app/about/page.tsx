@@ -53,7 +53,8 @@ const AboutPage = (): ReactNode => {
           <code>npx @linteljs/create sync</code>
           {' '}
           re-applies the standard after an update. It rewrites the
-          toolchain and never touches your source.
+          agent plugin, asks before it changes
+          the ESLint config or package.json, and never touches your source.
         </p>
       </section>
     </main>
