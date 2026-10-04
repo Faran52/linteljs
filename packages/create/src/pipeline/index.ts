@@ -4,5 +4,6 @@ export {
   applySync,
   type PendingStatus,
   planSync,
+  runnerSwitch,
   type SyncPlan,
 } from './runs/sync/syncRun';

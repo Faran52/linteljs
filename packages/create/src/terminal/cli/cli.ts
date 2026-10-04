@@ -25,6 +25,7 @@ import {
   applySync,
   pipelineRun,
   planSync,
+  runnerSwitch,
 } from '@pipeline';
 
 import packageJson from '../../../package.json' with { type: 'json' };
@@ -157,6 +158,22 @@ const runSync = async (
   prompter: Prompter,
   hasTerminal: boolean,
 ): Promise<number> => {
+  const switched = await runnerSwitch(options.cwd, answers);
+
+  if (switched !== null) {
+    const { from, to } = switched;
+
+    const message = [
+      `Nothing was written: this project runs its suites on ${from}, and linteljs now runs them on ${to}.`,
+      'sync changes no runner, since the suites, setup and test scripts are the project\'s.',
+      `Port them to ${to}, swap the dependencies, and run sync again.`,
+    ].join(' ');
+
+    console.error(message);
+
+    return 1;
+  }
+
   const plan = await planSync(options.cwd, answers);
   const install = installCommands(answers.packageManager, plan.missing);
 

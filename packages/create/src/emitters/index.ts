@@ -1,5 +1,6 @@
 export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 export { styleGlob } from './always/utils/scriptUtils';
+export { TEST_RUNNERS } from './constants';
 export {
   buildArtifacts,
   seedArtifacts,
@@ -13,6 +14,7 @@ export {
   type MissingDependencies,
   parsePackageJson,
 } from './utils/packageJsonUtils';
+export { testRunnerOf } from './utils/runnerUtils';
 export {
   type Artifact,
   type ArtifactContent,

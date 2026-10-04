@@ -29,6 +29,7 @@ import { parsePackageJson } from '@emitters';
 import {
   applySync,
   planSync,
+  runnerSwitch,
   type SyncEntry,
   type SyncResult,
 } from './syncRun';
@@ -676,5 +677,65 @@ describe('sync limits itself to what linteljs owns', () => {
 
     const file = await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
     expect(file).toContain(workspace);
+  });
+});
+
+describe('runnerSwitch', () => {
+  const REACT_NATIVE: HostedAnswers = {
+    ...HOSTED_DEFAULTS,
+    target: 'react-native',
+  };
+
+  const withDevDependencies = async (devDependencies: Record<string, string>): Promise<void> => {
+    const manifest = JSON.stringify({ devDependencies });
+
+    await writeFile(join(cwd, 'package.json'), `${manifest}\n`, 'utf8');
+  };
+
+  it('names the runner a project installed when the target now runs another', async () => {
+    await withDevDependencies({ vitest: '^5.0.2' });
+
+    const switched = await runnerSwitch(cwd, REACT_NATIVE);
+
+    expect(switched).toStrictEqual({
+      from: 'vitest',
+      to: 'jest',
+    });
+  });
+
+  it.each<[string, Record<string, string>]>([
+    ['the target runner installed beside the other', { jest: '^29.7.0', vitest: '^5.0.2' }],
+    ['no runner installed', { typescript: '^6.0.3' }],
+  ])('finds no switch with %s', async (_, devDependencies) => {
+    await withDevDependencies(devDependencies);
+
+    const switched = await runnerSwitch(cwd, REACT_NATIVE);
+
+    expect(switched).toBeNull();
+  });
+
+  it('finds no switch in a project without devDependencies', async () => {
+    await writeFile(join(cwd, 'package.json'), '{}\n', 'utf8');
+
+    const switched = await runnerSwitch(cwd, REACT_NATIVE);
+
+    expect(switched).toBeNull();
+  });
+
+  it('finds no switch without a package.json', async () => {
+    const switched = await runnerSwitch(cwd, REACT_NATIVE);
+
+    expect(switched).toBeNull();
+  });
+
+  it('finds no switch where the project declined a suite', async () => {
+    await withDevDependencies({ vitest: '^5.0.2' });
+
+    const switched = await runnerSwitch(cwd, {
+      ...REACT_NATIVE,
+      testing: 'none',
+    });
+
+    expect(switched).toBeNull();
   });
 });

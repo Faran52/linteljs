@@ -591,6 +591,27 @@ describe('main: sync', () => {
     expect(joined).toContain("Unknown option '--force'");
   });
 
+  it('writes nothing and fails where the target now runs another runner than the project installed', async () => {
+    await generated();
+
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'react-native',
+    });
+
+    const before = await readFile(join(project, 'tsconfig.json'), 'utf8');
+
+    const { code, errors } = await runMain(['sync', '--yes']);
+    const after = await readFile(join(project, 'tsconfig.json'), 'utf8');
+    const hasJestConfig = await exists(join(project, 'jest.config.js'));
+
+    expect(code).toBe(1);
+    const joined = errors.join('\n');
+    expect(joined).toContain('this project runs its suites on vitest, and linteljs now runs them on jest');
+    expect(after).toBe(before);
+    expect(hasJestConfig).toBe(false);
+  });
+
   it('says what it removed once the config stops selecting a host', async () => {
     await generated();
 

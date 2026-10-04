@@ -2,6 +2,8 @@ import { basename, join } from 'node:path';
 
 import { MANAGED_PATH } from '@config/constants';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
@@ -21,9 +23,11 @@ import {
   dependencyDrift,
   linteljsConfigEmitter,
   parsePackageJson,
+  TEST_RUNNERS,
+  testRunnerOf,
 } from '@emitters';
 
-import type { HostedAnswers } from '@config/types';
+import type { HostedAnswers, TestRunner } from '@config/types';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 
@@ -42,6 +46,11 @@ export interface PendingEntry {
 export interface SyncPlan extends DependencyDrift {
   entries: SyncEntry[];
   pending: PendingEntry[];
+}
+
+export interface RunnerSwitch {
+  from: TestRunner;
+  to: TestRunner;
 }
 
 export interface SyncResult {
@@ -131,6 +140,37 @@ const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyD
   const packageJson = parsePackageJson(manifest);
 
   return dependencyDrift(packageJson, answers);
+};
+
+// The suites, setup and scripts a runner reads are the project's: a sync switching runners would strand them.
+export const runnerSwitch = async (cwd: string, answers: HostedAnswers): Promise<RunnerSwitch | null> => {
+  const to = testRunnerOf(answers);
+  const manifest = await readIfPresent(join(cwd, 'package.json'));
+
+  if (to === undefined || manifest === null) {
+    return null;
+  }
+
+  const devDependencies = parsePackageJson(manifest).devDependencies ?? {};
+
+  // Each runner's package carries the runner's name.
+  const isInstalled = (runner: TestRunner): boolean => {
+    return Object.hasOwn(devDependencies, runner);
+  };
+
+  const from = valuesOf(TEST_RUNNERS)
+    .find(isInstalled);
+
+  if (from === undefined || isInstalled(to)) {
+    return null;
+  }
+
+  const found: RunnerSwitch = {
+    from,
+    to,
+  };
+
+  return found;
 };
 
 // Exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
