@@ -324,8 +324,10 @@ describe('hookOrderCase', () => {
   it('skips an array already in order and one holding a comment', () => {
     const sorted = runBuild(hookOrderCase(DEFAULT_HOOKS, 'asc'), 'useEffect(() => {}, [alpha, beta]);\n');
     const commented = runBuild(hookOrderCase(DEFAULT_HOOKS, 'asc'), 'useEffect(() => {}, [beta, /* a */ alpha]);\n');
+    const single = runBuild(hookOrderCase(DEFAULT_HOOKS, 'asc'), 'useEffect(() => {}, [beta]);\n');
 
     expect(sorted.skips).toStrictEqual(['dependency array is already in the order the edit would write']);
+    expect(single.skips).toStrictEqual(['dependency array is already in the order the edit would write']);
     expect(commented.skips).toStrictEqual(['comment inside the range the edit rewrites']);
   });
 

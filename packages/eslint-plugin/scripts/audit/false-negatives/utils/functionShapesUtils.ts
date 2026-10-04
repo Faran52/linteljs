@@ -490,7 +490,7 @@ const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefin
       return elementNames;
     });
 
-  if (elements.length < 2 || names.length !== elements.length) {
+  if (names.length !== elements.length) {
     return undefined;
   }
 
