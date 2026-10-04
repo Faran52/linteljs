@@ -29,7 +29,10 @@ const sheet = stylex.create({
   },
 
   line: {
-    animationName: cascade,
+    animationName: {
+      'default': null,
+      '@media (prefers-reduced-motion: no-preference)': cascade,
+    },
     animationDuration: '5s',
     animationIterationCount: 'infinite',
   },

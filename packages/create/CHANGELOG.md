@@ -164,6 +164,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The logo mark stands still under `prefers-reduced-motion: reduce` on every web target. The reduce rule sat in
+  `base.css`, and the mark's own sheet, loaded later at the same weight, restarted the animation; the mark now
+  animates only under `no-preference`, in its CSS and in its StyleX sheet. The end-to-end browser pass fails on an
+  animation running under reduced motion.
 - The starter's Version page lists only the answers its target asks: every target showed the web extension's
   Browser answer, since each holds its default.
 - `scripts/checkBannedPatterns.ts` reports a directive written as a block comment, such as

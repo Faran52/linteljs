@@ -214,6 +214,28 @@ const notFoundProblems = async (page: Page, origin: string): Promise<string[]> =
   return problems;
 };
 
+// Under reduced motion the first page runs no animation, which a later rule of the same weight can undo.
+const motionProblems = async (page: Page, origin: string): Promise<string[]> => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(origin, { waitUntil: 'networkidle' });
+
+  const running = await page
+    .evaluate(() => {
+      return document
+        .getAnimations()
+        .filter((animation) => {
+          return animation.playState === 'running';
+        })
+        .length;
+    });
+
+  await page.emulateMedia({ reducedMotion: null });
+
+  const problems = running === 0 ? [] : [`/: ${String(running)} animations run under reduced motion`];
+
+  return problems;
+};
+
 // Every route the starter links from its first page, each loaded fresh so the server answers it too.
 const crawl = async (origin: string, servesLanguage: boolean, hasCatchAll: boolean): Promise<string[]> => {
   const browser = await chromium.launch(BROWSER_OPTIONS);
@@ -266,6 +288,10 @@ const crawl = async (origin: string, servesLanguage: boolean, hasCatchAll: boole
 
       problems.push(...viewProblems);
     }
+
+    const motionSeen = await motionProblems(page, origin);
+
+    problems.push(...motionSeen);
 
     const [, route = '/'] = routes;
 

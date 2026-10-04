@@ -25,8 +25,8 @@ everything below.
 - **One smoke per other manager**: each target's widest case runs once on npm, Yarn 4 and bun (30), so every
   manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case.
 - **Browser pass**: on the eight served targets the widest pnpm case also serves its build, loads every linked
-  route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200 or a
-  missing `h1`. A ninth runs the widest React Router framework-mode case on npm, and adds a 404 from its
+  route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200, a
+  missing `h1` or an animation running under reduced motion. A ninth runs the widest React Router framework-mode case on npm, and adds a 404 from its
   catch-all. With `languages`, a server-rendered pass holds that the raw HTML carries the chosen `lang` and `dir`. Skipped on webextension (its pages are loaded from `dist/`, not served) and React Native (its web
   build is not what ships).
 - **It installs the checkout, never npm**: a local Verdaccio on one fixed port publishes the three packages and

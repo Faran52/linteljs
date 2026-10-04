@@ -5,8 +5,11 @@
   color: var(--primary);
 }
 
-.mark-line {
-  animation: cascade 5s infinite;
+/* Here, not in the base sheet: a later rule of the same weight would win over it. */
+@media (prefers-reduced-motion: no-preference) {
+  .mark-line {
+    animation: cascade 5s infinite;
+  }
 }
 
 .mark-line-1 {

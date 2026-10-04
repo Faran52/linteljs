@@ -213,13 +213,6 @@ app-status-page {
   color: var(--primary);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .mark-line {
-    transform: none;
-    animation: none;
-  }
-}
-
 /* The status pages: a crash, a refusal and a path nothing routes. */
 .status {
   display: grid;
