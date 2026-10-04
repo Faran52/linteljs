@@ -1,10 +1,16 @@
 'use client';
 
+import { CONTACT_TEXT, type Translate } from '@apis/contact';
+
 import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './useContactForm';
 
 import type { ReactNode } from 'react';
+
+const inEnglish: Translate = (key) => {
+  return CONTACT_TEXT[key];
+};
 
 // A client component: a form is state.
 const ContactPage = (): ReactNode => {
@@ -14,7 +20,7 @@ const ContactPage = (): ReactNode => {
     submitting,
     canSubmit,
     onSubmit,
-  } = useContactForm();
+  } = useContactForm(inEnglish);
 
   return (
     <main className="page">

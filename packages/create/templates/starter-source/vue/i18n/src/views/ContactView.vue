@@ -6,8 +6,10 @@ import TextInput from '@ui/text-input/TextInput.vue';
 
 import { useContactForm } from './useContactForm';
 
-const form = useContactForm();
 const { t } = useI18n();
+const form = useContactForm((key) => {
+  return t(key);
+});
 </script>
 
 <template>

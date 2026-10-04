@@ -4,12 +4,11 @@ import { injectForm, injectStore } from '@tanstack/angular-form';
 
 import { useSubmitContact } from '@apis/contact/contact-api';
 import { validateContactForm } from '@apis/contact/form-validator';
+import { type ContactValues, errorText } from '@apis/contact/schemas';
 import { t } from '@i18n';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';
-
-import type { ContactValues } from '@apis/contact/schemas';
 
 @Component({
   imports: [Button, TextInput],
@@ -44,14 +43,15 @@ export class Contact {
   });
 
   protected errorOf(name: keyof ContactValues): string | undefined {
-    // Read inline: `errors` is an `any[]`, so naming its first element would be an unsafe assignment.
     const meta = this.state().fieldMeta[name];
 
     if (meta === undefined || (!meta.isBlurred && this.state().submissionAttempts === 0)) {
       return undefined;
     }
 
-    return meta.errors[0] === undefined ? undefined : String(meta.errors[0]);
+    const found = String(meta.errors[0]);
+
+    return errorText(found, t);
   }
 
   // Open until a send is tried, which names what is missing; then held until the rules pass.

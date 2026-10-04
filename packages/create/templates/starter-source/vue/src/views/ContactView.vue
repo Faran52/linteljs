@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { CONTACT_TEXT } from '@apis/contact';
+
 import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';
 
 import { useContactForm } from './useContactForm';
 
-const form = useContactForm();
+const form = useContactForm((key) => {
+  return CONTACT_TEXT[key];
+});
 </script>
 
 <template>

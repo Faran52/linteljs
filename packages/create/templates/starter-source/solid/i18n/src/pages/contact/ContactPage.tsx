@@ -7,7 +7,7 @@ import { createContactForm } from './createContactForm';
 import type { JSX } from 'solid-js';
 
 export const ContactPage = (): JSX.Element => {
-  const form = createContactForm();
+  const form = createContactForm(t);
 
   return (
     <main class="page">

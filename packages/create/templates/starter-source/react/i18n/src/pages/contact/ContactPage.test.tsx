@@ -104,4 +104,18 @@ describe('ContactPage', () => {
     const element = screen.getByRole('button', { name: common.contactSend });
     expect(element).toBeTruthy();
   });
+
+  it('labels its fields and says why in the language chosen', async () => {
+    renderPage();
+
+    await act(async () => {
+      await i18n.changeLanguage(last);
+    });
+
+    const { common } = resources[last];
+    fill(common.contactEmail, 'not-an-address');
+
+    const element = await screen.findByText(common.contactEmailInvalid);
+    expect(element).toBeTruthy();
+  });
 });

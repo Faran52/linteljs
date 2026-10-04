@@ -984,9 +984,11 @@ webextension popup.
 - **Shared tables hold keys, not text.** The twins of `src/config/statuses.ts` and `src/config/standard.ts` hold a
   key into the flat, camelCase `common.json`, so every framework translates the same table. Text around a command
   is one key read through `Trans`, so the command stays in its `<code>` in any word order.
-- **What stays English.** Form labels and validation messages, since the schemas own them; the gate's `runs` and
-  the recorded answer labels on the About and Version pages, since the generator emits them as facts about the
-  project; and the home page, not yet translated.
+- **The contact rules return keys, not text.** A failed rule is a `contact*` locale key, and every contact hook
+  takes the page's `translate`, so the labels and messages follow the language. The English stays in the schemas'
+  `CONTACT_TEXT`, read only by a project with no languages.
+- **What stays English.** The gate's `runs` and the recorded answer labels on the About and Version pages, since
+  the generator emits them as facts about the project; and the home page, not yet translated.
 - **Direction follows the language.** `<html lang dir>` is set on init and on every change, so Arabic turns the
   page `rtl`; the starter CSS uses logical properties only.
 - **A server-rendered target serves the chosen language on the first byte.** React Router framework mode (in its

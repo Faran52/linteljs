@@ -3,7 +3,10 @@ import { ref } from 'vue';
 import { useForm } from '@tanstack/vue-form';
 
 import {
+  type ContactKey,
   type ContactValues,
+  errorText,
+  type Translate,
   useSubmitContact,
 } from '@apis/contact';
 import { type ContactSubmission, validateContactForm } from '@apis/contact/formValidator';
@@ -24,8 +27,9 @@ export interface ContactForm {
   onSubmit: (event: Event) => void;
 }
 
-// Every read is a getter over one `useSelector`, the only read of this library Vue tracks.
-export const useContactForm = (): ContactForm => {
+// Every read is a getter over one `useSelector`, the only read of this library Vue tracks. `translate` names the
+// labels and rules: the page's own `t`, or the English beside the rules.
+export const useContactForm = (translate: Translate): ContactForm => {
   const sent = ref(false);
   const submit = useSubmitContact();
   const form = useForm({
@@ -49,25 +53,28 @@ export const useContactForm = (): ContactForm => {
 
   const field = (
     name: keyof ContactValues,
-    label: string,
+    label: ContactKey,
     extra: Partial<TextInputProps> = {},
   ): TextInputProps => {
     const props: TextInputProps = {
       id: name,
-      label,
       ...extra,
+      get label() {
+        return translate(label);
+      },
       get value() {
         return state.value.values[name];
       },
       get error() {
-        // Read inline: `errors` is an `any[]`, so naming its first element would be an unsafe assignment.
         const meta = state.value.fieldMeta[name];
 
         if (meta === undefined || (!meta.isBlurred && state.value.submissionAttempts === 0)) {
           return undefined;
         }
 
-        return meta.errors[0] === undefined ? undefined : String(meta.errors[0]);
+        const found = String(meta.errors[0]);
+
+        return errorText(found, translate);
       },
     };
 
@@ -76,8 +83,8 @@ export const useContactForm = (): ContactForm => {
 
   const contactForm: ContactForm = {
     fields: {
-      email: field('email', 'Email', { type: 'email' }),
-      message: field('message', 'Message', { multiline: true }),
+      email: field('email', 'contactEmail', { type: 'email' }),
+      message: field('message', 'contactMessage', { multiline: true }),
     },
     get sent() {
       return sent.value;

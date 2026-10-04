@@ -6,10 +6,20 @@ import {
 } from '@angular/forms';
 
 import { useSubmitContact } from '@apis/contact/contact-api';
-import { type ContactValues, validateContact } from '@apis/contact/schemas';
+import {
+  CONTACT_TEXT,
+  type ContactValues,
+  errorText,
+  type Translate,
+  validateContact,
+} from '@apis/contact/schemas';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';
+
+const inEnglish: Translate = (key) => {
+  return CONTACT_TEXT[key];
+};
 
 @Component({
   imports: [
@@ -40,7 +50,7 @@ export class Contact {
 
     const found = validateContact(this.form.getRawValue());
 
-    return found[name];
+    return errorText(found[name], inEnglish);
   }
 
   protected set(name: keyof ContactValues, value: string): void {

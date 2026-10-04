@@ -20,8 +20,8 @@ describe('validateContactForm', () => {
     });
     const expected = {
       fields: {
-        email: 'Enter a valid email address.',
-        message: 'Write at least ten characters.',
+        email: 'contactEmailInvalid',
+        message: 'contactMessageShort',
       },
     };
     expect(errors).toEqual(expected);

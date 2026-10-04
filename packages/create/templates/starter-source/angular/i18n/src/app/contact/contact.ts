@@ -6,7 +6,11 @@ import {
 } from '@angular/forms';
 
 import { useSubmitContact } from '@apis/contact/contact-api';
-import { type ContactValues, validateContact } from '@apis/contact/schemas';
+import {
+  type ContactValues,
+  errorText,
+  validateContact,
+} from '@apis/contact/schemas';
 import { t } from '@i18n';
 
 import { Button } from '@ui/button/button';
@@ -43,7 +47,7 @@ export class Contact {
 
     const found = validateContact(this.form.getRawValue());
 
-    return found[name];
+    return errorText(found[name], t);
   }
 
   protected set(name: keyof ContactValues, value: string): void {

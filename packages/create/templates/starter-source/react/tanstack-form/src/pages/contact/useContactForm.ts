@@ -4,6 +4,8 @@ import { useForm, useSelector } from '@tanstack/react-form';
 
 import {
   type ContactValues,
+  errorText,
+  type Translate,
   useSubmitContact,
 } from '@apis/contact';
 import { validateContactForm } from '@apis/contact/formValidator';
@@ -24,7 +26,8 @@ export interface ContactForm {
   onSubmit: SubmitEventHandler<HTMLFormElement>;
 }
 
-export const useContactForm = (): ContactForm => {
+// `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
+export const useContactForm = (translate: Translate): ContactForm => {
   const [sent, setSent] = useState(false);
   const submit = useSubmitContact();
   const form = useForm({
@@ -54,12 +57,13 @@ export const useContactForm = (): ContactForm => {
   ): TextInputProps => {
     const meta = state.fieldMeta[name];
     const shown = meta !== undefined && (meta.isBlurred || state.submissionAttempts > 0);
+    const found = shown ? String(meta.errors[0]) : undefined;
 
     const props: TextInputProps = {
       id: name,
       label,
       value: state.values[name],
-      error: !shown || meta.errors[0] === undefined ? undefined : String(meta.errors[0]),
+      error: errorText(found, translate),
       onBlur: () => {
         form
           .setFieldMeta(name, (prev) => {
@@ -86,10 +90,12 @@ export const useContactForm = (): ContactForm => {
     return props;
   };
 
+  const emailLabel = translate('contactEmail');
+  const messageLabel = translate('contactMessage');
   const contactForm: ContactForm = {
     fields: {
-      email: field('email', 'Email', { type: 'email' }),
-      message: field('message', 'Message', { multiline: true }),
+      email: field('email', emailLabel, { type: 'email' }),
+      message: field('message', messageLabel, { multiline: true }),
     },
     sent,
     submitting: state.isSubmitting,

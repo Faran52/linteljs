@@ -3,8 +3,11 @@ import { type Accessor, createSignal } from 'solid-js';
 import { createForm } from '@tanstack/solid-form';
 
 import {
+  type ContactKey,
   type ContactValues,
   createSubmitContact,
+  errorText,
+  type Translate,
 } from '@apis/contact';
 import { type ContactSubmission, validateContactForm } from '@apis/contact/formValidator';
 
@@ -23,7 +26,8 @@ export interface ContactForm {
 }
 
 // One `useSelector` behind every getter: it is the only read of this library Solid tracks.
-export const createContactForm = (): ContactForm => {
+// `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
+export const createContactForm = (translate: Translate): ContactForm => {
   const [sent, setSent] = createSignal(false);
   const submit = createSubmitContact();
   const form = createForm(() => {
@@ -51,25 +55,28 @@ export const createContactForm = (): ContactForm => {
 
   const field = (
     name: keyof ContactValues,
-    label: string,
+    label: ContactKey,
     extra: Partial<TextInputProps> = {},
   ): TextInputProps => {
     const props: TextInputProps = {
       id: name,
-      label,
       ...extra,
+      get label() {
+        return translate(label);
+      },
       get value() {
         return state().values[name];
       },
       get error() {
-        // Read inline: `errors` is an `any[]`, so naming its first element would be an unsafe assignment.
         const meta = state().fieldMeta[name];
 
         if (meta === undefined || (!meta.isBlurred && state().submissionAttempts === 0)) {
           return undefined;
         }
 
-        return meta.errors[0] === undefined ? undefined : String(meta.errors[0]);
+        const found = String(meta.errors[0]);
+
+        return errorText(found, translate);
       },
       onBlur: () => {
         form
@@ -98,8 +105,8 @@ export const createContactForm = (): ContactForm => {
 
   const contactForm: ContactForm = {
     fields: {
-      email: field('email', 'Email', { type: 'email' }),
-      message: field('message', 'Message', { multiline: true }),
+      email: field('email', 'contactEmail', { type: 'email' }),
+      message: field('message', 'contactMessage', { multiline: true }),
     },
     sent,
     canSubmit: () => {

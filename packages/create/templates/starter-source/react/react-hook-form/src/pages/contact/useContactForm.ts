@@ -7,6 +7,8 @@ import {
 
 import {
   type ContactValues,
+  errorText,
+  type Translate,
   useSubmitContact,
   validateContact,
 } from '@apis/contact';
@@ -31,6 +33,7 @@ interface FieldOptions {
   control: Control<ContactValues>;
   name: keyof ContactValues;
   label: string;
+  translate: Translate;
   multiline?: boolean;
   type?: 'text' | 'email';
 }
@@ -40,6 +43,7 @@ const useField = ({
   control,
   name,
   label,
+  translate,
   multiline = false,
   type = 'text',
 }: FieldOptions): TextInputProps => {
@@ -54,7 +58,7 @@ const useField = ({
     multiline,
     type,
     value: field.value,
-    error: fieldState.error?.message,
+    error: errorText(fieldState.error?.message, translate),
     onBlur: field.onBlur,
     onChange: field.onChange,
   };
@@ -62,7 +66,8 @@ const useField = ({
   return props;
 };
 
-export const useContactForm = (): ContactForm => {
+// `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
+export const useContactForm = (translate: Translate): ContactForm => {
   const [sent, setSent] = useState(false);
   const submit = useSubmitContact();
   const {
@@ -102,13 +107,15 @@ export const useContactForm = (): ContactForm => {
       email: useField({
         control,
         name: 'email',
-        label: 'Email',
+        label: translate('contactEmail'),
+        translate,
         type: 'email',
       }),
       message: useField({
         control,
         name: 'message',
-        label: 'Message',
+        label: translate('contactMessage'),
+        translate,
         multiline: true,
       }),
     },

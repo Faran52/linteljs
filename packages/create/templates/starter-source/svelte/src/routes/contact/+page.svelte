@@ -2,9 +2,13 @@
   import Button from '@ui/button/Button.svelte';
   import TextInput from '@ui/text-input/TextInput.svelte';
 
+  import { CONTACT_TEXT } from '$lib/apis/contact';
+
   import { useContactForm } from './useContactForm';
 
-  const form = useContactForm();
+  const form = useContactForm((key) => {
+    return CONTACT_TEXT[key];
+  });
 </script>
 
 <main class="page">

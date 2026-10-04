@@ -1,11 +1,17 @@
+import { CONTACT_TEXT, type Translate } from '@apis/contact';
+
 import { Button, TextInput } from '@ui';
 
 import { createContactForm } from './createContactForm';
 
 import type { JSX } from 'solid-js';
 
+const inEnglish: Translate = (key) => {
+  return CONTACT_TEXT[key];
+};
+
 export const ContactPage = (): JSX.Element => {
-  const form = createContactForm();
+  const form = createContactForm(inEnglish);
 
   return (
     <main class="page">

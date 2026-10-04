@@ -1,8 +1,14 @@
+import { CONTACT_TEXT, type Translate } from '@apis/contact';
+
 import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './useContactForm';
 
 import type { FC } from 'react';
+
+const inEnglish: Translate = (key) => {
+  return CONTACT_TEXT[key];
+};
 
 export const ContactPage: FC = () => {
   const {
@@ -11,7 +17,7 @@ export const ContactPage: FC = () => {
     submitting,
     canSubmit,
     onSubmit,
-  } = useContactForm();
+  } = useContactForm(inEnglish);
 
   return (
     <main className="page">

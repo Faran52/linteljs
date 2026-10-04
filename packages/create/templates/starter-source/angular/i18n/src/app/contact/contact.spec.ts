@@ -73,6 +73,19 @@ describe('Contact', () => {
     expect(root.querySelector('[role="status"]')?.textContent).toBe(common.contactSent);
   });
 
+  it('labels its fields and says why in the language applied', async () => {
+    applyLanguage(last);
+
+    const harness = await render();
+    const { common } = resources[last];
+    const root = await fill(harness, '#email', 'not-an-address');
+    const label = root.querySelector('label[for="email"]')?.textContent;
+    const message = root.querySelector('#email-error')?.textContent;
+
+    expect(label?.trim()).toBe(common.contactEmail);
+    expect(message).toBe(common.contactEmailInvalid);
+  });
+
   it('refuses what the rules refuse, and says why beside the field', async () => {
     const harness = await render();
     const root = await fill(harness, '#email', 'not-an-address');

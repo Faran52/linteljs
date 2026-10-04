@@ -14,7 +14,9 @@ export const ContactPage: FC = () => {
     submitting,
     canSubmit,
     onSubmit,
-  } = useContactForm();
+  } = useContactForm((key) => {
+    return t(key);
+  });
 
   return (
     <main className="page">

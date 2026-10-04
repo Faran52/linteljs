@@ -6,7 +6,9 @@
 
   import { useContactForm } from './useContactForm';
 
-  const form = useContactForm();
+  const form = useContactForm((key) => {
+    return m[key]();
+  });
 </script>
 
 <main class="page">

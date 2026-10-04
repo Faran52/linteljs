@@ -8,7 +8,7 @@
     <form novalidate (submit)="send($event)">
       <app-text-input
         name="email"
-        label="Email"
+        [label]="t('contactEmail')"
         type="email"
         [value]="state().values.email"
         [error]="errorOf('email')"
@@ -17,7 +17,7 @@
       />
       <app-text-input
         name="message"
-        label="Message"
+        [label]="t('contactMessage')"
         [multiline]="true"
         [value]="state().values.message"
         [error]="errorOf('message')"
