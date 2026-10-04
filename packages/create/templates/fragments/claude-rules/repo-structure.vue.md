@@ -67,6 +67,7 @@ Imports run one way:
   `components/` or `store/`.
 - `store/*` does not import from `views/` or `components/`.
 - `components/*` does not import from `views/`.
-- `router/*` imports views and nothing else.
+- `router/*` imports views, config, and a component a route renders directly, such as the status
+  page; never a store, util or service.
 - `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
   and never write a `src/` prefix.

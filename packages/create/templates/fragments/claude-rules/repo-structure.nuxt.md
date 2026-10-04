@@ -49,8 +49,8 @@ header, and `<NuxtPage />` is where the route goes.
 
 `nuxt.config.ts` is canonical for the build, and this project sets two things there that matter.
 `srcDir` is `src/`, not Nuxt 4's default `app/`, so every glob in the project reads one source root.
-`typescript.tsConfig` carries the compiler options, because `tsconfig.json` is a solution file of
-references into `.nuxt/` and an extending config would replace the paths Nuxt generates.
+`alias` carries the path aliases, because `tsconfig.json` extends `.nuxt/tsconfig.app.json` and a
+`paths` of its own would replace the set Nuxt generates from them.
 
 `.nuxt/` and `.output/` are generated. Never edit either, and never commit a fix into one.
 
@@ -83,5 +83,5 @@ Imports run one way:
 - `store/*` does not import from `views/` or `components/`.
 - `components/*` does not import from `views/`.
 - `pages/*` imports views and nothing else.
-- `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
-  and never write a `src/` prefix.
+- `alias` in `nuxt.config.ts` is canonical for path aliases. Use the configured ones; never invent
+  a shorthand and never write a `src/` prefix.
