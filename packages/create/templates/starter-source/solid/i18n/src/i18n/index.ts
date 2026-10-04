@@ -24,7 +24,7 @@ const [language, setLanguage] = createSignal<Language>(fallbackLanguage);
 
 export { language };
 
-// The library's own resolver reads `{{x}}`; every target's locales hold `{x}`.
+// The library's own resolver reads `{{x}}`; these locales hold `{x}`.
 const resolveTemplate: TemplateResolver = (template, ...args) => {
   const [values] = args;
 

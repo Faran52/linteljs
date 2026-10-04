@@ -2,7 +2,7 @@ import { For, type JSX } from 'solid-js';
 
 import { ANSWERS, STACK } from '@config/linteljs';
 
-// Recorded at birth: a browser cannot read its machine's Node or package manager.
+// Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
 export const VersionPage = (): JSX.Element => {
   return (
     <main class="page">
