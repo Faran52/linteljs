@@ -16,10 +16,9 @@ import {
   buildDependencies,
   buildDevDependencies,
   buildOverrides,
-  dependencyDrift,
   type PackageJson,
   parsePackageJson,
-  upgradedPackageJson,
+  serializedPackageJson,
 } from '../../utils/packageJsonUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
@@ -120,38 +119,16 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   return patched;
 };
 
-const serialized = (packageJson: PackageJson): string => {
-  return `${JSON.stringify(packageJson, null, 2)}\n`;
-};
-
-// `sync` moves only the `@linteljs/*` versions: the framework and everything else stay the project's.
-export const resyncPackageJson = (current: string, answers: Answers): string => {
-  const existing = parsePackageJson(current);
-  const { upgrades } = dependencyDrift(existing, answers);
-
-  if (upgrades.length === 0) {
-    return current;
-  }
-
-  const upgraded = upgradedPackageJson(existing, upgrades);
-
-  return serialized(upgraded);
-};
-
 // Merged: two of three migrations had to add dependencies their answers already implied.
 export const packageJsonEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
   const merge = (current: string | null): string => {
     const manifest: PackageJson = current === null ? { name } : parsePackageJson(current);
     const patched = patchPackageJson(manifest, answers);
 
-    return serialized(patched);
+    return serializedPackageJson(patched);
   };
 
-  const resync = (current: string): string => {
-    return resyncPackageJson(current, answers);
-  };
-
-  const artifacts = [merged('package', 'package.json', merge, resync)];
+  const artifacts = [merged('package', 'package.json', merge)];
 
   return artifacts;
 };

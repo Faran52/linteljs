@@ -25,8 +25,13 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
   bun: 'bun run',
 };
 
+export const ESLINT_CONFIG_PATH = 'eslint.config.js';
+
+// The one tree `sync` owns whole, and so the one it may delete in.
+export const PLUGIN_ROOT = 'plugins/linteljs/';
+
 // `sync` removes what is in here and no longer expected; a hand edit to the config leaves no trace.
-export const MANAGED_PATH = 'plugins/linteljs/managed.json';
+export const MANAGED_PATH = `${PLUGIN_ROOT}managed.json`;
 
 export const STAGES: Stage[] = [
   'lint',

@@ -1,3 +1,4 @@
+import { ESLINT_CONFIG_PATH } from '@config/constants';
 import {
   type Answers,
   type Artifact,
@@ -173,7 +174,7 @@ export const emitEslintConfig = (answers: Answers): string => {
 
 export const eslintConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitEslintConfig(answers);
-  const artifacts = [emitted('lint', 'eslint.config.js', config)];
+  const artifacts = [emitted('lint', ESLINT_CONFIG_PATH, config)];
 
   return artifacts;
 };

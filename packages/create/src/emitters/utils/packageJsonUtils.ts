@@ -25,6 +25,7 @@ import {
 
 import {
   ALLOWED_BUILDS,
+  ESLINT_CONFIG_PEERS,
   HTML_DEV_DEPENDENCIES,
   ROUTER_DEPENDENCIES,
   ROUTER_DEV_DEPENDENCIES,
@@ -59,6 +60,7 @@ export interface PackageJson {
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
   overrides?: Overrides;
   resolutions?: Record<string, string>;
   trustedDependencies?: string[];
@@ -77,14 +79,9 @@ export interface Upgrade {
   to: string;
 }
 
-export interface MissingDependencies {
-  dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
-}
-
 export interface DependencyDrift {
   upgrades: Upgrade[];
-  missing: MissingDependencies;
+  peers: Upgrade[];
 }
 
 const LINTELJS_SCOPE = '@linteljs/';
@@ -360,49 +357,48 @@ const isBehind = (from: string | undefined, to: string): boolean => {
   return from === undefined || rankOfRange(from) < rankOfRange(to);
 };
 
-// What `sync` may change in a project's dependencies: its own packages, and nothing the project chose.
+// What `sync` may change in a project's dependencies: its own packages, and the peers its lint config needs.
 export const dependencyDrift = (existing: PackageJson, answers: Answers): DependencyDrift => {
   const installed = {
     ...existing.devDependencies,
     ...existing.dependencies,
   };
-  const wanted = {
-    dependencies: buildDependencies(answers),
-    devDependencies: buildDevDependencies(answers),
-  };
   const upgrades: Upgrade[] = [];
-  const missing: MissingDependencies = {
-    dependencies: {},
-    devDependencies: {},
-  };
+  const peers: Upgrade[] = [];
+  const wanted = buildDevDependencies(answers);
 
-  const fields = ['dependencies', 'devDependencies'] as const;
+  for (const [name, to] of Object.entries(wanted)) {
+    const from = installed[name];
 
-  for (const field of fields) {
-    for (const [name, to] of Object.entries(wanted[field])) {
-      const from = installed[name];
-      const isOwn = name.startsWith(LINTELJS_SCOPE);
+    if (!isBehind(from, to)) {
+      continue;
+    }
 
-      if (isOwn && isBehind(from, to)) {
-        upgrades.push({
-          name,
-          ...(from === undefined ? {} : { from }),
-          to,
-        });
-      }
+    const upgrade: Upgrade = {
+      name,
+      ...(from === undefined ? {} : { from }),
+      to,
+    };
 
-      if (!isOwn && from === undefined) {
-        missing[field][name] = to;
-      }
+    if (name.startsWith(LINTELJS_SCOPE)) {
+      upgrades.push(upgrade);
+    }
+
+    if (ESLINT_CONFIG_PEERS.includes(name)) {
+      peers.push(upgrade);
     }
   }
 
   const drift: DependencyDrift = {
     upgrades,
-    missing,
+    peers,
   };
 
   return drift;
+};
+
+export const serializedPackageJson = (packageJson: PackageJson): string => {
+  return `${JSON.stringify(packageJson, null, 2)}\n`;
 };
 
 // Only the `@linteljs/*` entries move, each in the field the project keeps it in.

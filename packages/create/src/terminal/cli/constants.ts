@@ -1,8 +1,6 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
-import { type PackageManager, type Stage } from '@config/types';
-
-import { type PendingStatus } from '@pipeline';
+import { type Stage } from '@config/types';
 
 // The answer lines go between the two halves, built from the records when the usage is printed.
 export const USAGE_HEAD = `@linteljs/create [name] [options]
@@ -12,7 +10,7 @@ export const USAGE_HEAD = `@linteljs/create [name] [options]
   --no-install      skip the install and the eslint --fix pass that needs it
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
-  --yes, -y         accept the defaults, ask nothing; sync: apply without asking
+  --yes, -y         accept the defaults, ask nothing; sync: accept every step
   --version, -v
   --help, -h
 
@@ -25,25 +23,13 @@ A list is comma-separated or the flag repeated.
 Without a terminal, create needs --yes or an answer flag; a name alone exits 1.
 With no name it takes the directory's.
 
-sync updates only what linteljs owns: its hooks, scripts and configs, and the
-@linteljs/* versions in package.json. It lists them and asks once; without a
-terminal it needs --yes. A missing dependency is printed as a command, never written.
+sync rewrites plugins/linteljs/ without asking. It then asks before each of:
+the @linteljs/* versions in package.json, the peers @linteljs/eslint-config
+lacks or has behind, and an eslint config that differs (backing it up first).
+A missing eslint config is written. Without a terminal a step needs --yes.
 `;
 
-export const SYNC_NEEDS_YES = 'Nothing was written: sync asks before it writes. Run it in a terminal, or pass --yes.';
-
-export const SYNC_ACTIONS: Record<PendingStatus, string> = {
-  changed: 'update',
-  missing: 'add',
-  obsolete: 'delete',
-};
-
-export const ADD_PREFIX: Record<PackageManager, string> = {
-  pnpm: 'pnpm add',
-  npm: 'npm install',
-  yarn: 'yarn add',
-  bun: 'bun add',
-};
+export const SYNC_NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';
 
 export const CLI_OPTIONS = {
   'existing': {

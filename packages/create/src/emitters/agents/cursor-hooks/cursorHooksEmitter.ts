@@ -70,12 +70,7 @@ export const cursorHooksEmitter = (answers: Answers): Artifact[] => {
     return [];
   }
 
-  const artifacts: Artifact[] = [
-    {
-      ...merged('standard', '.cursor/hooks.json', mergeCursorHooks),
-      removable: true,
-    },
-  ];
+  const artifacts: Artifact[] = [merged('standard', '.cursor/hooks.json', mergeCursorHooks)];
 
   return artifacts;
 };

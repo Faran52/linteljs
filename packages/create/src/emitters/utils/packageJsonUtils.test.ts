@@ -15,7 +15,7 @@ import { valuesOf } from '@utils/objectUtils';
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { targetFor } from '@targets';
 
-import { VERSIONS } from '../constants';
+import { ESLINT_CONFIG_PEERS, VERSIONS } from '../constants';
 
 import {
   allowedBuildNames,
@@ -25,6 +25,7 @@ import {
   dependencyDrift,
   parsePackageJson,
   pinned,
+  serializedPackageJson,
   upgradedPackageJson,
   versioned,
 } from './packageJsonUtils';
@@ -1083,11 +1084,12 @@ describe('buildDependencies with languages', () => {
 });
 
 describe('dependencyDrift', () => {
-  it('names an old or absent @linteljs/* package an upgrade and anything else absent missing, by field', () => {
+  it('names an old or absent @linteljs/* package an upgrade, and an old or absent lint peer a peer', () => {
     const drift = dependencyDrift({
       dependencies: { react: '^99.0.0' },
       devDependencies: {
         '@linteljs/eslint-config': '^1.5.0',
+        'eslint': '^8.0.0',
         'typescript': '^99.0.0',
       },
     }, DEFAULT_ANSWERS);
@@ -1100,9 +1102,31 @@ describe('dependencyDrift', () => {
     }];
     expect(drift.upgrades).toEqual(expected);
 
-    expect(drift.missing.devDependencies).not.toHaveProperty('typescript');
-    expect(drift.missing.devDependencies).toHaveProperty('husky');
-    expect(drift.missing.dependencies).toHaveProperty('qs');
+    const peerNames = drift.peers
+      .map(({ name }) => {
+        return name;
+      });
+    const expectedPeers = [
+      '@eslint-react/eslint-plugin',
+      '@html-eslint/eslint-plugin',
+      '@html-eslint/parser',
+      '@vitest/eslint-plugin',
+      'eslint',
+      'eslint-plugin-jsx-a11y-x',
+      'eslint-plugin-react-hooks',
+    ];
+    expect(peerNames).toEqual(expectedPeers);
+    const eslintPeer = {
+      name: 'eslint',
+      from: '^8.0.0',
+      to: VERSIONS['eslint'],
+    };
+    expect(drift.peers).toContainEqual(eslintPeer);
+    const freshTypescript = {
+      name: 'typescript',
+      to: VERSIONS['typescript'],
+    };
+    expect(fresh.peers).toContainEqual(freshTypescript);
 
     const upgrades = [{
       name: '@linteljs/eslint-config',
@@ -1137,6 +1161,19 @@ describe('dependencyDrift', () => {
   });
 });
 
+describe('ESLINT_CONFIG_PEERS', () => {
+  it('names exactly the peers @linteljs/eslint-config declares', () => {
+    const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
+    const { peerDependencies = {} } = parsePackageJson(readFileSync(path, 'utf8'));
+
+    const declared = Object.keys(peerDependencies)
+      .toSorted((left, right) => {
+        return left.localeCompare(right, 'en');
+      });
+    expect(ESLINT_CONFIG_PEERS).toEqual(declared);
+  });
+});
+
 describe('upgradedPackageJson', () => {
   it('moves each version in the field the project keeps it in, and adds an absent one as a dev dependency', () => {
     const upgraded = upgradedPackageJson({
@@ -1164,5 +1201,13 @@ describe('upgradedPackageJson', () => {
 
     const emptied = { devDependencies: {} };
     expect(bare).toEqual(emptied);
+  });
+});
+
+describe('serializedPackageJson', () => {
+  it('writes two-space JSON with a final newline', () => {
+    const text = serializedPackageJson({ name: 'demo' });
+
+    expect(text).toBe('{\n  "name": "demo"\n}\n');
   });
 });

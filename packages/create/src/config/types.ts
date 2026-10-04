@@ -125,8 +125,6 @@ interface CopiedAssets {
 
 interface MergedText {
   merge: (current: string | null) => string;
-  // What `sync` writes over a file the project already has, where the project owns more of it than `merge` leaves.
-  resync?: (current: string) => string;
 }
 
 export type ArtifactContent = CopiedAssets | EmittedText | MergedText;
@@ -142,8 +140,6 @@ export interface Artifact {
   seed?: true;
   // A starter test covering source the scaffolder may not have written.
   requires?: string[];
-  // A merge `sync` may still delete, because the whole file exists only for the answer that asked for it.
-  removable?: true;
 }
 
 // One record, so `sync` and `create --existing` discover the same files.

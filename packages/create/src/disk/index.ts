@@ -14,6 +14,7 @@ export {
   globSnapshot,
   isExecutableFile,
   readIfPresent,
+  rename,
   rm,
   rmdirIfEmpty,
 } from './utils/fsUtils';

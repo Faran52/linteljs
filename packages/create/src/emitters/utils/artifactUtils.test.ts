@@ -78,21 +78,3 @@ describe('merged', () => {
     expect(actual).toStrictEqual(expected);
   });
 });
-
-describe('merged with a resync', () => {
-  it('carries the resync beside the merge', () => {
-    const merge = (current: string | null): string => {
-      return current ?? '';
-    };
-
-    const resync = (current: string): string => {
-      return current;
-    };
-
-    const expected = {
-      merge,
-      resync,
-    };
-    expect(merged('package', 'package.json', merge, resync).content).toEqual(expected);
-  });
-});

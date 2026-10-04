@@ -19,7 +19,6 @@ import { type PackageJson, parsePackageJson } from '../../utils/packageJsonUtils
 import {
   packageJsonEmitter,
   patchPackageJson,
-  resyncPackageJson,
 } from './packageJsonEmitter';
 
 import type { TargetId } from '@config/types';
@@ -299,34 +298,5 @@ describe('packageJsonEmitter', () => {
     expect(patched.dependencies?.['react']).toBe(VERSIONS['react']);
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.scripts?.['lint']).toBe('eslint .');
-  });
-});
-
-describe('resyncPackageJson', () => {
-  const scaffolded = `${JSON.stringify({
-    name: 'demo-app',
-    dependencies: { react: '^99.0.0' },
-    devDependencies: { '@linteljs/eslint-config': '^1.0.0' },
-  })}\n`;
-
-  it('moves only the @linteljs/* version, keeping the framework the project bumped', () => {
-    const [artifact] = packageJsonEmitter(answersFor({}), { setupTests: [], styleEntries: [] }, 'demo-app');
-    const resynced = artifact !== undefined && 'resync' in artifact.content
-      ? artifact.content.resync(scaffolded)
-      : '';
-    const synced = parsePackageJson(resynced);
-
-    const expected = { react: '^99.0.0' };
-    expect(synced.dependencies).toEqual(expected);
-    const expectedDevDependencies = { '@linteljs/eslint-config': VERSIONS['@linteljs/eslint-config'] };
-    expect(synced.devDependencies).toEqual(expectedDevDependencies);
-    expect(synced.scripts).toBeUndefined();
-  });
-
-  it('hands back the bytes it was given when nothing of linteljs is behind', () => {
-    const current = '{ "devDependencies": { "@linteljs/eslint-config": "^9.0.0" } }';
-
-    const resyncedPackageJson = resyncPackageJson(current, answersFor({}));
-    expect(resyncedPackageJson).toBe(current);
   });
 });

@@ -8,7 +8,6 @@ import {
 import {
   mergePnpmWorkspace,
   pnpmWorkspaceEmitter,
-  resyncPnpmWorkspace,
 } from './pnpmWorkspaceEmitter';
 import { allowBuildsBlock, RELEASE_AGE_BLOCK } from './utils/emitUtils';
 
@@ -163,19 +162,4 @@ it('adds allowBuilds to a next scaffold that has none', () => {
 
   expect(merged).toContain("allowBuilds:\n  '@parcel/watcher': true\n  '@swc/core': true");
   expect(merged).not.toContain('ignoredBuiltDependencies');
-});
-
-describe('resyncPnpmWorkspace', () => {
-  it('keeps a build opt-out the project owns, where a birth drops it, and adds only the blocks that are absent', () => {
-    const [artifact] = pnpmWorkspaceEmitter(answersFor({}));
-    const owned = 'ignoredBuiltDependencies:\n  - sharp\n';
-    const resynced = artifact !== undefined && 'resync' in artifact.content
-      ? artifact.content.resync(owned)
-      : undefined;
-
-    expect(resynced).toContain(owned);
-    expect(resynced).toContain(RELEASE_AGE_BLOCK);
-    const resyncedPnpmWorkspace = resyncPnpmWorkspace(owned, answersFor({}));
-    expect(resyncedPnpmWorkspace).toBe(resynced);
-  });
 });

@@ -34,17 +34,11 @@ export const merged = (
   stage: Stage,
   target: string,
   merge: (current: string | null) => string,
-  resync?: (current: string) => string,
 ): Artifact => {
   const artifact: Artifact = {
     stage,
     target,
-    content: resync === undefined
-      ? { merge }
-      : {
-          merge,
-          resync,
-        },
+    content: { merge },
   };
 
   return artifact;

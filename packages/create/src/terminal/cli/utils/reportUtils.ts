@@ -13,18 +13,16 @@ import {
 import { unscopedName } from '@utils/nameUtils';
 
 import {
-  ADD_PREFIX,
   MS_PER_SECOND,
   SPINNER_FRAMES,
   SPINNER_INTERVAL,
   STAGE_LABELS,
-  SYNC_ACTIONS,
 } from '../constants';
 
 import { widthOf } from './flagUtils';
 
-import type { MissingDependencies } from '@emitters';
-import type { PipelineOptions, SyncPlan } from '@pipeline';
+import type { Upgrade } from '@emitters';
+import type { PipelineOptions } from '@pipeline';
 import type { CliOptions } from './argvUtils';
 
 export interface StageReport extends Required<Pick<PipelineOptions,
@@ -169,57 +167,20 @@ export const stageReport = (options: CliOptions): StageReport => {
   return stdout.isTTY ? liveReport() : pipedReport(options);
 };
 
-// One row per file, then one per `@linteljs/*` version: what the single question covers.
-export const syncTable = (plan: SyncPlan): string => {
-  const files = plan.pending
-    .map(({ target, status }) => {
-      const row = [SYNC_ACTIONS[status], target] as const;
+// One row per package: what its question covers.
+export const upgradeTable = (upgrades: Upgrade[]): string => {
+  const width = Math.max(...upgrades
+    .map(({ name }) => {
+      return name.length;
+    }));
 
-      return row;
-    });
-  const versions = plan.upgrades
+  return upgrades
     .map(({
       name,
       from,
       to,
     }) => {
-      const row = ['upgrade', `${name} ${from ?? 'none'} -> ${to}`] as const;
-
-      return row;
-    });
-  const rows = [...files, ...versions];
-  const width = Math.max(...rows
-    .map(([action]) => {
-      return action.length;
-    }));
-
-  return rows
-    .map(([action, subject]) => {
-      return `  ${action.padEnd(width)}  ${subject}`;
+      return `  ${name.padEnd(width)}  ${from ?? 'none'} -> ${to}`;
     })
     .join('\n');
-};
-
-// Quoted: `cmd.exe` reads a bare `^` as an escape.
-const specsOf = (dependencies: Record<string, string>): string => {
-  return Object.entries(dependencies)
-    .map(([name, version]) => {
-      return `"${name}@${version}"`;
-    })
-    .join(' ');
-};
-
-export const installCommands = (packageManager: PackageManager, missing: MissingDependencies): string[] => {
-  const add = ADD_PREFIX[packageManager];
-  const commands: string[] = [];
-
-  if (Object.keys(missing.dependencies).length > 0) {
-    commands.push(`  ${add} ${specsOf(missing.dependencies)}`);
-  }
-
-  if (Object.keys(missing.devDependencies).length > 0) {
-    commands.push(`  ${add} -D ${specsOf(missing.devDependencies)}`);
-  }
-
-  return commands;
 };

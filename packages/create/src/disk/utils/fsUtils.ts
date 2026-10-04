@@ -17,7 +17,7 @@ interface CodedError extends Error {
 }
 
 // `node:fs` is importable from `disk/` alone, so this is the one place to substitute.
-export { rm } from 'node:fs/promises';
+export { rename, rm } from 'node:fs/promises';
 
 // Sync because its answer feeds a `spawnSync`: `spawns/` resolves a binary with no asynchronous point to wait at.
 export const isExecutableFile = (path: string): boolean => {

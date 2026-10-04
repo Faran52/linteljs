@@ -1,9 +1,10 @@
 export type { PipelineOptions } from './runs/pipeline/pipelineRun';
 export { pipelineRun } from './runs/pipeline/pipelineRun';
 export {
-  applySync,
-  type PendingStatus,
+  type LintConfigPlan,
   planSync,
   runnerSwitch,
-  type SyncPlan,
+  syncPlugin,
+  writeDependencies,
+  writeLintConfig,
 } from './runs/sync/syncRun';

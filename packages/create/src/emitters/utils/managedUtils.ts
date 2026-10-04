@@ -1,15 +1,15 @@
+import { PLUGIN_ROOT } from '@config/constants';
+
 import type { Artifact } from '@config/types';
 
-// A preserved or merged artifact is never safe to delete; the removable merges exist because a host was chosen.
+// Only the plugin tree: `sync` deletes nowhere else.
 export const removableIn = (artifacts: Artifact[]): string[] => {
   return artifacts
-    .filter((artifact) => {
-      const owned = !('merge' in artifact.content) || artifact.removable === true;
-
-      return artifact.preserve !== true && owned;
-    })
     .map((artifact) => {
       return artifact.target;
+    })
+    .filter((target) => {
+      return target.startsWith(PLUGIN_ROOT);
     });
 };
 

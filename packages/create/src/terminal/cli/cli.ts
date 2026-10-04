@@ -5,6 +5,8 @@ import {
 } from 'node:path';
 import { stdin } from 'node:process';
 
+import { ESLINT_CONFIG_PATH } from '@config/constants';
+
 import { unscopedName } from '@utils/nameUtils';
 
 import {
@@ -20,12 +22,15 @@ import {
   linteljsConfigReader,
   readIfPresent,
 } from '@disk';
-import { parsePackageJson } from '@emitters';
+import { parsePackageJson, type Upgrade } from '@emitters';
 import {
-  applySync,
+  type LintConfigPlan,
   pipelineRun,
   planSync,
   runnerSwitch,
+  syncPlugin,
+  writeDependencies,
+  writeLintConfig,
 } from '@pipeline';
 
 import packageJson from '../../../package.json' with { type: 'json' };
@@ -54,11 +59,10 @@ import {
 } from './utils/argvUtils';
 import { usage } from './utils/flagUtils';
 import {
-  installCommands,
   nextSteps,
   say,
   stageReport,
-  syncTable,
+  upgradeTable,
 } from './utils/reportUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -66,6 +70,21 @@ import type { Answers, HostedAnswers } from '@config/types';
 interface HostedAsk {
   name: string;
   answers: HostedAnswers;
+}
+
+type Step = 'done' | 'declined' | 'blocked';
+
+interface Asker {
+  isYes: boolean;
+  prompter: Prompter;
+  hasTerminal: boolean;
+}
+
+interface DependencyStep {
+  changes: Upgrade[];
+  heading: string;
+  question: string;
+  done: string;
 }
 
 const EXIT_CANCELLED = 130;
@@ -152,6 +171,75 @@ const askedFrom = async (
   return answered;
 };
 
+// `--yes` accepts; with no terminal the step writes nothing and the run fails, so a script notices.
+const stepOf = async (asker: Asker, heading: string, question: string): Promise<Step> => {
+  say(heading);
+
+  if (asker.isYes) {
+    return 'done';
+  }
+
+  if (!asker.hasTerminal) {
+    console.error(SYNC_NEEDS_YES);
+
+    return 'blocked';
+  }
+
+  const isApproved = await confirm(asker.prompter, question);
+
+  return isApproved ? 'done' : 'declined';
+};
+
+const dependencyStep = async (cwd: string, asker: Asker, step: DependencyStep): Promise<Step> => {
+  const {
+    changes,
+    heading,
+    question,
+    done,
+  } = step;
+
+  if (changes.length === 0) {
+    return 'done';
+  }
+
+  const outcome = await stepOf(asker, `${heading}\n${upgradeTable(changes)}`, question);
+
+  if (outcome === 'done') {
+    await writeDependencies(cwd, changes);
+    say(done);
+  }
+
+  return outcome;
+};
+
+// A missing config is written; one the project has is moved aside only when asked.
+const lintConfigStep = async (
+  cwd: string,
+  asker: Asker,
+  answers: HostedAnswers,
+  plan: LintConfigPlan,
+): Promise<Step> => {
+  if (plan.status !== 'changed') {
+    if (plan.status === 'missing') {
+      await writeLintConfig(cwd, answers, plan);
+      say(`wrote ${ESLINT_CONFIG_PATH}`);
+    }
+
+    return 'done';
+  }
+
+  const { path, backup } = plan;
+  const question = `Move it to ${backup} and write ${ESLINT_CONFIG_PATH}?`;
+  const outcome = await stepOf(asker, `${path} differs from the config linteljs writes.`, question);
+
+  if (outcome === 'done') {
+    await writeLintConfig(cwd, answers, plan);
+    say(`moved ${path} to ${backup}, wrote ${ESLINT_CONFIG_PATH}`);
+  }
+
+  return outcome;
+};
+
 const runSync = async (
   options: CliOptions,
   answers: HostedAnswers,
@@ -174,48 +262,8 @@ const runSync = async (
     return 1;
   }
 
-  const plan = await planSync(options.cwd, answers);
-  const install = installCommands(answers.packageManager, plan.missing);
-
-  if (install.length > 0) {
-    const heading = 'linteljs needs packages this project does not have. sync leaves dependencies to you:';
-
-    const notice = [heading, ...install].join('\n');
-
-    say(notice);
-  }
-
-  if (plan.pending.length === 0) {
-    say('Everything is already up to date.');
-    return 0;
-  }
-
-  say(`sync would change:\n${syncTable(plan)}`);
-
-  if (!options.yes) {
-    if (!hasTerminal) {
-      console.error(SYNC_NEEDS_YES);
-      return 1;
-    }
-
-    const approved = await confirm(prompter, 'Apply these changes?');
-
-    if (!approved) {
-      say('Nothing was written.');
-      return 0;
-    }
-  }
-
-  const targets = plan.pending
-    .map((entry) => {
-      return entry.target;
-    });
-
-  const { written, removed } = await applySync(
-    options.cwd,
-    answers,
-    targets,
-  );
+  const { cwd } = options;
+  const { written, removed } = await syncPlugin(cwd, answers);
 
   for (const target of written) {
     say(`wrote ${target}`);
@@ -225,7 +273,52 @@ const runSync = async (
     say(`removed ${target}`);
   }
 
-  return 0;
+  const plan = await planSync(cwd, answers);
+  const {
+    upgrades,
+    peers,
+    eslintConfig,
+  } = plan;
+  const isCurrent = written.length + removed.length + upgrades.length + peers.length === 0
+    && eslintConfig.status === 'unchanged';
+
+  if (isCurrent) {
+    say('Everything is already up to date.');
+    return 0;
+  }
+
+  const asker: Asker = {
+    isYes: options.yes,
+    prompter,
+    hasTerminal,
+  };
+  const dependencies: DependencyStep[] = [
+    {
+      changes: upgrades,
+      heading: '@linteljs/* versions behind:',
+      question: 'Update them in package.json?',
+      done: 'wrote package.json',
+    },
+    {
+      changes: peers,
+      heading: '@linteljs/eslint-config peers missing or behind:',
+      question: 'Add or update them in package.json?',
+      done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
+    },
+  ];
+  const steps: Step[] = [];
+
+  for (const step of dependencies) {
+    const outcome = await dependencyStep(cwd, asker, step);
+
+    steps.push(outcome);
+  }
+
+  const lintOutcome = await lintConfigStep(cwd, asker, answers, eslintConfig);
+
+  steps.push(lintOutcome);
+
+  return steps.includes('blocked') ? 1 : 0;
 };
 
 // Not `process.exit`, which drops queued stderr writes.

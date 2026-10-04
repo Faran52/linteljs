@@ -252,6 +252,31 @@ export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
   },
 };
 
+// `@linteljs/eslint-config`'s peers, held to its package.json by the suite: what `sync` may add or move.
+export const ESLINT_CONFIG_PEERS: readonly string[] = [
+  '@eslint-react/eslint-plugin',
+  '@html-eslint/eslint-plugin',
+  '@html-eslint/parser',
+  '@next/eslint-plugin-next',
+  '@stylexjs/eslint-plugin',
+  '@tanstack/eslint-plugin-query',
+  '@tanstack/eslint-plugin-router',
+  '@vitest/eslint-plugin',
+  'angular-eslint',
+  'eslint',
+  'eslint-plugin-astro',
+  'eslint-plugin-better-tailwindcss',
+  'eslint-plugin-jest',
+  'eslint-plugin-jsx-a11y-x',
+  'eslint-plugin-react-hooks',
+  'eslint-plugin-solid',
+  'eslint-plugin-svelte',
+  'eslint-plugin-vue',
+  'eslint-plugin-vuejs-accessibility',
+  'typescript',
+  'vue-eslint-parser',
+];
+
 export const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
 
 export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {

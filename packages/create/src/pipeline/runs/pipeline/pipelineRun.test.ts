@@ -33,7 +33,7 @@ import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
-import { planSync } from '../sync/syncRun';
+import { planSync, syncPlugin } from '../sync/syncRun';
 
 import { pipelineRun } from './pipelineRun';
 
@@ -515,10 +515,23 @@ describe('what create and sync each discover about a project', () => {
       .toContain('__mocks__/setupTests.ts');
   });
 
-  it('leaves sync nothing to report on a project it has just written', async () => {
+  it('leaves sync nothing to change on a project it has just written', async () => {
     await generate({});
 
-    const { pending } = await planSync(cwd, hostedAnswersFor({}));
-    expect(pending).toEqual([]);
+    const answers = hostedAnswersFor({});
+    const synced = await syncPlugin(cwd, answers);
+    const plan = await planSync(cwd, answers);
+
+    const nothingSynced = {
+      written: [],
+      removed: [],
+    };
+    expect(synced).toEqual(nothingSynced);
+    const nothingPlanned = {
+      upgrades: [],
+      peers: [],
+      eslintConfig: { status: 'unchanged' },
+    };
+    expect(plan).toEqual(nothingPlanned);
   });
 });

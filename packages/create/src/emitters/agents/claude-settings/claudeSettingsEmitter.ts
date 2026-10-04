@@ -80,14 +80,11 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
 
   const artifacts: Artifact[] = [
     adapterArtifact('CLAUDE.md', answers),
-    {
-      ...merged('standard', '.claude/settings.json', (current) => {
-        const settings = emitClaudeSettings(answers.plugins);
+    merged('standard', '.claude/settings.json', (current) => {
+      const settings = emitClaudeSettings(answers.plugins);
 
-        return mergeClaudeSettings(settings, current);
-      }),
-      removable: true,
-    },
+      return mergeClaudeSettings(settings, current);
+    }),
     copied('plugins/linteljs/.claude-plugin/plugin.json'),
     copied('plugins/linteljs/.claude-plugin/marketplace.json'),
   ];

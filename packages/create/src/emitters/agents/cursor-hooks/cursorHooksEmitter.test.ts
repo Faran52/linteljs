@@ -180,13 +180,12 @@ describe('cursorHooksEmitter', () => {
     expect(cursorHooks).toEqual([]);
   });
 
-  it('merges .cursor/hooks.json and marks it removable', () => {
+  it('merges .cursor/hooks.json', () => {
     const [artifact, ...rest] = cursorHooksEmitter(answersFor(['cursor']));
 
     expect(rest).toEqual([]);
     expect(artifact?.stage).toBe('standard');
     expect(artifact?.target).toBe('.cursor/hooks.json');
-    expect(artifact?.removable).toBe(true);
 
     expect(artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '')
       .toBe(mergeCursorHooks(null));

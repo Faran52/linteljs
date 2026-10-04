@@ -491,6 +491,42 @@ describe('main: patching a project that already exists', () => {
 });
 
 describe('main: sync', () => {
+  const NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';
+  const VERSIONS_QUESTION = 'Update them in package.json?';
+  const ESLINT_QUESTION = 'Move it to eslint.config.js.bak and write eslint.config.js?';
+
+  const manifestText = async (): Promise<string> => {
+    return await readFile(join(project, 'package.json'), 'utf8');
+  };
+
+  const devDependencies = async (): Promise<Record<string, string>> => {
+    const text = await manifestText();
+
+    return parsePackageJson(text).devDependencies ?? {};
+  };
+
+  const editDevDependencies = async (edit: (entries: Record<string, string>) => void): Promise<void> => {
+    const text = await manifestText();
+    const manifest = parsePackageJson(text);
+    const entries = { ...manifest.devDependencies };
+
+    edit(entries);
+    const edited = {
+      ...manifest,
+      devDependencies: entries,
+    };
+
+    await writeFile(join(project, 'package.json'), `${JSON.stringify(edited, null, 2)}\n`, 'utf8');
+  };
+
+  const withOldConfigVersion = async (): Promise<void> => {
+    await generated();
+
+    await editDevDependencies((entries) => {
+      entries['@linteljs/eslint-config'] = '^1.5.0';
+    });
+  };
+
   it('reports nothing to do for a project it just generated', async () => {
     await generated();
 
@@ -499,86 +535,130 @@ describe('main: sync', () => {
 
     expect(code).toBe(0);
     expect(asked.calls).toEqual([]);
-    expect(printed).toContain('Everything is already up to date.');
-    expect(printed).not.toContain('linteljs needs packages');
+    expect(printed).toBe('Everything is already up to date.\n');
   });
 
-  it('lists the files in one table, asks once, and writes nothing when declined', async () => {
+  it('rewrites an edited plugin file without asking, even with no terminal', async () => {
     await generated();
     await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+
+    const {
+      code,
+      printed,
+      errors,
+    } = await runMain(['sync']);
+
+    expect(code).toBe(0);
+    expect(errors).toEqual([]);
+    expect(printed).toBe(`wrote ${RULE}\n`);
+    const file = await readFile(join(project, RULE), 'utf8');
+    expect(file).not.toBe('# local edit\n');
+  });
+
+  it('lists an old @linteljs/* version, asks, and leaves package.json alone when declined', async () => {
+    await withOldConfigVersion();
+    const before = await manifestText();
 
     const asked = scripted(['no']);
     const { code, printed } = await runMain(['sync'], asked);
 
     expect(code).toBe(0);
-    const expected = ['Apply these changes?'];
-    expect(asked.calls).toEqual(expected);
-    expect(printed).toContain(`sync would change:\n  update  ${RULE}\n`);
-    expect(printed).toContain('Nothing was written.');
-    expect(printed).not.toContain('local edit');
-    const file = await readFile(join(project, RULE), 'utf8');
-    expect(file).toBe('# local edit\n');
+    expect(asked.calls).toEqual([VERSIONS_QUESTION]);
+    expect(printed).toMatch(/^@linteljs\/\* versions behind:\n {2}@linteljs\/eslint-config {2}\^1\.5\.0 -> /u);
+    const after = await manifestText();
+    expect(after).toBe(before);
   });
 
-  it('writes once the question is answered yes', async () => {
-    await generated();
-    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+  it('bumps the version once the question is answered yes', async () => {
+    await withOldConfigVersion();
 
-    const { printed } = await runMain(['sync'], scripted(['yes']));
+    const { code, printed } = await runMain(['sync'], scripted(['yes']));
 
-    expect(printed).toContain(`wrote ${RULE}`);
-    const file = await readFile(join(project, RULE), 'utf8');
-    expect(file).not.toBe('# local edit\n');
+    expect(code).toBe(0);
+    expect(printed).toContain('wrote package.json');
+    const entries = await devDependencies();
+    expect(entries['@linteljs/eslint-config']).not.toBe('^1.5.0');
   });
 
-  it('writes under --yes without asking', async () => {
-    await generated();
-    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
-
-    const asked = scripted([]);
-    const { printed } = await runMain(['sync', '--yes'], asked);
-
-    expect(asked.calls).toEqual([]);
-    expect(printed).toContain(`wrote ${RULE}`);
-  });
-
-  it('refuses without a terminal or --yes, and writes nothing', async () => {
-    await generated();
-    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+  it('writes nothing for a step with no terminal and no --yes, says so, and fails', async () => {
+    await withOldConfigVersion();
+    const before = await manifestText();
 
     const { code, errors } = await runMain(['sync']);
 
     expect(code).toBe(1);
-    const expected = ['Nothing was written: sync asks before it writes. Run it in a terminal, or pass --yes.'];
-    expect(errors).toEqual(expected);
-    const file = await readFile(join(project, RULE), 'utf8');
-    expect(file).toBe('# local edit\n');
+    expect(errors).toEqual([NEEDS_YES]);
+    const after = await manifestText();
+    expect(after).toBe(before);
   });
 
-  it('prints the install command for a dependency the project lacks, and leaves package.json without it', async () => {
+  it('adds a missing eslint-config peer and prints the install, and adds nothing else', async () => {
     await generated();
 
-    const manifestText = await readFile(join(project, 'package.json'), 'utf8');
-    const manifest = parsePackageJson(manifestText);
-    const devDependencies = { ...manifest.devDependencies };
+    await editDevDependencies((entries) => {
+      Reflect.deleteProperty(entries, 'eslint');
+      Reflect.deleteProperty(entries, 'husky');
+    });
 
-    Reflect.deleteProperty(devDependencies, 'husky');
-    const trimmed = {
-      ...manifest,
-      devDependencies,
-    };
-
-    await writeFile(join(project, 'package.json'), `${JSON.stringify(trimmed, null, 2)}\n`, 'utf8');
-
-    const { code, printed } = await runMain(['sync', '--yes']);
-    const syncedText = await readFile(join(project, 'package.json'), 'utf8');
-    const synced = parsePackageJson(syncedText);
+    const asked = scripted([]);
+    const { code, printed } = await runMain(['sync', '--yes'], asked);
 
     expect(code).toBe(0);
-    const heading = 'linteljs needs packages this project does not have. sync leaves dependencies to you:';
-    expect(printed).toContain(`${heading}\n  pnpm add -D "husky@`);
-    expect(printed).toMatch(/ {2}pnpm add -D "husky@[^"]+"\n/u);
-    expect(synced.devDependencies).not.toHaveProperty('husky');
+    expect(asked.calls).toEqual([]);
+    expect(printed).toMatch(/^@linteljs\/eslint-config peers missing or behind:\n {2}eslint {2}none -> /u);
+    expect(printed).toContain('wrote package.json. Install them:\n  pnpm install\n');
+    const entries = await devDependencies();
+    expect(entries).toHaveProperty('eslint');
+    expect(entries).not.toHaveProperty('husky');
+  });
+
+  it('writes a missing eslint config without asking', async () => {
+    await generated();
+    await rm(join(project, 'eslint.config.js'));
+
+    const { code, printed } = await runMain(['sync']);
+
+    expect(code).toBe(0);
+    expect(printed).toBe('wrote eslint.config.js\n');
+  });
+
+  it.each<[string, string[], string]>([
+    [
+      'keeps',
+      ['no'],
+      '// ours\n',
+    ],
+    [
+      'backs up',
+      ['yes'],
+      '',
+    ],
+  ])('%s an edited eslint config as answered', async (_, answers, expected) => {
+    await generated();
+    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
+
+    const asked = scripted(answers);
+    const { code } = await runMain(['sync'], asked);
+
+    expect(code).toBe(0);
+    expect(asked.calls).toEqual([ESLINT_QUESTION]);
+    const file = await readFile(join(project, 'eslint.config.js'), 'utf8');
+    const kept = file === '// ours\n' ? file : '';
+    expect(kept).toBe(expected);
+  });
+
+  it('moves an edited eslint config past an earlier backup under --yes', async () => {
+    await generated();
+    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
+    await writeFile(join(project, 'eslint.config.js.bak'), '// earlier\n', 'utf8');
+
+    const { printed } = await runMain(['sync', '--yes']);
+
+    expect(printed).toContain('moved eslint.config.js to eslint.config.js.bak.1, wrote eslint.config.js');
+    const earlier = await readFile(join(project, 'eslint.config.js.bak'), 'utf8');
+    expect(earlier).toBe('// earlier\n');
+    const backup = await readFile(join(project, 'eslint.config.js.bak.1'), 'utf8');
+    expect(backup).toBe('// ours\n');
   });
 
   it('refuses --force as an unknown flag', async () => {
@@ -612,7 +692,7 @@ describe('main: sync', () => {
     expect(hasJestConfig).toBe(false);
   });
 
-  it('says what it removed once the config stops selecting a host', async () => {
+  it('removes what a dropped host owned in the plugin folder, and nothing outside it', async () => {
     await generated();
 
     await writeConfig({
@@ -622,9 +702,11 @@ describe('main: sync', () => {
 
     const { printed } = await runMain(['sync', '--yes'], scripted([]));
 
-    expect(printed).toMatch(/delete +\.claude\/settings\.json\n/u);
-    expect(printed).toContain('removed .claude/settings.json');
-    expect(printed).toContain('wrote AGENTS.md');
+    expect(printed).toContain('removed plugins/linteljs/.claude-plugin/plugin.json');
+    const hasClaudeSettings = await exists(join(project, '.claude/settings.json'));
+    expect(hasClaudeSettings).toBe(true);
+    const hasAgents = await exists(join(project, 'AGENTS.md'));
+    expect(hasAgents).toBe(false);
   });
 
   it('refuses to sync a config that is absent, and writes nothing', async () => {
@@ -649,7 +731,7 @@ describe('main: sync', () => {
     expect(configPathExists).toBe(false);
   });
 
-  it('plans an extension from the browser and framework the config recorded', async () => {
+  it('writes the plugin files an extension\'s recorded framework needs', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
       target: 'webextension',
@@ -657,12 +739,11 @@ describe('main: sync', () => {
       hostedFramework: 'solid',
     });
 
-    const asked = scripted(['no']);
+    const asked = scripted([]);
     const { printed } = await runMain(['sync'], asked);
 
-    const expected = ['Apply these changes?'];
-    expect(asked.calls).toEqual(expected);
-    expect(printed).toMatch(/add +plugins\/linteljs\/skills\/linteljs\/references\/solid-reactivity\.md\n/u);
+    expect(asked.calls).toEqual([]);
+    expect(printed).toContain('wrote plugins/linteljs/skills/linteljs/references/solid-reactivity.md\n');
   });
 });
 

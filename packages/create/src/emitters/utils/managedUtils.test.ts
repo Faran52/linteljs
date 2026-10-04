@@ -4,40 +4,18 @@ import {
   it,
 } from 'vitest';
 
-import { emitted, merged } from './artifactUtils';
+import { emitted } from './artifactUtils';
 import { managedRecord, removableIn } from './managedUtils';
 
 describe('removableIn', () => {
-  it('takes what this CLI writes whole', () => {
-    const removable = removableIn([emitted('standard', 'eslint.config.js', '')]);
-    const expected = ['eslint.config.js'];
-    expect(removable).toEqual(expected);
-  });
+  it('takes what sits under plugins/linteljs/ and nothing outside it', () => {
+    const removable = removableIn([
+      emitted('standard', 'plugins/linteljs/hooks/hooks.json', ''),
+      emitted('standard', 'eslint.config.js', ''),
+      emitted('standard', 'plugins/other/file.md', ''),
+    ]);
 
-  it('leaves a preserved artifact out', () => {
-    const removable = removableIn([{
-      ...emitted('standard', 'CLAUDE.md', ''),
-      preserve: true,
-    }]);
-
-    expect(removable).toEqual([]);
-  });
-
-  it('leaves a merge out', () => {
-    const removable = removableIn([merged('standard', 'pnpm-workspace.yaml', () => {
-      return '';
-    })]);
-    expect(removable).toEqual([]);
-  });
-
-  it('takes a merge that says it is removable', () => {
-    const removable = removableIn([{
-      ...merged('standard', '.claude/settings.json', () => {
-        return '';
-      }),
-      removable: true,
-    }]);
-    const expected = ['.claude/settings.json'];
+    const expected = ['plugins/linteljs/hooks/hooks.json'];
     expect(removable).toEqual(expected);
   });
 });

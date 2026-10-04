@@ -110,7 +110,7 @@ describe('usage', () => {
 
   it('ends on the sync note', () => {
     const text = usage();
-    const endsOnSync = text.endsWith('A missing dependency is printed as a command, never written.\n');
+    const endsOnSync = text.endsWith('A missing eslint config is written. Without a terminal a step needs --yes.\n');
     expect(endsOnSync).toBe(true);
   });
 });

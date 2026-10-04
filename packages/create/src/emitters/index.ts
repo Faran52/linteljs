@@ -1,4 +1,4 @@
-export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
+export { emitEslintConfig } from './always/eslint-config/eslintConfigEmitter';
 export { styleGlob } from './always/utils/scriptUtils';
 export { TEST_RUNNERS } from './constants';
 export {
@@ -11,8 +11,10 @@ export {
   buildDevDependencies,
   type DependencyDrift,
   dependencyDrift,
-  type MissingDependencies,
   parsePackageJson,
+  serializedPackageJson,
+  type Upgrade,
+  upgradedPackageJson,
 } from './utils/packageJsonUtils';
 export { testRunnerOf } from './utils/runnerUtils';
 export {

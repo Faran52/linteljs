@@ -31,9 +31,11 @@ const withoutSuperseded = (existing: string): string => {
   return kept.join('\n');
 };
 
-// Line-based: a YAML round-trip would reformat every line the user wrote. Only adds a block that is absent.
-export const resyncPnpmWorkspace = (existing: string, answers: Answers): string => {
-  const remainder = existing.replace(/^\n+/, '');
+// Line-based: a YAML round-trip would reformat every line the user wrote. Only adds a block that is absent,
+// and drops the scaffolder's opt-out, which refuses exactly the builds linteljs allows.
+export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
+  const remainder = withoutSuperseded(existing ?? '')
+    .replace(/^\n+/, '');
 
   const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
@@ -46,20 +48,11 @@ export const resyncPnpmWorkspace = (existing: string, answers: Answers): string 
   return `${withOverrides.trimEnd()}\n`;
 };
 
-// At birth the scaffolder's opt-out goes too; on `sync` it is the project's own.
-export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
-  const workspace = withoutSuperseded(existing ?? '');
-
-  return resyncPnpmWorkspace(workspace, answers);
-};
-
 // Discarding it breaks an install that already wrote into it.
 export const pnpmWorkspaceEmitter = (answers: Answers): Artifact[] => {
   const artifacts: Artifact[] = answers.packageManager === 'pnpm'
     ? [merged('package', 'pnpm-workspace.yaml', (current) => {
         return mergePnpmWorkspace(current, answers);
-      }, (current) => {
-        return resyncPnpmWorkspace(current, answers);
       })]
     : [];
 

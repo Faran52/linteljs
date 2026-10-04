@@ -1,16 +1,24 @@
-import { basename, join } from 'node:path';
+import {
+  basename,
+  join,
+  posix,
+} from 'node:path';
 
-import { MANAGED_PATH } from '@config/constants';
+import {
+  ESLINT_CONFIG_PATH,
+  MANAGED_PATH,
+  PLUGIN_ROOT,
+} from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
 
-import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
   entryExists,
   managedPathsReader,
   projectShapeReader,
   readIfPresent,
+  rename,
   rm,
   rmdirIfEmpty,
   safeProjectPath,
@@ -21,31 +29,33 @@ import {
   buildArtifacts,
   type DependencyDrift,
   dependencyDrift,
-  linteljsConfigEmitter,
+  emitEslintConfig,
   parsePackageJson,
+  serializedPackageJson,
   TEST_RUNNERS,
   testRunnerOf,
+  type Upgrade,
+  upgradedPackageJson,
 } from '@emitters';
+
+import { ESLINT_CONFIG_SPELLINGS } from './constants';
 
 import type { HostedAnswers, TestRunner } from '@config/types';
 
-export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
-
-export interface SyncEntry {
-  target: string;
-  status: SyncStatus;
+interface LintConfigSettled {
+  status: 'missing' | 'unchanged';
 }
 
-export type PendingStatus = Exclude<SyncStatus, 'unchanged'>;
-
-export interface PendingEntry {
-  target: string;
-  status: PendingStatus;
+interface LintConfigChanged {
+  status: 'changed';
+  path: string;
+  backup: string;
 }
+
+export type LintConfigPlan = LintConfigSettled | LintConfigChanged;
 
 export interface SyncPlan extends DependencyDrift {
-  entries: SyncEntry[];
-  pending: PendingEntry[];
+  eslintConfig: LintConfigPlan;
 }
 
 export interface RunnerSwitch {
@@ -58,94 +68,19 @@ export interface SyncResult {
   removed: string[];
 }
 
-const entryOf = (target: string, status: SyncStatus): SyncEntry => {
-  const entry: SyncEntry = {
-    target,
-    status,
-  };
-
-  return entry;
+// A recorded path is the project's to edit: one that leaves the folder, or names a directory, is never deleted.
+const isPluginPath = (target: string): boolean => {
+  return target.startsWith(PLUGIN_ROOT) && !target.endsWith('/') && posix.normalize(target) === target;
 };
 
-// Versions through 1.5.3 kept the answers in `lintel.config.json`.
-const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
-  const managedPaths = await managedPathsReader(cwd);
-  const candidates = [...managedPaths, LEGACY_CONFIG_PATH];
-
-  return candidates;
-};
-
-// Over a file the project has, a merge with a `resync` keeps what the project owns.
-const forSync = (artifact: Artifact): Artifact => {
-  const { content } = artifact;
-
-  if (!('resync' in content)) {
-    return artifact;
-  }
-
-  const { merge, resync = merge } = content;
-
-  const resyncing: Artifact = {
-    ...artifact,
-    content: {
-      merge: (current) => {
-        return current === null ? merge(null) : resync(current);
-      },
-    },
-  };
-
-  return resyncing;
-};
-
-const lacksCurrentConfig = async (cwd: string): Promise<boolean> => {
-  const hasCurrent = await entryExists(join(cwd, CONFIG_PATH));
-
-  return !hasCurrent;
-};
-
-// A 1.x project's answers exist only under the old name, which `sync` removes.
-const migratedConfig = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
-  const hasLegacy = await entryExists(join(cwd, LEGACY_CONFIG_PATH));
-  const isMigrating = hasLegacy && await lacksCurrentConfig(cwd);
-
-  return isMigrating ? linteljsConfigEmitter(answers) : [];
-};
-
-const syncArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
-  const project = await projectShapeReader(cwd);
-  const projectName = basename(cwd);
-  const migrated = await migratedConfig(cwd, answers);
-  const built = buildArtifacts(answers, project, projectName)
-    .map(forSync);
-
-  return migrated.concat(built);
-};
-
-// A package.json `sync` would write from nothing carries every dependency already.
-const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
-  const manifest = await readIfPresent(join(cwd, 'package.json'));
-
-  if (manifest === null) {
-    const noDrift: DependencyDrift = {
-      upgrades: [],
-      missing: {
-        dependencies: {},
-        devDependencies: {},
-      },
-    };
-
-    return noDrift;
-  }
-
-  const packageJson = parsePackageJson(manifest);
-
-  return dependencyDrift(packageJson, answers);
+const packageJsonPath = (cwd: string): string => {
+  return join(cwd, 'package.json');
 };
 
 // The suites, setup and scripts a runner reads are the project's: a sync switching runners would strand them.
 export const runnerSwitch = async (cwd: string, answers: HostedAnswers): Promise<RunnerSwitch | null> => {
   const to = testRunnerOf(answers);
-  const manifest = await readIfPresent(join(cwd, 'package.json'));
+  const manifest = await readIfPresent(packageJsonPath(cwd));
 
   if (to === undefined || manifest === null) {
     return null;
@@ -173,80 +108,79 @@ export const runnerSwitch = async (cwd: string, answers: HostedAnswers): Promise
   return found;
 };
 
-// Exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
-const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
-  const entries: SyncEntry[] = [];
+const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
+  const manifest = await readIfPresent(packageJsonPath(cwd));
 
-  const candidates = await obsoleteCandidates(cwd);
+  if (manifest === null) {
+    const noDrift: DependencyDrift = {
+      upgrades: [],
+      peers: [],
+    };
 
-  for (const target of candidates) {
-    const isObsolete = !expected.has(target) && await entryExists(join(cwd, target));
-
-    if (isObsolete) {
-      entries.push(entryOf(target, 'obsolete'));
-    }
+    return noDrift;
   }
 
-  return entries;
+  const existing = parsePackageJson(manifest);
+
+  return dependencyDrift(existing, answers);
+};
+
+// Never over an earlier backup: `.bak`, then `.bak.1`, `.bak.2` and so on.
+const freeBackup = async (cwd: string, path: string): Promise<string> => {
+  let backup = `${path}.bak`;
+  let index = 0;
+  let isTaken = await entryExists(join(cwd, backup));
+
+  while (isTaken) {
+    index += 1;
+    backup = `${path}.bak.${String(index)}`;
+    isTaken = await entryExists(join(cwd, backup));
+  }
+
+  return backup;
+};
+
+const lintConfigPlan = async (cwd: string, answers: HostedAnswers): Promise<LintConfigPlan> => {
+  const unchanged: LintConfigSettled = { status: 'unchanged' };
+  const missing: LintConfigSettled = { status: 'missing' };
+  const emitted = emitEslintConfig(answers);
+
+  for (const path of ESLINT_CONFIG_SPELLINGS) {
+    const current = await readIfPresent(join(cwd, path));
+
+    if (current === null) {
+      continue;
+    }
+
+    if (path === ESLINT_CONFIG_PATH && current === emitted) {
+      return unchanged;
+    }
+
+    const backup = await freeBackup(cwd, path);
+    const changed: LintConfigChanged = {
+      status: 'changed',
+      path,
+      backup,
+    };
+
+    return changed;
+  }
+
+  return missing;
 };
 
 export const planSync = async (cwd: string, answers: HostedAnswers): Promise<SyncPlan> => {
-  const entries: SyncEntry[] = [];
-  const expected = new Set<string>();
-  const artifacts = await syncArtifacts(cwd, answers);
-
-  for (const artifact of artifacts) {
-    expected.add(artifact.target);
-
-    // This run's own bookkeeping, not a file to report.
-    if (artifact.target === MANAGED_PATH) {
-      continue;
-    }
-
-    const path = join(cwd, artifact.target);
-    const current = await readIfPresent(path);
-
-    if (current === null) {
-      entries.push(entryOf(artifact.target, 'missing'));
-      continue;
-    }
-
-    // Reporting an edit here would invite a sync that undoes it.
-    if (artifact.preserve === true) {
-      entries.push(entryOf(artifact.target, 'unchanged'));
-      continue;
-    }
-
-    const shipped = await shippedAssetsReader(artifact.content, current);
-
-    entries.push(entryOf(artifact.target, current === shipped ? 'unchanged' : 'changed'));
-  }
-
-  const obsolete = await obsoleteIn(cwd, expected);
-
-  entries.push(...obsolete);
-
   const drift = await driftOf(cwd, answers);
+  const eslintConfig = await lintConfigPlan(cwd, answers);
   const plan: SyncPlan = {
     ...drift,
-    entries,
-    pending: entries
-      .flatMap(({ target, status }) => {
-        const kept: PendingEntry[] = status === 'unchanged'
-          ? []
-          : [{
-              target,
-              status,
-            }];
-
-        return kept;
-      }),
+    eslintConfig,
   };
 
   return plan;
 };
 
-// An empty `.claude/` reads as if the host were still configured.
+// An empty `.claude-plugin/` reads as if the host were still configured.
 const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
   const directories = new Set(removed
     .flatMap((target) => {
@@ -273,54 +207,52 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
   }
 };
 
-export const applySync = async (
-  cwd: string,
-  answers: HostedAnswers,
-  targets: string[],
-): Promise<SyncResult> => {
+const pluginArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
+  const project = await projectShapeReader(cwd);
+  const built = buildArtifacts(answers, project, basename(cwd));
+
+  return built
+    .filter(({ target }) => {
+      return target.startsWith(PLUGIN_ROOT);
+    });
+};
+
+// The folder is linteljs's whole, so it is written without asking.
+export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<SyncResult> => {
   const written: string[] = [];
   const removed: string[] = [];
-  const expected = new Set<string>();
 
   // Read first: the loop below rewrites the record.
-  const candidates = await obsoleteCandidates(cwd);
-  const artifacts = await syncArtifacts(cwd, answers);
+  const recorded = await managedPathsReader(cwd);
+  const artifacts = await pluginArtifacts(cwd, answers);
+  const expected = new Set(artifacts
+    .map(({ target }) => {
+      return target;
+    }));
 
   for (const artifact of artifacts) {
-    expected.add(artifact.target);
+    const path = await safeProjectPath(cwd, artifact.target);
+    const current = await readIfPresent(path);
+    const shipped = await shippedAssetsReader(artifact.content, current);
 
-    // A partial sync that left it stale would forget what it may remove next time.
-    if (artifact.target === MANAGED_PATH) {
-      await artifactWriter(cwd, artifact);
-      continue;
-    }
-
-    if (!targets.includes(artifact.target)) {
+    if (current === shipped) {
       continue;
     }
 
     const isWritten = await artifactWriter(cwd, artifact);
 
-    if (isWritten) {
+    // The record is this run's own bookkeeping, not a file to report.
+    if (isWritten && artifact.target !== MANAGED_PATH) {
       written.push(artifact.target);
     }
   }
 
-  for (const target of candidates) {
-    if (expected.has(target) || !targets.includes(target)) {
-      continue;
-    }
-
-    // Until the current name is written, the old one holds the only copy of the answers.
-    const isOnlyConfig = target === LEGACY_CONFIG_PATH && await lacksCurrentConfig(cwd);
-
-    if (isOnlyConfig) {
+  for (const target of recorded) {
+    if (expected.has(target) || !isPluginPath(target)) {
       continue;
     }
 
     const path = await safeProjectPath(cwd, target);
-
-    // Gone since the plan: nothing to remove or report, and its directory may be gone too.
     const isPresent = await entryExists(path);
 
     if (!isPresent) {
@@ -340,4 +272,34 @@ export const applySync = async (
   };
 
   return result;
+};
+
+// Only the named entries move; every other byte of the manifest is the project's.
+export const writeDependencies = async (cwd: string, changes: Upgrade[]): Promise<void> => {
+  const manifest = await readIfPresent(packageJsonPath(cwd));
+  const upgraded = upgradedPackageJson(parsePackageJson(manifest ?? '{}'), changes);
+  const artifact: Artifact = {
+    stage: 'package',
+    target: 'package.json',
+    content: { text: serializedPackageJson(upgraded) },
+  };
+
+  await artifactWriter(cwd, artifact);
+};
+
+export const writeLintConfig = async (cwd: string, answers: HostedAnswers, plan: LintConfigPlan): Promise<void> => {
+  if (plan.status === 'changed') {
+    const from = await safeProjectPath(cwd, plan.path);
+    const to = await safeProjectPath(cwd, plan.backup);
+
+    await rename(from, to);
+  }
+
+  const artifact: Artifact = {
+    stage: 'lint',
+    target: ESLINT_CONFIG_PATH,
+    content: { text: emitEslintConfig(answers) },
+  };
+
+  await artifactWriter(cwd, artifact);
 };
