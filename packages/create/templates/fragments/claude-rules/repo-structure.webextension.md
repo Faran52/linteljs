@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/**/*.ts"
+  - "src/**/*.{ts,tsx,vue,svelte}"
   - "tsconfig.json"
   - "vite.config.ts"
   - "manifest.json"
@@ -23,7 +23,7 @@ testing.
 
 A generated project has `manifest.json` and the folders for the surfaces it was generated with.
 The popup is `index.html`, with `src/main.ts` rendering `src/popup/` and its mark from `src/lib/mark/`. <!-- when popup -->
-`src/background/` holds the service worker. <!-- when background -->
+`src/background/` holds the background script: a service worker on Chrome, an event page on Firefox. <!-- when background -->
 `devtools.html` loads `src/devtools/`, and `panel.html` loads `src/panel/`. <!-- when devtools-panel -->
 The rest of the tree below is where the next surface goes. Do not keep a folder for a surface this project
 does not have.
@@ -43,7 +43,7 @@ src/
   main.ts         the popup entry, rendering popup/
   style.css       the stylesheet entry, importing styles/ and lib/mark/
   popup/          what the popup renders
-  background/     the service worker named by manifest.background
+  background/     the background script named by manifest.background
   content-scripts/
   devtools/  panel/
   config/         constants and env access

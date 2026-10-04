@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/**/*.{ts,tsx,astro}"
+  - "src/**/*.{ts,tsx,astro,vue,svelte}"
   - "tsconfig.json"
   - "astro.config.mjs"
 ---

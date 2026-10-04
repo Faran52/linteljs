@@ -21,8 +21,8 @@ for the route with its path flattened: `app-index.test.tsx` for `src/app/index.t
 ## Layout
 
 `src/app/` is Expo Router's, and the router owns it: a file's path there *is* its route, so a file
-moved is a route changed. That ownership covers case too, so the directory is exempt from both the
-filename and the folder convention: `_layout.tsx` and segments like `[slug]` and `(tabs)` are
+moved is a route changed. That ownership covers case too, so the filename and the folder convention
+admit the router's own spellings there: `_layout.tsx` and segments like `[slug]` and `(tabs)` are
 spelled the way the router reads them. Everything a route reaches sits beside it under `src/`.
 
 ```

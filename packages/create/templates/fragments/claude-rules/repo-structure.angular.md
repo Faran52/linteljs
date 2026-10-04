@@ -14,8 +14,8 @@ here, because a prose copy of a lint rule is the part that rots. The reserved `*
 `*.service.ts` family is Angular's own convention, not a rule this config checks. This file carries
 placement and direction, which no rule can see.
 
-A spec sits beside the file it tests and takes the same name, so `app.component.ts` is pinned by
-`app.component.spec.ts`. That pairing is convention here too, not something the config enforces.
+A spec sits beside the file it tests and takes the same name, so `app.ts` is pinned by
+`app.spec.ts`. That pairing is convention here too, not something the config enforces.
 
 ## Layout
 
