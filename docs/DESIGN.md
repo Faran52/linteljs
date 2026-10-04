@@ -311,13 +311,11 @@ module is a drawer of small helpers rather than one subject, which is why it get
 `composeConfig` passes through), because naming it unasked would make ESLint lint `.astro` files in a project that
 has no parser for them.
 
-The numbers govern this workspace too. Measured on 2026-10-03 the way the rules count, in non-test source: the
-longest file is `create/src/targets/react/reactTarget.ts` at 479 lines, the longest `utils/` module
-`create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 626, and the longest function
-`create/src/targets/next/nextTarget.ts`'s builder at 299, with `chain-call-newline`'s `create` at 286 and `base`
-itself at 278. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
-the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
-does not state.
+The numbers govern this workspace too. Measured on 2026-10-04 the way the rules count, in non-test source: the
+longest file is `create/src/targets/react/reactTarget.ts` at 441 lines, the longest `utils/` module
+`create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 694, and the longest function
+`base` itself at 293, with `chain-call-newline`'s `create` at 286. The workspace has no cap of its own: a
+workspace-only number would be a second standard the published one does not state.
 
 ### Magic numbers in source only
 
@@ -348,7 +346,7 @@ on itself, and `base` turns it on with both options for every script and SFC fil
 rules follow it: `create` returns a named `visitors: Rule.RuleListener`.
 
 A suite that asserts on parsed JSON names it `const parsed: unknown = JSON.parse(text)`, the shape the banned-pattern
-checker already grants and 16 suite sites used before the rule was on. Hoisting it bare would type it `any`, and a
+checker already grants. Hoisting it bare would type it `any`, and a
 typed read helper or a `JSON.parse` exemption would each be a second way to say the same thing. Every finding in the
 workspace was fixed in the code, so the root config carries no exemption for it.
 
@@ -518,17 +516,16 @@ adapter, and any file two frameworks write to the byte, such as a barrel or the 
 and a target id is that target's tree, so Next reads `shared: 'react'` for the primitives, stores and
 api modules it renders identically. Logic with no framework in it is shared even where the module around it is
 not: a framework's i18n module keeps its reactive state and its `t`, and reads language matching, direction,
-detection order and placeholder filling from `shared/i18n/src/i18n/utils/languageUtils.ts`, whose one suite ships
-beside it, and every contact api wrapper, plain or a TanStack Query mutation, reads `submitContact` from
+detection order and placeholder filling from `shared/i18n/src/i18n/utils/languageUtils.ts`, and the language cookie
+and `Accept-Language` parsing from `cookieUtils.ts` beside it, each with its one suite; every contact api wrapper, plain or a TanStack Query mutation, reads `submitContact` from
 `shared/src/lib/apis/contact/submission.ts`. Every extended query adapter builds its query and mutation options
 from `shared/src/lib/utils/queryOptionsUtils.ts`, typed structurally and handed the adapter's client for
 invalidation, and every TanStack Form contact form takes `validateContactForm` from
 `shared/src/lib/apis/contact/formValidator.ts`, one file for the plain and the zod rules since it calls whichever
-`schemas.ts` ships. A copy of framework-free logic in two targets is a defect, caught by
-`fallow dupes` over `starter-source/`; the shell that imports it stays per target. Anything with a framework in it
+`schemas.ts` ships. A copy of framework-free logic in two targets is a defect; the shell that imports it stays
+per target. Anything with a framework in it
 is not shared: React's `className` is not Vue's `class`, React destructures props and Solid may not, and React's
-route element is a node where Solid's has to
-be a function. A target that writes a shared file under its own naming (Angular's `status-utils.ts`) keeps the one
+route element is a node where Solid's has to be a function. A target that writes a shared file under its own naming (Angular's `status-utils.ts`) keeps the one
 source: the starter emitter rewrites a shared file's relative imports to the names the target writes, so a
 difference in file naming alone is never a reason for a copy.
 
@@ -991,27 +988,27 @@ webextension popup.
   the recorded answer labels on the About and Version pages, since the generator emits them as facts about the
   project; and the home page, not yet translated.
 - **Direction follows the language.** `<html lang dir>` is set on init and on every change, so Arabic turns the
-  page `rtl`; the starter CSS uses logical properties only. React Router framework mode detects in the root
-  `loader`, from the stored cookie and then `Accept-Language`, so the server renders `<html lang dir>` in the
-  reader's language and the browser starts in the language the server rendered.
-- **Next translates on the client only.** No next-intl plugin, no `request.ts` and no locale segment in the URL:
-  the language is the reader's choice, not a route. The root layout renders `<html lang="en" dir="ltr">`, and
-  `I18nProvider` reads the language through `useSyncExternalStore` with an English server snapshot, so hydration
-  matches and the client switches after it. The translated pages are client components, and each suite wraps its
-  render in the provider, so Next's `i18n` parts carry no test setup.
+  page `rtl`; the starter CSS uses logical properties only.
+- **A server-rendered target serves the chosen language on the first byte.** React Router framework mode (in its
+  root `loader`), Next (in the root layout), Nuxt (in `src/plugins/i18n.ts`) and SvelteKit (in
+  `src/hooks.server.ts`) detect from the request: the language cookie, then `Accept-Language`. The server renders
+  `<html lang dir>` and the page in that language, and the client hydrates in it. The language select writes the
+  cookie, the one stored choice.
+- **Next translates without routing.** No next-intl plugin, no `request.ts` and no locale segment in the URL:
+  the language is the reader's choice, not a route. The root layout hands the detected language to
+  `I18nProvider`, which reads it as the server snapshot of a `useSyncExternalStore`, so hydration matches. The
+  translated pages are client components, and each suite wraps its render in the provider, so Next's `i18n`
+  parts carry no test setup.
 - **vue-i18n reads the shared locales as they are, once quoted.** Its message compiler reads `@` as the start of a
   linked message, so `src/i18n/index.ts` quotes each as the literal `{'@'}` at load, and the shared files stay
   plain. A translation that carries `<code>` is never rendered as HTML: `CodeText` splits the message on its
   marks and renders each command as text inside its own `<code>`, so `warnHtmlMessage` is off rather than met
   with `v-html`. The test setup installs the one `i18n` on every mount, in English until a suite switches.
-- **Nuxt takes vue-i18n directly, not `@nuxtjs/i18n`.** The module detects on the server, from a cookie it
-  writes and `Accept-Language`, which stores a detected language and puts the language in the request rather
-  than the reader's choice; its auto-imported `useI18n` also has nothing to resolve in vitest, which runs
-  outside Nuxt's build. With vue-i18n alone, Nuxt reuses Vue's i18n core, pages and components. A
-  `src/plugins/i18n.ts` installs it and binds the head's `lang` and `dir` to the locale, so the server renders
-  `<html lang="en" dir="ltr">` and Unhead keeps both on the language afterwards. The server never changes the
-  locale; detection runs in `onNuxtReady`, after hydration, so the first client render matches the server's
-  English and the page switches after it, as Next does.
+- **Nuxt takes vue-i18n directly, not `@nuxtjs/i18n`.** The module writes a detected language to its cookie, so a
+  first visit passes for a choice; its auto-imported `useI18n` also has nothing to resolve in vitest, which runs
+  outside Nuxt's build. With vue-i18n alone, Nuxt reuses Vue's i18n core, pages and components.
+  `src/plugins/i18n.ts` detects once on the server, carries the language to the client in `useState`, and binds
+  the head's `lang` and `dir` to the locale.
 - **SvelteKit takes Paraglide JS, not svelte-i18n.** A SvelteKit project with svelte-i18n 4.0.1 audited at one
   moderate advisory under `pnpm audit --prod` (GHSA-67mh-4wv8-2f99, the esbuild 0.19 it pins) and two under
   `pnpm audit`; with Paraglide JS and its message-format plugin the same project audits at none, and installs
@@ -1336,10 +1333,13 @@ no `commandWindows` and no wrapper.
 
 The command guards read the payload's `tool_name` to choose a dialect, since Claude Code's PowerShell tool hands
 them PowerShell. `utils/commandParserUtils.ts` answers the commands a line would run, or nothing when it cannot read
-it, and each guard treats nothing as a finding: the git guard denies, the eslint guard warns. A PowerShell
-subexpression, script block or `Start-Process` is read as the commands inside it and marks the enclosing command
-opaque, which the git guard also denies. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped the way
-`sh -c` is. It is a guardrail: a variable holding a subcommand still passes, in either shell.
+it, and each guard treats nothing as a finding: the git guard denies, the eslint guard warns. Bash compound
+commands (`if`, `for`, `{ }`), subshells, `$( )`, backtick and process substitutions and unquoted heredoc bodies
+are read as the commands inside them; a substitution inside a word marks that word computed, which the git guard
+denies anywhere but a commit message. A PowerShell subexpression, script block or `Start-Process` is read as the
+commands inside it and marks the enclosing command opaque, which the git guard also denies. `cmd /c`,
+`pwsh -Command` and `Invoke-Expression` are unwrapped the way `sh -c` is. It is a guardrail: a variable holding a
+subcommand and a `case` body still pass.
 
 ### Context: a warning hook and two status lines
 
@@ -1467,11 +1467,9 @@ So `pnpm lint:starters`, a leg of `pnpm check`, lints each starter where it will
 installed, under that project's own `eslint . --max-warnings 0`, type-aware rules included. A text read outside a
 project has no program behind it: measured on 2026-10-01, the project service's default project over the starter
 texts gave 6,261 findings across 488 files, every one from a type-aware rule and 6,210 of them `no-unsafe-*`, since
-each framework import reads as an error type. The walk that preceded this one linted the texts in memory with those
-rules off by name, so a `safeParse` read as `{ issues }` against Zod 4, a props type resolved to `any` across a
-component boundary or a promise dropped from a blur handler reached the end-to-end suite before anything saw it.
+each framework import reads as an error type.
 
-Its scope is the template texts: `STARTER_CASES` in `packages/create/e2e/starter-cover/` names 62 e2e
+Its scope is the template texts: `STARTER_CASES` in `packages/create/e2e/starter-cover/` names 67 e2e
 cases that between them write every distinct text a starter template can become (781 on 2026-10-02, per target and destination,
 the joined test setup included), and `starterCover.test.ts` fails when a template, a transform or a new answer
 leaves a text no case writes, naming the labels that would reach it. What the emitters write themselves is left to

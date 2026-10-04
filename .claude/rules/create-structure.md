@@ -69,8 +69,8 @@ pipeline/   the stage machine, sync, and the passes over written source.
   `pipeline/passes/` is the one exception, editing source already written.
 - `emitters/utils/`: `artifactUtils.ts` (the content shapes), `managedUtils.ts` (the managed record),
   `shapeUtils.ts` (a project's own spelling of a file), `importUtils.ts` (import order), `stylingUtils.ts`,
-  `aliasUtils.ts`, `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and
-  `pnpm-workspace/`). What only `package-json/` reads, `SUPERSEDED`, stays in that subject's `constants.ts`.
+  `aliasUtils.ts`, `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
+  literal), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and `pnpm-workspace/`). What only `package-json/` reads, `SUPERSEDED`, stays in that subject's `constants.ts`.
 
 ## `config/` and `utils/`
 

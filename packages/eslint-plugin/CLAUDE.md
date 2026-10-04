@@ -54,7 +54,7 @@ the code. Everything else in that standard stands.
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test:coverage` and `pnpm build` clean. Coverage is 100 on every
   axis; never lower a threshold.
-- Run `--fix` on this repo after touching a fixer. It found the column-0 fixes the unit suite missed.
+- Run `--fix` on this repo after touching a fixer.
 - Before a release: `pnpm smoke` (packs the tarball, runs ESLint through the ESM and CJS entries, scans
   the bundle for post-Node-18 APIs) and `pnpm compat` (ESLint 6 to 10 side by side, byte-identical fixed
   text). Both need the network. CI runs them plus `oldest-runtime` on `node:18-alpine`.
