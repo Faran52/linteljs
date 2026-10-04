@@ -2,7 +2,7 @@
   import { ANSWERS, STACK } from '@config/linteljs';
 </script>
 
-<!-- What was recorded at birth: a browser cannot read its machine's Node or package manager. -->
+<!-- Recorded when the project was generated: a browser cannot read its machine's Node or package manager. -->
 <main class="page">
   <h1 class="page-title">Version</h1>
   <p class="page-lede">What this project is running, and the answers it was generated from.</p>

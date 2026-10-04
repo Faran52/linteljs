@@ -7,7 +7,7 @@
     page: Component;
   }
 
-  // The data slot is a component here, so a suite needs a component to put it around its subject.
+  // The data provider is a component in Svelte, so a suite needs a component to put it around its subject.
   const { page: Page }: Props = $props();
 </script>
 

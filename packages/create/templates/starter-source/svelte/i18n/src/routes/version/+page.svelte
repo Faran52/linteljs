@@ -6,7 +6,7 @@
   import CodeText from '@ui/code-text/CodeText.svelte';
 </script>
 
-<!-- What was recorded at birth: a browser cannot read its machine's Node or package manager. -->
+<!-- Recorded when the project was generated: a browser cannot read its machine's Node or package manager. -->
 <main class="page">
   <h1 class="page-title">{m.version()}</h1>
   <p class="page-lede">{m.versionLede()}</p>
