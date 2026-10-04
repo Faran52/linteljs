@@ -175,9 +175,7 @@ describe('localeFiles', () => {
   });
 
   it('drops every contact key, and only those, where the project has no contact page', () => {
-    const [english] = localeFiles(() => {
-      return false;
-    });
+    const [english] = localeFiles();
     const source = '{\n  "contact": "Contact",\n  "home": "Home",\n  "contactSend": "Send"\n}\n';
 
     const written = english?.transform?.(source, ARABIC);
@@ -191,9 +189,7 @@ describe('localeFiles', () => {
     '{ "count": 1 }',
     'not json',
   ])('leaves a locale it cannot read, %s, as written', (source) => {
-    const [english] = localeFiles(() => {
-      return false;
-    });
+    const [english] = localeFiles();
 
     const written = english?.transform?.(source, ARABIC);
 

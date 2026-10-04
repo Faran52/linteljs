@@ -97,9 +97,12 @@ const withoutContact = (source: string): string => {
   return `${JSON.stringify(kept, null, 2)}\n`;
 };
 
-// Every target reads the same locales, so a key added once reaches all of them; a project with no contact page
-// gets none of its keys.
-export const localeFiles = (hasContact: (answers: Answers) => boolean): StarterFile[] => {
+/**
+ * Every target reads the same locales, so a key added once reaches all of them; a project with no contact page
+ * gets none of its keys.
+ * No predicate: the target has no contact page.
+ */
+export const localeFiles = (hasContact?: (answers: Answers) => boolean): StarterFile[] => {
   return LANGUAGES
     .map((language): StarterFile => {
       const localeFile: StarterFile = {
@@ -110,7 +113,7 @@ export const localeFiles = (hasContact: (answers: Answers) => boolean): StarterF
         variant: 'i18n',
         shared: true,
         transform: (source, answers) => {
-          return hasContact(answers) ? source : withoutContact(source);
+          return hasContact?.(answers) === true ? source : withoutContact(source);
         },
       };
 

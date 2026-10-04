@@ -1,6 +1,7 @@
 import { hasLibrary } from '@utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
+import { hasI18n } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -100,10 +101,8 @@ export const angularTarget: TargetBuilder = () => {
       formValidatorFile(FORM_VALIDATOR),
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
-      // Reactive Forms ship with Angular, so every project has the Contact page.
-      ...localeFiles(() => {
-        return true;
-      }),
+      // Reactive Forms ship with Angular, so every project with a locale has the Contact page.
+      ...localeFiles(hasI18n),
       languageUtilsFile('language-utils'),
       ...filesAt(ALWAYS),
       ...filesAt(SHARED, {

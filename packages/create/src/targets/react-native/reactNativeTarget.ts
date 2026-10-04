@@ -134,9 +134,7 @@ export const reactNativeTarget: TargetBuilder = () => {
       }),
       ...reactNativeI18nFiles(),
       // No contact page.
-      ...localeFiles(() => {
-        return false;
-      }),
+      ...localeFiles(),
       languageUtilsFile(),
       {
         target: '__mocks__/renderScreen.tsx',

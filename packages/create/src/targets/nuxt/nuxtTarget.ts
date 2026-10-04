@@ -141,9 +141,7 @@ export const nuxtTarget: TargetBuilder = () => {
         variant: 'i18n',
       },
       // No contact page.
-      ...localeFiles(() => {
-        return false;
-      }),
+      ...localeFiles(),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...translated<StarterFile>({ target: 'src/views/HomeView.vue' }),

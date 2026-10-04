@@ -22,9 +22,7 @@ export const popupI18nFiles = (): StarterFile[] => {
       variant: 'i18n',
     },
     // No contact page.
-    ...localeFiles(() => {
-      return false;
-    }),
+    ...localeFiles(),
     languageUtilsFile(),
   ];
 

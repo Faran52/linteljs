@@ -115,9 +115,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyleModules('solid'),
       ...astroI18nFiles(),
       // No contact page.
-      ...localeFiles(() => {
-        return false;
-      }),
+      ...localeFiles(),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...filesAt(ALWAYS),
