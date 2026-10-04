@@ -98,6 +98,8 @@ when a version's change lives in a sibling it is described there instead:
   body now lands in the same `--fix` run.
 - `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or
   `for` body, which no function encloses and so none could make async.
+- `prefer-destructured-props` no longer reports a props parameter written through, as in `props.alpha = 1`,
+  `props.count++`, `delete props.alpha` or a destructuring target, since a destructured copy cannot write back.
 - `prefer-try-catch` reports an awaited or async-returned chain behind a type wrapper, such as
   `await (fetch(url).catch(handle) as Promise<Data>)`, which both promise rules skipped.
   `prefer-await-to-then` hands `return p.then(x) as Promise<T>` in an async function off to it.

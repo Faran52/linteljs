@@ -67,6 +67,13 @@ const Widget = (props) => props[key];
 
 // correct: a member component uses the object itself
 const Widget = (props) => <props.Icon />;
+
+// correct: a write through the object cannot go through a destructured copy
+const Widget = (props) => {
+  props.count++;
+
+  return props.alpha;
+};
 ```
 
 ## Options
@@ -79,6 +86,10 @@ Any whole-value use of the parameter ends the analysis: a JSX spread, an argumen
 spread into an object, an alias, a reassignment, a computed read with a dynamic key, a JSX member
 component. Those need the object itself, and forcing a destructure would only make the component
 rebuild what it already had.
+
+A write through the parameter, anywhere, ends it too: `props.alpha = 1`, `props.count += 1`,
+`props.count++`, `delete props.alpha`, or a member as a destructuring or `for...of` target. Each
+changes the object, and a destructured local would take the write in its place.
 
 An unused props parameter is not reported either; that is `no-unused-vars`' finding. A wrapped
 component with no declarator to name it, `export default memo(function (props) {...})`, has no

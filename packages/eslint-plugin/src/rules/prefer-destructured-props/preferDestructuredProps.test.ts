@@ -54,8 +54,39 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
     'class Panel { Render(props) { return props.alpha; } }',
     'const registry = { Widget: (props) => props.alpha };',
     'Widget = (props) => props.alpha;',
+
+    'const Widget = (props) => { props.alpha = 1; return props.bravo; };',
+    'const Widget = (props) => { props.count += 1; return props.bravo; };',
+    'const Widget = (props) => { props.count++; return props.bravo; };',
+    'const Widget = (props) => { delete props.alpha; return props.bravo; };',
+    'const Widget = (props) => { [props.alpha] = pair; return props.bravo; };',
+    'const Widget = (props) => { [...props.rest] = list; return props.bravo; };',
+    'const Widget = (props) => { ({ key: props.alpha } = source); return props.bravo; };',
+    'const Widget = (props) => { [props.alpha = 1] = pair; return props.bravo; };',
+    'const Widget = (props) => { for (props.alpha of list); return props.bravo; };',
+    'const Widget = (props) => { for (props.alpha in source); return props.bravo; };',
   ],
   invalid: [
+    {
+      code: 'const Widget = (props) => { ({ [props.alpha]: local } = source); return props.bravo; };',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (props) => { props.alpha.bravo = 1; delete props.charlie.delta; return props.echo; };',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (props) => { local = props.alpha; return -props.bravo; };',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (props) => { const [first = props.alpha] = list; return first; };',
+      errors: [{ messageId: 'destructure' }],
+    },
+    {
+      code: 'const Widget = (props) => { for (const key of props.alpha); return { key: props.bravo }; };',
+      errors: [{ messageId: 'destructure' }],
+    },
     {
       code: 'function Widget(props) { return props.alpha; }',
       errors: [{ messageId: 'destructure' }],

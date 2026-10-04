@@ -56,6 +56,25 @@ const spanOf = (node: Ranged): string => {
   return `${String(start)}:${String(end)}`;
 };
 
+// A write through the object has no destructured equivalent: it would land on a local copy.
+const isWriteTarget = (node: MemberExpressionNode): boolean => {
+  const { parent } = node;
+
+  switch (parent.type) {
+    case 'AssignmentExpression':
+    case 'AssignmentPattern':
+    case 'ForInStatement':
+    case 'ForOfStatement':
+      return parent.left === node;
+    case 'UnaryExpression':
+      return parent.operator === 'delete';
+    case 'Property':
+      return parent.parent.type === 'ObjectPattern' && parent.value === node;
+    default:
+      return parent.type === 'ArrayPattern' || parent.type === 'RestElement' || parent.type === 'UpdateExpression';
+  }
+};
+
 export const preferDestructuredProps = createRule('prefer-destructured-props', {
   meta: {
     type: 'suggestion',
@@ -76,7 +95,9 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
 
     const visitors: Rule.RuleListener = {
       'MemberExpression': (node: MemberExpressionNode) => {
-        memberObjects.set(spanOf(node.object), !node.computed || node.property.type === 'Literal');
+        const destructurable = !node.computed || node.property.type === 'Literal';
+
+        memberObjects.set(spanOf(node.object), destructurable && !isWriteTarget(node));
       },
 
       ':function:exit': (node: FunctionLike) => {
