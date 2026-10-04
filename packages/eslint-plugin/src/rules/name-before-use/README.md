@@ -152,3 +152,8 @@ items.filter((item) => {
 
 A good name needs judgement, and a name the fixer made up (`value1`) is worse than the inline
 expression. So it reports and you pick the name.
+
+## Notes
+
+Not in `recommended`. The base layer of `@linteljs/eslint-config` turns it on for every script and SFC file,
+with `ignoreEmptyLiterals` and `ignoreLiteralArguments` both `true`.

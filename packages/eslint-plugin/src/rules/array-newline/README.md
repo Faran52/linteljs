@@ -80,5 +80,5 @@ accepts `[alpha,\n  bravo]` with a hanging bracket. Neither setting says "three 
 and leave the rest alone", which is the whole of this rule.
 
 The closest pair, brackets at `{ multiline: true, minItems: 3 }` and elements at
-`{ consistent: true, minItems: 3 }`, gives this rule's fixed output on 36 of its 48 suite cases. On real
+`{ consistent: true, minItems: 3 }`, gives this rule's fixed output on 36 of the 48 suite cases the rule had on 2026-10-02. On real
 code nearly every rewrite it makes splits a short list that holds one multi-line element, `['error', {\n  ...\n}]`.

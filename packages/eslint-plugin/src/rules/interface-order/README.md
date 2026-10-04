@@ -9,7 +9,8 @@ Keep top-level interfaces and type aliases together, after imports and before ru
 Types belong in one block near the top of the file, where a reader looking for the shape of things
 can find them without scrolling past the implementation. Only top-level `interface` and `type`
 declarations are checked, exported or not. Anything nested inside a function or a block is left
-where it is.
+where it is. The block goes after the last import or directive (`'use client'`), and each Svelte
+`<script>` is checked on its own.
 
 ## Examples of incorrect code for this rule
 

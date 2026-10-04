@@ -6,8 +6,7 @@ Use `//` for short comments and JSDoc blocks for longer prose.
 - Fixable: yes (code)
 - In `recommended`: yes
 
-The standard this workspace publishes says `//` for one or two lines and `/** */` at three or
-more.
+A comment of one or two lines takes `//`, and one of three or more a `/** */` block.
 
 The fix rewrites the delimiter and nothing else. Text, indentation and order are carried across
 unchanged, so a run of `//` lines becomes the same sentences inside one block and a short JSDoc
@@ -58,8 +57,8 @@ None.
 Directives are machine-addressed rather than prose, and rewriting one breaks what points at it.
 A shebang, a `/// <reference>`, any `eslint-*` directive, any `ts-` or `@ts-` directive,
 `v8 ignore`, `c8 ignore`, `istanbul ignore`, `prettier-ignore` and the `//# sourceMappingURL=` and
-`//# sourceURL=` lines are all skipped, and a directive
-in the middle of a run also ends the run rather than joining it.
+`//# sourceURL=` lines are all skipped, and a directive in the middle of a run ends the run rather
+than joining it.
 
 A comment sharing a line with code is skipped too. A trailing note is one line by construction,
 and moving it would move the code with it.

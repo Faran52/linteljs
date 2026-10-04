@@ -24,6 +24,8 @@ directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its 
 `@ui`. Any other exact key names one file, which tsc takes before any `prefix/*`: an import spelled as that key,
 or a fix that would spell it, stays as written.
 
+It checks `import` and `export ... from` declarations, and a dynamic `import()` whose specifier is a plain string literal.
+
 ## Examples of incorrect code for this rule
 
 ```ts
