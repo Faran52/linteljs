@@ -345,6 +345,7 @@ const GATES: GateRow[] = [
   ['src/pages/contact/ContactPage.test.tsx', FORM_ENGLISH],
   ['src/pages/contact/ContactPage.test.tsx@i18n', FORM_I18N],
   ['src/pages/contact/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
   ['src/pages/contact/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),
   ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],

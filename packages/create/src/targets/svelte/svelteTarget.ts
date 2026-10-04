@@ -29,6 +29,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  formValidatorTest,
   submissionTest,
 } from '../utils/starterUtils';
 import {
@@ -244,6 +245,7 @@ export const svelteTarget: TargetBuilder = () => {
         },
       },
       submissionTest(),
+      formValidatorTest(),
     ],
     build: 'vite build',
     // The kit's plugin owns the dev server.

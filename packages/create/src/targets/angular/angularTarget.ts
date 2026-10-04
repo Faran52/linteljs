@@ -14,7 +14,12 @@ import {
   mockFiles,
   mockTests,
 } from '../utils/mockUtils';
-import { filesAt, submissionTest } from '../utils/starterUtils';
+import {
+  filesAt,
+  formValidatorFile,
+  formValidatorTest,
+  submissionTest,
+} from '../utils/starterUtils';
 import { tailwindThemeFile } from '../utils/styleUtils';
 
 import {
@@ -22,6 +27,7 @@ import {
   ALWAYS,
   ANGULAR_I18N,
   CONTACT_PAGE_FILES,
+  FORM_VALIDATOR,
   SHARED,
 } from './constants';
 import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
@@ -91,6 +97,7 @@ export const angularTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/submission.ts',
         shared: true,
       },
+      formValidatorFile(FORM_VALIDATOR),
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
       ...localeFiles(),
@@ -168,6 +175,7 @@ export const angularTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contact-api.ts',
       },
       submissionTest('spec'),
+      formValidatorTest(FORM_VALIDATOR, 'spec'),
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

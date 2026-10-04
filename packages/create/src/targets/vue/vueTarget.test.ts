@@ -188,6 +188,7 @@ const GATES: GateRow[] = [
   ['src/views/routes.ts@with-form', WITH_FORM],
   ...homeGates('src/views/HomeView.vue'),
   ['src/views/useContactForm.ts', WITH_FORM],
+  ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],

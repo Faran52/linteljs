@@ -27,6 +27,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  formValidatorTest,
   submissionTest,
 } from '../utils/starterUtils';
 import {
@@ -197,6 +198,7 @@ export const vueTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
       submissionTest(),
+      formValidatorTest(),
       {
         target: 'src/lib/providers/store/storeProvider.test.ts',
         covers: 'src/lib/providers/store/storeProvider.ts',

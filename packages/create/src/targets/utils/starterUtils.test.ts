@@ -9,6 +9,8 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  formValidatorFile,
+  formValidatorTest,
   submissionTest,
 } from './starterUtils';
 
@@ -128,9 +130,9 @@ describe('contactSchemaFiles', () => {
   });
 
   it('writes the plain schema with a form, and the zod one with zod', () => {
-    const plain = pickedBy(contactSchemaFiles(), { form: 'tanstack-form' });
+    const plain = pickedBy(contactSchemaFiles(), { form: 'react-hook-form' });
     const zod = pickedBy(contactSchemaFiles(), {
-      form: 'tanstack-form',
+      form: 'react-hook-form',
       libraries: ['zod'],
     });
 
@@ -146,8 +148,52 @@ describe('contactSchemaFiles', () => {
         return tree;
       });
 
-    const expected = [true, true];
+    const expected = [
+      true,
+      true,
+      true,
+    ];
     expect(shared).toEqual(expected);
+  });
+
+  it('adds the form validator with TanStack Form', () => {
+    const actual = pickedBy(contactSchemaFiles(), { form: 'tanstack-form' });
+
+    const expected = ['src/lib/apis/contact/schemas.ts base', 'src/lib/apis/contact/formValidator.ts base'];
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe('formValidatorFile', () => {
+  it('lands the shared validator under the stem it is given', () => {
+    const file = formValidatorFile('src/lib/apis/contact/form-validator');
+
+    const expected = {
+      target: 'src/lib/apis/contact/form-validator.ts',
+      source: 'src/lib/apis/contact/formValidator.ts',
+      shared: true,
+    };
+    expect(file).toMatchObject(expected);
+  });
+});
+
+describe('formValidatorTest', () => {
+  it('names the shared suite under the stem and suffix it is given', () => {
+    const plain = formValidatorTest();
+    const spec = formValidatorTest('src/lib/apis/contact/form-validator', 'spec');
+
+    const expected = {
+      target: 'src/lib/apis/contact/formValidator.test.ts',
+      covers: 'src/lib/apis/contact/formValidator.ts',
+      source: 'src/lib/apis/contact/formValidator.test.ts',
+      shared: true,
+    };
+    expect(plain).toStrictEqual(expected);
+    const expectedSpec = {
+      target: 'src/lib/apis/contact/form-validator.spec.ts',
+      covers: 'src/lib/apis/contact/form-validator.ts',
+    };
+    expect(spec).toMatchObject(expectedSpec);
   });
 });
 

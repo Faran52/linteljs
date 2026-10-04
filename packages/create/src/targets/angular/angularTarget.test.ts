@@ -165,6 +165,7 @@ const GATES: GateRow[] = [
     }),
   ['src/lib/apis/contact/schemas.ts', [{ libraries: [[]] }]],
   ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],
+  ['src/lib/apis/contact/form-validator.ts', [{ form: ['tanstack-form'] }]],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/query-options-utils.spec.ts', TANSTACK_QUERY],

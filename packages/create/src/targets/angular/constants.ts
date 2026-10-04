@@ -39,6 +39,8 @@ export const ACCESSORS: AccessorNames = {
   optionsUtils: 'src/lib/utils/query-options-utils',
 };
 
+export const FORM_VALIDATOR = 'src/lib/apis/contact/form-validator';
+
 // Each ships a translated twin under `i18n`.
 export const TRANSLATED: readonly string[] = [
   'src/main.ts',

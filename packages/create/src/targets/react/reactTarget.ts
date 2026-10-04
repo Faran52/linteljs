@@ -34,6 +34,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  formValidatorTest,
   submissionTest,
 } from '../utils/starterUtils';
 import {
@@ -155,6 +156,7 @@ const reactStarterTests = (): StarterTest[] => {
       covers: 'src/lib/apis/contact/contactApi.ts',
     },
     submissionTest(),
+    formValidatorTest(),
     ...rtkContactTests(),
   ];
 

@@ -5,8 +5,8 @@ import { useForm, useSelector } from '@tanstack/react-form';
 import {
   type ContactValues,
   useSubmitContact,
-  validateContact,
 } from '@apis/contact';
+import { validateContactForm } from '@apis/contact/formValidator';
 
 import type { TextInputProps } from '@ui';
 
@@ -34,13 +34,7 @@ export const useContactForm = (): ContactForm => {
     },
     validators: {
       // Every change re-runs the rules; a field shows its result only once it is left.
-      onChange: ({ value }) => {
-        const found = validateContact(value);
-
-        const errors = Object.keys(found).length > 0 ? { fields: found } : undefined;
-
-        return errors;
-      },
+      onChange: validateContactForm,
     },
     onSubmit: async ({ value }) => {
       await submit(value);

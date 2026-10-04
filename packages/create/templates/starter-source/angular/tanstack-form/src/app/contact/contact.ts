@@ -3,10 +3,12 @@ import { Component, signal } from '@angular/core';
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
 import { useSubmitContact } from '@apis/contact/contact-api';
-import { type ContactValues, validateContact } from '@apis/contact/schemas';
+import { validateContactForm } from '@apis/contact/form-validator';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';
+
+import type { ContactValues } from '@apis/contact/schemas';
 
 @Component({
   imports: [Button, TextInput],
@@ -25,12 +27,7 @@ export class Contact {
     },
     validators: {
       // Every change re-runs the rules; a field shows its result only once it is left.
-      onChange: ({ value }) => {
-        const found = validateContact(value);
-        const formErrors = Object.keys(found).length > 0 ? { fields: found } : undefined;
-
-        return formErrors;
-      },
+      onChange: validateContactForm,
     },
     onSubmit: async ({ value }) => {
       await this.submit(value);

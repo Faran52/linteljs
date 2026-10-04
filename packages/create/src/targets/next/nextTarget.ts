@@ -35,6 +35,7 @@ import {
   contactApiFiles,
   contactSchemaFiles,
   filesAt,
+  formValidatorTest,
   submissionTest,
 } from '../utils/starterUtils';
 import {
@@ -130,6 +131,7 @@ const nextStarterTests = (): StarterTest[] => {
       shared: 'react',
     },
     submissionTest(),
+    formValidatorTest(),
     ...rtkContactTests(),
   ];
 

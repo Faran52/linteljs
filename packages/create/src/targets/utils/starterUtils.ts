@@ -14,6 +14,8 @@ interface ContactApiOptions {
 
 const SUBMISSION = 'src/lib/apis/contact/submission.ts';
 
+const FORM_VALIDATOR = 'src/lib/apis/contact/formValidator';
+
 // Each path as a starter file carrying the same fields.
 export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'target'> = {}): StarterFile[] => {
   return paths
@@ -76,6 +78,31 @@ export const submissionTest = (suffix = 'test'): StarterTest => {
   return test;
 };
 
+// TanStack Form's form-level validator over the contact rules, under Angular's kebab stem where it is passed one.
+export const formValidatorFile = (stem = FORM_VALIDATOR): StarterFile => {
+  const file: StarterFile = {
+    target: `${stem}.ts`,
+    source: `${FORM_VALIDATOR}.ts`,
+    when: (answers) => {
+      return answers.form === 'tanstack-form';
+    },
+    shared: true,
+  };
+
+  return file;
+};
+
+export const formValidatorTest = (stem = FORM_VALIDATOR, suffix = 'test'): StarterTest => {
+  const test: StarterTest = {
+    target: `${stem}.${suffix}.ts`,
+    covers: `${stem}.ts`,
+    source: `${FORM_VALIDATOR}.test.ts`,
+    shared: true,
+  };
+
+  return test;
+};
+
 export const contactSchemaFiles = (): StarterFile[] => {
   const files: StarterFile[] = [
     {
@@ -93,6 +120,7 @@ export const contactSchemaFiles = (): StarterFile[] => {
       variant: 'zod',
       shared: true,
     },
+    formValidatorFile(),
   ];
 
   return files;
