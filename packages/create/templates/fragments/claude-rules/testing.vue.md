@@ -15,8 +15,9 @@ Use these rules when touching tests, mocks, or test setup.
   file they cover.
 - Vitest globals are available without import. Do not mix bare and imported styles in one file.
 - `__mocks__/setupTests.ts` is the run's `setupFiles`, wired from `vitest.config.ts`. It ships
-  empty, apart from `TEST_QUERY_OPTIONS` when the project answered `tanstack-query`: it is where a
-  global stub is registered, and a project with no modules yet has nothing to stub.
+  only what an answer brings: i18n installed on every mount when the project has locales,
+  `TEST_QUERY_OPTIONS` when it answered `tanstack-query`, and the MSW server when it answered
+  `msw`. It is where a global stub is registered.
 - Global mocks belong beside the setup file under `__mocks__/`, registered from it, and exist
   for **determinism, not for gaps**.
   `happy-dom` supplies `matchMedia` and `requestAnimationFrame`, but its `matchMedia` answers every

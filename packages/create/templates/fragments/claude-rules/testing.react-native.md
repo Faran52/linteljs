@@ -24,7 +24,7 @@ Use these rules when touching tests, mocks, or test setup.
 - React Native Testing Library. Query by what a user or a screen reader reaches: `getByRole`,
   `getByLabelText`, `getByText`. Never by `testID` where a role or a label exists.
 - Test globals are available without import. Do not mix bare and imported styles in one file.
-- `__mocks__/setupTests.ts` is the run's `setupFiles`, wired from `vitest.config.ts`. It carries
+- `__mocks__/setupTests.tsx` is the run's `setupFiles`, wired from `vitest.config.ts`. It carries
   the stand-ins for the native modules the template imports: nothing native runs under a unit
   test, so each of those throws at import time rather than returning something wrong.
 - Coverage is 100% on statements, branches, functions and lines, the same bar every other target
