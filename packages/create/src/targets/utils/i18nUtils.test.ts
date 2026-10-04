@@ -187,6 +187,7 @@ describe('localeFiles', () => {
   it.each([
     '[]',
     '{ "count": 1 }',
+    '{ "home": "Home", "count": 1 }',
     'not json',
   ])('leaves a locale it cannot read, %s, as written', (source) => {
     const [english] = localeFiles();
