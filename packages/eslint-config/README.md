@@ -38,6 +38,7 @@ Each layer switch is off unless you enable it.
 | `framework` | Adds a framework layer: `'react'`, `'next'`, `'react-native'`, `'vue'`, `'nuxt'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React, `nuxt` includes Vue, and `react-native` is React without the web accessibility preset. |
 | `typescript` | Enables the TypeScript layer. |
 | `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
+| `jest` | The same for a project on Jest, such as React Native on `jest-expo`. |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
@@ -89,6 +90,7 @@ loads every framework and library layer, so it needs every optional peer install
 | `base(options?)` | `/base` | `@stylistic` layout, `import-x` module checks, import sorting, unused imports, file and folder naming, sonarjs, size caps, no magic numbers outside tests and config, at most three operators in one expression outside tests, `@linteljs/name-before-use`, `prefer-destructuring`, and the plugin's `recommended`. It works for JavaScript on its own. It extends the plugin's five TypeScript-only rules to `.vue` and `.svelte` files. The four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
 | `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
+| `jest()` | `/jest` | Jest recommended rules and globals for test files. | `eslint-plugin-jest` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro` |
 | `react()` | `/react` | `@eslint-react` with its stricter rules, React Hooks, JSX accessibility, the four `@eslint-react` DOM rules (`<button>` type, `<iframe>` sandbox, unsafe `target="_blank"`, `javascript:` URLs), sonarjs's React rules, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |

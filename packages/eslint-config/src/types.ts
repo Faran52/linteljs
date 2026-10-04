@@ -55,6 +55,7 @@ export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'
   framework?: Framework;
   typescript?: boolean;
   vitest?: boolean;
+  jest?: boolean;
   html?: boolean;
   libraries?: LibraryLayer[];
   tailwindEntryPoint?: string;

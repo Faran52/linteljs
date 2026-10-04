@@ -8,6 +8,7 @@ export default defineConfig({
     composeConfig: 'src/compose-config/composeConfig.ts',
     typescript: 'src/layers/typescript/typescriptLayer.ts',
     vitest: 'src/layers/vitest/vitestLayer.ts',
+    jest: 'src/layers/jest/jestLayer.ts',
     html: 'src/layers/html/htmlLayer.ts',
     astro: 'src/frameworks/astro/astroFramework.ts',
     react: 'src/frameworks/react/reactFramework.ts',

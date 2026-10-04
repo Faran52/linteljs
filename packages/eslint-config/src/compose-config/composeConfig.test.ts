@@ -291,6 +291,21 @@ describe('composeConfig', () => {
     expect(plainRuleIds).not.toContain('vitest/no-focused-tests');
   });
 
+  it('composes the jest layer on request and not otherwise', async () => {
+    const code = "it.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
+    const path = 'src/lib/utils/sample.test.ts';
+    // The plugin reads the installed Jest's major, and this workspace installs none.
+    const jestVersion = { settings: { jest: { version: 29 } } };
+
+    const jestConfig = await composeConfig({ jest: true });
+    const jestRuleIds = await ruleIdsFor([...jestConfig, jestVersion], code, path);
+    expect(jestRuleIds).toContain('jest/no-focused-tests');
+
+    const plainConfig = await composeConfig();
+    const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
+    expect(plainRuleIds).not.toContain('jest/no-focused-tests');
+  });
+
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 

@@ -34,6 +34,7 @@ export {
 } from './frameworks/vue/vueFramework';
 export { base } from './layers/base/baseLayer';
 export { html } from './layers/html/htmlLayer';
+export { jest } from './layers/jest/jestLayer';
 export { typescript } from './layers/typescript/typescriptLayer';
 export { vitest } from './layers/vitest/vitestLayer';
 export { stylex } from './libraries/stylex/stylexLibrary';

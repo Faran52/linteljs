@@ -11,6 +11,12 @@ const loadVitest = async (): Promise<Layer> => {
   return vitest();
 };
 
+const loadJest = async (): Promise<Layer> => {
+  const { jest } = await import('../layers/jest/jestLayer');
+
+  return jest();
+};
+
 const loadHtml = async (): Promise<Layer> => {
   const { html } = await import('../layers/html/htmlLayer');
 
@@ -29,6 +35,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     framework,
     typescript: withTypescript,
     vitest: withVitest,
+    jest: withJest,
     html: withHtml,
     libraries = [],
     tailwindEntryPoint,
@@ -43,6 +50,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
 
   const libraryLayers = await Promise.all(loading);
   const vitestRules = withVitest === true ? await loadVitest() : [];
+  const jestRules = withJest === true ? await loadJest() : [];
   const htmlRules = withHtml === true ? await loadHtml() : [];
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
   const astroRules = baseOptions.astro === true ? await loadAstro() : [];
@@ -60,6 +68,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),
     ...vitestRules,
+    ...jestRules,
     ...htmlRules,
     ...astroRules,
   ];

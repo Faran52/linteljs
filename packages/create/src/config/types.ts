@@ -174,6 +174,7 @@ export interface ComposeConfigOptions {
   framework?: Framework;
   typescript?: boolean;
   vitest?: boolean;
+  jest?: boolean;
   html?: boolean;
   astro?: boolean;
   libraries?: LibraryLayer[];
