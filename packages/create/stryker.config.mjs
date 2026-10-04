@@ -36,12 +36,13 @@ const PARTS = {
   'terminal-answers': ['src/{terminal,answers}/**/*.ts'],
   'config-utils-rings': ['src/{config/**/*,utils/**/*,rings}.ts'],
   'rest': ['src/**/*.ts'],
+  'templates': ['templates/project/**/utils/*.ts'],
 };
 const {
   globs,
   excluded,
   incrementalFile,
-} = strykerPart(PARTS, ['src/**/*.ts']);
+} = strykerPart(PARTS, ['src/**/*.ts', 'templates/project/**/utils/*.ts']);
 
 const config = {
   ...STRYKER_BASE,
@@ -53,11 +54,12 @@ const config = {
   coverageAnalysis: 'perTest',
   disableBail: !process.env.CI,
 
-  // All of `src` is 8134 mutants; `--mutate` narrows a run.
+  // `src` is 7833 mutants and the template utils 2205; `--mutate` narrows a run.
   mutate: [
     ...globs,
     '!src/**/*.test.ts',
     '!src/**/types.ts',
+    '!templates/**/*.test.ts',
     ...excluded,
   ],
 
