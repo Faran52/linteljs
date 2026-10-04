@@ -74,6 +74,19 @@ describe('angularTarget', () => {
     expect(suite?.target).toBe('src/lib/utils/status-utils.spec.ts');
   });
 
+  it.each([
+    ['src/lib/apis/contact/submission.ts', 'src/lib/apis/contact/submission.spec.ts'],
+    ['src/lib/apis/contact/form-validator.ts', 'src/lib/apis/contact/form-validator.spec.ts'],
+  ])('writes the shared suite over %s under the spec name the CLI would give it', (covers, expected) => {
+    const record = recordFor();
+    const suite = record.starterTests
+      .find((test) => {
+        return test.covers === covers;
+      });
+
+    expect(suite?.target).toBe(expected);
+  });
+
   it('points each camelCase alias at a kebab file it writes', () => {
     const record = recordFor();
     const written = record.starterFiles
