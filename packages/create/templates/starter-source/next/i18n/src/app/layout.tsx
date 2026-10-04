@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 // The server renders the reader's language from the request, so the first byte is already in it.
-// The three slots below are the client boundary, and everything under them inherits it.
+// The three providers below are the client boundary, and everything under them inherits it.
 const RootLayout = async ({ children }: RootLayoutProps): Promise<ReactNode> => {
   const request = await headers();
   const cookies = request.get('cookie') ?? '';

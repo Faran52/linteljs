@@ -2,7 +2,7 @@ import { ANSWERS, STACK } from '@config/linteljs';
 
 import type { ReactNode } from 'react';
 
-// Recorded at birth: a browser cannot read its machine's Node or package manager.
+// Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
 const VersionPage = (): ReactNode => {
   return (
     <main className="page">

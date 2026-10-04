@@ -10,8 +10,8 @@ const code = (chunks: ReactNode): ReactNode => {
   return <code>{chunks}</code>;
 };
 
-// Recorded at birth: a browser cannot read its machine's Node or package manager. A client component, so
-// it speaks the reader's language.
+// Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
+// A client component, so it speaks the reader's language.
 const VersionPage = (): ReactNode => {
   const t = useTranslations();
 
