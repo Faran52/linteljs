@@ -4,8 +4,10 @@ import { type Answers, type Artifact } from '@config/types';
 
 import { targetFor, type TsconfigPlugin } from '@targets';
 
+import { TEST_RUNNERS } from '../../constants';
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
+import { testRunnerOf } from '../../utils/runnerUtils';
 
 // No `noUnusedLocals`/`noUnusedParameters`: `unused-imports` owns that.
 
@@ -68,12 +70,13 @@ const BASE_EXCLUDE = [
 // `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`.
 const typesFor = (answers: Answers): string[] => {
   const target = targetFor(answers);
+  const runner = testRunnerOf(answers);
 
   const types: string[] = [
     'node',
     ...(target.vitePlugin === undefined ? [] : ['vite/client']),
     // Named, so a project that declined a suite does not typecheck against ambient `describe`.
-    ...(answers.testing === 'vitest' ? ['vitest/globals'] : []),
+    ...(runner === undefined ? [] : [TEST_RUNNERS[runner].types]),
     ...target.tsconfig.types ?? [],
   ];
 

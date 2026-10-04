@@ -39,6 +39,7 @@ import { nuxtConfigEmitter } from './target/nuxt-config/nuxtConfigEmitter';
 import { reactRouterConfigEmitter } from './target/react-router-config/reactRouterConfigEmitter';
 import { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
 import { viteConfigEmitter } from './target/vite-config/viteConfigEmitter';
+import { jestConfigEmitter } from './testing/jest-config/jestConfigEmitter';
 import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
@@ -71,6 +72,7 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'target/react-router-config': reactRouterConfigEmitter,
   'target/nuxt-config': nuxtConfigEmitter,
   'testing/vitest-config': vitestConfigEmitter,
+  'testing/jest-config': jestConfigEmitter,
   'testing/test-setup': testSetupEmitter,
   'manager/yarnrc': yarnrcEmitter,
   'manager/bunfig': bunfigEmitter,

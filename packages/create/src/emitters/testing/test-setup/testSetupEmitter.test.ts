@@ -163,7 +163,6 @@ describe('the shipped test setup', () => {
   it.each<TargetId>([
     'react',
     'solid',
-    'react-native',
   ])(
     'ships the router mocks to %s, which has a binding they could stand in for',
     async (target) => {
@@ -185,8 +184,9 @@ describe('the shipped test setup', () => {
     'svelte',
     'angular',
     'webextension',
+    'react-native',
   ])(
-    'ships none to %s, whose framework has none of the three',
+    'ships none to %s, which installs none of the three',
     async (target) => {
       const setup = await setupFor({ target });
       expect(setup).not.toContain('navigateMock');
@@ -237,10 +237,9 @@ describe('the shipped test setup', () => {
       data: 'tanstack-query',
     });
 
-    const index = setup.indexOf("vi.mock('expo-device'");
-    expect(index).toBeLessThan(setup.indexOf('navigateMock'));
-    const navigateMockIndex = setup.indexOf('navigateMock');
-    expect(navigateMockIndex).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
+    const index = setup.indexOf("'react-native-reanimated'");
+    expect(index).toBeGreaterThan(-1);
+    expect(index).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
   });
 
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {

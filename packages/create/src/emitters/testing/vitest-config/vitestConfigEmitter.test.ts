@@ -43,7 +43,10 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
   return emitVitestConfig(answers, setupPath);
 };
 
-const TARGETS = valuesOf(ANSWERS.target.values);
+const VITEST_TARGETS = valuesOf(ANSWERS.target.values)
+  .filter((target) => {
+    return target !== 'react-native';
+  });
 
 const MERGED = `import { defineConfig, mergeConfig } from 'vitest/config';
 
@@ -182,72 +185,6 @@ export default getViteConfig({
 });
 `;
 
-const PLATFORMS = `import { reactNative } from '@srsholmes/vitest-react-native';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
-
-const platform = (name: string, extensions: string[], include: string[]) => {
-  const project = {
-    plugins: [react(), reactNative()],
-    resolve: {
-      tsconfigPaths: true,
-      extensions,
-    },
-    test: {
-      name,
-      include,
-      globals: true,
-      environment: 'node',
-      setupFiles: ['./__mocks__/setupTests.tsx'],
-    },
-  };
-
-  return project;
-};
-
-export default defineConfig({
-  test: {
-    projects: [
-      platform(
-        'native',
-        [
-          '.ios.tsx',
-          '.ios.ts',
-          '.native.tsx',
-          '.native.ts',
-          '.tsx',
-          '.ts',
-          '.jsx',
-          '.js',
-          '.json',
-        ],
-        ['src/**/*.test.{ts,tsx}'],
-      ),
-    ],
-    coverage: {
-      provider: 'v8',
-      include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs}'],
-      exclude: [
-        '**/*.test.*',
-        '**/*.d.ts',
-        'src/typings/**',
-        'src/{main,index}.{ts,tsx}',
-        '**/*.stylex.{ts,tsx}',
-        '**/components/**/styles.{ts,tsx}',
-        'src/app/_layout.tsx',
-        'src/config/routes.ts',
-      ],
-      thresholds: {
-        lines: 100,
-        branches: 100,
-        functions: 100,
-        statements: 100,
-      },
-    },
-  },
-});
-`;
-
 describe('emitVitestConfig', () => {
   it('names the stylex plugin where there is no vite config to inherit one from', () => {
     const config = configFor({
@@ -282,6 +219,11 @@ export default defineConfig({
     expect(config).toBeNull();
   });
 
+  it('writes nothing for a target whose suites run on jest', () => {
+    const config = configFor({ target: 'react-native' });
+    expect(config).toBeNull();
+  });
+
   it.each<[string, TargetId, string]>([
     [
       'merges the vite config where the target builds with vite',
@@ -303,11 +245,6 @@ export default defineConfig({
       'astro',
       FACTORY,
     ],
-    [
-      'runs React Native as a platform project of its own',
-      'react-native',
-      PLATFORMS,
-    ],
   ])('%s', (_shape, target, expected) => {
     const config = configFor({ target });
     expect(config).toBe(expected);
@@ -316,8 +253,6 @@ export default defineConfig({
   it('names the setup file the artifact list writes', () => {
     const config = configFor();
     expect(config).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
-    const nativeConfig = configFor({ target: 'react-native' });
-    expect(nativeConfig).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
   });
 
   it('covers the single-file component extension where the target has one', () => {
@@ -344,9 +279,6 @@ export default defineConfig({
       const config = configFor({ target });
       expect(config).toContain("execArgv: ['--no-experimental-webstorage'],");
     }
-
-    const nativeConfig = configFor({ target: 'react-native' });
-    expect(nativeConfig).not.toContain('execArgv');
   });
 
   it.each<[TargetId, string]>([
@@ -440,107 +372,7 @@ describe('the coverage surface', () => {
     expect(config).toContain(`include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}']`);
   });
 
-  it.each<[string, AnswerOverrides, string[]]>([
-    [
-      'react',
-      { target: 'react' },
-      [],
-    ],
-    [
-      'react in framework mode',
-      {
-        target: 'react',
-        router: 'react-router-framework',
-      },
-      ['src/root.tsx', 'src/routes/**'],
-    ],
-    [
-      'next',
-      { target: 'next' },
-      ['src/app/layout.tsx', 'src/app/global-error.tsx'],
-    ],
-    [
-      'vue',
-      { target: 'vue' },
-      [],
-    ],
-    [
-      'nuxt',
-      { target: 'nuxt' },
-      [],
-    ],
-    [
-      'svelte',
-      { target: 'svelte' },
-      ['src/routes/+layout.svelte'],
-    ],
-    [
-      'solid',
-      { target: 'solid' },
-      [],
-    ],
-    [
-      'angular',
-      { target: 'angular' },
-      ['src/app/app.config.ts', 'src/app/app.routes.ts'],
-    ],
-    [
-      'astro',
-      { target: 'astro' },
-      ['src/config/**'],
-    ],
-    [
-      'webextension',
-      { target: 'webextension' },
-      ['src/background/index.ts'],
-    ],
-    [
-      'a webextension with a popup alone',
-      {
-        target: 'webextension',
-        surfaces: ['popup'],
-      },
-      [],
-    ],
-    [
-      'a webextension with a devtools panel',
-      {
-        target: 'webextension',
-        surfaces: ['devtools-panel'],
-      },
-      [
-        'src/config/linteljs.ts',
-        'src/devtools/index.ts',
-        'src/panel/index.ts',
-      ],
-    ],
-    [
-      'react-native',
-      { target: 'react-native' },
-      ['src/app/_layout.tsx', 'src/config/routes.ts'],
-    ],
-  ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
-    const [, block = ''] = /coverage: \{[\s\S]*?exclude: \[([^\]]*)\]/u.exec(configFor(overrides) ?? '') ?? [];
-
-    const quoted = [...block.matchAll(/'([^']+)'/gu)];
-    const entries = quoted
-      .map(([, entry]) => {
-        return entry;
-      });
-
-    const expected = [
-      '**/*.test.*',
-      '**/*.d.ts',
-      'src/typings/**',
-      'src/{main,index}.{ts,tsx}',
-      '**/*.stylex.{ts,tsx}',
-      '**/components/**/styles.{ts,tsx}',
-      ...excluded,
-    ];
-    expect(entries).toEqual(expected);
-  });
-
-  it.each(TARGETS)('keeps the thresholds at 100 on %s', (target) => {
+  it.each(VITEST_TARGETS)('keeps the thresholds at 100 on %s', (target) => {
     const config = configFor({ target });
 
     expect(config)

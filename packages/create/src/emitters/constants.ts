@@ -2,6 +2,8 @@ import {
   type Framework,
   type Router,
   type Store,
+  type TestRunner,
+  type TestRunnerParts,
 } from '@config/types';
 
 // The emitted `@stylistic/max-len`: any looser, and an inlined list like React Native's `ignores` fails its lint.
@@ -58,8 +60,6 @@ export const VERSIONS: Record<string, string> = {
   'unplugin': '^2.3.11',
   '@solid-primitives/i18n': '^2.2.1',
   '@solidjs/testing-library': '^0.8.10',
-  // What lets vitest load React Native at all.
-  '@srsholmes/vitest-react-native': '^0.1.5',
   // The bare plugin, for a host that owns its entry; `sveltekit()` would take it over.
   '@sveltejs/vite-plugin-svelte': '^7.3.1',
   // The PostCSS half, for a target with no vite.config.ts.
@@ -116,6 +116,13 @@ export const VERSIONS: Record<string, string> = {
   'react-native': '0.86.3',
   // react-native's cli plugin peers its own release exactly and worklets peers `*`; declared, both resolve to it.
   '@react-native/metro-config': '0.86.3',
+  // What the SDK's `bundledNativeModules` pins; its `@react-native/jest-preset` peer is the react-native release.
+  'jest-expo': '~57.0.5',
+  '@react-native/jest-preset': '0.86.3',
+  // Held at 29: jest-expo runs on Jest 29's babel-jest and environments, so a 30 runner puts two majors in the tree.
+  'jest': '^29.7.0',
+  '@types/jest': '^29.5.14',
+  'eslint-plugin-jest': '^29.16.6',
   'expo-router': '~57.0.24',
   'expo-constants': '~57.0.20',
   'expo-linking': '~57.0.11',
@@ -216,12 +223,32 @@ export const SHARED_DEV_DEPENDENCIES = [
   'stylelint-order',
 ];
 
-export const RUNNER_DEV_DEPENDENCIES = [
-  '@vitest/coverage-v8',
-  '@vitest/eslint-plugin',
-  'happy-dom',
-  'vitest',
-];
+// Both exit 1 on an empty run; `coverage` stays strict, since check uses it.
+export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
+  vitest: {
+    devDependencies: [
+      '@vitest/coverage-v8',
+      '@vitest/eslint-plugin',
+      'happy-dom',
+      'vitest',
+    ],
+    yarnPeers: ['vite'],
+    test: 'vitest run --passWithNoTests',
+    coverage: 'vitest run --coverage',
+    types: 'vitest/globals',
+  },
+  jest: {
+    devDependencies: [
+      '@types/jest',
+      'eslint-plugin-jest',
+      'jest',
+    ],
+    yarnPeers: [],
+    test: 'jest --passWithNoTests',
+    coverage: 'jest --coverage',
+    types: 'jest',
+  },
+};
 
 export const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
 

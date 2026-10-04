@@ -12,7 +12,6 @@ import {
 
 import {
   hasLibrary,
-  hasTests,
   localesOf,
 } from '@utils/answerUtils';
 import { isJsonObject } from '@utils/objectUtils';
@@ -29,14 +28,16 @@ import {
   HTML_DEV_DEPENDENCIES,
   ROUTER_DEPENDENCIES,
   ROUTER_DEV_DEPENDENCIES,
-  RUNNER_DEV_DEPENDENCIES,
   SHARED_DEV_DEPENDENCIES,
   STORE_BINDINGS,
   STORE_DEPENDENCIES,
   TANSTACK_FORM_BINDINGS,
   TANSTACK_QUERY_BINDINGS,
+  TEST_RUNNERS,
   VERSIONS,
 } from '../constants';
+
+import { testRunnerOf } from './runnerUtils';
 
 type Overrides = Record<string, string | Record<string, string>>;
 
@@ -296,6 +297,7 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
 
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
+  const runner = testRunnerOf(answers);
 
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
@@ -316,14 +318,13 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
-    ...(hasTests(answers)
-      // Yarn installs no peers, and vitest needs `vite`; npm installs it itself.
-      ? [
-          ...RUNNER_DEV_DEPENDENCIES,
-          ...answers.packageManager === 'yarn' ? ['vite'] : [],
+    ...(runner === undefined
+      ? []
+      : [
+          ...TEST_RUNNERS[runner].devDependencies,
+          ...answers.packageManager === 'yarn' ? TEST_RUNNERS[runner].yarnPeers : [],
           ...target.testDevDependencies ?? [],
-        ]
-      : []),
+        ]),
     ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),

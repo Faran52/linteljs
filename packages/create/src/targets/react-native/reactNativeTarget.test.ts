@@ -58,12 +58,11 @@ describe('reactNativeTarget', () => {
     expect(record.build).toBe('expo export');
   });
 
-  it('runs its suite the way Metro resolves', () => {
+  it('runs its suite on jest-expo, with no router to mock', () => {
     const record = recordFor();
-    const [platform] = record.testPlatforms ?? [];
-
-    expect(platform?.name).toBe('native');
-    expect(platform?.extensions[0]).toBe('.ios.tsx');
+    expect(record.testRunner).toBe('jest');
+    expect(record.testDevDependencies).toContain('jest-expo');
+    expect(record.routerMock).toBeUndefined();
   });
 
   it('names files the way any JSX target does, less the route root', () => {

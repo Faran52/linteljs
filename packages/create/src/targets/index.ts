@@ -13,7 +13,6 @@ export type {
   StarterFile,
   StarterTest,
   TargetRecord,
-  TestPlatform,
   TsconfigPlugin,
 } from './types';
 export { starterApplies } from './utils/gateUtils';

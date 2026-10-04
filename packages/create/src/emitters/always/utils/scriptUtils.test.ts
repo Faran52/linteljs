@@ -222,15 +222,26 @@ describe('buildScripts', () => {
     expect(scripts).toMatchObject(expected);
   });
 
-  it('names vitest for every target that has a suite', () => {
+  it.each([
+    [
+      'react',
+      'vitest run --passWithNoTests',
+      'vitest run --coverage',
+    ],
+    [
+      'react-native',
+      'jest --passWithNoTests',
+      'jest --coverage',
+    ],
+  ] as const)('names the runner %s runs its suite on', (target, expectedTest, expectedCoverage) => {
     const {
       test,
       'test:coverage': coverage,
       check,
-    } = buildScripts(answersFor({ target: 'react-native' }));
+    } = buildScripts(answersFor({ target }));
 
-    expect(test).toBe('vitest run --passWithNoTests');
-    expect(coverage).toBe('vitest run --coverage');
+    expect(test).toBe(expectedTest);
+    expect(coverage).toBe(expectedCoverage);
     expect(check).toContain('test:coverage');
   });
 

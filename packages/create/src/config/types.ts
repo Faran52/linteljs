@@ -19,6 +19,19 @@ export type HostedFramework = 'react' | 'vue' | 'svelte' | 'solid';
 
 export type Testing = 'vitest' | 'none';
 
+// The runner a target's suites run on: `testing` asks whether, the target decides which.
+export type TestRunner = 'vitest' | 'jest';
+
+export interface TestRunnerParts {
+  devDependencies: string[];
+  // Yarn installs no peers.
+  yarnPeers: string[];
+  test: string;
+  coverage: string;
+  // The tsconfig `types` entry that declares the globals.
+  types: string;
+}
+
 export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
 
 export type Library = 'zod' | 'es-toolkit' | 'ts-pattern' | 't3-env';

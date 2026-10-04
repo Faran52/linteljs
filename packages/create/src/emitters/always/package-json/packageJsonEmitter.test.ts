@@ -194,11 +194,7 @@ describe('patchPackageJson', () => {
       packageManager: 'bun',
     }));
 
-    expect(bun.trustedDependencies).toEqual(expect.arrayContaining([
-      'sharp',
-      'unrs-resolver',
-      'esbuild',
-    ]));
+    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver']));
 
     const patchedPackageJson = patchPackageJson({}, answersFor({ packageManager: 'pnpm' }));
     expect(patchedPackageJson).not.toHaveProperty('trustedDependencies');

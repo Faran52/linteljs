@@ -61,13 +61,6 @@ export interface I18nParts {
   compiler?: I18nCompiler;
 }
 
-// `include` matters as much as `extensions`, or a web variant resolves under a native test.
-export interface TestPlatform {
-  name: string;
-  extensions: string[];
-  include: string[];
-}
-
 export interface PluginSpec {
   imports: string[];
   calls: string[];
@@ -195,7 +188,8 @@ export interface TargetRecord {
   build: string;
   // SvelteKit's `svelte-kit sync` writes the tsconfig the emitted one extends.
   prepare?: string;
-  testPlatforms?: TestPlatform[];
+  // Absent: vitest.
+  testRunner?: 'jest';
   extraScripts?: Record<string, string>;
   dependencies?: string[];
   devDependencies: string[];

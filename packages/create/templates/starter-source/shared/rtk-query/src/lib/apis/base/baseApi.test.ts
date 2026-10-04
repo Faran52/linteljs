@@ -16,8 +16,9 @@ interface Version {
 
 const requested: string[] = [];
 
-const fetchMock = vi.fn((request: Request): Promise<Response> => {
-  requested.push(new URL(request.url).pathname);
+// Typed as `fetch` is, so jest can spy the global with it; `fetchBaseQuery` hands it a `Request`.
+const fetchMock = vi.fn((input: RequestInfo | URL): Promise<Response> => {
+  requested.push(new URL(new Request(input).url).pathname);
 
   const json = JSON.stringify({ status: 'ok' });
   const response = new Response(json, {

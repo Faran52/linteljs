@@ -388,7 +388,7 @@ describe('buildTsconfig', () => {
       'vitest/globals',
       'chrome',
     ]],
-    ['react-native', ['node', 'vitest/globals']],
+    ['react-native', ['node', 'jest']],
   ])('declares the ambient types %s builds against', (target, types) => {
     const { compilerOptions } = buildTsconfig(answersFor({ target }));
 

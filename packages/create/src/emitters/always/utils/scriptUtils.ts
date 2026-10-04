@@ -4,6 +4,9 @@ import { hasTests, localesOf } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
+import { TEST_RUNNERS } from '../../constants';
+import { testRunnerOf } from '../../utils/runnerUtils';
+
 import type { Answers } from '@config/types';
 
 // Named in the return type so callers need no unreachable `?? ''`.
@@ -51,10 +54,11 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
 
   Object.assign(scripts, target.extraScripts);
 
-  if (hasTests(answers)) {
-    // vitest exits 1 on an empty run; test:coverage stays strict, since check uses it.
-    scripts['test'] = 'vitest run --passWithNoTests';
-    scripts['test:coverage'] = 'vitest run --coverage';
+  const runner = testRunnerOf(answers);
+
+  if (runner !== undefined) {
+    scripts['test'] = TEST_RUNNERS[runner].test;
+    scripts['test:coverage'] = TEST_RUNNERS[runner].coverage;
   }
 
   scripts['build'] = target.build;

@@ -11,6 +11,7 @@ import { MAX_LINE } from '../../constants';
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 import { quote } from '../../utils/quoteUtils';
+import { testRunnerOf } from '../../utils/runnerUtils';
 
 import {
   BASE_IGNORES,
@@ -85,9 +86,11 @@ const optionRows = (answers: Answers): OptionRow[] => {
   // This CLI generates TypeScript only.
   rows.push(['typescript', 'true']);
 
-  // The layer imports @vitest/eslint-plugin, which dies on ERR_MODULE_NOT_FOUND without the suite.
-  if (answers.testing === 'vitest') {
-    rows.push(['vitest', 'true']);
+  // The layer imports its runner's plugin, which dies on ERR_MODULE_NOT_FOUND without the suite.
+  const runner = testRunnerOf(answers);
+
+  if (runner !== undefined) {
+    rows.push([runner, 'true']);
   }
 
   if (target.html) {

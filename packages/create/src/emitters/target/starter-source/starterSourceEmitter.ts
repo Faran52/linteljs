@@ -15,12 +15,15 @@ import {
   targetFor,
 } from '@targets';
 
+import { testRunnerOf } from '../../utils/runnerUtils';
+
 import {
   RELATIVE_SPECIFIER,
   STYLEX_ATTRS,
   STYLEX_PROPS,
   USE_CLIENT,
 } from './constants';
+import { inJestDialect } from './utils/jestDialectUtils';
 import { relativeSpecifier, stem } from './utils/starterPathUtils';
 
 type Starter = StarterFile | StarterTest;
@@ -109,6 +112,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
     });
   const renames = renamesOf([...files, ...suites]);
   const clientBoundaries = new Set(target.clientBoundaries);
+  const isJest = testRunnerOf(answers) === 'jest';
 
   const artifactOf = (file: Starter): Artifact => {
     const sources = [sourceOf(target.id, file)];
@@ -118,6 +122,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       ...renames.size === 0 ? [] : [rewritten],
       ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
+      ...isJest && 'covers' in file ? [inJestDialect] : [],
       ...transform === undefined
         ? []
         : [(source: string) => {

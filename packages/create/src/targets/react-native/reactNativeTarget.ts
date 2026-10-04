@@ -3,7 +3,6 @@ import { hasTests } from '@utils/answerUtils';
 import {
   COMMON_REACT_PLUGINS,
   FOLDER_ROUTED,
-  ROUTER_MOCK,
   STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
@@ -101,22 +100,8 @@ export const reactNativeTarget: TargetBuilder = () => {
       include: ['.expo/types/**/*.ts', 'expo-env.d.ts'],
     },
     testSetup: 'fragments/test-setup/setupTests.reactNative.ts',
-    // React Native resolves as Metro does and renders through a test renderer, not a DOM.
-    testPlatforms: [{
-      name: 'native',
-      extensions: [
-        '.ios.tsx',
-        '.ios.ts',
-        '.native.tsx',
-        '.native.ts',
-        '.tsx',
-        '.ts',
-        '.jsx',
-        '.js',
-        '.json',
-      ],
-      include: ['src/**/*.test.{ts,tsx}'],
-    }],
+    // jest-expo resolves as Metro does and renders through a test renderer, not a DOM.
+    testRunner: 'jest',
     // The shell reaches Expo's TypeScript source in `node_modules`, which no test transform strips.
     // The route list goes with it: the tab bar is its only reader.
     coverageExclude: ['src/app/_layout.tsx', 'src/config/routes.ts'],
@@ -216,15 +201,14 @@ export const reactNativeTarget: TargetBuilder = () => {
       '@types/react',
       '@react-native/metro-config',
     ],
-    // Its `esbuild` needs an install script, hence `allowBuilds`.
+    // jest-expo requires the preset as a peer.
     testDevDependencies: [
-      '@srsholmes/vitest-react-native',
+      '@react-native/jest-preset',
       '@testing-library/react-native',
-      // The vitest transform only: this target owns no vite build.
-      '@vitejs/plugin-react',
+      'jest-expo',
       'test-renderer',
     ],
-    allowBuilds: ['esbuild'],
+    allowBuilds: [],
     // What Expo SDK 57's own template pins.
     versions: {
       'react': '19.2.3',
@@ -233,7 +217,6 @@ export const reactNativeTarget: TargetBuilder = () => {
     },
     i18n: REACT_NATIVE_I18N,
     stateRules: ['react-state.md', 'hooks-order.md'],
-    routerMock: ROUTER_MOCK,
   };
 
   return record;

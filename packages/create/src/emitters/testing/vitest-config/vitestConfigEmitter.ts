@@ -4,48 +4,24 @@ import {
   type ProjectShape,
 } from '@config/types';
 
-import {
-  type PluginSpec,
-  targetFor,
-  type TestPlatform,
-} from '@targets';
+import { type PluginSpec, targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
+import { testRunnerOf } from '../../utils/runnerUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
+import { coverageExclude, coverageInclude } from '../utils/coverageUtils';
 
-import { platformEntries, quoted } from './utils/platformUtils';
+const quoted = (values: string[]): string => {
+  return values
+    .map((value) => {
+      return `'${value}'`;
+    })
+    .join(', ');
+};
 
 // `./vite.config.js`: extensionless, Vite warns every run; `.ts` hits TS5097; `.js` resolves to the `.ts`.
-
-// Root of `src/` only, so a `src/lib/index.ts` barrel still counts.
-const SHARED_COVERAGE_EXCLUDE = [
-  '**/*.test.*',
-  '**/*.d.ts',
-  'src/typings/**',
-  'src/{main,index}.{ts,tsx}',
-  // Compiled to CSS by the bundler, so nothing of it is left at runtime.
-  '**/*.stylex.{ts,tsx}',
-  // An `.astro` component has no vitest renderer, so a module only one imports is unreachable by any suite.
-  '**/components/**/styles.{ts,tsx}',
-];
-
-// A bare `src/**` hands rolldown `src/app.html`, printing a parse failure while the gate passes.
-const MEASURABLE = [
-  'ts',
-  'tsx',
-  'mts',
-  'js',
-  'jsx',
-  'mjs',
-];
-
-const coverageInclude = (sfcExtension?: string): string => {
-  const extensions = sfcExtension === undefined ? MEASURABLE : [...MEASURABLE, sfcExtension];
-
-  return `src/**/*.{${extensions.join(',')}}`;
-};
 
 // One entry per line: `max-len` has no fixer.
 const excludeList = (exclude: string[], indent: string): string => {
@@ -89,47 +65,6 @@ ${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
 
-// React Native renders through a test renderer, not a DOM; `resolve.extensions` is Metro's own order.
-const platformProjects = (
-  platforms: TestPlatform[],
-  include: string,
-  exclude: string[],
-  setup: string,
-): string => {
-  return `import { reactNative } from '@srsholmes/vitest-react-native';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
-
-const platform = (name: string, extensions: string[], include: string[]) => {
-  const project = {
-    plugins: [react(), reactNative()],
-    resolve: {
-      tsconfigPaths: true,
-      extensions,
-    },
-    test: {
-      name,
-      include,
-      globals: true,
-      environment: 'node',
-      setupFiles: ['./${setup}'],
-    },
-  };
-
-  return project;
-};
-
-export default defineConfig({
-  test: {
-    projects: [
-${platformEntries(platforms)}
-    ],
-${coverageBlock(include, exclude, '    ')}
-  },
-});
-`;
-};
-
 const mergedConfig = (block: string, testConditions: string[] | undefined): string => {
   const conditions = testConditions === undefined
     ? ''
@@ -167,22 +102,13 @@ ${block}
 };
 
 export const emitVitestConfig = (answers: Answers, setup: string): string | null => {
-  if (answers.testing !== 'vitest') {
+  if (testRunnerOf(answers) !== 'vitest') {
     return null;
   }
 
   const target = targetFor(answers);
-  const include = coverageInclude(target.sfcExtension);
-  // React Router's route table is configuration; TanStack Router builds its tree in `App.tsx`.
-  const exclude = [
-    ...SHARED_COVERAGE_EXCLUDE,
-    ...target.coverageExclude ?? [],
-    ...(answers.router === undefined || answers.router === 'tanstack-router' ? [] : ['src/routes/**']),
-  ];
-
-  if (target.testPlatforms !== undefined) {
-    return platformProjects(target.testPlatforms, include, exclude, setup);
-  }
+  const include = coverageInclude(answers);
+  const exclude = coverageExclude(answers);
 
   if (target.vitePlugin !== undefined) {
     const nestedBlock = testBlock(include, exclude, setup, '    ', target.testPool);

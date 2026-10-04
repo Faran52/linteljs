@@ -637,14 +637,30 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
   });
 
-  it('gives react native the adapter on top of the shared runner', () => {
+  it('runs react native on jest-expo, with no vitest left', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
+    const expected = {
+      '@react-native/jest-preset': VERSIONS['react-native'],
+      '@types/jest': '^29.5.14',
+      'eslint-plugin-jest': '^29.16.6',
+      'jest': '^29.7.0',
+      'jest-expo': '~57.0.5',
+    };
+    expect(devDependencies).toMatchObject(expected);
+    const names = Object.keys(devDependencies);
+    const vitestNames = names
+      .filter((name) => {
+        return name.includes('vite') || name === 'happy-dom';
+      });
+    expect(vitestNames).toEqual([]);
+  });
 
-    expect(devDependencies).toHaveProperty('@srsholmes/vitest-react-native');
-    expect(devDependencies).toHaveProperty('vitest');
-    expect(devDependencies).toHaveProperty('@vitest/coverage-v8');
-    expect(devDependencies).not.toHaveProperty('jest');
-    expect(devDependencies).not.toHaveProperty('jest-expo');
+  it('names no vite for yarn on jest, whose runner peers none', () => {
+    const devDependencies = buildDevDependencies(answersFor({
+      target: 'react-native',
+      packageManager: 'yarn',
+    }));
+    expect(devDependencies).not.toHaveProperty('vite');
   });
 
   it('installs the react lint plugins on react native, less the accessibility one', () => {
@@ -748,7 +764,7 @@ describe('buildDevDependencies', () => {
     [
       'react-native',
       { target: 'react-native' },
-      ['esbuild'],
+      [],
     ],
   ])('allows the builds %s runs', (_label, overrides, own) => {
     const builds = [
@@ -817,6 +833,7 @@ describe('parsePackageJson', () => {
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
   '@react-native-async-storage/async-storage': '',
+  '@react-native/jest-preset': '',
   '@react-native/metro-config': '',
   'expo': '~',
   'expo-constants': '~',
@@ -824,6 +841,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'expo-localization': '~',
   'expo-router': '~',
   'expo-status-bar': '~',
+  'jest-expo': '~',
   'lightningcss': '',
   'react-native': '',
   'react-native-css': '',

@@ -1,0 +1,90 @@
+import { answersFor } from '@mocks/answersFor';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { emitJestConfig, jestConfigEmitter } from './jestConfigEmitter';
+
+import type { Answers } from '@config/types';
+
+const NATIVE = `import tsconfig from './tsconfig.json' with { type: 'json' };
+
+const moduleNameMapper = Object.fromEntries(
+  Object.entries(tsconfig.compilerOptions.paths).map(([alias, [location]]) => {
+    return [\`^\${alias.replace('*', '(.*)')}$\`, location.replace('.', '<rootDir>').replace('*', '$1')];
+  }),
+);
+
+export default {
+  preset: 'jest-expo',
+  resolver: 'react-native-worklets/jest/resolver.js',
+  moduleNameMapper,
+  setupFilesAfterEnv: ['<rootDir>/__mocks__/setupTests.tsx'],
+  testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx,mts,js,jsx,mjs}',
+    '!**/*.test.*',
+    '!**/*.d.ts',
+    '!src/typings/**',
+    '!src/{main,index}.{ts,tsx}',
+    '!**/*.stylex.{ts,tsx}',
+    '!**/components/**/styles.{ts,tsx}',
+    '!src/app/_layout.tsx',
+    '!src/config/routes.ts',
+  ],
+  coverageThreshold: {
+    global: {
+      lines: 100,
+      branches: 100,
+      functions: 100,
+      statements: 100,
+    },
+  },
+};
+`;
+
+describe('jestConfigEmitter', () => {
+  it('hands React Native its jest config after the first write', () => {
+    const answers = answersFor({ target: 'react-native' });
+    const artifacts = jestConfigEmitter(answers, EMPTY_PROJECT);
+    const expected = [{
+      stage: 'standard',
+      target: 'jest.config.js',
+      content: { text: NATIVE },
+      preserve: true,
+    }];
+    expect(artifacts).toEqual(expected);
+  });
+
+  it('names the setup file the project already has', () => {
+    const answers = answersFor({ target: 'react-native' });
+    const project = {
+      ...EMPTY_PROJECT,
+      setupTests: ['__mocks__/setupTests.ts'],
+    };
+    const artifacts = jestConfigEmitter(answers, project);
+    const expected = [expect.objectContaining({
+      content: { text: emitJestConfig(answers, '__mocks__/setupTests.ts') },
+    })];
+    expect(artifacts).toEqual(expected);
+  });
+
+  it.each<[string, Partial<Answers>]>([
+    ['a target whose suites run on vitest', { target: 'react' }],
+    [
+      'a project that declined a suite',
+      {
+        target: 'react-native',
+        testing: 'none',
+      },
+    ],
+  ])('writes nothing for %s', (_label, overrides) => {
+    const answers = answersFor(overrides);
+    const artifacts = jestConfigEmitter(answers, EMPTY_PROJECT);
+    expect(artifacts).toEqual([]);
+  });
+});
