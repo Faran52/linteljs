@@ -1,5 +1,7 @@
 import { type Artifact, type Emitter } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -85,7 +87,7 @@ export const angularConfigEmitter: Emitter = (answers, _project, name): Artifact
     return [];
   }
 
-  const config = emitAngularConfig(name, answers.packageManager);
+  const config = emitAngularConfig(unscopedName(name), answers.packageManager);
   const artifacts = [emitted('standard', 'angular.json', config)];
 
   return artifacts;

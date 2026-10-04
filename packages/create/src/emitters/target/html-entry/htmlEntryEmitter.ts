@@ -1,5 +1,7 @@
 import { type Artifact, type Emitter } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -44,7 +46,7 @@ export const htmlEntryEmitter: Emitter = (answers, _project, name): Artifact[] =
     return [];
   }
 
-  const page = emitHtmlEntry(name, htmlEntry, favicon);
+  const page = emitHtmlEntry(unscopedName(name), htmlEntry, favicon);
   const artifacts = [emitted('standard', 'index.html', page)];
 
   return artifacts;

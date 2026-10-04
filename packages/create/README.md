@@ -54,7 +54,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 
 | Question | Flag | Choices | Default |
 | --- | --- | --- | --- |
-| Project name | positional | a valid npm package name | the directory's name |
+| Project name | positional | a valid npm package name, scoped or not; the directory drops the scope | the name `package.json` records, else the directory's |
 | Framework | `--target` | `react`, `next`, `vue`, `nuxt`, `svelte`, `solid`, `angular`, `astro`, `webextension`, `react-native` | `react` |
 | Browser | `--browser` | `chrome`, `firefox` (webextension) | `chrome` |
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |

@@ -1,5 +1,7 @@
 import { type Artifact, type Emitter } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -44,7 +46,7 @@ export const expoConfigEmitter: Emitter = (answers, _project, name): Artifact[] 
     return [];
   }
 
-  const config = emitExpoConfig(name);
+  const config = emitExpoConfig(unscopedName(name));
   const artifacts = [emitted('standard', 'app.json', config)];
 
   return artifacts;

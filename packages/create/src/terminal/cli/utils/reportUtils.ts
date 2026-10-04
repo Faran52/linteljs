@@ -10,6 +10,8 @@ import {
   type Stage,
 } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import {
   ADD_PREFIX,
   MS_PER_SECOND,
@@ -63,7 +65,7 @@ export const stageLine = (stage: Stage, writes: number, notice: string, millisec
 
 export const nextSteps = (name: string, options: CliOptions, packageManager: PackageManager): string => {
   const run = RUN_PREFIX[packageManager];
-  const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
+  const enter = options.existing || name === '' ? [] : [`  cd ${unscopedName(name)}`];
   const install = options.skip.includes('install')
     ? [`  ${packageManager} install`, `  ${run} lint:fix`]
     : [];

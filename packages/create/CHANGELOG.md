@@ -38,6 +38,8 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
+- A scoped project name is accepted: `create @acme/app` writes `app/`, records `@acme/app` in `package.json`, and
+  titles the page `app`. `--existing` titles it after the name `package.json` records, else after the directory.
 - Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,
   `--store`, `--router`, `--testing`, `--type-safety`, `--libraries`, `--styling`, `--data`, `--form`, `--mocking`,
   `--languages`, `--agents`, `--plugins`. An empty list, such as `--libraries ''`, answers none. `--version`

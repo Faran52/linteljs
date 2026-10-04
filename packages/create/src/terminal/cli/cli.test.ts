@@ -366,6 +366,60 @@ describe('main: create', () => {
     const name = await nameAt(project);
     expect(name).toBe('demo-app');
   });
+
+  it('keeps a scope to package.json, and names the directory and the page after what follows it', async () => {
+    const { printed } = await runMain([
+      '@acme/demo-app',
+      '--no-install',
+      '--yes',
+    ]);
+
+    const directory = join(project, 'demo-app');
+    const name = await nameAt(directory);
+    expect(name).toBe('@acme/demo-app');
+    const page = await readFile(join(directory, 'index.html'), 'utf8');
+    expect(page).toContain('<title>demo-app</title>');
+    const record = await readFile(join(directory, 'src/config/linteljs.ts'), 'utf8');
+    expect(record).toContain("export const NAME = 'demo-app';");
+    expect(printed).toContain('cd demo-app\n');
+  });
+
+  it.each([
+    [
+      'the unscoped part of the name package.json records',
+      '@acme/demo-app',
+      'demo-app',
+    ],
+    [
+      'its directory when package.json records no valid name',
+      'Not A Name',
+      'directory',
+    ],
+  ])('names an existing project\'s page after %s', async (_case, recorded, expected) => {
+    const manifest = JSON.stringify({ name: recorded });
+    const directory = join(project, 'directory');
+    await mkdir(directory);
+    await writeFile(join(directory, 'package.json'), manifest, 'utf8');
+    chdir(directory);
+
+    await generated();
+
+    const name = await nameAt(directory);
+    expect(name).toBe(recorded);
+    const page = await readFile(join(directory, 'index.html'), 'utf8');
+    expect(page).toContain(`<title>${expected}</title>`);
+  });
+
+  it('names an existing project with no package.json after its directory', async () => {
+    const directory = join(project, 'directory');
+    await mkdir(directory);
+    chdir(directory);
+
+    await generated();
+
+    const page = await readFile(join(directory, 'index.html'), 'utf8');
+    expect(page).toContain('<title>directory</title>');
+  });
 });
 
 describe('main: patching a project that already exists', () => {

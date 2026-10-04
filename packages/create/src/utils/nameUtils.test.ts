@@ -1,0 +1,13 @@
+import { unscopedName } from './nameUtils';
+
+describe('unscopedName', () => {
+  it('drops the scope of a scoped name', () => {
+    const name = unscopedName('@acme/web-app');
+    expect(name).toBe('web-app');
+  });
+
+  it('leaves an unscoped name as it is', () => {
+    const name = unscopedName('web-app');
+    expect(name).toBe('web-app');
+  });
+});

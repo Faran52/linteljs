@@ -1,6 +1,8 @@
 import { RUN_PREFIX } from '@config/constants';
 import { type Emitter, type HostedAnswers } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import { ANSWERS } from '@answers';
 
 import { VERSIONS } from '../../constants';
@@ -52,7 +54,7 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
 const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
-  const record = emitLinteljsRecord(answers, name);
+  const record = emitLinteljsRecord(answers, unscopedName(name));
   const artifacts = [emitted('standard', RECORD_MODULE, record)];
 
   return artifacts;

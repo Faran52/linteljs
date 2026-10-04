@@ -5,6 +5,8 @@ import {
 } from 'node:path';
 import { stdin } from 'node:process';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -13,7 +15,12 @@ import {
   LEGACY_CONFIG_PATH,
   parseLinteljsConfig,
 } from '@answers';
-import { entryExists, linteljsConfigReader } from '@disk';
+import {
+  entryExists,
+  linteljsConfigReader,
+  readIfPresent,
+} from '@disk';
+import { parsePackageJson } from '@emitters';
 import {
   applySync,
   pipelineRun,
@@ -35,6 +42,7 @@ import {
   type Prompter,
   RunCancelled,
 } from '../prompts/prompts';
+import { isValidProjectName } from '../utils/nameUtils';
 
 import { SYNC_NEEDS_YES } from './constants';
 import {
@@ -70,6 +78,14 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
   });
 
   return parseLinteljsConfig(configText);
+};
+
+// `--existing` takes the name its package.json records, as a new project takes its argument's.
+const existingName = async (cwd: string): Promise<string> => {
+  const manifestText = await readIfPresent(join(cwd, 'package.json'));
+  const recorded = manifestText === null ? undefined : parsePackageJson(manifestText).name;
+
+  return recorded !== undefined && isValidProjectName(recorded) ? recorded : basename(cwd);
 };
 
 // Only the questionnaire can supply a missing name.
@@ -124,7 +140,7 @@ const askedFrom = async (
     throw new Error(NOTHING_ANSWERED_MESSAGE);
   }
 
-  const known = options.existing ? basename(options.cwd) : options.name;
+  const known = options.existing ? await existingName(options.cwd) : options.name;
   const prefilled = known === '' ? {} : { name: known };
   const asked = await ask(prompter, prefilled);
   const answered: HostedAsk = {
@@ -253,9 +269,12 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       return await runSync(options, answers, prompter ?? inquirerPrompter, hasTerminal);
     }
 
+    const projectName = name === '' ? await existingName(options.cwd) : name;
+    const directory = unscopedName(name);
+
     await pipelineRun({
-      name: name === '' ? basename(options.cwd) : name,
-      cwd: options.existing ? options.cwd : resolve(options.cwd, name),
+      name: projectName,
+      cwd: options.existing ? options.cwd : resolve(options.cwd, directory),
       answers,
       skip: options.skip,
       existing: options.existing,

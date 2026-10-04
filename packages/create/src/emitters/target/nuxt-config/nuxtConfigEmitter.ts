@@ -4,6 +4,8 @@ import {
   type Emitter,
 } from '@config/types';
 
+import { unscopedName } from '@utils/nameUtils';
+
 import { targetFor } from '@targets';
 
 import { buildAliases } from '../../utils/aliasUtils';
@@ -96,7 +98,7 @@ export const nuxtConfigEmitter: Emitter = (answers, _project, name): Artifact[] 
     return [];
   }
 
-  const config = emitNuxtConfig(answers, name);
+  const config = emitNuxtConfig(answers, unscopedName(name));
   const artifacts = [emitted('package', 'nuxt.config.ts', config)];
 
   return artifacts;
