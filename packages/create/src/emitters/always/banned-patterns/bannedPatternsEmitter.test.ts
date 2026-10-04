@@ -53,6 +53,20 @@ describe('checkerArtifact', () => {
       .toContain(`const TYPE_SAFETY: TypeSafety = '${typeSafety}';`);
   });
 
+  it('imports directive for a project block that calls it, and only then', () => {
+    const transform = transformOf(answersFor({}));
+    const shipped = readFileSync(SHIPPED, 'utf8');
+    const banned = "const PROJECT_BANNED: BannedPattern[] = [{ name: 'todo', re: directive('TODO') }];";
+    const current = shipped.replace('const PROJECT_BANNED: BannedPattern[] = [];', banned);
+
+    const merged = transform(shipped, current);
+    expect(merged).toContain('  checkBanned,\n  directive,\n  FLOORS,\n');
+    expect(merged).toContain(banned);
+
+    const unchanged = transform(shipped, shipped);
+    expect(unchanged).not.toContain('directive');
+  });
+
   it('throws when the type-safety anchor has drifted out of the shipped checker', () => {
     expect(() => {
       const transform = transformOf(answersFor({ typeSafety: 'relaxed' }));

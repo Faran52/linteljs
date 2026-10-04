@@ -37,11 +37,19 @@ const carriedOver = (shipped: string, current: string, name: string): string => 
     });
 };
 
+const IMPORT_ANCHOR = '  checkBanned,\n';
+
 export const mergeChecker = (shipped: string, current: string | null): string => {
   // With no file yet, the shipped text stands in for it and every block carries over unchanged.
   const existing = current ?? shipped;
 
   const withSkipped = carriedOver(shipped, existing, 'PROJECT_SKIPPED');
+  const merged = carriedOver(withSkipped, existing, 'PROJECT_BANNED');
+  const banned = blockOf(merged, 'PROJECT_BANNED') ?? '';
 
-  return carriedOver(withSkipped, existing, 'PROJECT_BANNED');
+  // A checker from before 2.0 declared `directive` itself; the entry no longer does, so a block calling it gets
+  // the import from the util.
+  return /\bdirective\(/u.test(banned)
+    ? merged.replace(IMPORT_ANCHOR, `${IMPORT_ANCHOR}  directive,\n`)
+    : merged;
 };

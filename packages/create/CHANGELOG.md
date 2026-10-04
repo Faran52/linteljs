@@ -166,7 +166,12 @@ when a version's change lives in a sibling it is described there instead:
   `/* eslint-disable */`. It blanked every block comment before matching, so only the `//` form was caught, and a
   `/*` inside a template literal could blank the lines after it. Its logic now lives in
   `scripts/utils/bannedPatternsUtils.ts`, and `typecheckStaged.ts`'s in `scripts/utils/typecheckStagedUtils.ts`;
-  the entries keep the lines `sync` writes and carries over.
+  the entries keep the lines `sync` writes and carries over. A carried-over `PROJECT_BANNED` that calls
+  `directive()` gets the import from the util.
+- The git safety hook reads heredocs, command substitutions, subshells and compound commands in bash. A heredoc
+  body was read as shell, so one apostrophe in it denied the command as unreadable, and `$(git stash)`, a
+  backtick, `(git stash)` or `do git stash` slipped past it. A commit message from `"$(cat <<'EOF' ...)"` is
+  cleared; any other substituted git operand is denied as unreadable.
 - An Angular project's `tsconfig.json` sets `erasableSyntaxOnly` like every other target's. Its starter injects
   with `inject()`, and `typescript()` already refuses the parameter properties the flag was dropped for.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every

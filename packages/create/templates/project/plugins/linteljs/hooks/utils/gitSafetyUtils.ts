@@ -1,6 +1,7 @@
 // A guard cannot vouch for what it cannot read, so an unreadable command is denied.
 import {
   commandName,
+  COMPUTED,
   type Dialect,
   parseCommand,
   type ParsedCommand,
@@ -47,8 +48,31 @@ const addIsBanned = (arguments_: string[]): boolean => {
     });
 };
 
+const MESSAGE_VALUED = new Set([
+  '-m',
+  '--message',
+  '-F',
+  '--file',
+]);
+
+// A substituted commit message is the one computed operand no banned flag can hide in.
+const hasComputedOperand = (operands: string[]): boolean => {
+  return operands
+    .some((operand, index) => {
+      return operand.includes(COMPUTED)
+        && !MESSAGE_VALUED.has(operands[index - 1] ?? '')
+        && !/^(?:-m|--message=)/u.test(operand);
+    });
+};
+
 const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
-  if (commandName(tokens[0]) !== 'git') {
+  const name = commandName(tokens[0]);
+
+  if (name.includes(COMPUTED)) {
+    return UNREADABLE_REASON;
+  }
+
+  if (name !== 'git') {
     return undefined;
   }
 
@@ -68,6 +92,10 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
 
   if (subcommand === 'reset') {
     return RESET;
+  }
+
+  if (subcommand?.includes(COMPUTED) === true || hasComputedOperand(operands)) {
+    return UNREADABLE_REASON;
   }
 
   if (options.includes('--no-verify')) {
@@ -101,7 +129,9 @@ export const gitSafetyReason = (command: string, dialect: Dialect): string | und
       unreadable = true;
     }
     else if (verdict !== undefined) {
-      return `Blocked \`${parsed.tokens.join(' ')}\`. ${verdict}`;
+      return `Blocked \`${parsed.tokens
+        .join(' ')
+        .replaceAll(COMPUTED, '$(...)')}\`. ${verdict}`;
     }
   }
 

@@ -6,6 +6,7 @@ import {
 
 import {
   commandName,
+  COMPUTED,
   type Dialect,
   parseCommand,
   skipOptions,
@@ -157,6 +158,127 @@ describe('parseCommand', () => {
       'sudo -i; command -p; exec -c',
       [],
     ],
+    [
+      'a quoted heredoc body as text',
+      "cat <<'EOF' > a.md\nit's git stash\nEOF\ngit log",
+      [
+        [
+          'cat',
+          '>',
+          'a.md',
+        ],
+        ['git', 'log'],
+      ],
+    ],
+    [
+      'an escaped heredoc delimiter as a quoted one',
+      'cat <<\\EOF\n$(git stash)\nEOF',
+      [['cat']],
+    ],
+    [
+      'a double-quoted heredoc delimiter as a quoted one',
+      'cat <<"EOF"\n`git stash`\nEOF',
+      [['cat']],
+    ],
+    [
+      'the substitutions in an unquoted heredoc body',
+      "cat <<EOF\nit's \\$(no) $(git log) `git status`\nEOF",
+      [
+        ['cat'],
+        ['git', 'log'],
+        ['git', 'status'],
+      ],
+    ],
+    [
+      'a tab-stripped heredoc, and a second one on the same line',
+      'cat <<-A <<B # note\n\tit\'s\n\tA\r\nit\'s\nB\ngit log',
+      [['cat'], ['git', 'log']],
+    ],
+    [
+      'a heredoc body running to the end',
+      "cat <<'EOF'\nit's",
+      [['cat']],
+    ],
+    [
+      'a heredoc with no body',
+      'cat <<EOF',
+      [['cat']],
+    ],
+    [
+      'a here-string as a token',
+      'cat <<< "it\'s"',
+      [[
+        'cat',
+        '<<<',
+        "it's",
+      ]],
+    ],
+    [
+      'command substitutions as the commands inside them',
+      'echo "$(git log)" `git status` "`b`" <(a) $((1 + 2))',
+      [
+        ['git', 'log'],
+        ['git', 'status'],
+        ['b'],
+        ['a'],
+        [
+          '1',
+          '+',
+          '2',
+        ],
+        [
+          'echo',
+          COMPUTED,
+          COMPUTED,
+          COMPUTED,
+          COMPUTED,
+          COMPUTED,
+        ],
+      ],
+    ],
+    [
+      'a substitution inside a token',
+      'git commit -m "feat: $(cat <<\'EOF\'\nit\'s\nEOF\n) done"',
+      [
+        ['cat'],
+        [
+          'git',
+          'commit',
+          '-m',
+          `feat: ${COMPUTED} done`,
+        ],
+      ],
+    ],
+    [
+      'subshells, groups and compound commands',
+      '(git log); { git status; }; if a; then b; elif c; else d; fi; while e; do f; done; until g; do :; done',
+      [
+        ['git', 'log'],
+        ['git', 'status'],
+        ['a'],
+        ['b'],
+        ['c'],
+        ['d'],
+        ['e'],
+        ['f'],
+        ['g'],
+        [':'],
+      ],
+    ],
+    [
+      'a case pattern as a character',
+      'case x in a) b;; esac',
+      [
+        [
+          'case',
+          'x',
+          'in',
+          'a)',
+          'b',
+        ],
+        ['esac'],
+      ],
+    ],
   ])('reads %s', (_label, source, expected) => {
     const tokens = tokensOf(source);
     expect(tokens).toEqual(expected);
@@ -176,6 +298,10 @@ describe('parseCommand', () => {
     ['sudo with a missing operand', 'sudo -u'],
     ['env -S with no operand', 'env -S'],
     ['an env split string that cannot be read', 'env -S "\'git log"'],
+    ['a heredoc with no delimiter', 'cat <<'],
+    ['a heredoc delimiter run into a quote', 'cat <<EOF"x"'],
+    ['an unclosed substitution', 'echo "$(git log"'],
+    ['an unclosed subshell', '(git log'],
   ])('cannot read %s', (_label, source) => {
     const actual = parseCommand(source, 'bash');
     expect(actual).toBeUndefined();
@@ -300,6 +426,37 @@ describe('parseCommand', () => {
   ])('reads PowerShell %s', (_label, source, expected) => {
     const tokens = tokensOf(source, 'powershell');
     expect(tokens).toEqual(expected);
+  });
+
+  it('marks a command with an unquoted substitution as opaque, and a quoted one as readable', () => {
+    const actual = parseCommand('git $(a) "$(b)"; git "$(c)"', 'bash');
+    const expected = [
+      {
+        tokens: ['a'],
+        opaque: false,
+      },
+      {
+        tokens: ['b'],
+        opaque: false,
+      },
+      {
+        tokens: [
+          'git',
+          COMPUTED,
+          COMPUTED,
+        ],
+        opaque: true,
+      },
+      {
+        tokens: ['c'],
+        opaque: false,
+      },
+      {
+        tokens: ['git', COMPUTED],
+        opaque: false,
+      },
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('marks a command with a computed part as opaque, and leaves the rest readable', () => {

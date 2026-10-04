@@ -145,6 +145,34 @@ const DENIED: CommandProbe[] = [
     label: 'newline-separated invocation',
     command: 'git status\ngit add -v -A',
   },
+  {
+    label: 'command substitution',
+    command: 'echo "$(git stash)"',
+  },
+  {
+    label: 'backtick substitution',
+    command: 'x=`git reset --hard HEAD`',
+  },
+  {
+    label: 'subshell',
+    command: '(git stash)',
+  },
+  {
+    label: 'compound command',
+    command: 'for f in a; do git add -A; done',
+  },
+  {
+    label: 'substitution in an unquoted heredoc',
+    command: "cat <<EOF\nit's $(git stash)\nEOF",
+  },
+  {
+    label: 'invocation after a quoted heredoc',
+    command: "cat <<'EOF'\nit's\nEOF\ngit stash",
+  },
+  {
+    label: 'amend beside a substituted message',
+    command: 'git commit -m "$(echo x)" --amend',
+  },
 ];
 
 const UNREADABLE_COMMANDS: CommandProbe[] = [
@@ -171,6 +199,22 @@ const UNREADABLE_COMMANDS: CommandProbe[] = [
   {
     label: 'recursion depth exhaustion',
     command: shellWrapped('echo safe', 20),
+  },
+  {
+    label: 'computed command name',
+    command: '$(echo git) stash',
+  },
+  {
+    label: 'computed subcommand',
+    command: 'git "$(echo stash)"',
+  },
+  {
+    label: 'computed operand',
+    command: 'git commit "$(echo --no-verify)"',
+  },
+  {
+    label: 'unquoted substitution',
+    command: 'git commit -m $(echo x)',
   },
 ];
 
@@ -242,6 +286,18 @@ const CLEARED: CommandProbe[] = [
   {
     label: 'env attached path status',
     command: 'env -P/usr/bin git status',
+  },
+  {
+    label: 'quoted heredoc naming git',
+    command: "cat > notes.md <<'EOF'\nthe git-safety hook (it's strict): git stash\nEOF",
+  },
+  {
+    label: 'commit message from a heredoc',
+    command: 'git commit -m "$(cat <<\'EOF\'\nfix: it\'s done\nEOF\n)"',
+  },
+  {
+    label: 'substituted message in its other spellings',
+    command: 'git commit --message "$(a)" -F "$(b)" --file "$(c)" --message="$(d)" -m"$(e)"',
   },
 ];
 

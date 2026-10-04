@@ -13,10 +13,27 @@ interface Segment {
   tokens: string[];
 }
 
+interface Heredoc {
+  delimiter: string;
+  literal: boolean;
+  strip: boolean;
+}
+
+// What a group interrupted, restored when it closes.
+interface Group extends Segment {
+  active: boolean;
+  body: Heredoc | undefined;
+  closer: string;
+  quote: string;
+  token: string;
+}
+
 interface TokenizerState {
   active: boolean;
+  body: Heredoc | undefined;
   dialect: Dialect;
-  groups: Segment[];
+  groups: Group[];
+  heredocs: Heredoc[];
   opaque: boolean;
   quote: string;
   segments: Segment[];
@@ -47,6 +64,26 @@ interface UnreadableStep {
 type Step = NestedStep | NextStep | NoWrapperStep | UnreadableStep;
 
 const MAX_DEPTH = 8;
+
+// Stands in for the output of a bash command substitution inside a token.
+export const COMPUTED = '\u0000';
+
+// Words that open or close a bash compound command, after which the next command starts. A `case` pattern's `)`
+// is not read: `case` bodies stay a known gap.
+const RESERVED = new Set([
+  '!',
+  '{',
+  '}',
+  'if',
+  'then',
+  'else',
+  'elif',
+  'fi',
+  'do',
+  'done',
+  'while',
+  'until',
+]);
 const UNREADABLE: Step = { kind: 'unreadable' };
 const NO_WRAPPER: Step = { kind: 'none' };
 
@@ -114,16 +151,69 @@ const emitSegment = (state: TokenizerState): void => {
 };
 
 // A PowerShell group is read as the commands inside it, and the command it sits in cannot be vouched for.
+const pushGroup = (state: TokenizerState, group: Group): void => {
+  state.groups.push(group);
+  state.active = false;
+  state.body = undefined;
+  state.opaque = false;
+  state.quote = '';
+  state.token = '';
+  state.tokens = [];
+};
+
 const openGroup = (state: TokenizerState): void => {
   emitToken(state);
 
-  state.groups.push({
+  pushGroup(state, {
+    active: false,
+    body: undefined,
+    closer: '',
     opaque: true,
+    quote: '',
+    token: '',
     tokens: state.tokens,
   });
+};
 
-  state.tokens = [];
-  state.opaque = false;
+/**
+ * A bash substitution is read as the commands inside it, and leaves COMPUTED in the token it sits in. Unquoted,
+ * its output is split into words no guard can count, so that command cannot be vouched for either. A heredoc body
+ * is no command's token, so one there leaves nothing.
+ */
+const openSubstitution = (state: TokenizerState, closer: string): void => {
+  const inToken = state.body === undefined;
+
+  pushGroup(state, {
+    active: inToken,
+    body: state.body,
+    closer,
+    opaque: state.opaque || (inToken && state.quote === ''),
+    quote: state.quote,
+    token: inToken ? state.token + COMPUTED : '',
+    tokens: state.tokens,
+  });
+};
+
+// Opens the substitution at `$(` or a backtick, and answers the last character it consumed.
+const substitute = (source: string, index: number, state: TokenizerState): number => {
+  const backtick = source.charAt(index) === '`';
+
+  openSubstitution(state, backtick ? '`' : ')');
+  return backtick ? index : index + 1;
+};
+
+const openSubshell = (state: TokenizerState): void => {
+  emitToken(state);
+
+  pushGroup(state, {
+    active: false,
+    body: undefined,
+    closer: ')',
+    opaque: state.opaque,
+    quote: '',
+    token: '',
+    tokens: state.tokens,
+  });
 };
 
 const closeGroup = (state: TokenizerState): boolean => {
@@ -134,8 +224,12 @@ const closeGroup = (state: TokenizerState): boolean => {
     return false;
   }
 
-  state.tokens = outer.tokens;
+  state.active = outer.active;
+  state.body = outer.body;
   state.opaque = outer.opaque;
+  state.quote = outer.quote;
+  state.token = outer.token;
+  state.tokens = outer.tokens;
   return true;
 };
 
@@ -164,8 +258,12 @@ const readQuotedCharacter = (source: string, index: number, state: TokenizerStat
 
     state.token += source.charAt(index);
   }
-  else if (state.dialect === 'powershell' && state.quote === '"' && source.startsWith('$(', index)) {
-    return undefined;
+  else if (state.quote === '"' && (source.startsWith('$(', index) || character === '`')) {
+    if (state.dialect === 'powershell') {
+      return undefined;
+    }
+
+    return substitute(source, index, state);
   }
   else {
     state.token += character;
@@ -222,11 +320,12 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
   if (character === '#' && !state.active) {
     const lineEnd = source.indexOf('\n', index);
     emitSegment(state);
-    return lineEnd === -1 ? source.length : lineEnd;
+    return lineEnd === -1 ? source.length : lineEnd - 1;
   }
 
   if (character === '\n') {
     emitSegment(state);
+    state.body = state.heredocs.shift();
   }
   else if (/\s/u.test(character)) {
     emitToken(state);
@@ -243,11 +342,89 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
   return index;
 };
 
+// `<<-'EOF'`, `<<"EOF"`, `<<\EOF` and `<<EOF`. A quoted delimiter makes the body literal.
+const HEREDOC = /^<<(-?)[ \t]*(?:'([^'\n]*)'|"([^"\n]*)"|\\?([^\s"&'();<>`|]+))(?=[\s&;<>|)]|$)/u;
+
+// The body is read from the line after the redirect, so it is queued until that line ends.
+const readHeredoc = (source: string, index: number, state: TokenizerState): number | undefined => {
+  const match = HEREDOC.exec(source.slice(index));
+
+  if (match === null) {
+    return undefined;
+  }
+
+  const [
+    redirect,
+    strip,
+    single,
+    double,
+    bare,
+  ] = match;
+
+  emitToken(state);
+
+  state.heredocs.push({
+    delimiter: [
+      single,
+      double,
+      bare,
+    ].join(''),
+    literal: bare === undefined || redirect.includes('\\'),
+    strip: strip === '-',
+  });
+
+  return index + redirect.length - 1;
+};
+
+const readBashGroup = (source: string, index: number, state: TokenizerState): number | undefined => {
+  const character = source.charAt(index);
+
+  if (source.startsWith('<<<', index)) {
+    state.token += '<<<';
+    state.active = true;
+    return index + 2;
+  }
+
+  if (source.startsWith('<<', index)) {
+    return readHeredoc(source, index, state);
+  }
+
+  if (character === state.groups.at(-1)?.closer) {
+    closeGroup(state);
+    return index;
+  }
+
+  if (character === '(') {
+    openSubshell(state);
+    return index;
+  }
+
+  return substitute(source, index, state);
+};
+
+// `$(`, `<(`, `>(` and a backtick open a substitution, `(` a subshell where a command can start, and `)` closes
+// only what is open, so a `case` pattern stays a character.
+const isBashGroup = (source: string, index: number, state: TokenizerState): boolean => {
+  const character = source.charAt(index);
+  const pair = source.slice(index, index + 2);
+
+  if (/^(?:[$<>]\(|<<|`)/u.test(pair)) {
+    return true;
+  }
+
+  const closer = state.groups.at(-1)?.closer;
+  return (character === '(' && !state.active) || (character === ')' && closer === ')');
+};
+
 const readUnquotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
   const pair = source.slice(index, index + 2);
 
   if (state.dialect === 'powershell' && POWERSHELL_GROUP.test(pair)) {
     return readPowerShellGroup(source, index, state);
+  }
+
+  if (state.dialect === 'bash' && isBashGroup(source, index, state)) {
+    return readBashGroup(source, index, state);
   }
 
   const character = source.charAt(index);
@@ -265,11 +442,56 @@ const readUnquotedCharacter = (source: string, index: number, state: TokenizerSt
   return readPlainCharacter(source, index, state);
 };
 
+// A body line is skipped whole when it is literal or the delimiter, and read for substitutions otherwise.
+const readBody = (source: string, index: number, state: TokenizerState, body: Heredoc): number => {
+  if (source[index - 1] === '\n') {
+    const lineEnd = source.indexOf('\n', index);
+    const end = lineEnd === -1 ? source.length : lineEnd;
+    const line = source
+      .slice(index, end)
+      .replace(body.strip ? /^\t*/u : /^/u, '')
+      .replace(/\r$/u, '');
+
+    if (line === body.delimiter) {
+      state.body = state.heredocs.shift();
+      return end;
+    }
+
+    if (body.literal) {
+      return end;
+    }
+  }
+
+  const character = source.charAt(index);
+
+  if (character === '\\') {
+    return index + 1;
+  }
+
+  if (character === '`' || source.startsWith('$(', index)) {
+    return substitute(source, index, state);
+  }
+
+  return index;
+};
+
+const readCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
+  if (state.body !== undefined) {
+    return readBody(source, index, state, state.body);
+  }
+
+  return state.quote === ''
+    ? readUnquotedCharacter(source, index, state)
+    : readQuotedCharacter(source, index, state);
+};
+
 const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => {
   const state: TokenizerState = {
     active: false,
+    body: undefined,
     dialect,
     groups: [],
+    heredocs: [],
     opaque: false,
     quote: '',
     segments: [],
@@ -280,9 +502,7 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
   let index = 0;
 
   while (index < source.length) {
-    const next = state.quote === ''
-      ? readUnquotedCharacter(source, index, state)
-      : readQuotedCharacter(source, index, state);
+    const next = readCharacter(source, index, state);
 
     if (next === undefined) {
       return undefined;
@@ -755,7 +975,11 @@ const wrapperStep = (tokens: string[], index: number, token: string, depth: numb
 
 const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undefined => {
   let { tokens, opaque } = segment;
-  let index = skipAssignments(tokens, tokens[0] === '!' ? 1 : 0);
+  let index = 0;
+
+  while (RESERVED.has(tokens[index] ?? '') || isAssignment(tokens[index] ?? '')) {
+    index += 1;
+  }
 
   for (let token = tokens[index]; token !== undefined; token = tokens[index]) {
     const step = wrapperStep(tokens, index, token, depth);

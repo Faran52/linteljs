@@ -35,6 +35,16 @@ describe('mergeChecker', () => {
     expect(mergedChecker).toBe(SHIPPED);
   });
 
+  it('imports directive after checkBanned when the project block calls it', () => {
+    const shipped = `import {\n  checkBanned,\n} from './utils';\n${SHIPPED}`;
+    const banned = "const PROJECT_BANNED: Banned[] = [directive('x')];";
+    const current = shipped.replace('const PROJECT_BANNED: Banned[] = [];', banned);
+
+    const mergedChecker = mergeChecker(shipped, current);
+    const expected = current.replace('  checkBanned,\n', '  checkBanned,\n  directive,\n');
+    expect(mergedChecker).toBe(expected);
+  });
+
   it('lifts both of the project blocks over the shipped ones', () => {
     const current = withBlocks(
       "const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];",
