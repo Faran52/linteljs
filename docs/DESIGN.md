@@ -1666,8 +1666,8 @@ unawaited promise, and an SFC pair. Linting them reports the defect each exists 
 `setupTests.i18n.ts`, `setupTests.reactNativeI18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
-what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setup
-reaches for `../src/i18n` alike. They are data here
+what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setups
+reach for `@i18n` alike, an alias only that project declares. They are data here
 and code only in a generated project, where that project's own `eslint .` judges them; `pnpm lint:starters` and the
 end-to-end suite are what prove it.
 
