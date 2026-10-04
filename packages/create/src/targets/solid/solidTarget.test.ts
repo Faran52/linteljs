@@ -128,7 +128,7 @@ const GATES: GateRow[] = [
   ['src/pages/routes.tsx', WITHOUT_FORM],
   ['src/pages/routes.tsx@with-form', WITH_FORM],
   ...homeGates('src/pages/home/HomePage.tsx'),
-  ['src/pages/contact/useContactForm.ts', WITH_FORM],
+  ['src/pages/contact/createContactForm.ts', WITH_FORM],
   ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
   ['src/components/ui/index.ts', WITHOUT_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],

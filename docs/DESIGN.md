@@ -497,8 +497,8 @@ and `appDirectory` on React Router, and both are set, so every glob in this repo
 ### How a template is laid out
 
 **One file per axis, never per combination.** React's Contact demo crosses a form library, a data layer and Zod,
-which is eighteen combinations, and is one file per axis. The joins do it: `useSubmitContact()` has one signature in all
-three api spellings, so the form never learns which layer runs it; `ROUTES` is one array the header, the route
+which is eighteen combinations, and is one file per axis. The joins do it: `useSubmitContact()` (Solid's
+`createSubmitContact()`) has one signature in all three api spellings, so the form never learns which layer runs it; `ROUTES` is one array the header, the route
 table and the no-router switch all read; the entry is one file because the router lives in `App` and the store and
 data layer live in providers beside it. `starterSourceEmitter` refuses two starter files for one destination under
 one answer set, which would otherwise be a silent last-one-wins race on disk.

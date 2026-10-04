@@ -1,6 +1,6 @@
 import { CHECK } from '@config/linteljs';
 
-import { useCounter } from '@store/counter/counterStore';
+import { createCounter } from '@store/counter/counterStore';
 import { t } from '@i18n';
 
 import { Button, Mark } from '@ui';
@@ -13,7 +13,7 @@ export interface HomePageProps {
 }
 
 export const HomePage = (props: HomePageProps): JSX.Element => {
-  const counter = useCounter();
+  const counter = createCounter();
 
   return (
     <main class="hero">

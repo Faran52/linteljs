@@ -8,6 +8,8 @@ import type { StarterFile, StarterTest } from '../types';
 interface ContactApiOptions {
   // The tree holding both wrappers, where the plain one is not `starter-source/shared/`'s.
   shared?: TargetId;
+  // The tree holding the barrel, where the wrapper it re-exports is not named `useSubmitContact`.
+  barrel?: TargetId;
 }
 
 const SUBMISSION = 'src/lib/apis/contact/submission';
@@ -29,6 +31,7 @@ export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'tar
 
 // The contact form's fetch wrapper, plain or through TanStack Query, behind the barrel its page imports.
 export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] => {
+  const { barrel = true, ...trees } = options;
   const files: StarterFile[] = [
     {
       target: 'src/lib/apis/contact/index.ts',
@@ -36,14 +39,14 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
         // RTK Query, offered only beside its Redux store, keeps its own `createApi` barrel.
         return hasForm(answers) && answers.data !== 'rtk-query';
       },
-      shared: true,
+      shared: barrel,
     },
     {
       target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
-      shared: options.shared ?? true,
+      shared: trees.shared ?? true,
     },
     {
       target: 'src/lib/apis/contact/contactApi.ts',
@@ -51,7 +54,7 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
         return hasForm(answers) && answers.data === 'tanstack-query';
       },
       variant: 'tanstack-query',
-      ...options,
+      ...trees,
     },
     {
       target: `${SUBMISSION}.ts`,

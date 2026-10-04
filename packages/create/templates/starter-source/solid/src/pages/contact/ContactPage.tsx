@@ -1,11 +1,11 @@
 import { Button, TextInput } from '@ui';
 
-import { useContactForm } from './useContactForm';
+import { createContactForm } from './createContactForm';
 
 import type { JSX } from 'solid-js';
 
 export const ContactPage = (): JSX.Element => {
-  const form = useContactForm();
+  const form = createContactForm();
 
   return (
     <main class="page">

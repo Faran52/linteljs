@@ -2,14 +2,14 @@ import { renderHook } from '@solidjs/testing-library';
 
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
-import { useCounter } from './counterStore';
+import { createCounter } from './counterStore';
 
-describe('useCounter', () => {
+describe('createCounter', () => {
   it('counts up, and every reader sees the same count', () => {
     const { result } = renderHook(() => {
       const readers = {
-        one: useCounter(),
-        two: useCounter(),
+        one: createCounter(),
+        two: createCounter(),
       };
 
       return readers;

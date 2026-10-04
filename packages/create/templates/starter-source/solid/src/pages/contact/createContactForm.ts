@@ -4,7 +4,7 @@ import { createForm } from '@tanstack/solid-form';
 
 import {
   type ContactValues,
-  useSubmitContact,
+  createSubmitContact,
 } from '@apis/contact';
 import { type ContactSubmission, validateContactForm } from '@apis/contact/formValidator';
 
@@ -23,9 +23,9 @@ export interface ContactForm {
 }
 
 // One `useSelector` behind every getter: it is the only read of this library Solid tracks.
-export const useContactForm = (): ContactForm => {
+export const createContactForm = (): ContactForm => {
   const [sent, setSent] = createSignal(false);
-  const submit = useSubmitContact();
+  const submit = createSubmitContact();
   const form = createForm(() => {
     const options = {
       defaultValues: {

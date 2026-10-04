@@ -2,12 +2,12 @@ import { renderHook } from '@solidjs/testing-library';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 
-import { useSubmitContact } from './contactApi';
+import { createSubmitContact } from './contactApi';
 
 import type { ContactValues } from './schemas';
 
 const outcomeOf = async (values: ContactValues): Promise<string> => {
-  const { result } = renderHook(useSubmitContact, { wrapper: DataProvider });
+  const { result } = renderHook(createSubmitContact, { wrapper: DataProvider });
 
   try {
     const { status } = await result(values);
@@ -19,7 +19,7 @@ const outcomeOf = async (values: ContactValues): Promise<string> => {
   }
 };
 
-describe('useSubmitContact', () => {
+describe('createSubmitContact', () => {
   it('answers 200 for details the rules accept', async () => {
     const outcome = await outcomeOf({
       email: 'someone@example.com',

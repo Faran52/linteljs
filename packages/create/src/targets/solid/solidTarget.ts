@@ -122,7 +122,11 @@ export const solidTarget: TargetBuilder = () => {
       ...filesAt(FORM_FILES, {
         when: hasForm,
       }),
-      ...contactApiFiles(),
+      // Solid's `createX` naming keeps its wrapper and barrel off the shared `useSubmitContact`.
+      ...contactApiFiles({
+        shared: 'solid',
+        barrel: 'solid',
+      }),
       ...contactSchemaFiles(),
       {
         target: 'src/components/ui/index.ts',

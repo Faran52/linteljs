@@ -294,7 +294,7 @@ describe('the starter source', () => {
     ]],
     ['solid', [
       'src/pages/contact/ContactPage.tsx',
-      'src/pages/contact/useContactForm.ts',
+      'src/pages/contact/createContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
     ]],
     ['svelte', [
@@ -379,7 +379,7 @@ describe('the starter source', () => {
     ],
     [
       'solid',
-      'shared',
+      'solid',
       'solid',
     ],
     [

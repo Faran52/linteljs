@@ -106,6 +106,24 @@ describe('contactApiFiles', () => {
     expect(shared).toStrictEqual(expected);
   });
 
+  it('reads the barrel from the tree named for it', () => {
+    const shared = contactApiFiles({
+      shared: 'solid',
+      barrel: 'solid',
+    })
+      .map(({ shared: tree }) => {
+        return tree;
+      });
+
+    const expected = [
+      'solid',
+      'solid',
+      'solid',
+      true,
+    ];
+    expect(shared).toStrictEqual(expected);
+  });
+
   it('writes nothing with RTK Query, which keeps its own barrel', () => {
     const rtk = {
       form: 'tanstack-form',

@@ -14,7 +14,7 @@ export interface Counter {
 const store = new Store<CounterState>({ count: 0 });
 
 // Solid's `createStore` covers state inside a component; this is for what crosses one.
-export const useCounter = (): Counter => {
+export const createCounter = (): Counter => {
   const count = useSelector(store, (state) => {
     return state.count;
   });
