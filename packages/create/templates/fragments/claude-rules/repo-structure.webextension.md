@@ -50,7 +50,7 @@ src/
   typings/        ambient .d.ts only
   assets/  styles/
   components/
-    ui/           primitives: DOM-building modules or custom elements
+    ui/           primitives
     features/     reusable domain features
   lib/
     mark/         the popup's mark, a string of markup and its stylesheet
@@ -73,7 +73,8 @@ job is undoing it.
   that do not share a realm.
 - Extension API code (anything touching `chrome.*` or `browser.*`) stays in the surface
   folders. One adapter per surface, not a platform call scattered through `lib/`.
-- A component here is a DOM-building module or a custom element. `components/ui/` takes anything
+- With no hosted framework, a component here is a DOM-building module or a custom element; with
+  one (React, Vue, Svelte, Solid) it is that framework's component. `components/ui/` takes anything
   reusable by nature even with one consumer today; a component bound to its parent's data lives in
   that parent's `partials/`, never nested.
 - `lib/model/` holds domain entities and their types. `lib/services/` holds the logic over them.
