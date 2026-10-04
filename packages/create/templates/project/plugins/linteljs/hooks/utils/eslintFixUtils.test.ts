@@ -11,8 +11,10 @@ interface CommandProbe {
   label: string;
 }
 
-const UNFIXED = /^eslint was called without --fix/u;
-const UNREADABLE = /^This command could not be read/u;
+const UNFIXED = 'eslint was called without --fix. Run `eslint <files> --fix` instead: it fixes what it can and '
+  + 'still reports the rest, so one run is enough.';
+const UNREADABLE = 'This command could not be read, so the eslint check cannot tell whether it runs eslint '
+  + 'without --fix. If it does, run `eslint <files> --fix` instead.';
 
 const WARNED: CommandProbe[] = [
   {
@@ -196,7 +198,7 @@ const CLEARED: CommandProbe[] = [
 ];
 
 // Each runner's own option walk, one row per way out of it.
-const RUNNERS_WARNED: [string, RegExp][] = [
+const RUNNERS_WARNED: [string, string][] = [
   ['npx -p', UNREADABLE],
   ['pnpm --filter', UNREADABLE],
   ['pnpm exec --package', UNREADABLE],
@@ -205,6 +207,23 @@ const RUNNERS_WARNED: [string, RegExp][] = [
   ['npm exec eslint src', UNFIXED],
   ['bun x eslint src', UNFIXED],
   ['yarn --cwd app eslint src', UNFIXED],
+  ['npx --package eslint@9 eslint src', UNFIXED],
+  ['npx --fix eslint src', UNFIXED],
+  ['pnpm --fix eslint src', UNFIXED],
+  ['pnpm -C app eslint src', UNFIXED],
+  ['pnpm --dir app eslint src', UNFIXED],
+  ['pnpm dlx eslint src', UNFIXED],
+  ['pnpm run eslint src', UNFIXED],
+  ['npm --workspace app exec eslint src', UNFIXED],
+  ['npm x eslint src', UNFIXED],
+  ['npm run eslint src', UNFIXED],
+  ['npm exec -w app eslint src', UNFIXED],
+  ['npm exec --workspace app eslint src', UNFIXED],
+  ['yarn exec eslint src', UNFIXED],
+  ['yarn dlx eslint src', UNFIXED],
+  ['yarn run eslint src', UNFIXED],
+  ['bun --cwd app x eslint src', UNFIXED],
+  ['bun run eslint src', UNFIXED],
 ];
 
 const RUNNERS_CLEARED = [
@@ -214,6 +233,8 @@ const RUNNERS_CLEARED = [
   'pnpm exec prettier src',
   'npm',
   'npm install',
+  'npm install eslint',
+  'npm exec eslint --fix src',
   'npm exec',
   'npm exec eslint src --fix',
   'bun --cwd app run lint',
@@ -222,7 +243,7 @@ const RUNNERS_CLEARED = [
 describe('eslintFixReason', () => {
   it.each(RUNNERS_WARNED)('warns for the runner line %s', (command, expected) => {
     const reply = eslintFixReason(command, 'bash');
-    expect(reply).toMatch(expected);
+    expect(reply).toBe(expected);
   });
 
   it.each(RUNNERS_CLEARED)('clears the runner line %s', (command) => {
@@ -232,12 +253,12 @@ describe('eslintFixReason', () => {
 
   it.each(WARNED)('warns for genuine eslint: $label', ({ command }) => {
     const reply = eslintFixReason(command, 'bash');
-    expect(reply).toMatch(UNFIXED);
+    expect(reply).toBe(UNFIXED);
   });
 
   it.each(UNREADABLE_COMMANDS)('cannot read $label, and warns', ({ command }) => {
     const reply = eslintFixReason(command, 'bash');
-    expect(reply).toMatch(UNREADABLE);
+    expect(reply).toBe(UNREADABLE);
   });
 
   it.each(CLEARED)('clears a fixed or unrelated command: $label', ({ command }) => {
@@ -252,7 +273,7 @@ describe('eslintFixReason', () => {
     ['eslint src "unterminated', UNREADABLE],
   ])('reads PowerShell %s', (command, expected) => {
     const reply = eslintFixReason(command, 'powershell');
-    expect(reply).toMatch(expected);
+    expect(reply).toBe(expected);
   });
 
   it.each(['eslint src --fix', "pnpm exec eslint --fix 'src'"])('clears PowerShell %s', (command) => {
@@ -262,11 +283,11 @@ describe('eslintFixReason', () => {
 
   it.each<'bash' | 'powershell'>(['bash', 'powershell'])('reads Command Prompt reached from %s', (tool) => {
     const cmdReply = eslintFixReason('cmd /c eslint .', tool);
-    expect(cmdReply).toMatch(UNFIXED);
+    expect(cmdReply).toBe(UNFIXED);
     const cmdExeReply = eslintFixReason('cmd.exe /k "npx eslint ."', tool);
-    expect(cmdExeReply).toMatch(UNFIXED);
+    expect(cmdExeReply).toBe(UNFIXED);
     const unclosedQuoteReply = eslintFixReason('cmd /c "eslint src', tool);
-    expect(unclosedQuoteReply).toMatch(UNREADABLE);
+    expect(unclosedQuoteReply).toBe(UNREADABLE);
     const fixingReply = eslintFixReason('cmd /c "eslint --fix ."', tool);
     expect(fixingReply).toBeUndefined();
   });

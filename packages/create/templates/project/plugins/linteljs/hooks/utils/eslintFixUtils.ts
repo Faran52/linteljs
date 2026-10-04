@@ -7,22 +7,23 @@ import {
   skipOptions,
 } from './commandParserUtils.ts';
 
-type Verdict = 'clear' | 'unfixed' | 'unreadable';
+// `undefined` clears the command.
+type Verdict = 'unfixed' | 'unreadable' | undefined;
 
 const UNFIXED = 'eslint was called without --fix. Run `eslint <files> --fix` instead: it fixes what it can and still '
   + 'reports the rest, so one run is enough.';
 const UNREADABLE = 'This command could not be read, so the eslint check cannot tell whether it runs eslint without '
   + '--fix. If it does, run `eslint <files> --fix` instead.';
 
-const isEslint = (token: string): boolean => {
-  return commandName(token) === 'eslint';
+const isEslint = (token: string | undefined): boolean => {
+  return token !== undefined && commandName(token) === 'eslint';
 };
 
 // Only an exact `--fix` before `--` counts: `--fix-dry-run` and `--fix-type` fix nothing.
 const fixVerdict = (arguments_: string[]): Verdict => {
   const separator = arguments_.indexOf('--');
   const options = separator === -1 ? arguments_ : arguments_.slice(0, separator);
-  return options.includes('--fix') ? 'clear' : 'unfixed';
+  return options.includes('--fix') ? undefined : 'unfixed';
 };
 
 const directRunnerVerdict = (tokens: string[], start: number): Verdict => {
@@ -32,16 +33,17 @@ const directRunnerVerdict = (tokens: string[], start: number): Verdict => {
     return 'unreadable';
   }
 
-  const eslintArguments = tokens.slice(index + 1);
+  // From the eslint token itself, which is never `--` or `--fix`.
+  const eslintArguments = tokens.slice(index);
 
-  return isEslint(tokens[index] ?? '') ? fixVerdict(eslintArguments) : 'clear';
+  return isEslint(tokens[index]) ? fixVerdict(eslintArguments) : undefined;
 };
 
 const scriptRunnerVerdict = (
   tokens: string[],
   start: number,
   before: Set<string>,
-  commands: string[],
+  commands: ReadonlySet<string | undefined>,
   after: Set<string>,
 ): Verdict => {
   let index = skipOptions(tokens, start, before);
@@ -50,7 +52,7 @@ const scriptRunnerVerdict = (
     return 'unreadable';
   }
 
-  if (commands.includes(tokens[index] ?? '')) {
+  if (commands.has(tokens[index])) {
     index += 1;
   }
 
@@ -60,9 +62,9 @@ const scriptRunnerVerdict = (
     return 'unreadable';
   }
 
-  const eslintArguments = tokens.slice(index + 1);
+  const eslintArguments = tokens.slice(index);
 
-  return isEslint(tokens[index] ?? '') ? fixVerdict(eslintArguments) : 'clear';
+  return isEslint(tokens[index]) ? fixVerdict(eslintArguments) : undefined;
 };
 
 const npmVerdict = (tokens: string[], start: number): Verdict => {
@@ -72,14 +74,14 @@ const npmVerdict = (tokens: string[], start: number): Verdict => {
     return 'unreadable';
   }
 
-  const runCommands = [
+  const runCommands = new Set<string | undefined>([
     'exec',
     'x',
     'run',
-  ];
+  ]);
 
-  if (!runCommands.includes(tokens[index] ?? '')) {
-    return 'clear';
+  if (!runCommands.has(tokens[index])) {
+    return undefined;
   }
 
   index = skipOptions(tokens, index + 1, new Set([
@@ -92,8 +94,8 @@ const npmVerdict = (tokens: string[], start: number): Verdict => {
     return 'unreadable';
   }
 
-  if (!isEslint(tokens[index] ?? '')) {
-    return 'clear';
+  if (!isEslint(tokens[index])) {
+    return undefined;
   }
 
   const arguments_ = tokens.slice(index + 1);
@@ -106,9 +108,7 @@ const eslintVerdict = (tokens: ParsedCommand['tokens']): Verdict => {
   const executable = commandName(tokens[0]);
 
   if (executable === 'eslint') {
-    const eslintArguments = tokens.slice(1);
-
-    return fixVerdict(eslintArguments);
+    return fixVerdict(tokens);
   }
 
   if (executable === 'npx' || executable === 'bunx') {
@@ -121,11 +121,11 @@ const eslintVerdict = (tokens: ParsedCommand['tokens']): Verdict => {
       '--dir',
       '--filter',
     ]);
-    const runCommands = [
+    const runCommands = new Set<string | undefined>([
       'exec',
       'dlx',
       'run',
-    ];
+    ]);
     const commandValued = new Set(['--package']);
 
     return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, commandValued);
@@ -137,23 +137,23 @@ const eslintVerdict = (tokens: ParsedCommand['tokens']): Verdict => {
 
   if (executable === 'yarn') {
     const globalValued = new Set(['--cwd']);
-    const runCommands = [
+    const runCommands = new Set<string | undefined>([
       'exec',
       'dlx',
       'run',
-    ];
+    ]);
 
     return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, NO_OPTIONS);
   }
 
   if (executable === 'bun') {
     const globalValued = new Set(['--cwd']);
-    const runCommands = ['x', 'run'];
+    const runCommands = new Set<string | undefined>(['x', 'run']);
 
     return scriptRunnerVerdict(tokens, 1, globalValued, runCommands, NO_OPTIONS);
   }
 
-  return 'clear';
+  return undefined;
 };
 
 export const eslintFixReason = (command: string, dialect: Dialect): string | undefined => {
