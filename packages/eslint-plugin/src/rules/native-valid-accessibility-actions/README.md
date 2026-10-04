@@ -72,7 +72,8 @@ None.
   missing one.
 - An array or a name computed at runtime. `accessibilityActions={actions}` and
   `{ name: chosen }` cannot be read here.
-- A spread inside the array. `[...base]` carries entries this rule cannot enumerate.
+- The entries a spread inside the array carries. `[...base]` is not empty, and the entries written
+  beside the spread are still checked.
 - A missing name or label in an entry with a spread or a computed key. `{ ...base }` and
   `{ [key]: 'mute' }` may carry either one. A key it can read, such as `hint`, is still reported.
 - Whether the handler actually handles each declared name. That needs following the function to
@@ -80,7 +81,9 @@ None.
 - Anything else about the array once the two halves are unpaired: the pairing is reported on its
   own, since with no handler nothing inside the array can run either way.
 
-It is not fixable. The missing half is a function body only the author can write, and the missing
+## Why there is no autofix
+
+The missing half is a function body only the author can write, and the missing
 label is a phrase a screen reader will read out.
 
 ## Notes

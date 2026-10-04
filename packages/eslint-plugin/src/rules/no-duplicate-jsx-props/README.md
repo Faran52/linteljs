@@ -7,10 +7,8 @@ Report duplicate JSX props on the same element.
 - In `recommended`: no, opt in explicitly
 
 React keeps the last occurrence of a duplicated prop and silently drops the rest, so the first
-value disappears without a word from the compiler, the type checker or any other rule. This rule reports the second and later occurrences.
-
-It is not fixable. Deleting one of the two is a guess at which value the author meant, and the
-two values usually differ.
+value disappears without a word from the compiler, the type checker or any other rule. This rule
+reports the second and later occurrences.
 
 A spread resets the count. `{...props}` can override every explicit prop before it and be
 overridden by every explicit prop after it, so this is the documented way to offer a default:
@@ -54,8 +52,13 @@ const view = <><span a={1} /><span a={2} /></>;
 
 None.
 
+## Why there is no autofix
+
+Deleting one of the two is a guess at which value the author meant, and the two values usually
+differ.
+
 ## Notes
 
-The plugin ships no JSX layer of its own, so this rule is not in `recommended`: it turns on in
-the React, React Native and Solid layers of `@linteljs/eslint-config`, the ones that render JSX. Vue and Svelte
-templates are not JSX and take nothing.
+The plugin ships no JSX layer of its own, so this rule is not in `recommended`: it turns on in the
+React, React Native and Solid layers of `@linteljs/eslint-config`, the ones that render JSX. Vue and
+Svelte templates are not JSX and take nothing.

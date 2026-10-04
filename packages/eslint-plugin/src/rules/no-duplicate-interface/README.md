@@ -17,8 +17,6 @@ file's top level, a `declare global` block, a `declare module` block, a `namespa
 function's block, and none is compared with another, so augmenting a global or a module's
 interface stays allowed.
 
-It is not fixable. Merging the two bodies is a guess when both declare the same member.
-
 ## Examples of incorrect code for this rule
 
 ```ts
@@ -58,6 +56,10 @@ interface Box { size: number }
 ## Options
 
 None.
+
+## Why there is no autofix
+
+Merging the two bodies is a guess when both declare the same member.
 
 ## Notes
 

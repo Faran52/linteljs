@@ -68,7 +68,9 @@ None.
 - Whether the state is *true*. Saying `disabled` when the control is enabled is a bug this rule
   cannot see.
 
-It is not fixable. `'true'` is presumably `true`, but a string is also what someone reaches for
+## Why there is no autofix
+
+`'true'` is presumably `true`, but a string is also what someone reaches for
 when the value came from a form or an API, and rewriting it would change what the program does
 rather than how it is annotated.
 

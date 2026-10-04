@@ -76,7 +76,9 @@ None.
   [`native-accessible-name`](../native-accessible-name); which role it should carry
   is a judgment this rule does not make.
 
-It is not fixable. `"buton"` is probably `"button"`, but `"img"` could be `"image"` or
+## Why there is no autofix
+
+`"buton"` is probably `"button"`, but `"img"` could be `"image"` or
 `"imagebutton"` and those announce differently, and a wrong role is harder to find later than a
 missing one. Nearest-match repair of an accessibility annotation is a guess with a cost, so this
 reports and stops.

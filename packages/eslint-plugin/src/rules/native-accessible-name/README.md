@@ -68,7 +68,7 @@ announced its own contents.
 
 ## Options
 
-`components` is an array of extra element names to treat as controls. An atomic component library
+`components` (default `[]`) is an array of extra element names to treat as controls. An atomic component library
 is the normal case: `IconButton`, `Pill` and `SegmentControl` are invisible to this rule until
 they are named, unless they happen to carry one of the touch handlers above.
 
@@ -99,7 +99,9 @@ Both spellings count as a name: `accessibilityLabel` and `aria-label`, `accessib
 and `aria-labelledby`. React Native maps the ARIA alias onto the legacy prop, so a rule that knew
 only one of the two would report components that are already accessible.
 
-It is not fixable, and deliberately so. A label is a sentence about what the control does, which
+## Why there is no autofix
+
+A label is a sentence about what the control does, which
 only the author knows. A fixer would have to invent one, and an invented label is worse than no
 label: it silences this rule, reads as done, and ships a button that announces the wrong thing.
 

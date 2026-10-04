@@ -40,6 +40,11 @@ the focus stop, or drop it from the container and let each child keep its own.
 <View accessible>
   <View onPress={go} />
 </View>
+
+// incorrect: a control behind a condition, a ternary or a fragment is still inside
+<View accessible>
+  {canSave && <Pressable accessibilityLabel="Save" />}
+</View>
 ```
 
 ## Examples of correct code for this rule
@@ -64,7 +69,7 @@ the focus stop, or drop it from the container and let each child keep its own.
 
 ## Options
 
-`components` is an array of extra element names to treat as controls, for a component library
+`components` (default `[]`) is an array of extra element names to treat as controls, for a component library
 whose buttons are not named after a React Native primitive.
 
 ```js
@@ -85,7 +90,9 @@ whose buttons are not named after a React Native primitive.
 - A control that *is* the accessible element. `<Pressable accessible>` is correct: the focus stop
   and the control are the same node.
 
-It is not fixable. The two repairs are opposites and produce different interfaces: hoisting
+## Why there is no autofix
+
+The two repairs are opposites and produce different interfaces: hoisting
 `accessible` onto the control merges the surrounding text into the button's name, dropping it
 leaves the text and the button as separate stops. Which one is right depends on whether the card
 is one thing or several, and only the author knows.
