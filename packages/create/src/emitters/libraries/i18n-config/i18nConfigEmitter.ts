@@ -37,9 +37,16 @@ export const emitI18nConfig = (languages: Language[]): string => {
 
       return `  {\n    id: '${language}',\n    label: '${label}',\n    dir: '${dir}',\n  },`;
     });
+  // `quote-props` quotes every key once one needs it, and none otherwise.
+  const quote = languages
+    .some((language) => {
+      return language.includes('-');
+    })
+    ? '\''
+    : '';
   const resources = languages
     .map((language) => {
-      return `  '${language}': { common: ${identifierOf(language)} },`;
+      return `  ${quote}${language}${quote}: { common: ${identifierOf(language)} },`;
     });
 
   const source = [

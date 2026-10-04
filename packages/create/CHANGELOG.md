@@ -164,6 +164,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A project whose languages are all bare tags, such as `en` and `ar`, lands fix-clean: `src/i18n/config.ts` quoted
+  every `resources` key, and the first `eslint --fix` unquoted them under `quote-props`. The keys are quoted only
+  when one needs it, such as `zh-CN`.
 - `linteljs.config.json` records only the answers its target asks. Every target but a web extension recorded
   `"browser": "chrome"`, an answer it never prompts for; reading a config fills it back in, so an existing one
   still loads.

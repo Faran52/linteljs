@@ -118,6 +118,7 @@ describe('i18nConfigEmitter', () => {
 
     expect(text).toContain('  {\n    id: \'ar\',\n    label: \'العربية\',\n    dir: \'rtl\',\n  },');
     expect(text).toContain('  \'zh-TW\': { common: zhTw },');
+    expect(text).toContain('  \'ar\': { common: ar },');
     expect(text).toContain('export const languageStorageKey = \'language\';');
     expect(text).toContain('export const fallbackLanguage = \'en\';');
   });
@@ -148,8 +149,8 @@ describe('i18nConfigEmitter', () => {
       '] as const;',
       '',
       'export const resources = {',
-      '  \'en\': { common: en },',
-      '  \'ar\': { common: ar },',
+      '  en: { common: en },',
+      '  ar: { common: ar },',
       '};',
       '',
       '// The tag, then each shorter prefix of it: `zh-TW-x-hk` reads as `zh-TW`, then `zh`.',
