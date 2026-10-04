@@ -85,8 +85,12 @@ describe('Contact', () => {
     const root = await fill(harness, '#email', 'someone@example.com');
 
     const disabled = root.querySelector('button')?.disabled;
+    const busy = root
+      .querySelector('app-button')
+      ?.getAttribute('aria-busy');
 
     expect(disabled).toBe(false);
+    expect(busy).toBe('false');
   });
 
   it('holds Send while the message is on its way', async () => {
@@ -104,8 +108,12 @@ describe('Contact', () => {
     harness.detectChanges();
 
     const held = root.querySelector('button')?.disabled;
+    const busy = root
+      .querySelector('app-button')
+      ?.getAttribute('aria-busy');
 
     expect(held).toBe(true);
+    expect(busy).toBe('true');
   });
 
   it('sends once both fields are valid', async () => {

@@ -24,7 +24,7 @@
         (valueChange)="set('message', $event)"
         (blurred)="blur('message')"
       />
-      <app-button type="submit" [disabled]="sending()">Send</app-button>
+      <app-button type="submit" [disabled]="sending()" [attr.aria-busy]="sending()">Send</app-button>
     </form>
   }
 </main>

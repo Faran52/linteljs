@@ -24,7 +24,7 @@
         (valueChange)="set('message', $event)"
         (blurred)="blur('message')"
       />
-      <app-button type="submit" [disabled]="sending()">{{ t('contactSend') }}</app-button>
+      <app-button type="submit" [disabled]="sending()" [attr.aria-busy]="sending()">{{ t('contactSend') }}</app-button>
     </form>
   }
 </main>
