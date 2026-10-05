@@ -1,6 +1,10 @@
 import { For, type JSX } from 'solid-js';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 export const AboutPage = (): JSX.Element => {
@@ -52,7 +56,7 @@ export const AboutPage = (): JSX.Element => {
       <section class="section">
         <h2 class="section-title">Keeping it current</h2>
         <p class="note">
-          <code>npx @linteljs/create sync</code>
+          <code>{SYNC}</code>
           {' '}
           re-applies the standard after an update. It rewrites the agent plugin, asks before it changes
           the ESLint config or package.json, and never touches your source.

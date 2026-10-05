@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CHECK } from '@config/linteljs';
+import { CHECK, SYNC } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import { applyLanguage } from '@i18n';
@@ -51,7 +51,7 @@ describe('About', () => {
     ]);
 
     expect(shownHolds).toEqual(holds);
-    expect(noteCommands).toEqual([CHECK, 'npx @linteljs/create sync']);
+    expect(noteCommands).toEqual([CHECK, SYNC]);
     expect(root.textContent).not.toMatch(/[{}<>]/u);
   });
 });

@@ -1306,6 +1306,12 @@ project's on every `create --existing` run.
 
 ### What `sync` writes, and what it asks first
 
+Every place that names `sync` to a project, its README, its About page and the CLI help, names it under the
+project's own manager: `pnpm dlx`, `npx`, `yarn dlx` or `bunx @linteljs/create sync`. The project has no
+`create-linteljs` bin, so `pnpm exec` finds nothing, and npm refuses `npx` with `EBADDEVENGINES` wherever
+`devEngines.packageManager` names another manager, which every generated project's does. Measured on a pnpm Angular
+project: `npx @linteljs/create sync` exits on `EBADDEVENGINES`, `pnpm dlx @linteljs/create sync` runs.
+
 The runner-switch refusal runs first (see the Jest section). Then:
 
 - **`plugins/linteljs/` is written without asking.** The folder is linteljs's whole, the one tree no project edits.

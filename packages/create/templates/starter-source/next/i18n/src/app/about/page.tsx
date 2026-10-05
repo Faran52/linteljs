@@ -2,7 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import type { ReactNode } from 'react';
@@ -60,7 +64,7 @@ const AboutPage = (): ReactNode => {
         <h2 className="section-title">{t('aboutCurrent')}</h2>
         <p className="note">
           {t.rich('aboutSync', {
-            command: 'npx @linteljs/create sync',
+            command: SYNC,
             code,
           })}
         </p>

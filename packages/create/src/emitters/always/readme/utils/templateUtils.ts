@@ -1,4 +1,4 @@
-import { RUN_PREFIX } from '@config/constants';
+import { RUN_PREFIX, SYNC_COMMAND } from '@config/constants';
 
 import { hasTests } from '@utils/answerUtils';
 
@@ -27,6 +27,7 @@ export const sharedSlots = (projectName: string, answers: Answers): Record<strin
     PROJECT_NAME: projectName,
     TARGET_LABEL: ANSWERS.target.values[answers.target].label,
     RUN: run,
+    SYNC: SYNC_COMMAND[answers.packageManager],
     CHECK_CHAIN: buildScripts(answers).check,
     TEST_ROWS: testRows(answers, run),
   };

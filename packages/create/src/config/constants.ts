@@ -25,6 +25,14 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
   bun: 'bun run',
 };
 
+// Each through its own manager: npm refuses `npx` in a project whose `devEngines` names another.
+export const SYNC_COMMAND: Record<PackageManager, string> = {
+  pnpm: 'pnpm dlx @linteljs/create sync',
+  npm: 'npx @linteljs/create sync',
+  yarn: 'yarn dlx @linteljs/create sync',
+  bun: 'bunx @linteljs/create sync',
+};
+
 export const ESLINT_CONFIG_PATH = 'eslint.config.js';
 
 // The one tree `sync` owns whole, and so the one it may delete in.

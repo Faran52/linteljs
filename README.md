@@ -29,8 +29,11 @@ coverage at 100% when the project has tests, and the build, and it passes on the
 
 ```bash
 npx @linteljs/create --existing
-npx @linteljs/create sync
+pnpm dlx @linteljs/create sync
 ```
+
+Run `sync` through the project's own manager, `pnpm dlx`, `npx`, `yarn dlx` or `bunx`: npm refuses `npx` in a
+project whose `devEngines` names another manager, as a generated one does. Its README names the one to use.
 
 `--existing` applies the standard in place. `sync` rewrites `plugins/linteljs/`, then asks before each
 other step: the `@linteljs/*` versions, the ESLint config's peers, and a changed ESLint config, which it backs up

@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { CHECK, GATE } from '@config/linteljs';
+  import {
+    CHECK,
+    GATE,
+    SYNC,
+  } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 </script>
 
@@ -40,7 +44,7 @@ import { STANDARD_PATHS } from '@config/standard';
   <section class="section">
     <h2 class="section-title">Keeping it current</h2>
     <p class="note">
-      <code>npx @linteljs/create sync</code> re-applies the standard after an update. It
+      <code>{SYNC}</code> re-applies the standard after an update. It
       rewrites the agent plugin, asks before it changes
       the ESLint config or package.json, and never touches your source.
     </p>

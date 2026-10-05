@@ -45,6 +45,14 @@ describe('sharedSlots', () => {
     expect(slots['RUN']).toBe('pnpm');
   });
 
+  it('names a sync that runs under the project manager', () => {
+    const { SYNC: pnpmSync } = sharedSlots('demo-app', answersFor({}));
+    const { SYNC: npmSync } = sharedSlots('demo-app', answersFor({ packageManager: 'npm' }));
+
+    expect(pnpmSync).toBe('pnpm dlx @linteljs/create sync');
+    expect(npmSync).toBe('npx @linteljs/create sync');
+  });
+
   it('carries the check chain built from the answers', () => {
     const { CHECK_CHAIN: checkChain } = sharedSlots('demo-app', answersFor({}));
     expect(checkChain).toContain('lint');

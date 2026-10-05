@@ -17,6 +17,13 @@ describe('emitCiWorkflow', () => {
     expect(ciWorkflow).toContain('- run: pnpm check');
   });
 
+  it('tells the project the workflow is its own, since sync never rewrites it', () => {
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({}));
+
+    expect(ciWorkflow).toContain('It is yours: sync never rewrites it.');
+    expect(ciWorkflow).not.toContain('replaced');
+  });
+
   it('names a script the project actually declares', () => {
     const managers = [
       'pnpm',

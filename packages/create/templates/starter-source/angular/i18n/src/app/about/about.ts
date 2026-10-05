@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import { t } from '@i18n';
@@ -19,7 +23,7 @@ export class About {
 
   protected readonly standardPaths = STANDARD_PATHS;
 
-  protected readonly sync = 'npx @linteljs/create sync';
+  protected readonly sync = SYNC;
 
   protected readonly t = t;
 }

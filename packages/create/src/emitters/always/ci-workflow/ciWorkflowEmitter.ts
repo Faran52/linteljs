@@ -53,8 +53,7 @@ export const emitCiWorkflow = (answers: HostedAnswers): string => {
   return `# The gate in front of every push, written by @linteljs/create. It runs exactly what \`${
     RUN_PREFIX[answers.packageManager]
   } check\`
-# runs locally, so a green commit here means the same checks passed. Add a second workflow file
-# beside this one for anything else; this one is replaced on every \`linteljs sync\`.
+# runs locally, so a green commit here means the same checks passed. It is yours: sync never rewrites it.
 name: ci
 
 on:

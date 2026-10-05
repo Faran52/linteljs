@@ -1,6 +1,10 @@
 import { For, type JSX } from 'solid-js';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import { t } from '@i18n';
@@ -51,7 +55,7 @@ export const AboutPage = (): JSX.Element => {
       <section class="section">
         <h2 class="section-title">{t('aboutCurrent')}</h2>
         <p class="note">
-          <CodeText text={t('aboutSync', { command: 'npx @linteljs/create sync' })} />
+          <CodeText text={t('aboutSync', { command: SYNC })} />
         </p>
       </section>
     </main>

@@ -20,6 +20,8 @@ export const NAME = 'my-app';
 
 export const CHECK = 'pnpm check';
 
+export const SYNC = 'pnpm dlx @linteljs/create sync';
+
 export const GATE = [
   {
     command: 'pnpm lint',
@@ -143,6 +145,31 @@ describe('the gate it records', () => {
 
     expect(recorded).toContain("export const CHECK = 'npm run check';");
     expect(recorded).toContain("command: 'npm run build',");
+  });
+
+  it('names a sync the manager runs inside the project', () => {
+    const managers = [
+      'npm',
+      'yarn',
+      'bun',
+    ] as const;
+
+    const syncs = managers
+      .map((packageManager) => {
+        const record = emitLinteljsRecord(hostedAnswersFor({ packageManager }), 'my-app');
+        const lines = record.split('\n');
+
+        return lines
+          .find((line) => {
+            return line.startsWith('export const SYNC');
+          });
+      });
+
+    expect(syncs).toEqual([
+      "export const SYNC = 'npx @linteljs/create sync';",
+      "export const SYNC = 'yarn dlx @linteljs/create sync';",
+      "export const SYNC = 'bunx @linteljs/create sync';",
+    ]);
   });
 });
 

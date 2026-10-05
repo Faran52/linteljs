@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { CHECK, GATE } from '@config/linteljs';
+  import {
+    CHECK,
+    GATE,
+    SYNC,
+  } from '@config/linteljs';
   import { STANDARD_PATHS } from '@config/standard';
 
   import { m } from '@i18n';
@@ -41,7 +45,7 @@
   <section class="section">
     <h2 class="section-title">{m.aboutCurrent()}</h2>
     <p class="note">
-      <CodeText text={m.aboutSync({ command: 'npx @linteljs/create sync' })} />
+      <CodeText text={m.aboutSync({ command: SYNC })} />
     </p>
   </section>
 </main>

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import CodeText from '@ui/code-text/CodeText.vue';
@@ -58,7 +62,7 @@ const { t } = useI18n();
         {{ t('aboutCurrent') }}
       </h2>
       <p class="note">
-        <CodeText :text="t('aboutSync', { command: 'npx @linteljs/create sync' })" />
+        <CodeText :text="t('aboutSync', { command: SYNC })" />
       </p>
     </section>
   </main>

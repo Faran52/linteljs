@@ -1,13 +1,17 @@
 import { Trans, useTranslation } from 'react-i18next';
 
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import type { FC } from 'react';
 
 const CODE = { code: <code /> };
 const CHECK_VALUES = { command: CHECK };
-const SYNC_VALUES = { command: 'npx @linteljs/create sync' };
+const SYNC_VALUES = { command: SYNC };
 
 export const AboutPage: FC = () => {
   const { t } = useTranslation();

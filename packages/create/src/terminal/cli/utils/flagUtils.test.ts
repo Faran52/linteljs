@@ -108,9 +108,11 @@ describe('usage', () => {
     expect(text).toBe(expected);
   });
 
-  it('ends on the sync note', () => {
+  it('ends on the sync note, naming sync under every manager', () => {
     const text = usage();
-    const endsOnSync = text.endsWith('A missing eslint config is written. Without a terminal a step needs --yes.\n');
+    const endsOnSync = text.endsWith('Without a terminal a step needs --yes.\n'
+      + 'Run it through the project\'s manager, which npx is only in an npm project:\n'
+      + 'pnpm dlx, npx, yarn dlx or bunx @linteljs/create sync.\n');
     expect(endsOnSync).toBe(true);
   });
 });

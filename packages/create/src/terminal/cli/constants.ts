@@ -27,6 +27,8 @@ sync rewrites plugins/linteljs/ without asking. It then asks before each of:
 the @linteljs/* versions in package.json, the peers @linteljs/eslint-config
 lacks or has behind, and an eslint config that differs (backing it up first).
 A missing eslint config is written. Without a terminal a step needs --yes.
+Run it through the project's manager, which npx is only in an npm project:
+pnpm dlx, npx, yarn dlx or bunx @linteljs/create sync.
 `;
 
 export const SYNC_NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';

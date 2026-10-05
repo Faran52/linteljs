@@ -1,4 +1,4 @@
-import { RUN_PREFIX } from '@config/constants';
+import { RUN_PREFIX, SYNC_COMMAND } from '@config/constants';
 import { type Emitter, type HostedAnswers } from '@config/types';
 
 import { unscopedName } from '@utils/nameUtils';
@@ -33,6 +33,8 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
     nameDeclaration(name),
     '',
     `export const CHECK = '${RUN_PREFIX[answers.packageManager]} check';`,
+    '',
+    `export const SYNC = '${SYNC_COMMAND[answers.packageManager]}';`,
     '',
     'export const GATE = [',
     gate,

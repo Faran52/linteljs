@@ -52,5 +52,6 @@ describe('readmeEmitter', () => {
     expect(readme).toContain('React (Vite)');
     expect(readme).toContain('`pnpm lint:css`');
     expect(readme).toContain('pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck');
+    expect(readme).toContain('`pnpm dlx @linteljs/create sync` rewrites');
   });
 });

@@ -98,9 +98,12 @@ it takes the directory's. Ctrl+C writes nothing.
 
 ```bash
 npx @linteljs/create --existing
-npx @linteljs/create sync
-npx @linteljs/create sync --yes
+pnpm dlx @linteljs/create sync
+pnpm dlx @linteljs/create sync --yes
 ```
+
+Run `sync` through the project's own manager, `pnpm dlx`, `npx`, `yarn dlx` or `bunx`: npm refuses `npx` in a
+project whose `devEngines` names another manager, as a generated one does. Its README names the one to use.
 
 `--existing` applies the standard in place, reading `linteljs.config.json` if it exists and asking otherwise; it
 never guesses a framework.

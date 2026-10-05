@@ -1,5 +1,9 @@
 ---
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import { t } from '@i18n';
@@ -7,8 +11,6 @@ import { t } from '@i18n';
 import CodeText from '@ui/code-text/CodeText.astro';
 
 import Layout from '@layouts/Layout.astro';
-
-const SYNC = 'npx @linteljs/create sync';
 ---
 
 <Layout titleKey="about">

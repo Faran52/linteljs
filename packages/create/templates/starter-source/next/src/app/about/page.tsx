@@ -1,4 +1,8 @@
-import { CHECK, GATE } from '@config/linteljs';
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
 import type { ReactNode } from 'react';
@@ -50,7 +54,7 @@ const AboutPage = (): ReactNode => {
       <section className="section">
         <h2 className="section-title">Keeping it current</h2>
         <p className="note">
-          <code>npx @linteljs/create sync</code>
+          <code>{SYNC}</code>
           {' '}
           re-applies the standard after an update. It rewrites the
           agent plugin, asks before it changes
