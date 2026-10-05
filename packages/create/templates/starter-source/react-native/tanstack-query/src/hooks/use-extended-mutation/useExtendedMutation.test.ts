@@ -72,6 +72,10 @@ describe('useExtendedMutation', () => {
     const expected = { status: 'accepted' };
     expect(actual).toEqual(expected);
 
+    await waitFor(() => {
+      expect(result.current.status).toBe('success');
+    });
+
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
       body: '{"message":"hello there"}',
@@ -110,6 +114,10 @@ describe('useExtendedMutation', () => {
 
     await act(() => {
       return result.current.send({ message: 'hello there' });
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('success');
     });
 
     const expected = { queryKey: ['/version'] };
