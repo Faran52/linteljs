@@ -68,7 +68,7 @@ describe('readmeEmitter', () => {
 
     expect(nativeReadme).toContain('`npx expo run:ios` or `npx expo run:android`');
     expect(nativeReadme).toContain('enableSceneSupport');
-    expect(nativeReadme).toContain('--enable-native-access=ALL-UNNAMED');
+    expect(nativeReadme).toContain('gradle-daemon-jvm.properties');
     expect(webReadme).not.toContain('## Native builds');
   });
 });

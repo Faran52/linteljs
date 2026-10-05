@@ -9,6 +9,7 @@ export const ALWAYS: readonly string[] = [
   'src/components/features/crash-page/CrashPage.tsx',
   'src/components/features/document-head/DocumentHead.tsx',
   'src/components/ui/mark/Mark.tsx',
+  'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts',
   'src/styles/starter.ts',
 ];
 

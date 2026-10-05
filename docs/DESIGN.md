@@ -1223,11 +1223,16 @@ a generated project built with Xcode 27 launched on an iOS 27 iPhone 18 Pro simu
 carrying `UIApplicationSceneManifest`. SDK 58 adopts the life cycle by default and Expo says not to set the option
 there, so the SDK 58 move drops the plugin entry.
 
-Android on JDK 25 fails in `configureCMakeDebug` on a restricted native method, which
-`JAVA_TOOL_OPTIONS=--enable-native-access=ALL-UNNAMED` fixes. No committed file carries it: `expo prebuild`
-rewrites `android/gradle.properties`, and `expo-build-properties` passes no JVM arguments. The generated README's
-native-build notes say so, and name `expo run:*` through the project's manager, since `npx` in a project whose
-`devEngines` names another manager fails with EBADDEVENGINES.
+Android on JDK 24 and later fails in `configureCMakeDebug`: the Android Gradle plugin runs Prefab 2.1.0, the last
+release, as its own `java` process, and the JNA it bundles calls `System.load`, whose restricted-method warning the
+plugin takes for a failure. `org.gradle.jvmargs` never reaches that process, and `JAVA_TOOL_OPTIONS` lives in no
+committed file. React Native builds on JDK 17, so a starter config plugin writes
+`android/gradle/gradle-daemon-jvm.properties` on every prebuild: Gradle runs its daemon, and Prefab with it, on
+JDK 17 whatever `JAVA_HOME` names, and downloads Temurin 17 from Adoptium where none is installed. Measured
+2026-10-05: after `expo prebuild --clean`, `assembleDebug` passed with `JAVA_HOME` on JDK 17, 25 and 27 and
+`JAVA_TOOL_OPTIONS` unset, the download path passed with no JDK 17 on the machine, and `expo run:android` on JDK 25
+opened Home on an emulator. The generated README's native-build notes say so, and name `expo run:*` through the
+project's manager, since `npx` in a project whose `devEngines` names another manager fails with EBADDEVENGINES.
 
 ### The document head is web only, and a dev build carries no dev client
 

@@ -172,6 +172,10 @@ export const reactNativeTarget: TargetBuilder = () => {
         covers: 'src/components/ui/mark/Mark.tsx',
       },
       {
+        target: 'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.test.ts',
+        covers: 'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts',
+      },
+      {
         target: 'src/styles/starter.test.ts',
         covers: 'src/styles/starter.ts',
       },

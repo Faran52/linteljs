@@ -200,7 +200,10 @@ when a version's change lives in a sibling it is described there instead:
   line of text.
 - A React Native development build launches on Xcode 27, where iOS stopped it with "UIScene life cycle is
   required": `app.json` opts into Expo SDK 57's scene support through `expo-build-properties`. The README gains
-  native-build notes, with `expo run:*` through the project's manager and the JDK 25 flag Android needs.
+  native-build notes, with `expo run:*` through the project's manager.
+- A React Native Android build passes on any JDK from 17, where JDK 24 and later failed `configureCMakeDebug` on a
+  restricted native method. A starter config plugin pins Gradle's daemon to JDK 17 on every prebuild, downloading
+  Temurin 17 where none is installed.
 - A React Native development build opens on Home on iOS, where it showed a Render Error, "Add the handoff origin":
   the root layout wrote `expo-router/head` on every platform. A `DocumentHead` component now writes it on the web
   only.

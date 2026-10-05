@@ -12,7 +12,7 @@ import { targetFor } from '@targets';
 import { LANGUAGE_NAMES } from '../../libraries/i18n-config/constants';
 import { emitted } from '../../utils/artifactUtils';
 
-import { IOS_LOCALES } from './constants';
+import { GRADLE_DAEMON_JVM_PLUGIN, IOS_LOCALES } from './constants';
 
 // No icons: the starter ships no images, and a path to a missing file fails the first `expo export`.
 // Declared locales are what iOS reports the device's language against, and what each system's per-app setting lists.
@@ -54,6 +54,7 @@ export const emitExpoConfig = (name: string, locales: Language[]): string => {
       plugins: [
         'expo-router',
         ['expo-build-properties', { ios: { enableSceneSupport: true } }],
+        GRADLE_DAEMON_JVM_PLUGIN,
         ...localization,
       ],
       // `typedRoutes` is what makes `Href` a union of this project's own routes rather than a string.

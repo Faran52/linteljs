@@ -10,6 +10,7 @@ import { EMPTY_PROJECT } from '@config/constants';
 import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
 const SCENE_SUPPORT = ['expo-build-properties', { ios: { enableSceneSupport: true } }];
+const DAEMON_JVM = './src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts';
 
 describe('emitExpoConfig', () => {
   it('names the app, its slug and its scheme after the project', () => {
@@ -30,7 +31,11 @@ describe('emitExpoConfig', () => {
           bundler: 'metro',
           output: 'static',
         },
-        plugins: ['expo-router', SCENE_SUPPORT],
+        plugins: [
+          'expo-router',
+          SCENE_SUPPORT,
+          DAEMON_JVM,
+        ],
         experiments: {
           typedRoutes: true,
           reactCompiler: true,
@@ -47,6 +52,7 @@ describe('emitExpoConfig', () => {
         plugins: [
           'expo-router',
           SCENE_SUPPORT,
+          DAEMON_JVM,
           ['expo-localization', {
             supportedLocales: {
               ios: ['en', 'ar'],
@@ -67,6 +73,7 @@ describe('emitExpoConfig', () => {
         plugins: [
           'expo-router',
           SCENE_SUPPORT,
+          DAEMON_JVM,
           ['expo-localization', {
             supportedLocales: {
               ios: ['zh-Hans', 'zh-Hant'],
