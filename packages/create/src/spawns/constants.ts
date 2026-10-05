@@ -1,6 +1,6 @@
 // `git rev-parse --local-env-vars`: a hook, an alias or a worktree's `rebase --exec` exports these, and a git
 // spawned with them acts on that repository instead of its cwd.
-export const REPOSITORY_ENV = new Set([
+export const REPOSITORY_ENV = [
   'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_CONFIG',
   'GIT_CONFIG_PARAMETERS',
@@ -16,4 +16,4 @@ export const REPOSITORY_ENV = new Set([
   'GIT_PREFIX',
   'GIT_SHALLOW_FILE',
   'GIT_COMMON_DIR',
-]);
+];

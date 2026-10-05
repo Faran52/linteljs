@@ -8,7 +8,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process, { env, execPath } from 'node:process';
 
-import { Semaphore } from 'es-toolkit';
+import {
+  difference,
+  Semaphore,
+  uniq,
+} from 'es-toolkit';
 
 import { type E2eRegistry, startRegistry } from '@e2e/registry/registry';
 import { answerFlags } from '@e2e/utils/workspaceUtils';
@@ -72,9 +76,9 @@ const collectOne = async (
   return await PASSES[pm].list(project, registry);
 };
 
-const sorted = (names: Iterable<string>): string => {
-  const list = [...new Set(names)]
-    .sort((left, right) => {
+const sorted = (names: string[]): string => {
+  const list = uniq(names)
+    .toSorted((left, right) => {
       return left.localeCompare(right, 'en');
     });
 
@@ -90,10 +94,7 @@ const sorted = (names: Iterable<string>): string => {
 const report = (found: [string, Record<Collected, string[]>][]): void => {
   const rows = found
     .map(([label, { pnpm, npm }]) => {
-      const extra = npm
-        .filter((name) => {
-          return !pnpm.includes(name);
-        });
+      const extra = difference(npm, pnpm);
 
       const row = {
         label,

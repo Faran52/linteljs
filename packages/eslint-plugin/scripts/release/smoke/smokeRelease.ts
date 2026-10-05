@@ -11,6 +11,8 @@ import {
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { sumBy } from 'es-toolkit';
+
 import { unpackTarball } from '../../../../../scripts/utils/processUtils.ts';
 import { log } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
@@ -225,10 +227,9 @@ for (const [label, shape] of entries) {
     assert.deepEqual(preset.plugins, ['@linteljs'], `${label}: configs.${presetName} names no plugin`);
 
     const enabled = Object.keys(preset.rules ?? {}).length
-      + (preset.overrides ?? [])
-        .reduce((total: number, override) => {
-          return total + Object.keys(override.rules ?? {}).length;
-        }, 0);
+      + sumBy(preset.overrides ?? [], (override) => {
+        return Object.keys(override.rules ?? {}).length;
+      });
 
     assert.ok(enabled > 0, `${label}: configs.${presetName} enables nothing`);
   }

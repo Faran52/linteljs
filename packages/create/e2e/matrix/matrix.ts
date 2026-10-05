@@ -1,5 +1,7 @@
 import { env } from 'node:process';
 
+import { orderBy } from 'es-toolkit';
+
 import {
   type Answers,
   type HostedFramework,
@@ -376,23 +378,18 @@ export const targetCases = (target: TargetId): E2eCase[] => {
   const paired = env['E2E_FULL'] === '1' ? every : coveringSubset(every);
 
   // Stable, so a tie keeps the first.
-  const byWidth = (left: E2eCase, right: E2eCase): number => {
-    return answerCount(right) - answerCount(left);
-  };
-
-  const widest = every
-    .toSorted(byWidth)
+  const widest = orderBy(every, [answerCount], ['desc'])
     .slice(0, 1);
   const extra = widest
     .flatMap((item) => {
       return fullCases(target, item);
     });
   // Framework mode server-renders where the widest React case does not, so it gets a browser pass of its own.
-  const framework = every
+  const frameworkCases = every
     .filter(({ answers }) => {
       return answers.router === 'react-router-framework';
-    })
-    .toSorted(byWidth)
+    });
+  const framework = orderBy(frameworkCases, [answerCount], ['desc'])
     .slice(0, 1)
     .map(({ answers }): E2eCase => {
       const onNpm = asCase({

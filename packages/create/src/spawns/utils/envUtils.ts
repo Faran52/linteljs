@@ -1,12 +1,9 @@
 import { env } from 'node:process';
 
+import { omit } from 'es-toolkit';
+
 import { REPOSITORY_ENV } from '../constants';
 
 export const repositoryFreeEnv = (): NodeJS.ProcessEnv => {
-  const kept = Object.entries(env)
-    .filter(([name]) => {
-      return !REPOSITORY_ENV.has(name);
-    });
-
-  return Object.fromEntries(kept);
+  return omit(env, REPOSITORY_ENV);
 };

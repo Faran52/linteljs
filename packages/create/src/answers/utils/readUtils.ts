@@ -1,3 +1,5 @@
+import { mapValues } from 'es-toolkit';
+
 import {
   isJsonObject,
   isValueOf,
@@ -117,9 +119,7 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
     throw new Error(`${key} must be an object`);
   }
 
-  const entries = Object.entries(value);
-
-  for (const [alias, directory] of entries) {
+  for (const [alias, directory] of Object.entries(value)) {
     if (!alias.startsWith('@') && !alias.startsWith('$')) {
       throw new Error(`${key} key must start with @ or $: ${alias}`);
     }
@@ -129,14 +129,7 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
     }
   }
 
-  const aliasPairs = entries
-    .map(([alias, directory]) => {
-      const aliasPair: [string, string] = [alias, String(directory)];
-
-      return aliasPair;
-    });
-
-  return Object.fromEntries(aliasPairs);
+  return mapValues(value, String);
 };
 
 export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue | undefined): ReadResult<R> => {

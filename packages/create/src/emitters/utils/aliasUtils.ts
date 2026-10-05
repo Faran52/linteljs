@@ -23,7 +23,6 @@ const writesApis = (answers: Answers): boolean => {
 // The order is the dependency direction, so a sorted import block reads as the architecture.
 export const buildAliases = (answers: Answers): AliasMap => {
   const target = targetFor(answers);
-  const omitted = new Set(target.omitAliases);
 
   const all: AliasMap = {
     ...target.routeAlias,
@@ -46,7 +45,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
   };
 
   // Dropped at the end, to keep the order above intact.
-  const kept: [string, string][] = Object.entries(omit(all, [...omitted]));
+  const kept: [string, string][] = Object.entries(omit(all, target.omitAliases ?? []));
 
   // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
   const withIndexes = kept

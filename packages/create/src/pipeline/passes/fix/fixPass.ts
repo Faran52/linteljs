@@ -1,3 +1,5 @@
+import { difference } from 'es-toolkit';
+
 import { RUN_PREFIX } from '@config/constants';
 
 import { parsedAs } from '@utils/objectUtils';
@@ -59,12 +61,9 @@ const fixStyles = async (cwd: string, answers: Answers, report: (message: string
   }
 
   const afterFix = await globSnapshot(cwd, glob);
-  const after = new Set(afterFix);
+  const changed = difference(before, afterFix);
 
-  report(changedFiles(before
-    .filter((entry) => {
-      return !after.has(entry);
-    }).length, 'stylelint'));
+  report(changedFiles(changed.length, 'stylelint'));
 };
 
 // Never fatal: exit 1 on remaining findings is normal.

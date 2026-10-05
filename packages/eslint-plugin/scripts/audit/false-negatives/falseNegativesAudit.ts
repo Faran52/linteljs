@@ -3,7 +3,11 @@ import { readFileSync } from 'node:fs';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 
-import { orderBy, sum } from 'es-toolkit';
+import {
+  difference,
+  orderBy,
+  sum,
+} from 'es-toolkit';
 import { Linter } from 'eslint';
 
 import {
@@ -94,10 +98,7 @@ if (sources.length === 0) {
 }
 
 const shapedRules = Object.keys(SHAPES);
-const unshapedRules = RULE_IDS
-  .filter((rule) => {
-    return !shapedRules.includes(rule);
-  });
+const unshapedRules = difference(RULE_IDS, shapedRules);
 
 // Said on every run, so a rule with no shapes is a visible gap rather than a quiet one.
 if (unshapedRules.length > 0) {

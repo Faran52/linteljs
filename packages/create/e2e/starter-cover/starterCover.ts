@@ -1,5 +1,11 @@
 import { globSync } from 'node:fs';
 
+import {
+  difference,
+  maxBy,
+  range,
+} from 'es-toolkit';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
@@ -149,11 +155,6 @@ const sweepOnce = (): Sweep => {
 // Greedy: the class reaching the most uncovered texts, until none is left.
 const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] => {
   const remaining = new Set(uncovered);
-  // Reaches nothing, so the first class reaching a text replaces it.
-  const NONE: TextClass = {
-    label: '',
-    texts: new Set(),
-  };
   const picked: string[] = [];
 
   const reach = (item: TextClass): number => {
@@ -165,13 +166,13 @@ const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] =>
       }).length;
   };
 
-  const wider = (best: TextClass, item: TextClass): TextClass => {
-    return reach(item) > reach(best) ? item : best;
-  };
-
   // Every text belongs to a class, so a class is left while a text is.
   while (remaining.size > 0) {
-    const best = classes.reduce(wider, NONE);
+    const best = maxBy(classes, reach);
+
+    if (best === undefined) {
+      break;
+    }
 
     picked.push(best.label);
 
@@ -211,15 +212,7 @@ export const starterCover = (labels: readonly string[]): StarterCover => {
 
       return texts;
     });
-  const covered = new Set(reached);
-  const span = { length: sweep.textCount };
-  const allTexts = Array.from(span, (_, index) => {
-    return index;
-  });
-  const missed = allTexts
-    .filter((text) => {
-      return !covered.has(text);
-    });
+  const missed = difference(range(sweep.textCount), reached);
   const uncovered = new Set(missed);
 
   const cover: StarterCover = {

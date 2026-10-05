@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit';
+
 import type { AliasMap } from '../../../types';
 
 const BUILTIN_GROUP = [
@@ -80,9 +82,7 @@ const unknownAliasesIn = (aliases: string[]): string[] => {
     })
     .map(patternFor);
 
-  const patterns = [...new Set(unknownPatterns)];
-
-  return patterns
+  return uniq(unknownPatterns)
     .sort((left, right) => {
       return left.localeCompare(right);
     });

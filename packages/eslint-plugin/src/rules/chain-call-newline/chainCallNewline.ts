@@ -1,3 +1,5 @@
+import { sortBy } from 'es-toolkit';
+
 import { scopeOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   gapIsBlank,
@@ -301,10 +303,11 @@ export const chainCallNewline = createRule('chain-call-newline', {
     };
 
     const lineFits = (plan: Plan, line: number): boolean => {
-      const gaps = [...gapsOn(plan, line)]
-        .sort((first, second) => {
-          return first.range[0] - second.range[0];
-        });
+      const gaps = sortBy([...gapsOn(plan, line)], [
+        (gap) => {
+          return gap.range[0];
+        },
+      ]);
 
       const splitFit = gaps
         .every((gap, index) => {

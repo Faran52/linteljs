@@ -1,3 +1,5 @@
+import { omit } from 'es-toolkit';
+
 import {
   MANAGER_FLOORS,
   NODE_FLOOR,
@@ -26,17 +28,6 @@ import { SUPERSEDED } from './constants';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
-const withoutSuperseded = (dependencies: Record<string, string>): Record<string, string> => {
-  const kept = Object.entries(dependencies)
-    .filter(([name]) => {
-      return !SUPERSEDED.includes(name);
-    });
-
-  return Object.fromEntries(
-    kept,
-  );
-};
-
 export const patchPackageJson = (existing: PackageJson, answers: Answers): PackageJson => {
   const target = targetFor(answers);
   const packageJson = { ...existing };
@@ -48,7 +39,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...buildDependencies(answers),
   };
   const devDependencies = {
-    ...withoutSuperseded(existing.devDependencies ?? {}),
+    ...omit(existing.devDependencies ?? {}, SUPERSEDED),
     ...buildDevDependencies(answers),
   };
   const pm = answers.packageManager;

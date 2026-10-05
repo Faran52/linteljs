@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit';
+
 import { PERCENT } from '../constants.ts';
 
 // Maps are a fact of the source, so every run over one file carries the same ids.
@@ -151,7 +153,7 @@ export const gapOf = (file: FileCoverage, hits: Set<string>): string[] => {
 };
 
 const rangesOf = (lines: number[]): string[] => {
-  const sorted = [...new Set(lines)]
+  const sorted = uniq(lines)
     .toSorted((left, right) => {
       return left - right;
     });

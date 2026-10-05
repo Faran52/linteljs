@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit';
+
 import {
   type Answers,
   type Artifact,
@@ -74,7 +76,7 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     '  // Merged into the paths Nuxt generates, which is what keeps its own `#` aliases resolving alongside these.',
     '  alias: {',
     // An exact key writes the same two lines as the `/*` key beside it.
-    ...new Set(aliases),
+    ...uniq(aliases),
     '  },',
     // The Vite plugin: Nuxt's `postcss-import` reads `@import "tailwindcss"` off disk and fails.
     ...(styling.call === undefined

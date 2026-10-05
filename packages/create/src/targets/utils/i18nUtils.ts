@@ -1,3 +1,5 @@
+import { omitBy } from 'es-toolkit';
+
 import { LANGUAGES } from '@config/constants';
 
 import { localesOf } from '@utils/answerUtils';
@@ -88,11 +90,9 @@ const withoutContact = (source: string): string => {
     return source;
   }
 
-  const entries = Object.entries(locale)
-    .filter(([key]) => {
-      return !key.startsWith('contact');
-    });
-  const kept = Object.fromEntries(entries);
+  const kept = omitBy(locale, (_, key) => {
+    return key.startsWith('contact');
+  });
 
   return `${JSON.stringify(kept, null, 2)}\n`;
 };

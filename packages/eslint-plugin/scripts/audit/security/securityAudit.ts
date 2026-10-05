@@ -2,7 +2,10 @@
 import { relative, resolve } from 'node:path';
 import process from 'node:process';
 
-import { countBy } from 'es-toolkit';
+import {
+  countBy,
+  difference,
+} from 'es-toolkit';
 import { ESLint } from 'eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
@@ -106,10 +109,7 @@ if (!sonarjs.rules) {
 
 const installed = Object.keys(sonarjs.rules);
 const expected = Object.keys(SECURITY_RULES);
-const missing = expected
-  .filter((name) => {
-    return !installed.includes(name);
-  });
+const missing = difference(expected, installed);
 
 // A rule the plugin no longer has would show up as a clean report.
 if (missing.length > 0) {

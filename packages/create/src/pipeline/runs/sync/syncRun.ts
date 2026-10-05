@@ -4,6 +4,8 @@ import {
   posix,
 } from 'node:path';
 
+import { uniq } from 'es-toolkit';
+
 import {
   ESLINT_CONFIG_PATH,
   MANAGED_PATH,
@@ -175,7 +177,7 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
 
 // An empty `.claude-plugin/` reads as if the host were still configured.
 const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
-  const directories = new Set(removed
+  const directories = uniq(removed
     .flatMap((target) => {
       const parts = target
         .split('/')
@@ -190,8 +192,8 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
     }));
 
   // A child path is always longer than its parent, so length descending is depth-first.
-  const deepestFirst = [...directories]
-    .sort((left, right) => {
+  const deepestFirst = directories
+    .toSorted((left, right) => {
       return right.length - left.length;
     });
 

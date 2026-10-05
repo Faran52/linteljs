@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit';
+
 import { MANAGER_FLOORS } from '@config/constants';
 import { type Answers, type Artifact } from '@config/types';
 
@@ -23,7 +25,7 @@ export const emitYarnrc = (answers: Answers): string => {
       return PEER_EXTENSIONS[name];
     });
 
-  const blocks = [...new Set(peerExtensions)].join('');
+  const blocks = uniq(peerExtensions).join('');
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS.yarn;
   const ageGate = rankOf(version) >= rankOf(AGE_GATE_FLOOR) ? AGE_GATE : '';
 
