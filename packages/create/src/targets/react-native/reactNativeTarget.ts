@@ -102,9 +102,6 @@ export const reactNativeTarget: TargetBuilder = () => {
     testSetup: 'fragments/test-setup/setupTests.reactNative.ts',
     // jest-expo resolves as Metro does and renders through a test renderer, not a DOM.
     testRunner: 'jest',
-    // The shell reaches Expo's TypeScript source in `node_modules`, which no test transform strips.
-    // The route list goes with it: the tab bar is its only reader.
-    coverageExclude: ['src/app/_layout.tsx', 'src/config/routes.ts'],
     starterFiles: [
       // No dev server, so no browser worker.
       ...mockFiles(false, false),
@@ -149,6 +146,19 @@ export const reactNativeTarget: TargetBuilder = () => {
       // React's hook suites import `@testing-library/react`, and this target has no DOM.
       ...accessorTests(ACCESSORS),
       ...rtkTests(),
+      {
+        target: 'src/app-layout.test.tsx',
+        covers: 'src/app/_layout.tsx',
+        when: (answers) => {
+          return !isTailwind(answers);
+        },
+      },
+      {
+        target: 'src/app-layout.test.tsx',
+        covers: 'src/app/_layout.tsx',
+        when: isTailwind,
+        variant: 'tailwind',
+      },
       {
         target: 'src/components/features/crash-page/CrashPage.test.tsx',
         covers: 'src/components/features/crash-page/CrashPage.tsx',

@@ -586,9 +586,10 @@ block. The rule reads identically on every target.
   null, where querying back out of `innerHTML` is a guard for a case that cannot happen and a branch the 100% gate
   cannot cover. The mark lives in `lib/mark/`, because with no hosted framework a file under `components/` is a
   component by directory and with one by extension, and a string of markup satisfies neither.
-- **React Native's route list is out of coverage with the shell.** The nav is the tab bar in `src/app/_layout.tsx`,
-  excluded because rendering the navigator reaches Expo's TypeScript source in `node_modules`, which no test
-  transform strips, and `src/config/routes.ts` would otherwise be a table nothing executes.
+- **React Native's shell is under coverage.** jest-expo transforms Expo's TypeScript source in `node_modules`, so
+  `src/app-layout.test.tsx` renders `src/app/_layout.tsx` through `expo-router/testing-library`, and the tab bar
+  executes `src/config/routes.ts` with it. The Tailwind spelling of the suite stubs `global.css`, which only Metro
+  reads through NativeWind.
 - **Svelte's link resolver takes one route at a time.** `resolve()` types its argument as a conditional on the
   route, so the route list resolves each entry where its literal is known; that list therefore imports
   `$app/paths` and is not shared.

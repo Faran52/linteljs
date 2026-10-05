@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import Head from 'expo-router/head';
 
 import { NAME } from '@config/linteljs';
@@ -48,6 +49,8 @@ const RootLayout = (): ReactNode => {
           type="image/svg+xml"
         />
       </Head>
+      {/* `auto` draws dark icons on a light scheme; Android otherwise keeps them light on the light header. */}
+      <StatusBar style="auto" />
       <Tabs screenOptions={screenOptions}>
         {PAGES
           .map((page) => {

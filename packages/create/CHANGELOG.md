@@ -198,6 +198,9 @@ when a version's change lives in a sibling it is described there instead:
   store reads it.
 - A web extension's DevTools panel page has a `main` landmark and an `h1`, as the popup does, where it held one bare
   line of text.
+- A React Native project draws its status bar with `expo-status-bar`'s `auto` style, so Android shows dark icons on
+  the light header, where the clock and icons were white on white. The root layout gains a suite and comes under
+  coverage with the route list, both excluded before.
 - A React Native project's web tabs are named by their label alone, where each name carried the tab bar's
   placeholder icon glyph twice. The About and Version screens take keyboard focus, so a keyboard can scroll them, where
   axe flagged them `scrollable-region-focusable` once they overflowed.

@@ -111,6 +111,8 @@ const GATES: GateRow[] = [
   ['src/app/_layout.tsx@i18n', [{ styling: [undefined, 'stylex'], languages: ANSWERED }]],
   ['src/app/_layout.tsx@tailwind', [{ styling: ['tailwind'], languages: [undefined] }]],
   ['src/app/_layout.tsx@tailwind-i18n', [{ styling: ['tailwind'], languages: ANSWERED }]],
+  ['src/app-layout.test.tsx', [{ styling: [undefined, 'stylex'] }]],
+  ['src/app-layout.test.tsx@tailwind', TAILWIND],
   ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
       const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];

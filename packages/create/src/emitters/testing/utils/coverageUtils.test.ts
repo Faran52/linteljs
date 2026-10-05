@@ -98,7 +98,7 @@ describe('coverageExclude', () => {
     [
       'react-native',
       { target: 'react-native' },
-      ['src/app/_layout.tsx', 'src/config/routes.ts'],
+      [],
     ],
   ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
     const answers = answersFor(overrides);
