@@ -192,7 +192,6 @@ export const VERSIONS: Record<string, string> = {
   'postcss': '^8.5.28',
   'react-hook-form': '^7.89.0',
   'i18next': '^26.4.2',
-  'i18next-browser-languagedetector': '^8.2.1',
   'react-i18next': '^17.0.15',
   // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version.
   'react-native-css': '3.1.0-rc.0',

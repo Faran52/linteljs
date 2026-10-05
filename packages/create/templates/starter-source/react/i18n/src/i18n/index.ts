@@ -1,12 +1,10 @@
 import { initReactI18next } from 'react-i18next';
 
 import i18next, { type InitOptions } from 'i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 import {
   fallbackLanguage,
   languages,
-  languageStorageKey,
   resources,
 } from './config';
 import { languageCookie, storedLanguage } from './utils/cookieUtils';
@@ -21,8 +19,8 @@ export const applyDocumentDirection = (language: string): void => {
   root.dir = directionOf(language);
 };
 
-// A server's detection from its request's `Cookie` and `Accept-Language` tags. The browser's detector reads the same
-// cookie.
+// The stored choice, then the reader's languages: a server passes its request's `Cookie` and `Accept-Language`, the
+// browser its own, so every target detects by one rule.
 export const detectLanguage = (cookies: string, preferred: readonly string[]): string => {
   const stored = storedLanguage(cookies);
 
@@ -39,11 +37,10 @@ export const chooseLanguage = async (language: string): Promise<void> => {
 export const initI18n = (options: Pick<InitOptions, 'lng'> = {}): typeof i18next => {
   if (!i18next.isInitialized) {
     void i18next
-      .use(LanguageDetector)
       .use(initReactI18next)
       .init({
         resources,
-        ...options,
+        lng: options.lng ?? detectLanguage(document.cookie, navigator.languages),
         fallbackLng: fallbackLanguage,
         supportedLngs: languages
           .map((option) => {
@@ -56,12 +53,6 @@ export const initI18n = (options: Pick<InitOptions, 'lng'> = {}): typeof i18next
           escapeValue: false,
           prefix: '{',
           suffix: '}',
-        },
-        detection: {
-          order: ['cookie', 'navigator'],
-          // Nothing is stored on detection: a first visit would otherwise look like a choice.
-          caches: [],
-          lookupCookie: languageStorageKey,
         },
       });
 

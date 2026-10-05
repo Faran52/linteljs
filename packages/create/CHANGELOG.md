@@ -188,6 +188,9 @@ when a version's change lives in a sibling it is described there instead:
 - A device that names Chinese by script, as iOS does with `zh-Hans-CN` and `zh-Hant-TW`, opens a project in `zh-CN`
   or `zh-TW` rather than in English, on every target. A React Native project declares Chinese to iOS as `zh-Hans`
   and `zh-Hant`, the designators iOS matches, and keeps `zh-CN` and `zh-TW` for Android.
+- A React project opens a browser set to `zh-Hant` in `zh-TW`, where it opened `zh-CN`: React now detects by the
+  same rule as every other target, in place of i18next's browser detector, which it no longer depends on. A browser
+  set to `zh-HK` or `zh-MO` opens `zh-TW` on every target, where React opened `zh-CN` and the rest English.
 - The language label in a React Native project's header stays on one line on a narrow screen, where it broke
   inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
 - A React Native project with a right-to-left language lays out right to left on a device in that language, in

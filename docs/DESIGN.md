@@ -966,8 +966,8 @@ ships English as well, since it is the fallback. Only a target whose record carr
 that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular, Astro, React Native and the
 webextension popup.
 
-- **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
-  browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
+- **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and no
+  detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
   Paraglide JS, Solid takes @solid-primitives/i18n, React Native takes i18next with react-i18next and no
   detector. Angular and Astro take none: Angular's own signal is the
   whole runtime a switch needs, and an Astro page ships no framework to hold one, so each hand-rolled core is
@@ -976,8 +976,11 @@ webextension popup.
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
 - **A detected language is never stored.** The order is the stored choice, then the browser, then English. The
-  detector's `caches` is empty and the language select is the one writer, so a first visit does not pass for a
-  choice and a later change of browser language still reaches the page.
+  language select is the one writer, so a first visit does not pass for a choice and a later change of browser
+  language still reaches the page.
+- **Every target detects through one `lookupTags`.** A script tag reads as its region, `zh-Hans` as `zh-CN` and
+  `zh-Hant` as `zh-TW`, and `zh-HK` and `zh-MO` read as `zh-TW`, since both write Traditional. React reads it too
+  rather than i18next's browser detector, which matched `zh-Hant` to the first `zh` it offers, `zh-CN`.
 - **`src/i18n/config.ts` is emitted, everything else is a template.** Its imports name the chosen locales, so it
   depends on the answer; it holds data only. Each translated file is a `translated` pair: the English file as
   before, and an `i18n` twin that replaces it once a language is chosen.

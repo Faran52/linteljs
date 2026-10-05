@@ -82,7 +82,6 @@ describe('reactTarget', () => {
     const expected = {
       dependencies: [
         'i18next',
-        'i18next-browser-languagedetector',
         'react-i18next',
       ],
       testSetup: 'fragments/test-setup/setupTests.i18n.ts',

@@ -83,6 +83,14 @@ describe('languageUtils', () => {
     expect(traditional).toContain('zh-TW');
   });
 
+  it('reads Hong Kong and Macau Chinese as Traditional', () => {
+    const hongKong = lookupTags('zh-HK');
+    const macau = lookupTags('zh-MO');
+
+    expect(hongKong).toContain('zh-TW');
+    expect(macau).toContain('zh-TW');
+  });
+
   it('falls back when neither the stored choice nor the reader is offered', () => {
     const language = pickLanguage(null, ['fr-FR']);
 

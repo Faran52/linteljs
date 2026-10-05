@@ -9,13 +9,9 @@ import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
 
-// With no language named, i18next detects again, exactly as it does at init.
-const detected = async (): Promise<string> => {
-  const i18n = initI18n();
-
-  await i18n.changeLanguage();
-
-  return i18n.language;
+// What the browser's cookie and languages detect, as init reads them.
+const detected = (): string => {
+  return detectLanguage(document.cookie, navigator.languages);
 };
 
 const browserSpeaks = (tags: string[]): void => {
@@ -29,28 +25,34 @@ describe('i18n', () => {
     await initI18n().changeLanguage('en');
   });
 
-  it('falls back to English for a browser language it does not offer', async () => {
+  it('falls back to English for a browser language it does not offer', () => {
     browserSpeaks(['fr-FR']);
 
-    const actual = await detected();
+    const actual = detected();
     expect(actual).toBe('en');
   });
 
-  it('follows the browser, and stores nothing it detected', async () => {
+  it('follows the browser, and stores nothing it detected', () => {
     browserSpeaks([last]);
 
-    const actual = await detected();
+    const actual = detected();
     expect(actual).toBe(last);
     const item = storedLanguage(document.cookie);
     expect(item).toBeUndefined();
   });
 
-  it('puts a stored choice before the browser', async () => {
+  it('puts a stored choice before the browser', () => {
     browserSpeaks(['fr-FR']);
     document.cookie = languageCookie(last);
 
-    const actual = await detected();
+    const actual = detected();
     expect(actual).toBe(last);
+  });
+
+  it('starts in the language the browser detects', () => {
+    const actual = initI18n().language;
+    const expected = detected();
+    expect(actual).toBe(expected);
   });
 
   it('initialises once', () => {

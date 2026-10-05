@@ -1040,7 +1040,6 @@ describe('buildDependencies with languages', () => {
 
     expect(actual).toEqual(expect.arrayContaining([
       'i18next',
-      'i18next-browser-languagedetector',
       'react-i18next',
     ]));
 
