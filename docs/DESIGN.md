@@ -174,15 +174,13 @@ An element with no accessible name is the same defect in a Vite React app, a Sol
 layers arrives. Measured against a real Next project: 31 newly error-level rules, zero new findings.
 
 **The plugin is the `-x` fork, and that is a bun decision.** `eslint-plugin-jsx-a11y` caps its `eslint` peer at 9.
-It runs on 10; the metadata is stale. pnpm waves it through with `peerDependencyRules` and yarn with
-`packageExtensions`, but bun has no equivalent: measured against a real
-install, `.npmrc` `legacy-peer-deps`, `bunfig.toml` `logLevel = "error"`, `install.peer = false`, `--omit=peer`,
+It runs on 10; the metadata is stale. pnpm could wave it through with `peerDependencyRules` and yarn with
+`packageExtensions`, but bun has no equivalent: measured against a real install, `.npmrc` `legacy-peer-deps`, `bunfig.toml` `logLevel = "error"`, `install.peer = false`, `--omit=peer`,
 `--silent`, a root `peerDependenciesMeta` and a `bun patch` of the plugin's range all still print
 `warn: incorrect peer dependency`, because bun reads the range from the registry manifest. So the layers take
 `eslint-plugin-jsx-a11y-x`, whose range admits 10, at the cost of the `jsx-a11y-x/*` rule prefix.
-`eslint-plugin-astro` keeps the original, because it loads it by literal name and prefixes its ids with `astro/`;
-aliasing the fork in would emit `astro/jsx-a11y-x/*` ids it never registers. That is the single
-`eslint-plugin-jsx-a11y>eslint` allowance the emitted `pnpm-workspace.yaml` still names.
+`eslint-plugin-astro` falls back to the fork when the original is not installed and keeps its own `astro/jsx-a11y/*`
+ids, so no project installs the original and the emitted `pnpm-workspace.yaml` names no peer allowance.
 
 **The template frameworks get the same floor, by three mechanisms**, because what each ecosystem ships differs:
 
@@ -201,14 +199,12 @@ and placed later it lands on the same glob and takes the `parserOptions` carryin
 
 `@linteljs/vue/sfc-import-seam` turns `no-unsafe-argument` and `no-unsafe-assignment` off for every `.ts` file in a
 Vue or Nuxt project, because the program behind lint reads an SFC import as an error type and `vue-tsc --noEmit`
-checks that seam. Measured on 2026-10-01 against the `lint:starters` projects, every answer on, with the two
-rules back on: Vue gave 11 findings, every one an SFC import (`createApp(App)` in `main.ts`, a route's `component:`
-in `router/index.ts` and `views/routes.ts`, a `mount(ContactView)` result in its suite); Nuxt gave 2, both a real
-`any` from Vitest's `expect.objectContaining` in the i18n plugin suite, which now reads the head it records instead.
-The seam is Nuxt's too: a probe `.ts` importing `AppHeader.vue` gives the same error-typed finding, since Nuxt's
-generated types declare no `*.vue` module. So the override stays as it is. A glob cannot name what imports an SFC
-(an entry, a router, a route table and any suite all do), and a list of today's starter paths would miss the first
-such file a project adds.
+checks that seam. Measured against the `lint:starters` projects, every answer on, with the two rules back on: Vue
+gave 11 findings, every one an SFC import (`createApp(App)` in `main.ts`, a route's `component:` in
+`router/index.ts` and `views/routes.ts`, a `mount(ContactView)` result in its suite). The seam is Nuxt's too: a
+probe `.ts` importing `AppHeader.vue` gives the same error-typed finding, since Nuxt's generated types declare no
+`*.vue` module. A glob cannot name what imports an SFC (an entry, a router, a route table and any suite all do), and
+a list of today's starter paths would miss the first such file a project adds.
 
 ### React Native lints as React without the accessibility preset
 
@@ -311,11 +307,11 @@ module is a drawer of small helpers rather than one subject, which is why it get
 `composeConfig` passes through), because naming it unasked would make ESLint lint `.astro` files in a project that
 has no parser for them.
 
-The numbers govern this workspace too. Measured on 2026-10-04 the way the rules count, in non-test source: the
-longest file is `create/src/targets/react/reactTarget.ts` at 441 lines, the longest `utils/` module
-`create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 694, and the longest function
-`base` itself at 293, with `chain-call-newline`'s `create` at 286. The workspace has no cap of its own: a
-workspace-only number would be a second standard the published one does not state.
+The numbers govern this workspace too. Measured the way the rules count, in non-test source: the longest file is
+`create/src/targets/react/reactTarget.ts` at 438 lines, the longest `utils/` module
+`create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 694, and the longest function the
+`reactNativeTarget` builder at 295, with `base` at 293. The workspace has no cap of its own: a workspace-only number
+would be a second standard the published one does not state.
 
 ### Magic numbers in source only
 
@@ -332,9 +328,8 @@ every one already a named entry. `1000` is not allowed, and is `MS_PER_SECOND` i
 `base` turns on `sonarjs/expression-complexity` at its default `max: 3`, restated, for every script and SFC file
 except suites, `__mocks__/` and e2e: a case may spell out the condition it pins, while source names the parts of a
 long condition in `const`s or a small predicate. Config files and `constants.ts` stay in scope, since the rule is
-about reading a condition rather than naming a number. Measured on 2026-10-02: 18 findings in 8 files, all under
-`eslint-plugin/scripts/` and `eslint-config/scripts/`, and none in the suites or the starters. Every one was
-fixed in the code, so the root config carries no exemption for it.
+about reading a condition rather than naming a number. The workspace has no finding, so the root config carries
+no exemption for it.
 
 ### `name-before-use` reports and never fixes
 
@@ -346,9 +341,8 @@ on itself, and `base` turns it on with both options for every script and SFC fil
 rules follow it: `create` returns a named `visitors: Rule.RuleListener`.
 
 A suite that asserts on parsed JSON names it `const parsed: unknown = JSON.parse(text)`, the shape the banned-pattern
-checker already grants. Hoisting it bare would type it `any`, and a
-typed read helper or a `JSON.parse` exemption would each be a second way to say the same thing. Every finding in the
-workspace was fixed in the code, so the root config carries no exemption for it.
+checker already grants. Hoisting it bare would type it `any`, and a typed read helper or a `JSON.parse` exemption
+would each be a second way to say the same thing. The root config carries no exemption for it.
 
 ### `base` carries no framework rule
 
@@ -1139,16 +1133,12 @@ which runs no compiler. React Native keeps Expo's path through `babel-preset-exp
 React Native is the one target whose suites run on Jest, through `jest-expo`'s default preset: the runner Expo
 ships and tests against, rather than a Vitest plugin at 0.1.x with one maintainer standing in for the native
 renderer. The trade is stability. The gate holds: a generated project reaches 100% on statements, branches,
-functions and lines (measured 2026-10-04 on a tanstack-query, zustand, i18n project: 179 statements, 58 branches,
-53 functions, 80 of 80 tests; 83 of 83 once the LanguageSelect radiogroup case was added). `testing` stays a yes or
-no: the target picks the runner, through the record's `testRunner`.
+functions and lines (measured on a tanstack-query, zustand, i18n project: 179 statements, 58 branches, 53
+functions). `testing` stays a yes or no: the target picks the runner, through the record's `testRunner`.
 
-This section used to say jest-expo stops at 71%. The spike refuted that: 71% was a half-finished port, 73% with 9 of
-17 suites failing to load on port errors (`Vitest cannot be imported in a CommonJS module`, `toHaveBeenCalledOnce is
-not a function`, ``Property `OS` does not have access type get``). Every uncovered line needed a test or a mock, none
-was unreachable. `Platform.OS` stays a runtime read under jest-expo, so `jest.replaceProperty(Platform, 'OS', 'web')`
-covers a web branch. No target writes a `.web` module, so one native project is all it takes; were one added, a
-second project on the native preset with a resolver preferring the `.web` sibling measured 100% again.
+`Platform.OS` stays a runtime read under jest-expo, so `jest.replaceProperty(Platform, 'OS', 'web')` covers a web
+branch. No target writes a `.web` module, so one native project is all it takes; were one added, a second project
+on the native preset with a resolver preferring the `.web` sibling measured 100% again.
 
 The cost, measured:
 
@@ -1157,13 +1147,15 @@ The cost, measured:
 - Jest is pinned to `^29.7.0`, jest-expo 57's own major: jest-expo 57.0.5 depends on Jest 29 packages (`babel-jest`,
   `jest-environment-jsdom`, `@jest/globals`). Under the Jest 30 runner it works, but with two Jest majors in the
   tree, and `node_modules` grew from 587M to 745M.
-- Slower: a warm run with coverage takes about 3.6 s against Vitest's 1.4 s (7.3 s with `--no-cache`).
+- Slower: a warm run with coverage takes about 3.6 s against Vitest's 1.4 s (7.3 s with `--no-cache`). A file's
+  first render transforms React Native lazily, past Jest's 5 s default on a shared CI runner, so the emitted
+  `jest.config.js` sets `testTimeout: 15_000`.
 
 No worklets resolver. `react-native-worklets/jest/resolver.js` lets the real Reanimated load, but under pnpm it
 strips the native extensions from any `basedir` naming `react-native-worklets`, and expo-modules-core's `.pnpm`
 directory carries that peer in its name. `NativeViewManagerAdapter` then resolves to its web file, which throws
-`requireNativeViewManager is not available on ios` (from expo-glass-effect, through expo-router). The spike ran on
-npm and never saw it. Reanimated keeps the View stand-in mock.
+`requireNativeViewManager is not available on ios` (from expo-glass-effect, through expo-router). Reanimated keeps
+the View stand-in mock.
 
 The `react-native` export condition jest-expo resolves takes a fix in `jest.config.js` for two answers. msw's `msw/node`
 exports `"react-native": null`, so with msw the config sets `customExportConditions` to `node`, `require`,
@@ -1177,14 +1169,10 @@ No `babel.config.js`. The default preset carries its own Babel transform; only t
 pass `babel-jest` a bare `caller` and fail without one (`SyntaxError: .../@react-native/jest-preset/jest/setup.js:
 Unexpected token`). Measured at 100% on all four metrics without it, under Jest 30 and 29.7.
 
-The `hostComponentNames` warning is gone. The Vitest plugin passed that option to `@testing-library/react-native`
-14, which dropped it and printed `Unknown option(s) passed to configure: hostComponentNames` 17 times a run; Jest
-prints none, and the end-to-end run of `react-native pnpm` passed 16 of 16 with no such line.
-
 `sync` changes no runner. A project generated while React Native ran on Vitest keeps its suites, its setup and its
 `test` scripts, none of which `sync` owns, so a sync writing the Jest lint config would strand them: measured on
 such a project, rewriting `tsconfig.json` and `eslint.config.js` for Jest left every suite unresolved, `eslint .`
-failing. So the refusal runs before any other step: where `package.json` installs one runner and the target now runs
+failing. So a refusal runs before any other step: where `package.json` installs one runner and the target now runs
 another, `sync` writes nothing and exits 1 naming both; the project ports its suites, swaps the dependencies, and
 syncs again.
 
@@ -1217,6 +1205,7 @@ YN0086 for seven requests inside Expo SDK 57's own tree, none of them a clash (`
 `@expo/log-box`, `@expo/router-server` and `expo-symbols` asking for `expo-constants` and `expo-font`,
 `expo-linking` passing no `expo` to `expo-constants`, two Babel packages passing no `@babel/core`); each has a
 `packageExtensions` entry, and the target carries no `logFilters`.
+
 ### A native build opts into the UIScene life cycle
 
 Xcode 27's iOS SDK refuses to launch an app that keeps the AppDelegate window: `expo run:ios` dies with "UIScene
@@ -1250,7 +1239,6 @@ expo-router maps that URL to `/`. Measured the same day: a fresh `expo run:ios`,
 and a warm one from the About tab each land on Home. So neither `expo-dev-client` nor an `app/+native-intent.tsx`
 is added: each would answer a 404 that does not occur.
 
-
 ## Package managers
 
 pnpm reads approved install scripts from `allowBuilds` in `pnpm-workspace.yaml`; bun reads `trustedDependencies`
@@ -1261,14 +1249,13 @@ builds.
 Every manager that has a release age gate gets two days, linteljs exempt: pnpm `minimumReleaseAge: 2880`
 (minutes), bun `install.minimumReleaseAge = 172800` (seconds) in `bunfig.toml`, Yarn `npmMinimalAgeGate: 2880`
 (minutes). CI e2e run 36732855202 failed every bun and yarn case on a half-published `@eslint-react/jsx` that
-pnpm's gate held back. Measured 2026-10-01: bun 1.2.23 ignores the keys and 1.3.0 honours them, with exclusions
+pnpm's gate held back. Measured: bun 1.2.23 ignores the keys and 1.3.0 honours them, with exclusions
 matched by exact name; Yarn 4.9.4 refuses `npmMinimalAgeGate` as an unrecognized setting and 4.10.1 reads it, so
-`.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. The
-e2e harness zeroes none of them: each project's own exemption lets the just-published linteljs packages through.
+`.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. The e2e harness zeroes none of them: each project's own exemption lets the just-published linteljs packages through.
 
 `.yarnrc.yml` is load-bearing, measured on React and Next with it removed. npm emits no `.npmrc`: it resolves peers
 itself, and a conflict must fail the install (and the e2e `npm ls --all`) rather than be silently chosen, which
-`legacy-peer-deps` did. Measured 2026-10-01 with npm 11 and the flag off, `vite` for vitest and StyleX's
+`legacy-peer-deps` would. Measured with npm 11 and the flag off, `vite` for vitest and StyleX's
 `@csstools/css-tokenizer` 4 both install correctly unnamed (`npm ls --all` exit 0, stylelint exit 0 on the
 emitted CSS), so they are not named for npm; yarn installs no peers and still names `vite`. `test-renderer` stays
 named: unnamed, npm picks 1.3.0, whose `react ^19.3.0` peer fails against Expo's 19.2.3 and `npm ls` exits 1. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
@@ -1281,10 +1268,8 @@ supplied by a tree the project does not own. `postcss-html` on `postcss` is answ
 dropped its own postcss, so `postcss-html` would rest on whatever `postcss-safe-parser` hoists, and marking it
 optional leaves YN0002 printing. A blanket `YN0002`/`YN0060` discard would also stop the suite's no-warnings
 assertion firing on yarn, since with nothing printed yarn never reports `Done with warnings`. No target filters
-anything: the last, Angular's discard of `@angular/build` peering vitest 4, went when `@angular/build` 22.2 admitted
-vitest 5, and pnpm's `peerDependencyRules` block went with it. The discard had also hidden two `YN0086`s on
-Angular, `@tanstack/angular-store` asking `@tanstack/angular-form` for `@angular/common` and `goober` asking the
-query devtools for `csstype`, which `packageExtensions` now answers.
+anything. On Angular, `packageExtensions` answers two `YN0086`s: `@tanstack/angular-store` asking
+`@tanstack/angular-form` for `@angular/common`, and `goober` asking the query devtools for `csstype`.
 
 ### The executor's manager and Node
 
@@ -1578,13 +1563,13 @@ of three ESLint packages.
 
 So `pnpm lint:starters`, a leg of `pnpm check`, lints each starter where it will run: in a generated project,
 installed, under that project's own `eslint . --max-warnings 0`, type-aware rules included. A text read outside a
-project has no program behind it: measured on 2026-10-01, the project service's default project over the starter
+project has no program behind it: measured, the project service's default project over the starter
 texts gave 6,261 findings across 488 files, every one from a type-aware rule and 6,210 of them `no-unsafe-*`, since
 each framework import reads as an error type.
 
-Its scope is the template texts: `STARTER_CASES` in `packages/create/e2e/starter-cover/` names 67 e2e
-cases that between them write every distinct text a starter template can become (781 on 2026-10-02, per target and destination,
-the joined test setup included), and `starterCover.test.ts` fails when a template, a transform or a new answer
+Its scope is the template texts: `STARTER_CASES` in `packages/create/e2e/starter-cover/` names 70 e2e cases that
+between them write every distinct text a starter template can become, per target and destination, the joined test
+setup included, and `starterCover.test.ts` fails when a template, a transform or a new answer
 leaves a text no case writes, naming the labels that would reach it. What the emitters write themselves is left to
 the end-to-end matrix, which runs every pair. Each case is the pipeline's own output (`pipelineRun`, install and fix
 skipped) under `~/.cache/linteljs/typed/projects/`, with `@linteljs/eslint-config` and, through a pnpm override,
@@ -1597,7 +1582,7 @@ The nine StyleX cases also run `test` and `build` after lint: StyleX resolves `@
 compiles, so a broken alias lints clean. The step costs 42 seconds of a warm `--all` run.
 
 A case whose generated tree (less `node_modules`, the lockfile and `.git`) hashes as it did at its last clean lint is
-skipped; `--all` lints every case. Measured on 2026-10-02, ten cores and five at a time: cold, 8.4 minutes; warm
+skipped; `--all` lints every case. Measured on ten cores, five at a time: cold, 8.4 minutes; warm
 with `--all`, 4.5 minutes; warm with nothing changed, 16 seconds. So `check` runs the changed mode and CI runs
 `--all` first, with the cache keyed on `create`'s templates and source. A missing cache prints a notice and runs
 cold rather than skip. `lint:starters:fix` writes a fix back to a template copied whole and untransformed, and only
@@ -1632,8 +1617,7 @@ under pnpm, and a greedy cover keeps enough of them that every *pair* of answer 
 cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
 `languages`, `testing`, and each library on or off as an axis of its own. `agents`, `plugins` and `surfaces` are
 always their full value, and `typeSafety` is always `strict`: neither changes what is installed, and `relaxed` only
-loosens rules over the same files. `languages` is none or all six, since a project without it is byte-identical to
-one generated before it and must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
+loosens rules over the same files. `languages` is none or all six, since a project without it must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
 an exact-tag match.
 
 On top of the pairs, 41 more. Per target, the first case answering the most (every library, every optional answer
@@ -1661,7 +1645,6 @@ Every defect the suite has found was a two-way interaction, and none needed a th
 | floating promise in `src/devtools/index.ts` | the extension target, on Chrome |
 | a leftover `app.spec.ts` | Angular, with `testing: none` |
 | `@mocks/renderScreen` importing what is not installed | React Native, with `testing: none` |
-| `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` (no longer run: strict only) |
 
 Greedy set cover over the legal enumeration: every case it can pick is one `refuseMisfit` accepts, so nothing has to
 be checked for legality and the pair universe is by construction the reachable one. It is deterministic, so a label
@@ -1787,7 +1770,7 @@ reach for `@i18n` alike, an alias only that project declares. They are data here
 and code only in a generated project, where that project's own `eslint .` judges them; `pnpm lint:starters` and the
 end-to-end suite are what prove it.
 
-Measured on 2026-10-05 for `setupTests.mswJest.ts`, the Jest twin of the MSW setup: without its entry, `eslint` on
+Measured for `setupTests.mswJest.ts`, the Jest twin of the MSW setup: without its entry, `eslint` on
 it reports 9 errors, every one `no-unsafe-call`, `no-unsafe-member-access` or `no-unsafe-assignment`, because the
 `jest` global and `./msw/node` resolve to nothing here.
 
@@ -1803,7 +1786,7 @@ on `layoutUtils`.
 ### `resolver: { project: 'packages/*/tsconfig.json' }`
 
 The default resolver reads a single tsconfig discovered from the working directory, which in a workspace is the
-root, and each package's `@mocks/*` lives in its own tsconfig. Measured on 2026-10-02 without the override: 156
+root, and each package's `@mocks/*` lives in its own tsconfig. Measured without the override: 156
 `import-x/no-unresolved` findings, every one an `@mocks/` import.
 
 `noWarnOnMultipleProjects` rides beside it. The resolver prints "Multiple projects found" twice per run when
@@ -1845,7 +1828,8 @@ no asynchronous point to wait at.
 
 `es-toolkit/compat` is banned outright, in every package: the strict entry or the standard library. `/compat` is
 the lodash-compatibility build, and this workspace never had lodash to migrate from, so its looser signatures only
-buy a way to make a call typecheck that should not have been an es-toolkit call. Measured: the strict `sortBy` and
+buy a way to make a call typecheck that should not have been an es-toolkit call. es-toolkit itself is in use:
+bundled into `eslint-config` and `eslint-plugin`, and a runtime dependency of `create`. Measured: the strict `sortBy` and
 `orderBy` are `<T extends object>` and take no `string[]`, while `/compat`'s `sortBy<T>(collection: ArrayLike<T>,
 ...)` accepts every string sort here. Taking it would replace `localeCompare(left, right, 'en')` comparators with a
 default comparison that orders mixed case differently, which moves the bytes of `plugins/linteljs/managed.json`,
@@ -1904,7 +1888,7 @@ reached through a field (`parent.callee`, `parent.object`, `outer.parent.body`) 
 sonarjs reads the intersection and the union member as disjoint, so it calls `parent.callee === fn` impossible when
 that is the whole question the rule asks.
 
-Measured, last on 2026-10-02: with the rule forced on, it reports five comparisons across the three files the block names. They are
+Measured with the rule forced on: it reports five comparisons across the three files the block names. They are
 not constant, which the plugin's 100% branch gate proves: each is taken both ways by a test. Treat the count as a
 reading to re-take, not to trust; if it reaches zero, the reports are right and the block is wrong. The files are
 named one by one, so another site has to be added on purpose.
@@ -1920,9 +1904,8 @@ named one by one, so another site has to be added on purpose.
 An inclusion rather than an exemption. `base` treats every `e2e/` as a suite, which is right for a generated project's
 Playwright folder and stays as shipped. This workspace's one `e2e/` is the create harness, `packages/create/e2e/`,
 which is source that happens to drive a suite, so the root config maps `base`'s output and drops `**/e2e/**` from
-every block's `files` and `ignores`. Its `*.test.ts` stay suites through `**/*.{test,spec}.*`. Measured on 2026-10-03,
-when the harness left `src/`: the source-only blocks then reached its 15 non-test modules and found five
-`no-magic-numbers` (a 200 status, the ping's 100 attempts and 200ms interval, a milliseconds divisor, the three parts
+every block's `files` and `ignores`. Its `*.test.ts` stay suites through `**/*.{test,spec}.*`. Measured: the
+source-only blocks reach its non-test modules and found five `no-magic-numbers` (a 200 status, the ping's 100 attempts and 200ms interval, a milliseconds divisor, the three parts
 of a version) and nothing from `expression-complexity`, `max-lines` or `max-lines-per-function`.
 
 ### `@linteljs/workspace/e2e-test`
