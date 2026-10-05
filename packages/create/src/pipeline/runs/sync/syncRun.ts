@@ -271,8 +271,7 @@ export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<S
 export const writeDependencies = async (cwd: string, changes: Upgrade[]): Promise<void> => {
   const manifest = await readIfPresent(packageJsonPath(cwd));
   const upgraded = upgradedPackageJson(parsePackageJson(manifest ?? '{}'), changes);
-  const artifact: Artifact = {
-    stage: 'package',
+  const artifact: Omit<Artifact, 'stage'> = {
     target: 'package.json',
     content: { text: serializedPackageJson(upgraded) },
   };
@@ -288,8 +287,7 @@ export const writeLintConfig = async (cwd: string, answers: HostedAnswers, plan:
     await rename(from, to);
   }
 
-  const artifact: Artifact = {
-    stage: 'lint',
+  const artifact: Omit<Artifact, 'stage'> = {
     target: ESLINT_CONFIG_PATH,
     content: { text: emitEslintConfig(answers) },
   };

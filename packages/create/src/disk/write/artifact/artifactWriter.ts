@@ -17,7 +17,8 @@ const EXECUTABLE_MODE = 0o755;
 
 export const artifactWriter = async (
   cwd: string,
-  artifact: Artifact,
+  // The stage only orders a create run, so a sync write names none.
+  artifact: Omit<Artifact, 'stage'>,
   seed = false,
 ): Promise<boolean> => {
   if (artifact.seed === true && !seed) {
