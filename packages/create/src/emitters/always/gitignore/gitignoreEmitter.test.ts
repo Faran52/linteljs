@@ -39,16 +39,40 @@ describe('mergeGitignore', () => {
     expect(mergedGitignore).toBe('# linteljs\ncoverage/\n*.tsbuildinfo\n');
   });
 
-  it('adds nothing a second time', () => {
-    const once = mergeGitignore('node_modules\n', ENTRIES);
+  it('adds nothing a second time, a negation included', () => {
+    const entries = [
+      '.env.*',
+      '!.env.example',
+      ...ENTRIES,
+    ];
+    const once = mergeGitignore('node_modules\n', entries);
 
-    const mergedGitignore = mergeGitignore(once, ENTRIES);
+    const mergedGitignore = mergeGitignore(once, entries);
     expect(mergedGitignore).toBe(once);
   });
 
   it('adds only the entry that is missing', () => {
     const mergedGitignore = mergeGitignore('coverage/\n', ENTRIES);
     expect(mergedGitignore).toBe('coverage/\n\n# linteljs\n*.tsbuildinfo\n');
+  });
+
+  it('appends a negation again after a pattern appended that would override it', () => {
+    const mergedGitignore = mergeGitignore('.env\n!.env.example\n', [
+      '.env',
+      '.env.*',
+      '!.env.example',
+    ]);
+    expect(mergedGitignore).toBe('.env\n!.env.example\n\n# linteljs\n.env.*\n!.env.example\n');
+  });
+
+  it('appends no negation when every pattern before it is already there', () => {
+    const existing = '.env.*\n!.env.example\n';
+    const mergedGitignore = mergeGitignore(existing, [
+      '.env.*',
+      '!.env.example',
+      'coverage/',
+    ]);
+    expect(mergedGitignore).toBe(`${existing}\n# linteljs\ncoverage/\n`);
   });
 
   it('recognises an entry already there on a CRLF line ending', () => {

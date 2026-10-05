@@ -1,5 +1,3 @@
-import { difference } from 'es-toolkit';
-
 import { type Answers, type Artifact } from '@config/types';
 
 import { targetFor } from '@targets';
@@ -17,7 +15,20 @@ export const mergeGitignore = (existing: string | null, entries: string[]): stri
   // Either line ending, or a Windows checkout's trailing `\r` gets the entry appended again.
   const lines = current.split(/\r?\n/);
 
-  const missing = difference(entries, lines);
+  const isNegation = (entry: string): boolean => {
+    return entry.startsWith('!');
+  };
+
+  const firstAppended = entries
+    .findIndex((entry) => {
+      return !isNegation(entry) && !lines.includes(entry);
+    });
+  // Last match wins, so a negation our list orders after an appended pattern goes again after it. By list
+  // order, not glob matching: repeating a negation the new pattern never matches is harmless.
+  const missing = entries
+    .filter((entry, index) => {
+      return !lines.includes(entry) || (firstAppended !== -1 && index > firstAppended && isNegation(entry));
+    });
 
   if (missing.length === 0) {
     return current;
