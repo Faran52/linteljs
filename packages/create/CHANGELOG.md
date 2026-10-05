@@ -196,6 +196,8 @@ when a version's change lives in a sibling it is described there instead:
 - A React Native project with msw runs its Jest suites without Node 26's `ExperimentalWarning: localStorage is not
   available`, once per worker. The msw setup drops the `localStorage` global React Native lacks before msw's cookie
   store reads it.
+- A web extension's DevTools panel page has a `main` landmark and an `h1`, as the popup does, where it held one bare
+  line of text.
 - The language label in a React Native project's header stays on one line on a narrow screen, where it broke
   inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
 - A React Native project with a right-to-left language lays out right to left on a device in that language, in

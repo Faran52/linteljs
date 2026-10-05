@@ -1,11 +1,14 @@
 import { renderPanel } from './renderPanel';
 
 describe('renderPanel', () => {
-  it('writes into the element it is handed', () => {
+  it('writes a main landmark with one heading into the element it is handed', () => {
     const root = document.createElement('div');
 
     renderPanel(root);
 
-    expect(root.textContent).toBe('Panel ready.');
+    const heading = root.querySelector('main > h1')?.textContent;
+    const status = root.querySelector('main > p')?.textContent;
+    expect(heading).toBe('Panel');
+    expect(status).toBe('Ready.');
   });
 });
