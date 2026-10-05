@@ -107,7 +107,6 @@ export const FRAMEWORK_GROUPS: Record<Framework, string[]> = {
     '^svelte/',
     '^@sveltejs/',
     String.raw`^\$app/`,
-    String.raw`^\$env/`,
     '^#lib(?:/|$)',
   ],
   'solid': [

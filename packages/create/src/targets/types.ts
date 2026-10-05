@@ -189,7 +189,7 @@ export interface TargetRecord {
   reactRouterProject?: true;
   angularProject?: true;
   build: string;
-  // SvelteKit's `svelte-kit sync` writes the tsconfig the emitted one extends.
+  // SvelteKit's `svelte-kit sync` generates the kit's types.
   prepare?: string;
   // Absent: vitest.
   testRunner?: 'jest';

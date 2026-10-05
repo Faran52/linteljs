@@ -5,8 +5,8 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-// No file behind either, so the resolver has nothing to find.
-const VIRTUAL_MODULES = [String.raw`^\$app/`, String.raw`^\$env/`];
+// No file behind it, so the resolver has nothing to find.
+const VIRTUAL_MODULES = [String.raw`^\$app/`];
 
 export const svelteGroup: string[] = [
   '^svelte$',

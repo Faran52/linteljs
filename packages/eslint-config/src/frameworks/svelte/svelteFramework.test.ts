@@ -72,10 +72,8 @@ describe('svelte', () => {
     expect(svelteEnabled).not.toContain(FILENAME_RULE);
   });
 
-  it.each([
-    '$app/navigation',
-    '$env/static/public',
-  ])('lets %s go unresolved', async (specifier) => {
+  it('lets $app/navigation go unresolved', async () => {
+    const specifier = '$app/navigation';
     const code = `import { a } from '${specifier}';\n\nexport const value = a;\n`;
 
     const baseRuleIds = await ruleIdsFor(base(), code, 'src/lib/sample.ts');
@@ -86,8 +84,12 @@ describe('svelte', () => {
     expect(svelteRuleIds).not.toContain('import-x/no-unresolved');
   });
 
-  it('still reports a package that does not resolve', async () => {
-    const code = "import { a } from 'not-installed';\n\nexport const value = a;\n";
+  // Kit 3 has no `$env/*` modules: its env lives under `$app/env`.
+  it.each([
+    'not-installed',
+    '$env/static/public',
+  ])('still reports %s, which does not resolve', async (specifier) => {
+    const code = `import { a } from '${specifier}';\n\nexport const value = a;\n`;
 
     const config = [...base(), ...svelte()];
     const ruleIds = await ruleIdsFor(config, code, 'src/lib/sample.ts');
@@ -111,13 +113,18 @@ describe('svelte', () => {
     'svelte/store',
     '@sveltejs/kit',
     '$app/navigation',
-    '$env/static/public',
     '#lib/store/counterStore.ts',
     '#lib',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
     const config = base({ frameworkGroup: svelteGroup });
     const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
+  });
+
+  it('sorts $env/static/public with the packages', async () => {
+    const config = base({ frameworkGroup: svelteGroup });
+    const actual = await sortsAheadOfPackages(config, '$env/static/public');
+    expect(actual).toBe(false);
   });
 
   it('names every block it writes', () => {

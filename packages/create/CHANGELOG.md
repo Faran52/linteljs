@@ -148,8 +148,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
-- **Svelte moves to SvelteKit 3.** `#lib/*` comes from a `package.json` `imports` entry in place of `$lib`, and
-  every import names its file with the extension; `tsconfig.json` extends `$app/tsconfig`.
+- **Svelte moves to SvelteKit 3 and `@sveltejs/adapter-auto` 8.** `#lib/*` comes from a `package.json` `imports`
+  entry in place of `$lib`, and every import names its file with the extension; `tsconfig.json` extends
+  `$app/tsconfig` and takes its types from `$app/types`. `$app/environment` is `$app/env`, the error page calls
+  `refreshAll` in place of `invalidateAll`, and the hooks import `Handle` and `ResolveOptions` from
+  `@sveltejs/kit/hooks`. `vite.config.ts` turns runes on for every component outside `node_modules`.
 - **React Native runs its suites on Jest, through `jest-expo`, not Vitest.** The project gets `jest.config.js`
   (the `jest-expo` preset, a module mapper from `tsconfig.json`'s paths, 100% thresholds on all four metrics),
   `jest`, `@types/jest`, `eslint-plugin-jest`, `jest-expo` and `@react-native/jest-preset`, the `jest` lint layer and

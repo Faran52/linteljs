@@ -88,7 +88,6 @@ describe('sortedImports', () => {
       'svelte/store',
       '@sveltejs/kit',
       '$app/state',
-      '$env/static/public',
     ]],
     ['solid', [
       'solid-js',
