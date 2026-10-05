@@ -31,8 +31,7 @@ const withoutSuperseded = (existing: string): string => {
   return kept.join('\n');
 };
 
-// Line-based: a YAML round-trip would reformat every line the user wrote. Only adds a block that is absent,
-// and drops the scaffolder's opt-out, which refuses exactly the builds linteljs allows.
+// Line-based: a YAML round-trip would reformat every line the user wrote.
 export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
   const remainder = withoutSuperseded(existing ?? '')
     .replace(/^\n+/, '');

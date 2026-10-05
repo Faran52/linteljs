@@ -1,4 +1,4 @@
-// Every version since 1.0.0 packed `docs/`, and `files` does not pack `src`.
+// Every published version packs `docs/`, and `files` does not pack `src`.
 import {
   mkdirSync,
   readdirSync,

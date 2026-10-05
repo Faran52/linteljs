@@ -1,7 +1,7 @@
 import type { Surface } from '@config/types';
 import type { OptionalMultiRecord } from '../../types';
 
-// No `minimum`: a config or flag may still say `surfaces: []`, what an older config means.
+// No `minimum`: an older config says `surfaces: []`.
 export const surfacesAnswer = {
   key: 'surfaces',
   flag: 'surfaces',

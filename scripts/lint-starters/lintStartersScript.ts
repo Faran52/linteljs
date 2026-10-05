@@ -103,8 +103,7 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
     return reprepared.ok ? 'unchanged' : fail(item.label, 'prepare', reprepared.output);
   }
 
-  // A kept lockfile keeps what a changed project no longer needs: a React Native case moved off Vitest kept its
-  // esbuild, whose build script the new `allowBuilds` refuses (ci 37235229009).
+  // A kept lockfile keeps what a changed project no longer needs, such as an esbuild `allowBuilds` refuses.
   rmSync(join(dir, 'pnpm-lock.yaml'), { force: true });
 
   const installArgs = ['install', '--no-frozen-lockfile'];

@@ -47,8 +47,7 @@ export const mergeChecker = (shipped: string, current: string | null): string =>
   const merged = carriedOver(withSkipped, existing, 'PROJECT_BANNED');
   const banned = blockOf(merged, 'PROJECT_BANNED');
 
-  // A checker from before 2.0 declared `directive` itself; the entry no longer does, so a block calling it gets
-  // the import from the util.
+  // A pre-2.0 project block calls `directive` without importing it.
   return /\bdirective\(/u.test(banned)
     ? merged.replace(IMPORT_ANCHOR, `${IMPORT_ANCHOR}  directive,\n`)
     : merged;
