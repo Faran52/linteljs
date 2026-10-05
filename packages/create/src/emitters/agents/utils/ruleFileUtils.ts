@@ -16,7 +16,13 @@ const expanded = (glob: string): string[] => {
     : group[1]
         .split(',')
         .flatMap((alternative) => {
-          return expanded(`${glob.slice(0, group.index)}${alternative}${glob.slice(group.index + group[0].length)}`);
+          // A function, so a `$` in the alternative is never read as a replacement pattern.
+          const spelled = glob
+            .replace(group[0], () => {
+              return alternative;
+            });
+
+          return expanded(spelled);
         });
 
   return globs;
