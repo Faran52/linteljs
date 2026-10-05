@@ -1229,6 +1229,18 @@ rewrites `android/gradle.properties`, and `expo-build-properties` passes no JVM 
 native-build notes say so, and name `expo run:*` through the project's manager, since `npx` in a project whose
 `devEngines` names another manager fails with EBADDEVENGINES.
 
+### The document head is web only, and a dev build carries no dev client
+
+On iOS `expo-router/head` is a native module for Handoff, and in development it throws "Add the handoff origin"
+unless the `expo-router` plugin names an `origin`. A starter has no real origin, so `DocumentHead` renders `<Head>`
+on the web only. Measured 2026-10-05 on an iOS 27 simulator: with the guard removed the app opens on a Render
+Error, and with it on Home.
+
+`expo run:ios` opens `<scheme>://expo-development-client/?url=...` rather than launching by bundle id, and
+expo-router maps that URL to `/`. Measured the same day: a fresh `expo run:ios`, a cold `simctl openurl` of the URL
+and a warm one from the About tab each land on Home. So neither `expo-dev-client` nor an `app/+native-intent.tsx`
+is added: each would answer a 404 that does not occur.
+
 
 ## Package managers
 
