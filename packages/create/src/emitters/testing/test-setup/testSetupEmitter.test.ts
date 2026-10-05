@@ -242,6 +242,18 @@ describe('the shipped test setup', () => {
     expect(index).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
   });
 
+  it('drops Node\'s localStorage before a React Native suite loads msw, whose cookie store reads it', async () => {
+    const setup = await setupFor({
+      target: 'react-native',
+      mocking: 'msw',
+    });
+
+    const dropped = setup.indexOf("Reflect.deleteProperty(globalThis, 'localStorage');");
+    const loaded = setup.indexOf("('./msw/node')");
+    expect(dropped).toBeGreaterThan(-1);
+    expect(dropped).toBeLessThan(loaded);
+  });
+
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {
     const text = await readFile(join(TEMPLATES_ROOT, fragment), 'utf8');
 

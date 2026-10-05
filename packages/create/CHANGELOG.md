@@ -193,6 +193,9 @@ when a version's change lives in a sibling it is described there instead:
   set to `zh-HK` or `zh-MO` opens `zh-TW` on every target, where React opened `zh-CN` and the rest English.
 - A Nuxt project with `--store tanstack-store` installs `@tanstack/vue-store`. It recorded the store and listed it on
   the Version page but installed nothing for it.
+- A React Native project with msw runs its Jest suites without Node 26's `ExperimentalWarning: localStorage is not
+  available`, once per worker. The msw setup drops the `localStorage` global React Native lacks before msw's cookie
+  store reads it.
 - The language label in a React Native project's header stays on one line on a narrow screen, where it broke
   inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
 - A React Native project with a right-to-left language lays out right to left on a device in that language, in
