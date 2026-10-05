@@ -25,12 +25,13 @@ describe('the version screen', () => {
     }
   });
 
-  it('is the one main landmark on the page', async () => {
+  it('is the one main landmark on the page, and a keyboard can reach its scroll', async () => {
     await renderScreen(<VersionScreen />);
 
     const landmarks = screen.container.queryAll((node) => {
       return node.props.role === 'main';
     });
     expect(landmarks).toHaveLength(1);
+    expect(landmarks[0]).toHaveProp('tabIndex', 0);
   });
 });

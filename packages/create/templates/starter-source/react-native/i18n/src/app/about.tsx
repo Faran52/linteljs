@@ -16,7 +16,12 @@ const AboutScreen = (): ReactNode => {
   const { layout, text } = useStarterStyles();
 
   return (
-    <ScrollView style={layout.screen} role="main">
+    // Focusable, so a keyboard can scroll what overflows on the web.
+    <ScrollView
+      style={layout.screen}
+      role="main"
+      tabIndex={0}
+    >
       <Text style={text.pageTitle}>{t('about')}</Text>
       <Text style={text.lede}>{t('aboutLede')}</Text>
 

@@ -14,7 +14,12 @@ const VersionScreen = (): ReactNode => {
   const { layout, text } = useStarterStyles();
 
   return (
-    <ScrollView style={layout.screen} role="main">
+    // Focusable, so a keyboard can scroll what overflows on the web.
+    <ScrollView
+      style={layout.screen}
+      role="main"
+      tabIndex={0}
+    >
       <Text style={text.pageTitle}>Version</Text>
       <Text style={text.lede}>What this project is running, and the answers it was generated from.</Text>
 

@@ -10,6 +10,11 @@ import type { ReactNode } from 'react';
 
 const UNLISTED = { href: null };
 
+// With no icon given, the tab bar draws a placeholder glyph into each tab's accessible name.
+const noIcon = (): null => {
+  return null;
+};
+
 const RootLayout = (): ReactNode => {
   const { colors, layout } = useStarterStyles();
 
@@ -22,6 +27,7 @@ const RootLayout = (): ReactNode => {
     tabBarActiveTintColor: colors.primary,
     tabBarInactiveTintColor: colors.muted,
     tabBarStyle: layout.tabBar,
+    tabBarIcon: noIcon,
     tabBarIconStyle: { display: 'none' },
     tabBarLabelStyle: { fontSize: 15 },
     tabBarItemStyle: { justifyContent: 'center' },

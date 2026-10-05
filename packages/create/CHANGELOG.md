@@ -198,6 +198,9 @@ when a version's change lives in a sibling it is described there instead:
   store reads it.
 - A web extension's DevTools panel page has a `main` landmark and an `h1`, as the popup does, where it held one bare
   line of text.
+- A React Native project's web tabs are named by their label alone, where each name carried the tab bar's
+  placeholder icon glyph twice. The About and Version screens take keyboard focus, so a keyboard can scroll them, where
+  axe flagged them `scrollable-region-focusable` once they overflowed.
 - The language label in a React Native project's header stays on one line on a narrow screen, where it broke
   inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
 - A React Native project with a right-to-left language lays out right to left on a device in that language, in
