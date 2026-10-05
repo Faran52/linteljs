@@ -3,6 +3,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { render } from '@testing-library/react-native';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
 // `SafeAreaProvider` measures its insets natively, so it has to be real and handed metrics rather than mocked.
 const METRICS = {
   frame: {
@@ -22,7 +25,13 @@ const METRICS = {
 export const renderScreen = async (ui: ReactElement) => {
   return render(ui, {
     wrapper: ({ children }) => {
-      return <SafeAreaProvider initialMetrics={METRICS}>{children}</SafeAreaProvider>;
+      return (
+        <SafeAreaProvider initialMetrics={METRICS}>
+          <StoreProvider>
+            <DataProvider>{children}</DataProvider>
+          </StoreProvider>
+        </SafeAreaProvider>
+      );
     },
   });
 };

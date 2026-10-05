@@ -2,10 +2,12 @@ import { hasTests } from '@utils/answerUtils';
 
 import {
   COMMON_REACT_PLUGINS,
+  CONTACT_HOOK_FORMS,
   FOLDER_ROUTED,
   STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
+import { hasForm } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -17,11 +19,18 @@ import {
   accessorTests,
   mockFiles,
   mockTests,
+  rtkContactFiles,
   rtkFiles,
   rtkTests,
 } from '../utils/mockUtils';
 import { componentNaming } from '../utils/namingUtils';
-import { filesAt } from '../utils/starterUtils';
+import {
+  contactApiFiles,
+  contactSchemaFiles,
+  filesAt,
+  formValidatorTest,
+  submissionTest,
+} from '../utils/starterUtils';
 
 import {
   ACCESSORS,
@@ -33,11 +42,15 @@ import { reactNativeI18nFiles, reactNativeI18nTests } from './utils/translatedFi
 
 import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { TargetRecord } from '../types';
+import type { StarterFile, TargetRecord } from '../types';
 
 // Metro has no Tailwind pipeline of its own.
 const isTailwind = (answers: Answers): boolean => {
   return answers.styling === 'tailwind';
+};
+
+const isRedux = (answers: Answers): boolean => {
+  return answers.store === 'redux-toolkit';
 };
 
 // Not its own layer: `eslint-plugin-react-native` caps at `eslint ^9`, and `eslint-config-expo` collides with `base()`.
@@ -104,7 +117,7 @@ export const reactNativeTarget: TargetBuilder = () => {
     testRunner: 'jest',
     starterFiles: [
       // No dev server, so no browser worker.
-      ...mockFiles(false, false),
+      ...mockFiles(true, false),
       ...accessorFiles(ACCESSORS, {
         shared: 'react',
         names: SOURCE_ACCESSORS,
@@ -115,8 +128,91 @@ export const reactNativeTarget: TargetBuilder = () => {
         shared: true,
       }),
       ...reactNativeI18nFiles(),
-      // No contact page.
-      ...localeFiles(),
+      ...localeFiles(hasForm),
+      {
+        target: 'src/config/routes.ts',
+        when: (answers) => {
+          return !hasForm(answers);
+        },
+        shared: true,
+      },
+      {
+        target: 'src/config/routes.ts',
+        when: hasForm,
+        variant: 'with-form',
+        shared: true,
+      },
+      {
+        target: 'src/components/ui/index.ts',
+        when: hasForm,
+        variant: 'with-form',
+      },
+      {
+        target: 'src/components/ui/text-input/TextInput.tsx',
+        when: hasForm,
+      },
+      ...CONTACT_HOOK_FORMS
+        .map((form): StarterFile => {
+          const file: StarterFile = {
+            target: 'src/hooks/use-contact-form/useContactForm.ts',
+            when: (answers) => {
+              return answers.form === form;
+            },
+            variant: form,
+            shared: 'react',
+            source: 'src/pages/contact/useContactForm.ts',
+          };
+
+          return file;
+        }),
+      ...contactApiFiles({ shared: 'react' }),
+      ...rtkContactFiles(),
+      ...contactSchemaFiles(),
+      // TanStack Query needs an ancestor; RTK Query rides the Redux provider, whose store registers its middleware.
+      {
+        target: 'src/lib/providers/data/DataProvider.tsx',
+        when: (answers) => {
+          return answers.data !== 'tanstack-query';
+        },
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/providers/data/DataProvider.tsx',
+        when: (answers) => {
+          return answers.data === 'tanstack-query';
+        },
+        variant: 'tanstack-query',
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/providers/store/StoreProvider.tsx',
+        when: (answers) => {
+          return answers.store !== 'redux-toolkit';
+        },
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/providers/store/StoreProvider.tsx',
+        when: isRedux,
+        variant: 'redux-toolkit',
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/store/counter/counterStore.ts',
+        when: (answers) => {
+          return isRedux(answers) && answers.data !== 'rtk-query';
+        },
+        variant: 'redux-toolkit',
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/store/counter/counterStore.ts',
+        when: (answers) => {
+          return isRedux(answers) && answers.data === 'rtk-query';
+        },
+        variant: 'rtk-query',
+        shared: 'react',
+      },
       languageUtilsFile(),
       {
         target: '__mocks__/renderScreen.tsx',
@@ -141,7 +237,7 @@ export const reactNativeTarget: TargetBuilder = () => {
     ],
     // expo-router treats every file under the route root as a route; `expo export` fails on a suite there.
     starterTests: [
-      ...mockTests(false),
+      ...mockTests(true),
       STATUS_UTILS_TEST,
       // React's hook suites import `@testing-library/react`, and this target has no DOM.
       ...accessorTests(ACCESSORS),
@@ -179,6 +275,40 @@ export const reactNativeTarget: TargetBuilder = () => {
         target: 'src/styles/starter.test.ts',
         covers: 'src/styles/starter.ts',
       },
+      {
+        target: 'src/components/ui/text-input/TextInput.test.tsx',
+        covers: 'src/components/ui/text-input/TextInput.tsx',
+      },
+      // React's own suites for these render through a DOM.
+      {
+        target: 'src/lib/providers/data/DataProvider.test.tsx',
+        covers: 'src/lib/providers/data/DataProvider.tsx',
+      },
+      {
+        target: 'src/lib/providers/store/StoreProvider.test.tsx',
+        covers: 'src/lib/providers/store/StoreProvider.tsx',
+      },
+      {
+        target: 'src/lib/store/counter/counterStore.test.ts',
+        covers: 'src/lib/store/counter/counterStore.ts',
+      },
+      {
+        target: 'src/lib/apis/contact/contactApi.test.ts',
+        covers: 'src/lib/apis/contact/contactApi.ts',
+      },
+      {
+        target: 'src/lib/apis/contact/contactEndpoints.test.ts',
+        covers: 'src/lib/apis/contact/contactEndpoints.ts',
+        variant: 'rtk-query',
+        shared: 'react',
+      },
+      {
+        target: 'src/lib/apis/contact/contactHooks.test.ts',
+        covers: 'src/lib/apis/contact/contactHooks.ts',
+        variant: 'rtk-query',
+      },
+      submissionTest(),
+      formValidatorTest(),
       ...reactNativeI18nTests(),
       LOCALES_TEST,
       languageUtilsTest(),

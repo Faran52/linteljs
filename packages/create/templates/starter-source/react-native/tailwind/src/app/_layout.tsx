@@ -5,6 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { PAGES } from '@config/routes';
 import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
 // Metro has no CSS pipeline; NativeWind is what makes this import mean anything.
 import { DocumentHead } from '@features/document-head/DocumentHead';
 
@@ -46,27 +49,29 @@ const RootLayout = (): ReactNode => {
   };
 
   return (
-    <>
-      <DocumentHead />
-      {/* `auto` draws dark icons on a light scheme; Android otherwise keeps them light on the light header. */}
-      <StatusBar style="auto" />
-      <Tabs screenOptions={screenOptions}>
-        {PAGES
-          .map((page) => {
-            const options = { title: page.label };
+    <StoreProvider>
+      <DataProvider>
+        <DocumentHead />
+        {/* `auto` draws dark icons on a light scheme; Android otherwise keeps them light on the light header. */}
+        <StatusBar style="auto" />
+        <Tabs screenOptions={screenOptions}>
+          {PAGES
+            .map((page) => {
+              const options = { title: page.label };
 
-            return (
-              <Tabs.Screen
-                key={page.id}
-                name={page.id === 'home' ? 'index' : page.id}
-                options={options}
-              />
-            );
-          })}
-        {/* A route, so Tabs would list it: `href: null` keeps it off the bar. */}
-        <Tabs.Screen name="+not-found" options={UNLISTED} />
-      </Tabs>
-    </>
+              return (
+                <Tabs.Screen
+                  key={page.id}
+                  name={page.id === 'home' ? 'index' : page.id}
+                  options={options}
+                />
+              );
+            })}
+          {/* A route, so Tabs would list it: `href: null` keeps it off the bar. */}
+          <Tabs.Screen name="+not-found" options={UNLISTED} />
+        </Tabs>
+      </DataProvider>
+    </StoreProvider>
   );
 };
 

@@ -12,6 +12,8 @@ export interface Palette {
   readonly border: string;
   readonly primary: string;
   readonly primaryForeground: string;
+  readonly destructive: string;
+  readonly input: string;
 }
 
 export type StarterStyles = ReturnType<typeof sheetsFor>;
@@ -29,6 +31,8 @@ const PALETTES = {
     border: '#e7e3dd',
     primary: '#a8541c',
     primaryForeground: '#fff',
+    destructive: '#b23a32',
+    input: '#928f8b',
   },
   dark: {
     background: '#1f2128',
@@ -38,6 +42,8 @@ const PALETTES = {
     border: '#32343c',
     primary: '#e8a05c',
     primaryForeground: '#241505',
+    destructive: '#db827a',
+    input: '#737376',
   },
 } satisfies Record<'light' | 'dark', Palette>;
 
@@ -96,6 +102,32 @@ const sheetsFor = (colors: Palette) => {
       borderColor: colors.border,
       backgroundColor: 'transparent',
     },
+    actionDisabled: { opacity: 0.5 },
+    form: {
+      gap: 16,
+      marginTop: 16,
+      alignItems: 'flex-start',
+    },
+    field: {
+      alignSelf: 'stretch',
+      gap: 6,
+    },
+    input: {
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 7,
+      borderWidth: 1,
+      borderColor: colors.input,
+      backgroundColor: colors.card,
+      color: colors.foreground,
+      fontSize: 15,
+    },
+    textarea: {
+      minHeight: 120,
+      textAlignVertical: 'top',
+    },
+    inputInvalid: { borderColor: colors.destructive },
     header: { backgroundColor: colors.card },
     scene: { backgroundColor: colors.background },
     mark: { gap: 6 },
@@ -149,6 +181,20 @@ const sheetsFor = (colors: Palette) => {
       textAlign: 'center',
     },
     actionOutline: { color: colors.foreground },
+    label: {
+      color: colors.foreground,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    error: {
+      color: colors.destructive,
+      fontSize: 13,
+    },
+    sent: {
+      marginTop: 16,
+      color: colors.foreground,
+      fontSize: 15,
+    },
     pageTitle: {
       fontSize: 22,
       fontWeight: '600',

@@ -1,13 +1,18 @@
 import {
   ANSWERED,
   byKey,
+  type Condition,
+  contactGates,
   type GateRow,
   mswGates,
+  NOT_TANSTACK_QUERY,
   RTK_QUERY,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
+  WITH_FORM,
   WITH_I18N,
+  WITHOUT_FORM,
   WITHOUT_I18N,
 } from '@mocks/starterGates';
 import {
@@ -101,8 +106,46 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
+const FORM_ENGLISH: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: [undefined],
+}];
+const FORM_I18N: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: ANSWERED,
+}];
+
 const GATES: GateRow[] = [
-  ...mswGates(false, false),
+  ...mswGates(true, false),
+  ...contactGates(['tanstack-query', 'rtk-query']),
+  ['src/app/contact.tsx', FORM_ENGLISH],
+  ['src/app/contact.tsx@i18n', FORM_I18N],
+  ['src/app-contact.test.tsx', FORM_ENGLISH],
+  ['src/app-contact.test.tsx@i18n', FORM_I18N],
+  ['src/config/routes.ts', WITHOUT_FORM],
+  ['src/config/routes.ts@with-form', WITH_FORM],
+  ['src/components/ui/index.ts@with-form', WITH_FORM],
+  ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
+  ['src/hooks/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
+  ['src/hooks/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
+  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [
+    undefined,
+    'zustand',
+    'tanstack-store',
+  ] }]],
+  ['src/lib/providers/store/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
+  // Only Redux's provider reads the store; the other two stores have no demo here.
+  ['src/lib/store/counter/counterStore.ts@redux-toolkit', [{
+    store: ['redux-toolkit'],
+    data: [undefined, 'tanstack-query'],
+  }]],
+  ['src/lib/store/counter/counterStore.ts@rtk-query', [{
+    store: ['redux-toolkit'],
+    data: ['rtk-query'],
+  }]],
   ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
   ['metro.config.js@tailwind', TAILWIND],
   ['nativewind-env.d.ts@tailwind', TAILWIND],

@@ -83,8 +83,10 @@ when a version's change lives in a sibling it is described there instead:
   | Web extension popup | a resolver, with no library; `chrome.i18n` cannot switch at runtime. An extension without a popup is not asked |
 
 - **The starter.** Every target but the extension has a header with a "LintelJS Starter" label and tabs, Home,
-  About and Version pages; React, Next, Vue, Svelte and Solid add Contact with a form library. Angular renders it under every
-  answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. A Contact field shows its
+  About and Version pages; React, Next, React Native, Vue, Svelte and Solid add Contact with a form library. Angular renders it under every
+  answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. React Native's Contact is a tab
+  that scrolls clear of the keyboard, sends through the chosen data layer, and mounts React's store and data
+  providers in its root layout, so Redux and TanStack Query hooks have their ancestor. A Contact field shows its
   error once it is left or a send is tried, and clears it as soon as the value passes. About lists every script
   `check` chains, with what each runs and the manager's own prefix. The page title is the project's name, and the
   header wraps a name too long for its row rather than cutting it off.

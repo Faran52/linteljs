@@ -86,6 +86,32 @@ describe('reactNativeI18nFiles', () => {
     const tailwindFiles = [...ENGLISH_FILES, 'src/app/_layout.tsx@tailwind'];
     expect(tailwind).toEqual(tailwindFiles);
   });
+
+  it('writes the contact screen once a form library is chosen, translated under i18n', () => {
+    const english = writtenUnder(reactNativeI18nFiles(), answersFor({
+      target: 'react-native',
+      form: 'tanstack-form',
+    }));
+    const translated = writtenUnder(reactNativeI18nFiles(), answersFor({
+      target: 'react-native',
+      form: 'react-hook-form',
+      languages: ['ar'],
+    }));
+
+    const englishFiles = [
+      ...ENGLISH_FILES,
+      'src/app/_layout.tsx',
+      'src/app/contact.tsx',
+    ];
+    expect(english).toEqual(englishFiles);
+    const translatedFiles = [
+      ...translatedOf(ENGLISH_FILES),
+      'src/app/_layout.tsx@i18n',
+      'src/app/contact.tsx@i18n',
+      ...I18N_ONLY,
+    ];
+    expect(translated).toEqual(translatedFiles);
+  });
 });
 
 describe('reactNativeI18nTests', () => {
@@ -126,6 +152,8 @@ describe('reactNativeI18nTests', () => {
       'src/app/+not-found.tsx',
       `${STATUS_PAGE}.tsx`,
       `${STATUS_PAGE}.tsx`,
+      'src/app/contact.tsx',
+      'src/app/contact.tsx',
       'src/i18n/index.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
     ];
@@ -136,5 +164,27 @@ describe('reactNativeI18nTests', () => {
     const written = writtenUnder(reactNativeI18nTests(), answersFor({ target: 'react-native' }));
 
     expect(written).toEqual(SUITES);
+  });
+
+  it('covers the contact screen once a form library is chosen, translated under i18n', () => {
+    const english = writtenUnder(reactNativeI18nTests(), answersFor({
+      target: 'react-native',
+      form: 'tanstack-form',
+    }));
+    const translated = writtenUnder(reactNativeI18nTests(), answersFor({
+      target: 'react-native',
+      form: 'tanstack-form',
+      languages: ['ar'],
+    }));
+
+    const englishSuites = [...SUITES, 'src/app-contact.test.tsx'];
+    expect(english).toEqual(englishSuites);
+    const translatedSuites = [
+      ...translatedOf(SUITES),
+      'src/app-contact.test.tsx@i18n',
+      'src/i18n/index.test.ts@i18n',
+      'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
+    ];
+    expect(translated).toEqual(translatedSuites);
   });
 });

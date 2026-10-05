@@ -1,4 +1,4 @@
-import { type SubmitEventHandler, useState } from 'react';
+import { useState } from 'react';
 
 import { useForm, useSelector } from '@tanstack/react-form';
 
@@ -12,6 +12,11 @@ import { validateContactForm } from '@apis/contact/formValidator';
 
 import type { TextInputProps } from '@ui';
 
+// A web form's submit and a native press both carry one, so one hook serves `<form>` and `Pressable`.
+export interface PreventableEvent {
+  preventDefault: () => void;
+}
+
 export interface ContactFields {
   email: TextInputProps;
   message: TextInputProps;
@@ -22,8 +27,7 @@ export interface ContactForm {
   sent: boolean;
   submitting: boolean;
   canSubmit: boolean;
-  // Not `FormEventHandler`: React 19's types deprecate it and name this as what a submit actually takes.
-  onSubmit: SubmitEventHandler<HTMLFormElement>;
+  onSubmit: (event: PreventableEvent) => void;
 }
 
 // `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
@@ -53,7 +57,7 @@ export const useContactForm = (translate: Translate): ContactForm => {
   const field = (
     name: keyof ContactValues,
     label: string,
-    extra: Partial<TextInputProps> = {},
+    extra: Partial<TextInputProps>,
   ): TextInputProps => {
     const meta = state.fieldMeta[name];
     const shown = meta !== undefined && (meta.isBlurred || state.submissionAttempts > 0);

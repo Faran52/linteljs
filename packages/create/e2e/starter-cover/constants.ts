@@ -71,6 +71,9 @@ export const STARTER_CASES: readonly string[] = [
   'react-native pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
   'react-native pnpm vitest tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
   'react-native pnpm vitest tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tanstack-form redux-toolkit msw zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest react-hook-form redux-toolkit rtk-query languages es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tanstack-form tanstack-query zod+es-toolkit+ts-pattern+t3-env',
 ];
 
 export const LINTED_FILE = /\.(?:[cm]?[jt]sx?|astro|vue|svelte)$/u;

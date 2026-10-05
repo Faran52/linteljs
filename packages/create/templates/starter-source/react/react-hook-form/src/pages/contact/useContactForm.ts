@@ -1,4 +1,4 @@
-import { type SubmitEventHandler, useState } from 'react';
+import { useState } from 'react';
 import {
   type Control,
   useController,
@@ -15,6 +15,11 @@ import {
 
 import type { TextInputProps } from '@ui';
 
+// A web form's submit and a native press both carry one, so one hook serves `<form>` and `Pressable`.
+export interface PreventableEvent {
+  preventDefault: () => void;
+}
+
 export interface ContactFields {
   email: TextInputProps;
   message: TextInputProps;
@@ -25,8 +30,7 @@ export interface ContactForm {
   sent: boolean;
   submitting: boolean;
   canSubmit: boolean;
-  // Not `FormEventHandler`: React 19's types deprecate it and name this as what a submit actually takes.
-  onSubmit: SubmitEventHandler<HTMLFormElement>;
+  onSubmit: (event: PreventableEvent) => void;
 }
 
 interface FieldOptions {
@@ -124,10 +128,12 @@ export const useContactForm = (translate: Translate): ContactForm => {
     canSubmit: !formState.isSubmitted || formState.isValid,
     // Wrapped: `handleSubmit` answers a promise-returning handler, which `no-misused-promises` refuses.
     onSubmit: (event) => {
+      event.preventDefault();
+
       void handleSubmit(async (values) => {
         await submit(values);
         setSent(true);
-      })(event);
+      })();
     },
   };
 

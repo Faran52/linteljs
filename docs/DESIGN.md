@@ -602,9 +602,10 @@ block. The rule reads identically on every target.
   `.vue` one under the compiler behind lint, so it resolves to `any`.
 - **Angular's `angular.json` is emitted rather than templated**, because it carries the project's name.
 
-The form, Zod and data answers are demonstrated on every target that renders a contact page. Angular always renders
-one, on Reactive Forms, since `@angular/forms` ships with the framework; TanStack Form swaps the page's component for
-`injectForm`. Astro and the extension install the form library without a demo, and Nuxt declares its stores without
+The form, Zod and data answers are demonstrated on every target that renders a contact page, React Native among them:
+its screen reuses React's contact hooks, api spellings and providers, so a data layer there is the one React runs.
+Angular always renders one, on Reactive Forms, since `@angular/forms` ships with the framework; TanStack Form swaps
+the page's component for `injectForm`. Astro and the extension install the form library without a demo, and Nuxt declares its stores without
 a counter; recorded here so the absence reads as a decision rather than a forgotten file.
 
 ## The starter page
