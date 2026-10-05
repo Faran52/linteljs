@@ -22,7 +22,7 @@ export type Condition = {
 
 export type GateRow = readonly [key: string, conditions: readonly Condition[]];
 
-export interface GateWalk {
+interface GateWalk {
   gated: string[];
   twice: string[];
   mismatchesOf: (rows: readonly GateRow[]) => string[];
@@ -51,8 +51,6 @@ export const WITH_FORM: readonly Condition[] = [{ form: ANSWERED }];
 export const WITHOUT_FORM: readonly Condition[] = [{ form: [undefined] }];
 export const WITH_I18N: readonly Condition[] = [{ languages: ANSWERED }];
 export const WITHOUT_I18N: readonly Condition[] = [{ languages: [undefined] }];
-export const WITH_STORE: readonly Condition[] = [{ store: ANSWERED }];
-export const WITHOUT_STORE: readonly Condition[] = [{ store: [undefined] }];
 export const TANSTACK_QUERY: readonly Condition[] = [{ data: ['tanstack-query'] }];
 export const NOT_TANSTACK_QUERY: readonly Condition[] = [{ data: [undefined, 'rtk-query'] }];
 export const RTK_QUERY: readonly Condition[] = [{ data: ['rtk-query'] }];

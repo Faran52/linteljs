@@ -37,7 +37,7 @@ const SESSION_ID = /^[\w-]+$/u;
 
 const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)/u;
 
-export const isObject = (value: unknown): value is object => {
+const isObject = (value: unknown): value is object => {
   return typeof value === 'object' && value !== null;
 };
 
