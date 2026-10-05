@@ -8,4 +8,6 @@ export class Button {
   readonly type = input<'button' | 'submit'>('button');
 
   readonly disabled = input(false);
+
+  readonly busy = input(false);
 }

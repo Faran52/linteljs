@@ -9,9 +9,11 @@ describe('Button', () => {
     await harness.whenStable();
 
     const button = (harness.nativeElement as HTMLElement).querySelector('button');
+    const busy = button?.getAttribute('aria-busy');
 
     expect(button?.type).toBe('button');
     expect(button?.disabled).toBe(false);
+    expect(busy).toBe('false');
   });
 
   it('submits and disables on request', async () => {
@@ -25,5 +27,18 @@ describe('Button', () => {
 
     expect(button?.type).toBe('submit');
     expect(button?.disabled).toBe(true);
+  });
+
+  it('marks the button busy on request', async () => {
+    const harness = TestBed.createComponent(Button);
+
+    harness.componentRef.setInput('busy', true);
+    await harness.whenStable();
+
+    const busy = (harness.nativeElement as HTMLElement)
+      .querySelector('button')
+      ?.getAttribute('aria-busy');
+
+    expect(busy).toBe('true');
   });
 });

@@ -128,7 +128,7 @@ describe('Contact', () => {
 
     const disabled = root.querySelector('button')?.disabled;
     const busy = root
-      .querySelector('app-button')
+      .querySelector('button')
       ?.getAttribute('aria-busy');
 
     expect(disabled).toBe(false);
@@ -151,7 +151,7 @@ describe('Contact', () => {
 
     const held = root.querySelector('button')?.disabled;
     const busy = root
-      .querySelector('app-button')
+      .querySelector('button')
       ?.getAttribute('aria-busy');
 
     expect(held).toBe(true);
