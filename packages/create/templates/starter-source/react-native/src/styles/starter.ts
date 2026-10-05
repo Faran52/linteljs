@@ -16,6 +16,10 @@ export interface Palette {
 
 export type StarterStyles = ReturnType<typeof sheetsFor>;
 
+// The header keeps a fixed height, as iOS's own bars do, and a display glyph is large already: their text stops
+// growing here, where body text scales with the system setting.
+export const MAX_FONT_SCALE = 1.5;
+
 const PALETTES = {
   light: {
     background: '#faf9f7',
@@ -78,8 +82,9 @@ const sheetsFor = (colors: Palette) => {
       gap: 12,
       marginTop: 24,
     },
+    // A floor, not a height: the label's line grows with the system text size.
     action: {
-      height: 38,
+      minHeight: 38,
       justifyContent: 'center',
       paddingHorizontal: 15,
       borderRadius: 7,

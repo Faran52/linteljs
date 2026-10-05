@@ -15,4 +15,12 @@ describe('stylesFor', () => {
     expect(light).toBe('#faf9f7');
     expect(unset).toBe('#faf9f7');
   });
+
+  // A fixed height would clip a label grown with the system text size.
+  it('gives an action a floor for its height, not a height', () => {
+    const { layout } = stylesFor('light');
+
+    expect(layout.action.minHeight).toBe(38);
+    expect(layout.action).not.toHaveProperty('height');
+  });
 });

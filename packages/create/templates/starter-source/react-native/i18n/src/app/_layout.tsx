@@ -2,12 +2,13 @@ import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Tabs } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import Head from 'expo-router/head';
+import { HeaderTitle } from 'expo-router/react-navigation';
+import { StatusBar } from 'expo-status-bar';
 
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
-import { useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
 import { initI18n, restoreLanguage } from '@i18n';
 
@@ -33,7 +34,13 @@ const RootLayout = (): ReactNode => {
   }, []);
 
   const screenOptions: BottomTabNavigationOptions = {
-    headerTitle: t('starterLabel'),
+    headerTitle: () => {
+      return (
+        <HeaderTitle tintColor={colors.foreground} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+          {t('starterLabel')}
+        </HeaderTitle>
+      );
+    },
     headerRight: () => {
       return <LanguageSelect />;
     },

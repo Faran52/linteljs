@@ -12,6 +12,7 @@ import i18next from 'i18next';
 import { renderScreen } from '@mocks/renderScreen';
 
 import { languages, languageStorageKey } from '@/i18n/config';
+import { MAX_FONT_SCALE } from '@/styles/starter';
 
 import { LanguageSelect } from './LanguageSelect';
 
@@ -67,6 +68,14 @@ describe('LanguageSelect', () => {
 
     const label = screen.getByText('English');
     expect(label.props.numberOfLines).toBe(1);
+  });
+
+  // The header's height is fixed, so the largest system text would clip the label.
+  it('caps how far the label grows with the system text size', async () => {
+    await renderScreen(<LanguageSelect />);
+
+    const label = screen.getByText('English');
+    expect(label.props.maxFontSizeMultiplier).toBe(MAX_FONT_SCALE);
   });
 
   it('offers every language under its own name, the one in use checked', async () => {

@@ -3,6 +3,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { renderScreen } from '@mocks/renderScreen';
 
 import { STATUSES } from '@/config/statuses';
+import { MAX_FONT_SCALE } from '@/styles/starter';
 
 import { StatusPage } from './StatusPage';
 
@@ -21,6 +22,14 @@ describe('StatusPage', () => {
     expect(home.props.href).toBe('/');
     const buttonElement = screen.queryByRole('button');
     expect(buttonElement).toBeNull();
+  });
+
+  // At the largest system text a three-digit code would otherwise break across lines.
+  it('caps how far the code grows with the system text size', async () => {
+    await renderScreen(<StatusPage code={code} message={message} />);
+
+    const element = screen.getByText('500');
+    expect(element.props.maxFontSizeMultiplier).toBe(MAX_FONT_SCALE);
   });
 
   it('offers a retry when it is given one', async () => {

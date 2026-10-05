@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import Head from 'expo-router/head';
+import { HeaderTitle } from 'expo-router/react-navigation';
+import { StatusBar } from 'expo-status-bar';
 
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
-import { useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
 import type { BottomTabNavigationOptions } from 'expo-router/tabs';
 import type { ReactNode } from 'react';
@@ -20,7 +21,13 @@ const RootLayout = (): ReactNode => {
   const { colors, layout } = useStarterStyles();
 
   const screenOptions: BottomTabNavigationOptions = {
-    headerTitle: 'LintelJS Starter',
+    headerTitle: () => {
+      return (
+        <HeaderTitle tintColor={colors.foreground} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+          LintelJS Starter
+        </HeaderTitle>
+      );
+    },
     headerTitleAlign: 'left',
     headerStyle: layout.header,
     headerTintColor: colors.foreground,

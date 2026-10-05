@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import { useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
 import { chooseLanguage } from '@i18n';
 import { languages } from '@i18n/config';
@@ -58,7 +58,13 @@ export const LanguageSelect = (): ReactNode => {
           setOpen(true);
         }}
       >
-        <Text style={currentLabelStyle} numberOfLines={1}>{current?.label}</Text>
+        <Text
+          style={currentLabelStyle}
+          numberOfLines={1}
+          maxFontSizeMultiplier={MAX_FONT_SCALE}
+        >
+          {current?.label}
+        </Text>
       </Pressable>
       <Modal
         transparent

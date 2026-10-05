@@ -6,7 +6,7 @@ import {
 
 import { Link } from 'expo-router';
 
-import { useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 
@@ -33,7 +33,7 @@ export const StatusPage = ({
 
   return (
     <View style={layout.status} role="main">
-      <Text style={text.statusCode}>{code}</Text>
+      <Text style={text.statusCode} maxFontSizeMultiplier={MAX_FONT_SCALE}>{code}</Text>
       <Text style={text.statusMessage} accessibilityRole="alert">{message}</Text>
       <View style={layout.actions}>
         {onRetry === undefined
