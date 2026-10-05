@@ -20,6 +20,7 @@ import { parsePackageJson } from '@emitters';
 import {
   CACHE_DIR,
   MS_PER_SECOND,
+  NPM_CACHE_DIR,
   PING_ATTEMPTS,
   PING_INTERVAL,
   PORT,
@@ -275,6 +276,11 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
     },
     stop: () => {
       verdaccio.kill();
+
+      rmSync(NPM_CACHE_DIR, {
+        recursive: true,
+        force: true,
+      });
     },
   };
 

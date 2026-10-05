@@ -1714,6 +1714,9 @@ exist, and the suite publishes `@linteljs/*` under a version no run has used, so
 `pruneBunCache` deletes only the `@linteljs/*` entries. Anything the prune misses fails loudly, because
 `verifyLintOutput` asserts the resolved version is this run's.
 
+npm's cache lives in `.e2e/npm-cache` and teardown removes it. npm never evicts, and kept across runs it reached 34
+GB; the npm smoke is 11 cases, so a cold cache costs one run little.
+
 ## Releasing
 
 Push a branch named for the version. That is the whole ritual:

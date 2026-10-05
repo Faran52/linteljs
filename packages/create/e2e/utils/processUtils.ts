@@ -6,6 +6,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { inject } from 'vitest';
 
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
+import { NPM_CACHE_DIR } from '../registry/constants';
 
 import type { PackageManager } from '@config/types';
 
@@ -65,8 +66,8 @@ export const run = async (
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
-        // A cache of which versions exist starts empty every run; a cache of bytes persists.
-        npm_config_cache: join(registry.cacheDir, 'npm'),
+        // A cache of which versions exist starts empty every run; a cache of bytes persists, npm's excepted.
+        npm_config_cache: NPM_CACHE_DIR,
         pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
         pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
         YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),

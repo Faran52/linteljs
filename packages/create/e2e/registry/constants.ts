@@ -11,6 +11,9 @@ export const RUN_DIR = join(ROOT, '.e2e');
 // Never wiped: the fixed port keeps a cache's recorded registry valid between runs.
 export const CACHE_DIR = join(ROOT, '.e2e-cache');
 
+// Per run and removed at teardown: npm's cache never evicts, and grew to 34 GB across runs.
+export const NPM_CACHE_DIR = join(RUN_DIR, 'npm-cache');
+
 // Twenty seconds for verdaccio to answer its ping.
 export const PING_ATTEMPTS = 100;
 
