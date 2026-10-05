@@ -54,4 +54,21 @@ describe('readmeEmitter', () => {
     expect(readme).toContain('pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck');
     expect(readme).toContain('`pnpm dlx @linteljs/create sync` rewrites');
   });
+
+  it('adds the native build notes to a react native project only, through its manager', async () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'react-native' as const,
+      packageManager: 'npm' as const,
+    };
+    const [native] = readmeEmitter(answers, EMPTY_PROJECT, 'demo-app');
+    const [web] = readmeEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const nativeReadme = native === undefined ? '' : await shippedAssetsReader(native.content, null);
+    const webReadme = web === undefined ? '' : await shippedAssetsReader(web.content, null);
+
+    expect(nativeReadme).toContain('`npx expo run:ios` or `npx expo run:android`');
+    expect(nativeReadme).toContain('enableSceneSupport');
+    expect(nativeReadme).toContain('--enable-native-access=ALL-UNNAMED');
+    expect(webReadme).not.toContain('## Native builds');
+  });
 });

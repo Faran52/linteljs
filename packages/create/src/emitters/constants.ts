@@ -127,6 +127,7 @@ export const VERSIONS: Record<string, string> = {
   'expo-constants': '~57.0.20',
   'expo-linking': '~57.0.11',
   'expo-status-bar': '~57.0.1',
+  'expo-build-properties': '~57.0.22',
   'expo-localization': '~57.0.2',
   'react-native-safe-area-context': '~5.7.0',
   'react-native-screens': '~4.26.0',

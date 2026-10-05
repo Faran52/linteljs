@@ -1213,6 +1213,22 @@ YN0086 for seven requests inside Expo SDK 57's own tree, none of them a clash (`
 `@expo/log-box`, `@expo/router-server` and `expo-symbols` asking for `expo-constants` and `expo-font`,
 `expo-linking` passing no `expo` to `expo-constants`, two Babel packages passing no `@babel/core`); each has a
 `packageExtensions` entry, and the target carries no `logFilters`.
+### A native build opts into the UIScene life cycle
+
+Xcode 27's iOS SDK refuses to launch an app that keeps the AppDelegate window: `expo run:ios` dies with "UIScene
+life cycle is required for apps built with this SDK". Expo SDK 57 adopts the scene life cycle from expo 57.0.23 only
+as an opt-in, so `app.json` sets `ios.enableSceneSupport` through `expo-build-properties`, at the SDK's
+`bundledNativeModules` pin ([expo/expo#46664](https://github.com/expo/expo/issues/46664)). Measured 2026-10-05:
+a generated project built with Xcode 27 launched on an iOS 27 iPhone 18 Pro simulator, its prebuilt `Info.plist`
+carrying `UIApplicationSceneManifest`. SDK 58 adopts the life cycle by default and Expo says not to set the option
+there, so the SDK 58 move drops the plugin entry.
+
+Android on JDK 25 fails in `configureCMakeDebug` on a restricted native method, which
+`JAVA_TOOL_OPTIONS=--enable-native-access=ALL-UNNAMED` fixes. No committed file carries it: `expo prebuild`
+rewrites `android/gradle.properties`, and `expo-build-properties` passes no JVM arguments. The generated README's
+native-build notes say so, and name `expo run:*` through the project's manager, since `npx` in a project whose
+`devEngines` names another manager fails with EBADDEVENGINES.
+
 
 ## Package managers
 

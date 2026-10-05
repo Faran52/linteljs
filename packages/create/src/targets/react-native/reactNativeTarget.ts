@@ -188,6 +188,7 @@ export const reactNativeTarget: TargetBuilder = () => {
     // Reanimated and the gesture handler are expo-router's peers; `react-native-css` requires Reanimated undeclared.
     dependencies: [
       'expo',
+      'expo-build-properties',
       'expo-router',
       'expo-constants',
       'expo-linking',

@@ -9,6 +9,8 @@ import { EMPTY_PROJECT } from '@config/constants';
 
 import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
+const SCENE_SUPPORT = ['expo-build-properties', { ios: { enableSceneSupport: true } }];
+
 describe('emitExpoConfig', () => {
   it('names the app, its slug and its scheme after the project', () => {
     const parsed: unknown = JSON.parse(emitExpoConfig('Demo-App', []));
@@ -28,7 +30,7 @@ describe('emitExpoConfig', () => {
           bundler: 'metro',
           output: 'static',
         },
-        plugins: ['expo-router'],
+        plugins: ['expo-router', SCENE_SUPPORT],
         experiments: {
           typedRoutes: true,
           reactCompiler: true,
@@ -42,12 +44,16 @@ describe('emitExpoConfig', () => {
 
     const expected = {
       expo: {
-        plugins: ['expo-router', ['expo-localization', {
-          supportedLocales: {
-            ios: ['en', 'ar'],
-            android: ['en', 'ar'],
-          },
-        }]],
+        plugins: [
+          'expo-router',
+          SCENE_SUPPORT,
+          ['expo-localization', {
+            supportedLocales: {
+              ios: ['en', 'ar'],
+              android: ['en', 'ar'],
+            },
+          }],
+        ],
       },
     };
     expect(parsed).toMatchObject(expected);
@@ -58,12 +64,16 @@ describe('emitExpoConfig', () => {
 
     const expected = {
       expo: {
-        plugins: ['expo-router', ['expo-localization', {
-          supportedLocales: {
-            ios: ['zh-Hans', 'zh-Hant'],
-            android: ['zh-CN', 'zh-TW'],
-          },
-        }]],
+        plugins: [
+          'expo-router',
+          SCENE_SUPPORT,
+          ['expo-localization', {
+            supportedLocales: {
+              ios: ['zh-Hans', 'zh-Hant'],
+              android: ['zh-CN', 'zh-TW'],
+            },
+          }],
+        ],
       },
     };
     expect(parsed).toMatchObject(expected);

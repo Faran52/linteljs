@@ -25,6 +25,14 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
   bun: 'bun run',
 };
 
+// A project binary through its own manager, never `npx` outside npm, for the same `devEngines` refusal.
+export const EXEC_PREFIX: Record<PackageManager, string> = {
+  pnpm: 'pnpm exec',
+  npm: 'npx',
+  yarn: 'yarn',
+  bun: 'bunx',
+};
+
 // Each through its own manager: npm refuses `npx` in a project whose `devEngines` names another.
 export const SYNC_COMMAND: Record<PackageManager, string> = {
   pnpm: 'pnpm dlx @linteljs/create sync',

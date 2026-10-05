@@ -869,6 +869,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   '@react-native/jest-preset': '',
   '@react-native/metro-config': '',
   'expo': '~',
+  'expo-build-properties': '~',
   'expo-constants': '~',
   'expo-linking': '~',
   'expo-localization': '~',

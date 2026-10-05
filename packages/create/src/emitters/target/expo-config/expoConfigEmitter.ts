@@ -50,7 +50,12 @@ export const emitExpoConfig = (name: string, locales: Language[]): string => {
         output: 'static',
       },
       ...(rtl ? { extra: { supportsRTL: true } } : {}),
-      plugins: ['expo-router', ...localization],
+      // Xcode 27's SDK refuses a launch without the UIScene life cycle; SDK 57 adopts it only on this opt-in.
+      plugins: [
+        'expo-router',
+        ['expo-build-properties', { ios: { enableSceneSupport: true } }],
+        ...localization,
+      ],
       // `typedRoutes` is what makes `Href` a union of this project's own routes rather than a string.
       experiments: {
         typedRoutes: true,
