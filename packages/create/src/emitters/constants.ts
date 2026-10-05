@@ -81,7 +81,8 @@ export const VERSIONS: Record<string, string> = {
   '@types/node': '^26.6.3',
   '@types/react': '^19.3.0',
   '@types/react-dom': '^19.3.0',
-  '@vitejs/plugin-react': '^6.1.1',
+  // Held, since 6.1.2 peers `oxc-transform-react ^0.152.0` while `@astrojs/react` 7 still peers `^0.145.0`.
+  '@vitejs/plugin-react': '6.1.1',
   // Held to 0.145: that plugin and `@astrojs/react` both peer `^0.145.0`, which on a zero major admits 0.145 alone.
   'oxc-transform-react': '^0.145.0',
   '@vitest/coverage-v8': '^5.0.2',

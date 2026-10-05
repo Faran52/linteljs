@@ -145,10 +145,10 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  it('leaves the react build plugin to the targets that own a vite config', () => {
+  it('declares the react build plugin, so npm dedupes the copy `@astrojs/react` brings onto the held version', () => {
     const { devDependencies } = recordFor({ hostedFramework: 'react' });
 
-    expect(devDependencies).not.toContain('@vitejs/plugin-react');
+    expect(devDependencies).toContain('@vitejs/plugin-react');
     expect(devDependencies).toContain('oxc-transform-react');
   });
 

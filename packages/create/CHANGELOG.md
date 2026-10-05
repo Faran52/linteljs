@@ -135,7 +135,8 @@ when a version's change lives in a sibling it is described there instead:
 - The package also provides a `create` binary, which `yarn create @linteljs` looks for.
 - The React Compiler runs natively through `@vitejs/plugin-react`'s `compiler` and `oxc-transform-react`, with no
   Babel pass; Expo's `app.json` sets `experiments.reactCompiler`. `eslint-plugin-react-compiler` is gone, since
-  `eslint-plugin-react-hooks` 7 carries its rules.
+  `eslint-plugin-react-hooks` 7 carries its rules. `@vitejs/plugin-react` is held at 6.1.1, and an Astro React
+  island declares it, since 6.1.2 peers a compiler `@astrojs/react` 7 refuses and npm failed the install.
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.

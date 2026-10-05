@@ -712,14 +712,14 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('@react-native/metro-config');
   });
 
-  it('installs neither the React plugin nor its Rolldown preset for an Astro React island', () => {
+  it('installs the held React plugin but not its Rolldown preset for an Astro React island', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'astro',
       hostedFramework: 'react',
     }));
 
     expect(devDependencies).toHaveProperty('@astrojs/react');
-    expect(devDependencies).not.toHaveProperty('@vitejs/plugin-react');
+    expect(devDependencies).toHaveProperty('@vitejs/plugin-react');
     expect(devDependencies).not.toHaveProperty('@rolldown/plugin-babel');
   });
 
@@ -868,6 +868,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   '@react-native-async-storage/async-storage': '',
   '@react-native/jest-preset': '',
   '@react-native/metro-config': '',
+  '@vitejs/plugin-react': '',
   'expo': '~',
   'expo-build-properties': '~',
   'expo-constants': '~',

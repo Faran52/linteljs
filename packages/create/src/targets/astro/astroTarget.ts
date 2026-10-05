@@ -143,11 +143,8 @@ export const astroTarget: TargetBuilder = (answers) => {
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      // Less the build plugin, which `@astrojs/react` brings.
-      ...(hosted?.devDependencies ?? [])
-        .filter((name) => {
-          return name !== '@vitejs/plugin-react';
-        }),
+      // With the build plugin `@astrojs/react` brings, so npm dedupes its copy onto the held version.
+      ...hosted?.devDependencies ?? [],
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).
