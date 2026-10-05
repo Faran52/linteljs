@@ -24,7 +24,7 @@ Use these rules when touching tests, mocks, or test setup.
   frame-driven is reachable without taking control of them.
 - **Effects are batched to a microtask.** After changing state, `await tick()` before asserting on
   the DOM. Testing Library's `fireEvent` returns a promise that already does this, so await it.
-- `$app/state`, `$app/navigation` and `$env/*` are SvelteKit-provided virtual modules with no
+- `$app/state`, `$app/navigation` and `$app/env` are SvelteKit-provided virtual modules with no
   implementation under Vitest. One that many suites read is mocked globally in setup, as
   `$app/state` is; one only a single suite reads, such as `$app/navigation` for the error page, is
   mocked in that suite.

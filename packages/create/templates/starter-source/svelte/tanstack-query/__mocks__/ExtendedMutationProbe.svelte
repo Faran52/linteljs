@@ -1,7 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-
-  import { createExtendedMutation } from '$lib/hooks/create-extended-mutation/createExtendedMutation';
+  import { createExtendedMutation } from '#lib/hooks/create-extended-mutation/createExtendedMutation.ts';
 
   interface Props {
     path: string;

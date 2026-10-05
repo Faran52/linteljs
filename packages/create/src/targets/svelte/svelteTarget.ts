@@ -68,10 +68,8 @@ export const svelteTarget: TargetBuilder = () => {
     naming: sfcNaming('svelte', 'routes'),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,
-    // An extending config replaces `paths` rather than merging `.svelte-kit/tsconfig.json`'s.
-    extraAliases: {
-      '$lib/*': './src/lib/*',
-    },
+    // No bare `#lib`: the starter has no `src/lib/index.ts` for it to name.
+    packageImports: { '#lib/*': './src/lib/*' },
     styleEntry: 'src/app.css',
     starterStyles: [
       './styles/tokens.css',
@@ -91,18 +89,27 @@ export const svelteTarget: TargetBuilder = () => {
         "import adapter from '@sveltejs/adapter-auto';",
         "import { sveltekit } from '@sveltejs/kit/vite';",
       ],
-      calls: ['sveltekit({ adapter: adapter() })'],
-    },
-    // An extending config replaces `include`, and `non-ambient.d.ts` is where `RouteId` lives.
-    tsconfig: {
-      extends: './.svelte-kit/tsconfig.json',
-      include: [
-        '**/*.svelte',
-        '.svelte-kit/ambient.d.ts',
-        '.svelte-kit/env.d.ts',
-        '.svelte-kit/non-ambient.d.ts',
-        '.svelte-kit/types/**/$types.d.ts',
+      // Runes everywhere but `node_modules`, as `sv create` writes it: a legacy-mode component fails to compile.
+      calls: [
+        [
+          'sveltekit({',
+          '      adapter: adapter(),',
+          '      compilerOptions: {',
+          '        runes: ({ filename }) => {',
+          String.raw`          const parts = filename.split(/[/\\]/u);`,
+          '',
+          "          return parts.includes('node_modules') ? undefined : true;",
+          '        },',
+          '      },',
+          '    })',
+        ].join('\n'),
       ],
+    },
+    // Our `types` replaces the kit's, and `$app/types` is where its ambient modules and `RouteId` live.
+    tsconfig: {
+      extends: '$app/tsconfig',
+      include: ['**/*.svelte'],
+      types: ['$app/types'],
     },
     testConditions: ['browser'],
     // `<svelte:head>` compiles to a hydration branch a rendering suite cannot reach.

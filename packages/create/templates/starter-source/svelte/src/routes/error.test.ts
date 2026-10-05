@@ -1,4 +1,4 @@
-import { invalidateAll } from '$app/navigation';
+import { refreshAll } from '$app/navigation';
 import { page } from '$app/state';
 
 import {
@@ -12,7 +12,7 @@ import { STATUSES } from '@config/statuses';
 import ErrorPage from './+error.svelte';
 
 vi.mock('$app/navigation', () => {
-  const navigation = { invalidateAll: vi.fn() };
+  const navigation = { refreshAll: vi.fn() };
 
   return navigation;
 });
@@ -45,6 +45,6 @@ describe('the error page', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(invalidateAll).toHaveBeenCalledOnce();
+    expect(refreshAll).toHaveBeenCalledOnce();
   });
 });

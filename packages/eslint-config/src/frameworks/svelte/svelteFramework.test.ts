@@ -73,7 +73,6 @@ describe('svelte', () => {
   });
 
   it.each([
-    '$lib/utils',
     '$app/navigation',
     '$env/static/public',
   ])('lets %s go unresolved', async (specifier) => {
@@ -113,6 +112,8 @@ describe('svelte', () => {
     '@sveltejs/kit',
     '$app/navigation',
     '$env/static/public',
+    '#lib/store/counterStore.ts',
+    '#lib',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
     const config = base({ frameworkGroup: svelteGroup });
     const actual = await sortsAheadOfPackages(config, specifier);

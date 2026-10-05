@@ -60,6 +60,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     // So npm cannot publish it.
     private: true,
     ...(target.packageMain === undefined ? {} : { main: target.packageMain }),
+    ...(target.packageImports === undefined ? {} : { imports: target.packageImports }),
     // A browser worker is a file the page fetches, so it sits where the dev server serves.
     ...(answers.mocking === 'msw' && target.publicDirectory !== undefined
       ? { msw: { workerDirectory: [target.publicDirectory] } }

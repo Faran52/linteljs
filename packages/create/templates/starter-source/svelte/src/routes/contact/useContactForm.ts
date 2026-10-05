@@ -1,13 +1,13 @@
-import { createForm } from '@tanstack/svelte-form';
-
+import { type ContactSubmission, validateContactForm } from '#lib/apis/contact/formValidator.ts';
 import {
   type ContactKey,
   type ContactValues,
   errorText,
   type Translate,
   useSubmitContact,
-} from '$lib/apis/contact';
-import { type ContactSubmission, validateContactForm } from '$lib/apis/contact/formValidator';
+} from '#lib/apis/contact/index.ts';
+
+import { createForm } from '@tanstack/svelte-form';
 
 import type { TextInputProps } from '@ui/text-input/types';
 

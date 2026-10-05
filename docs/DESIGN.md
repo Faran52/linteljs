@@ -686,7 +686,7 @@ below the boundary, it shows the 403 page, with no retry, since trying again can
 | next | `app/not-found.tsx` | `ForbiddenError` from a client component (a server component's error arrives without its class); `forbidden()` is experimental | `app/error.tsx` and `app/global-error.tsx`, with `reset` |
 | vue | a catch-all route rendering the page | `ForbiddenError` | `onErrorCaptured` in `ErrorBoundary.vue` around `RouterView` |
 | nuxt | `error.vue` | `createError` | `error.vue`, retry is `clearError()` |
-| svelte | `+error.svelte` | `error(403)` | `+error.svelte`, retry is `invalidateAll()` |
+| svelte | `+error.svelte` | `error(403)` | `+error.svelte`, retry is `refreshAll()` |
 | solid, no router | none, nothing routes | `ForbiddenError` | `<ErrorBoundary>` with its `reset` |
 | angular | a `**` route rendering the page | `ForbiddenError` | a custom `ErrorHandler` sets a signal to the status the shell swaps its outlet for; retry clears it |
 | astro | `src/pages/404.astro` | no: static output has no request to refuse | none: static output renders at build, so a crash fails the build, not a visit |
@@ -763,7 +763,7 @@ The entry's spelling is the target's: `componentNaming()` and `sfcNaming()` give
 | React | `src/pages/<kebab>/{Name}Page.tsx` | `lib/hooks/` `use*` | closest to the spine |
 | Next.js | `src/app/` | `lib/hooks/` `use*` | `lib/server/` for `server-only` modules; no Pages Router |
 | Vue, Nuxt | `src/views/`, `src/pages/` on Nuxt | `lib/composables/` | Pinia stores in `lib/store/` |
-| Svelte | `src/routes/` | `lib/hooks/` | `$lib` points at `src/lib`; components at `src/components/` |
+| Svelte | `src/routes/` | `lib/hooks/` | `#lib/*` maps `src/lib/*` through `package.json` `imports`; components at `src/components/` |
 | Solid | `src/pages/` | `lib/primitives/` `create*` | the `use` prefix is wrong in Solid |
 | Angular | `src/app/` | `lib/services/`, DI replaces hooks | `src/config/` replaces `src/environments/` |
 | React Native | `src/app/`, owned by expo-router | `src/hooks/` `use*` | no test file under `src/app/`, see [React Native](#react-native) |
@@ -1561,7 +1561,7 @@ stay visible, and fails on any other test file with no source beside it.
 `templates/starter-source/**` is outside every `tsconfig` include, ignored by the root `eslint.config.ts`, and
 outside the vitest include. It cannot become ordinary source: it imports 60 distinct external packages this
 workspace resolves none of (`@angular/*`, `expo`, `react-native`, `next`, `svelte`, `vue`, `solid-js`, `pinia`, every
-`@tanstack/*` binding, every testing library, and the `$app`, `$lib` and `@/*` specifiers three frameworks resolve
+`@tanstack/*` binding, every testing library, and the `$app`, `#lib` and `@/*` specifiers three frameworks resolve
 themselves). Making it ordinary source means installing ten targets' runtime and test dependencies into a workspace
 of three ESLint packages.
 

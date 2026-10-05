@@ -108,6 +108,7 @@ export const FRAMEWORK_GROUPS: Record<Framework, string[]> = {
     '^@sveltejs/',
     String.raw`^\$app/`,
     String.raw`^\$env/`,
+    '^#lib(?:/|$)',
   ],
   'solid': [
     '^solid-js$',

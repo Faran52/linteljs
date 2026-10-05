@@ -1,7 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-
-  import { createExtendedQuery } from '$lib/hooks/create-extended-query/createExtendedQuery';
+  import { createExtendedQuery } from '#lib/hooks/create-extended-query/createExtendedQuery.ts';
 
   interface Props {
     path: string;

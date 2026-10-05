@@ -53,6 +53,7 @@ export interface PackageJson {
   version?: string;
   private?: boolean;
   main?: string;
+  imports?: Record<string, string>;
   type?: string;
   packageManager?: string;
   engines?: Record<string, string>;

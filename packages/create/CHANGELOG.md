@@ -146,6 +146,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- **Svelte moves to SvelteKit 3.** `#lib/*` comes from a `package.json` `imports` entry in place of `$lib`, and
+  every import names its file with the extension; `tsconfig.json` extends `$app/tsconfig`.
 - **React Native runs its suites on Jest, through `jest-expo`, not Vitest.** The project gets `jest.config.js`
   (the `jest-expo` preset, a module mapper from `tsconfig.json`'s paths, 100% thresholds on all four metrics),
   `jest`, `@types/jest`, `eslint-plugin-jest`, `jest-expo` and `@react-native/jest-preset`, the `jest` lint layer and

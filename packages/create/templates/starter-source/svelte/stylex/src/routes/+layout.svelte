@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
+  import DataProvider from '#lib/providers/data/DataProvider.svelte';
 
   import { NAME } from '@config/linteljs';
 
   import AppHeader from '@features/app-header/AppHeader.svelte';
-
-  import DataProvider from '$lib/providers/data/DataProvider.svelte';
 
   import type { Snippet } from 'svelte';
 

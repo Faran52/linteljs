@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DataProvider from '$lib/providers/data/DataProvider.svelte';
+  import DataProvider from '#lib/providers/data/DataProvider.svelte';
 
   import type { Component } from 'svelte';
 

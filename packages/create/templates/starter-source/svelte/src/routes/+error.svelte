@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import { page } from '$app/state';
 
   import { STATUSES } from '@config/statuses';
@@ -17,5 +17,5 @@
 {#if known}
   <StatusPage {...known} />
 {:else}
-  <StatusPage {...STATUSES.serverError} onretry={invalidateAll} />
+  <StatusPage {...STATUSES.serverError} onretry={refreshAll} />
 {/if}

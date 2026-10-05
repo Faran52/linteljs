@@ -240,16 +240,12 @@ describe('buildTsconfig', () => {
       'svelte',
       { target: 'svelte' },
       {
-        extends: './.svelte-kit/tsconfig.json',
+        extends: '$app/tsconfig',
         include: [
           '**/*.ts',
           '**/*.tsx',
           '**/*.mts',
           '**/*.svelte',
-          '.svelte-kit/ambient.d.ts',
-          '.svelte-kit/env.d.ts',
-          '.svelte-kit/non-ambient.d.ts',
-          '.svelte-kit/types/**/$types.d.ts',
         ],
       },
     ],
@@ -370,6 +366,7 @@ describe('buildTsconfig', () => {
       'node',
       'vite/client',
       'vitest/globals',
+      '$app/types',
     ]],
     ['solid', [
       'node',
@@ -608,14 +605,12 @@ describe('alias coupling', () => {
     expect(react.compilerOptions.paths).not.toHaveProperty('@providers/*');
   });
 
-  it('extends what SvelteKit generates, and keeps $lib resolvable through it', () => {
+  it('extends what SvelteKit generates, and keeps the kit types its own types would replace', () => {
     const config = buildTsconfig(answersFor({ target: 'svelte' }));
 
-    expect(config.extends).toBe('./.svelte-kit/tsconfig.json');
-    const expected = ['./src/lib'];
-    expect(config.compilerOptions.paths?.['$lib']).toEqual(expected);
-    const libFiles = ['./src/lib/*'];
-    expect(config.compilerOptions.paths?.['$lib/*']).toEqual(libFiles);
+    expect(config.extends).toBe('$app/tsconfig');
+    expect(config.compilerOptions.types).toContain('$app/types');
+    expect(config.compilerOptions.paths).not.toHaveProperty('$lib');
     const react = buildTsconfig(answersFor({ target: 'react' }));
     expect(react.extends).toBeUndefined();
   });

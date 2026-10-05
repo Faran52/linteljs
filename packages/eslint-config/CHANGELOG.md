@@ -101,6 +101,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- `svelte()` sorts SvelteKit 3's `#lib` into its framework group and resolves it through `package.json` `imports`,
+  so `$lib` is no longer let go unresolved.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 - `typescript-eslint` moves to ^8.71.0 and `eslint-plugin-sonarjs` to ^4.2.2.
 - `es-toolkit` is bundled into `dist/`, so it adds no runtime dependency.

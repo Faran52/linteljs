@@ -1,7 +1,7 @@
 import { detectLanguage, directionOf } from '@i18n';
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
-import type { Handle, ResolveOptions } from '@sveltejs/kit';
+import type { Handle, ResolveOptions } from '@sveltejs/kit/hooks';
 
 // What the hook reads of SvelteKit's event, so a suite can hand it a plain request.
 interface LanguageEvent {

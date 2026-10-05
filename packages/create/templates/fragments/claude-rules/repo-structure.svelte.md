@@ -2,7 +2,7 @@
 paths:
   - "src/**/*.{ts,svelte}"
   - "tsconfig.json"
-  - "svelte.config.js"
+  - "vite.config.ts"
 ---
 
 # Repository Structure
@@ -40,7 +40,7 @@ src/
   hooks.server.ts  hooks.client.ts
 ```
 
-Components stay at `src/components/`, not `src/lib/components/`. `$lib` already points at
+Components stay at `src/components/`, not `src/lib/components/`. `#lib` already points at
 `src/lib`, and SvelteKit's reserved `src/hooks.server.ts` sits at the `src/` root, so neither
 clashes with `lib/hooks/`.
 
@@ -58,7 +58,7 @@ exports. Do not add a second library for state a rune already holds. Mind the se
   nest a private folder inside another.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today.
 - `+page.server.ts` and `+server.ts` are the only place server secrets appear. Everything they need
-  comes from `$env/static/private`, never from a module also imported by a `.svelte` file.
+  comes from `$app/env/private`, never from a module also imported by a `.svelte` file.
 - A `load` function orchestrates; it does not hold logic. Put the logic in `services/` and test it
   without a request.
 - `services/` is domain logic and may never import from `apis/`. `apis/` is the only layer that
@@ -76,5 +76,5 @@ Imports run one way: `routes → components → store → utils / services / hoo
 - Never put mutable module-level state in anything the server imports: SvelteKit shares the module
   across requests, so it becomes a cross-user leak. Per-request state goes in `event.locals` or a
   context set during rendering.
-- `tsconfig.json` is canonical for path aliases. Use the configured ones alongside `$lib`; never
-  invent a shorthand and never write a `src/` prefix.
+- `tsconfig.json` is canonical for path aliases, and `package.json` `imports` for `#lib`, which names
+  the file with its extension. Never invent a shorthand and never write a `src/` prefix.

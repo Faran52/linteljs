@@ -180,6 +180,14 @@ describe('patchPackageJson', () => {
     expect(defaultPackage).not.toHaveProperty('main');
   });
 
+  it('declares subpath imports only for the target whose framework reads them', () => {
+    const sveltePackage = patchPackageJson({}, answersFor({ target: 'svelte' }));
+    const expected = { '#lib/*': './src/lib/*' };
+    expect(sveltePackage.imports).toEqual(expected);
+    const defaultPackage = patchPackageJson({}, answersFor({}));
+    expect(defaultPackage).not.toHaveProperty('imports');
+  });
+
   it('marks every generated project private', () => {
     const { private: freshPrivate } = patchPackageJson({}, answersFor({}));
     const { private: overriddenPrivate } = patchPackageJson({ private: false }, answersFor({}));

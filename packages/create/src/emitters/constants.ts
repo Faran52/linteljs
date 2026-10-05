@@ -150,8 +150,8 @@ export const VERSIONS: Record<string, string> = {
   'stylelint-order': '^8.1.1',
   'svelte': '^5.57.1',
   // Its own template installs the kit and the adapter rather than inheriting them from `sv create`.
-  '@sveltejs/kit': '^2.70.3',
-  '@sveltejs/adapter-auto': '^7.0.1',
+  '@sveltejs/kit': '^3.0.0',
+  '@sveltejs/adapter-auto': '^8.0.0',
   'svelte-check': '^4.7.6',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',

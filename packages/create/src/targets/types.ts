@@ -108,7 +108,6 @@ export interface TsconfigDelta {
   include?: string[];
   // An allow-list once populated: an installed but unlisted `@types/chrome` still lints as unresolved.
   types?: string[];
-  // An extending config replaces `paths`, so `$lib` is re-declared.
   extends?: string;
   rootDirs?: string[];
   // Declaring `paths` would replace Nuxt's merged alias set with half of it.
@@ -180,6 +179,8 @@ export interface TargetRecord {
   expoProject?: true;
   // Expo's default `expo/AppEntry` reads a root `App.tsx` a routed project does not have.
   packageMain?: string;
+  // Node subpath imports, which SvelteKit 3 reads for `#lib` in place of its own `$lib`.
+  packageImports?: Record<string, string>;
   nuxtProject?: true;
   // Where a browser mock worker has to land; React Native has no dev server.
   publicDirectory?: string;
