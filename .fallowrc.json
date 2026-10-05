@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "packages/create/bin/*.ts",
+    "packages/*/tsdown.config.ts",
+    "packages/create/e2e/registry/registry.ts",
+    "packages/create/templates/project/plugins/linteljs/hooks/*.ts",
+    "packages/create/templates/project/scripts/*.ts",
+    "packages/eslint-plugin/scripts/release/run-rules/runRulesRelease.ts"
+  ],
+  "ignorePatterns": [
+    "packages/create/templates/starter-source/**",
+    "packages/create/templates/fragments/**",
+    "packages/*/__mocks__/fixtures/**"
+  ],
+  "ignoreDependencies": [
+    "@stryker-mutator/vitest-runner",
+    "eslint-import-resolver-typescript",
+    "jiti",
+    "svelte",
+    "verdaccio"
+  ],
+  "ignoreUnresolvedImports": [
+    "@linteljs/eslint-config/compose-config"
+  ],
+  "rules": {
+    "duplicate-exports": "off"
+  }
+}

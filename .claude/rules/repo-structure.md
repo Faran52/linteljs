@@ -85,4 +85,6 @@ frameworks this workspace does not install and files named `*.test.ts`.
   (one project per package, the coverage thresholds), `tsconfig.json` and `tsconfig.root.json`,
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,
   `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
-  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split).
+  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split),
+  `.fallowrc.json` (for `npx fallow`: the entry points no import reaches, the template text and fixtures left out,
+  and the dependencies loaded by name rather than imported).

@@ -9,6 +9,7 @@ import { starterSourceEmitter } from '@emitters';
 
 import { STARTER_CASES } from './constants';
 import {
+  greedyLabels,
   starterCases,
   starterCover,
   writtenOf,
@@ -37,6 +38,17 @@ describe('starterCover', () => {
     expect(cover.texts).toBeGreaterThan(0);
     expect(cover.uncovered).toBe(cover.texts);
     expect(again.uncovered).toBe(0);
+  });
+
+  it('suggests what reaches a text and stops at one no class reaches', () => {
+    const classes = [{
+      label: 'reaches',
+      texts: new Set([0]),
+    }];
+    const uncovered = new Set([0, 1]);
+    const suggested = greedyLabels(classes, uncovered);
+
+    expect(suggested).toStrictEqual(['reaches']);
   });
 
   it('names a label no case carries', () => {

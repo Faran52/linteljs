@@ -376,7 +376,7 @@ then reads like plain JavaScript: its fields are in its body.
 
 ### Rules `base` leaves off, measured
 
-Each was tried against the workspace and the 670 starter files with `base` as it stands.
+Each was tried against the workspace and the starter source with `base` as it stands.
 
 - `@stylistic/curly-newline`: with `minElements: 1` alone it reports a block holding only a comment, the
   `catch {` with a `// why` line under it that `base` allows (six findings, four unfixable); with
@@ -1559,7 +1559,7 @@ stay visible, and fails on any other test file with no source beside it.
 ## The shipped starter source, and the gate that reads it
 
 `templates/starter-source/**` is outside every `tsconfig` include, ignored by the root `eslint.config.ts`, and
-outside the vitest include. It cannot become ordinary source: it imports 53 distinct external packages this
+outside the vitest include. It cannot become ordinary source: it imports 60 distinct external packages this
 workspace resolves none of (`@angular/*`, `expo`, `react-native`, `next`, `svelte`, `vue`, `solid-js`, `pinia`, every
 `@tanstack/*` binding, every testing library, and the `$app`, `$lib` and `@/*` specifiers three frameworks resolve
 themselves). Making it ordinary source means installing ten targets' runtime and test dependencies into a workspace

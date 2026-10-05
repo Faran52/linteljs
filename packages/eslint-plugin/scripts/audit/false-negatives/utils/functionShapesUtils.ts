@@ -33,6 +33,8 @@ interface ArrowDeclaration {
   name: string;
 }
 
+type DeclarationStep<T> = (state: State, node: AstNode, found: ArrowDeclaration) => T;
+
 interface Dependencies {
   array: AstNode;
   names: string[];
@@ -153,49 +155,50 @@ const declarationSkipReason = (state: State, node: AstNode, found: ArrowDeclarat
       : undefined);
 };
 
-export const functionDeclarationCase: Build = (state) => {
-  const declarations = nodesOf(state, 'VariableDeclaration');
+const arrowDeclarationCase = (
+  skipReason: DeclarationStep<string | undefined>,
+  rewrite: DeclarationStep<Candidate>,
+): Build => {
+  return (state) => {
+    const declarations = nodesOf(state, 'VariableDeclaration');
 
-  return pickFirst(declarations, (node) => {
-    const found = arrowDeclarationOf(node);
+    return pickFirst(declarations, (node) => {
+      const found = arrowDeclarationOf(node);
 
-    if (!found) {
-      return undefined;
-    }
+      if (!found) {
+        return undefined;
+      }
 
-    const reason = declarationSkipReason(state, node, found);
+      const reason = skipReason(state, node, found);
 
-    if (skipped(state, reason)) {
-      return undefined;
-    }
+      if (skipped(state, reason)) {
+        return undefined;
+      }
 
+      return rewrite(state, node, found);
+    });
+  };
+};
+
+export const functionDeclarationCase: Build = arrowDeclarationCase(
+  declarationSkipReason,
+  (state, node, found) => {
     const declaration = writeFunction(state, found.arrow, `function ${found.name}`);
 
     return replaced(state, node.range[0], node.range[1], declaration);
-  });
-};
+  },
+);
 
-export const functionExpressionCase: Build = (state) => {
-  const declarations = nodesOf(state, 'VariableDeclaration');
-
-  return pickFirst(declarations, (node) => {
-    const found = arrowDeclarationOf(node);
-
-    if (!found) {
-      return undefined;
-    }
-
-    const reason = arrowBodySkipReason(state, found.arrow, found.arrow.range[0]);
-
-    if (skipped(state, reason)) {
-      return undefined;
-    }
-
+export const functionExpressionCase: Build = arrowDeclarationCase(
+  (state, _node, found) => {
+    return arrowBodySkipReason(state, found.arrow, found.arrow.range[0]);
+  },
+  (state, _node, found) => {
     const expression = writeFunction(state, found.arrow, 'function ');
 
     return replaced(state, found.arrow.range[0], found.arrow.range[1], expression);
-  });
-};
+  },
+);
 
 const objectArrowProperty = (node: AstNode): BlockArrow | undefined => {
   const arrow = nodeOf(node.value);

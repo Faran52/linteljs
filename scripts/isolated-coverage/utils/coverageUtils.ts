@@ -1,4 +1,4 @@
-import { uniq } from 'es-toolkit';
+import { isPlainObject, uniq } from 'es-toolkit';
 
 import { PERCENT } from '../constants.ts';
 
@@ -37,7 +37,7 @@ export interface Attribution {
 }
 
 export const isCoverageReport = (value: unknown): value is CoverageReport => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return isPlainObject(value);
 };
 
 export const entriesOf = (file: FileCoverage): string[] => {

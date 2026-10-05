@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { env } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
+import { omitBy } from 'es-toolkit';
 import { inject } from 'vitest';
 
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
@@ -20,15 +21,12 @@ export const registry = inject('registry');
 // `LAUNCHER_KEYS` strips the launcher's `npm_config_user_agent`, so a case names its manager.
 export const launcherFreeEnv = (): Record<string, string | undefined> => {
   // `run-p` reads `npm_execpath`, so a launcher's value would run its manager inside the case's project.
-  const inherited = Object.entries(env)
-    .filter(([key]) => {
-      return !LAUNCHER_KEYS.has(key)
-        && !key.startsWith('npm_package_')
-        && !key.startsWith('npm_lifecycle_')
-        && !key.startsWith('VITEST');
-    });
-
-  return Object.fromEntries(inherited);
+  return omitBy(env, (_value, key) => {
+    return LAUNCHER_KEYS.has(key)
+      || key.startsWith('npm_package_')
+      || key.startsWith('npm_lifecycle_')
+      || key.startsWith('VITEST');
+  });
 };
 
 export const run = async (

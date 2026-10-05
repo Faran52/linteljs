@@ -153,7 +153,7 @@ const sweepOnce = (): Sweep => {
 };
 
 // Greedy: the class reaching the most uncovered texts, until none is left.
-const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] => {
+export const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] => {
   const remaining = new Set(uncovered);
   const picked: string[] = [];
 
@@ -166,9 +166,13 @@ const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] =>
       }).length;
   };
 
-  // Every text belongs to a class, so a class is left while a text is.
+  // A text no class reaches would otherwise pick a class that removes nothing, forever.
   while (remaining.size > 0) {
-    const best = maxBy(classes, reach);
+    const reaching = classes
+      .filter((item) => {
+        return reach(item) > 0;
+      });
+    const best = maxBy(reaching, reach);
 
     if (best === undefined) {
       break;
