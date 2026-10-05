@@ -67,6 +67,8 @@ const config = {
   moduleNameMapper,${hasMsw ? MSW_OPTIONS : ''}${unignores ? UNIGNORE_OPTION : ''}
   setupFilesAfterEnv: ['<rootDir>/${setup}'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
+  // A file's first render transforms React Native lazily, past Jest's 5s default on a shared CI runner.
+  testTimeout: 15_000,
   collectCoverageFrom: [${globList([coverageInclude(answers), ...exclude])}
   ],
   coverageThreshold: {

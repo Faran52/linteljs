@@ -28,6 +28,7 @@ const ROUTES = {
   '_layout': RootLayout,
   'index': empty,
   'about': empty,
+  'contact': empty,
   'version': empty,
   '+not-found': empty,
 };

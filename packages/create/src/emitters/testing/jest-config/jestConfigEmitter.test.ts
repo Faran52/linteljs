@@ -31,6 +31,8 @@ const config = {
   moduleNameMapper,
   setupFilesAfterEnv: ['<rootDir>/__mocks__/setupTests.tsx'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
+  // A file's first render transforms React Native lazily, past Jest's 5s default on a shared CI runner.
+  testTimeout: 15_000,
   collectCoverageFrom: [
     'src/**/*.{ts,tsx,mts,js,jsx,mjs}',
     '!**/*.test.*',
