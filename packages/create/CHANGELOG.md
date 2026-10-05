@@ -168,7 +168,10 @@ when a version's change lives in a sibling it is described there instead:
   React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and declares
   `@react-native/metro-config`. A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only; the
   `crx({ manifest })` call is unchanged. Angular's `pnpm-workspace.yaml` loses its `peerDependencyRules` block,
-  since `@angular/build` 22.2 admits vitest 5, and no target discards a peer warning any more.
+  since `@angular/build` 22.2 admits vitest 5, and no target discards a peer warning any more. Patch and minor
+  releases at least two days old as of 2026-10-05 are taken too: Angular 22.2.1, `@analogjs/vite-plugin-angular`
+  2.8.0, Next 16.3.8, Vite 8.3.2, Vitest 5.0.3, ESLint 10.12.0, Stylelint 17.16.0, TanStack Query 5.104.1,
+  `@eslint-react/eslint-plugin` 5.23.5, `vue-tsc` 3.3.12 and `next-intl` 4.14.9.
 - The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on
   file carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule
   files drop their "shipped verbatim" note.
