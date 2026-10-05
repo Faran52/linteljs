@@ -45,20 +45,32 @@ describe('sharedSlots', () => {
     expect(slots['RUN']).toBe('pnpm');
   });
 
-  it('names a sync that runs under the project manager', () => {
-    const { SYNC: pnpmSync } = sharedSlots('demo-app', answersFor({}));
-    const { SYNC: npmSync } = sharedSlots('demo-app', answersFor({ packageManager: 'npm' }));
+  it.each([
+    [
+      'pnpm',
+      'pnpm exec',
+      'pnpm dlx @linteljs/create sync',
+    ],
+    [
+      'npm',
+      'npx',
+      'npx @linteljs/create sync',
+    ],
+    [
+      'yarn',
+      'yarn',
+      'yarn dlx @linteljs/create sync',
+    ],
+    [
+      'bun',
+      'bunx',
+      'bunx @linteljs/create sync',
+    ],
+  ] as const)('runs a project binary and sync under %s', (packageManager, exec, sync) => {
+    const { EXEC: actualExec, SYNC: actualSync } = sharedSlots('demo-app', answersFor({ packageManager }));
 
-    expect(pnpmSync).toBe('pnpm dlx @linteljs/create sync');
-    expect(npmSync).toBe('npx @linteljs/create sync');
-  });
-
-  it('runs a project binary through the project manager', () => {
-    const { EXEC: pnpmExec } = sharedSlots('demo-app', answersFor({}));
-    const { EXEC: yarnExec } = sharedSlots('demo-app', answersFor({ packageManager: 'yarn' }));
-
-    expect(pnpmExec).toBe('pnpm exec');
-    expect(yarnExec).toBe('yarn');
+    expect(actualExec).toBe(exec);
+    expect(actualSync).toBe(sync);
   });
 
   it('carries the check chain built from the answers', () => {
