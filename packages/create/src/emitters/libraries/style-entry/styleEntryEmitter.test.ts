@@ -43,6 +43,11 @@ describe('the entry path', () => {
     expect(entryPath).toBe('src/styles/tailwind.css');
   });
 
+  it('writes the entry in the standard stage', () => {
+    const [artifact] = styleEntryEmitter(answersFor({ styling: 'tailwind' }), EMPTY_PROJECT);
+    expect(artifact?.stage).toBe('standard');
+  });
+
   it('falls back to the target default when the project has none', () => {
     const entryPath = entryPathOf('webextension', []);
     expect(entryPath).toBe('src/style.css');
