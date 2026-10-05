@@ -72,8 +72,6 @@ interface HostedAsk {
   answers: HostedAnswers;
 }
 
-type Step = 'done' | 'declined' | 'blocked';
-
 interface Asker {
   isYes: boolean;
   prompter: Prompter;
@@ -171,26 +169,25 @@ const askedFrom = async (
   return answered;
 };
 
-// `--yes` accepts; with no terminal the step writes nothing and the run fails, so a script notices.
-const stepOf = async (asker: Asker, heading: string, question: string): Promise<Step> => {
+// `--yes` accepts; with no terminal it is null: the step writes nothing and the run fails, so a script notices.
+const stepOf = async (asker: Asker, heading: string, question: string): Promise<boolean | null> => {
   say(heading);
 
   if (asker.isYes) {
-    return 'done';
+    return true;
   }
 
   if (!asker.hasTerminal) {
     console.error(SYNC_NEEDS_YES);
 
-    return 'blocked';
+    return null;
   }
 
-  const isApproved = await confirm(asker.prompter, question);
-
-  return isApproved ? 'done' : 'declined';
+  return await confirm(asker.prompter, question);
 };
 
-const dependencyStep = async (cwd: string, asker: Asker, step: DependencyStep): Promise<Step> => {
+// Each step resolves to whether it was blocked.
+const dependencyStep = async (cwd: string, asker: Asker, step: DependencyStep): Promise<boolean> => {
   const {
     changes,
     heading,
@@ -199,17 +196,17 @@ const dependencyStep = async (cwd: string, asker: Asker, step: DependencyStep): 
   } = step;
 
   if (changes.length === 0) {
-    return 'done';
+    return false;
   }
 
-  const outcome = await stepOf(asker, `${heading}\n${upgradeTable(changes)}`, question);
+  const isApproved = await stepOf(asker, `${heading}\n${upgradeTable(changes)}`, question);
 
-  if (outcome === 'done') {
+  if (isApproved === true) {
     await writeDependencies(cwd, changes);
     say(done);
   }
 
-  return outcome;
+  return isApproved === null;
 };
 
 // A missing config is written; one the project has is moved aside only when asked.
@@ -218,26 +215,26 @@ const lintConfigStep = async (
   asker: Asker,
   answers: HostedAnswers,
   plan: LintConfigPlan,
-): Promise<Step> => {
+): Promise<boolean> => {
   if (plan.status !== 'changed') {
     if (plan.status === 'missing') {
       await writeLintConfig(cwd, answers, plan);
       say(`wrote ${ESLINT_CONFIG_PATH}`);
     }
 
-    return 'done';
+    return false;
   }
 
   const { path, backup } = plan;
   const question = `Move it to ${backup} and write ${ESLINT_CONFIG_PATH}?`;
-  const outcome = await stepOf(asker, `${path} differs from the config linteljs writes.`, question);
+  const isApproved = await stepOf(asker, `${path} differs from the config linteljs writes.`, question);
 
-  if (outcome === 'done') {
+  if (isApproved === true) {
     await writeLintConfig(cwd, answers, plan);
     say(`moved ${path} to ${backup}, wrote ${ESLINT_CONFIG_PATH}`);
   }
 
-  return outcome;
+  return isApproved === null;
 };
 
 const runSync = async (
@@ -279,8 +276,17 @@ const runSync = async (
     peers,
     eslintConfig,
   } = plan;
-  const isCurrent = written.length + removed.length + upgrades.length + peers.length === 0
-    && eslintConfig.status === 'unchanged';
+  const changeLists = [
+    written,
+    removed,
+    upgrades,
+    peers,
+  ];
+  const isEmpty = changeLists
+    .every((entries) => {
+      return entries.length === 0;
+    });
+  const isCurrent = isEmpty && eslintConfig.status === 'unchanged';
 
   if (isCurrent) {
     say('Everything is already up to date.');
@@ -292,33 +298,28 @@ const runSync = async (
     prompter,
     hasTerminal,
   };
-  const dependencies: DependencyStep[] = [
-    {
-      changes: upgrades,
-      heading: '@linteljs/* versions behind:',
-      question: 'Update them in package.json?',
-      done: 'wrote package.json',
-    },
-    {
-      changes: peers,
-      heading: '@linteljs/eslint-config peers missing or behind:',
-      question: 'Add or update them in package.json?',
-      done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
-    },
+  const upgradeStep: DependencyStep = {
+    changes: upgrades,
+    heading: '@linteljs/* versions behind:',
+    question: 'Update them in package.json?',
+    done: 'wrote package.json',
+  };
+  const peerStep: DependencyStep = {
+    changes: peers,
+    heading: '@linteljs/eslint-config peers missing or behind:',
+    question: 'Add or update them in package.json?',
+    done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
+  };
+  const isUpgradeBlocked = await dependencyStep(cwd, asker, upgradeStep);
+  const isPeerBlocked = await dependencyStep(cwd, asker, peerStep);
+  const isLintBlocked = await lintConfigStep(cwd, asker, answers, eslintConfig);
+  const blocked = [
+    isUpgradeBlocked,
+    isPeerBlocked,
+    isLintBlocked,
   ];
-  const steps: Step[] = [];
 
-  for (const step of dependencies) {
-    const outcome = await dependencyStep(cwd, asker, step);
-
-    steps.push(outcome);
-  }
-
-  const lintOutcome = await lintConfigStep(cwd, asker, answers, eslintConfig);
-
-  steps.push(lintOutcome);
-
-  return steps.includes('blocked') ? 1 : 0;
+  return blocked.includes(true) ? 1 : 0;
 };
 
 // Not `process.exit`, which drops queued stderr writes.

@@ -494,6 +494,7 @@ describe('main: sync', () => {
   const NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';
   const VERSIONS_QUESTION = 'Update them in package.json?';
   const ESLINT_QUESTION = 'Move it to eslint.config.js.bak and write eslint.config.js?';
+  const ESLINT_DIFFERS = 'eslint.config.js differs from the config linteljs writes.\n';
 
   const manifestText = async (): Promise<string> => {
     return await readFile(join(project, 'package.json'), 'utf8');
@@ -638,13 +639,45 @@ describe('main: sync', () => {
     await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
 
     const asked = scripted(answers);
-    const { code } = await runMain(['sync'], asked);
+    const { code, printed } = await runMain(['sync'], asked);
 
     expect(code).toBe(0);
     expect(asked.calls).toEqual([ESLINT_QUESTION]);
+    expect(printed).toMatch(new RegExp(`^${ESLINT_DIFFERS}`, 'u'));
     const file = await readFile(join(project, 'eslint.config.js'), 'utf8');
     const kept = file === '// ours\n' ? file : '';
     expect(kept).toBe(expected);
+  });
+
+  it('keeps an edited eslint config with no terminal and no --yes, says so, and fails', async () => {
+    await generated();
+    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
+
+    const {
+      code,
+      printed,
+      errors,
+    } = await runMain(['sync']);
+
+    expect(code).toBe(1);
+    expect(printed).toBe(ESLINT_DIFFERS);
+    expect(errors).toEqual([NEEDS_YES]);
+    const file = await readFile(join(project, 'eslint.config.js'), 'utf8');
+    expect(file).toBe('// ours\n');
+  });
+
+  it('asks before adding a missing eslint-config peer', async () => {
+    await generated();
+
+    await editDevDependencies((entries) => {
+      Reflect.deleteProperty(entries, 'eslint');
+    });
+
+    const asked = scripted(['no']);
+    const { code } = await runMain(['sync'], asked);
+
+    expect(code).toBe(0);
+    expect(asked.calls).toEqual(['Add or update them in package.json?']);
   });
 
   it('moves an edited eslint config past an earlier backup under --yes', async () => {
