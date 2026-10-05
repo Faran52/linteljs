@@ -146,6 +146,8 @@ export interface TargetRecord {
   i18n?: I18nParts;
   hostsFramework?: true;
   ignores: string[];
+  // The official scaffolder's `.gitignore` entries for its build, cache and generated output, verbatim.
+  gitignore: string[];
   naming: NamingMap;
   folderNaming: NamingMap;
   // The route unit's directory, first: it imports every layer below it.

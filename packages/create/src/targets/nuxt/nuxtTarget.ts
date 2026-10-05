@@ -66,6 +66,14 @@ export const nuxtTarget: TargetBuilder = () => {
     // Installed with no counter module: Nuxt's starter has no store demo.
     stores: ['pinia', 'tanstack-store'],
     ignores: ['.nuxt/**', '.output/**'],
+    gitignore: [
+      '.output',
+      '.data',
+      '.nuxt',
+      '.nitro',
+      '.cache',
+      'dist',
+    ],
     naming: sfcNaming('vue'),
     // A dynamic route is `[slug].vue`, so a directory may be one too.
     folderNaming: { 'src/**/': FOLDER_ROUTED },

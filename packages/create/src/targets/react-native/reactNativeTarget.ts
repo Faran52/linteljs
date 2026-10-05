@@ -73,6 +73,23 @@ export const reactNativeTarget: TargetBuilder = () => {
       'ios/**',
       'expo-env.d.ts',
     ],
+    // Less `expo-env.d.ts`, which the starter ships.
+    gitignore: [
+      '.expo/',
+      'dist/',
+      'web-build/',
+      '.kotlin/',
+      '*.orig.*',
+      '*.jks',
+      '*.p8',
+      '*.p12',
+      '*.key',
+      '*.mobileprovision',
+      '.metro-health-check*',
+      '*.pem',
+      '/ios',
+      '/android',
+    ],
     // expo-router resolves a route by its filename.
     naming: componentNaming('app'),
     folderNaming: { 'src/**/': FOLDER_ROUTED },

@@ -44,6 +44,13 @@ export const angularTarget: TargetBuilder = () => {
     html: false,
     stores: ['ngrx-signals'],
     ignores: ['.angular/**'],
+    gitignore: [
+      '/dist',
+      '/tmp',
+      '/out-tsc',
+      '/bazel-out',
+      '/.angular/cache',
+    ],
     // No `--file-name-style-guide`: pinning affects initial files only (measured with `2016`).
     naming: {
       // `check-file` applies every matching key, so two on one name must agree.

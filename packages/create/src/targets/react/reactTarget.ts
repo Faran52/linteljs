@@ -10,6 +10,7 @@ import {
   REACT_VITE_PLUGIN,
   ROUTER_MOCK,
   STATUS_UTILS_TEST,
+  VITE_GITIGNORE,
 } from '../constants';
 import { hasForm, hasStore } from '../utils/gateUtils';
 import {
@@ -188,6 +189,7 @@ const baseReactTarget = (): TargetRecord => {
     ],
     routers: ROUTERS,
     ignores: [],
+    gitignore: VITE_GITIGNORE,
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,
@@ -408,6 +410,7 @@ const frameworkMode = (): Partial<TargetRecord> => {
   const record: Partial<TargetRecord> = {
     reactRouterProject: true,
     ignores: ['.react-router/**', 'build/**'],
+    gitignore: ['/.react-router/', '/build/'],
     html: false,
     htmlEntry: undefined,
     // React Router's plugin expects its server's preamble and fails every suite, so the test run takes plain React.

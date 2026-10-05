@@ -1373,6 +1373,12 @@ birth, since a workflow cannot name a script `package.json` does not define.
 merge that adds what is missing and keeps the rest. At birth the `pnpm-workspace.yaml` merge drops the
 scaffolder's `ignoredBuiltDependencies`, which opts out of exactly the builds linteljs opts into.
 
+Since no scaffolder runs, `.gitignore` carries the whole list: dependencies, env files (less `.env.example`),
+`.DS_Store`, `coverage/` and `*.tsbuildinfo` on every target, Yarn's own list on Yarn, and the record's
+`gitignore`, which copies the build, cache and generated entries of the target's official scaffolder verbatim.
+Verbatim, so an `--existing` project born from that scaffolder gains nothing twice. A record drops an entry
+naming a file its starter ships, as React Native drops Expo's `expo-env.d.ts`.
+
 ### What `sync` may delete, and why the project holds the list
 
 A project records what this CLI wrote under `plugins/linteljs/` in `plugins/linteljs/managed.json`, and `sync`

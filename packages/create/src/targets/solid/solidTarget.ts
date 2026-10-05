@@ -4,6 +4,7 @@ import {
   PARTS,
   ROUTER_MOCK,
   STATUS_UTILS_TEST,
+  VITE_GITIGNORE,
 } from '../constants';
 import {
   hasForm,
@@ -60,6 +61,7 @@ export const solidTarget: TargetBuilder = () => {
     html: true,
     stores: ['tanstack-store'],
     ignores: [],
+    gitignore: VITE_GITIGNORE,
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: { '@primitives/*': './src/lib/primitives/*' },

@@ -11,6 +11,7 @@ import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
 import { parsePackageJson } from '@emitters';
 
 import { browserProblems } from '../browser/browser';
+import { removedAfter } from '../utils/cleanupUtils';
 import {
   oneAtATime,
   outcome,
@@ -127,12 +128,7 @@ const missingStylexRules = (project: string): string => {
   return missing;
 };
 
-export const runE2eCase = async ({
-  label,
-  answers,
-  variant,
-}: E2eCase): Promise<void> => {
-  const root = join(workspace, label.replaceAll(' ', '-'));
+const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<void> => {
   const name = answers.target;
   const project = join(root, name);
 
@@ -214,4 +210,12 @@ export const runE2eCase = async ({
 
     expect(seen).toEqual([]);
   }
+};
+
+export const runE2eCase = async (item: E2eCase): Promise<void> => {
+  const root = join(workspace, item.label.replaceAll(' ', '-'));
+
+  await removedAfter(root, async () => {
+    await checkCase(item, root);
+  });
 };

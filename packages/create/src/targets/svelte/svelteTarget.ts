@@ -65,6 +65,17 @@ export const svelteTarget: TargetBuilder = () => {
     stores: ['tanstack-store'],
     // `%sveltekit.head%` and `%sveltekit.body%` are placeholders, so the HTML layer reads an empty page.
     ignores: ['.svelte-kit/**', 'src/app.html'],
+    gitignore: [
+      '.output',
+      '.vercel',
+      '.netlify',
+      '.wrangler',
+      '/.svelte-kit',
+      '/build',
+      '!.env.test',
+      'vite.config.js.timestamp-*',
+      'vite.config.ts.timestamp-*',
+    ],
     naming: sfcNaming('svelte', 'routes'),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,

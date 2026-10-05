@@ -1,14 +1,11 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync } from 'node:fs';
 
 import { MANAGER_FLOORS } from '@config/constants';
 
 import { VERSION_PARTS, WORKSPACE_PREFIX } from '../constants';
 import { PACKAGE_MANAGERS } from '../matrix/constants';
 
+import { removeDir } from './cleanupUtils';
 import {
   oneAtATime,
   registry,
@@ -21,11 +18,8 @@ import type { Answers, PackageManager } from '@config/types';
 
 export const workspace = mkdtempSync(WORKSPACE_PREFIX);
 
-export const afterAllCleanup = (): void => {
-  rmSync(workspace, {
-    recursive: true,
-    force: true,
-  });
+export const afterAllCleanup = async (): Promise<void> => {
+  await removeDir(workspace);
 };
 
 const agentOf = (pm: PackageManager, version: string): string => {

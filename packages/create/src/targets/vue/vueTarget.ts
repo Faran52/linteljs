@@ -4,6 +4,7 @@ import {
   FOLDER,
   PARTS,
   STATUS_UTILS_TEST,
+  VITE_GITIGNORE,
 } from '../constants';
 import {
   hasForm,
@@ -59,6 +60,7 @@ export const vueTarget: TargetBuilder = () => {
     sfcExtension: 'vue',
     stores: ['pinia', 'tanstack-store'],
     ignores: [],
+    gitignore: VITE_GITIGNORE,
     naming: sfcNaming('vue'),
     folderNaming: { 'src/**/': FOLDER },
     hooksAlias: { '@composables/*': './src/lib/composables/*' },

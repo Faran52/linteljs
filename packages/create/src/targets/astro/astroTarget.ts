@@ -55,6 +55,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     // Atoms outlive an island, which is the state problem Astro actually has.
     stores: ['nanostores'],
     ignores: ['.astro/**'],
+    gitignore: ['dist/', '.astro/'],
     // `COMPONENT` admits both `Card.astro` and a route's lowercase `index.astro`.
     naming: {
       'src/**/*.astro': COMPONENT,

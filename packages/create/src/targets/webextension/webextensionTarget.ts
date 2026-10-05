@@ -1,6 +1,10 @@
 import { hasSurface } from '@utils/answerUtils';
 
-import { DECLARATION_KEY, FOLDER } from '../constants';
+import {
+  DECLARATION_KEY,
+  FOLDER,
+  VITE_GITIGNORE,
+} from '../constants';
 import { hostedNaming, hostedPartsFor } from '../utils/frameworkUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
@@ -106,6 +110,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     hostsFramework: true,
     html: popup || hasSurface(answers, 'devtools-panel'),
     ignores: [],
+    gitignore: VITE_GITIGNORE,
     naming: hosted === undefined
       ? {
           'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',

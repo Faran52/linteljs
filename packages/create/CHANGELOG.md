@@ -11,7 +11,9 @@ when a version's change lives in a sibling it is described there instead:
 ### Breaking
 
 - **No official scaffolder runs.** Every target writes linteljs's own starter tree, and the `scaffold` stage is
-  gone: `--skip` takes `lint`, `package`, `standard`, `install` and `fix`.
+  gone: `--skip` takes `lint`, `package`, `standard`, `install` and `fix`. `.gitignore` carries the list the
+  scaffolder wrote: dependencies, env files, `.DS_Store`, Yarn's state on Yarn, and the build and cache output of
+  the target's official scaffolder.
 - **`--skip-scaffold` is now `--existing`, and `--fresh` is now `--seed`.** `--existing` runs in the directory that
   already exists rather than making `<name>/`; `--seed` plants the starter and seed files a new project gets.
 - **The package manager is no longer asked.** The manager that runs `create` is the project's, read from

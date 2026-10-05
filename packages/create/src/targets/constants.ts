@@ -125,6 +125,13 @@ export const PARTS: Record<HostedFramework, FrameworkParts> = {
   },
 };
 
+// create-vite's `template-*/_gitignore`.
+export const VITE_GITIGNORE = [
+  'dist',
+  'dist-ssr',
+  '*.local',
+];
+
 export const HOOKS_ALIAS: AliasMap = { '@hooks/*': './src/lib/hooks/*' };
 
 // `react()` loads `jsx-a11y-x`, so every target composing that layer installs it.
