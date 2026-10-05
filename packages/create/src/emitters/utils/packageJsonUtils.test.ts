@@ -272,6 +272,12 @@ describe('buildDependencies', () => {
     [
       'nuxt',
       undefined,
+      'tanstack-store',
+      ['@tanstack/vue-store'],
+    ],
+    [
+      'nuxt',
+      undefined,
       'pinia',
       ['pinia', '@vue/devtools-api'],
     ],
@@ -296,6 +302,32 @@ describe('buildDependencies', () => {
     const dependencyNames = Object.keys(dependencies);
 
     expect(dependencyNames).toEqual(expect.arrayContaining(packages));
+  });
+
+  it('installs a package for every store each target offers', () => {
+    const bare = TARGET_IDS
+      .flatMap((target) => {
+        const plain = answersFor({ target });
+        const plainDependencies = buildDependencies(plain);
+        const without = Object.keys(plainDependencies);
+        const offered = targetFor(plain).stores ?? [];
+
+        return offered
+          .filter((store) => {
+            const dependencies = buildDependencies(answersFor({
+              target,
+              store,
+            }));
+            const names = Object.keys(dependencies);
+
+            return names.length === without.length;
+          })
+          .map((store) => {
+            return `${target} ${store}`;
+          });
+      });
+
+    expect(bare).toEqual([]);
   });
 
   it('installs no store where none was chosen', () => {

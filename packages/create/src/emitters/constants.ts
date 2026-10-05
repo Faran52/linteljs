@@ -307,6 +307,7 @@ export const STORE_BINDINGS: Partial<Record<Store, Partial<Record<Framework, str
     'next': '@tanstack/react-store',
     'react-native': '@tanstack/react-store',
     'vue': '@tanstack/vue-store',
+    'nuxt': '@tanstack/vue-store',
     'svelte': '@tanstack/svelte-store',
     'solid': '@tanstack/solid-store',
   },
