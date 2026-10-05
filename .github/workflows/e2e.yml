@@ -6,8 +6,8 @@ on:
   push:
     branches: [main, 'v*']
   schedule:
-    # Sunday noon UTC: nothing releases at the weekend, so this catches transitive drift after a release.
-    - cron: '0 12 * * 0'
+    # Daily at noon UTC, so an upstream release that breaks a fresh install fails here within a day, not for a user.
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 permissions:
