@@ -126,18 +126,11 @@ const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyD
 };
 
 // Never over an earlier backup: `.bak`, then `.bak.1`, `.bak.2` and so on.
-const freeBackup = async (cwd: string, path: string): Promise<string> => {
-  let backup = `${path}.bak`;
-  let index = 0;
-  let isTaken = await entryExists(join(cwd, backup));
+const freeBackup = async (cwd: string, path: string, index = 0): Promise<string> => {
+  const backup = index === 0 ? `${path}.bak` : `${path}.bak.${String(index)}`;
+  const isTaken = await entryExists(join(cwd, backup));
 
-  while (isTaken) {
-    index += 1;
-    backup = `${path}.bak.${String(index)}`;
-    isTaken = await entryExists(join(cwd, backup));
-  }
-
-  return backup;
+  return isTaken ? await freeBackup(cwd, path, index + 1) : backup;
 };
 
 const lintConfigPlan = async (cwd: string, answers: HostedAnswers): Promise<LintConfigPlan> => {

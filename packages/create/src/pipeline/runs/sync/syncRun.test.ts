@@ -17,6 +17,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import { MANAGED_PATH, PLUGIN_ROOT } from '@config/constants';
@@ -38,6 +39,36 @@ import {
 
 import type { HostedAnswers } from '@config/types';
 
+const PROBE_LIMIT = 100;
+
+const probes = vi.hoisted(() => {
+  const counter = { count: 0 };
+
+  return counter;
+});
+
+// A backup probe that never finds a free name throws here rather than run into the suite's timeout.
+vi.mock('@disk', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@disk')>();
+
+  const entryExists = async (path: string): Promise<boolean> => {
+    probes.count += 1;
+
+    if (probes.count > PROBE_LIMIT) {
+      throw new Error(`more than ${String(PROBE_LIMIT)} probes`);
+    }
+
+    return await actual.entryExists(path);
+  };
+
+  const mocked = {
+    ...actual,
+    entryExists,
+  };
+
+  return mocked;
+});
+
 const CLAUDE_PLUGIN = 'plugins/linteljs/.claude-plugin/plugin.json';
 const CLAUDE_MARKETPLACE = 'plugins/linteljs/.claude-plugin/marketplace.json';
 const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
@@ -50,6 +81,7 @@ const CODEX_ONLY: HostedAnswers = {
 let cwd = '';
 
 beforeEach(async () => {
+  probes.count = 0;
   const prefix = join(tmpdir(), 'linteljs-sync-');
   cwd = await mkdtemp(prefix);
 });
