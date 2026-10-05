@@ -129,6 +129,11 @@ const sheetsFor = (colors: Palette) => {
     },
     inputInvalid: { borderColor: colors.destructive },
     header: { backgroundColor: colors.card },
+    // The header's trailing inset: with the language trigger's own 16, its label ends on the screen's 24.
+    headerEnd: {
+      flexBasis: 'auto',
+      paddingEnd: 8,
+    },
     scene: { backgroundColor: colors.background },
     mark: { gap: 6 },
     beam: {

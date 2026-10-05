@@ -1,72 +1,24 @@
-import { Tabs } from 'expo-router';
-import { HeaderTitle } from 'expo-router/react-navigation';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-
-import { PAGES } from '@config/routes';
-import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { DocumentHead } from '@features/document-head/DocumentHead';
 
-import type { BottomTabNavigationOptions } from 'expo-router/tabs';
 import type { ReactNode } from 'react';
 
-const UNLISTED = { href: null };
-
-// With no icon given, the tab bar draws a placeholder glyph into each tab's accessible name.
-const noIcon = (): null => {
-  return null;
-};
+// The tabs draw their own header; the 404 sits outside them, so the bar counts only its tabs.
+const STACK_OPTIONS = { headerShown: false };
 
 const RootLayout = (): ReactNode => {
-  const { colors, layout } = useStarterStyles();
-
-  const screenOptions: BottomTabNavigationOptions = {
-    headerTitle: () => {
-      return (
-        <HeaderTitle tintColor={colors.foreground} maxFontSizeMultiplier={MAX_FONT_SCALE}>
-          LintelJS Starter
-        </HeaderTitle>
-      );
-    },
-    headerTitleAlign: 'left',
-    headerStyle: layout.header,
-    headerTintColor: colors.foreground,
-    headerShadowVisible: false,
-    tabBarActiveTintColor: colors.primary,
-    tabBarInactiveTintColor: colors.muted,
-    tabBarStyle: layout.tabBar,
-    tabBarIcon: noIcon,
-    tabBarIconStyle: { display: 'none' },
-    tabBarLabelStyle: { fontSize: 15 },
-    tabBarItemStyle: { justifyContent: 'center' },
-    sceneStyle: layout.scene,
-  };
-
   return (
     <StoreProvider>
       <DataProvider>
         <DocumentHead />
         {/* `auto` draws dark icons on a light scheme; Android otherwise keeps them light on the light header. */}
         <StatusBar style="auto" />
-        <Tabs screenOptions={screenOptions}>
-          {PAGES
-            .map((page) => {
-              const options = { title: page.label };
-
-              return (
-                <Tabs.Screen
-                  key={page.id}
-                  name={page.id === 'home' ? 'index' : page.id}
-                  options={options}
-                />
-              );
-            })}
-          {/* A route, so Tabs would list it: `href: null` keeps it off the bar. */}
-          <Tabs.Screen name="+not-found" options={UNLISTED} />
-        </Tabs>
+        <Stack screenOptions={STACK_OPTIONS} />
       </DataProvider>
     </StoreProvider>
   );

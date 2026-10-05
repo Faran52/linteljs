@@ -3,38 +3,40 @@ import i18next from 'i18next';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import { GATE } from '@/config/linteljs';
+import { ANSWERS, STACK } from '@/config/linteljs';
 import { languages, resources } from '@/i18n/config';
 
-import AboutScreen from './app/about';
+import VersionScreen from './app/(tabs)/version';
 
 const last = languages.at(-1)?.id ?? 'en';
 
-describe('the about screen', () => {
+describe('the version screen', () => {
   afterEach(async () => {
     await act(async () => {
       await i18next.changeLanguage('en');
     });
   });
 
-  it('lists every leg of the gate', async () => {
-    await renderScreen(<AboutScreen />);
+  it('renders every recorded row of the stack', async () => {
+    await renderScreen(<VersionScreen />);
 
-    for (const { command } of GATE) {
-      const element = screen.getByText(command);
-      expect(element).toBeTruthy();
+    for (const { name } of STACK) {
+      const elements = screen.getAllByText(name);
+      expect(elements).not.toHaveLength(0);
     }
   });
 
-  it('says where the standard lives', async () => {
-    await renderScreen(<AboutScreen />);
+  it('renders every answer this project was generated from', async () => {
+    await renderScreen(<VersionScreen />);
 
-    const element = screen.getByText('eslint.config.js');
-    expect(element).toBeTruthy();
+    for (const { label } of ANSWERS) {
+      const elements = screen.getAllByText(label);
+      expect(elements).not.toHaveLength(0);
+    }
   });
 
   it('speaks the language chosen', async () => {
-    await renderScreen(<AboutScreen />);
+    await renderScreen(<VersionScreen />);
 
     await act(async () => {
       await i18next.changeLanguage(last);
@@ -43,11 +45,10 @@ describe('the about screen', () => {
     const { common } = resources[last];
 
     const shown = [
-      common.about,
-      common.aboutLede,
-      common.aboutGate,
-      common.aboutStandard,
-      common.standardEslint,
+      common.version,
+      common.versionLede,
+      common.versionStack,
+      common.versionAnswers,
     ];
 
     for (const text of shown) {
@@ -57,7 +58,7 @@ describe('the about screen', () => {
   });
 
   it('is the one main landmark on the page, and a keyboard can reach its scroll', async () => {
-    await renderScreen(<AboutScreen />);
+    await renderScreen(<VersionScreen />);
 
     const landmarks = screen.container.queryAll((node) => {
       return node.props.role === 'main';

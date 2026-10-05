@@ -42,9 +42,10 @@ const LANGUAGE_SELECT = 'src/components/features/language-select/LanguageSelect'
 const STATUS_PAGE = 'src/components/features/status-page/StatusPage';
 
 export const TRANSLATED = [
-  'src/app/index.tsx',
-  'src/app/about.tsx',
-  'src/app/version.tsx',
+  'src/app/(tabs)/_layout.tsx',
+  'src/app/(tabs)/index.tsx',
+  'src/app/(tabs)/about.tsx',
+  'src/app/(tabs)/version.tsx',
   `${STATUS_PAGE}.tsx`,
 ];
 
@@ -52,9 +53,9 @@ export const I18N_ONLY_FILES = ['src/i18n/index.ts', `${LANGUAGE_SELECT}.tsx`];
 
 // Each suite, and the file it covers.
 export const TRANSLATED_SUITES = [
-  ['src/app-index.test.tsx', 'src/app/index.tsx'],
-  ['src/app-about.test.tsx', 'src/app/about.tsx'],
-  ['src/app-version.test.tsx', 'src/app/version.tsx'],
+  ['src/app-tabs-index.test.tsx', 'src/app/(tabs)/index.tsx'],
+  ['src/app-tabs-about.test.tsx', 'src/app/(tabs)/about.tsx'],
+  ['src/app-tabs-version.test.tsx', 'src/app/(tabs)/version.tsx'],
   ['src/app-not-found.test.tsx', 'src/app/+not-found.tsx'],
   [`${STATUS_PAGE}.test.tsx`, `${STATUS_PAGE}.tsx`],
 ] as const;

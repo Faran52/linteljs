@@ -16,7 +16,7 @@ placement and direction, which no rule can see.
 A spec sits beside the file it tests and takes its case: `Mark.test.tsx` beside `Mark.tsx`,
 `useExtendedQuery.test.ts` beside `useExtendedQuery.ts`. **Never put a test under `src/app/`**: expo-router
 bundles every file there as a route, and a suite breaks the export. A route's suite sits in `src/`, named
-for the route with its path flattened: `app-index.test.tsx` for `src/app/index.tsx`.
+for the route with its path flattened: `app-tabs-index.test.tsx` for `src/app/(tabs)/index.tsx`.
 
 ## Layout
 

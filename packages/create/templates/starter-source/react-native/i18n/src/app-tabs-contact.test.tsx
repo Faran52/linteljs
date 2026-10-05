@@ -1,12 +1,18 @@
+import { DeviceEventEmitter, ScrollView } from 'react-native';
+
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
 } from '@testing-library/react-native';
+import i18next from 'i18next';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import ContactScreen from './app/contact';
+import { languages, resources } from '@/i18n/config';
+
+import ContactScreen from './app/(tabs)/contact';
 
 const fill = async (label: string, value: string): Promise<void> => {
   const field = screen.getByLabelText(label);
@@ -15,7 +21,38 @@ const fill = async (label: string, value: string): Promise<void> => {
   await fireEvent(field, 'blur');
 };
 
+const last = languages.at(-1)?.id ?? 'en';
+
 describe('the contact screen', () => {
+  afterEach(async () => {
+    await act(async () => {
+      await i18next.changeLanguage('en');
+    });
+  });
+
+  it('speaks the language chosen, its rules included', async () => {
+    await renderScreen(<ContactScreen />);
+
+    await act(async () => {
+      await i18next.changeLanguage(last);
+    });
+
+    const { common } = resources[last];
+    await fill(common.contactEmail, 'not-an-address');
+
+    const shown = [
+      common.contact,
+      common.contactLede,
+      common.contactSend,
+      common.contactEmailInvalid,
+    ];
+
+    for (const text of shown) {
+      const element = await screen.findByText(text);
+      expect(element).toBeTruthy();
+    }
+  });
+
   it('refuses what the rules refuse, and says why beside the field', async () => {
     await renderScreen(<ContactScreen />);
     await fill('Email', 'not-an-address');
@@ -64,7 +101,7 @@ describe('the contact screen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Send' }));
 
     const element = await screen.findByRole('status');
-    expect(element).toHaveTextContent('Thanks. Nothing was sent, this is a starter.');
+    expect(element).toHaveTextContent(resources.en.common.contactSent);
   });
 
   it('is the one main landmark on the page, and a keyboard can reach its scroll', async () => {
@@ -75,5 +112,16 @@ describe('the contact screen', () => {
     });
     expect(landmarks).toHaveLength(1);
     expect(landmarks[0]).toHaveProp('tabIndex', 0);
+  });
+
+  it('scrolls Send into view once the keyboard is up', async () => {
+    const scrollToEnd = jest.spyOn(ScrollView.prototype, 'scrollToEnd');
+    await renderScreen(<ContactScreen />);
+
+    await act(() => {
+      DeviceEventEmitter.emit('keyboardDidShow', {});
+    });
+
+    expect(scrollToEnd).toHaveBeenCalledTimes(1);
   });
 });

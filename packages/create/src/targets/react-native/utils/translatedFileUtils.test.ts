@@ -26,9 +26,10 @@ const STATUS_PAGE = 'src/components/features/status-page/StatusPage';
 const ENGLISH_FILES = [
   'true:src/config/statuses.ts',
   'true:src/config/standard.ts',
-  'src/app/index.tsx',
-  'src/app/about.tsx',
-  'src/app/version.tsx',
+  'src/app/(tabs)/_layout.tsx',
+  'src/app/(tabs)/index.tsx',
+  'src/app/(tabs)/about.tsx',
+  'src/app/(tabs)/version.tsx',
   `${STATUS_PAGE}.tsx`,
 ];
 
@@ -101,13 +102,13 @@ describe('reactNativeI18nFiles', () => {
     const englishFiles = [
       ...ENGLISH_FILES,
       'src/app/_layout.tsx',
-      'src/app/contact.tsx',
+      'src/app/(tabs)/contact.tsx',
     ];
     expect(english).toEqual(englishFiles);
     const translatedFiles = [
       ...translatedOf(ENGLISH_FILES),
       'src/app/_layout.tsx@i18n',
-      'src/app/contact.tsx@i18n',
+      'src/app/(tabs)/contact.tsx@i18n',
       ...I18N_ONLY,
     ];
     expect(translated).toEqual(translatedFiles);
@@ -116,9 +117,9 @@ describe('reactNativeI18nFiles', () => {
 
 describe('reactNativeI18nTests', () => {
   const SUITES = [
-    'src/app-index.test.tsx',
-    'src/app-about.test.tsx',
-    'src/app-version.test.tsx',
+    'src/app-tabs-index.test.tsx',
+    'src/app-tabs-about.test.tsx',
+    'src/app-tabs-version.test.tsx',
     'src/app-not-found.test.tsx',
     `${STATUS_PAGE}.test.tsx`,
   ];
@@ -142,18 +143,18 @@ describe('reactNativeI18nTests', () => {
     expect(written).toEqual(expected);
 
     const coveredFiles = [
-      'src/app/index.tsx',
-      'src/app/index.tsx',
-      'src/app/about.tsx',
-      'src/app/about.tsx',
-      'src/app/version.tsx',
-      'src/app/version.tsx',
+      'src/app/(tabs)/index.tsx',
+      'src/app/(tabs)/index.tsx',
+      'src/app/(tabs)/about.tsx',
+      'src/app/(tabs)/about.tsx',
+      'src/app/(tabs)/version.tsx',
+      'src/app/(tabs)/version.tsx',
       'src/app/+not-found.tsx',
       'src/app/+not-found.tsx',
       `${STATUS_PAGE}.tsx`,
       `${STATUS_PAGE}.tsx`,
-      'src/app/contact.tsx',
-      'src/app/contact.tsx',
+      'src/app/(tabs)/contact.tsx',
+      'src/app/(tabs)/contact.tsx',
       'src/i18n/index.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
     ];
@@ -177,11 +178,11 @@ describe('reactNativeI18nTests', () => {
       languages: ['ar'],
     }));
 
-    const englishSuites = [...SUITES, 'src/app-contact.test.tsx'];
+    const englishSuites = [...SUITES, 'src/app-tabs-contact.test.tsx'];
     expect(english).toEqual(englishSuites);
     const translatedSuites = [
       ...translatedOf(SUITES),
-      'src/app-contact.test.tsx@i18n',
+      'src/app-tabs-contact.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
     ];

@@ -4,7 +4,7 @@ import { renderScreen } from '@mocks/renderScreen';
 
 import { CHECK, NAME } from '@/config/linteljs';
 
-import HomeScreen from './app/index';
+import HomeScreen from './app/(tabs)/index';
 
 describe('the home screen', () => {
   it('carries the project name and the mark', async () => {

@@ -584,6 +584,10 @@ block. The rule reads identically on every target.
   `src/app-layout.test.tsx` renders `src/app/_layout.tsx` through `expo-router/testing-library`, and the tab bar
   executes `src/config/routes.ts` with it. The Tailwind spelling of the suite stubs `global.css`, which only Metro
   reads through NativeWind.
+- **React Native's tabs are a route group.** expo-router adds every sibling route to a navigator, and iOS reads a
+  tab's position out of the navigator's routes, so a `+not-found` beside the tabs made VoiceOver say "1 of 5" over
+  four tabs. The pages sit in `src/app/(tabs)/` under their own `Tabs` layout, and the root `_layout.tsx` is a
+  headerless `Stack` holding the group and the 404. A group adds nothing to a URL.
 - **Svelte's link resolver takes one route at a time.** `resolve()` types its argument as a conditional on the
   route, so the route list resolves each entry where its literal is known; that list therefore imports
   `$app/paths` and is not shared.
@@ -1187,8 +1191,8 @@ collects every `.ts`/`.tsx` and ignores only `+api`, `+middleware`, `+html` and 
 option is read from `app.json`, where regexes cannot survive JSON. Measured on expo-router 57.0.11, a suite under
 `src/app/` kills the web export at static render on `expect is not defined` and the ios export by bundling
 `@testing-library/react-native` into the app graph. So route suites sit directly in `src/`, named for the route
-with the path flattened: `app-index.test.tsx` for `src/app/index.tsx`. Do not change the record's `build` or move
-a test under `src/app/` without running `pnpm --filter @linteljs/create test:e2e -t react-native`.
+with the path flattened: `app-tabs-index.test.tsx` for `src/app/(tabs)/index.tsx`. Do not change the record's
+`build` or move a test under `src/app/` without running `pnpm --filter @linteljs/create test:e2e -t react-native`.
 
 ### It follows the Expo SDK's pins, not react-native's latest
 

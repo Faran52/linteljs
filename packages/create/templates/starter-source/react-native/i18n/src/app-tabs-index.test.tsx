@@ -6,7 +6,7 @@ import { renderScreen } from '@mocks/renderScreen';
 import { CHECK, NAME } from '@/config/linteljs';
 import { languages, resources } from '@/i18n/config';
 
-import HomeScreen from './app/index';
+import HomeScreen from './app/(tabs)/index';
 
 // The build's React Compiler skips a child whose props never change, and it is off under Vitest: this does the same.
 jest.mock('react-i18next', () => {

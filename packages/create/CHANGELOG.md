@@ -83,15 +83,16 @@ when a version's change lives in a sibling it is described there instead:
   | React Native | i18next, with the choice kept in `@react-native-async-storage/async-storage`, opening in the device's preferred language from expo-localization. A native app lays out right to left when the device's language is right to left, through `extra.supportsRTL` in `app.json` |
   | Web extension popup | a resolver, with no library; `chrome.i18n` cannot switch at runtime. An extension without a popup is not asked |
 
-- **The starter.** Every target but the extension has a header with a "LintelJS Starter" label and tabs, Home,
-  About and Version pages; React, Next, React Native, Vue, Svelte and Solid add Contact with a form library. Angular renders it under every
-  answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. React Native's Contact is a tab
-  that scrolls clear of the keyboard, sends through the chosen data layer, and mounts React's store and data
-  providers in its root layout, so Redux and TanStack Query hooks have their ancestor. A Contact field shows its
-  error once it is left or a send is tried, and clears it as soon as the value passes. About lists every script
-  `check` chains, with what each runs and the manager's own prefix. The page title is the project's name, and the
-  header wraps a name too long for its row rather than cutting it off. The Version page lists the answers the
-  target asks.
+- **The starter.** Every target but the extension has a header with a "LintelJS Starter" label and tabs, Home, About
+  and Version pages; React, Next, React Native, Vue, Svelte and Solid add Contact with a form library. Angular
+  renders it under every answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. React
+  Native's Contact is a tab that scrolls its Send button clear of the keyboard, sends through the chosen data layer,
+  and mounts React's store and data providers in its root layout, so Redux and TanStack Query hooks have their
+  ancestor. React Native keeps its tabs in a route group apart from the 404, so VoiceOver counts only the tabs. A
+  Contact field shows its error once it is left or a send is tried, and clears it as soon as the value passes. About
+  lists every script `check` chains, with what each runs and the manager's own prefix. The page title is the
+  project's name, and the header wraps a name too long for its row rather than cutting it off. The Version page
+  lists the answers the target asks.
 - **Accessibility and SEO.** Every starter document sets `lang` on `<html>` and carries a description meta, the
   extension popup holds its content in a `<main>` landmark, and every target that serves a public directory ships
   a `robots.txt`, so a single-page app does not answer `/robots.txt` with its HTML shell.

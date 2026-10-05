@@ -29,7 +29,7 @@ export const reactNativeI18nFiles = (): StarterFile[] => {
         variant: 'tailwind',
       },
       {
-        target: 'src/app/contact.tsx',
+        target: 'src/app/(tabs)/contact.tsx',
         when: hasForm,
       },
     ],
@@ -47,8 +47,8 @@ export const reactNativeI18nTests = (): StarterTest[] => {
         });
       }),
     ...translated<StarterTest>({
-      target: 'src/app-contact.test.tsx',
-      covers: 'src/app/contact.tsx',
+      target: 'src/app-tabs-contact.test.tsx',
+      covers: 'src/app/(tabs)/contact.tsx',
       when: hasForm,
     }),
     ...I18N_ONLY_SUITES

@@ -23,4 +23,12 @@ describe('stylesFor', () => {
     expect(layout.action.minHeight).toBe(38);
     expect(layout.action).not.toHaveProperty('height');
   });
+
+  // The header's trailing control would otherwise sit flush against the edge.
+  it('insets the header\'s trailing control, at its own width', () => {
+    const { headerEnd } = stylesFor('light').layout;
+
+    expect(headerEnd.paddingEnd).toBe(8);
+    expect(headerEnd.flexBasis).toBe('auto');
+  });
 });

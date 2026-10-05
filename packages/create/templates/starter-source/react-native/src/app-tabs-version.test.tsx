@@ -4,7 +4,7 @@ import { renderScreen } from '@mocks/renderScreen';
 
 import { ANSWERS, STACK } from '@/config/linteljs';
 
-import VersionScreen from './app/version';
+import VersionScreen from './app/(tabs)/version';
 
 describe('the version screen', () => {
   it('renders every recorded row of the stack', async () => {

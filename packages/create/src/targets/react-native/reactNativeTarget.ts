@@ -256,6 +256,10 @@ export const reactNativeTarget: TargetBuilder = () => {
         variant: 'tailwind',
       },
       {
+        target: 'src/app-tabs-layout.test.tsx',
+        covers: 'src/app/(tabs)/_layout.tsx',
+      },
+      {
         target: 'src/components/features/crash-page/CrashPage.test.tsx',
         covers: 'src/components/features/crash-page/CrashPage.tsx',
       },
