@@ -6,7 +6,7 @@ import {
   range,
 } from 'es-toolkit';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
@@ -82,7 +82,7 @@ const signatureOf = (copied: Copied[]): string => {
 };
 
 const allCases = (): E2eCase[] => {
-  return valuesOf(ANSWERS.target.values)
+  return keysOf(ANSWERS.target.values)
     .flatMap(everyCase);
 };
 

@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   type AnswerKey,
@@ -36,7 +36,7 @@ const isFlaggable = (record: AnswerRecord): record is FlaggedRecord => {
 };
 
 export const flaggedAnswers = (): FlaggedAnswer[] => {
-  return valuesOf(ANSWERS)
+  return keysOf(ANSWERS)
     .flatMap((key): FlaggedAnswer[] => {
       const record: AnswerRecord = ANSWERS[key];
 
@@ -92,7 +92,7 @@ export const answerUsage = (flagged: readonly FlaggedAnswer[]): string => {
 
   return flagged
     .map((answer) => {
-      return `  ${labelOf(answer).padEnd(width)}  ${valuesOf(answer.record.values).join(', ')}${noteOf(answer.record)}`;
+      return `  ${labelOf(answer).padEnd(width)}  ${keysOf(answer.record.values).join(', ')}${noteOf(answer.record)}`;
     })
     .join('\n');
 };

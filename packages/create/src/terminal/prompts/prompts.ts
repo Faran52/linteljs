@@ -5,7 +5,7 @@ import {
 } from '@inquirer/prompts';
 import { omit } from 'es-toolkit';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   type AnswerKey,
@@ -248,7 +248,7 @@ const offeredValuesOf = <V extends string>(
   target: TargetRecord,
   answered: Answers,
 ): V[] => {
-  return valuesOf(values)
+  return keysOf(values)
     .filter((value) => {
       return values[value].only === undefined || values[value].only(target, answered);
     });

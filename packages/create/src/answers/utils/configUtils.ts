@@ -1,6 +1,6 @@
 import { isEqual } from 'es-toolkit';
 
-import { isJsonObject, valuesOf } from '@utils/objectUtils';
+import { isJsonObject, keysOf } from '@utils/objectUtils';
 
 import { targetFor, type TargetRecord } from '@targets';
 
@@ -79,7 +79,7 @@ const libraryChoices = (value: JsonValue | undefined): Library[] => {
 };
 
 // Read as its own `Record`, so every key it yields is already `AnswerKey`.
-const ANSWER_KEYS = valuesOf(ANSWERS);
+const ANSWER_KEYS = keysOf(ANSWERS);
 
 const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   for (const key of ANSWER_KEYS) {

@@ -43,7 +43,7 @@ import {
   type Testing,
 } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import {
@@ -71,7 +71,7 @@ interface ScannedArtifact {
   text: string;
 }
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
   const answers = hostedAnswersFor(overrides);
@@ -168,7 +168,7 @@ describe('buildArtifacts', () => {
   it.each(TARGET_IDS)('names each path once across both lists for %s', (target) => {
     const answers = hostedAnswersFor({
       target,
-      agents: valuesOf(ANSWERS.agents.values),
+      agents: keysOf(ANSWERS.agents.values),
       libraries: ['zod'],
     });
     const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
@@ -568,7 +568,7 @@ describe('the files a webextension surface owns', () => {
     ],
   };
   const SURFACE_PATH = /^(?:[^/]+\.html|src\/(?:main\.ts|popup\/|background\/|devtools\/|panel\/|lib\/mark\/))/u;
-  const SURFACES = valuesOf(ANSWERS.surfaces.values);
+  const SURFACES = keysOf(ANSWERS.surfaces.values);
 
   const byLocale = (left: string, right: string): number => {
     return left.localeCompare(right, 'en');

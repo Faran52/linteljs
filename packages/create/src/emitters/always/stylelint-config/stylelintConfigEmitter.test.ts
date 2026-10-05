@@ -4,13 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
 import { emitStylelintConfig, stylelintConfigEmitter } from './stylelintConfigEmitter';
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const PLAIN = `const config = {
   extends: [

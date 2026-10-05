@@ -6,7 +6,7 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
@@ -43,7 +43,7 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
   return emitVitestConfig(answers, setupPath);
 };
 
-const VITEST_TARGETS = valuesOf(ANSWERS.target.values)
+const VITEST_TARGETS = keysOf(ANSWERS.target.values)
   .filter((target) => {
     return target !== 'react-native';
   });

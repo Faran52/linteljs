@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { LANGUAGES } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import {
@@ -245,14 +245,14 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
     routers = [],
     stores = [],
   } = builder(base);
-  const forms = valuesOf(ANSWERS.form.values);
-  const dataLayers = valuesOf(ANSWERS.data.values);
-  const stylings = valuesOf(ANSWERS.styling.values);
-  const mockings = valuesOf(ANSWERS.mocking.values);
-  const testings = valuesOf(ANSWERS.testing.values);
-  const hostedFrameworks = valuesOf(ANSWERS.hostedFramework.values);
-  const browsers = valuesOf(ANSWERS.browser.values);
-  const surfaceAnswers = valuesOf(ANSWERS.surfaces.values)
+  const forms = keysOf(ANSWERS.form.values);
+  const dataLayers = keysOf(ANSWERS.data.values);
+  const stylings = keysOf(ANSWERS.styling.values);
+  const mockings = keysOf(ANSWERS.mocking.values);
+  const testings = keysOf(ANSWERS.testing.values);
+  const hostedFrameworks = keysOf(ANSWERS.hostedFramework.values);
+  const browsers = keysOf(ANSWERS.browser.values);
+  const surfaceAnswers = keysOf(ANSWERS.surfaces.values)
     .map((surface) => {
       const answer = [surface];
 

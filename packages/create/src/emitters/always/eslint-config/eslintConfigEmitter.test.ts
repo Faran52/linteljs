@@ -5,7 +5,7 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import { FOLDER_ROUTED } from '@targets';
@@ -33,7 +33,7 @@ interface AnswerOverrides {
   data?: Data;
 }
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
 

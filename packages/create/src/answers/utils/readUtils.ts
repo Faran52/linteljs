@@ -3,7 +3,7 @@ import { mapValues } from 'es-toolkit';
 import {
   isJsonObject,
   isValueOf,
-  valuesOf,
+  keysOf,
 } from '@utils/objectUtils';
 
 import type { AliasMap } from '@config/types';
@@ -52,7 +52,7 @@ const choiceValue = <V extends string>(
   values: Record<V, unknown>,
 ): V => {
   if (typeof value !== 'string' || !isValueOf(value, values)) {
-    throw new Error(`${key} must be one of: ${valuesOf(values).join(', ')}`);
+    throw new Error(`${key} must be one of: ${keysOf(values).join(', ')}`);
   }
 
   return value;

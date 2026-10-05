@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
@@ -8,4 +8,4 @@ export const NOTHING_ANSWERED_MESSAGE
 
 export const RUN_CANCELLED_MESSAGE = 'Cancelled: nothing was written.';
 
-export const ANSWER_KEYS = valuesOf(ANSWERS);
+export const ANSWER_KEYS = keysOf(ANSWERS);

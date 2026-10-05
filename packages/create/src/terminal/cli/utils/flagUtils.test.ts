@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
@@ -80,7 +80,7 @@ describe('answerUsage', () => {
     expect(line).toMatch(/^ {2}--libraries <list> /u);
     const targetLine = lineFor('target');
     expect(targetLine).toMatch(/^ {2}--target <value> /u);
-    const listsTargets = lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '));
+    const listsTargets = lineFor('target').endsWith(keysOf(ANSWERS.target.values).join(', '));
     expect(listsTargets).toBe(true);
     const notesRouter = lineFor('router').endsWith(` (${ANSWERS.router.note})`);
     expect(notesRouter).toBe(true);

@@ -1,4 +1,4 @@
-import { isValueOf, valuesOf } from '@utils/objectUtils';
+import { isValueOf, keysOf } from '@utils/objectUtils';
 
 import { isJsonArray, type JsonValue } from './readUtils';
 
@@ -26,7 +26,7 @@ export const migrateLifted = <
   const lifted = listed.filter(isLifted);
 
   if (lifted.length > 1) {
-    throw new Error(`libraries must contain at most one of: ${valuesOf(values).join(', ')}`);
+    throw new Error(`libraries must contain at most one of: ${keysOf(values).join(', ')}`);
   }
 
   const [only] = lifted;

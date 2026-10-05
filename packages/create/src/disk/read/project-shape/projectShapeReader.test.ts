@@ -15,14 +15,14 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { TARGETS } from '@targets';
 
 import { projectShapeReader, STYLE_ENTRY_CANDIDATES } from './projectShapeReader';
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 let cwd = '';
 

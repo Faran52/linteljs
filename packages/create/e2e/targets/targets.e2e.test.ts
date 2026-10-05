@@ -6,7 +6,7 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
@@ -14,7 +14,7 @@ import { targetCases } from '../matrix/matrix';
 import { runE2eCase } from '../runner/runner';
 import { afterAllCleanup, managersToRun } from '../utils/workspaceUtils';
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const MANAGERS = await managersToRun(env['E2E_PM']);
 // `E2E_SHARD=2/4` runs every fourth case from the second, so CI splits one manager's cases across runners.

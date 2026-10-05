@@ -1,6 +1,6 @@
 import { LANGUAGES } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { targetFor } from '@targets';
 
@@ -9,7 +9,7 @@ import { targetAnswer } from '../../target/target/targetAnswer';
 
 import { languagesAnswer } from './languagesAnswer';
 
-const TARGETS = valuesOf(targetAnswer.values);
+const TARGETS = keysOf(targetAnswer.values);
 
 describe('languagesAnswer', () => {
   it('is keyed languages and may be skipped', () => {

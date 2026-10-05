@@ -1,12 +1,12 @@
-// The prototype is the whole check: arrays, class instances and null-prototype records are refused.
+import { isPlainObject } from 'es-toolkit';
+
+// Narrows to `object` rather than es-toolkit's `Record<PropertyKey, any>`, so no `any` reaches a caller.
 export const isJsonObject = (value: unknown): value is object => {
-  return typeof value === 'object'
-    && value !== null
-    && Object.getPrototypeOf(value) === Object.prototype;
+  return isPlainObject(value);
 };
 
 // `for...in` types a record's key as its key union, so neither a cast nor a filter is needed.
-export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
+export const keysOf = <V extends string>(values: Record<V, unknown>): V[] => {
   const keys: V[] = [];
 
   for (const key in values) {

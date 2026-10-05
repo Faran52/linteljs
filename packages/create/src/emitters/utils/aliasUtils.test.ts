@@ -5,13 +5,13 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
 import { buildAliases } from './aliasUtils';
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 describe('buildAliases', () => {
   it('builds the default React alias map, ordered as the spine reads top-down', () => {

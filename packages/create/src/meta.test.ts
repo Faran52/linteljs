@@ -23,7 +23,7 @@ import {
 
 import { MANAGER_FLOORS } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { type AnswerRecord, ANSWERS } from '@answers';
 import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
@@ -389,7 +389,7 @@ it.skipIf(instrumented)('leaves the emitter assembler nothing to branch on', () 
 });
 
 describe('answers records', () => {
-  const keys = valuesOf(ANSWERS);
+  const keys = keysOf(ANSWERS);
   const records: readonly AnswerRecord[] = keys
     .map((key) => {
       return ANSWERS[key];
@@ -426,7 +426,7 @@ it('gives every package manager a floor', () => {
   const floored = Object.keys(MANAGER_FLOORS)
     .toSorted(byName);
 
-  const managers = valuesOf(ANSWERS.packageManager.values)
+  const managers = keysOf(ANSWERS.packageManager.values)
     .toSorted(byName);
 
   expect(floored).toEqual(managers);

@@ -13,7 +13,7 @@ import {
   type TargetId,
 } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
@@ -124,7 +124,7 @@ describe('the asset a destination derives', () => {
   });
 });
 
-const targetIds = valuesOf(ANSWERS.target.values);
+const targetIds = keysOf(ANSWERS.target.values);
 
 it.each(targetIds)('plants every %s starter only on a project being born', (target) => {
   const artifacts = starterSourceEmitter(answersFor({ target }));

@@ -5,7 +5,7 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
@@ -47,7 +47,7 @@ interface TypesSource {
   jsxImportSource?: string;
 }
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 describe('buildTsconfig', () => {
   it('carries the shared base', () => {

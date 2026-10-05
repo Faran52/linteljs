@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from '../constants';
 
@@ -47,7 +47,7 @@ const withDescription = (record: AnswerRecord): Partial<SchemaProperty> => {
 const enumProperty = (record: ChoiceRecord | OptionalChoiceRecord): SchemaProperty => {
   const property: SchemaProperty = {
     ...withDescription(record),
-    enum: valuesOf(record.values),
+    enum: keysOf(record.values),
   };
 
   return property;
@@ -72,7 +72,7 @@ const enumListProperty = (record: MultiRecord | OptionalMultiRecord): SchemaProp
   const property: SchemaProperty = {
     type: 'array',
     ...withDescription(record),
-    items: { enum: valuesOf(record.values) },
+    items: { enum: keysOf(record.values) },
     minItems: record.minimum,
     uniqueItems: true,
   };
@@ -134,7 +134,7 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
 
 // Generated from the records; `schemaUtils.test.ts` pins both checked-in copies against it.
 export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
-  const keys = valuesOf(answers);
+  const keys = keysOf(answers);
 
   const required = [
     '$schema',

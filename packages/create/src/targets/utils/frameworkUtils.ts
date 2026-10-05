@@ -1,6 +1,6 @@
 import { type HostedFramework, type NamingMap } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   COMPONENT,
@@ -18,7 +18,7 @@ export const partsFor = (framework: HostedFramework): FrameworkParts => {
 
 export const hostedPartsFor = (framework: HostedFramework | undefined): FrameworkParts | undefined => {
   // Keyed by `undefined` too, so a target that hosts no framework looks up nothing rather than branching.
-  const hosted = new Map<HostedFramework | undefined, FrameworkParts>(valuesOf(PARTS)
+  const hosted = new Map<HostedFramework | undefined, FrameworkParts>(keysOf(PARTS)
     .map((key) => {
       const entry: [HostedFramework | undefined, FrameworkParts] = [key, PARTS[key]];
 

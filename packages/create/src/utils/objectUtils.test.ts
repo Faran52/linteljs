@@ -7,8 +7,8 @@ import {
 import {
   isJsonObject,
   isValueOf,
+  keysOf,
   parsedAs,
-  valuesOf,
 } from './objectUtils';
 
 describe('isJsonObject', () => {
@@ -16,6 +16,7 @@ describe('isJsonObject', () => {
     ['an object', {}],
     ['an object with keys', { name: 'demo' }],
     ['a parsed object', JSON.parse('{ "a": 1 }')],
+    ['a null-prototype object', Object.create(null)],
   ])('takes %s', (_case, value) => {
     const valueIsJsonObject = isJsonObject(value);
     expect(valueIsJsonObject).toBe(true);
@@ -31,16 +32,15 @@ describe('isJsonObject', () => {
     ['a parsed array', JSON.parse('[1, 2]')],
     ['a class instance', new Error('boom')],
     ['a map', new Map()],
-    ['a null-prototype object', Object.create(null)],
   ])('refuses %s', (_case, value) => {
     const valueIsJsonObject = isJsonObject(value);
     expect(valueIsJsonObject).toBe(false);
   });
 });
 
-describe('valuesOf', () => {
+describe('keysOf', () => {
   it('answers the keys a record carries, in the order it declares them', () => {
-    const values = valuesOf({
+    const values = keysOf({
       react: 'React',
       vue: 'Vue',
     });

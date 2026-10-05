@@ -19,7 +19,7 @@ import {
   type TargetId,
 } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
@@ -35,10 +35,10 @@ interface Axes {
   surfaces: (Surface | undefined)[];
 }
 
-const BROWSERS = valuesOf(ANSWERS.browser.values);
-const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
-const SURFACES = valuesOf(ANSWERS.surfaces.values);
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const BROWSERS = keysOf(ANSWERS.browser.values);
+const HOSTED_FRAMEWORKS = keysOf(ANSWERS.hostedFramework.values);
+const SURFACES = keysOf(ANSWERS.surfaces.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 // Pinned so the axis table is built without a record at collection; the first suite holds it to the records.
 const HOSTS: Partial<Record<TargetId, Pick<TargetRecord, 'hostsBrowser' | 'hostsFramework'>>> = {

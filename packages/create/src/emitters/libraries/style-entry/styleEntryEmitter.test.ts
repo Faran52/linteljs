@@ -12,7 +12,7 @@ import {
   type TargetId,
 } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import { STYLE_ENTRY_CANDIDATES } from '@disk';
@@ -56,7 +56,7 @@ describe('the entry path', () => {
   });
 
   it('can discover every default a target declares', () => {
-    const declared = valuesOf(ANSWERS.target.values)
+    const declared = keysOf(ANSWERS.target.values)
       .map((target) => {
         const { styleEntry } = targetFor(answersFor({ target }));
 

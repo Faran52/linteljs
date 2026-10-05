@@ -10,7 +10,7 @@ import {
 
 import { MANAGER_FLOORS } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { targetFor } from '@targets';
@@ -65,9 +65,9 @@ interface Sibling {
   version: string;
 }
 
-const FORMS = valuesOf(ANSWERS.form.values);
-const LIBRARIES = valuesOf(ANSWERS.libraries.values);
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const FORMS = keysOf(ANSWERS.form.values);
+const LIBRARIES = keysOf(ANSWERS.libraries.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const hostedFor = (hostedFramework: HostedFramework | undefined): Partial<Answers> => {
   if (hostedFramework === undefined) {

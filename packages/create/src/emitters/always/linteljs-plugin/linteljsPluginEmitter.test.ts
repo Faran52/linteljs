@@ -18,7 +18,7 @@ import {
   type TypeSafety,
 } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
@@ -45,8 +45,8 @@ interface SkillDocument {
   body: string;
 }
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
-const AGENTS = valuesOf(ANSWERS.agents.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
+const AGENTS = keysOf(ANSWERS.agents.values);
 
 const find = (overrides: AnswerOverrides, target: string): Artifact | undefined => {
   const artifacts = referenceArtifacts(answersFor(overrides));

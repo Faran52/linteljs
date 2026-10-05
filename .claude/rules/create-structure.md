@@ -86,7 +86,7 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - `config/types.ts` is the shared vocabulary (answer unions, `Answers`, the artifact and its stages, the
   emitter signature, a project on disk); `config/constants.ts` is every shared value. Data only, so no suite:
   a function goes to a `utils/` at its readers' level. Caught by `@linteljs/workspace/create-config-data`.
-- `src/utils/` is the innermost code ring: `objectUtils.ts` (`isJsonObject`, `valuesOf`, `parsedAs`),
+- `src/utils/` is the innermost code ring: `objectUtils.ts` (`isJsonObject`, `keysOf`, `parsedAs`),
   `answerUtils.ts` (`hasLibrary`, `hasSurface` and the other predicates over `Answers`), `versionUtils.ts`.
 
 ## `answers/`

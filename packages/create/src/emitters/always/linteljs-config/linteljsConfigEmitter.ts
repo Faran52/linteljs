@@ -2,7 +2,7 @@ import { omit } from 'es-toolkit';
 
 import { type Answers, type Artifact } from '@config/types';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   type AnswerKey,
@@ -20,7 +20,7 @@ import { emitted } from '../../utils/artifactUtils';
 const unaskedKeys = (answers: Answers): AnswerKey[] => {
   const target = targetFor(answers);
 
-  return valuesOf(ANSWERS)
+  return keysOf(ANSWERS)
     .filter((key: AnswerKey) => {
       const record: AnswerRecord = ANSWERS[key];
 

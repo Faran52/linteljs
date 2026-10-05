@@ -5,7 +5,7 @@ import {
   vi,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   ANSWERS,
@@ -26,10 +26,10 @@ interface Answered {
 
 type TestedTarget = (typeof TARGET_IDS)[number];
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const pairsOf = (answers: Answers): string[] => {
-  const libraryFlags = valuesOf(ANSWERS.libraries.values)
+  const libraryFlags = keysOf(ANSWERS.libraries.values)
     .map((library): [string, string] => {
       const isChosen = answers.libraries.includes(library);
       const flag: [string, string] = [library, String(isChosen)];
@@ -212,7 +212,7 @@ describe('targetCases', () => {
         .map(({ answers }) => {
           return answers.languages?.join(',') ?? 'none';
         });
-      const offered = ['none', valuesOf(ANSWERS.languages.values).join(',')];
+      const offered = ['none', keysOf(ANSWERS.languages.values).join(',')];
 
       const actual = [target, [...new Set(chosen)]];
       const expected = [target, offered];
@@ -261,7 +261,7 @@ describe('targetCases', () => {
       const hosts = [...new Set(hosted)];
 
       for (const hostedFramework of hosts) {
-        for (const form of valuesOf(ANSWERS.form.values)) {
+        for (const form of keysOf(ANSWERS.form.values)) {
           const candidate: Answers = {
             ...DEFAULT_ANSWERS,
             target,
@@ -339,13 +339,13 @@ describe('targetCases', () => {
     const managers = seen(({ packageManager }) => {
       return packageManager;
     });
-    const everyManager = all(valuesOf(ANSWERS.packageManager.values), false);
+    const everyManager = all(keysOf(ANSWERS.packageManager.values), false);
     expect(managers).toEqual(everyManager);
 
     const suites = seen(({ testing }) => {
       return testing;
     });
-    const everySuite = all(valuesOf(ANSWERS.testing.values), false);
+    const everySuite = all(keysOf(ANSWERS.testing.values), false);
     expect(suites).toEqual(everySuite);
 
     const typeSafeties = seen(({ typeSafety }) => {
@@ -357,65 +357,65 @@ describe('targetCases', () => {
     const browsers = seen(({ browser }) => {
       return browser;
     });
-    const everyBrowser = all(valuesOf(ANSWERS.browser.values), false);
+    const everyBrowser = all(keysOf(ANSWERS.browser.values), false);
     expect(browsers).toEqual(everyBrowser);
 
     const hostedFrameworks = seen(({ hostedFramework }) => {
       return hostedFramework;
     });
-    const everyHostedFramework = all(valuesOf(ANSWERS.hostedFramework.values), true);
+    const everyHostedFramework = all(keysOf(ANSWERS.hostedFramework.values), true);
     expect(hostedFrameworks).toEqual(everyHostedFramework);
 
     const stylings = seen(({ styling }) => {
       return styling;
     });
-    const everyStyling = all(valuesOf(ANSWERS.styling.values), true);
+    const everyStyling = all(keysOf(ANSWERS.styling.values), true);
     expect(stylings).toEqual(everyStyling);
 
     const forms = seen(({ form }) => {
       return form;
     });
-    const everyForm = all(valuesOf(ANSWERS.form.values), true);
+    const everyForm = all(keysOf(ANSWERS.form.values), true);
     expect(forms).toEqual(everyForm);
 
     const routers = seen(({ router }) => {
       return router;
     });
-    const everyRouter = all(valuesOf(ANSWERS.router.values), true);
+    const everyRouter = all(keysOf(ANSWERS.router.values), true);
     expect(routers).toEqual(everyRouter);
 
     const stores = seen(({ store }) => {
       return store;
     });
-    const everyStore = all(valuesOf(ANSWERS.store.values), true);
+    const everyStore = all(keysOf(ANSWERS.store.values), true);
     expect(stores).toEqual(everyStore);
 
     const dataLayers = seen(({ data }) => {
       return data;
     });
-    const everyDataLayer = all(valuesOf(ANSWERS.data.values), true);
+    const everyDataLayer = all(keysOf(ANSWERS.data.values), true);
     expect(dataLayers).toEqual(everyDataLayer);
 
     const mockings = seen(({ mocking }) => {
       return mocking;
     });
-    const everyMocking = all(valuesOf(ANSWERS.mocking.values), true);
+    const everyMocking = all(keysOf(ANSWERS.mocking.values), true);
     expect(mockings).toEqual(everyMocking);
   });
 
   it('carries every multi-select but libraries at its full value, and surfaces only where a target has them', () => {
     for (const { answers } of everyTargetsCases()) {
-      const inOrder = valuesOf(ANSWERS.libraries.values)
+      const inOrder = keysOf(ANSWERS.libraries.values)
         .filter((library) => {
           return answers.libraries.includes(library);
         });
 
       expect(answers.libraries).toEqual(inOrder);
-      expect(answers.agents).toEqual(valuesOf(ANSWERS.agents.values));
-      expect(answers.plugins).toEqual(valuesOf(ANSWERS.plugins.values));
+      expect(answers.agents).toEqual(keysOf(ANSWERS.agents.values));
+      expect(answers.plugins).toEqual(keysOf(ANSWERS.plugins.values));
 
       expect(answers.surfaces).toEqual(answers.target === 'webextension'
-        ? valuesOf(ANSWERS.surfaces.values)
+        ? keysOf(ANSWERS.surfaces.values)
         : undefined);
     }
   });
@@ -467,12 +467,12 @@ describe('targetCases', () => {
       return JSON.stringify(onPnpm);
     };
 
-    const otherManagers = valuesOf(ANSWERS.packageManager.values)
+    const otherManagers = keysOf(ANSWERS.packageManager.values)
       .filter((pm) => {
         return pm !== 'pnpm';
       })
       .toSorted(byLabel);
-    const allLibraries = valuesOf(ANSWERS.libraries.values);
+    const allLibraries = keysOf(ANSWERS.libraries.values);
 
     for (const target of TARGET_IDS) {
       const counts = everyCase(target)
@@ -552,8 +552,8 @@ describe('targetCases', () => {
       });
     const [first] = framework;
     const expected = [{
-      languages: valuesOf(ANSWERS.languages.values),
-      libraries: valuesOf(ANSWERS.libraries.values),
+      languages: keysOf(ANSWERS.languages.values),
+      libraries: keysOf(ANSWERS.libraries.values),
       variant: 'browser',
     }];
 
@@ -574,7 +574,7 @@ describe('targetCases', () => {
         .toSorted((left, right) => {
           return left.localeCompare(right);
         })];
-      const expected = [target, valuesOf(ANSWERS.packageManager.values)
+      const expected = [target, keysOf(ANSWERS.packageManager.values)
         .toSorted((left, right) => {
           return left.localeCompare(right);
         })];

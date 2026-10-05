@@ -1,6 +1,6 @@
 import { RUN_PREFIX } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
@@ -114,7 +114,7 @@ const printable = (value: Answers[AnswerKey]): string | undefined => {
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
   const target = targetFor(answers);
 
-  return valuesOf(records)
+  return keysOf(records)
     .flatMap((key: AnswerKey) => {
       const record = records[key];
       const printed = printable(answers[key]);

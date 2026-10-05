@@ -12,7 +12,7 @@ import {
   PLUGIN_ROOT,
 } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import {
   artifactWriter,
@@ -95,7 +95,7 @@ export const runnerSwitch = async (cwd: string, answers: HostedAnswers): Promise
     return Object.hasOwn(devDependencies, runner);
   };
 
-  const from = valuesOf(TEST_RUNNERS)
+  const from = keysOf(TEST_RUNNERS)
     .find(isInstalled);
 
   if (from === undefined || isInstalled(to)) {

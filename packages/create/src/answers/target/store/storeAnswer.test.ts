@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { targetFor } from '@targets';
 
@@ -6,7 +6,7 @@ import { DEFAULT_ANSWERS } from '../../registry';
 
 import { storeAnswer } from './storeAnswer';
 
-const STORES = valuesOf(storeAnswer.values);
+const STORES = keysOf(storeAnswer.values);
 
 describe('storeAnswer', () => {
   it('is keyed store', () => {

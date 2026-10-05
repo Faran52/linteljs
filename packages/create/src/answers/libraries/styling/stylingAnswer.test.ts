@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { keysOf } from '@utils/objectUtils';
 
 import { targetFor } from '@targets';
 
@@ -6,7 +6,7 @@ import { ANSWERS, DEFAULT_ANSWERS } from '../../registry';
 
 import { stylingAnswer } from './stylingAnswer';
 
-const TARGETS = valuesOf(ANSWERS.target.values);
+const TARGETS = keysOf(ANSWERS.target.values);
 
 describe('stylingAnswer', () => {
   it('is keyed styling', () => {
