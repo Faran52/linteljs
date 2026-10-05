@@ -201,6 +201,9 @@ when a version's change lives in a sibling it is described there instead:
 - A React Native development build launches on Xcode 27, where iOS stopped it with "UIScene life cycle is
   required": `app.json` opts into Expo SDK 57's scene support through `expo-build-properties`. The README gains
   native-build notes, with `expo run:*` through the project's manager and the JDK 25 flag Android needs.
+- A React Native development build opens on Home on iOS, where it showed a Render Error, "Add the handoff origin":
+  the root layout wrote `expo-router/head` on every platform. A `DocumentHead` component now writes it on the web
+  only.
 - A React Native project draws its status bar with `expo-status-bar`'s `auto` style, so Android shows dark icons on
   the light header, where the clock and icons were white on white. The root layout gains a suite and comes under
   coverage with the route list, both excluded before.
