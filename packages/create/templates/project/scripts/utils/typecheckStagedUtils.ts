@@ -10,7 +10,6 @@ const normalizePath = (filePath: string): string => {
   return srcIndex === -1 ? normalized : normalized.slice(srcIndex);
 };
 
-// The output of a failed run, or null when it passed.
 const failedOutput = (command: string): string | null => {
   const {
     status,

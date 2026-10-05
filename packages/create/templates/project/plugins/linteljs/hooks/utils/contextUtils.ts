@@ -128,7 +128,6 @@ export const badgeOf = (tokens: number): string => {
   return `\u001B[38;5;${String(colour)}m[CTX ${String(thousands)}K]\u001B[0m`;
 };
 
-// No transcript named, none is read.
 const namedContextOf = (payload: object, pathOf: (transcript: string) => string): number => {
   const transcript = stringAt(payload, 'transcript_path');
 
