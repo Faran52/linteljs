@@ -16,7 +16,7 @@
   "aboutStandard": "أين يوجد المعيار",
   "aboutCurrent": "إبقاؤه محدّثًا",
   "aboutSync": "يعيد <code>{command}</code> تطبيق المعيار بعد التحديث. يعيد كتابة إضافة الوكيل، ويسأل قبل تغيير إعدادات ESLint أو package.json، ولا يمسّ شيفرتك المصدرية أبدًا.",
-  "standardEslint": "الطبقات، مستوردة من @linteljs/eslint-config",
+  "standardEslint": "الطبقات، مستوردة من \u2066@linteljs/eslint-config\u2069",
   "standardSkills": "القواعد التي يقرؤها وكيل البرمجة قبل أن يكتب",
   "standardConfig": "الإجابات التي أُنشئ منها هذا المشروع",
   "standardHusky": "البوابة عند كل إيداع، فلا يدخل شيء دون تدقيق",

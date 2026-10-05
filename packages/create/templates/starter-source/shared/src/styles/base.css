@@ -34,6 +34,9 @@ body {
 code {
   font-family: var(--font-mono);
   font-size: var(--text-body);
+
+  /* A path or command keeps its own direction in an rtl page, so `.husky/` does not read `/husky.`. */
+  unicode-bidi: plaintext;
 }
 
 /* Each framework's mount point, so the page under the header takes the height left. */
