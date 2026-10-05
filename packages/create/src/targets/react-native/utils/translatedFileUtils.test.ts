@@ -117,6 +117,7 @@ describe('reactNativeI18nFiles', () => {
 
 describe('reactNativeI18nTests', () => {
   const SUITES = [
+    'src/app-tabs-layout.test.tsx',
     'src/app-tabs-index.test.tsx',
     'src/app-tabs-about.test.tsx',
     'src/app-tabs-version.test.tsx',
@@ -143,6 +144,8 @@ describe('reactNativeI18nTests', () => {
     expect(written).toEqual(expected);
 
     const coveredFiles = [
+      'src/app/(tabs)/_layout.tsx',
+      'src/app/(tabs)/_layout.tsx',
       'src/app/(tabs)/index.tsx',
       'src/app/(tabs)/index.tsx',
       'src/app/(tabs)/about.tsx',

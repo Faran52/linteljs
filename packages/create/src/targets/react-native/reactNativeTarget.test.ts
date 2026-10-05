@@ -85,6 +85,7 @@ const BILINGUAL_PATHS = [
   'src/app/(tabs)/index.tsx',
   'src/app/(tabs)/about.tsx',
   'src/app/(tabs)/version.tsx',
+  'src/app-tabs-layout.test.tsx',
   'src/app-tabs-index.test.tsx',
   'src/app-tabs-about.test.tsx',
   'src/app-tabs-version.test.tsx',

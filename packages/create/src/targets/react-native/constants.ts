@@ -53,6 +53,7 @@ export const I18N_ONLY_FILES = ['src/i18n/index.ts', `${LANGUAGE_SELECT}.tsx`];
 
 // Each suite, and the file it covers.
 export const TRANSLATED_SUITES = [
+  ['src/app-tabs-layout.test.tsx', 'src/app/(tabs)/_layout.tsx'],
   ['src/app-tabs-index.test.tsx', 'src/app/(tabs)/index.tsx'],
   ['src/app-tabs-about.test.tsx', 'src/app/(tabs)/about.tsx'],
   ['src/app-tabs-version.test.tsx', 'src/app/(tabs)/version.tsx'],
