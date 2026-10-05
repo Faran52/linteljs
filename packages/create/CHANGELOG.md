@@ -68,7 +68,8 @@ when a version's change lives in a sibling it is described there instead:
   language, which is never stored; Arabic sets `dir="rtl"`. The server-rendered starters (Nuxt, Next, SvelteKit,
   React Router's framework mode) keep the choice in a `language` cookie and render it, `lang` and `dir` included,
   from the first byte, falling back to the request's `Accept-Language`; the Vue, React and Astro starters keep it
-  in the same cookie.
+  in the same cookie. A device or browser that names Chinese by script or region (`zh-Hans`, `zh-Hant`, `zh-HK`,
+  `zh-MO`) opens in `zh-CN` or `zh-TW`.
 
   | Target | Through |
   | --- | --- |
@@ -79,7 +80,7 @@ when a version's change lives in a sibling it is described there instead:
   | Solid | @solid-primitives/i18n |
   | Angular | a signal, with no library; `@angular/localize` cannot switch at runtime |
   | Astro | a client script, with no library; Astro's i18n routing cannot switch at runtime |
-  | React Native | i18next, with the choice kept in `@react-native-async-storage/async-storage`; Arabic turns a native app right to left from its next launch |
+  | React Native | i18next, with the choice kept in `@react-native-async-storage/async-storage`, opening in the device's preferred language from expo-localization. A native app lays out right to left when the device's language is right to left, through `extra.supportsRTL` in `app.json` |
   | Web extension popup | a resolver, with no library; `chrome.i18n` cannot switch at runtime. An extension without a popup is not asked |
 
 - **The starter.** Every target but the extension has a header with a "LintelJS Starter" label and tabs, Home,
@@ -89,7 +90,8 @@ when a version's change lives in a sibling it is described there instead:
   providers in its root layout, so Redux and TanStack Query hooks have their ancestor. A Contact field shows its
   error once it is left or a send is tried, and clears it as soon as the value passes. About lists every script
   `check` chains, with what each runs and the manager's own prefix. The page title is the project's name, and the
-  header wraps a name too long for its row rather than cutting it off.
+  header wraps a name too long for its row rather than cutting it off. The Version page lists the answers the
+  target asks.
 - **Accessibility and SEO.** Every starter document sets `lang` on `<html>` and carries a description meta, the
   extension popup holds its content in a `<main>` landmark, and every target that serves a public directory ships
   a `robots.txt`, so a single-page app does not answer `/robots.txt` with its HTML shell.
@@ -102,8 +104,8 @@ when a version's change lives in a sibling it is described there instead:
   `color-scheme: light dark`, a `.light` or `.dark` class pins either, and Tailwind's `dark:` variant matches the
   same condition. React Native reads the same token values through `useColorScheme`. Every text token meets
   WCAG AA in both schemes, 4.5:1 on the page, a card and a muted surface, and a field's border 3:1.
-- Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme. React Native's mark
-  animates like the web one, through Reanimated, and holds still under reduced motion.
+- Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme. The mark animates
+  only under `prefers-reduced-motion: no-preference`, on the web and, through Reanimated, on React Native.
 - **Aliases.** Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside
   `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
   is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one
@@ -112,8 +114,6 @@ when a version's change lives in a sibling it is described there instead:
   `react-router-framework`, `eslint.config.js` sets `aliasExempt: ['src/routes.ts']` and
   `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
   the aliases.
-- `sync` removes what a deselected answer left behind in `plugins/linteljs/`, from the record in
-  `plugins/linteljs/managed.json`.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
   `.github/hooks/linteljs.json`. The command guards read
   PowerShell as well as Bash, and `--no-verify` is denied on any git subcommand.
@@ -151,7 +151,7 @@ when a version's change lives in a sibling it is described there instead:
   Jest's types, and drops the Vitest plugin that stood in for the native renderer, `@vitejs/plugin-react` and the
   `esbuild` build approval. Coverage stays at 100%, and RNTL's `hostComponentNames` warning is gone. Jest is held
   to 29, jest-expo 57's own major; suites compile through Babel to CommonJS, and a run takes about 3.6 s where
-  Vitest took 1.4 s. With msw, the config resolves `msw/node` and transforms its ES-only dependencies; with
+  Vitest took 1.4 s. Each test gets 15 s, since a file's first render transforms React Native lazily. With msw, the config resolves `msw/node` and transforms its ES-only dependencies; with
   redux-toolkit, it transforms `immer` and `react-redux`. A React Native project from before 2.0 keeps its suites
   on Vitest until they are ported: `sync` writes nothing there and exits 1, naming both runners.
 - **A new project passes its own `check` with nothing from the fix stage.** Every emitted file lands as
@@ -172,6 +172,7 @@ when a version's change lives in a sibling it is described there instead:
   releases at least two days old as of 2026-10-05 are taken too: Angular 22.2.1, `@analogjs/vite-plugin-angular`
   2.8.0, Next 16.3.8, Vite 8.3.2, Vitest 5.0.3, ESLint 10.12.0, Stylelint 17.16.0, TanStack Query 5.104.1,
   `@eslint-react/eslint-plugin` 5.23.5, `vue-tsc` 3.3.12 and `next-intl` 4.14.9.
+- `es-toolkit` joins `@inquirer/prompts` as a runtime dependency of this package.
 - The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on
   file carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule
   files drop their "shipped verbatim" note.
@@ -185,23 +186,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
-- A project whose languages are all bare tags, such as `en` and `ar`, lands fix-clean: `src/i18n/config.ts` quoted
-  every `resources` key, and the first `eslint --fix` unquoted them under `quote-props`. The keys are quoted only
-  when one needs it, such as `zh-CN`.
 - `linteljs.config.json` records only the answers its target asks. Every target but a web extension recorded
   `"browser": "chrome"`, an answer it never prompts for; reading a config fills it back in, so an existing one
   still loads.
-- A device that names Chinese by script, as iOS does with `zh-Hans-CN` and `zh-Hant-TW`, opens a project in `zh-CN`
-  or `zh-TW` rather than in English, on every target. A React Native project declares Chinese to iOS as `zh-Hans`
-  and `zh-Hant`, the designators iOS matches, and keeps `zh-CN` and `zh-TW` for Android.
-- A React project opens a browser set to `zh-Hant` in `zh-TW`, where it opened `zh-CN`: React now detects by the
-  same rule as every other target, in place of i18next's browser detector, which it no longer depends on. A browser
-  set to `zh-HK` or `zh-MO` opens `zh-TW` on every target, where React opened `zh-CN` and the rest English.
-- A Nuxt project with `--store tanstack-store` installs `@tanstack/vue-store`. It recorded the store and listed it on
-  the Version page but installed nothing for it.
-- A React Native project with msw runs its Jest suites without Node 26's `ExperimentalWarning: localStorage is not
-  available`, once per worker. The msw setup drops the `localStorage` global React Native lacks before msw's cookie
-  store reads it.
 - A web extension's DevTools panel page has a `main` landmark and an `h1`, as the popup does, where it held one bare
   line of text.
 - A React Native development build launches on Xcode 27, where iOS stopped it with "UIScene life cycle is
@@ -210,37 +197,6 @@ when a version's change lives in a sibling it is described there instead:
 - A React Native Android build passes on any JDK from 17, where JDK 24 and later failed `configureCMakeDebug` on a
   restricted native method. A starter config plugin pins Gradle's daemon to JDK 17 on every prebuild, downloading
   Temurin 17 where none is installed.
-- A React Native development build opens on Home on iOS, where it showed a Render Error, "Add the handoff origin":
-  the root layout wrote `expo-router/head` on every platform. A `DocumentHead` component now writes it on the web
-  only.
-- A React Native project draws its status bar with `expo-status-bar`'s `auto` style, so Android shows dark icons on
-  the light header, where the clock and icons were white on white. The root layout gains a suite and comes under
-  coverage with the route list, both excluded before.
-- A React Native project's web tabs are named by their label alone, where each name carried the tab bar's
-  placeholder icon glyph twice. The About and Version screens take keyboard focus, so a keyboard can scroll them, where
-  axe flagged them `scrollable-region-focusable` once they overflowed.
-- The language label in a React Native project's header stays on one line on a narrow screen, where it broke
-  inside the word at 360dp. The title gives way first and truncates, and the label keeps its own width.
-- A React Native project with a right-to-left language lays out right to left on a device in that language, in
-  Expo Go and in a build, on Android and iOS. `app.json` now sets `extra.supportsRTL`, SDK 57's switch for native
-  RTL, which Expo Go reads and the expo-localization plugin writes into a build. The starter no longer calls
-  `I18nManager.allowRTL` and `forceRTL` on a switch: Expo Go reset them, and Expo rules out mixing them with the
-  static setting.
-- A React Native project opens in the device's language on iOS. It read the language from `Intl`, which iOS
-  resolves against the app's own localizations, so a device in Arabic read as `en-SA` and the app opened in
-  English. It now reads the device's preferred languages from expo-localization, in order, and `app.json` declares
-  the chosen languages through the expo-localization plugin's `supportedLocales`.
-- The logo mark stands still under `prefers-reduced-motion: reduce` on every web target. The reduce rule sat in
-  `base.css`, and the mark's own sheet, loaded later at the same weight, restarted the animation; the mark now
-  animates only under `no-preference`, in its CSS and in its StyleX sheet. The end-to-end browser pass fails on an
-  animation running under reduced motion.
-- The contact form speaks the chosen language. Its labels and validation messages were English in every language;
-  the rules now return a `contact*` locale key, every contact hook takes the page's `translate`, and the six
-  locale files carry the four new keys.
-- A project with no contact page gets no `contact*` locale keys. Every target wrote the shared locale files
-  whole, so React Native, Astro, Nuxt, the web extension and a target with no form carried keys nothing read.
-- The starter's Version page lists only the answers its target asks: every target showed the web extension's
-  Browser answer, since each holds its default.
 - `scripts/checkBannedPatterns.ts` reports a directive written as a block comment, such as
   `/* eslint-disable */`. It blanked every block comment before matching, so only the `//` form was caught, and a
   `/*` inside a template literal could blank the lines after it. Its logic now lives in

@@ -82,6 +82,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- `es-toolkit` is bundled into `dist/`, so the package still has no runtime dependencies.
 - A crash on a lookup the parse should guarantee names the lookup and asks for the parser in the issue.
 
 ### Fixed
@@ -128,8 +129,6 @@ pin and mature dependency floors in `@linteljs/create` and `@linteljs/eslint-con
 
 The mutation audit moves to Stryker 10.0.0; its Vitest dry run still discovers 2,146 mutants and
 passes all 5,076 tests before mutation execution.
-
-## 1.5.0
 
 ## 1.5.0
 

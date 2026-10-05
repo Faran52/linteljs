@@ -15,7 +15,8 @@ npm run check
 The scaffolder writes a starter app with its tests, ESLint flat config, TypeScript settings, git hooks, and
 coding-agent rules and hooks, for React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through
 Expo, and Manifest V3 web extensions. `check` runs lint, the banned-pattern check, CSS lint, the typecheck,
-coverage at 100% when the project has tests, and the build, and it passes on the first run. Generated projects need Node 22.18 or newer.
+coverage at 100% when the project has tests, and the build, and it passes on the first run. Generated projects
+need Node 22.18 or newer.
 
 ## Packages
 
@@ -32,13 +33,9 @@ npx @linteljs/create --existing
 pnpm dlx @linteljs/create sync
 ```
 
-Run `sync` through the project's own manager, `pnpm dlx`, `npx`, `yarn dlx` or `bunx`: npm refuses `npx` in a
-project whose `devEngines` names another manager, as a generated one does. Its README names the one to use.
-
-`--existing` applies the standard in place. `sync` rewrites `plugins/linteljs/`, then asks before each
-other step: the `@linteljs/*` versions, the ESLint config's peers, and a changed ESLint config, which it backs up
-to `.bak` first. `--yes` accepts every step. It plans from `linteljs.config.json`, so it never
-guesses a framework or overrides a recorded choice.
+`--existing` applies the standard in place. `sync` rewrites `plugins/linteljs/`, then asks before each other
+step. Run it through the project's own manager. The
+[`@linteljs/create` README](packages/create/README.md#existing-projects-and-updates) has the details.
 
 ## Why
 

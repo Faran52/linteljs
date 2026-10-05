@@ -42,8 +42,6 @@ For ESLint 8 or older, use the legacy preset name:
 }
 ```
 
-Flat presets are arrays; legacy presets are eslintrc objects. Use the matching form for your config.
-
 To enable a single rule:
 
 ```js
@@ -57,8 +55,7 @@ export default [
 
 ## Everything, including the opt-outs
 
-`recommended` carries the rules most projects want. `all` carries every rule, which is the way in
-for one that ships off by default.
+`recommended` carries the rules most projects want. `all` carries every rule, including those off by default.
 
 ```js
 export default [
@@ -145,11 +142,10 @@ The package supports ESLint `>=6.0.0` and Node `>=18.0.0`.
 | 9.x | Flat config | `configs['flat/recommended']` |
 | 8.x and below | eslintrc | `extends: ['plugin:@linteljs/recommended']` |
 
-The package has no runtime dependencies. Its compatibility matrix packs the tarball, runs it with ESLint 6
-through 10, and checks that fixed output stays identical across those versions. Compatibility helpers cover
-ESLint APIs that moved between releases. A fixer must preserve behaviour, so a rule that cannot prove a
-rewrite is safe reports without fixing. The bundle targets Node 18 and the source uses only ES2022 built-ins,
-so nothing in it needs a newer runtime than the floor.
+The package has no runtime dependencies: what it uses is bundled. Its compatibility matrix packs the tarball,
+runs it with ESLint 6 through 10, and checks that fixed output is identical across them. A fixer must preserve
+behaviour, so a rule that cannot prove a rewrite safe reports without fixing. The bundle targets Node 18 and the
+source uses only ES2022 built-ins.
 
 ## Adding a rule
 

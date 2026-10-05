@@ -26,7 +26,7 @@ const config = await composeConfig({
 export default config;
 ```
 
-`composeConfig` returns a normal flat-config array. Add your own blocks after it to override a rule or scope an
+`composeConfig` returns a flat-config array. Add your own blocks after it to override a rule or scope an
 exception.
 
 ## Options
@@ -54,7 +54,8 @@ import sorting stays aligned with the framework that loaded it.
 
 ## Layer order
 
-The composer applies the layers in this order: base, TypeScript, framework, library, Vitest, HTML, then Astro.
+The composer applies the layers in this order: base, TypeScript, framework, library, Vitest, Jest, HTML, then
+Astro.
 Framework layers override shared layers. Vue and Svelte must come after TypeScript so their top-level parsers
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
 `.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
@@ -64,8 +65,7 @@ owns its template processing, so a generated Angular project does not add `html(
 
 ## Compose layers yourself
 
-Use subpaths when the composer is not enough. Import only the layers you need to avoid pulling in optional
-peers for frameworks or libraries you are not using.
+Use subpaths when the composer is not enough. Import only the layers you need, so you install only their peers.
 
 ```js
 import base from '@linteljs/eslint-config/base';
@@ -80,7 +80,7 @@ export default [
 ```
 
 Apply the same order yourself. The root export re-exports every layer except `composeConfig`, but importing it
-loads every framework and library layer, so it needs every optional peer installed. Use the subpaths.
+loads every layer, so it needs every optional peer installed.
 
 ## Layers
 
@@ -105,9 +105,6 @@ loads every framework and library layer, so it needs every optional peer install
 | `tanstackRouter()` | `/tanstack-router` | TanStack Router recommended rules. | `@tanstack/eslint-plugin-router` |
 | `tailwind(entryPoint?)` | `/tailwind` | better-tailwindcss's `recommended`: class order, line wrapping, and duplicate, conflicting, deprecated and non-canonical classes. Scripts, SFCs and `.astro` files. | `eslint-plugin-better-tailwindcss` |
 | `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` or `style` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
-
-Framework and library plugins are optional peer dependencies. Install the peers for layers you enable; the
-column above names them per layer.
 
 ## Base options
 
@@ -156,9 +153,6 @@ up that package's file and not the repository root's. Pass `ignores` for anythin
 
 ## Why these layers exist
 
-The config is layered so a project only loads the plugins it chose. `composeConfig` makes that order a tested
-public API instead of an undocumented convention.
-
 `base` uses `import-x`'s TypeScript settings rather than a hand-written replacement. Those settings tell the
 resolver which parser handles the file it resolved. Without them, `import-x/no-cycle` can miss cycles in
 TypeScript files.
@@ -175,8 +169,8 @@ pnpm typecheck
 pnpm smoke
 ```
 
-`pnpm smoke` packs the package and imports every export subpath. It catches an exports entry that builds
-successfully but fails for a consumer.
+`pnpm smoke` packs the package and imports every export subpath, which catches an exports entry that builds but
+fails for a consumer.
 
 ## License
 

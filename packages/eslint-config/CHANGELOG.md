@@ -103,6 +103,7 @@ when a version's change lives in a sibling it is described there instead:
 
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 - `typescript-eslint` moves to ^8.71.0 and `eslint-plugin-sonarjs` to ^4.2.2.
+- `es-toolkit` is bundled into `dist/`, so it adds no runtime dependency.
 - `astro-eslint-parser` and `svelte-eslint-parser` are no longer optional peers: `eslint-plugin-astro` and
   `eslint-plugin-svelte` depend on them, so installing the plugin is enough.
 

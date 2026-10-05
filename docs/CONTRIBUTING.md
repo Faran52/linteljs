@@ -1,12 +1,11 @@
 # Contributing
 
-This is a pnpm workspace of three published packages. Everything in it is outward facing, so a
-change here reaches somebody else's project.
+This is a pnpm workspace of three published packages, so a change here reaches somebody else's project.
 
 ## What you need
 
-Node 26.10.0 or newer, and pnpm 12. Both are declared in `engines`, so an older one fails at install
-rather than halfway through a run.
+Node 26.10.0 or newer, and pnpm 12.6 or newer. Both are declared in `engines`, so an older one fails at
+install rather than halfway through a run.
 
 ```
 pnpm install
@@ -29,16 +28,12 @@ E2E_PM=pnpm pnpm --filter @linteljs/create test:e2e
 Run it for anything that changes what a generated project receives: it sees what the unit gate
 cannot, such as a package that installs but is never imported.
 
-Two gates read the starter source:
-
-- `pnpm lint:starters`, a leg of `pnpm check`, writes 67 cases that between them carry every starter text into
-  real projects under `~/.cache/linteljs/typed/`, installs them against this checkout's packed config and plugin,
-  and runs each project's own `eslint . --max-warnings 0`, type-aware rules included. It lints only the cases
-  whose generated tree changed since their last clean lint; `--all` lints every one, as CI does. The first run
-  installs everything and takes several minutes; a run with nothing changed takes under one. It needs
-  the network.
-  `pnpm lint:starters:fix` writes autofixes back to the templates.
-- The end-to-end suite above is the full matrix and the whole gate.
+`pnpm lint:starters`, a leg of `pnpm check`, lints the starter source. It writes 70 cases that between them
+carry every starter text into real projects under `~/.cache/linteljs/typed/`, installs them against this
+checkout's packed config and plugin, and runs each project's own `eslint . --max-warnings 0`, type-aware rules
+included. It lints only the cases whose generated tree changed since their last clean lint; `--all` lints every
+one, as CI does. The first run installs everything and takes several minutes; a run with nothing changed takes
+under one. It needs the network. `pnpm lint:starters:fix` writes autofixes back to the templates.
 
 ## The three packages
 

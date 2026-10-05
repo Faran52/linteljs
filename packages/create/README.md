@@ -42,10 +42,12 @@ the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typ
 `--testing none`), and the build.
 
 The starter is linteljs's own, not a framework scaffolder's. Every target but the web extension gets a header with
-tabs, Home, About and Version pages, and a status page for each 403, 404 and crash the target can produce. It follows the system colour scheme at WCAG AA
-contrast in both, carries a description meta and, where a public directory is served, a `robots.txt`. It ships
-the chosen languages and remembers the choice; the server-rendered targets read it from a `language` cookie and
-render it from the first byte. It passes its own `check` before you change a line.
+tabs, Home, About and Version pages, and a status page for each 403, 404 and crash the target can produce. React,
+Next, React Native, Vue, Svelte and Solid add a Contact page with a form library, and Angular always has one. The
+starter follows the system colour scheme at WCAG AA contrast in both, carries a description meta and, where a
+public directory is served, a `robots.txt`. It ships the chosen languages and remembers the choice; the
+server-rendered targets read it from a `language` cookie and render it from the first byte. It passes its own
+`check` before you change a line.
 
 ## Questions and options
 
