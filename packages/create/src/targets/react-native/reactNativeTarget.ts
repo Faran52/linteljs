@@ -164,6 +164,10 @@ export const reactNativeTarget: TargetBuilder = () => {
         covers: 'src/components/features/crash-page/CrashPage.tsx',
       },
       {
+        target: 'src/components/features/document-head/DocumentHead.test.tsx',
+        covers: 'src/components/features/document-head/DocumentHead.tsx',
+      },
+      {
         target: 'src/components/ui/mark/Mark.test.tsx',
         covers: 'src/components/ui/mark/Mark.tsx',
       },

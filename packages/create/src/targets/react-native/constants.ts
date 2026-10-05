@@ -7,6 +7,7 @@ export const ALWAYS: readonly string[] = [
   'src/typings/assets.d.ts',
   'src/app/+not-found.tsx',
   'src/components/features/crash-page/CrashPage.tsx',
+  'src/components/features/document-head/DocumentHead.tsx',
   'src/components/ui/mark/Mark.tsx',
   'src/styles/starter.ts',
 ];
