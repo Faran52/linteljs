@@ -352,7 +352,6 @@ const writeIfPresent = (
   }
 };
 
-// Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const confirm = async (prompter: Prompter, message: string): Promise<boolean> => {
   const picked = await prompter.select({
     message,
@@ -373,6 +372,7 @@ export const confirm = async (prompter: Prompter, message: string): Promise<bool
   return answer === 'yes';
 };
 
+// Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
   const answered: Partial<Record<AnswerKey, JsonValue>> = {};

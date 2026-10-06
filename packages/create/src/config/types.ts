@@ -68,13 +68,13 @@ export type Plugin = 'ponytail' | 'context7' | 'frontend-design';
 export interface Answers {
   target: TargetId;
   browser: Browser;
-  // Absent means `popup` and `background`, the only shape written before the answer existed.
+  // Absent means `popup` and `background`, what a config without the answer describes.
   surfaces?: Surface[];
   // Absent means the host's own plain-TypeScript shape.
   hostedFramework?: HostedFramework;
   testing: Testing;
   packageManager: PackageManager;
-  // Absent in a config written before they were recorded.
+  // Absent in a config that does not record them.
   packageManagerVersion?: string;
   nodeVersion?: string;
   libraries: Library[];

@@ -151,7 +151,7 @@ const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Lintel
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
     target: readAnswer(ANSWERS.target, parsed.target),
-    // Defaults so a config written before the extension axes existed still parses.
+    // Defaults, so a config without the extension axes still parses.
     browser: parsed.browser === undefined ? ANSWERS.browser.default : readAnswer(ANSWERS.browser, parsed.browser),
     ...(surfacesValue === undefined ? {} : { surfaces: surfacesValue }),
     ...(hostedFrameworkValue === undefined ? {} : { hostedFramework: hostedFrameworkValue }),
