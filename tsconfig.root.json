@@ -22,6 +22,9 @@
     "vitest.config.ts",
     "scripts/**/*.ts",
 
+    // The repo mod's one classic hook command, run by node; its tsconfig.json checks the rest as mod code.
+    ".claude/skills/linteljs/hooks/checkStatus.ts",
+
     /**
      * `eslint.config.ts` composes its layers out of `eslint-config`'s source, which pulls every framework layer
      * into this program. Those layers lean on that package's ambient shims for the plugins that

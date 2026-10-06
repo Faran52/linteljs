@@ -1,5 +1,13 @@
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
+import { env } from 'node:process';
 
 import {
   commandPayload,
@@ -121,6 +129,35 @@ it.each(['checkBand.tsx', 'checkBand.test.tsx'])('keeps .claude/skills/linteljs/
   const isEqual = copy.equals(shipped);
 
   expect(isEqual).toBe(true);
+});
+
+// `pnpm mod-types` has the engine write both beside the band; neither belongs in the tarball.
+it('packs neither the engine-written mod types nor the tsconfig that reads them', () => {
+  const typesDir = join(import.meta.dirname, '..', '.claude-plugin/types');
+  const probe = join(typesDir, 'packProbe.d.ts');
+  const hadTypes = existsSync(typesDir);
+  mkdirSync(typesDir, { recursive: true });
+  writeFileSync(probe, '');
+
+  // The pnpm running this suite, so the file list is the one a publish packs.
+  const packed = execFileSync(String(env['npm_execpath']), [
+    'pack',
+    '--dry-run',
+    '--ignore-scripts',
+    '--json',
+  ], {
+    cwd: join(import.meta.dirname, '../../../../..'),
+    encoding: 'utf8',
+  });
+
+  rmSync(hadTypes ? probe : typesDir, {
+    recursive: true,
+    force: true,
+  });
+
+  expect(packed).toContain('templates/project/plugins/linteljs/.claude-plugin/plugin.json');
+  expect(packed).not.toContain('.claude-plugin/types');
+  expect(packed).not.toContain('plugins/linteljs/tsconfig.json');
 });
 
 const CASES: [HookScript, object | string][] = [

@@ -84,8 +84,13 @@ frameworks this workspace does not install and files named `*.test.ts`.
 `.claude/skills/linteljs/` is this repo's own Claude Code mod. The engine finds the plugin folder there with no
 `settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the three below. It is
 named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its gate is
-`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`; ESLint ignores
-the folder and Fallow does not discover it (both measured in `docs/DESIGN.md`).
+`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`, plus `pnpm typecheck`:
+each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
+extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsconfig.mod.json`'s strict flags.
+`pnpm mod-types` has the engine write those types (gitignored, never packed); `scripts/typecheck-mods/` runs
+`tsc` on both, failing without them locally and skipping in CI. `hooks/checkStatus.ts` is a classic hook
+command, checked as Node code by `tsconfig.root.json`. ESLint still ignores the mod files and Fallow does not
+discover the folder (`docs/DESIGN.md`).
 
 - **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
   `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds

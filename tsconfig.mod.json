@@ -1,0 +1,22 @@
+{
+  /**
+   * This repo's strict flags for the two Claude Code mods. Each mod's `tsconfig.json` extends the engine's
+   * `.claude-plugin/types/tsconfig.json` (no DOM, no Node, the engine's jsx), then this. docs/DESIGN.md: Ignores.
+   */
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "erasableSyntaxOnly": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "forceConsistentCasingInFileNames": true
+  }
+}

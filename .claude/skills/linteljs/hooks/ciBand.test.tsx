@@ -112,7 +112,7 @@ const drawn = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey = 
   const found = await band.find({ type: 'Text' });
   await band.unmount();
 
-  return found === undefined ? {} : { text: found.text, color: String(found.props.color) };
+  return found === undefined ? {} : { text: found.text, color: String(found.props['color']) };
 };
 
 const PASSED: Ci['runs'] = [['ci', 'completed', 'success'], ['e2e', 'completed', 'success'], ['audit', 'completed', 'success']];

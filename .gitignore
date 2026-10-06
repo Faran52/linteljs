@@ -19,6 +19,9 @@ packages/eslint-plugin/docs/
 packages/*/reports/
 .stryker-tmp/
 
+# The declarations Claude Code writes beside a mod it loads (`pnpm mod-types`), for this engine version only.
+**/.claude-plugin/types/
+
 # Throwaway scripts: never committed, linted or typechecked.
 *.tmp.ts
 

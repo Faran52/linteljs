@@ -22,7 +22,7 @@ interface Repo {
 }
 
 interface Seen {
-  lints: { cwd?: string; stdin?: string }[];
+  lints: { cwd: string | undefined; stdin: string | undefined }[];
   prompts: string[];
 }
 

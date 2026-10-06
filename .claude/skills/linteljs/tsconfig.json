@@ -1,0 +1,13 @@
+{
+  // The mod modules against the types `pnpm mod-types` has the engine write. docs/DESIGN.md: Ignores.
+  "extends": [
+    "./.claude-plugin/types/tsconfig.json",
+    "../../../tsconfig.mod.json"
+  ],
+  "include": [
+    "hooks",
+    "types"
+  ],
+  // A classic hook command run by node, checked as Node code by the root `tsconfig.root.json`.
+  "exclude": ["hooks/checkStatus.ts"]
+}

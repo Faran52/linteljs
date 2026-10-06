@@ -1,0 +1,12 @@
+{
+  // Not shipped: the check band against the types `pnpm mod-types` has the engine write. docs/DESIGN.md: Ignores.
+  "extends": [
+    "./.claude-plugin/types/tsconfig.json",
+    "../../../../../../tsconfig.mod.json"
+  ],
+  "include": [
+    "hooks/checkBand.tsx",
+    "hooks/checkBand.test.tsx",
+    "types"
+  ]
+}

@@ -50,6 +50,8 @@
     "!templates/project/scripts/**/*.test.ts",
     "!templates/project/plugins/**/*.test.ts",
     "!templates/project/plugins/**/*.test.tsx",
+    "!templates/project/plugins/linteljs/tsconfig.json",
+    "!templates/project/plugins/linteljs/.claude-plugin/types",
     "!templates/**/node_modules",
     "CHANGELOG.md",
     "README.md",
