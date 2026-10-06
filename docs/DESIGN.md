@@ -1860,8 +1860,8 @@ them, `pnpm typecheck:mods` runs `tsc` on both, and `modModules()` in `eslint.co
 tsconfigs check to ESLint. In CI no engine runs to write them, so `scripts/typecheck-mods/` skips and
 `UNTYPED_MODS` ignores every mod whose `index.d.ts` is missing. That lasts until Anthropic publishes the types
 for 2.1.289 or later: `claude plugin validate` and `claude plugin test` strip types without checking them
-(anthropics/claude-code#99771), so they are the mods' only gate in CI, `claude plugin test` on the repo mod
-alone (the check band's suite runs there as a copy). `.fallowrc.json` ignores `.claude/**`.
+(anthropics/claude-code#99771), and they run locally only: `claude plugin test` on the repo mod alone is the
+check band's gate (its suite runs there as a copy). CI runs neither. `.fallowrc.json` ignores `.claude/**`.
 Measured: without it `fallow list` finds the repo mod's 13 files, and `fallow` fails on 12 unused files (the
 engine loads `register.tsx` by name, and `claude plugin test` runs the suites), the check band copy as a clone
 group, and 20 health findings scored on Fallow's estimate, since `claude plugin test` writes no coverage.
