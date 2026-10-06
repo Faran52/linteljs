@@ -14,7 +14,7 @@ export const CONTACT_TEXT = {
   contactEmail: 'Email',
   contactMessage: 'Message',
   contactEmailInvalid: 'Enter a valid email address.',
-  contactMessageShort: 'Write at least ten characters.',
+  contactMessageShort: 'Write a message of at least ten characters.',
 } as const;
 
 export const isContactKey = (value: unknown): value is ContactKey => {

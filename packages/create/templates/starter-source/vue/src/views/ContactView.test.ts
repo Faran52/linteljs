@@ -41,6 +41,19 @@ describe('ContactView', () => {
     expect(untouched).toBe(false);
   });
 
+  it('names the message field when it is left empty', async () => {
+    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+
+    await fill(view, 'textarea', '');
+    await nextTick();
+
+    const message = view
+      .get('#message-error')
+      .text();
+
+    expect(message).toBe('Write a message of at least ten characters.');
+  });
+
   it('clears an error as soon as the value is valid', async () => {
     const view: ReturnType<typeof mount> = mount(ContactView, mounted);
 

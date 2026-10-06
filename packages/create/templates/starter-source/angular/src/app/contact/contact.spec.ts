@@ -53,6 +53,15 @@ describe('Contact', () => {
     expect(message).toBe('Enter a valid email address.');
   });
 
+  it('names the message field when it is left empty', async () => {
+    const harness = await render();
+    const root = await fill(harness, '#message', '');
+
+    const message = root.querySelector('#message-error')?.textContent;
+
+    expect(message).toBe('Write a message of at least ten characters.');
+  });
+
   it('flags only the field that was left', async () => {
     const harness = await render();
     const root = await fill(harness, '#email', 'not-an-address');

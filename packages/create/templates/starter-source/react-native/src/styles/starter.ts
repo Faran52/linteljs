@@ -129,7 +129,12 @@ const sheetsFor = (colors: Palette) => {
     },
     inputInvalid: { borderColor: colors.destructive },
     header: { backgroundColor: colors.card },
-    // The header's trailing inset: with the language trigger's own 16, its label ends on the screen's 24.
+    // Both header ends sit on the screen's 24, in line with the page below; the title gives way to the end.
+    headerStart: {
+      flexShrink: 1,
+      marginStart: 24,
+    },
+    // With the language trigger's own 16, its label ends on the screen's 24.
     headerEnd: {
       flexBasis: 'auto',
       paddingEnd: 8,

@@ -24,6 +24,13 @@ describe('stylesFor', () => {
     expect(layout.action).not.toHaveProperty('height');
   });
 
+  it('starts the header on the screen\'s own inset', () => {
+    const { headerStart, screen } = stylesFor('light').layout;
+
+    expect(headerStart.marginStart).toBe(screen.paddingHorizontal);
+    expect(headerStart.flexShrink).toBe(1);
+  });
+
   // The header's trailing control would otherwise sit flush against the edge.
   it('insets the header\'s trailing control, at its own width', () => {
     const { headerEnd } = stylesFor('light').layout;

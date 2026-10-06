@@ -66,7 +66,7 @@ describe('the contact screen', () => {
     await fill('Email', 'not-an-address');
     await screen.findByText('Enter a valid email address.');
 
-    const untouched = screen.queryByText('Write at least ten characters.');
+    const untouched = screen.queryByText('Write a message of at least ten characters.');
     expect(untouched).toBeNull();
   });
 
@@ -88,7 +88,7 @@ describe('the contact screen', () => {
     await fill('Email', 'someone@example.com');
     await fireEvent.press(screen.getByRole('button', { name: 'Send' }));
 
-    const element = await screen.findByText('Write at least ten characters.');
+    const element = await screen.findByText('Write a message of at least ten characters.');
     expect(element).toBeTruthy();
     const button = screen.getByRole('button', { name: 'Send' });
     expect(button).toBeDisabled();

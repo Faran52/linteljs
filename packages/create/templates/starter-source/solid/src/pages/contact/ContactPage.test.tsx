@@ -40,7 +40,7 @@ describe('ContactPage', () => {
     fill('Email', 'not-an-address');
     await screen.findByText('Enter a valid email address.');
 
-    const untouched = screen.queryByText('Write at least ten characters.');
+    const untouched = screen.queryByText('Write a message of at least ten characters.');
 
     expect(untouched).toBeNull();
   });
@@ -63,7 +63,7 @@ describe('ContactPage', () => {
     fill('Email', 'someone@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    const element = await screen.findByText('Write at least ten characters.');
+    const element = await screen.findByText('Write a message of at least ten characters.');
     expect(element).toBeTruthy();
   });
 

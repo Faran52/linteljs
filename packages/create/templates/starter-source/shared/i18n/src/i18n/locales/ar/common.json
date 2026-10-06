@@ -30,7 +30,7 @@
   "contactEmail": "البريد الإلكتروني",
   "contactMessage": "الرسالة",
   "contactEmailInvalid": "أدخل عنوان بريد إلكتروني صالحًا.",
-  "contactMessageShort": "اكتب عشرة أحرف على الأقل.",
+  "contactMessageShort": "اكتب رسالة من عشرة أحرف على الأقل.",
   "popupLede": "إضافة يبنيها Vite، والمعيار مطبّق عليها مسبقًا.",
   "gateHint": "شغّل <code>{command}</code> للبوابة الكاملة.",
   "homeLedeReact": "React و Vite، والمعيار مطبّق مسبقًا.",

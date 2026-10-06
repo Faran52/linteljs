@@ -24,6 +24,7 @@ const TabsLayout = (): ReactNode => {
       );
     },
     headerTitleAlign: 'left',
+    headerTitleContainerStyle: layout.headerStart,
     headerStyle: layout.header,
     headerTintColor: colors.foreground,
     headerShadowVisible: false,

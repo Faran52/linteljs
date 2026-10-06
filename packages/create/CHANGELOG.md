@@ -259,6 +259,10 @@ when a version's change lives in a sibling it is described there instead:
   answer that fails its pattern says it must match the pattern, not that it must be a string.
 - The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
+- The contact form's message rule names its field, in every shipped language: an empty or short message reads
+  "Write a message of at least ten characters." rather than a bare count.
+- React Native's header starts its title on the screen's 24, the inset its language label already ends on, so
+  both header ends line up with the page below.
 
 ## 1.5.3
 

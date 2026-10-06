@@ -30,4 +30,12 @@ describe('the tabs layout', () => {
     const title = screen.getByRole('heading', { name: 'LintelJS Starter' });
     expect(title.props.maxFontSizeMultiplier).toBe(MAX_FONT_SCALE);
   });
+
+  // The navigator's own 16 would start the title short of the page below it.
+  it('starts the header title on the screen\'s inset', async () => {
+    await renderRouter(ROUTES);
+
+    const container = screen.getByRole('heading', { name: 'LintelJS Starter' }).parent;
+    expect(container).toHaveStyle({ marginStart: 24 });
+  });
 });

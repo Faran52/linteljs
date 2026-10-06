@@ -32,8 +32,7 @@ const TabsLayout = (): ReactNode => {
       return <LanguageSelect />;
     },
     headerTitleAlign: 'left',
-    // The title gives way to the language label, which keeps its own width.
-    headerTitleContainerStyle: { flexShrink: 1 },
+    headerTitleContainerStyle: layout.headerStart,
     headerRightContainerStyle: layout.headerEnd,
     headerStyle: layout.header,
     headerTintColor: colors.foreground,
