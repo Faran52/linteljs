@@ -21,20 +21,20 @@ const hook = (name: string, matcher: string): CopilotHook => {
   return entry;
 };
 
-const SHELL = 'bash|powershell';
-const EDIT = 'edit|create|str_replace_editor|apply_patch';
-
 // No commit gate: Copilot reports a shell tool as a success whatever its exit status.
 const COPILOT_HOOKS = {
   version: 1,
   hooks: {
     preToolUse: [
-      hook('gitSafetyGuard', SHELL),
-      hook('dependencyAsk', SHELL),
-      hook('generatedFileGuard', EDIT),
-      hook('dependencyAsk', EDIT),
+      hook('gitSafetyGuard', 'bash|powershell'),
+      hook('dependencyAsk', 'bash|powershell'),
+      hook('generatedFileGuard', 'edit|create|str_replace_editor|apply_patch'),
+      hook('dependencyAsk', 'edit|create|str_replace_editor|apply_patch'),
     ],
-    postToolUse: [hook('eslintFixWarning', SHELL), hook('bannedPatternGuard', EDIT)],
+    postToolUse: [
+      hook('eslintFixWarning', 'bash|powershell'),
+      hook('bannedPatternGuard', 'edit|create|str_replace_editor|apply_patch'),
+    ],
   },
 };
 
