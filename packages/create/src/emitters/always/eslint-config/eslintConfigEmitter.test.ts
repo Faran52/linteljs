@@ -1,4 +1,5 @@
 import { answersFor } from '@mocks/answersFor';
+import { everyTarget } from '@mocks/everyTarget';
 import {
   describe,
   expect,
@@ -815,6 +816,18 @@ describe('ignores', () => {
       });
 
     expect(duplicated).toEqual([]);
+  });
+
+  it('ignores the vendored plugin on every target and hosted framework', () => {
+    const missing = everyTarget()
+      .filter(([, answers]) => {
+        return !ignoresOf(answers).includes('plugins/linteljs/**');
+      })
+      .map(([label]) => {
+        return label;
+      });
+
+    expect(missing).toEqual([]);
   });
 });
 

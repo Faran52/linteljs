@@ -1,4 +1,5 @@
 import { answersFor } from '@mocks/answersFor';
+import { everyTarget } from '@mocks/everyTarget';
 import {
   describe,
   expect,
@@ -652,6 +653,22 @@ describe('a hosted framework brings its own JSX settings', () => {
 
     const frameworkless = buildTsconfig(answersFor({ target: 'webextension' }));
     expect(frameworkless.compilerOptions).not.toHaveProperty('jsx');
+  });
+});
+
+describe('the vendored plugin', () => {
+  it('is excluded on every target and hosted framework', () => {
+    const missing = everyTarget()
+      .filter(([, answers]) => {
+        const { exclude } = buildTsconfig(answers);
+
+        return !exclude.includes('plugins/linteljs');
+      })
+      .map(([label]) => {
+        return label;
+      });
+
+    expect(missing).toEqual([]);
   });
 });
 
