@@ -823,6 +823,23 @@ describe('main: answers given as flags', () => {
     };
     expect(config).toMatchObject(expected);
   });
+
+  it.each([
+    [[], ['ponytail', 'context7']],
+    [['--plugins', 'frontend-design'], ['frontend-design']],
+  ])('records a library\'s plugins from %j as %j', async (flags, plugins) => {
+    await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+      '--target',
+      'typescript',
+      ...flags,
+    ]);
+
+    const config = await configAt();
+    expect(config.plugins).toStrictEqual(plugins);
+  });
 });
 
 describe('main: what a run reports', () => {

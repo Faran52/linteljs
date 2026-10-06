@@ -375,6 +375,19 @@ describe('ask', () => {
     expect(result.answers).toMatchObject(expected);
   });
 
+  it('preselects no frontend-design plugin for a library', async () => {
+    const defaults = Array.from({ length: 20 }, () => {
+      return undefined;
+    });
+    const { result } = await askWith([
+      'demo-lib',
+      'typescript',
+      ...defaults,
+    ]);
+
+    expect(result.answers.plugins).toStrictEqual(['ponytail', 'context7']);
+  });
+
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app',

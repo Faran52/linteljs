@@ -14,7 +14,7 @@ newer.
 | full gate | `{{RUN}} check` |
 
 `check` chains `{{CHECK_CHAIN}}`. It passes on a new project, and coverage thresholds are 100%. `package.json`
-is canonical for the rest, the development server script included.
+is canonical for every other script.
 
 ## Where the standard lives
 

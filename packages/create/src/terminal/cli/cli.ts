@@ -10,6 +10,7 @@ import { ESLINT_CONFIG_PATH } from '@config/constants';
 import { unscopedName } from '@utils/nameUtils';
 
 import {
+  ANSWERS,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
@@ -32,6 +33,7 @@ import {
   writeDependencies,
   writeLintConfig,
 } from '@pipeline';
+import { targetFor } from '@targets';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import {
@@ -95,7 +97,17 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
     ...flags,
   });
 
-  return parseLinteljsConfig(configText);
+  const parsed = parseLinteljsConfig(configText);
+  const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault(targetFor(parsed)) : undefined;
+
+  const answers: Answers = plugins === undefined
+    ? parsed
+    : {
+        ...parsed,
+        plugins,
+      };
+
+  return answers;
 };
 
 // `--existing` takes the name its package.json records, as a new project takes its argument's.

@@ -38,6 +38,8 @@ export interface MultiRecord<V extends string = string> extends Base {
   kind: 'multi';
   values: Record<V, Omit<ValueRecord, 'only'>>;
   default: V[];
+  // The schema records `default`; a target may preselect fewer.
+  targetDefault?: (target: TargetRecord) => V[] | undefined;
   minimum?: number;
 }
 

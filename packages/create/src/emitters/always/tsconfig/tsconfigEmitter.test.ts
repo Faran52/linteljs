@@ -456,6 +456,12 @@ describe('buildTsconfig', () => {
     expect(angular.compilerOptions.noEmit).toBeUndefined();
     expect(react.compilerOptions.noEmit).toBe(true);
   });
+
+  it('drops the dom libs for a library', () => {
+    const { compilerOptions } = buildTsconfig(answersFor({ target: 'typescript' }));
+
+    expect(compilerOptions.lib).toStrictEqual(['esnext']);
+  });
 });
 
 describe('alias coupling', () => {

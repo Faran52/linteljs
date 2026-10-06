@@ -71,4 +71,16 @@ describe('readmeEmitter', () => {
     expect(nativeReadme).toContain('gradle-daemon-jvm.properties');
     expect(webReadme).not.toContain('## Native builds');
   });
+
+  it('names no development server for a library', async () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'typescript' as const,
+    };
+    const [artifact] = readmeEmitter(answers, EMPTY_PROJECT, 'demo-lib');
+    const readme = artifact === undefined ? '' : await shippedAssetsReader(artifact.content, null);
+
+    expect(readme).toContain('`package.json`\nis canonical for every other script.');
+    expect(readme).not.toContain('server');
+  });
 });

@@ -72,7 +72,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
 | AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor` | `claude-code` |
-| AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three |
+| AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three; a library leaves out `frontend-design` |
 
 A list takes comma-separated values or the flag repeated.
 

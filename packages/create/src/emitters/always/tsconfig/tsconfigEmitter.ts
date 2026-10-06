@@ -96,18 +96,21 @@ const pathsFrom = (answers: Answers): Record<string, string[]> => {
 };
 
 const compilerOptionsFor = (answers: Answers): CompilerOptions => {
-  const delta = targetFor(answers).tsconfig;
+  const target = targetFor(answers);
+  const delta = target.tsconfig;
 
   const compilerOptions: CompilerOptions = {
     rootDir: '.',
     ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
 
     target: 'esnext',
-    lib: [
-      'dom',
-      'dom.iterable',
-      'esnext',
-    ],
+    lib: target.libraryProject === true
+      ? ['esnext']
+      : [
+          'dom',
+          'dom.iterable',
+          'esnext',
+        ],
     // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
     useDefineForClassFields: delta.useDefineForClassFields ?? true,
     ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
