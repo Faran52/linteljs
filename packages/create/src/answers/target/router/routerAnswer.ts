@@ -22,7 +22,7 @@ export const routerAnswer = {
         return target.routers?.includes('react-router') === true;
       },
     },
-    // A mode of React Router rather than a router, so a value here rather than a new answer.
+    // A mode of React Router, so a value rather than a new answer.
     'react-router-framework': {
       label: 'React Router, framework mode',
       hint: 'Server rendered, route modules and generated types',

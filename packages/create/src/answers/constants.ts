@@ -3,7 +3,7 @@ import type { Answers } from '@config/types';
 export type SchemaVersion = 1 | typeof CURRENT_SCHEMA_VERSION;
 
 export const CONFIG_PATH = 'linteljs.config.json';
-// What every version through 1.5.3 wrote; `sync` removes it.
+// The pre-v2 config name; `sync` removes it.
 export const LEGACY_CONFIG_PATH = 'lintel.config.json';
 export const CONFIG_SCHEMA_URL
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json';
