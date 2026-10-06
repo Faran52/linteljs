@@ -30,8 +30,7 @@ const PARTS = {
   'targets-b': ['src/targets/{svelte,vue}/**/*.ts'],
   'targets-c': ['src/targets/{solid,webextension}/**/*.ts'],
   'targets-d': ['src/targets/{react-native,astro,angular}/**/*.ts'],
-  // The shared target utils are what every target suite reads, so they split from the rest: one part held them all
-  // and ran 1h54m (audit 37215418274) against under an hour for every other part.
+  // Every target suite reads the shared target utils: in one part they ran 1h54m, and every other part under an hour.
   'targets-utils-a': ['src/targets/utils/{mockUtils,starterUtils}.ts'],
   'targets-utils-b': ['src/targets/utils/*.ts'],
   'targets-e': ['src/targets/**/*.ts'],
@@ -53,6 +52,8 @@ const config = {
   tempDirName: TEMP_DIR,
   // Stryker prefixes an `extends` with `../..`; naming no file keeps `../../tsconfig.json` as written.
   tsconfigFile: 'none',
+  // Its `@ts-nocheck` header breaks the band's byte-equal copy, and vitest never typechecks a mutant anyway.
+  disableTypeChecks: false,
 
   // Locally every covering test runs, so a test that only repeats another's shows; CI bails to stay in hours.
   coverageAnalysis: 'perTest',
@@ -75,7 +76,7 @@ const config = {
   },
 
   // Suites spawn git and node, which a loaded machine slows past the default. A static mutant in `config/constants.ts`
-  // reruns the whole suite: at 30s audit 37215418274 timed out 16 that a local run kills in 7s.
+  // reruns the whole suite: at 30s CI timed out 16 that a local run kills in 7s.
   timeoutMS: 120000,
   // Measured on ten cores: six is as fast as nine, and nine turned kills into timeouts.
   concurrency: 6,

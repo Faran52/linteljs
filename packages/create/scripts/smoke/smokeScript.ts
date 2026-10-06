@@ -33,8 +33,13 @@ const STAGES = [
   'fix',
 ];
 
-// Negated in `files`, so a generated project inherits no test.
-const EXCLUDED = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.ts$/;
+// Negated in `files`, so a generated project inherits no test and no mod typecheck.
+const EXCLUDED_TEST = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.tsx?$/;
+const EXCLUDED_MOD_TYPECHECK = /^project\/plugins\/linteljs\/(?:tsconfig\.json|\.claude-plugin\/types\/.*)$/;
+
+const isExcluded = (name: string): boolean => {
+  return EXCLUDED_TEST.test(name) || EXCLUDED_MOD_TYPECHECK.test(name);
+};
 
 log('packing and extracting the tarball');
 
@@ -82,11 +87,11 @@ const packed = new Set(packedFiles);
 const shipped = filesIn(join(root, 'templates'));
 const leaked = shipped
   .filter((name) => {
-    return EXCLUDED.test(name) && packed.has(name);
+    return isExcluded(name) && packed.has(name);
   });
 const missing = shipped
   .filter((name) => {
-    return !EXCLUDED.test(name) && !packed.has(name);
+    return !isExcluded(name) && !packed.has(name);
   });
 
 assert.deepEqual(leaked, [], `excluded by \`files\` but packed:\n  ${leaked.join('\n  ')}`);

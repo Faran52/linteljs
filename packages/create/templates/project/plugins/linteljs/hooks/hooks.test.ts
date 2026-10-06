@@ -6,8 +6,8 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
-import { env } from 'node:process';
+import { dirname, join } from 'node:path';
+import { execPath } from 'node:process';
 
 import {
   commandPayload,
@@ -139,8 +139,9 @@ it('packs neither the engine-written mod types nor the tsconfig that reads them'
   mkdirSync(typesDir, { recursive: true });
   writeFileSync(probe, '');
 
-  // The pnpm running this suite, so the file list is the one a publish packs.
-  const packed = execFileSync(String(env['npm_execpath']), [
+  // npm, not pnpm: it lists the same files, and pnpm cannot resolve `catalog:` in Stryker's sandbox.
+  const npm = join(dirname(execPath), 'npm');
+  const packed = execFileSync(npm, [
     'pack',
     '--dry-run',
     '--ignore-scripts',
