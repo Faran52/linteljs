@@ -15,7 +15,9 @@ export const SUPERSEDED = [
   'jsdom',
 ];
 
+// `pack` refuses a package.json without a version.
 export const LIBRARY_FIELDS = {
+  version: '0.0.0',
   types: './dist/index.d.ts',
   exports: {
     '.': {

@@ -188,6 +188,39 @@ describe('patchPackageJson', () => {
     expect(defaultPackage).not.toHaveProperty('imports');
   });
 
+  it('gives a library the version, types, exports and files pack needs, and an app none of them', () => {
+    const library = patchPackageJson({}, answersFor({ target: 'typescript' }));
+    const expected: PackageJson = {
+      version: '0.0.0',
+      types: './dist/index.d.ts',
+      exports: {
+        '.': {
+          types: './dist/index.d.ts',
+          default: './dist/index.js',
+        },
+        './package.json': './package.json',
+      },
+      files: ['dist'],
+    };
+    expect(library).toMatchObject(expected);
+    const app = patchPackageJson({}, answersFor({}));
+    const appKeys = Object.keys(app);
+    expect(appKeys).not.toContain('version');
+    expect(appKeys).not.toContain('exports');
+    expect(appKeys).not.toContain('files');
+  });
+
+  it('keeps a library\'s own version and subpaths', () => {
+    const own: PackageJson = {
+      version: '1.4.0',
+      types: './dist/main.d.ts',
+      exports: { '.': './dist/main.js' },
+      files: ['dist', 'LICENSE'],
+    };
+    const library = patchPackageJson(own, answersFor({ target: 'typescript' }));
+    expect(library).toMatchObject(own);
+  });
+
   it('marks every generated project private', () => {
     const { private: freshPrivate } = patchPackageJson({}, answersFor({}));
     const { private: overriddenPrivate } = patchPackageJson({ private: false }, answersFor({}));

@@ -66,6 +66,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ? {
           ...LIBRARY_FIELDS,
           ...pick(existing, [
+            'version',
             'types',
             'exports',
             'files',

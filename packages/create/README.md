@@ -50,8 +50,8 @@ server-rendered targets read it from a `language` cookie and render it from the 
 `check` before you change a line.
 
 The `typescript` target is a library with no framework: `src/index.ts` exports a tested `greeting`, `tsdown` builds
-it to `dist/` with its declarations, and `package.json` carries `exports`, `types` and `files`. It asks no styling,
-form library, data fetching or API mocking question.
+it to `dist/` with its declarations, and `package.json` carries the `version`, `exports`, `types` and `files` that
+`pack` needs. It asks no styling, form library, data fetching or API mocking question.
 
 ## Questions and options
 
