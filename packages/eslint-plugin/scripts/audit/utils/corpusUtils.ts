@@ -81,7 +81,7 @@ const isScript = (entry: Dirent): boolean => {
 };
 
 // Symlinks are neither file nor directory, which keeps cycles out.
-// Lazy: eager, one capped run spent seven of its ten seconds on the walk.
+// Lazy: an eager walk costs a capped run seven of its ten seconds.
 const walk = function* (dir: string, keepNodeModules: boolean): Generator<string> {
   const entries = entriesOf(dir);
 

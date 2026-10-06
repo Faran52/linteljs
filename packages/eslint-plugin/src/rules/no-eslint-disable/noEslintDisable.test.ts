@@ -29,13 +29,9 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '// eslint-disable-linefoo no-console\nexport const value = 1;\n',
     '// eslint-disable-next-line-x no-console\nexport const value = 1;\n',
     /**
-     * Not valid code: a limit of what any rule can see. ESLint honours a bare disable before a rule runs, and a bare
-     * one names no rules, so it turns this rule off too. A directive naming this rule does the same, though that one
-     * cannot be shown here: under `RuleTester` the rule is registered as `no-eslint-disable`, so a directive naming
-     * `@linteljs/no-eslint-disable` matches nothing and earns an unknown-rule error instead of suppressing.
-     *
-     * Here to pin the limit rather than to bless the input. `linterOptions: { noInlineConfig: true }` is what closes
-     * it, and the README says so.
+     * A limit, not valid code: ESLint honours a bare disable before any rule runs, so it turns this rule off too. A
+     * directive naming this rule would as well, but `RuleTester` registers it as `no-eslint-disable`, so that case
+     * cannot be shown. `linterOptions: { noInlineConfig: true }` closes both.
      */
     '/* eslint-disable */\nexport const value = 1;\n',
   ],

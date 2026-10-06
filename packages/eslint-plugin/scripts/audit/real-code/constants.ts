@@ -8,7 +8,7 @@ export const MEDIAN = 0.5;
 
 export const P99 = 0.99;
 
-// The outliers and the slowest files listed.
+// How many outliers and slowest files a report lists.
 export const SHOWN_SAMPLES = 20;
 
 export const BUSIEST_FILES_SHOWN = 5;

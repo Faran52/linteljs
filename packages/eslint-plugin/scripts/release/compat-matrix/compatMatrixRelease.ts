@@ -76,7 +76,7 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
 
   writeFileSync(tsConfigPath, isFlat(major) ? tsFlatConfig : tsLegacyConfig);
 
-  // The 2019 parser's peers do not name this old ESLint on the nose; the pairing in TS_TOOLING is the check.
+  // `--legacy-peer-deps`: the 2019 parser's peer range omits these old majors; the TS_TOOLING pairing is the check.
   await execFileAsync('npm', [
     'install',
     `eslint@${String(major)}`,

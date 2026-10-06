@@ -1,7 +1,7 @@
 // `whitespace`: identical token stream afterwards; `reorder`: the same tokens in a different order.
 export const FIX_SHAPES = ['whitespace', 'reorder'] as const;
 
-// A typescript rule wastes a traversal on a .js file.
+// Split so a typescript rule never spends a traversal on a .js file.
 export const RULE_LANGUAGES = ['universal', 'typescript'] as const;
 
 export const TYPESCRIPT_FILES = [
