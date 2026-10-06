@@ -331,12 +331,21 @@ describe('attribute', () => {
 });
 
 describe('dominantRule', () => {
-  const busy = (ms: number): void => {
-    const until = performance.now() + ms;
+  // A fake clock that only the planted work moves, so no assertion rides on a loaded machine.
+  let clock = 0;
 
-    while (performance.now() < until) {
-    }
-  };
+  beforeEach(() => {
+    clock = 0;
+
+    vi.spyOn(performance, 'now')
+      .mockImplementation(() => {
+        return clock;
+      });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   const unionFile = (): string => {
     const prefix = join(tmpdir(), 'attribution-');
@@ -351,7 +360,7 @@ describe('dominantRule', () => {
   it('names the rule that costs the most over an empty pass', () => {
     const slow: Rule.RuleModule = {
       create: () => {
-        busy(100);
+        clock += 100;
 
         return {};
       },
@@ -363,8 +372,8 @@ describe('dominantRule', () => {
     const dominant = dominantRule(context, unionFile());
 
     expect(dominant.rule).toBe('slow-rule');
-    expect(dominant.ms).toBeGreaterThan(50);
-    expect(dominant.baseline).toBeGreaterThanOrEqual(0);
+    expect(dominant.ms).toBe(100);
+    expect(dominant.baseline).toBe(0);
   });
 
   it('names no rule when none is active', () => {
@@ -384,7 +393,7 @@ describe('dominantRule', () => {
 
     vi.spyOn(context.linter, 'verifyAndFix')
       .mockImplementationOnce((...args) => {
-        busy(100);
+        clock += 100;
 
         return verify(...args);
       });
@@ -393,6 +402,6 @@ describe('dominantRule', () => {
 
     const { baseline } = dominantRule(context, unionFile());
 
-    expect(baseline).toBeLessThan(50);
+    expect(baseline).toBe(0);
   });
 });
