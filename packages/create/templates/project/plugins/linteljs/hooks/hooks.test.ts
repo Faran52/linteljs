@@ -16,7 +16,7 @@ import {
   it,
 } from 'vitest';
 
-it('registers the four hooks, each run by node from the plugin root', () => {
+it('registers the eight hooks, each run by node from the plugin root', () => {
   const hooksText = readFileSync(join(import.meta.dirname, 'hooks.json'), 'utf8');
   const hooks: unknown = JSON.parse(hooksText);
 
@@ -34,6 +34,27 @@ it('registers the four hooks, each run by node from the plugin root', () => {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/eslintFixWarningHook.ts"',
             },
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/commitGateHook.ts"',
+            },
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/dependencyAskHook.ts"',
+            },
+          ],
+        },
+        {
+          matcher: 'Edit|Write|apply_patch',
+          hooks: [
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/generatedFileGuardHook.ts"',
+            },
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/dependencyAskHook.ts"',
+            },
           ],
         },
       ],
@@ -48,10 +69,30 @@ it('registers the four hooks, each run by node from the plugin root', () => {
           ],
         },
         {
+          matcher: 'Bash|PowerShell',
+          hooks: [
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/checkRecordHook.ts"',
+            },
+          ],
+        },
+        {
           hooks: [
             {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/contextWarningHook.ts"',
+            },
+          ],
+        },
+      ],
+      PostToolUseFailure: [
+        {
+          matcher: 'Bash|PowerShell',
+          hooks: [
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/checkRecordHook.ts"',
             },
           ],
         },
@@ -87,6 +128,14 @@ const CASES: [HookScript, object | string][] = [
   ['eslintFixWarningHook.ts', cursorToolPayload('eslint src', 'postToolUse')],
   ['eslintFixWarningHook.ts', cursorToolPayload('eslint src', 'preToolUse')],
   ['bannedPatternGuardHook.ts', copilotPayload('edit', { path: 'missing.ts' })],
+  ['commitGateHook.ts', commandPayload('git commit -m x')],
+  ['commitGateHook.ts', cursorShellPayload('git commit')],
+  ['dependencyAskHook.ts', commandPayload('pnpm add zod')],
+  ['dependencyAskHook.ts', copilotPayload('bash', { command: 'npm i lodash' })],
+  ['dependencyAskHook.ts', cursorShellPayload('yarn add react')],
+  ['dependencyAskHook.ts', cursorToolPayload('pnpm add zod', 'preToolUse')],
+  ['generatedFileGuardHook.ts', { tool_input: { file_path: 'missing.ts' } }],
+  ['generatedFileGuardHook.ts', copilotPayload('edit', { path: 'missing.ts' })],
 ];
 
 describe('hook stdout', () => {

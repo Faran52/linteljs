@@ -41,10 +41,20 @@ interface CursorToolPayload {
 
 type Host = 'claude' | 'copilot' | 'cursor';
 
-export type HookScript = 'bannedPatternGuardHook.ts' | 'eslintFixWarningHook.ts' | 'gitSafetyGuardHook.ts';
+export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'dependencyAskHook.ts'
+  | 'eslintFixWarningHook.ts' | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
 
 // Scripts that answer in their own shape rather than a decision, so only `spawnHook` runs them.
-export type ContextScript = 'contextWarningHook.ts' | 'mainStatusLine.ts' | 'subagentStatusLine.ts';
+export type ContextScript = 'checkRecordHook.ts' | 'checkStatus.ts' | 'contextWarningHook.ts' | 'mainStatusLine.ts'
+  | 'subagentStatusLine.ts';
+
+// The hooks that answer with a permission, and which one; the rest add context or block.
+const PERMISSIONS = new Map<HookScript, 'ask' | 'deny'>([
+  ['commitGateHook.ts', 'deny'],
+  ['dependencyAskHook.ts', 'ask'],
+  ['generatedFileGuardHook.ts', 'deny'],
+  ['gitSafetyGuardHook.ts', 'deny'],
+]);
 
 const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
@@ -109,10 +119,12 @@ const hostOf = (input: object | string): Host => {
 const CURSOR_ALLOW = '{"permission":"allow"}\n';
 
 const decisionOf = (name: HookScript, host: Host, text: string): object => {
+  const permission = PERMISSIONS.get(name);
+
   if (host === 'cursor') {
-    const decision = name === 'gitSafetyGuardHook.ts'
+    const decision = permission !== undefined
       ? {
-          permission: 'deny',
+          permission,
           user_message: text,
           agent_message: text,
         }
@@ -122,9 +134,9 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
   }
 
   if (host === 'copilot') {
-    const decision = name === 'gitSafetyGuardHook.ts'
+    const decision = permission !== undefined
       ? {
-          permissionDecision: 'deny',
+          permissionDecision: permission,
           permissionDecisionReason: text,
         }
       : { additionalContext: text };
@@ -142,10 +154,10 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
   }
 
   const decision = {
-    hookSpecificOutput: name === 'gitSafetyGuardHook.ts'
+    hookSpecificOutput: permission !== undefined
       ? {
           hookEventName: 'PreToolUse',
-          permissionDecision: 'deny',
+          permissionDecision: permission,
           permissionDecisionReason: text,
         }
       : {
@@ -192,6 +204,7 @@ export const spawnHook = (
   input: object | string,
   projectDir?: string,
   pluginData?: string,
+  cwd?: string,
 ): string => {
   const env: typeof process.env = { ...process.env };
 
@@ -207,6 +220,7 @@ export const spawnHook = (
   }
 
   const result = spawnSync(process.execPath, [join(HOOKS_ROOT, name)], {
+    cwd,
     input: typeof input === 'string' ? input : JSON.stringify(input),
     encoding: 'utf8',
     env,
