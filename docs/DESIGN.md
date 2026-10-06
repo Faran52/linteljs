@@ -1851,6 +1851,10 @@ it reports 9 errors, every one `no-unsafe-call`, `no-unsafe-member-access` or `n
 package tsconfig instead gives `tsc` 25 errors, 3 of them `TS2307: Cannot find module 'claude-code'` and the rest
 the implicit `any`s that follow from it. `claude plugin validate` and `claude plugin test` are their gate.
 
+`.claude/skills/linteljs/**` is this repo's own mod, the same kind of module. Measured: without the entry,
+`eslint` on the folder reports 8 errors, one per `.ts` and `.tsx` file, each `was not found by the project
+service`. `claude plugin validate` and `claude plugin test` on the folder are its gate.
+
 ### `'**/utils/*.ts': '*Utils'`
 
 `check-file` takes a raw glob as the naming pattern: the rule validates the value with `is-glob` and micromatches the

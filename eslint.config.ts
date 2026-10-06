@@ -100,6 +100,8 @@ const config = [
       'packages/create/templates/starter-source/**',
       // docs/DESIGN.md: Ignores, the check band
       'packages/create/templates/project/plugins/**/*.tsx',
+      // docs/DESIGN.md: Ignores, the repo mod
+      '.claude/skills/linteljs/**',
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',

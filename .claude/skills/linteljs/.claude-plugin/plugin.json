@@ -1,0 +1,6 @@
+{
+  "name": "linteljs",
+  "version": "0.0.0",
+  "description": "This repo's own Claude Code mods: the shipped check band, a CI band and repo guards",
+  "types": "./types/index.d.ts"
+}
