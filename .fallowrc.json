@@ -10,6 +10,7 @@
     "packages/eslint-plugin/scripts/release/run-rules/runRulesRelease.ts"
   ],
   "ignorePatterns": [
+    ".claude/**",
     "packages/create/templates/starter-source/**",
     "packages/create/templates/fragments/**",
     "packages/*/__mocks__/fixtures/**"

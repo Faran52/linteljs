@@ -1846,17 +1846,18 @@ Measured for `setupTests.mswJest.ts`, the Jest twin of the MSW setup: without it
 it reports 9 errors, every one `no-unsafe-call`, `no-unsafe-member-access` or `no-unsafe-assignment`, because the
 `jest` global and `./msw/node` resolve to nothing here.
 
-`packages/create/templates/project/plugins/**/*.tsx` is the check band and its test, Claude Code mods that import
-`claude-code` and `claude-code/testing`, modules only the Claude Code engine provides. Measured: without the entry,
-`eslint` on the two files reports 2 errors, each `was not found by the project service`; adding them to the
-package tsconfig instead gives `tsc` 25 errors, 3 of them `TS2307: Cannot find module 'claude-code'` and the rest
-the implicit `any`s that follow from it. `claude plugin validate` and `claude plugin test` are their gate.
-
-`.claude/skills/linteljs/**` is this repo's own mod, the same kind of module. Measured: without the entry,
-`eslint` on the folder reports 13 errors, one per `.ts` and `.tsx` file, each `was not found by the project
-service`. `claude plugin validate` and `claude plugin test` on the folder are its gate. Fallow needs no entry for
-it: `fallow list` discovers no file under `.claude/`, so neither `dead-code` nor `dupes` sees the mod or its copy
-of the check band.
+The two Claude Code mods, the shipped check band under `packages/create/templates/project/plugins/linteljs/` and
+this repo's own under `.claude/skills/linteljs/`, import `claude-code` and `claude-code/testing`, modules only the
+Claude Code engine provides. Locally they are typechecked and linted against the declarations the engine writes:
+`pnpm mod-types` puts them at each mod's `.claude-plugin/types/` (gitignored), each mod's `tsconfig.json` extends
+them, `pnpm typecheck:mods` runs `tsc` on both, and `modModules()` in `eslint.config.ts` hands the files those
+tsconfigs check to ESLint. In CI no engine runs to write them, so `scripts/typecheck-mods/` skips and
+`UNTYPED_MODS` ignores every mod whose `index.d.ts` is missing. That lasts until Anthropic publishes the types
+for 2.1.289 or later: `claude plugin validate` and `claude plugin test` strip types without checking them
+(anthropics/claude-code#99771), so they are the mods' only gate in CI. `.fallowrc.json` ignores `.claude/**`.
+Measured: without it `fallow list` finds the repo mod's 13 files, and `fallow` fails on 12 unused files (the
+engine loads `register.tsx` by name, and `claude plugin test` runs the suites), the check band copy as a clone
+group, and 20 health findings scored on Fallow's estimate, since `claude plugin test` writes no coverage.
 
 The decisions the mod's code cannot show:
 
@@ -1873,8 +1874,11 @@ The decisions the mod's code cannot show:
   live agent, so a deny would block work that is not stale. A HEAD ahead of `origin/HEAD` adds an `ff-only` note
   to the spawned agent's prompt, since a new worktree starts at origin's default branch.
 - **A refused note is swallowed.** The leftover-worktree warning goes through `session.append`, which the engine
-  may refuse; the refusal is caught so the spawn and its base note still go ahead. Every gating hook carries a
-  `.catch` for the same reason: a broken guard must not take the tool down with it.
+  may refuse; the refusal is caught so the spawn and its base note still go ahead.
+- **No guard carries a `.catch`.** The engine drops a hook that throws or overruns and the call goes on without
+  it, which is also what a `.catch` answering `undefined` does, so a broken guard never takes the tool down.
+  Measured: a `tool.call` hook that throws, registered with and without that `.catch`, passes the call on
+  either way under `claude plugin test`.
 
 ### `'**/utils/*.ts': '*Utils'`
 
@@ -2019,10 +2023,23 @@ because it matches calls inside the body and there is no call. Off for that dire
 
 ### `@linteljs/workspace/band-types`
 
-`plugins/linteljs/types/index.d.ts` is the check band's state contract, and `claude plugin validate` reads a
-plugin's state only from an inline shape in `interface PluginState`. Measured on Claude Code 2.1.289: with
+`packages/create/templates/project/plugins/linteljs/types/index.d.ts` is the check band's state contract and
+`.claude/skills/linteljs/types/index.d.ts` the repo mod's, and `claude plugin validate` reads a plugin's state
+only from an inline shape in `interface PluginState`. Measured on Claude Code 2.1.289: with
 `linteljs: LinteljsState`, a named interface, validate fails with `linteljs.check is not declared`; inline, it
-passes, and `eslint` on the file reports 1 error, `no-inline-object-types`. Off for that one file.
+passes, and `eslint` on the file reports 1 error, `no-inline-object-types`. Off for those two files.
+
+### `@linteljs/workspace/mods`
+
+Two rules restated for the files the mods' tsconfigs check (`modModules()`), and nowhere else.
+
+- `@typescript-eslint/no-misused-promises` with `checksVoidReturn.arguments: false`. The engine's `On` is one
+  overload per event, and checking each async hook passed to `on(...)` against them stalls the rule. Measured on
+  `repoGuards.ts` at the rule's defaults: 318,223 ms of a 319.9 s run, with no finding (an earlier run gave
+  326,041 ms of 331 s); with the option the run takes 1.6 s, again with no finding.
+- `import-x/no-unresolved` ignoring `^claude-code(/testing)?$`. Both are ambient `declare module` blocks in the
+  engine-written types, which the resolver cannot reach. Measured: 9 findings without the ignore, 3 `claude-code`
+  and 6 `claude-code/testing`, all such imports; `tsc` resolves them through `pnpm typecheck:mods`.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

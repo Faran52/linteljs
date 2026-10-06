@@ -84,13 +84,15 @@ frameworks this workspace does not install and files named `*.test.ts`.
 `.claude/skills/linteljs/` is this repo's own Claude Code mod. The engine finds the plugin folder there with no
 `settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the three below. It is
 named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its gate is
-`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`, plus `pnpm typecheck`:
+`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`, plus `pnpm typecheck`
+and `pnpm lint`:
 each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
 extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsconfig.mod.json`'s strict flags.
 `pnpm mod-types` has the engine write those types (gitignored, never packed); `scripts/typecheck-mods/` runs
 `tsc` on both, failing without them locally and skipping in CI. `hooks/checkStatus.ts` is a classic hook
-command, checked as Node code by `tsconfig.root.json`. ESLint still ignores the mod files and Fallow does not
-discover the folder (`docs/DESIGN.md`).
+command, checked as Node code by `tsconfig.root.json`. The root `eslint.config.ts` lints the files each mod's
+tsconfig checks, and ignores them where the types are missing, as in CI. `.fallowrc.json` ignores `.claude/**`
+(`docs/DESIGN.md`).
 
 - **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
   `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds
@@ -117,6 +119,6 @@ discover the folder (`docs/DESIGN.md`).
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,
   `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
   `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split),
-  `.fallowrc.json` (for `npx fallow`: the entry points no import reaches, the template text and fixtures left out,
-  and the dependencies loaded by name rather than imported; `health.coverage` reads `pnpm test:coverage`'s
+  `.fallowrc.json` (for `npx fallow`: the entry points no import reaches, the template text, fixtures and repo
+  mod left out, and the dependencies loaded by name rather than imported; `health.coverage` reads `pnpm test:coverage`'s
   `coverage/coverage-final.json`, so CRAP scores use measured coverage, not Fallow's estimate).
