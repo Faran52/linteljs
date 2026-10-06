@@ -35,13 +35,18 @@ import {
   RULE_IDS,
 } from '../utils/lintUtils.ts';
 
-import { indexAst, type State } from './utils/editUtils.ts';
+import {
+  type Candidate,
+  indexAst,
+  type State,
+} from './utils/editUtils.ts';
 import {
   type Shape,
   SHAPES,
   TS_ONLY_RULES,
 } from './utils/shapesUtils.ts';
 
+import type { LintelRuleModule } from '../../../src/types.ts';
 import type { OptionValue } from '../utils/optionUtils.ts';
 
 interface ActiveShape extends Shape {
@@ -138,28 +143,35 @@ if (activeShapes.length === 0) {
 const linter = new Linter();
 const configCache = new Map<string, Linter.Config[]>();
 
+const optionsKey = (rule: string, options: Record<string, OptionValue> | undefined): string => {
+  return `${rule}|${JSON.stringify(options ?? null)}`;
+};
+
+// The neutered rule keeps its meta and reports nothing, which proves the audit can see a miss.
+const auditedModule = (rule: string): LintelRuleModule => {
+  const module = moduleOf(rule);
+  const neutered: LintelRuleModule = {
+    meta: module.meta,
+    create: () => {
+      return {};
+    },
+  };
+
+  return rule === flags.neuter ? neutered : module;
+};
+
 // Inline configuration off, since a third-party disable would silence the provoked report.
 const ruleConfig = (rule: string, options: Record<string, OptionValue> | undefined): Linter.Config[] => {
-  const key = `${rule}|${JSON.stringify(options ?? null)}`;
+  const key = optionsKey(rule, options);
   const cached = configCache.get(key);
 
   if (cached !== undefined) {
     return cached;
   }
 
-  const module = moduleOf(rule);
   const entry: Linter.RuleEntry = options === undefined ? 'error' : ['error', options];
   const config = configFor(
-    {
-      [rule]: rule === flags.neuter
-        ? {
-            meta: module.meta,
-            create: () => {
-              return {};
-            },
-          }
-        : module,
-    },
+    { [rule]: auditedModule(rule) },
     { [`@linteljs/${rule}`]: entry },
     {
       noInlineConfig: true,
@@ -236,38 +248,37 @@ const snippetAt = (source: string, offset: number): string => {
 };
 
 // Cached per rule and options: six shapes of one rule would otherwise pay six passes.
-const attempt = (entry: ActiveShape, file: string, state: State, name: string, cache: Map<string, Reports>): void => {
-  const candidate = entry.build(state);
-
-  if (!candidate) {
-    return;
-  }
-
-  const bucket = statsOf(entry);
-  const cacheKey = `${entry.rule}|${JSON.stringify(entry.options ?? null)}`;
+const reportsBefore = (entry: ActiveShape, state: State, name: string, cache: Map<string, Reports>): Reports => {
+  const cacheKey = optionsKey(entry.rule, entry.options);
   const before = cache.get(cacheKey) ?? reportsFor(state.source, name, entry);
 
   cache.set(cacheKey, before);
-  bucket.attempts += 1;
 
+  return before;
+};
+
+const cleanBefore = (entry: ActiveShape, before: Reports): boolean => {
   if (before.fatal) {
     noteSkip(entry, 'file does not lint cleanly under this parser');
 
-    return;
+    return false;
   }
 
   if (before.count > 0) {
     noteSkip(entry, 'file already reports for this rule, so silence would prove nothing');
 
-    return;
+    return false;
   }
 
-  const after = reportsFor(candidate.source, name, entry);
+  return true;
+};
 
+// True when the edit broke the code and the rule stayed silent.
+const wentUnreported = (entry: ActiveShape, bucket: Stats, after: Reports): boolean => {
   if (after.fatal) {
     noteSkip(entry, 'transformation produced invalid syntax');
 
-    return;
+    return false;
   }
 
   bucket.cases += 1;
@@ -275,11 +286,15 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
   if (after.count > 0) {
     bucket.seen += 1;
 
-    return;
+    return false;
   }
 
   bucket.misses += 1;
 
+  return true;
+};
+
+const reportMiss = (entry: ActiveShape, file: string, candidate: Candidate): void => {
   const missReport = [
     `false negative: @linteljs/${entry.rule}`,
     `  shape: ${describeShape(entry)}`,
@@ -294,6 +309,29 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
   ].join('\n');
 
   logError(missReport);
+};
+
+const attempt = (entry: ActiveShape, file: string, state: State, name: string, cache: Map<string, Reports>): void => {
+  const candidate = entry.build(state);
+
+  if (!candidate) {
+    return;
+  }
+
+  const bucket = statsOf(entry);
+  const before = reportsBefore(entry, state, name, cache);
+
+  bucket.attempts += 1;
+
+  if (!cleanBefore(entry, before)) {
+    return;
+  }
+
+  const after = reportsFor(candidate.source, name, entry);
+
+  if (wentUnreported(entry, bucket, after)) {
+    reportMiss(entry, file, candidate);
+  }
 };
 
 const counts = {
@@ -311,10 +349,14 @@ const shapesStillHungry = (): ActiveShape[] => {
     });
 };
 
+const isSkipped = (source: string): boolean => {
+  return skipReason(source) !== undefined || source.includes('eslint-disable');
+};
+
 const load = (file: string): [string, string, Program] | undefined => {
   const source = readFileSync(file, 'utf8');
 
-  if (skipReason(source) !== undefined || source.includes('eslint-disable')) {
+  if (isSkipped(source)) {
     counts.skipped += 1;
 
     return undefined;
@@ -344,6 +386,10 @@ const load = (file: string): [string, string, Program] | undefined => {
   return loaded;
 };
 
+const appliesTo = (entry: ActiveShape, name: string): boolean => {
+  return !TS_ONLY_RULES.has(entry.rule) || isTypeScript(name);
+};
+
 const check = (file: string, hungry: ActiveShape[]): void => {
   const loaded = load(file);
 
@@ -362,7 +408,7 @@ const check = (file: string, hungry: ActiveShape[]): void => {
   counts.scanned += 1;
 
   for (const entry of hungry) {
-    if (!TS_ONLY_RULES.has(entry.rule) || isTypeScript(name)) {
+    if (appliesTo(entry, name)) {
       attempt(entry, file, {
         ast,
         index,

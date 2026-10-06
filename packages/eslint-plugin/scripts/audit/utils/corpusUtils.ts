@@ -1,5 +1,9 @@
 import { hash } from 'node:crypto';
-import { existsSync, readdirSync } from 'node:fs';
+import {
+  type Dirent,
+  existsSync,
+  readdirSync,
+} from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import {
   extname,
@@ -53,29 +57,39 @@ export const sourcesFrom = (given: string[]): string[] => {
     });
 };
 
+// An unreadable directory reads as empty.
+const entriesOf = (dir: string): Dirent[] => {
+  try {
+    return readdirSync(dir, { withFileTypes: true });
+  }
+  catch {
+    return [];
+  }
+};
+
+const descends = (entry: Dirent, keepNodeModules: boolean): boolean => {
+  return entry.isDirectory()
+    && (!SKIP_DIRS.has(entry.name) || (keepNodeModules && entry.name === 'node_modules'));
+};
+
+const isScript = (entry: Dirent): boolean => {
+  const extension = extname(entry.name);
+
+  return entry.isFile() && !entry.name.includes('.min.') && SCRIPT_EXTENSIONS.has(extension);
+};
+
 // Symlinks are neither file nor directory, which keeps cycles out.
 // Lazy: eager, one capped run spent seven of its ten seconds on the walk.
 const walk = function* (dir: string, keepNodeModules: boolean): Generator<string> {
-  let entries;
-
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  }
-  catch {
-    return;
-  }
+  const entries = entriesOf(dir);
 
   for (const entry of entries) {
-    const extension = extname(entry.name);
+    if (descends(entry, keepNodeModules)) {
+      const subdir = join(dir, entry.name);
 
-    if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name) || (keepNodeModules && entry.name === 'node_modules')) {
-        const subdir = join(dir, entry.name);
-
-        yield* walk(subdir, keepNodeModules);
-      }
+      yield* walk(subdir, keepNodeModules);
     }
-    else if (entry.isFile() && !entry.name.includes('.min.') && SCRIPT_EXTENSIONS.has(extension)) {
+    else if (isScript(entry)) {
       yield join(dir, entry.name);
     }
   }

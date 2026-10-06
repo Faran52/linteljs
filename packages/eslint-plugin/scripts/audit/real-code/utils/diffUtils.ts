@@ -141,24 +141,39 @@ const nameAfter = (tokens: Token[], from: number): Token | undefined => {
   return undefined;
 };
 
+// Past the end, the missing token reads as Infinity and stops the scan.
+const firstTokenEndingAfter = (tokens: Token[], from: number, start: number): number => {
+  let index = from;
+
+  while ((tokens[index]?.range[1] ?? Infinity) <= start) {
+    index += 1;
+  }
+
+  return index;
+};
+
+const trailsPrevious = (tokens: Token[], index: number, comment: Token): boolean => {
+  const previous = tokens.at(index - 1);
+
+  return index > 0 && previous?.loc.end.line === comment.loc.start.line && !OPENERS.has(previous.value);
+};
+
+const describeAnchor = (anchor: Token | undefined): string => {
+  return anchor ? describeToken(anchor) : 'no name';
+};
+
 // Text alone cannot see a trailing note that moved down a line.
 const commentAnchors = ({ tokens, comments }: Parsed): string[] => {
   let index = 0;
 
   return comments
     .map((comment) => {
-      while (index < tokens.length && (tokens[index]?.range[1] ?? Infinity) <= comment.range[0]) {
-        index += 1;
-      }
+      index = firstTokenEndingAfter(tokens, index, comment.range[0]);
 
-      const previous = tokens.at(index - 1);
-      const trails = index > 0 && previous?.loc.end.line === comment.loc.start.line
-        && !OPENERS.has(previous.value);
-      const heads = trails ? undefined : nameAfter(tokens, index);
+      const heads = trailsPrevious(tokens, index, comment) ? undefined : nameAfter(tokens, index);
       const anchor = heads ?? nameBefore(tokens, index - 1);
 
-      return `${JSON.stringify(comment.value)} written ${heads ? 'before' : 'after'} `
-        + (anchor ? describeToken(anchor) : 'no name');
+      return `${JSON.stringify(comment.value)} written ${heads ? 'before' : 'after'} ${describeAnchor(anchor)}`;
     });
 };
 

@@ -144,6 +144,26 @@ const bodyHazard = (fn: AstNode): string | undefined => {
   return found;
 };
 
+const isIdentifierIn = (node: AstNode | null | undefined, names: Set<string>): node is AstNode => {
+  return node?.type === 'Identifier' && names.has(node.name ?? '');
+};
+
+const isPlainMember = (node: AstNode | undefined): node is AstNode => {
+  return node?.type === 'MemberExpression' && node.computed !== true;
+};
+
+const promiseMethodOf = (node: AstNode): AstNode | undefined => {
+  const { callee } = node;
+  const property = node.type === 'CallExpression' && isPlainMember(callee) ? callee.property : undefined;
+
+  return isIdentifierIn(property, PROMISE_METHODS) ? property : undefined;
+};
+
+const isNamespaceDestructure = (node: AstNode, namespaces: Set<string>): boolean => {
+  return node.type === 'VariableDeclarator' && node.id?.type === 'ObjectPattern'
+    && isIdentifierIn(node.init, namespaces);
+};
+
 // `promise[then](parse)` is why this exists.
 export const shapesOf = (ast: Program): Shapes => {
   const namespaces = new Set<string>();
@@ -162,26 +182,17 @@ export const shapesOf = (ast: Program): Shapes => {
   });
 
   walkAst(ast, (node) => {
-    const {
-      callee,
-      id,
-      init,
-    } = node;
-
     if (FUNCTION_LIKE.has(node.type)) {
       shapes.functions.set(at(node), node);
     }
 
-    const isMemberCall = node.type === 'CallExpression' && callee?.type === 'MemberExpression'
-      && callee.computed !== true;
-    const method = isMemberCall && callee.property?.type === 'Identifier' ? callee.property : undefined;
+    const method = promiseMethodOf(node);
 
-    if (method && PROMISE_METHODS.has(method.name ?? '')) {
+    if (method) {
       shapes.promiseCalls.add(at(method));
     }
 
-    if (node.type === 'VariableDeclarator' && id?.type === 'ObjectPattern' && init?.type === 'Identifier'
-      && namespaces.has(init.name ?? '')) {
+    if (isNamespaceDestructure(node, namespaces)) {
       shapes.namespaceDestructures.add(at(node));
     }
 
@@ -201,31 +212,22 @@ const finding = (ruleId: string, category: string, detail: string): Finding => {
   return reported;
 };
 
-export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<string>): Finding | undefined => {
-  const spot = atReport(report);
-  const ruleId = report.ruleId ?? '';
+const judgeReportOnly = (ruleId: string, spot: string, shapes: Shapes): Finding | undefined => {
+  const allowed = ruleId === '@linteljs/no-import-namespace-destructure'
+    ? shapes.namespaceDestructures
+    : shapes.promiseCalls;
 
-  if (REPORT_ONLY_RULES.has(ruleId)) {
-    const allowed = ruleId === '@linteljs/no-import-namespace-destructure'
-      ? shapes.namespaceDestructures
-      : shapes.promiseCalls;
+  return allowed.has(spot)
+    ? undefined
+    : finding(ruleId, 'report shape', `report at ${spot} is not the shape the rule claims`);
+};
 
-    return allowed.has(spot)
-      ? undefined
-      : finding(ruleId, 'report shape', `report at ${spot} is not the shape the rule claims`);
-  }
+// Only `preferArrow` with a fix converts: `preferExplicit` rewrites an arrow into an arrow.
+const converts = (report: Linter.LintMessage): boolean => {
+  return report.messageId === 'preferArrow' && report.fix !== undefined;
+};
 
-  // Only `preferArrow` with a fix converts: `preferExplicit` rewrites an arrow into an arrow.
-  if (report.messageId !== 'preferArrow' || report.fix === undefined) {
-    return undefined;
-  }
-
-  const fn = shapes.functions.get(spot);
-
-  if (fn === undefined) {
-    return finding(ruleId, 'report shape', `conversion reported at ${spot}, which is not a function`);
-  }
-
+const judgeConversion = (ruleId: string, spot: string, fn: AstNode, probed: Set<string>): Finding | undefined => {
   const hazard = bodyHazard(fn);
 
   if (hazard !== undefined) {
@@ -243,4 +245,23 @@ export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<st
         'converted a declaration called above itself, which a `const` cannot support',
       )
     : undefined;
+};
+
+export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<string>): Finding | undefined => {
+  const spot = atReport(report);
+  const ruleId = report.ruleId ?? '';
+
+  if (REPORT_ONLY_RULES.has(ruleId)) {
+    return judgeReportOnly(ruleId, spot, shapes);
+  }
+
+  if (!converts(report)) {
+    return undefined;
+  }
+
+  const fn = shapes.functions.get(spot);
+
+  return fn === undefined
+    ? finding(ruleId, 'report shape', `conversion reported at ${spot}, which is not a function`)
+    : judgeConversion(ruleId, spot, fn, probed);
 };

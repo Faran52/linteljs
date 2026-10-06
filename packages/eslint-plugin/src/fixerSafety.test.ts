@@ -156,27 +156,36 @@ const lostIndents = (sample: FixerSample, fixed: string): string[] => {
 
       return isIndented(line) && survivors.has(text) && !keptOrDeeper(line);
     });
+
+  const isAccountedFor = (line: string): boolean => {
+    const text = line.trim();
+
+    return text === '' || isIndented(line) || texts.has(text);
+  };
+
+  const strandsOpener = (line: string, opener: number): boolean => {
+    return !/^[)\]}]/.test(line) || isIndented(after[opener] ?? '');
+  };
+
+  const strandsSibling = (index: number): boolean => {
+    const next = after
+      .findIndex((sibling, at) => {
+        return at > index && sibling.trim() !== '';
+      });
+    const sibling = after[next] ?? '';
+
+    return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
+  };
+
   const stranded = after
     .filter((line, index) => {
-      const text = line.trim();
-
-      if (text === '' || isIndented(line) || texts.has(text)) {
+      if (isAccountedFor(line)) {
         return false;
       }
 
       const opener = openers[index];
 
-      if (opener !== undefined) {
-        return !/^[)\]}]/.test(line) || isIndented(after[opener] ?? '');
-      }
-
-      const next = after
-        .findIndex((sibling, at) => {
-          return at > index && sibling.trim() !== '';
-        });
-      const sibling = after[next] ?? '';
-
-      return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
+      return opener === undefined ? strandsSibling(index) : strandsOpener(line, opener);
     });
 
   const lost = [...moved, ...stranded];

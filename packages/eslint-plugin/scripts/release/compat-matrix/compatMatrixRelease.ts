@@ -9,6 +9,7 @@ import { packTarball } from '../../../../../scripts/utils/processUtils.ts';
 import { log, logError } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
   fatalOf,
+  type LintResult,
   lintResultOf,
   ruleIdsOf,
 } from '../utils/eslintOutputUtils.ts';
@@ -90,7 +91,7 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
   return dir;
 };
 
-const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean): Promise<[string[], string]> => {
+const lintArgs = (major: Major, dir: string, fix: boolean, typescript: boolean): string[] => {
   const bin = join(dir, 'node_modules', 'eslint', 'bin', 'eslint.js');
   const config = isFlat(major)
     ? [
@@ -107,27 +108,37 @@ const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean
         '--ext',
         '.ts,.js',
       ];
-  const result = await lintResultOf(
-    [
-      ...config,
-      ...(fix ? ['--fix-dry-run'] : []),
-      '-f',
-      'json',
-      typescript ? 'fixture.ts' : 'fixture.js',
-    ],
-    dir,
-  );
+  const args = [
+    ...config,
+    ...(fix ? ['--fix-dry-run'] : []),
+    '-f',
+    'json',
+    typescript ? 'fixture.ts' : 'fixture.js',
+  ];
+
+  return args;
+};
+
+// A fix pass is read for its output alone.
+const missingFrom = (result: LintResult, fix: boolean, typescript: boolean): string[] => {
+  const ids = ruleIdsOf(result);
+
+  return (fix ? [] : expectedFor(typescript))
+    .filter((id) => {
+      return !ids.includes(id);
+    });
+};
+
+const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean): Promise<[string[], string]> => {
+  const args = lintArgs(major, dir, fix, typescript);
+  const result = await lintResultOf(args, dir);
   const fatal = fatalOf(result);
 
   if (fatal.length > 0) {
     throw new Error(`${typescript ? 'typescript ' : ''}fatal ${JSON.stringify(fatal)}`);
   }
 
-  const missing = (fix ? [] : expectedFor(typescript))
-    .filter((id) => {
-      return !ruleIdsOf(result).includes(id);
-    });
-  const verdict: [string[], string] = [missing, result.output ?? ''];
+  const verdict: [string[], string] = [missingFrom(result, fix, typescript), result.output ?? ''];
 
   return verdict;
 };
