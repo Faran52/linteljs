@@ -322,12 +322,9 @@ const runSync = async (
   return blocked.includes(true) ? 1 : 0;
 };
 
-// Not `process.exit`, which drops queued stderr writes.
-export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
-  let options: CliOptions;
-
+const parsedOptions = (argv: string[]): CliOptions | undefined => {
   try {
-    options = parseCliArgs(argv);
+    return parseCliArgs(argv);
   }
   catch (error) {
     // An Error from another realm fails `instanceof`.
@@ -337,36 +334,11 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
     console.error(error.message);
 
-    return 1;
+    return undefined;
   }
+};
 
-  if (options.help) {
-    say(usage());
-    return 0;
-  }
-
-  if (options.version) {
-    say(packageJson.version);
-    return 0;
-  }
-
-  const refusal = argumentError(options);
-
-  if (refusal !== undefined) {
-    console.error(refusal);
-
-    return 1;
-  }
-
-  // After `--help` and `--version`, which owe an answer on any machine.
-  const host = await hostOf(options.cwd);
-
-  if (typeof host === 'string') {
-    console.error(host);
-
-    return 1;
-  }
-
+const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter): Promise<number> => {
   const hasTerminal = prompter !== undefined || stdin.isTTY;
 
   if (options.command === 'create') {
@@ -410,4 +382,42 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
   }
 
   return 0;
+};
+
+// Not `process.exit`, which drops queued stderr writes.
+export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
+  const options = parsedOptions(argv);
+
+  if (options === undefined) {
+    return 1;
+  }
+
+  if (options.help) {
+    say(usage());
+    return 0;
+  }
+
+  if (options.version) {
+    say(packageJson.version);
+    return 0;
+  }
+
+  const refusal = argumentError(options);
+
+  if (refusal !== undefined) {
+    console.error(refusal);
+
+    return 1;
+  }
+
+  // After `--help` and `--version`, which owe an answer on any machine.
+  const host = await hostOf(options.cwd);
+
+  if (typeof host === 'string') {
+    console.error(host);
+
+    return 1;
+  }
+
+  return runCommand(options, host, prompter);
 };

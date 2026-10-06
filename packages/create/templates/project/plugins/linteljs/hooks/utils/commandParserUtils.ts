@@ -55,6 +55,8 @@ interface NextStep {
 
 type Step = NestedStep | NextStep;
 
+type WrapperHandler = (tokens: string[], start: number, depth: number) => Step;
+
 // Shells and wrappers nested past this are not read.
 const MAX_DEPTH = 8;
 
@@ -804,56 +806,56 @@ const SHELLS = new Set([
   'ksh',
 ]);
 
+const nohupWrapper: WrapperHandler = (tokens, start) => {
+  return next(tokens[start] === '--' ? start + 1 : start);
+};
+
+const invokeExpressionWrapper: WrapperHandler = (tokens, start, depth) => {
+  const from = tokens[start]?.toLowerCase() === '-command' ? start + 1 : start;
+  const command = tokens
+    .slice(from)
+    .join(' ');
+
+  return nested(command, 'powershell', depth);
+};
+
+const optionWrapperOf = (valued: Set<string>): WrapperHandler => {
+  return (tokens, start) => {
+    return optionWrapper(tokens, start, valued);
+  };
+};
+
+const shellEntries = [...SHELLS]
+  .map((shell) => {
+    const entry: [string, WrapperHandler] = [shell, shellWrapper];
+
+    return entry;
+  });
+
+const WRAPPERS = new Map<string, WrapperHandler>([
+  ['env', envWrapper],
+  ['command', commandWrapper],
+  ['exec', optionWrapperOf(EXEC_VALUED)],
+  ['nohup', nohupWrapper],
+  ['sudo', optionWrapperOf(SUDO_VALUED)],
+  ['time', optionWrapperOf(TIME_VALUED)],
+  ...shellEntries,
+  ['pwsh', powerShellWrapper],
+  ['powershell', powerShellWrapper],
+  ['cmd', cmdWrapper],
+  ['iex', invokeExpressionWrapper],
+  ['invoke-expression', invokeExpressionWrapper],
+  ['start-process', startProcessWrapper],
+  ['saps', startProcessWrapper],
+  ['start', startProcessWrapper],
+]);
+
 // A token that is no wrapper is the command itself.
 const wrapperStep = (tokens: string[], index: number, token: string, depth: number, opaque: boolean): Step => {
-  const name = commandName(token);
+  const wrapper = WRAPPERS.get(commandName(token));
 
-  if (name === 'env') {
-    return envWrapper(tokens, index + 1);
-  }
-
-  if (name === 'command') {
-    return commandWrapper(tokens, index + 1);
-  }
-
-  if (name === 'exec') {
-    return optionWrapper(tokens, index + 1, EXEC_VALUED);
-  }
-
-  if (name === 'nohup') {
-    return next(tokens[index + 1] === '--' ? index + 2 : index + 1);
-  }
-
-  if (name === 'sudo') {
-    return optionWrapper(tokens, index + 1, SUDO_VALUED);
-  }
-
-  if (name === 'time') {
-    return optionWrapper(tokens, index + 1, TIME_VALUED);
-  }
-
-  if (SHELLS.has(name)) {
-    return shellWrapper(tokens, index + 1, depth);
-  }
-
-  if (name === 'pwsh' || name === 'powershell') {
-    return powerShellWrapper(tokens, index + 1, depth);
-  }
-
-  if (name === 'cmd') {
-    return cmdWrapper(tokens, index + 1, depth);
-  }
-
-  if (name === 'iex' || name === 'invoke-expression') {
-    const start = tokens[index + 1]?.toLowerCase() === '-command' ? index + 2 : index + 1;
-    const command = tokens
-      .slice(start)
-      .join(' ');
-    return nested(command, 'powershell', depth);
-  }
-
-  if (name === 'start-process' || name === 'saps' || name === 'start') {
-    return startProcessWrapper(tokens, index + 1);
+  if (wrapper !== undefined) {
+    return wrapper(tokens, index + 1, depth);
   }
 
   const command: Step = {
