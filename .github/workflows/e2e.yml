@@ -52,7 +52,7 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      # Node 26 no longer bundles corepack. Installed ahead of time, so no case ever waits on a download.
+      # Node 26 bundles no corepack. Installed ahead of time, so no case ever waits on a download.
       - if: matrix.pm == 'yarn'
         run: npm i -g corepack && corepack enable yarn && corepack install -g yarn@4.18.0
 
