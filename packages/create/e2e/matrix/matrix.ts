@@ -95,6 +95,12 @@ const offered = <V extends string>(
   target: TargetRecord,
   answered: Answers,
 ): (V | undefined)[] => {
+  if (record.slot?.(target) === false) {
+    const unasked = [undefined];
+
+    return unasked;
+  }
+
   const choices = [undefined, ...values
     .filter((value) => {
       const only = onlyFor(record, value);
@@ -279,9 +285,11 @@ export const everyCase = (target: TargetId): E2eCase[] => {
     return withMocking;
   });
 
-  // Every target asks. The full set holds both zh tags, so only an exact-tag match resolves zh-TW.
-  const languages = across(mockings, () => {
-    const choices = [undefined, LANGUAGES];
+  // The full set holds both zh tags, so only an exact-tag match resolves zh-TW.
+  const languages = across(mockings, (variant) => {
+    const record = recordOf(variant);
+    const asks = ANSWERS.languages.slot(record);
+    const choices = asks ? [undefined, LANGUAGES] : [undefined];
 
     return choices;
   }, (variant, chosen) => {

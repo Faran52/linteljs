@@ -62,7 +62,6 @@ export const mergeStyleEntry = (
 // From the entry: a scoped framework's colocated stylesheet only reaches its element when imported globally.
 export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
   const target = targetFor(answers);
-  const entry = projectSpelling(target.styleEntry, project.styleEntries);
   const tailwind = answers.styling === 'tailwind';
   const stylex = answers.styling === 'stylex';
   const imports = [
@@ -85,10 +84,11 @@ export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Arti
     ...(tailwind && target.tailwindTheme !== undefined ? [`@import "${target.tailwindTheme}";`] : []),
   ];
 
-  if (imports.length === 0) {
+  if (imports.length === 0 || target.styleEntry === undefined) {
     return [];
   }
 
+  const entry = projectSpelling(target.styleEntry, project.styleEntries);
   const suffix = stylex && target.stylexAtRule === true ? STYLEX_AT_RULE : undefined;
 
   const artifacts = [merged('standard', entry, (current) => {

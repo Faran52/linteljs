@@ -21,11 +21,11 @@ break. Reaching for `components/ui` in a package of emitters is how a layout sto
 
 ```
 src/
-  index.ts        the entry point, and a barrel: no implementation
-  <ring>/         one directory per layer, named for what the layer is
-    <subject>/    one directory per subject, named for the subject
-      <name>.ts   named for its single main export
-      <name>.test.ts
+  index.ts                 the entry point, and a barrel: no implementation
+  <ring>/                  one directory per layer, named for what the layer is
+    <subject>/             one directory per subject, named for the subject
+      <subject><Ring>.ts   the entry, as in model/greeting/greetingModel.ts
+      <subject><Ring>.test.ts
 ```
 
 A ring is a layer of the dependency direction below. Most libraries need two or three. Name them for
@@ -36,9 +36,12 @@ what they hold, never for a mechanism: `model` and `render` rather than `core` a
 - **One folder per thing.** A folder exists when it holds more than one file about one subject, and
   it is named for the subject rather than the mechanism. A subject directory with one file in it is
   still correct if a test sits beside it.
-- **A file with one export is named for that export.** A file that is a cohesive module is named for
-  its topic. `helpers.ts`, `utils.ts`, `assets.ts` and `index.ts` holding an implementation all fail
-  this: a plural noun or a bare verb promises data or an action the file does not contain.
+- **A subject's entry is named for the subject plus its kind.** The subject in camelCase, then the
+  singular of what names its kind: the ring where it has one kind, and nothing where a ring has no one
+  kind. The suffix is on the file, not the export: `model/greeting/greetingModel.ts` exports
+  `greeting`. Any other file is named for its topic. `helpers.ts`, `utils.ts`, `assets.ts` and
+  `index.ts` holding an implementation all fail this: a plural noun or a bare verb promises data or an
+  action the file does not contain.
 - **`index.ts` is a barrel and nothing else.** It re-exports. The moment it holds a function, the
   package has two names for the same thing and neither is searchable.
 - **A helper used by one subject lives in that subject's own `utils/`.** It moves up to a shared

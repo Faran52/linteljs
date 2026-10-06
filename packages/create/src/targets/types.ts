@@ -135,7 +135,8 @@ export interface TargetRecord {
   // A file type, so it stacks with a hosted framework.
   astro?: true;
   sfcExtension?: 'vue' | 'svelte';
-  styleEntry: string;
+  // Absent on a library, which renders nothing.
+  styleEntry?: string;
   // The first is what a v1 config's yes migrates to.
   stores?: readonly Store[];
   // Absent, the question is not asked.
@@ -188,6 +189,8 @@ export interface TargetRecord {
   publicDirectory?: string;
   reactRouterProject?: true;
   angularProject?: true;
+  // A published package: no styling, form, data or mocking is asked, and its tests run without a DOM.
+  libraryProject?: true;
   build: string;
   // SvelteKit's `svelte-kit sync` generates the kit's types.
   prepare?: string;

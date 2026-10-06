@@ -57,10 +57,10 @@ describe('the entry path', () => {
 
   it('can discover every default a target declares', () => {
     const declared = keysOf(ANSWERS.target.values)
-      .map((target) => {
+      .flatMap((target) => {
         const { styleEntry } = targetFor(answersFor({ target }));
 
-        return styleEntry;
+        return styleEntry ?? [];
       });
 
     expect(declared.length).toBeGreaterThan(0);
@@ -70,6 +70,15 @@ describe('the entry path', () => {
   it("takes the target's own entry over another the project also has", () => {
     const entryPath = entryPathOf('webextension', ['src/styles/global.css', 'src/style.css']);
     expect(entryPath).toBe('src/style.css');
+  });
+
+  it('writes no entry for a target with no stylesheet', () => {
+    const artifacts = styleEntryEmitter(answersFor({
+      target: 'typescript',
+      styling: 'tailwind',
+    }), EMPTY_PROJECT);
+
+    expect(artifacts).toEqual([]);
   });
 
   it('takes the discovered one when the target default is absent', () => {

@@ -4,7 +4,11 @@ import {
   type ProjectShape,
 } from '@config/types';
 
-import { type PluginSpec, targetFor } from '@targets';
+import {
+  type PluginSpec,
+  targetFor,
+  type TargetRecord,
+} from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
@@ -54,14 +58,18 @@ const testBlock = (
   exclude: string[],
   setup: string,
   indent: string,
-  pool?: string,
+  target: TargetRecord,
 ): string => {
+  const { testPool: pool } = target;
+  const dom = target.libraryProject !== true;
+  const poolLine = pool === undefined ? '' : `${indent}  pool: '${pool}',\n`;
+  const execArgvLine = dom ? `${indent}  execArgv: ['--no-experimental-webstorage'],\n` : '';
+
   return `${indent}test: {
 ${indent}  globals: true,
-${indent}  environment: 'happy-dom',
-${pool === undefined ? '' : `${indent}  pool: '${pool}',\n`}${indent}  setupFiles: ['./${setup}'],
-${indent}  execArgv: ['--no-experimental-webstorage'],
-${coverageBlock(include, exclude, `${indent}  `)}
+${indent}  environment: '${dom ? 'happy-dom' : 'node'}',
+${poolLine}${indent}  setupFiles: ['./${setup}'],
+${execArgvLine}${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
 
@@ -111,12 +119,12 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   const exclude = coverageExclude(answers);
 
   if (target.vitePlugin !== undefined) {
-    const nestedBlock = testBlock(include, exclude, setup, '    ', target.testPool);
+    const nestedBlock = testBlock(include, exclude, setup, '    ', target);
 
     return mergedConfig(nestedBlock, target.testConditions);
   }
 
-  const block = testBlock(include, exclude, setup, '  ', target.testPool);
+  const block = testBlock(include, exclude, setup, '  ', target);
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
   if (target.vitestFactory !== undefined) {

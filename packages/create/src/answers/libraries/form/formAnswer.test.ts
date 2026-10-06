@@ -5,6 +5,22 @@ import { DEFAULT_ANSWERS } from '../../registry';
 import { formAnswer } from './formAnswer';
 
 describe('formAnswer', () => {
+  it('takes a slot on an app and not on a library', () => {
+    const app = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    });
+    const library = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'typescript',
+    });
+
+    const onApp = formAnswer.slot(app);
+    expect(onApp).toBe(true);
+    const onLibrary = formAnswer.slot(library);
+    expect(onLibrary).toBe(false);
+  });
+
   it('is keyed form', () => {
     expect(formAnswer.key).toBe('form');
   });

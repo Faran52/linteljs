@@ -6,6 +6,9 @@ export const dataAnswer = {
   key: 'data',
   flag: 'data',
   prompt: 'Data fetching',
+  slot: (target) => {
+    return target.libraryProject !== true;
+  },
   kind: 'optionalChoice',
   none: {
     label: 'None',

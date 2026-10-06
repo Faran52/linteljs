@@ -38,6 +38,7 @@ import { manifestEmitter } from './target/manifest/manifestEmitter';
 import { nuxtConfigEmitter } from './target/nuxt-config/nuxtConfigEmitter';
 import { reactRouterConfigEmitter } from './target/react-router-config/reactRouterConfigEmitter';
 import { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
+import { tsdownConfigEmitter } from './target/tsdown-config/tsdownConfigEmitter';
 import { viteConfigEmitter } from './target/vite-config/viteConfigEmitter';
 import { jestConfigEmitter } from './testing/jest-config/jestConfigEmitter';
 import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
@@ -86,6 +87,7 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'target/expo-config': expoConfigEmitter,
   'target/html-entry': htmlEntryEmitter,
   'target/manifest': manifestEmitter,
+  'target/tsdown-config': tsdownConfigEmitter,
   'libraries/i18n-config': i18nConfigEmitter,
   'target/starter-source': starterSourceEmitter,
 };

@@ -206,13 +206,17 @@ describe('targetCases', () => {
     expect(angularTanstackFormZod).toBe(true);
   });
 
-  it('offers no languages or every one on every target', () => {
+  it('offers no languages or every one on every target that asks', () => {
     for (const target of TARGET_IDS) {
       const chosen = everyCase(target)
         .map(({ answers }) => {
           return answers.languages?.join(',') ?? 'none';
         });
-      const offered = ['none', keysOf(ANSWERS.languages.values).join(',')];
+      const asks = ANSWERS.languages.slot(targetFor({
+        ...DEFAULT_ANSWERS,
+        target,
+      }));
+      const offered = asks ? ['none', keysOf(ANSWERS.languages.values).join(',')] : ['none'];
 
       const actual = [target, [...new Set(chosen)]];
       const expected = [target, offered];

@@ -337,6 +337,15 @@ describe('emitEslintConfig', () => {
     expect(config).not.toContain('tailwindEntryPoint');
   });
 
+  it('names no tailwind entry point for a target with no stylesheet', () => {
+    const config = emitEslintConfig(answersFor({
+      target: 'typescript',
+      styling: 'tailwind',
+    }));
+
+    expect(config).not.toContain('tailwindEntryPoint');
+  });
+
   it('omits the html layer where there is no markup for it to lint', () => {
     const angularConfig = emitEslintConfig(answersFor({ target: 'angular' }));
     expect(angularConfig).not.toContain('html');

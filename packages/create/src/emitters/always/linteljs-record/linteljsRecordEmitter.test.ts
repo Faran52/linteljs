@@ -184,4 +184,10 @@ describe('linteljsRecordEmitter', () => {
     }];
     expect(artifacts).toEqual(expected);
   });
+
+  it('writes nothing for a library, which has no starter page to read it', () => {
+    const artifacts = linteljsRecordEmitter(hostedAnswersFor({ target: 'typescript' }), EMPTY_PROJECT, 'my-lib');
+
+    expect(artifacts).toEqual([]);
+  });
 });

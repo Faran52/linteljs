@@ -4,6 +4,7 @@ import { type Emitter, type HostedAnswers } from '@config/types';
 import { unscopedName } from '@utils/nameUtils';
 
 import { ANSWERS } from '@answers';
+import { targetFor } from '@targets';
 
 import { VERSIONS } from '../../constants';
 import { emitted } from '../../utils/artifactUtils';
@@ -56,6 +57,10 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
 const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
+  if (targetFor(answers).libraryProject === true) {
+    return [];
+  }
+
   const record = emitLinteljsRecord(answers, unscopedName(name));
   const artifacts = [emitted('standard', RECORD_MODULE, record)];
 

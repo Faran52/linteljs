@@ -77,6 +77,13 @@ describe('referenceArtifacts', () => {
     expect(sources).toEqual(expected);
   });
 
+  it('gives a library the library structure alone', () => {
+    const artifact = find({ target: 'typescript' }, reference('repo-structure.md'));
+
+    const sources = sourcesOf(artifact);
+    expect(sources).toEqual(['fragments/claude-rules/repo-structure.library.md']);
+  });
+
   it('removes Claude path frontmatter from every emitted reference', async () => {
     const artifacts = referenceArtifacts({
       ...DEFAULT_ANSWERS,

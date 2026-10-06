@@ -69,11 +69,11 @@ describe('projectShapeReader', () => {
 
 const targetDefaults = (): string[] => {
   return TARGET_IDS
-    .map((target) => {
+    .flatMap((target) => {
       return TARGETS[target]({
         ...DEFAULT_ANSWERS,
         target,
-      }).styleEntry;
+      }).styleEntry ?? [];
     });
 };
 

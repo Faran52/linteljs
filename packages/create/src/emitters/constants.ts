@@ -158,6 +158,7 @@ export const VERSIONS: Record<string, string> = {
   'tailwindcss': '^4.3.3',
   // Tilde: 1.3.0 peers `react ^19.3.0` and Expo pins 19.2.3, so unnamed, npm installs 1.3.0 and `npm ls` fails.
   'test-renderer': '~1.2.0',
+  'tsdown': '^0.23.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
   // Answers requests, never ships in a build. Held at 2: `@vitest/mocker` peers `msw: ^2.4.9`
@@ -233,10 +234,10 @@ export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
     devDependencies: [
       '@vitest/coverage-v8',
       '@vitest/eslint-plugin',
-      'happy-dom',
       'vitest',
     ],
     yarnPeers: ['vite'],
+    domDevDependencies: ['happy-dom'],
     test: 'vitest run --passWithNoTests',
     coverage: 'vitest run --coverage',
     types: 'vitest/globals',
@@ -249,6 +250,7 @@ export const TEST_RUNNERS: Record<TestRunner, TestRunnerParts> = {
       'jest',
     ],
     yarnPeers: [],
+    domDevDependencies: [],
     test: 'jest --passWithNoTests',
     coverage: 'jest --coverage',
     types: 'jest',

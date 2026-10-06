@@ -22,7 +22,7 @@ describe('languagesAnswer', () => {
     expect(actual).toEqual(LANGUAGES);
   });
 
-  it('takes a slot on every target, and on an extension only where a popup has text to translate', () => {
+  it('takes a slot on every app target, and on an extension only where a popup has text to translate', () => {
     const slotted = TARGETS
       .filter((target) => {
         const record = targetFor({
@@ -37,7 +37,11 @@ describe('languagesAnswer', () => {
       surfaces: ['background'],
     });
 
-    expect(slotted).toEqual(TARGETS);
+    expect(slotted).toEqual(TARGETS
+      .filter((target) => {
+        return target !== 'typescript';
+      }));
+
     const actual = languagesAnswer.slot(background);
     expect(actual).toBe(false);
   });

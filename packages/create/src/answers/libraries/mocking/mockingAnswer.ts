@@ -5,6 +5,9 @@ export const mockingAnswer = {
   key: 'mocking',
   flag: 'mocking',
   prompt: 'API mocking',
+  slot: (target) => {
+    return target.libraryProject !== true;
+  },
   kind: 'optionalChoice',
   none: {
     label: 'None',

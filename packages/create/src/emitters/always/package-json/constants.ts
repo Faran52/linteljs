@@ -1,3 +1,5 @@
+import { type PackageJson } from '../../utils/packageJsonUtils';
+
 // Superseded by @linteljs/eslint-config.
 export const SUPERSEDED = [
   'prettier',
@@ -12,3 +14,15 @@ export const SUPERSEDED = [
   'vite-plugin-vue-devtools',
   'jsdom',
 ];
+
+export const LIBRARY_FIELDS = {
+  types: './dist/index.d.ts',
+  exports: {
+    '.': {
+      types: './dist/index.d.ts',
+      default: './dist/index.js',
+    },
+    './package.json': './package.json',
+  },
+  files: ['dist'],
+} as const satisfies PackageJson;

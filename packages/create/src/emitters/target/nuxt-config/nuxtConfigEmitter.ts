@@ -72,7 +72,7 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     '    },',
     '  },',
     ...(answers.styling === 'stylex' ? STYLEX_DEV_HEAD : []),
-    `  css: ['~/${styleEntry.replace('src/', '')}'],`,
+    ...(styleEntry === undefined ? [] : [`  css: ['~/${styleEntry.replace('src/', '')}'],`]),
     '  // Merged into the paths Nuxt generates, which is what keeps its own `#` aliases resolving alongside these.',
     '  alias: {',
     // An exact key writes the same two lines as the `/*` key beside it.

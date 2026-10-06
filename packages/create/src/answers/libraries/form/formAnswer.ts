@@ -7,6 +7,9 @@ export const formAnswer = {
   key: 'form',
   flag: 'form',
   prompt: 'Form library',
+  slot: (target) => {
+    return target.libraryProject !== true;
+  },
   kind: 'optionalChoice',
   none: {
     label: 'None',

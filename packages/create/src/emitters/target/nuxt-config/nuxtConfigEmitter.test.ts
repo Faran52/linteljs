@@ -171,6 +171,12 @@ describe('nuxtConfigEmitter', () => {
     expect(nuxtConfig).toBe(PLAIN);
   });
 
+  it('lists no stylesheet for a target with none', () => {
+    const config = emitNuxtConfig(answersFor({ target: 'typescript' }), 'demo-app');
+
+    expect(config).not.toContain('css:');
+  });
+
   it('escapes a trailing backslash in an alias path so the config still parses', () => {
     const config = emitNuxtConfig(answersFor({ aliases: { '@odd/*': './a\\/*' } }), 'demo-app');
 

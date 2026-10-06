@@ -113,7 +113,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
   }
 
   // Without the entry point `better-tailwindcss` warns once per class string: 63 on one real project.
-  if (answers.styling === 'tailwind') {
+  if (answers.styling === 'tailwind' && target.styleEntry !== undefined) {
     rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
   }
 

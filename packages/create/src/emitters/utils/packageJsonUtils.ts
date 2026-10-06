@@ -53,6 +53,9 @@ export interface PackageJson {
   version?: string;
   private?: boolean;
   main?: string;
+  types?: string;
+  exports?: Record<string, string | Record<string, string>>;
+  files?: string[];
   imports?: Record<string, string>;
   type?: string;
   packageManager?: string;
@@ -133,8 +136,8 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
   };
 
   const dependencies: string[] = [
-    // `http.ts` ships on every project and `qs` is what it builds a querystring with.
-    'qs',
+    // `qs` builds the querystring in `http.ts`, which every app ships.
+    ...(target.libraryProject === true ? [] : ['qs']),
     ...answers.libraries
       .flatMap((library) => {
         return runtime[library];
@@ -296,6 +299,9 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
   const runner = testRunnerOf(answers);
+  const domDevDependencies = runner === undefined || target.libraryProject === true
+    ? []
+    : TEST_RUNNERS[runner].domDevDependencies;
 
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
@@ -316,6 +322,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
+    ...domDevDependencies,
     ...(runner === undefined
       ? []
       : [
@@ -329,7 +336,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.mocking === 'msw' ? ['msw'] : []),
     ...(localesOf(answers).length === 0 ? [] : target.i18n?.compiler?.devDependencies ?? []),
     // `qs` ships no types of its own.
-    '@types/qs',
+    ...(target.libraryProject === true ? [] : ['@types/qs']),
   ], target.versions);
 };
 

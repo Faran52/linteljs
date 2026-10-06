@@ -9,7 +9,8 @@ export type TargetId
     | 'angular'
     | 'astro'
     | 'webextension'
-    | 'react-native';
+    | 'react-native'
+    | 'typescript';
 
 export type Browser = 'chrome' | 'firefox';
 
@@ -26,6 +27,8 @@ export interface TestRunnerParts {
   devDependencies: string[];
   // Yarn installs no peers.
   yarnPeers: string[];
+  // Left out of a library, whose suites run in node.
+  domDevDependencies: string[];
   test: string;
   coverage: string;
   // The tsconfig `types` entry that declares the globals.

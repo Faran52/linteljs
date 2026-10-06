@@ -12,6 +12,7 @@ export const STARTER_CASES: readonly string[] = [
   'nuxt pnpm vitest tanstack-form stylex tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
   'angular pnpm vitest tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
   'react-native pnpm vitest tailwind tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'typescript pnpm vitest zod+es-toolkit+ts-pattern+t3-env',
   'react pnpm vitest react-hook-form redux-toolkit rtk-query es-toolkit+ts-pattern+t3-env',
   'next pnpm vitest react-hook-form redux-toolkit tailwind rtk-query es-toolkit+ts-pattern+t3-env',
   'astro pnpm vitest host-none tanstack-form stylex msw languages zod+es-toolkit+ts-pattern+t3-env',

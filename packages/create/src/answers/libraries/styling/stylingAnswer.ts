@@ -5,6 +5,9 @@ export const stylingAnswer = {
   key: 'styling',
   flag: 'styling',
   prompt: 'Styling',
+  slot: (target) => {
+    return target.libraryProject !== true;
+  },
   kind: 'optionalChoice',
   none: {
     label: 'None',

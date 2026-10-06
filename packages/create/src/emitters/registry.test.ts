@@ -250,14 +250,18 @@ describe('the project the answers write', () => {
   const projectsFor = (target: TargetId): Project[] => {
     return targetCases(target)
       .flatMap(({ answers: chosen }) => {
-        const variants: Answers[] = [
-          chosen,
-          {
+        const variants: Answers[] = [chosen];
+
+        const record = targetFor(chosen);
+        const mocks = ANSWERS.mocking.slot(record);
+
+        if (mocks) {
+          variants.push({
             ...chosen,
             mocking: 'msw',
             libraries: [],
-          },
-        ];
+          });
+        }
 
         if (targetFor(chosen).i18n !== undefined) {
           variants.push({
@@ -435,7 +439,7 @@ describe('the project the answers write', () => {
     const missing = new Set<string>();
 
     for (const project of projectsFor(target)) {
-      const { styleEntry } = targetFor(project.answers);
+      const { styleEntry = '' } = targetFor(project.answers);
       const declared = await declaredIn(project);
 
       const styleText = await project.textOf(styleEntry);

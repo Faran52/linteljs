@@ -63,7 +63,9 @@ const assetPathsOf = (target: TargetRecord): string[] => {
     });
   const paths = [
     ...ruleAssets,
-    `fragments/claude-rules/repo-structure.${target.id}.md`,
+    target.libraryProject === true
+      ? 'fragments/claude-rules/repo-structure.library.md'
+      : `fragments/claude-rules/repo-structure.${target.id}.md`,
     `fragments/claude-rules/testing.${target.id}.md`,
   ];
 

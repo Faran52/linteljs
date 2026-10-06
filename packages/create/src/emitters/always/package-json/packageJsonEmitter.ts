@@ -1,4 +1,4 @@
-import { omit } from 'es-toolkit';
+import { omit, pick } from 'es-toolkit';
 
 import {
   MANAGER_FLOORS,
@@ -24,7 +24,7 @@ import {
 } from '../../utils/packageJsonUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
-import { SUPERSEDED } from './constants';
+import { LIBRARY_FIELDS, SUPERSEDED } from './constants';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
@@ -61,6 +61,17 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     private: true,
     ...(target.packageMain === undefined ? {} : { main: target.packageMain }),
     ...(target.packageImports === undefined ? {} : { imports: target.packageImports }),
+    // A project's own subpaths survive.
+    ...(target.libraryProject === true
+      ? {
+          ...LIBRARY_FIELDS,
+          ...pick(existing, [
+            'types',
+            'exports',
+            'files',
+          ]),
+        }
+      : {}),
     // A browser worker is a file the page fetches, so it sits where the dev server serves.
     ...(answers.mocking === 'msw' && target.publicDirectory !== undefined
       ? { msw: { workerDirectory: [target.publicDirectory] } }
@@ -84,8 +95,8 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ...existing.scripts,
       ...buildScripts(answers),
     },
-    // Never empty: `qs` is read by `http.ts`, which every project receives.
-    dependencies,
+    // Empty only on a library, which ships no `http.ts`.
+    ...(Object.keys(dependencies).length === 0 ? {} : { dependencies }),
     devDependencies,
     ...(Object.keys(overrides).length === 0 || pm === 'pnpm'
       ? {}

@@ -9,6 +9,22 @@ import { stylingAnswer } from './stylingAnswer';
 const TARGETS = keysOf(ANSWERS.target.values);
 
 describe('stylingAnswer', () => {
+  it('takes a slot on an app and not on a library', () => {
+    const app = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    });
+    const library = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'typescript',
+    });
+
+    const onApp = stylingAnswer.slot(app);
+    expect(onApp).toBe(true);
+    const onLibrary = stylingAnswer.slot(library);
+    expect(onLibrary).toBe(false);
+  });
+
   it('is keyed styling', () => {
     expect(stylingAnswer.key).toBe('styling');
   });

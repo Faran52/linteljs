@@ -6,6 +6,7 @@ import { reactTarget } from './react/reactTarget';
 import { reactNativeTarget } from './react-native/reactNativeTarget';
 import { solidTarget } from './solid/solidTarget';
 import { svelteTarget } from './svelte/svelteTarget';
+import { typescriptTarget } from './typescript/typescriptTarget';
 import { vueTarget } from './vue/vueTarget';
 import { webextensionTarget } from './webextension/webextensionTarget';
 
@@ -26,6 +27,7 @@ export const TARGETS: Record<TargetId, TargetBuilder> = {
   'astro': astroTarget,
   'webextension': webextensionTarget,
   'react-native': reactNativeTarget,
+  'typescript': typescriptTarget,
 };
 
 export const targetFor = (answers: Answers): TargetRecord => {
