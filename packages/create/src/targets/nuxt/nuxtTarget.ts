@@ -236,7 +236,6 @@ export const nuxtTarget: TargetBuilder = () => {
         covers: 'src/pages/version.vue',
       },
     ],
-    // `nuxt prepare` writes `.nuxt/`, so nothing typechecks before it: it is the postinstall.
     build: 'nuxt build',
     extraScripts: {
       dev: 'nuxt dev',
@@ -244,6 +243,7 @@ export const nuxtTarget: TargetBuilder = () => {
       generate: 'nuxt generate',
     },
     typecheck: 'nuxt typecheck',
+    // `nuxt prepare` writes `.nuxt/`, so nothing typechecks before it: it is the postinstall.
     prepare: 'nuxt prepare',
     testDevDependencies: PARTS.vue.testDevDependencies,
     dependencies: [
