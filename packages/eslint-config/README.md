@@ -7,14 +7,14 @@ Composable ESLint flat-config layers for TypeScript projects. Use `composeConfig
 layer order without hand-writing the stack.
 
 ```bash
-npm install --save-dev @linteljs/eslint-config eslint typescript
+npm install --save-dev @linteljs/eslint-config eslint typescript jiti
 ```
 
 It needs Node 18.18 or later, ESLint 9 or later, and TypeScript 5.0 up to 6.0, the range the bundled
-typescript-eslint supports.
+typescript-eslint supports. ESLint loads a TypeScript config through jiti.
 
-```js
-// eslint.config.js
+```ts
+// eslint.config.ts
 import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
 const config = await composeConfig({

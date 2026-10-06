@@ -606,7 +606,7 @@ describe('main: sync', () => {
 
     expect(code).toBe(0);
     expect(asked.calls).toEqual([]);
-    expect(printed).toMatch(/^@linteljs\/eslint-config peers missing or behind:\n {2}eslint {2}none -> /u);
+    expect(printed).toMatch(/^Lint dependencies missing or behind:\n {2}eslint {2}none -> /u);
     expect(printed).toContain('wrote package.json. Install them:\n  pnpm install\n');
     const entries = await devDependencies();
     expect(entries).toHaveProperty('eslint');

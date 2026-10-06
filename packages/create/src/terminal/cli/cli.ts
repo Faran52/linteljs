@@ -306,7 +306,7 @@ const runSync = async (
   };
   const peerStep: DependencyStep = {
     changes: peers,
-    heading: '@linteljs/eslint-config peers missing or behind:',
+    heading: 'Lint dependencies missing or behind:',
     question: 'Add or update them in package.json?',
     done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
   };

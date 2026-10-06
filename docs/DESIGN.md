@@ -1344,8 +1344,8 @@ The runner-switch refusal runs first (see the Jest section). Then:
 - **`plugins/linteljs/` is written without asking.** The folder is linteljs's whole, the one tree no project edits.
 - **The `@linteljs/*` versions behind** are shown as a table, then a y/N. Only those entries of `package.json`
   move; a range that is not a version, such as `workspace:*`, never does.
-- **The `@linteljs/eslint-config` peers missing or behind** get their own y/N, after which the `<pm> install` to
-  run is printed. Every other dependency, the framework included, stays the project's.
+- **The lint dependencies missing or behind**, the `@linteljs/eslint-config` peers and jiti, get their own y/N,
+  after which the `<pm> install` to run is printed. Every other dependency, the framework included, stays the project's.
 - **The ESLint config** is written without asking when none exists. One that differs gets a y/N, which moves the
   first spelling ESLint would load to the first free `.bak`, `.bak.1` and so on, then writes `eslint.config.ts`.
   A moved file is never lost, so the project can diff the two and carry its additions over.

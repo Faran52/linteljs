@@ -137,7 +137,7 @@ describe('planSync', () => {
     expect(plan).toEqual(expected);
   });
 
-  it('lists an old @linteljs/* version, and the eslint-config peers missing or behind, and nothing else', async () => {
+  it('lists an old @linteljs/* version, and the lint dependencies missing or behind, and nothing else', async () => {
     await plantPackageJson({
       '@linteljs/eslint-config': '^1.5.0',
       'eslint': '^1.0.0',

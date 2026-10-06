@@ -14,7 +14,7 @@ export const emitAgentAdapter = (answers: Answers): string => {
 - Run it alone or redirected out of the work tree (\`${run} check > /tmp/check.log 2>&1\`), never piped or chained.
   Leading \`NAME=value\` assignments are fine.
 - In Claude Code a commit waits until that run has passed on the work tree it would commit.
-- Ask before adding or removing a dependency, and never edit a file whose first line marks it generated.
+- Never edit a file whose first line marks it generated.
 - Run \`${run} lint:fix\`, not lint without fixes.
 - Comments are minimal: a short why, or none. Never restate the code; no comments in tests.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.

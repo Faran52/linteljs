@@ -24,8 +24,8 @@ Without a terminal, create needs --yes or an answer flag; a name alone exits 1.
 With no name it takes the directory's.
 
 sync rewrites plugins/linteljs/ without asking. It then asks before each of:
-the @linteljs/* versions in package.json, the peers @linteljs/eslint-config
-lacks or has behind, and an eslint config that differs (backing it up first).
+the @linteljs/* versions in package.json, the lint dependencies missing or
+behind, and an eslint config that differs (backing it up first).
 A missing eslint config is written. Without a terminal a step needs --yes.
 Run it through the project's manager, which npx is only in an npm project:
 pnpm dlx, npx, yarn dlx or bunx @linteljs/create sync.

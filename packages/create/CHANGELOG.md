@@ -131,7 +131,7 @@ when a version's change lives in a sibling it is described there instead:
   directory. A commit is judged on the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit`
   read that checkout's run. A file whose first line marks it generated (`@generated`, `do not edit` and the like)
   cannot be edited, in Claude Code, Codex and Copilot. The emitted agent instructions tell
-  an agent how to run `check` so it counts, to ask before a dependency changes, and to leave a generated file alone.
+  an agent how to run `check` so it counts and to leave a generated file alone.
 - In Claude Code a band above the prompt shows the commit gate's state for the work tree (passed, failed,
   running, stale or not run), read at session start and after each main-session turn. It is a function-hooks module,
   `hooks/checkBand.tsx`, that `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
