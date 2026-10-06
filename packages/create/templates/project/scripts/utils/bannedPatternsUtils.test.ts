@@ -20,7 +20,6 @@ import {
   type BannedScan,
   BASE_SKIPPED,
   checkBanned,
-  directive,
   FLOORS,
 } from './bannedPatternsUtils.ts';
 
@@ -131,6 +130,12 @@ describe('each pattern, reported under its own name', () => {
     ['<unknown>', 'const cache = new Set<unknown>();'],
     ['@ts-ignore', '// @ts-ignore'],
     ['@ts-expect-error', '// @ts-expect-error wrong on purpose'],
+    ['coverage ignore', '/* v8 ignore next 3 */'],
+    ['coverage ignore', '// v8 ignore next'],
+    ['coverage ignore', '/* c8 ignore start */'],
+    ['coverage ignore', '// c8 ignore next'],
+    ['coverage ignore', '/* istanbul ignore else */'],
+    ['coverage ignore', '// istanbul  ignore next'],
     ['Record<string, unknown>', 'type Bag = Record<string,unknown>;'],
     ['Record<string, unknown>', 'type Bag = Record<string, unknown>;'],
     ['index signature', 'interface Bag { [key:string]: number }'],
@@ -162,6 +167,7 @@ describe('mentions rather than directives', () => {
   it.each([
     ['a line comment naming a disable', 'const value = 1; // an `eslint-disable-next-line` here would be wrong\n'],
     ['prose naming ts-ignore', 'const value = 1; // never reach for `@ts-ignore`\n'],
+    ['prose naming a coverage ignore', 'const value = 1; // a `v8 ignore` would hide the branch\n'],
     [
       'a banned pattern inside a multiline template',
       'const fixture = [\n  `function load(value: unknown) {`,\n  `  return value;`,\n].join("");\n',
@@ -342,17 +348,9 @@ describe('block comments', () => {
     expect(actual).toContain('2: const value = input as never;');
   });
 
-  it('reports a pattern the caller adds on a block directive', async () => {
-    const scan: BannedScan = {
-      ...STRICT,
-      patterns: [{
-        name: 'coverage ignore',
-        re: directive('v8 ignore'),
-        inComments: true,
-      }],
-    };
-    const actual = await checkFile('ignored.ts', '/* v8 ignore next */\nconst value = 1;\n', scan);
-    expect(actual).toContain('[coverage ignore]');
+  it('reports a coverage ignore on the first line of a block comment', async () => {
+    const actual = await check('/* v8 ignore next 3 -- unreachable\n * by type\n */\nconst value = 1;\n');
+    expect(actual).toContain('1: /* v8 ignore next 3 -- unreachable  [coverage ignore]');
   });
 });
 
@@ -364,6 +362,15 @@ describe('the floor and the skips', () => {
     };
     const actual = await checkFile('relaxed.ts', 'const value = input as never;\n', scan);
     expect(actual).toBe('');
+  });
+
+  it('bans a coverage ignore on the relaxed floor too', async () => {
+    const scan: BannedScan = {
+      ...STRICT,
+      patterns: FLOORS.relaxed,
+    };
+    const actual = await checkFile('relaxed.ts', '/* c8 ignore next */\nconst value = 1;\n', scan);
+    expect(actual).toContain('[coverage ignore]');
   });
 
   it('skips a path under scripts, given absolute or relative', async () => {

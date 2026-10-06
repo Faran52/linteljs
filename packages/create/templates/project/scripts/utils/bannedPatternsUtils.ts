@@ -51,6 +51,12 @@ const ALWAYS_BANNED: BannedPattern[] = [
     re: directive('eslint-disable'),
     inComments: true,
   },
+  {
+    // A branch a type demands and reality cannot reach is dead code: delete it rather than hide it.
+    name: 'coverage ignore',
+    re: directive(String.raw`(?:v8|c8|istanbul)\s+ignore`),
+    inComments: true,
+  },
 ];
 
 const STRICT_ONLY: BannedPattern[] = [

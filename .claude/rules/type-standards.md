@@ -39,8 +39,7 @@ Each implements somebody else's interface, where `unknown` is the upstream contr
 
 The shipped checker's own `BASE_SKIPPED` drops every file under a `scripts/`, which covers
 `create/templates/project/scripts/utils/bannedPatternsUtils.test.ts` and the banned directives it holds as
-fixtures. Package source is held to one pattern more than a generated project: `COVERAGE_IGNORE` bans every `v8`,
-`c8` and `istanbul` ignore under `packages/*/src`.
+fixtures. Both floors ban every `v8`, `c8` and `istanbul` ignore comment, here and in a generated project.
 
 A whole-file skip hides every future violation in that file, so do not add one where a predicate would do, and
 re-read the list when a listed file grows.

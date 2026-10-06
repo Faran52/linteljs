@@ -20,8 +20,8 @@ workspace differs.
   in a `beforeAll`. Stryker counts code that runs outside a test as static and runs every test for each such
   mutant. An `it.each` table holds data, not a call into `src`; a `src` module-level constant is data, not a call.
 - **Coverage is 100** on statements, branches, functions and lines in all three packages, set in the root
-  `vitest.config.ts`. Never lower a threshold. A branch a type demands and reality cannot reach is dead code:
-  delete it rather than cover it.
+  `vitest.config.ts`. Never lower a threshold, and never write a coverage ignore comment (`v8`, `c8` or
+  `istanbul`). A branch a type demands and reality cannot reach is dead code: delete it rather than cover it.
 
 ## Infrastructure
 

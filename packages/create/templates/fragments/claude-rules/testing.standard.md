@@ -22,6 +22,6 @@
   leave the mutation in the tree.
 - **Coverage: 100% line and branch** of the source you touched, reached with behaviour tests rather
   than contrived ones.
-- **A type-level guard that cannot fire at runtime** gets `// v8 ignore next N -- reason`, with the
-  reason stated. That is for a branch the compiler demands and reality cannot reach, such as a ref
-  that is always set before effects run. It is not a way to skip a branch you did not want to test.
+- **No coverage ignore comment** (`v8 ignore`, `c8 ignore`, `istanbul ignore`). A branch a type
+  demands and reality cannot reach is dead code: delete it, or reshape the code so the type no
+  longer demands it. The banned-pattern check rejects the comment.
