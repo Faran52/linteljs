@@ -99,6 +99,7 @@ const actionsWord = async ($: EngineInterface): Promise<string | undefined> => {
   return actions?.status.replaceAll('_', ' ');
 };
 
+// Green only when main's runs were read: Actions up says nothing about main.
 const colorOf = (words: string[], actions: string | undefined): CiBand['color'] => {
   if (words.some((word) => {
     return !word.endsWith(' passed') && !word.endsWith(' running');
@@ -106,7 +107,7 @@ const colorOf = (words: string[], actions: string | undefined): CiBand['color'] 
     return 'red';
   }
 
-  return actions === 'operational' && words.every((word) => {
+  return actions === 'operational' && words.length > 0 && words.every((word) => {
     return word.endsWith(' passed');
   })
     ? 'green'
@@ -141,13 +142,19 @@ export const registerCiBand = (on: On): void => {
     await refresh($);
 
     return next(e);
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('classic.Stop', async ($, e, next) => {
     await refresh($);
 
     return next(e);
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const band = await read($, ci);

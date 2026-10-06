@@ -12,6 +12,8 @@ export interface CommitMessage {
   file?: string;
 }
 
+const LIVE = new Set(['pending', 'running', 'waiting']);
+
 const READERS = new Set(['awk', 'bat', 'cat', 'head', 'less', 'more', 'sed', 'tail']);
 
 const UNREADABLE: [RegExp, string][] = [
@@ -207,4 +209,23 @@ export const commitMessage = (args: string[]): CommitMessage => {
   });
 
   return messages.length > 0 ? { text: messages.join('\n\n') } : { ...(file === undefined ? {} : { file }) };
+};
+
+// Worktrees no live agent of this session owns; the harness names each `agent-<id>`.
+export const leftoverNote = (names: string[], agents: { id: string; status: string }[]): string | undefined => {
+  const live = new Set(agents
+    .filter(({ status }) => {
+      return LIVE.has(status);
+    })
+    .map(({ id }) => {
+      return `agent-${id}`;
+    }));
+  const leftover = names.filter((name) => {
+    return !live.has(name);
+  });
+
+  return leftover.length === 0
+    ? undefined
+    : `linteljs: worktrees no running agent owns sit under .claude/worktrees: ${leftover.join(', ')}. `
+      + 'Merge or drop what each holds, then `git worktree remove` it.';
 };

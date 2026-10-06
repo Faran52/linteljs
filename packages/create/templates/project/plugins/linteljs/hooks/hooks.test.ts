@@ -113,6 +113,16 @@ it('points .codex-plugin/plugin.json at codexHooks.json', () => {
   expect(file).toContain('"hooks": "./hooks/codexHooks.json"');
 });
 
+// The repo's own mod carries the band and its suite as copies, since the engine loads nothing outside a plugin.
+it.each(['checkBand.tsx', 'checkBand.test.tsx'])('keeps .claude/skills/linteljs/hooks/%s byte-equal', (name) => {
+  const shipped = readFileSync(join(import.meta.dirname, name));
+  const copy = readFileSync(join(import.meta.dirname, '../../../../../../../.claude/skills/linteljs/hooks', name));
+
+  const isEqual = copy.equals(shipped);
+
+  expect(isEqual).toBe(true);
+});
+
 const CASES: [HookScript, object | string][] = [
   ['gitSafetyGuardHook.ts', commandPayload('git status')],
   ['gitSafetyGuardHook.ts', commandPayload('git add -A && git commit --amend')],

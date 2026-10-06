@@ -10,6 +10,7 @@ import {
   commitMessage,
   commitsIn,
   isTmpScript,
+  leftoverNote,
   POLL_REASON,
   pollReason,
   readReason,
@@ -17,8 +18,6 @@ import {
   shellReadReason,
 } from './utils/guardUtils.ts';
 import { shellCommands } from './utils/shellUtils.ts';
-
-const LIVE = new Set(['pending', 'running', 'waiting']);
 
 const run = async ($: EngineInterface, argv: string[], cwd: string, stdin?: string): Promise<string | undefined> => {
   const ran = await $.process.run(argv, { cwd, ...(stdin === undefined ? {} : { stdin }) })
@@ -113,23 +112,6 @@ const commitReason = async ($: EngineInterface, command: string): Promise<string
   return undefined;
 };
 
-// Worktrees no live agent of this session owns; the harness names each `agent-<id>`.
-const leftoverWorktrees = async ($: EngineInterface, root: string): Promise<string[]> => {
-  const agents = await $.agent.list();
-  const live = new Set(agents
-    .filter(({ status }) => {
-      return LIVE.has(status);
-    })
-    .map(({ id }) => {
-      return `agent-${id}`;
-    }));
-  const names = await namesIn($, `${root}/.claude/worktrees`);
-
-  return names.filter((name) => {
-    return !live.has(name);
-  });
-};
-
 // New worktrees start at origin's default branch, so a main ahead of it hands the agent an old tree.
 const baseNote = async ($: EngineInterface, root: string): Promise<string | undefined> => {
   const [head, origin] = (await run($, ['git', 'rev-parse', '--short', 'HEAD', 'refs/remotes/origin/HEAD'], root) ?? '')
@@ -147,11 +129,17 @@ export const registerGuards = (on: On): void => {
     const reason = readReason(e.file_path);
 
     return reason === undefined ? next(e) : { deny: reason };
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('tool.call', { tool: 'Monitor' }, async ($, e, next) => {
     return e.agentId === undefined ? next(e) : { deny: POLL_REASON };
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     const polls = e.agentId === undefined ? undefined : pollReason(e.command);
@@ -159,20 +147,29 @@ export const registerGuards = (on: On): void => {
     const reason = polls ?? reads ?? await commitReason($, e.command);
 
     return reason === undefined ? next(e) : { deny: reason };
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('tool.call', { tool: 'Edit' }, async ($, e, next) => {
     const reason = bansReason(e.file_path, addedBans(e.file_path, e.old_string, e.new_string));
 
     return reason === undefined ? next(e) : { deny: reason };
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('tool.call', { tool: 'Write' }, async ($, e, next) => {
     const before = await textOf($, e.file_path);
     const reason = bansReason(e.file_path, addedBans(e.file_path, before, e.content));
 
     return reason === undefined ? next(e) : { deny: reason };
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 
   on('tool.call', { tool: 'Agent' }, async ($, e, next) => {
     if (e.agentId !== undefined || e.isolation !== 'worktree') {
@@ -180,22 +177,20 @@ export const registerGuards = (on: On): void => {
     }
 
     const root = await $.session.root();
-    const leftover = await leftoverWorktrees($, root);
+    const leftover = leftoverNote(await namesIn($, `${root}/.claude/worktrees`), await $.agent.list());
     const note = await baseNote($, root);
 
-    if (leftover.length > 0) {
-      await $.session.append({
-        message: {
-          type: 'user',
-          content: [{
-            type: 'text',
-            text: `linteljs: worktrees no running agent owns sit under .claude/worktrees: ${leftover.join(', ')}. `
-              + 'Merge or drop what each holds, then `git worktree remove` it.',
-          }],
-        },
-      });
+    if (leftover !== undefined) {
+      await $.session.append({ message: { type: 'user', content: [{ type: 'text', text: leftover }] } })
+        // A warning only: a refused note leaves the spawn and its base note standing.
+        .catch(() => {
+          return undefined;
+        });
     }
 
     return next(note === undefined ? e : { ...e, prompt: `${note}\n\n${e.prompt}` });
-  });
+  })
+    .catch(() => {
+      return undefined;
+    });
 };
