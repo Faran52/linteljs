@@ -9,10 +9,13 @@ const MARKER = /@generated|\bdo not edit\b|\bauto-?generated\b|\bautomatically g
 // Long enough to quote the generator a first line names, short enough for one line of a reason.
 const QUOTED_LENGTH = 120;
 
-const firstLineOf = (path: string): string | undefined => {
+const markedFirstLine = (path: string): string | undefined => {
   try {
-    const [first = ''] = readFileSync(path, 'utf8').split(/\r?\n/u, 1);
-    return first;
+    return readFileSync(path, 'utf8')
+      .split(/\r?\n/u, 1)
+      .find((line) => {
+        return MARKER.test(line);
+      });
   }
   catch {
     // A file that does not exist yet is not generated.
@@ -23,9 +26,9 @@ const firstLineOf = (path: string): string | undefined => {
 
 export const generatedFileReason = (edit: EditInput): string | undefined => {
   for (const path of edit.paths) {
-    const first = firstLineOf(resolve(edit.cwd, path));
+    const first = markedFirstLine(resolve(edit.cwd, path));
 
-    if (first !== undefined && MARKER.test(first)) {
+    if (first !== undefined) {
       return `\`${path}\` is generated, as its first line says: \`${first
         .trim()
         .slice(0, QUOTED_LENGTH)}\`. `

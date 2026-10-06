@@ -304,8 +304,9 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
   }
 
   // `2>&1` and `<&3` in either shell, and bash's `&>file`, are redirects: that `&` ends no command.
+  // Every pattern is as long as the pair, so none needs an anchor.
   const pair = source.slice(index, index + 2);
-  const redirect = (state.dialect === 'bash' ? /^(?:[<>]&|&>)/u : /^>&/u).exec(pair)?.[0];
+  const redirect = (state.dialect === 'bash' ? /(?:[<>]&|&>)/u : />&/u).exec(pair)?.[0];
 
   if (redirect !== undefined) {
     state.token += redirect;
@@ -515,7 +516,13 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
 // The words of a line that is one command, as written: no wrapper unwrapped, no assignment dropped. A line of
 // several commands, or one that cannot be vouched for, has none.
 export const wordsOf = (source: string, dialect: Dialect): string[] | undefined => {
-  const [only, ...rest] = segmentsOf(source, dialect) ?? [];
+  const segments = segmentsOf(source, dialect);
+
+  if (segments === undefined) {
+    return undefined;
+  }
+
+  const [only, ...rest] = segments;
 
   return only === undefined || only.opaque || rest.length > 0 ? undefined : only.tokens;
 };

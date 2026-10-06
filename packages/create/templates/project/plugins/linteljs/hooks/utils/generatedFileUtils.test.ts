@@ -83,6 +83,12 @@ describe('generatedFileReason', () => {
     expect(reason).toContain(`\`${quoted}\`.`);
   });
 
+  it('quotes a padded first line trimmed', () => {
+    const reason = reasonFor('  // @generated  ');
+
+    expect(reason).toContain('says: `// @generated`.');
+  });
+
   it('clears a file that does not exist yet, and reads every path it is given', () => {
     writeFileSync(join(cwd, 'gen.ts'), '// @generated\n');
     const missing = generatedFileReason({
