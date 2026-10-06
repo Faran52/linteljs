@@ -42,8 +42,8 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
   const compile = compiler === undefined ? [] : [compiler.command];
 
   const scripts: Record<string, string> = {
-    'lint': 'eslint .',
-    'lint:fix': 'eslint . --fix',
+    'lint': 'eslint . --concurrency auto',
+    'lint:fix': 'eslint . --fix --concurrency auto',
     // lint-staged scans staged files only; the checker walks `src`, so an unstaged new file is scanned too.
     'lint:types': 'node scripts/checkBannedPatterns.ts src',
     // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.

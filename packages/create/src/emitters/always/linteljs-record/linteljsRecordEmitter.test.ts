@@ -25,7 +25,7 @@ export const SYNC = 'pnpm dlx @linteljs/create sync';
 export const GATE = [
   {
     command: 'pnpm lint',
-    runs: 'eslint .',
+    runs: 'eslint . --concurrency auto',
   },
   {
     command: 'pnpm lint:types',

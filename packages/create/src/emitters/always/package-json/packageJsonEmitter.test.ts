@@ -305,6 +305,6 @@ describe('packageJsonEmitter', () => {
     expect(patched.devDependencies?.['some-tool']).toBe('^1.0.0');
     expect(patched.dependencies?.['react']).toBe(VERSIONS['react']);
     expect(patched.scripts?.['dev']).toBe('vite');
-    expect(patched.scripts?.['lint']).toBe('eslint .');
+    expect(patched.scripts?.['lint']).toBe('eslint . --concurrency auto');
   });
 });

@@ -71,7 +71,7 @@ describe('gateRows', () => {
     }));
 
     const expected = [
-      ["command: 'pnpm lint'", "runs: 'eslint .'"],
+      ["command: 'pnpm lint'", "runs: 'eslint . --concurrency auto'"],
       ["command: 'pnpm lint:types'", "runs: 'node scripts/checkBannedPatterns.ts src'"],
       ["command: 'pnpm lint:css'", "runs: 'stylelint \"src/**/*.css\" --allow-empty-input'"],
       ["command: 'pnpm typecheck'", "runs: 'tsc --noEmit'"],

@@ -106,8 +106,8 @@ describe('buildScripts', () => {
   it('gives the linter a fix script beside its gate', () => {
     const scripts = buildScripts(answersFor({}));
     const expected = {
-      'lint': 'eslint .',
-      'lint:fix': 'eslint . --fix',
+      'lint': 'eslint . --concurrency auto',
+      'lint:fix': 'eslint . --fix --concurrency auto',
     };
     expect(scripts).toMatchObject(expected);
   });
