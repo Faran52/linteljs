@@ -35,14 +35,17 @@ Git hooks run `scripts/checkBannedPatterns.ts`, `eslint --fix`, `stylelint --fix
 files, and commitlint checks each message. They install with `{{RUN}} install`.
 
 Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, warn when eslint runs without
-`--fix`, and run `scripts/checkBannedPatterns.ts` over each file an agent writes.
+`--fix`, run `scripts/checkBannedPatterns.ts` over each file an agent writes, deny an edit to a file whose first
+line marks it generated, and ask you before a dependency is added or removed. In Claude Code a commit is held
+until `{{RUN}} check` has passed on the work tree it would commit, run on its own or redirected to a file outside
+the work tree, never piped or chained, and a band above the prompt shows that state.
 
 - **Claude Code and Codex** load them through the linteljs plugin. Codex skips plugin hooks until you trust
   them (`/hooks` in Codex), and runs a cached copy of the plugin, so reinstall it after a `sync` that changes
   `plugins/linteljs/`.
 - **Cursor** reads `.cursor/hooks.json` once you trust the workspace: the git guard before each shell command,
   the eslint warning after it. Cursor gives a hook no path for an agent's edit, so the banned-pattern check runs
-  on commit only. With Claude Code chosen too, Cursor may also load Claude Code's hooks (Cursor Settings,
+  on commit only, the generated-file guard not at all, and the dependency ask on a manager command only. With Claude Code chosen too, Cursor may also load Claude Code's hooks (Cursor Settings,
   Agents, Third-Party Imports); that copy stays silent under Cursor, so each guard answers once.
 - **Copilot** CLI and cloud agent read `.github/hooks/linteljs.json` with nothing to enable, and report the eslint
   warning and the banned-pattern findings after the tool runs.

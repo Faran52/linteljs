@@ -28,8 +28,11 @@ spelled the way the router reads them. Everything a route reaches sits beside it
 ```
 src/
   app/                  routes, owned by expo-router
-    _layout.tsx         the shell every route below renders inside
-    index.tsx           the entry route
+    _layout.tsx         the providers and a root Stack over the tab group and the 404
+    (tabs)/             the tab pages, apart from the 404 so the tab bar counts only tabs
+      _layout.tsx       the Tabs navigator
+      index.tsx         the entry route
+    +not-found.tsx      the 404
   app-<route>.test.tsx  each route's suite, outside the route root
   components/
     ui/                 primitives: text, button, card

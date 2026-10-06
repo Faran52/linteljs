@@ -9,7 +9,7 @@ import { DEFAULT_ANSWERS } from '@answers';
 import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 
 describe('emitAgentAdapter', () => {
-  it('points at the skill, the gate, the comment rule and the git bans, and nothing else', () => {
+  it('points at the skill, the gate, the dependency ask, the comment rule and the git bans, and nothing else', () => {
     const agentAdapter = emitAgentAdapter(DEFAULT_ANSWERS);
 
     expect(agentAdapter).toBe(`# LintelJS project
@@ -17,6 +17,9 @@ describe('emitAgentAdapter', () => {
 - Before a change, follow \`plugins/linteljs/skills/linteljs/SKILL.md\`: it names the rule file for that kind of change.
 - Read \`package.json\` for exact scripts and dependency versions.
 - Run \`pnpm check\` before declaring implementation work complete.
+- Run it alone or redirected out of the work tree (\`pnpm check > /tmp/check.log 2>&1\`), never piped or chained.
+- In Claude Code a commit waits until that run has passed on the work tree it would commit.
+- Ask before adding or removing a dependency, and never edit a file whose first line marks it generated.
 - Run \`pnpm lint:fix\`, not lint without fixes.
 - Comments are minimal: a short why, or none. Never restate the code; no comments in tests.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.

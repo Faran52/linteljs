@@ -20,9 +20,9 @@ when a version's change lives in a sibling it is described there instead:
   `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
   below its floor is refused, never upgraded: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is refused too.
 - **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read by
-  `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not. A v1 file
-  is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into `form`,
-  `styling` and `data`, and `store: true` becomes the target's first store.
+  `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not.
+  A v1 file is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into
+  `form`, `styling` and `data`, and `store: true` becomes the target's first store.
 - **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
   `sync` offers to move the old file to `.bak` and write the new one.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
@@ -90,7 +90,8 @@ when a version's change lives in a sibling it is described there instead:
   renders it under every answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. React
   Native's Contact is a tab that scrolls its Send button clear of the keyboard, sends through the chosen data layer,
   and mounts React's store and data providers in its root layout, so Redux and TanStack Query hooks have their
-  ancestor. React Native keeps its tabs in a route group apart from the 404, so VoiceOver counts only the tabs. A
+  ancestor. React Native keeps its tabs in a route group apart from the 404, so VoiceOver counts only the tabs,
+  and its header's language picker keeps clear of the screen's trailing inset. A
   Contact field shows its error once it is left or a send is tried, and clears it as soon as the value passes. About
   lists every script `check` chains, with what each runs and the manager's own prefix. The page title is the
   project's name, and the header wraps a name too long for its row rather than cutting it off. The Version page
@@ -113,24 +114,25 @@ when a version's change lives in a sibling it is described there instead:
   `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
   is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one
   too, first in `paths`: `@pages` on React and Solid, with `@routes` before it under React Router in code, `@views`
-  on Vue and Nuxt, `@layouts` on Astro. With
-  `react-router-framework`, `eslint.config.js` sets `aliasExempt: ['src/routes.ts']` and
-  `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
-  the aliases.
+  on Vue and Nuxt, `@layouts` on Astro. With `react-router-framework`, `eslint.config.js` sets
+  `aliasExempt: ['src/routes.ts']` and `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route
+  typegen reads that file without the aliases.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
-  `.github/hooks/linteljs.json`. The command guards read
-  PowerShell as well as Bash, and `--no-verify` is denied on any git subcommand.
+  `.github/hooks/linteljs.json`. The command guards read PowerShell as well as Bash, and `--no-verify` is denied
+  on any git subcommand.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on `create --existing`.
 - Three more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
-  would commit, untracked files included; the run counts on its own, with its output redirected or after a leading
-  `cd <dir> &&`, never piped or otherwise chained, and its result lives in the git directory. A commit is judged on
-  the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit` read that checkout's run. A file whose first line marks it generated (`@generated`,
-  `do not edit` and the like) cannot be edited, in Claude Code, Codex and Copilot. Adding or removing a dependency,
-  by a manager command or a `package.json` edit, asks you first; Cursor asks on the command only.
-- In Claude Code a band above the prompt shows the commit gate's state for the work tree (`passed`, `failed`,
-  `running`, `stale`), read at session start and after each main-session turn. It is a function-hooks module,
+  would commit, untracked files included; the run counts on its own, with its output redirected to a file outside
+  the work tree or after a leading `cd <dir> &&`, never piped or otherwise chained, and its result lives in the git
+  directory. A commit is judged on the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit`
+  read that checkout's run. A file whose first line marks it generated (`@generated`, `do not edit` and the like)
+  cannot be edited, in Claude Code, Codex and Copilot. Adding or removing a dependency, by a manager command or a
+  `package.json` edit, asks you first; Cursor asks on the command only. The emitted agent instructions tell
+  an agent how to run `check` so it counts, to ask before a dependency changes, and to leave a generated file alone.
+- In Claude Code a band above the prompt shows the commit gate's state for the work tree (passed, failed,
+  running, stale or not run), read at session start and after each main-session turn. It is a function-hooks module,
   `hooks/checkBand.tsx`, that `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
   and older versions run the other hooks without it. Codex reads `hooks/codexHooks.json`, the same hooks without
   `modules`, and every generated `tsconfig.json` excludes `plugins/linteljs`.
@@ -170,9 +172,10 @@ when a version's change lives in a sibling it is described there instead:
   Jest's types, and drops the Vitest plugin that stood in for the native renderer, `@vitejs/plugin-react` and the
   `esbuild` build approval. Coverage stays at 100%, and RNTL's `hostComponentNames` warning is gone. Jest is held
   to 29, jest-expo 57's own major; suites compile through Babel to CommonJS, and a run takes about 3.6 s where
-  Vitest took 1.4 s. Each test gets 15 s, since a file's first render transforms React Native lazily. With msw, the config resolves `msw/node` and transforms its ES-only dependencies; with
-  redux-toolkit, it transforms `immer` and `react-redux`. A React Native project from before 2.0 keeps its suites
-  on Vitest until they are ported: `sync` writes nothing there and exits 1, naming both runners.
+  Vitest took 1.4 s. Each test gets 15 s, since a file's first render transforms React Native lazily. With msw,
+  the config resolves `msw/node` and transforms its ES-only dependencies; with redux-toolkit, it transforms
+  `immer` and `react-redux`. A React Native project from before 2.0 keeps its suites on Vitest until they are
+  ported: `sync` writes nothing there and exits 1, naming both runners.
 - **A new project passes its own `check` with nothing from the fix stage.** Every emitted file lands as
   `eslint --fix` and `stylelint --fix` would leave it, under the layers' layout rules: one call per line in a chain,
   one item per line in a list of three or more, imports grouped by framework and by the project's own aliases, one
@@ -231,6 +234,8 @@ when a version's change lives in a sibling it is described there instead:
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
   git and install it spawns drops the repository variables git exports, so `git init` no longer reinitialises the
   caller's repository as bare and husky sets its hooks path on the project.
+- `create --existing` keeps a `.gitignore` negation such as `!.env.example` in force: where it appends a pattern
+  the negation is ordered after, such as `.env.*`, it appends the negation again after it.
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
   alone on every run.
 - A Next project sets `agentRules: false`, so `next dev` no longer rewrites the `CLAUDE.md` and `AGENTS.md` the
