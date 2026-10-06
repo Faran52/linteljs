@@ -134,7 +134,7 @@ it.each(['checkBand.tsx', 'checkBand.test.tsx'])('keeps .claude/skills/linteljs/
 // `pnpm mod-types` has the engine write both beside the band; neither belongs in the tarball.
 it('packs neither the engine-written mod types nor the tsconfig that reads them', () => {
   const typesDir = join(import.meta.dirname, '..', '.claude-plugin/types');
-  const probe = join(typesDir, 'packProbe.d.ts');
+  const probe = join(typesDir, 'packProbe.txt');
   const hadTypes = existsSync(typesDir);
   mkdirSync(typesDir, { recursive: true });
   writeFileSync(probe, '');
