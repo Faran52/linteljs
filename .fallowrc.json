@@ -25,5 +25,8 @@
   ],
   "rules": {
     "duplicate-exports": "off"
+  },
+  "health": {
+    "coverage": "coverage/coverage-final.json"
   }
 }

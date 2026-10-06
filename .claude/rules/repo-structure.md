@@ -87,4 +87,5 @@ frameworks this workspace does not install and files named `*.test.ts`.
   `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
   `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split),
   `.fallowrc.json` (for `npx fallow`: the entry points no import reaches, the template text and fixtures left out,
-  and the dependencies loaded by name rather than imported).
+  and the dependencies loaded by name rather than imported; `health.coverage` reads `pnpm test:coverage`'s
+  `coverage/coverage-final.json`, so CRAP scores use measured coverage, not Fallow's estimate).
