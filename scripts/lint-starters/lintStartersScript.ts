@@ -36,6 +36,7 @@ import {
   packed,
   pruneTarballs,
   slugOf,
+  type Spawned,
   spawnIn,
   stampOf,
   type Tarballs,
@@ -45,6 +46,8 @@ import {
 import type { E2eCase } from '@e2e/matrix/matrix';
 
 type Outcome = 'linted' | 'unchanged' | 'failed';
+
+type Step = [string, () => Promise<Spawned>];
 
 const flags = {
   all: { type: 'boolean' },
@@ -85,6 +88,75 @@ const prepareArgs = [
   'prepare',
 ];
 
+// The name and output of the first step to fail; the rest do not run.
+const firstFailure = async (steps: Step[]): Promise<[string, string] | undefined> => {
+  for (const [name, run] of steps) {
+    const result = await run();
+
+    if (!result.ok) {
+      const failure: [string, string] = [name, result.output];
+
+      return failure;
+    }
+  }
+
+  return undefined;
+};
+
+const stepOf = (name: string, dir: string, args: string[]): Step => {
+  const step: Step = [name, async () => {
+    return spawnIn(dir, args);
+  }];
+
+  return step;
+};
+
+// A fix run keeps its copies whether or not the lint passed.
+const lintStep = (item: E2eCase, dir: string): Step => {
+  const lintArgs = [
+    'exec',
+    'eslint',
+    '.',
+    '--max-warnings',
+    '0',
+  ];
+  const fixArgs = fixing ? ['--fix'] : [];
+  const step: Step = ['lint', async () => {
+    const linted = await spawnIn(dir, [...lintArgs, ...fixArgs]);
+
+    if (fixing) {
+      copies.push(fixedCopies(item, dir));
+    }
+
+    return linted;
+  }];
+
+  return step;
+};
+
+// StyleX resolves its theme imports only when it compiles, which lint never reaches.
+const stylexSteps = (item: E2eCase, dir: string): Step[] => {
+  const steps = [stepOf('test', dir, ['run', 'test']), stepOf('build', dir, ['run', 'build'])];
+
+  return item.answers.styling === 'stylex' ? steps : [];
+};
+
+const caseSteps = (item: E2eCase, dir: string): Step[] => {
+  const installArgs = ['install', '--no-frozen-lockfile'];
+  const steps = [
+    stepOf('install', dir, installArgs),
+    stepOf('prepare', dir, prepareArgs),
+    lintStep(item, dir),
+    ...stylexSteps(item, dir),
+  ];
+
+  return steps;
+};
+
+const isUnchanged = (stampPath: string, stamp: string): boolean => {
+  return !every && !fixing && readStamp(stampPath) === stamp;
+};
+
 // Install every time, so a changed tarball path reinstalls; `prepare` by hand, even when unchanged, since a no-op
 // install skips it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
 const lintCase = async (item: E2eCase): Promise<Outcome> => {
@@ -95,9 +167,8 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
   await generate(item, dir, tarballs);
 
   const stamp = stampOf(dir);
-  const isUnchanged = !every && !fixing && readStamp(stampPath) === stamp;
 
-  if (isUnchanged) {
+  if (isUnchanged(stampPath, stamp)) {
     const reprepared = await spawnIn(dir, prepareArgs);
 
     return reprepared.ok ? 'unchanged' : fail(item.label, 'prepare', reprepared.output);
@@ -106,50 +177,11 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
   // A kept lockfile keeps what a changed project no longer needs, such as an esbuild `allowBuilds` refuses.
   rmSync(join(dir, 'pnpm-lock.yaml'), { force: true });
 
-  const installArgs = ['install', '--no-frozen-lockfile'];
-  const installed = await spawnIn(dir, installArgs);
+  const steps = caseSteps(item, dir);
+  const failure = await firstFailure(steps);
 
-  if (!installed.ok) {
-    return fail(item.label, 'install', installed.output);
-  }
-
-  const prepared = await spawnIn(dir, prepareArgs);
-
-  if (!prepared.ok) {
-    return fail(item.label, 'prepare', prepared.output);
-  }
-
-  const lintArgs = [
-    'exec',
-    'eslint',
-    '.',
-    '--max-warnings',
-    '0',
-  ];
-  const fixArgs = fixing ? ['--fix'] : [];
-  const linted = await spawnIn(dir, [...lintArgs, ...fixArgs]);
-
-  if (fixing) {
-    copies.push(fixedCopies(item, dir));
-  }
-
-  if (!linted.ok) {
-    return fail(item.label, 'lint', linted.output);
-  }
-
-  // StyleX resolves its theme imports only when it compiles, which lint never reaches.
-  if (item.answers.styling === 'stylex') {
-    const tested = await spawnIn(dir, ['run', 'test']);
-
-    if (!tested.ok) {
-      return fail(item.label, 'test', tested.output);
-    }
-
-    const built = await spawnIn(dir, ['run', 'build']);
-
-    if (!built.ok) {
-      return fail(item.label, 'build', built.output);
-    }
+  if (failure) {
+    return fail(item.label, ...failure);
   }
 
   writeFileSync(stampPath, stamp, 'utf8');

@@ -232,8 +232,7 @@ export const fixedCopies = (item: E2eCase, dir: string): Map<string, string> => 
   return new Map(whole);
 };
 
-// A template several cases copy is written back only when every one of them fixed it the same way.
-export const writeAgreed = (copies: Map<string, string>[]): string[] => {
+const proposalsOf = (copies: Map<string, string>[]): Map<string, Set<string>> => {
   const proposals = new Map<string, Set<string>>();
 
   const entries = copies
@@ -250,14 +249,24 @@ export const writeAgreed = (copies: Map<string, string>[]): string[] => {
     proposals.set(source, texts);
   }
 
+  return proposals;
+};
+
+const agreedText = (texts: Set<string>): string | undefined => {
+  const [only] = texts;
+
+  return texts.size === 1 ? only : undefined;
+};
+
+// A template several cases copy is written back only when every one of them fixed it the same way.
+export const writeAgreed = (copies: Map<string, string>[]): string[] => {
   const written: string[] = [];
 
-  for (const [source, texts] of proposals) {
+  for (const [source, texts] of proposalsOf(copies)) {
     const templatePath = join(TEMPLATES_ROOT, source);
-    const [only] = texts;
-    const isAgreed = texts.size === 1 && only !== undefined;
+    const only = agreedText(texts);
 
-    if (isAgreed && only !== readFileSync(templatePath, 'utf8')) {
+    if (only !== undefined && only !== readFileSync(templatePath, 'utf8')) {
       writeFileSync(templatePath, only, 'utf8');
       written.push(source);
     }
