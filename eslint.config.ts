@@ -130,9 +130,6 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.vueI18n.ts',
       'packages/create/templates/starter-source/**',
       ...UNTYPED_MODS,
-      // docs/DESIGN.md: Ignores, the repo mod. Its last files, until their findings are fixed.
-      '.claude/skills/linteljs/hooks/{ciBand,register,repoGuards}.{ts,tsx}',
-      '.claude/skills/linteljs/hooks/{ciBand,repoGuards}.test.{ts,tsx}',
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',

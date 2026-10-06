@@ -1,16 +1,10 @@
-import type { AgentStatus, On } from 'claude-code';
 import {
   type Engine,
   expect,
   test,
 } from 'claude-code/testing';
 
-// Built at run time, so this suite never holds the text the guards refuse.
-const MIRROR = `https://${['npm', 'mirror'].join('')}.com/`;
-const IGNORE = `/* ${['istanbul', 'ignore'].join(' ')} next */`;
-// The kit's types leave `agentId` off `$.tool.call`, yet the call carries it to the hooks as a subagent's would.
-const SUBAGENT = { agentId: 'agent-1' };
-const CONVENTIONAL = /^(?:feat|fix)(?:\([\w-]+\))?: \S/u;
+import type { AgentStatus, On } from 'claude-code';
 
 interface Repo {
   staged: string[];
@@ -21,12 +15,43 @@ interface Repo {
   agents: [string, AgentStatus][];
 }
 
+interface Lint {
+  cwd: string | undefined;
+  stdin: string | undefined;
+}
+
 interface Seen {
-  lints: { cwd: string | undefined; stdin: string | undefined }[];
+  lints: Lint[];
   prompts: string[];
 }
 
-const fakeRepo = (on: On, overrides: Partial<Repo> = {}): { repo: Repo; seen: Seen } => {
+interface FakeRepo {
+  repo: Repo;
+  seen: Seen;
+}
+
+interface Ran {
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  isStdoutTruncated: boolean;
+  isStderrTruncated: boolean;
+}
+
+interface Answer {
+  value: Ran;
+}
+
+// Built at run time, so this suite never holds the text the guards refuse.
+const MIRROR_HOST = ['npm', 'mirror'].join('');
+const IGNORE_WORDS = ['istanbul', 'ignore'].join(' ');
+const MIRROR = `https://${MIRROR_HOST}.com/`;
+const IGNORE = `/* ${IGNORE_WORDS} next */`;
+// The kit's types leave `agentId` off `$.tool.call`, yet the call carries it to the hooks as a subagent's would.
+const SUBAGENT = { agentId: 'agent-1' };
+const CONVENTIONAL = /^(?:feat|fix)(?:\([\w-]+\))?: \S/u;
+
+const fakeRepo = (on: On, overrides: Partial<Repo> = {}): FakeRepo => {
   const repo: Repo = {
     staged: ['a.ts'],
     diff: '',
@@ -37,8 +62,9 @@ const fakeRepo = (on: On, overrides: Partial<Repo> = {}): { repo: Repo; seen: Se
     ...overrides,
   };
   const seen: Seen = { lints: [], prompts: [] };
-  const answer = (exitCode: number, stdout: string): { value: { exitCode: number; stdout: string; stderr: string; isStdoutTruncated: boolean; isStderrTruncated: boolean } } => {
-    return {
+
+  const answer = (exitCode: number, stdout: string): Answer => {
+    const answered = {
       value: {
         exitCode,
         stdout,
@@ -47,39 +73,57 @@ const fakeRepo = (on: On, overrides: Partial<Repo> = {}): { repo: Repo; seen: Se
         isStderrTruncated: false,
       },
     };
+
+    return answered;
   };
 
   on('session.root', () => {
-    return { value: '/repo' };
+    const root = { value: '/repo' };
+
+    return root;
   });
+
   on('session.cwd', () => {
-    return { value: '/repo' };
+    const cwd = { value: '/repo' };
+
+    return cwd;
   });
+
   on('agent.list', () => {
-    return {
-      value: repo.agents.map(([id, status]) => {
-        return {
+    const agents = repo.agents
+      .map(([id, status]) => {
+        const agent = {
           id,
           description: id,
           type: 'general-purpose',
           status,
         };
-      }),
-    };
+
+        return agent;
+      });
+    const listed = { value: agents };
+
+    return listed;
   });
+
   on('fs.list', (_, e) => {
-    return {
-      value: (repo.dirs[e.path] ?? []).map((name) => {
-        return {
+    const entries = (repo.dirs[e.path] ?? [])
+      .map((name) => {
+        const entry = {
           name,
           kind: 'file' as const,
           size: 0,
           mtimeMs: 0,
           isLink: false,
         };
-      }),
-    };
+
+        return entry;
+      });
+    const listed = { value: entries };
+
+    return listed;
   });
+
   on('fs.read', (_, e) => {
     const text = repo.texts[e.path];
 
@@ -87,8 +131,11 @@ const fakeRepo = (on: On, overrides: Partial<Repo> = {}): { repo: Repo; seen: Se
       throw new Error('ENOENT');
     }
 
-    return { value: text };
+    const file = { value: text };
+
+    return file;
   });
+
   on('process.run', (_, e) => {
     const command = e.argv.join(' ');
 
@@ -104,19 +151,28 @@ const fakeRepo = (on: On, overrides: Partial<Repo> = {}): { repo: Repo; seen: Se
 
     return answer(0, command.includes('--name-only') ? repo.staged.join('\n') : repo.diff);
   });
+
   on('tool.call', (_, e) => {
     if (e.tool === 'Agent') {
       seen.prompts.push(e.prompt);
     }
 
-    return { result: 'ran' };
+    const ran = { result: 'ran' };
+
+    return ran;
   });
 
-  return { repo, seen };
+  const fake = { repo, seen };
+
+  return fake;
 };
 
 const bash = async ($: Engine, command: string, agentId?: string): Promise<string | undefined> => {
-  const ran = await $.tool.call({ tool: 'Bash', command, ...(agentId === undefined ? {} : { agentId }) });
+  const ran = await $.tool.call({
+    tool: 'Bash',
+    command,
+    ...(agentId === undefined ? {} : { agentId }),
+  });
 
   return ran.deny;
 };
@@ -129,10 +185,17 @@ const read = async ($: Engine, file_path: string): Promise<string | undefined> =
 
 test('refuses reading a lockfile, installed code, coverage, a transcript or a task output whole', async ($, on) => {
   fakeRepo(on);
-  const paths = ['/repo/pnpm-lock.yaml', '/repo/node_modules/x/index.js', '/repo/coverage/lcov.info', '/t/s.jsonl', '/t/b.output'];
-  const denied = await Promise.all(paths.map(async (path) => {
-    return read($, path);
-  }));
+  const paths = [
+    '/repo/pnpm-lock.yaml',
+    '/repo/node_modules/x/index.js',
+    '/repo/coverage/lcov.info',
+    '/t/s.jsonl',
+    '/t/b.output',
+  ];
+  const denied = await Promise.all(paths
+    .map(async (path) => {
+      return read($, path);
+    }));
   const plain = await read($, '/repo/packages/create/pnpm-lock.yaml.md');
 
   expect(denied[0]).toContain('/repo/pnpm-lock.yaml is the lockfile');
@@ -165,8 +228,19 @@ test('refuses a subagent\'s polling, and leaves the main session\'s alone', asyn
   const agentWatch = await bash($, 'watch -n 5 ls', 'agent-1');
   const agentOnce = await bash($, 'ls; sleep 1', 'agent-1');
   const mainLoop = await bash($, loop);
-  const agentMonitor = await $.tool.call({ tool: 'Monitor', description: 'd', timeout_ms: 1000, command: 'ls', ...SUBAGENT });
-  const mainMonitor = await $.tool.call({ tool: 'Monitor', description: 'd', timeout_ms: 1000, command: 'ls' });
+  const agentMonitor = await $.tool.call({
+    tool: 'Monitor',
+    description: 'd',
+    timeout_ms: 1000,
+    command: 'ls',
+    ...SUBAGENT,
+  });
+  const mainMonitor = await $.tool.call({
+    tool: 'Monitor',
+    description: 'd',
+    timeout_ms: 1000,
+    command: 'ls',
+  });
 
   expect(agentLoop).toContain('a subagent does not poll');
   expect(agentWatch).toContain('a subagent does not poll');
@@ -183,7 +257,11 @@ test('runs commitlint on the message and refuses what it refuses', async ($, on)
 
   expect(bad).toContain('commitlint refuses this message:\n✖   subject may not be empty');
   expect(good).toBeUndefined();
-  expect(seen.lints).toEqual([{ cwd: '/repo', stdin: 'added stuff' }, { cwd: '/repo', stdin: 'feat: add a\n\nWhy it matters.' }]);
+
+  expect(seen.lints).toEqual([
+    { cwd: '/repo', stdin: 'added stuff' },
+    { cwd: '/repo', stdin: 'feat: add a\n\nWhy it matters.' },
+  ]);
 });
 
 test('reads the message from every way git takes one', async ($, on) => {
@@ -203,9 +281,10 @@ test('reads the message from every way git takes one', async ($, on) => {
     await bash($, command);
   }
 
-  const messages = seen.lints.map(({ stdin }) => {
-    return stdin;
-  });
+  const messages = seen.lints
+    .map(({ stdin }) => {
+      return stdin;
+    });
 
   expect(messages).toEqual([
     'fix: cluster',
@@ -227,7 +306,11 @@ test('lints in the directory a leading cd or git -C names, and skips what it can
   const noMessage = await bash($, 'git commit -F missing.txt');
   const notCommit = await bash($, 'git log -m "x"');
 
-  expect(seen.lints).toEqual([{ cwd: '/repo/packages/create', stdin: 'fix: a' }, { cwd: '/elsewhere', stdin: 'fix: b' }]);
+  expect(seen.lints).toEqual([
+    { cwd: '/repo/packages/create', stdin: 'fix: a' },
+    { cwd: '/elsewhere', stdin: 'fix: b' },
+  ]);
+
   expect(unread).toBeUndefined();
   expect(noMessage).toBeUndefined();
   expect(notCommit).toBeUndefined();
@@ -265,18 +348,30 @@ test('refuses staged lines adding a mirror or an ignore comment outside data fil
   expect(allowed).toBeUndefined();
 });
 
-test('refuses an Edit or Write that adds a mirror or an ignore comment, and allows one already there', async ($, on) => {
+test('refuses an Edit or Write adding a mirror or an ignore comment, and allows one already there', async ($, on) => {
   fakeRepo(on, { texts: { '/repo/old.ts': `const r = '${MIRROR}';\n` } });
+
   const edit = async (file_path: string, old_string: string, new_string: string): Promise<string | undefined> => {
-    const ran = await $.tool.call({ tool: 'Edit', file_path, old_string, new_string });
+    const ran = await $.tool.call({
+      tool: 'Edit',
+      file_path,
+      old_string,
+      new_string,
+    });
 
     return ran.deny;
   };
+
   const write = async (file_path: string, content: string): Promise<string | undefined> => {
-    const ran = await $.tool.call({ tool: 'Write', file_path, content });
+    const ran = await $.tool.call({
+      tool: 'Write',
+      file_path,
+      content,
+    });
 
     return ran.deny;
   };
+
   const addedMirror = await edit('/repo/a.ts', 'x', `x ${MIRROR}`);
   const keptMirror = await edit('/repo/a.ts', `a ${MIRROR}`, `b ${MIRROR}`);
   const addedIgnore = await edit('/repo/packages/create/src/a.ts', 'x', `${IGNORE}\nx`);
@@ -328,6 +423,7 @@ test('tells a worktree agent to fast-forward when main is ahead of origin', asyn
   expect(seen.prompts[0]).toBe('Your worktree may start at origin\'s def5678 rather than abc1234, where the main '
     + 'session is. Before anything else, run `git merge --ff-only abc1234` in it and confirm `git log --oneline -1`.'
     + '\n\nDo the task.');
+
   expect(seen.prompts[1]).toBe('Do the task.');
 });
 

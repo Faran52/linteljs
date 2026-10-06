@@ -1,9 +1,26 @@
-import type { On } from 'claude-code';
 import {
   type Engine,
   expect,
   test,
 } from 'claude-code/testing';
+
+import type { On } from 'claude-code';
+
+interface Ci {
+  runs: [string, string, string][];
+  actions?: string;
+  now: number;
+  offline?: boolean;
+}
+
+interface Calls {
+  gh: number;
+}
+
+interface Drawn {
+  text?: string;
+  color?: string;
+}
 
 const PROMPT = {
   hasSurvey: false,
@@ -21,23 +38,22 @@ const SURFACES = ['terminal', 'desktop'] as const;
 
 const MINUTES_3 = 180_000;
 
-interface Ci {
-  runs: [string, string, string][];
-  actions?: string;
-  now: number;
-  offline?: boolean;
-}
-
 // What `gh run list` and githubstatus.com answer, the clock, and how often `gh` ran.
-const fakeCi = (on: On, ci: Ci): { gh: number } => {
+const fakeCi = (on: On, ci: Ci): Calls => {
   const calls = { gh: 0 };
 
   on('session.root', () => {
-    return { value: '/repo' };
+    const root = { value: '/repo' };
+
+    return root;
   });
+
   on('clock.now', () => {
-    return { value: ci.now };
+    const now = { value: ci.now };
+
+    return now;
   });
+
   on('process.run', (_, e) => {
     const isGh = e.argv[0] === 'gh';
     calls.gh += isGh ? 1 : 0;
@@ -46,15 +62,21 @@ const fakeCi = (on: On, ci: Ci): { gh: number } => {
       throw new Error('offline');
     }
 
-    const runs = ci.runs.map(([workflowName, status, conclusion]) => {
-      return {
+    const runs = ci.runs
+      .map(([
         workflowName,
         status,
         conclusion,
-      };
-    });
+      ]) => {
+        const run = {
+          workflowName,
+          status,
+          conclusion,
+        };
 
-    return {
+        return run;
+      });
+    const ran = {
       value: {
         exitCode: 0,
         stdout: isGh ? JSON.stringify(runs) : '',
@@ -63,15 +85,20 @@ const fakeCi = (on: On, ci: Ci): { gh: number } => {
         isStderrTruncated: false,
       },
     };
+
+    return ran;
   });
+
   on('http.fetch', () => {
     if (ci.offline === true) {
       throw new Error('offline');
     }
 
-    const components = [{ name: 'Git Operations', status: 'operational' }, { name: 'Actions', status: ci.actions ?? 'operational' }];
-
-    return {
+    const components = [
+      { name: 'Git Operations', status: 'operational' },
+      { name: 'Actions', status: ci.actions ?? 'operational' },
+    ];
+    const fetched = {
       value: {
         status: 200,
         ok: true,
@@ -79,13 +106,18 @@ const fakeCi = (on: On, ci: Ci): { gh: number } => {
         text: JSON.stringify({ components }),
       },
     };
+
+    return fetched;
   });
+
   on('classic.SessionStart', () => {
     return {};
   });
+
   on('classic.Stop', () => {
     return {};
   });
+
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e);
     return <Box />;
@@ -93,11 +125,6 @@ const fakeCi = (on: On, ci: Ci): { gh: number } => {
 
   return calls;
 };
-
-interface Drawn {
-  text?: string;
-  color?: string;
-}
 
 const drawn = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey = false): Promise<Drawn> => {
   const band = await $.ui.mount({
@@ -112,13 +139,36 @@ const drawn = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey = 
   const found = await band.find({ type: 'Text' });
   await band.unmount();
 
-  return found === undefined ? {} : { text: found.text, color: String(found.props['color']) };
+  const seen = found === undefined ? {} : { text: found.text, color: String(found.props['color']) };
+
+  return seen;
 };
 
-const PASSED: Ci['runs'] = [['ci', 'completed', 'success'], ['e2e', 'completed', 'success'], ['audit', 'completed', 'success']];
+const PASSED: Ci['runs'] = [
+  [
+    'ci',
+    'completed',
+    'success',
+  ],
+  [
+    'e2e',
+    'completed',
+    'success',
+  ],
+  [
+    'audit',
+    'completed',
+    'success',
+  ],
+];
 
 test('draws main\'s runs and GitHub Actions green when everything passed', async ($, on) => {
-  fakeCi(on, { runs: [...PASSED, ['ci', 'completed', 'failure']], now: 0 });
+  fakeCi(on, { runs: [...PASSED, [
+    'ci',
+    'completed',
+    'failure',
+  ]], now: 0 });
+
   await $.classic.SessionStart({ source: 'startup' });
 
   for (const surface of SURFACES) {
@@ -132,11 +182,29 @@ test('draws main\'s runs and GitHub Actions green when everything passed', async
 });
 
 test('draws red for a failed or cancelled run, and yellow for a running one or a degraded Actions', async ($, on) => {
-  const ci: Ci = { runs: [['ci', 'completed', 'failure'], ['audit', 'completed', 'cancelled']], now: 0 };
+  const ci: Ci = { runs: [[
+    'ci',
+    'completed',
+    'failure',
+  ], [
+    'audit',
+    'completed',
+    'cancelled',
+  ]], now: 0 };
   fakeCi(on, ci);
   await $.classic.SessionStart({ source: 'startup' });
   const failed = await drawn($, 'terminal');
-  ci.runs = [['ci', 'in_progress', ''], ['e2e', 'completed', 'success']];
+
+  ci.runs = [[
+    'ci',
+    'in_progress',
+    '',
+  ], [
+    'e2e',
+    'completed',
+    'success',
+  ]];
+
   ci.now += MINUTES_3;
   await $.classic.SessionStart({ source: 'clear' });
   const running = await drawn($, 'terminal');
@@ -150,10 +218,12 @@ test('draws red for a failed or cancelled run, and yellow for a running one or a
     text: 'main: ci failed, audit cancelled · GitHub Actions operational',
     color: 'red',
   });
+
   expect(running).toEqual({
     text: 'main: ci running, e2e passed · GitHub Actions operational',
     color: 'yellow',
   });
+
   expect(degraded).toEqual({
     text: 'main: ci passed, e2e passed, audit passed · GitHub Actions partial outage',
     color: 'yellow',
@@ -161,7 +231,11 @@ test('draws red for a failed or cancelled run, and yellow for a running one or a
 });
 
 test('stays quiet offline, and draws what it could read when one source answers', async ($, on) => {
-  const ci: Ci = { runs: PASSED, now: 0, offline: true };
+  const ci: Ci = {
+    runs: PASSED,
+    now: 0,
+    offline: true,
+  };
   fakeCi(on, ci);
   await $.classic.SessionStart({ source: 'startup' });
   const offline = await drawn($, 'terminal');
@@ -179,7 +253,13 @@ test('refreshes when a turn stops, at most every three minutes', async ($, on) =
   const ci: Ci = { runs: PASSED, now: 1000 };
   const calls = fakeCi(on, ci);
   await $.classic.SessionStart({ source: 'startup' });
-  ci.runs = [['ci', 'completed', 'failure']];
+
+  ci.runs = [[
+    'ci',
+    'completed',
+    'failure',
+  ]];
+
   ci.now += MINUTES_3 - 1;
   await $.classic.Stop({ stop_hook_active: false });
   const throttled = await drawn($, 'terminal');
