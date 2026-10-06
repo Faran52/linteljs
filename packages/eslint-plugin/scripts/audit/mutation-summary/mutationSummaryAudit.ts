@@ -9,6 +9,7 @@ import process from 'node:process';
 import { log, logError } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 import {
+  exitCodeFor,
   logLinesFor,
   markdownFor,
   unkilledIn,
@@ -29,6 +30,7 @@ if (existsSync(reportPath)) {
 
   log(`${String(unkilled.length)} mutants not killed in ${reportPath}`);
   markdown = markdownFor(title, unkilled);
+  process.exitCode = exitCodeFor(unkilled);
 }
 else {
   logError(markdown);

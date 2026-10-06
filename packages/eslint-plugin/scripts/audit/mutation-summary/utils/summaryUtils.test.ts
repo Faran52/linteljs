@@ -1,4 +1,5 @@
 import {
+  exitCodeFor,
   logLinesFor,
   markdownFor,
   unkilledIn,
@@ -117,5 +118,27 @@ describe('logLinesFor', () => {
       'Timeout src/b.ts:10 StringLiteral -> "{}"',
     ];
     expect(lines).toStrictEqual(expected);
+  });
+});
+
+describe('exitCodeFor', () => {
+  it.each([
+    'Timeout',
+    'Survived',
+    'NoCoverage',
+  ])('fails the step on a single %s mutant', (status) => {
+    const report = { files: { 'src/a.ts': { mutants: [mutant('Killed', 1, '""'), mutant(status, 2, '""')] } } };
+    const unkilled = unkilledIn(report);
+
+    const code = exitCodeFor(unkilled);
+    expect(code).toBe(1);
+  });
+
+  it('passes the step when every mutant was killed or ignored', () => {
+    const report = { files: { 'src/a.ts': { mutants: [mutant('Killed', 1, '""'), mutant('Ignored', 2, 'x')] } } };
+    const unkilled = unkilledIn(report);
+
+    const code = exitCodeFor(unkilled);
+    expect(code).toBe(0);
   });
 });

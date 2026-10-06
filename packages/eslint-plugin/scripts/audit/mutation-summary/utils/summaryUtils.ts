@@ -119,3 +119,8 @@ export const logLinesFor = (unkilled: Unkilled[]): string[] => {
       return `${status} ${at} ${mutator} -> ${JSON.stringify(replacement)}`;
     });
 };
+
+// The audit's bar is zero, which Stryker's `break` threshold cannot express, so this step is the gate.
+export const exitCodeFor = (unkilled: Unkilled[]): number => {
+  return unkilled.length === 0 ? 0 : 1;
+};

@@ -27,7 +27,7 @@ const config = {
     ...excluded,
   ],
 
-  // `break` sits under 100 so the weekly audit flags a regression.
+  // `break` stops a collapsed run; the audit's summary step fails on any one mutant not killed.
   thresholds: {
     high: 100,
     low: 99,
