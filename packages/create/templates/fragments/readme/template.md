@@ -38,7 +38,7 @@ Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, 
 `--fix`, run `scripts/checkBannedPatterns.ts` over each file an agent writes, deny an edit to a file whose first
 line marks it generated, and ask you before a dependency is added or removed. In Claude Code a commit is held
 until `{{RUN}} check` has passed on the work tree it would commit, run on its own or redirected to a file outside
-the work tree, never piped or chained, and a band above the prompt shows that state.
+the work tree (leading `NAME=value` assignments are fine), never piped or chained, and a band above the prompt shows that state.
 
 - **Claude Code and Codex** load them through the linteljs plugin. Codex skips plugin hooks until you trust
   them (`/hooks` in Codex), and runs a cached copy of the plugin, so reinstall it after a `sync` that changes

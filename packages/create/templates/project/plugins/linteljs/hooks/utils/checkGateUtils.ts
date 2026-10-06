@@ -18,10 +18,13 @@ import {
 
 import {
   commandName,
+  COMPUTED,
   type Dialect,
+  isAssignment,
   parseCommand,
   type ParsedCommand,
   skipOptions,
+  wordsOf,
 } from './commandParserUtils.ts';
 import { GIT_GLOBAL_VALUED } from './gitSafetyUtils.ts';
 import {
@@ -53,6 +56,7 @@ interface CheckRecord {
 interface Located {
   commands: ParsedCommand[];
   cwd: string;
+  words: string[] | undefined;
 }
 
 const RESULTS = new Set<Json | undefined>([
@@ -277,6 +281,7 @@ const locate = (cwd: string, command: string, dialect: Dialect): Located => {
   const located: Located = {
     commands: parseCommand(rest, dialect) ?? [],
     cwd: target === undefined ? cwd : directoryOf(cwd, target),
+    words: wordsOf(rest, dialect),
   };
 
   return located;
@@ -331,19 +336,28 @@ const withoutRedirects = (tokens: string[]): string[] => {
   return words;
 };
 
-// The check alone counts, its output redirected or not, after a leading `cd <dir> &&` or none: a pipe hides its
-// exit status, and any other chain adds to it.
+// A leading `NAME=value` only sets the check's environment, unless its value is computed.
+const isPlainAssignment = (word: string): boolean => {
+  return isAssignment(word) && !word.includes(COMPUTED);
+};
+
+// The check alone counts, its output redirected or not, after leading environment assignments and a leading
+// `cd <dir> &&`, or none: a pipe hides its exit status, and any other chain adds to it.
 const checkProjectOf = (payload: object): Project | undefined => {
   const located = claudeCommandOf(payload);
-  const commands = located?.commands ?? [];
+  const words = located?.words ?? [];
   const project = located === undefined ? undefined : projectOf(located.cwd);
-  const [only] = commands;
+  const start = words
+    .findIndex((word) => {
+      return !isPlainAssignment(word);
+    });
 
-  if (project === undefined || only === undefined || commands.length > 1 || only.opaque) {
+  if (project === undefined || start === -1) {
     return undefined;
   }
 
-  const command = withoutRedirects(only.tokens).join(' ');
+  const run = withoutRedirects(words.slice(start));
+  const command = run.join(' ');
   const ran = command === checkOf(project) || command === `${project.manager} run check`;
 
   return ran ? project : undefined;
@@ -404,7 +418,8 @@ const heldReason = (project: Project, state: Exclude<CheckState, 'passed'>): str
 
   return `Commit held: \`${check}\` has not passed on these files (${WHY[state]}). Run \`${check}\` on its own, `
     + `or with its output redirected to a file outside the work tree (\`${check} > /tmp/check.log 2>&1\`), and `
-    + 'commit once it passes, from the work tree or after `cd <dir> &&`. A run piped into another command or chained '
+    + 'commit once it passes, from the work tree or after `cd <dir> &&`, with leading `NAME=value` assignments '
+    + 'or none. A run piped into another command or chained '
     + 'with one is not counted: its exit status is not the check\'s.';
 };
 

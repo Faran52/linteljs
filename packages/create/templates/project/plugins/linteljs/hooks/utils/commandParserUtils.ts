@@ -117,7 +117,7 @@ export const skipOptions = (tokens: string[], start: number, valued: Set<string>
   return operand ? undefined : tokens.length;
 };
 
-const isAssignment = (token: string): boolean => {
+export const isAssignment = (token: string): boolean => {
   return /^[A-Za-z_]\w*=/u.test(token);
 };
 
@@ -510,6 +510,14 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
 
   emitSegment(state);
   return state.segments;
+};
+
+// The words of a line that is one command, as written: no wrapper unwrapped, no assignment dropped. A line of
+// several commands, or one that cannot be vouched for, has none.
+export const wordsOf = (source: string, dialect: Dialect): string[] | undefined => {
+  const [only, ...rest] = segmentsOf(source, dialect) ?? [];
+
+  return only === undefined || only.opaque || rest.length > 0 ? undefined : only.tokens;
 };
 
 const next = (index: number): Step => {

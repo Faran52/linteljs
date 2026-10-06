@@ -250,6 +250,10 @@ describe('startCheck and finishCheck', () => {
     'pnpm check >& /tmp/check.log',
     'cd . && pnpm check',
     'cd . && pnpm check > /tmp/check.log 2>&1',
+    'CI=1 pnpm check',
+    "CI='a b' pnpm check",
+    'FOO=a BAR=b pnpm run check > /tmp/x.log 2>&1',
+    'cd . && CI=1 pnpm check > /tmp/check.log 2>&1',
   ])('counts `%s`', (command) => {
     runCheck(command);
     const state = checkState(root);
@@ -272,6 +276,16 @@ describe('startCheck and finishCheck', () => {
     'cd . extra && pnpm check',
     'pnpm check --fix',
     'pnpm check > $(mktemp)',
+    'CI=$(true) pnpm check',
+    'CI="$(true)" pnpm check',
+    'CI="$()" pnpm check',
+    'CI=`true` pnpm check',
+    'CI=1 pnpm check | tail',
+    'CI=1 pnpm check && echo done',
+    'CI=1; pnpm check',
+    'CI=1',
+    'env CI=1 pnpm check',
+    'time pnpm check',
     'npm run check',
     'pnpm lint',
     'git status',

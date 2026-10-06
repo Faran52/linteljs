@@ -208,6 +208,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **The commit gate reads a check run as written.** `CI=1 pnpm check` and `cd <dir> && FOO=a pnpm run check
+  > /tmp/check.log 2>&1` count; an assignment whose value is computed (`CI="$()" pnpm check`), an
+  assignment chained before the check (`CI=1; pnpm check`) and a wrapper (`env`, `time`) no longer do.
+
 - `linteljs.config.json` records only the answers its target asks. Every target but a web extension recorded
   `"browser": "chrome"`, an answer it never prompts for; reading a config fills it back in, so an existing one
   still loads.

@@ -12,6 +12,7 @@ export const emitAgentAdapter = (answers: Answers): string => {
 - Read \`package.json\` for exact scripts and dependency versions.
 - Run \`${run} check\` before declaring implementation work complete.
 - Run it alone or redirected out of the work tree (\`${run} check > /tmp/check.log 2>&1\`), never piped or chained.
+  Leading \`NAME=value\` assignments are fine.
 - In Claude Code a commit waits until that run has passed on the work tree it would commit.
 - Ask before adding or removing a dependency, and never edit a file whose first line marks it generated.
 - Run \`${run} lint:fix\`, not lint without fixes.

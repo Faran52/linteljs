@@ -10,6 +10,7 @@ import {
   type Dialect,
   parseCommand,
   skipOptions,
+  wordsOf,
 } from './commandParserUtils.ts';
 
 const tokensOf = (source: string, dialect: Dialect = 'bash'): string[][] | undefined => {
@@ -852,5 +853,32 @@ describe('skipOptions', () => {
   it('cannot skip a valued option with no value', () => {
     const actual = skipOptions(['-C'], 0, new Set(['-C']));
     expect(actual).toBeUndefined();
+  });
+});
+
+describe('wordsOf', () => {
+  it('answers the words of one command as written, wrappers and assignments kept', () => {
+    const words = wordsOf('CI=1 time pnpm check > check.log', 'bash');
+
+    expect(words).toEqual([
+      'CI=1',
+      'time',
+      'pnpm',
+      'check',
+      '>',
+      'check.log',
+    ]);
+  });
+
+  it.each([
+    '',
+    'a; b',
+    'a | b',
+    'CI="$(true)" pnpm check',
+    'CI=$() pnpm check',
+    'echo "open',
+  ])('answers nothing for `%s`', (source) => {
+    const words = wordsOf(source, 'bash');
+    expect(words).toBeUndefined();
   });
 });

@@ -30,7 +30,8 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
   `build` goes first because the packages typecheck against each other's built declarations. `lint:css` passes on
   an empty glob: this workspace has no CSS, and it ships the gate to every target.
 - A commit is held until `pnpm check` has passed on the work tree it would commit. Run it on its own or redirected
-  to a file outside the tree (`pnpm check > /tmp/check.log 2>&1`), never piped or chained, or it does not count.
+  to a file outside the tree (`pnpm check > /tmp/check.log 2>&1`), never piped or chained, or it does
+  not count. Leading `NAME=value` assignments (`CI=1 pnpm check`) and a leading `cd <dir> &&` are fine.
 
 ## Verification
 
