@@ -41,17 +41,16 @@ interface CursorToolPayload {
 
 type Host = 'claude' | 'copilot' | 'cursor';
 
-export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'dependencyAskHook.ts'
-  | 'eslintFixWarningHook.ts' | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
+export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'eslintFixWarningHook.ts'
+  | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
 
 // Scripts that answer in their own shape rather than a decision, so only `spawnHook` runs them.
 export type ContextScript = 'checkRecordHook.ts' | 'checkStatus.ts' | 'contextWarningHook.ts' | 'mainStatusLine.ts'
   | 'subagentStatusLine.ts';
 
-// The hooks that answer with a permission, and which one; the rest add context or block.
-const PERMISSIONS = new Map<HookScript, 'ask' | 'deny'>([
+// The hooks that deny; the rest add context or block.
+const PERMISSIONS = new Map<HookScript, 'deny'>([
   ['commitGateHook.ts', 'deny'],
-  ['dependencyAskHook.ts', 'ask'],
   ['generatedFileGuardHook.ts', 'deny'],
   ['gitSafetyGuardHook.ts', 'deny'],
 ]);

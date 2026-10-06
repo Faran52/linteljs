@@ -155,8 +155,8 @@ shows the gate's state for the work tree (passed, failed, running, stale or not 
 Nothing is installed on your behalf: your agent asks you to trust the directory and approve the plugin and hooks,
 and the project passes its gate if you decline. Codex runs plugin hooks only once trusted through `/hooks`, and
 runs a cached copy of the plugin, so reinstall it after a `sync` that changes `plugins/linteljs/`. Cursor has no
-edit event a hook can answer, so there the banned-pattern check runs on commit only, the generated-file guard
-not at all, and the dependency ask on a manager command only.
+edit event a hook can answer, so there the banned-pattern check runs on commit only and the generated-file guard
+not at all.
 
 ## More
 

@@ -27,9 +27,7 @@ const COPILOT_HOOKS = {
   hooks: {
     preToolUse: [
       hook('gitSafetyGuard', 'bash|powershell'),
-      hook('dependencyAsk', 'bash|powershell'),
       hook('generatedFileGuard', 'edit|create|str_replace_editor|apply_patch'),
-      hook('dependencyAsk', 'edit|create|str_replace_editor|apply_patch'),
     ],
     postToolUse: [
       hook('eslintFixWarning', 'bash|powershell'),

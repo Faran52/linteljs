@@ -47,10 +47,6 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/commitGateHook.ts"',
             },
-            {
-              type: 'command',
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/dependencyAskHook.ts"',
-            },
           ],
         },
         {
@@ -59,10 +55,6 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
             {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/generatedFileGuardHook.ts"',
-            },
-            {
-              type: 'command',
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/dependencyAskHook.ts"',
             },
           ],
         },
@@ -185,10 +177,6 @@ const CASES: [HookScript, object | string][] = [
   ['bannedPatternGuardHook.ts', copilotPayload('edit', { path: 'missing.ts' })],
   ['commitGateHook.ts', commandPayload('git commit -m x')],
   ['commitGateHook.ts', cursorShellPayload('git commit')],
-  ['dependencyAskHook.ts', commandPayload('pnpm add zod')],
-  ['dependencyAskHook.ts', copilotPayload('bash', { command: 'npm i lodash' })],
-  ['dependencyAskHook.ts', cursorShellPayload('yarn add react')],
-  ['dependencyAskHook.ts', cursorToolPayload('pnpm add zod', 'preToolUse')],
   ['generatedFileGuardHook.ts', { tool_input: { file_path: 'missing.ts' } }],
   ['generatedFileGuardHook.ts', copilotPayload('edit', { path: 'missing.ts' })],
 ];

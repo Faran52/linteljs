@@ -90,8 +90,8 @@ Conventional commits, and no trailers: no `Co-Authored-By`, no tool footer, what
 suggests by default. Stage your own files by path.
 
 In Claude Code the shipped hooks run here too: a commit is held until `pnpm check` has passed on
-the work tree, run on its own or redirected to a file outside it, never piped or chained, and a
-dependency change asks you first. `.claude/skills/linteljs/` adds the repo's own guards and bands.
+the work tree, run on its own or redirected to a file outside it, and never piped or chained.
+`.claude/skills/linteljs/` adds the repo's own guards and bands.
 
 No em-dashes anywhere: not in code comments, JSDoc, documentation, commit messages or rule
 descriptions.

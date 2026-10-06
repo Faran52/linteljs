@@ -45,7 +45,7 @@ the work tree (leading `NAME=value` assignments are fine), never piped or chaine
   `plugins/linteljs/`.
 - **Cursor** reads `.cursor/hooks.json` once you trust the workspace: the git guard before each shell command,
   the eslint warning after it. Cursor gives a hook no path for an agent's edit, so the banned-pattern check runs
-  on commit only, the generated-file guard not at all, and the dependency ask on a manager command only. With Claude Code chosen too, Cursor may also load Claude Code's hooks (Cursor Settings,
+  on commit only and the generated-file guard not at all. With Claude Code chosen too, Cursor may also load Claude Code's hooks (Cursor Settings,
   Agents, Third-Party Imports); that copy stays silent under Cursor, so each guard answers once.
 - **Copilot** CLI and cloud agent read `.github/hooks/linteljs.json` with nothing to enable, and report the eslint
   warning and the banned-pattern findings after the tool runs.

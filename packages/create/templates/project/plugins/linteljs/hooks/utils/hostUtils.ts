@@ -5,8 +5,7 @@ import type { Dialect } from './commandParserUtils.ts';
 
 export type Host = 'claude' | 'copilot' | 'cursor';
 
-// `ask` hands the call to the person, with the reason shown.
-export type DecisionKind = 'ask' | 'block' | 'deny' | 'warn';
+export type DecisionKind = 'block' | 'deny' | 'warn';
 
 // The one event each command hook answers under Cursor; `.cursor/hooks.json` registers it there and nowhere else.
 export type CursorEvent = 'beforeShellExecution' | 'postToolUse';
@@ -33,10 +32,6 @@ type Field = 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path' | 'f
   | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
 
 export type Json = number | object | string;
-
-const isPermission = (kind: DecisionKind): kind is 'ask' | 'deny' => {
-  return kind === 'ask' || kind === 'deny';
-};
 
 // A session id names a state file, so nothing but a plain token is accepted.
 const SESSION_ID = /^[\w-]+$/u;
@@ -206,7 +201,7 @@ export const readSession = (payload: object): SessionInput | undefined => {
 };
 
 const cursorDecision = (kind: DecisionKind, text: string): object => {
-  const decision = isPermission(kind)
+  const decision = kind === 'deny'
     ? {
         permission: kind,
         user_message: text,
@@ -218,7 +213,7 @@ const cursorDecision = (kind: DecisionKind, text: string): object => {
 };
 
 const copilotDecision = (kind: DecisionKind, text: string): object => {
-  const decision = isPermission(kind)
+  const decision = kind === 'deny'
     ? {
         permissionDecision: kind,
         permissionDecisionReason: text,
@@ -239,7 +234,7 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
   }
 
   const decision = {
-    hookSpecificOutput: isPermission(kind)
+    hookSpecificOutput: kind === 'deny'
       ? {
           hookEventName: 'PreToolUse',
           permissionDecision: kind,

@@ -125,13 +125,12 @@ when a version's change lives in a sibling it is described there instead:
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on `create --existing`.
-- Three more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
+- Two more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
   would commit, untracked files included; the run counts on its own, with its output redirected to a file outside
   the work tree or after a leading `cd <dir> &&`, never piped or otherwise chained, and its result lives in the git
   directory. A commit is judged on the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit`
   read that checkout's run. A file whose first line marks it generated (`@generated`, `do not edit` and the like)
-  cannot be edited, in Claude Code, Codex and Copilot. Adding or removing a dependency, by a manager command or a
-  `package.json` edit, asks you first; Cursor asks on the command only. The emitted agent instructions tell
+  cannot be edited, in Claude Code, Codex and Copilot. The emitted agent instructions tell
   an agent how to run `check` so it counts, to ask before a dependency changes, and to leave a generated file alone.
 - In Claude Code a band above the prompt shows the commit gate's state for the work tree (passed, failed,
   running, stale or not run), read at session start and after each main-session turn. It is a function-hooks module,

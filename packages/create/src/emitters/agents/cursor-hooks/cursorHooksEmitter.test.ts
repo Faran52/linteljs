@@ -18,7 +18,6 @@ import {
 const OURS = {
   beforeShellExecution: [
     { command: 'node plugins/linteljs/hooks/gitSafetyGuardHook.ts' },
-    { command: 'node plugins/linteljs/hooks/dependencyAskHook.ts' },
   ],
   postToolUse: [
     {
@@ -33,7 +32,7 @@ const THEIRS = {
 };
 
 describe('mergeCursorHooks', () => {
-  it('writes the git guard and the dependency ask on the shell gate and the eslint warning after a shell tool', () => {
+  it('writes the git guard on the shell gate and the eslint warning after a shell tool', () => {
     const merged = mergeCursorHooks(null);
 
     const parsed: unknown = JSON.parse(merged);
@@ -162,7 +161,7 @@ describe('mergeCursorHooks', () => {
         return match[1];
       });
 
-    expect(scripts).toHaveLength(3);
+    expect(scripts).toHaveLength(2);
 
     const allShipped = scripts
       .every((script) => {

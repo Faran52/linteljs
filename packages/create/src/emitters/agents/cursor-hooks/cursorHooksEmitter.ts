@@ -16,7 +16,6 @@ const HOOKS_DIRECTORY = 'plugins/linteljs/hooks/';
 export const CURSOR_HOOKS: Record<string, object[]> = {
   beforeShellExecution: [
     { command: `node ${HOOKS_DIRECTORY}gitSafetyGuardHook.ts` },
-    { command: `node ${HOOKS_DIRECTORY}dependencyAskHook.ts` },
   ],
   postToolUse: [
     {
