@@ -133,10 +133,12 @@ project from 1.x, whose answers sit in `lintel.config.json`, runs `create --exis
 ## Agents
 
 `plugins/linteljs/` holds one plugin every chosen agent reads: the rules as skill references, and hooks that deny
-banned git operations, warn when ESLint runs without `--fix`, and check each file an agent writes for banned
-patterns. The hooks inspect commands, never run them. In Claude Code a fourth hook warns once when a session's
-context passes 150K tokens, and `.claude/settings.json` adds a `[CTX nK]` badge for the session and for each
-subagent: green, amber past 130K, red past 150K. A status line of your own is kept.
+banned git operations, warn when ESLint runs without `--fix`, check each file an agent writes for banned
+patterns, deny an edit to a file whose first line marks it generated, and ask you before a dependency is added or
+removed. The hooks inspect commands, never run them. In Claude Code a commit is held until the project's `check`
+has passed on the work tree it would commit (run on its own or redirected to a file, never piped or chained), and
+a hook warns once when a session's context passes 150K tokens; `.claude/settings.json` adds a `[CTX nK]` badge
+for the session and for each subagent: green, amber past 130K, red past 150K. A status line of your own is kept.
 
 | Path | Written for | Owned by |
 | --- | --- | --- |
@@ -149,7 +151,8 @@ subagent: green, amber past 130K, red past 150K. A status line of your own is ke
 Nothing is installed on your behalf: your agent asks you to trust the directory and approve the plugin and hooks,
 and the project passes its gate if you decline. Codex runs plugin hooks only once trusted through `/hooks`, and
 runs a cached copy of the plugin, so reinstall it after a `sync` that changes `plugins/linteljs/`. Cursor has no
-edit event a hook can answer, so there the banned-pattern check runs on commit only.
+edit event a hook can answer, so there the banned-pattern check runs on commit only and the generated-file
+guard not at all.
 
 ## More
 

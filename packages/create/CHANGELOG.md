@@ -123,6 +123,11 @@ when a version's change lives in a sibling it is described there instead:
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on `create --existing`.
+- Three more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
+  would commit, untracked files included; the run counts on its own or with its output redirected, never piped or
+  chained, and its result lives in the git directory. A file whose first line marks it generated (`@generated`,
+  `do not edit` and the like) cannot be edited, in Claude Code, Codex and Copilot. Adding or removing a dependency,
+  by a manager command or a `package.json` edit, asks you first; Cursor asks on the command only.
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
   `onFail: "error"`; Bun gets `engines.bun` only. CI runs the Node major that ran `create`.
 - New releases wait two days before they install, so a half-published version is not picked up the minute it

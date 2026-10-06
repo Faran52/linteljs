@@ -12,6 +12,27 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/eslintFixWarningHook.ts\""
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/commitGateHook.ts\""
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/dependencyAskHook.ts\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/generatedFileGuardHook.ts\""
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/dependencyAskHook.ts\""
           }
         ]
       }
@@ -23,6 +44,26 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/bannedPatternGuardHook.ts\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/checkRecordHook.ts\""
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/create/templates/project/plugins/linteljs/hooks/checkRecordHook.ts\""
           }
         ]
       }
