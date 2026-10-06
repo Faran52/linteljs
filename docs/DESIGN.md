@@ -1474,7 +1474,12 @@ commit. That tree is the work tree, untracked files included and ignored ones no
 scratch copy of the index so the real index is never touched. It is taken when the check starts: a file changed
 while the check runs leaves the pass stale. Only the check itself counts, run as `pnpm check` (or the manager's
 `run check`, and `npm run check` on npm), on its own or with its output redirected: a pipe hides its exit status and
-a chain adds to it, so `pnpm check | tail` and `pnpm check; echo $?` record nothing. The gate takes the run before
+a chain adds to it, so `pnpm check | tail` and `pnpm check; echo $?` record nothing. The one chain that counts is a
+leading `cd <dir> && <check>`: `&&` runs the check only once the move worked, so the line's exit is the check's.
+The project is the one the command runs in, not the session's: a leading `cd <dir> &&` moves the whole line, and
+each `git -C <dir>` moves a commit on from there, so an agent whose shell sits in another checkout is judged on the
+worktree it names. `--git-dir` and `--work-tree` are not followed, and a `cd` after `;` or `||` moves nothing. A
+line with several commits is held when any of them would be. The gate takes the run before
 the command (`running`, with the tree) and `checkRecordHook.ts` the result after it, from `PostToolUse` for exit 0
 and `PostToolUseFailure` otherwise. The record lives at `git rev-parse --git-path linteljs`, in the git directory,
 so it is never in the work tree it describes and each worktree keeps its own. `checkStatus.ts` prints the state

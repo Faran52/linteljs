@@ -7,7 +7,11 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+} from 'node:path';
 
 import {
   afterEach,
@@ -62,6 +66,13 @@ const shell = (command: string, event = 'PreToolUse', tool = 'Bash'): object => 
 const runCheck = (command: string, event = 'PostToolUse'): void => {
   startCheck(shell(command));
   finishCheck(shell(command, event));
+};
+
+const scratchDirectory = (name: string): string => {
+  const prefix = join(tmpdir(), `linteljs-${name}-`);
+  const directory = mkdtempSync(prefix);
+
+  return realpathSync(directory);
 };
 
 const statePath = (): string => {
@@ -237,6 +248,8 @@ describe('startCheck and finishCheck', () => {
     'pnpm check &> /tmp/check.log',
     'pnpm check 2> /tmp/errors.log',
     'pnpm check >& /tmp/check.log',
+    'cd . && pnpm check',
+    'cd . && pnpm check > /tmp/check.log 2>&1',
   ])('counts `%s`', (command) => {
     runCheck(command);
     const state = checkState(root);
@@ -248,6 +261,15 @@ describe('startCheck and finishCheck', () => {
     'pnpm check 2>&1 | tail -5',
     'pnpm check && echo done',
     'pnpm check; echo $?',
+    'cd .; pnpm check',
+    'cd . || pnpm check',
+    'cd . && pnpm check | tail',
+    'cd . && pnpm check && echo done',
+    'cd . && cd . && pnpm check',
+    'cd "a && b" && pnpm check',
+    'echo . && pnpm check',
+    'cd && pnpm check',
+    'cd . extra && pnpm check',
     'pnpm check --fix',
     'pnpm check > $(mktemp)',
     'npm run check',
@@ -257,6 +279,25 @@ describe('startCheck and finishCheck', () => {
     runCheck(command);
     const state = checkState(root);
     expect(state).toBe('none');
+  });
+
+  it('records a `cd <dir> &&` check, from anywhere, against <dir>', () => {
+    const elsewhere = scratchDirectory('elsewhere');
+    const payload = {
+      ...shell(`cd ${root} && pnpm check > /tmp/check.log 2>&1`),
+      cwd: elsewhere,
+    };
+    startCheck(payload);
+
+    finishCheck({
+      ...payload,
+      hook_event_name: 'PostToolUse',
+    });
+
+    const state = checkState(root);
+    rmSync(elsewhere, { recursive: true });
+
+    expect(state).toBe('passed');
   });
 
   it('counts `npm run check` for an npm project, whose bare `npm check` is no script', () => {
@@ -329,6 +370,63 @@ describe('commitGateReason', () => {
     expect(reason).toContain('`pnpm check > /tmp/check.log 2>&1`');
   });
 
+  it.each([
+    'git -C {root} commit -m x',
+    'git -c a.b=c -C / -C {root} commit',
+    'cd {root} && git commit',
+    'cd {root} && git add a.ts && git commit',
+    'cd / && git -C {root} commit',
+    'Set-Location {root} && git commit',
+  ])('judges `%s` on the project it commits in, not the session\'s', (template) => {
+    const elsewhere = scratchDirectory('elsewhere');
+    const command = template.replaceAll('{root}', root);
+    const payload = {
+      ...shell(command),
+      cwd: elsewhere,
+    };
+    const held = commitGateReason(payload);
+    runCheck('pnpm check');
+    const passed = commitGateReason(payload);
+    rmSync(elsewhere, { recursive: true });
+
+    expect(held).toContain('not run on these files');
+    expect(passed).toBeUndefined();
+  });
+
+  it('reads a `-C` given as another option\'s value as that value', () => {
+    const reason = commitGateReason({
+      ...shell(`git --namespace -C -C ${basename(root)} commit`),
+      cwd: dirname(root),
+    });
+    expect(reason).toContain('not run on these files');
+  });
+
+  it('reads `~` in a moved directory as the home directory', () => {
+    vi.stubEnv('HOME', root);
+    const reason = commitGateReason({
+      ...shell('cd ~ && git commit'),
+      cwd: '/',
+    });
+    expect(reason).toContain('not run on these files');
+  });
+
+  it('holds a call whose second commit is in a project not yet checked', () => {
+    runCheck('pnpm check');
+    const other = scratchDirectory('other');
+
+    execFileSync('/usr/bin/git', [
+      'init',
+      '--quiet',
+      other,
+    ]);
+
+    writeFileSync(join(other, 'package.json'), '{"scripts":{"check":"true"}}');
+    const reason = commitGateReason(shell(`git commit && git -C ${other} commit`));
+    rmSync(other, { recursive: true });
+
+    expect(reason).toMatch(/^Commit held: `npm run check`/u);
+  });
+
   it('names a failed run', () => {
     runCheck('pnpm check', 'PostToolUseFailure');
     const reason = commitGateReason(shell('git commit'));
@@ -363,6 +461,7 @@ describe('commitGateReason', () => {
     'git log --grep commit',
     'echo git commit',
     'git -C',
+    'git commit -m "open',
   ])('passes `%s`, which commits nothing', (command) => {
     const reason = commitGateReason(shell(command));
     expect(reason).toBeUndefined();

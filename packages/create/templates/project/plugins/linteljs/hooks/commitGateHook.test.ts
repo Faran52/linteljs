@@ -1,4 +1,5 @@
 import { rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 import { checkedProject, shellPayload } from '@mocks/checkedProject';
 import {
@@ -37,6 +38,20 @@ describe('commitGateHook.ts', () => {
 
     expect(held).toMatch(/^Commit held: `pnpm check` has not passed on these files \(it has not run/u);
     expect(passed).toBeUndefined();
+  });
+
+  it('judges a commit and a check run from another directory on the checkout they name', () => {
+    const elsewhere = tmpdir();
+    const check = `cd ${root} && pnpm check > /tmp/check.log 2>&1`;
+    const held = runHook('commitGateHook.ts', shellPayload(elsewhere, `git -C ${root} commit -m x`));
+    runHook('commitGateHook.ts', shellPayload(elsewhere, check));
+    spawnHook('checkRecordHook.ts', shellPayload(elsewhere, check, 'PostToolUse'));
+    const moved = runHook('commitGateHook.ts', shellPayload(elsewhere, `cd ${root} && git commit -m x`));
+    const named = runHook('commitGateHook.ts', shellPayload(elsewhere, `git -C ${root} commit -m x`));
+
+    expect(held).toMatch(/^Commit held: /u);
+    expect(moved).toBeUndefined();
+    expect(named).toBeUndefined();
   });
 
   it('lets a command that commits nothing through', () => {

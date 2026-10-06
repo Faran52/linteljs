@@ -8,14 +8,17 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
+import { homedir } from 'node:os';
 import {
   delimiter,
   isAbsolute,
   join,
+  resolve,
 } from 'node:path';
 
 import {
   commandName,
+  type Dialect,
   parseCommand,
   type ParsedCommand,
   skipOptions,
@@ -45,6 +48,11 @@ interface Project {
 interface CheckRecord {
   tree: string;
   result: Result;
+}
+
+interface Located {
+  commands: ParsedCommand[];
+  cwd: string;
 }
 
 const RESULTS = new Set<Json | undefined>([
@@ -235,16 +243,72 @@ const cwdOf = (payload: object): string => {
   return stringAt(payload, 'cwd') ?? process.cwd();
 };
 
-// Claude Code's own calls only: Cursor runs a copy of these hooks, and no other host is given them.
-const claudeCommandOf = (payload: object): ParsedCommand[] | undefined => {
-  const input = hostOf(payload) === 'claude' ? readCommand(payload, 'beforeShellExecution') : undefined;
-  return input === undefined ? undefined : parseCommand(input.command, input.dialect);
+const CD_NAMES = new Set(['cd', 'set-location']);
+
+const HOME = /^~(?=$|[/\\])/u;
+
+const directoryOf = (cwd: string, directory: string): string => {
+  const home = homedir();
+  const expanded = directory.replace(HOME, home);
+
+  return resolve(cwd, expanded);
 };
 
-const isCommit = ({ tokens }: ParsedCommand): boolean => {
-  const index = skipOptions(tokens, 1, GIT_GLOBAL_VALUED);
+// Where a `cd <dir>` alone moves to.
+const movedTo = (move: ParsedCommand | undefined): string | undefined => {
+  const [
+    name = '',
+    directory,
+    ...rest
+  ] = move?.tokens ?? [];
+  const named = commandName(name);
 
-  return commandName(tokens[0]) === 'git' && tokens[index ?? tokens.length] === 'commit';
+  return move?.opaque === false && rest.length === 0 && CD_NAMES.has(named) ? directory : undefined;
+};
+
+// A leading `cd <dir> &&` runs the rest in <dir>, and only when the move worked, so its exit is the rest's.
+const locate = (cwd: string, command: string, dialect: Dialect): Located => {
+  const and = command.indexOf('&&');
+  const head = command.slice(0, Math.max(and, 0));
+  const [move] = parseCommand(head, dialect) ?? [];
+  const target = movedTo(move);
+  const rest = target === undefined ? command : command.slice(and + 2);
+  // An unreadable line commits nothing here: the git guard denies it.
+  const located: Located = {
+    commands: parseCommand(rest, dialect) ?? [],
+    cwd: target === undefined ? cwd : directoryOf(cwd, target),
+  };
+
+  return located;
+};
+
+// Claude Code's own calls only: Cursor runs a copy of these hooks, and no other host is given them.
+const claudeCommandOf = (payload: object): Located | undefined => {
+  const input = hostOf(payload) === 'claude' ? readCommand(payload, 'beforeShellExecution') : undefined;
+  const cwd = cwdOf(payload);
+
+  return input === undefined ? undefined : locate(cwd, input.command, input.dialect);
+};
+
+// The git options before `commit`, or nothing when the command is no commit.
+const commitOptionsOf = ({ tokens }: ParsedCommand): string[] | undefined => {
+  const index = skipOptions(tokens, 1, GIT_GLOBAL_VALUED) ?? 0;
+  const commits = commandName(tokens[0]) === 'git' && tokens[index] === 'commit';
+
+  return commits ? tokens.slice(1, index) : undefined;
+};
+
+// Each `git -C <dir>` moves git on from the last; `--git-dir` and `--work-tree` are not followed.
+const gitCwdOf = (options: string[], cwd: string): string => {
+  let directory = cwd;
+  let option = '';
+
+  for (const token of options) {
+    directory = option === '-C' ? directoryOf(directory, token) : directory;
+    option = option === '' && GIT_GLOBAL_VALUED.has(token) ? token : '';
+  }
+
+  return directory;
 };
 
 // `2>&1` and `>out.log` carry their file; `>`, `2>`, `&>` and `<` alone take the next word as theirs.
@@ -267,10 +331,12 @@ const withoutRedirects = (tokens: string[]): string[] => {
   return words;
 };
 
-// The check alone counts, its output redirected or not: a pipe hides its exit status, and a chain adds to it.
+// The check alone counts, its output redirected or not, after a leading `cd <dir> &&` or none: a pipe hides its
+// exit status, and any other chain adds to it.
 const checkProjectOf = (payload: object): Project | undefined => {
-  const commands = claudeCommandOf(payload) ?? [];
-  const project = projectOf(cwdOf(payload));
+  const located = claudeCommandOf(payload);
+  const commands = located?.commands ?? [];
+  const project = located === undefined ? undefined : projectOf(located.cwd);
   const [only] = commands;
 
   if (project === undefined || only === undefined || commands.length > 1 || only.opaque) {
@@ -333,19 +399,26 @@ const WHY: Record<Exclude<CheckState, 'passed'>, string> = {
   stale: 'files changed since it passed',
 };
 
-export const commitGateReason = (payload: object): string | undefined => {
-  const commits = claudeCommandOf(payload)?.some(isCommit) === true;
-  const project = commits ? projectOf(cwdOf(payload)) : undefined;
-  const state = project === undefined ? 'passed' : stateOf(project);
-
-  if (project === undefined || state === 'passed') {
-    return undefined;
-  }
-
+const heldReason = (project: Project, state: Exclude<CheckState, 'passed'>): string => {
   const check = checkOf(project);
 
   return `Commit held: \`${check}\` has not passed on these files (${WHY[state]}). Run \`${check}\` on its own, `
     + `or with its output redirected to a file outside the work tree (\`${check} > /tmp/check.log 2>&1\`), and `
-    + 'commit once it passes. A run piped into another command or chained with one is not counted: its exit status '
-    + 'is not the check\'s.';
+    + 'commit once it passes, from the work tree or after `cd <dir> &&`. A run piped into another command or chained '
+    + 'with one is not counted: its exit status is not the check\'s.';
+};
+
+export const commitGateReason = (payload: object): string | undefined => {
+  const { commands = [], cwd = '' } = claudeCommandOf(payload) ?? {};
+
+  for (const options of commands.map(commitOptionsOf)) {
+    const project = options === undefined ? undefined : projectOf(gitCwdOf(options, cwd));
+    const state = project === undefined ? 'passed' : stateOf(project);
+
+    if (project !== undefined && state !== 'passed') {
+      return heldReason(project, state);
+    }
+  }
+
+  return undefined;
 };

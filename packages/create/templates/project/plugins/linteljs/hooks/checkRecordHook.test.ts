@@ -42,6 +42,14 @@ describe('checkRecordHook.ts', () => {
     expect(state).toBe(expected);
   });
 
+  it('records a check run as `cd <dir> && <check>` against <dir>', () => {
+    const check = `cd ${root} && pnpm check`;
+    spawnHook('commitGateHook.ts', shellPayload('/', check));
+    spawnHook('checkRecordHook.ts', shellPayload('/', check, 'PostToolUse'));
+    const state = spawnHook('checkStatus.ts', '', undefined, undefined, root);
+    expect(state).toBe('passed');
+  });
+
   it('stays silent on malformed JSON', () => {
     const reply = spawnHook('checkRecordHook.ts', '{');
     expect(reply).toBe('');
