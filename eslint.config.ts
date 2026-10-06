@@ -1,4 +1,9 @@
 // Layers imported from source, so linting needs no build. Exemptions: docs/DESIGN.md "Workspace lint exemptions".
+import { existsSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+import ts from 'typescript';
+
 import {
   INNER_RINGS,
   MIDDLE_RINGS,
@@ -9,6 +14,7 @@ import {
 import base from './packages/eslint-config/src/layers/base/baseLayer';
 import typescript from './packages/eslint-config/src/layers/typescript/typescriptLayer';
 import vitest from './packages/eslint-config/src/layers/vitest/vitestLayer';
+import { MOD_DIRS, TYPES_FILE } from './scripts/typecheck-mods/constants';
 
 import type { Linter } from 'eslint';
 
@@ -59,6 +65,31 @@ const e2eAsSource = (block: Linter.Config): Linter.Config => {
   return sourceBlock;
 };
 
+// The files each mod's tsconfig.json checks against the types the engine writes. docs/DESIGN.md: Ignores
+const modModules = (dir: string): string[] => {
+  const root = join(import.meta.dirname, dir);
+  const source = ts.readJsonConfigFile(join(root, 'tsconfig.json'), (path) => {
+    return ts.sys.readFile(path);
+  });
+  const { fileNames } = ts.parseJsonSourceFileConfigFileContent(source, ts.sys, root);
+
+  return fileNames
+    .map((file) => {
+      return relative(import.meta.dirname, file);
+    });
+};
+
+const MOD_MODULES = MOD_DIRS.flatMap(modModules);
+
+// CI has no engine to write the types, so `pnpm typecheck:mods` skips there and so does this.
+const UNTYPED_MODS = MOD_DIRS
+  .filter((dir) => {
+    const written = existsSync(join(import.meta.dirname, dir, TYPES_FILE));
+
+    return !written;
+  })
+  .flatMap(modModules);
+
 const innerZones = (exceptBarrel: boolean): Zone[] => {
   return INNER_RINGS
     .slice(1)
@@ -98,10 +129,10 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.reactNativeI18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.vueI18n.ts',
       'packages/create/templates/starter-source/**',
-      // docs/DESIGN.md: Ignores, the check band
-      'packages/create/templates/project/plugins/**/*.tsx',
-      // docs/DESIGN.md: Ignores, the repo mod
-      '.claude/skills/linteljs/**',
+      ...UNTYPED_MODS,
+      // docs/DESIGN.md: Ignores, the repo mod. Its last files, until their findings are fixed.
+      '.claude/skills/linteljs/hooks/{ciBand,register,repoGuards}.{ts,tsx}',
+      '.claude/skills/linteljs/hooks/{ciBand,repoGuards}.test.{ts,tsx}',
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
@@ -243,8 +274,21 @@ const config = [
   // Plugin state is read from an inline shape. docs/DESIGN.md: `@linteljs/workspace/band-types`
   {
     name: '@linteljs/workspace/band-types',
-    files: ['packages/create/templates/project/plugins/linteljs/types/index.d.ts'],
+    files: [
+      'packages/create/templates/project/plugins/linteljs/types/index.d.ts',
+      '.claude/skills/linteljs/types/index.d.ts',
+    ],
     rules: { '@linteljs/no-inline-object-types': 'off' },
+  },
+
+  // `claude-code` is an ambient engine module, and its `On` stalls a check. docs/DESIGN.md: `@linteljs/workspace/mods`
+  {
+    name: '@linteljs/workspace/mods',
+    files: MOD_MODULES,
+    rules: {
+      'import-x/no-unresolved': ['error', { ignore: ['^claude-code(/testing)?$'] }],
+      '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { arguments: false } }],
+    },
   },
 ];
 

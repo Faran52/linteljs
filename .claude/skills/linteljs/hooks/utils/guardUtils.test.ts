@@ -3,7 +3,13 @@ import { expect, test } from 'claude-code/testing';
 import { leftoverNote } from './guardUtils.ts';
 
 test('names the worktrees no pending, running or waiting agent owns', () => {
-  const names = ['agent-a', 'agent-b', 'agent-c', 'agent-d', 'agent-e'];
+  const names = [
+    'agent-a',
+    'agent-b',
+    'agent-c',
+    'agent-d',
+    'agent-e',
+  ];
   const agents = [
     { id: 'a', status: 'pending' },
     { id: 'b', status: 'running' },

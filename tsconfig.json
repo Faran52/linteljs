@@ -76,7 +76,9 @@
 
   "include": [
     "**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    // A wildcard skips dot folders; the repo mod's classic hook is Node code, its tsconfig.json excludes it.
+    ".claude/skills/linteljs/hooks/checkStatus.ts"
   ],
 
   "exclude": [

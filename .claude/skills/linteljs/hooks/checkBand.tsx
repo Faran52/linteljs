@@ -27,13 +27,20 @@ const isWord = (text: string): text is CheckWord => {
 };
 
 // Outside a git project with a `check` script the script prints nothing, and the band stays away.
+const printed = async ($: EngineInterface, cwd: string): Promise<string> => {
+  try {
+    const status = await $.process.run(['node', `${$.plugin.root}/hooks/checkStatus.ts`], { cwd });
+
+    return status.stdout.trim();
+  }
+  catch {
+    return '';
+  }
+};
+
 const refresh = async ($: EngineInterface): Promise<void> => {
   const cwd = await $.session.root();
-  const status = await $.process.run(['node', `${$.plugin.root}/hooks/checkStatus.ts`], { cwd })
-    .catch(() => {
-      return undefined;
-    });
-  const text = status?.stdout.trim() ?? '';
+  const text = await printed($, cwd);
 
   await update($, check, () => {
     return isWord(text) ? text : null;
@@ -67,11 +74,12 @@ export const register: Register = (on) => {
 
     const { Box, Text } = $.ui.resolve(e);
     const [text, color] = BAND[word];
+    const below = await next(e);
 
     return (
       <Box flexDirection="column">
         <Text color={color}>{text}</Text>
-        {await next(e)}
+        {below}
       </Box>
     );
   });

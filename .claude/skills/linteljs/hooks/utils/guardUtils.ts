@@ -12,9 +12,28 @@ export interface CommitMessage {
   file?: string;
 }
 
-const LIVE = new Set(['pending', 'running', 'waiting']);
+// One agent loop as `$.agent.list()` reports it, as far as the note reads it.
+interface ListedAgent {
+  id: string;
+  status: string;
+}
 
-const READERS = new Set(['awk', 'bat', 'cat', 'head', 'less', 'more', 'sed', 'tail']);
+const LIVE = new Set([
+  'pending',
+  'running',
+  'waiting',
+]);
+
+const READERS = new Set([
+  'awk',
+  'bat',
+  'cat',
+  'head',
+  'less',
+  'more',
+  'sed',
+  'tail',
+]);
 
 const UNREADABLE: [RegExp, string][] = [
   [/(?:^|\/)pnpm-lock\.yaml$/u, 'the lockfile'],
@@ -34,7 +53,14 @@ const MIRROR_HOST = /npmmirror|registry/iu;
 // Files that hold the ignore comments as data: suites, fixtures, prose and the shipped template text.
 const COMMENT_DATA = /\.test\.tsx?$|\/__mocks__\/|\.md$|(?:^|\/)templates\//u;
 
-const GIT_VALUED = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path']);
+const GIT_VALUED = new Set([
+  '-C',
+  '-c',
+  '--git-dir',
+  '--work-tree',
+  '--namespace',
+  '--exec-path',
+]);
 const MESSAGE_FLAGS = new Set(['-m', '--message']);
 const FILE_FLAGS = new Set(['-F', '--file']);
 
@@ -47,9 +73,10 @@ export const resolvedPath = (base: string, path: string): string => {
 };
 
 export const readReason = (path: string): string | undefined => {
-  const found = UNREADABLE.find(([pattern]) => {
-    return pattern.test(path);
-  });
+  const found = UNREADABLE
+    .find(([pattern]) => {
+      return pattern.test(path);
+    });
 
   return found === undefined
     ? undefined
@@ -60,7 +87,9 @@ export const readReason = (path: string): string | undefined => {
 export const shellReadReason = (commands: ShellCommand[]): string | undefined => {
   const paths = commands
     .filter(({ words }) => {
-      return READERS.has(baseName(words[0] ?? ''));
+      const name = baseName(words[0] ?? '');
+
+      return READERS.has(name);
     })
     .flatMap(({ words }) => {
       return words.slice(1);
@@ -85,7 +114,9 @@ const countOf = (pattern: RegExp, text: string): number => {
 };
 
 const mirrorsIn = (text: string): string[] => {
-  return [...text.matchAll(URL_HOST)]
+  const urls = [...text.matchAll(URL_HOST)];
+
+  return urls
     .map(([, host = '']) => {
       return host.toLowerCase();
     })
@@ -97,25 +128,31 @@ const mirrorsIn = (text: string): string[] => {
 // What an edit adds that the repo bans: a registry other than npmjs, a coverage ignore or a Stryker disable.
 export const addedBans = (path: string, before: string, after: string): string[] => {
   const known = new Set(mirrorsIn(before));
-  const mirrors = [...new Set(mirrorsIn(after))].filter((host) => {
-    return !known.has(host);
-  });
+  const added = new Set(mirrorsIn(after));
+  const mirrors = [...added]
+    .filter((host) => {
+      return !known.has(host);
+    });
   const isData = COMMENT_DATA.test(path);
   const comments = !isData && countOf(IGNORE_COMMENT, after) > countOf(IGNORE_COMMENT, before);
 
-  return [
-    ...mirrors.map((host) => {
-      return `a registry other than registry.npmjs.org (${host})`;
-    }),
+  const bans = [
+    ...mirrors
+      .map((host) => {
+        return `a registry other than registry.npmjs.org (${host})`;
+      }),
     ...(comments ? ['a coverage ignore or Stryker disable comment'] : []),
   ];
+
+  return bans;
 };
 
 export const bansReason = (path: string, bans: string[]): string | undefined => {
   return bans.length === 0
     ? undefined
     : `linteljs: ${path} would gain ${bans.join(' and ')}. The repo commits only registry.npmjs.org `
-      + '(set a mirror in the environment, never in a file), and survivors and uncovered lines are fixed, never ignored.';
+      + '(set a mirror in the environment, never in a file), '
+      + 'and survivors and uncovered lines are fixed, never ignored.';
 };
 
 // Each file's added lines in a `git diff -U0`, by the path after `+++ b/`.
@@ -126,7 +163,8 @@ export const addedLines = (diff: string): Map<string, string> => {
   for (const line of diff.split('\n')) {
     if (line.startsWith('+++ ')) {
       path = line.slice(line.indexOf('/') + 1);
-    } else if (line.startsWith('+')) {
+    }
+    else if (line.startsWith('+')) {
       added.set(path, `${added.get(path) ?? ''}${line.slice(1)}\n`);
     }
   }
@@ -149,9 +187,13 @@ const gitCommit = (words: string[], base: string): CommitCommand | undefined => 
     index += GIT_VALUED.has(option) ? 2 : 1;
   }
 
-  return baseName(words[0] ?? '') === 'git' && words[index] === 'commit'
-    ? { dir, args: words.slice(index + 1) }
-    : undefined;
+  if (baseName(words[0] ?? '') !== 'git' || words[index] !== 'commit') {
+    return undefined;
+  }
+
+  const commit = { dir, args: words.slice(index + 1) };
+
+  return commit;
 };
 
 // The commits a line runs, each in the directory a leading `cd` or `git -C` moves it to.
@@ -164,8 +206,11 @@ export const commitsIn = (commands: ShellCommand[], cwd: string): CommitCommand[
 
     if (words[0] === 'cd' && words[1] !== undefined) {
       base = resolvedPath(base, words[1]);
-    } else if (commit !== undefined) {
-      commits.push(stdin === undefined ? commit : { ...commit, stdin });
+    }
+    else if (commit !== undefined) {
+      const fed = stdin === undefined ? commit : { ...commit, stdin };
+
+      commits.push(fed);
     }
   }
 
@@ -197,22 +242,28 @@ export const commitMessage = (args: string[]): CommitMessage => {
   const messages: string[] = [];
   let file: string | undefined;
 
-  args.forEach((word, index) => {
-    const flag = flagOf(word);
-    const value = flag === undefined ? undefined : optionValue(args, index, flag);
+  args
+    .forEach((word, index) => {
+      const flag = flagOf(word);
+      const value = flag === undefined ? undefined : optionValue(args, index, flag);
 
-    if (flag !== undefined && MESSAGE_FLAGS.has(flag) && value !== undefined) {
-      messages.push(value);
-    } else if (flag !== undefined && FILE_FLAGS.has(flag)) {
-      file = value;
-    }
-  });
+      if (flag !== undefined && MESSAGE_FLAGS.has(flag) && value !== undefined) {
+        messages.push(value);
+      }
+      else if (flag !== undefined && FILE_FLAGS.has(flag)) {
+        file = value;
+      }
+    });
 
-  return messages.length > 0 ? { text: messages.join('\n\n') } : { ...(file === undefined ? {} : { file }) };
+  const message: CommitMessage = messages.length > 0
+    ? { text: messages.join('\n\n') }
+    : { ...(file === undefined ? {} : { file }) };
+
+  return message;
 };
 
 // Worktrees no live agent of this session owns; the harness names each `agent-<id>`.
-export const leftoverNote = (names: string[], agents: { id: string; status: string }[]): string | undefined => {
+export const leftoverNote = (names: string[], agents: ListedAgent[]): string | undefined => {
   const live = new Set(agents
     .filter(({ status }) => {
       return LIVE.has(status);
@@ -220,9 +271,10 @@ export const leftoverNote = (names: string[], agents: { id: string; status: stri
     .map(({ id }) => {
       return `agent-${id}`;
     }));
-  const leftover = names.filter((name) => {
-    return !live.has(name);
-  });
+  const leftover = names
+    .filter((name) => {
+      return !live.has(name);
+    });
 
   return leftover.length === 0
     ? undefined

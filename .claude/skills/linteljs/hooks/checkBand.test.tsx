@@ -1,9 +1,17 @@
-import type { On } from 'claude-code';
 import {
   type Engine,
   expect,
   test,
 } from 'claude-code/testing';
+
+import type { On } from 'claude-code';
+
+interface Printed {
+  word: string;
+  runs?: boolean;
+}
+
+type Surface = (typeof SURFACES)[number];
 
 const PROMPT = {
   hasSurvey: false,
@@ -19,18 +27,16 @@ const PROMPT = {
 
 const SURFACES = ['terminal', 'desktop'] as const;
 
-interface Printed {
-  word: string;
-  runs?: boolean;
-}
-
 // What `checkStatus.ts` prints, or that node cannot run it, and every argv the band ran.
 const fakeStatus = (on: On, printed: Printed): (readonly string[])[] => {
   const runs: (readonly string[])[] = [];
 
   on('session.root', () => {
-    return { value: '/project' };
+    const root = { value: '/project' };
+
+    return root;
   });
+
   on('process.run', (_, e) => {
     runs.push(e.argv);
 
@@ -38,7 +44,7 @@ const fakeStatus = (on: On, printed: Printed): (readonly string[])[] => {
       throw new Error('node is not on PATH');
     }
 
-    return {
+    const ran = {
       value: {
         exitCode: 0,
         stdout: `${printed.word}\n`,
@@ -47,13 +53,22 @@ const fakeStatus = (on: On, printed: Printed): (readonly string[])[] => {
         isStderrTruncated: false,
       },
     };
+
+    return ran;
   });
+
   on('turn.complete', () => {
-    return { text: '' };
+    const completed = { text: '' };
+
+    return completed;
   });
+
   on('session.start', () => {
-    return { cwd: '/project' };
+    const started = { cwd: '/project' };
+
+    return started;
   });
+
   // The engine's own band, empty: the tree the band draws above.
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e);
@@ -74,7 +89,7 @@ const complete = async ($: Engine, agentId?: string): Promise<void> => {
   });
 };
 
-const bandText = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey = false): Promise<string | undefined> => {
+const bandText = async ($: Engine, surface: Surface, hasSurvey = false): Promise<string | undefined> => {
   const band = await $.ui.mount({
     plugin: 'linteljs',
     surface,
@@ -92,6 +107,7 @@ const bandText = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey
 
 test('draws the state word checkStatus.ts prints at session start', async ($, on) => {
   const runs = fakeStatus(on, { word: 'passed' });
+
   await $.session.start({
     cwd: '/project',
     surface: 'terminal',
@@ -99,7 +115,9 @@ test('draws the state word checkStatus.ts prints at session start', async ($, on
   });
 
   for (const surface of SURFACES) {
-    expect(await bandText($, surface)).toBe('check passed on this tree');
+    const text = await bandText($, surface);
+
+    expect(text).toBe('check passed on this tree');
   }
 
   expect(runs[0]?.[0]).toBe('node');
