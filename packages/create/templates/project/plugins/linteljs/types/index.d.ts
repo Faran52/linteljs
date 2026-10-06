@@ -1,12 +1,9 @@
 // The state word `hooks/checkStatus.ts` prints, which the check band draws.
 export type CheckWord = 'failed' | 'none' | 'passed' | 'running' | 'stale';
 
-export interface LinteljsState {
-  check: CheckWord | null;
-}
-
+// Inline, since `claude plugin validate` reads the state's shape from this declaration.
 declare module 'claude-code' {
   interface PluginState {
-    linteljs: LinteljsState;
+    linteljs: { check: CheckWord | null };
   }
 }

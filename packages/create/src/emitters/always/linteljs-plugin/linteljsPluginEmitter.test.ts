@@ -243,7 +243,6 @@ describe('linteljsPluginEmitter', () => {
       });
 
     const expected = [
-      ['plugins/linteljs/hooks/hooks.json', undefined],
       ['plugins/linteljs/hooks/gitSafetyGuardHook.ts', undefined],
       ['plugins/linteljs/hooks/eslintFixWarningHook.ts', undefined],
       ['plugins/linteljs/hooks/bannedPatternGuardHook.ts', undefined],

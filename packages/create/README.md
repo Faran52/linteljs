@@ -139,6 +139,9 @@ removed. The hooks inspect commands, never run them. In Claude Code a commit is 
 has passed on the work tree it would commit (run on its own or redirected to a file, never piped or chained), and
 a hook warns once when a session's context passes 150K tokens; `.claude/settings.json` adds a `[CTX nK]` badge
 for the session and for each subagent: green, amber past 130K, red past 150K. A status line of your own is kept.
+A band above the prompt shows the gate's state for the work tree, `passed`, `failed`, `running` or `stale`; it
+needs Claude Code 2.1.250 or so, and an older one runs every other hook without it. The plugin is linteljs's
+tooling, so your `tsconfig.json` and ESLint config leave `plugins/linteljs/` out.
 
 | Path | Written for | Owned by |
 | --- | --- | --- |

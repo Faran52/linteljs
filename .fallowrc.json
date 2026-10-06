@@ -5,6 +5,7 @@
     "packages/*/tsdown.config.ts",
     "packages/create/e2e/registry/registry.ts",
     "packages/create/templates/project/plugins/linteljs/hooks/*.ts",
+    "packages/create/templates/project/plugins/linteljs/hooks/*.tsx",
     "packages/create/templates/project/scripts/*.ts",
     "packages/eslint-plugin/scripts/release/run-rules/runRulesRelease.ts"
   ],
@@ -15,6 +16,7 @@
   ],
   "ignoreDependencies": [
     "@stryker-mutator/vitest-runner",
+    "claude-code",
     "eslint-import-resolver-typescript",
     "jiti",
     "svelte",

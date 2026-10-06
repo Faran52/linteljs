@@ -2,5 +2,6 @@
   "name": "linteljs",
   "version": "1.0.0",
   "description": "LintelJS project standards and safety hooks",
-  "author": { "name": "Faran Ali" }
+  "author": { "name": "Faran Ali" },
+  "types": "./types/index.d.ts"
 }

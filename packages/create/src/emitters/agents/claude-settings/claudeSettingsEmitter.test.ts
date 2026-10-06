@@ -144,6 +144,9 @@ describe('claudeSettingsEmitter', () => {
       ['.claude/settings.json', undefined],
       ['plugins/linteljs/.claude-plugin/plugin.json', undefined],
       ['plugins/linteljs/.claude-plugin/marketplace.json', undefined],
+      ['plugins/linteljs/hooks/hooks.json', undefined],
+      ['plugins/linteljs/hooks/checkBand.tsx', undefined],
+      ['plugins/linteljs/types/index.d.ts', undefined],
     ];
     expect(written).toEqual(expected);
   });
@@ -162,7 +165,8 @@ describe('claudeSettingsEmitter', () => {
   "name": "linteljs",
   "version": "1.0.0",
   "description": "LintelJS project standards and safety hooks",
-  "author": { "name": "Faran Ali" }
+  "author": { "name": "Faran Ali" },
+  "types": "./types/index.d.ts"
 }
 `);
 

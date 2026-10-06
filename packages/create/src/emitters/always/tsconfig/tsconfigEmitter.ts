@@ -60,11 +60,13 @@ const BASE_INCLUDE = [
   '**/*.tsx',
   '**/*.mts',
 ];
+// The plugin is vendored tooling, typechecked where it is written, and its band imports the engine's `claude-code`.
 const BASE_EXCLUDE = [
   'node_modules',
   'dist',
   'build',
   'coverage',
+  'plugins/linteljs',
 ];
 
 // `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`.

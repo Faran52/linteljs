@@ -4,10 +4,16 @@ import {
   it,
 } from 'vitest';
 
+import { isJsonObject, parsedAs } from '@utils/objectUtils';
+
 import { DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
-import { codexMarketplaceEmitter, emitCodexMarketplace } from './codexMarketplaceEmitter';
+import {
+  codexHooks,
+  codexMarketplaceEmitter,
+  emitCodexMarketplace,
+} from './codexMarketplaceEmitter';
 
 import type { Answers } from '@config/types';
 
@@ -171,6 +177,11 @@ describe('codexMarketplaceEmitter', () => {
         'plugins/linteljs/.codex-plugin/plugin.json',
         undefined,
       ],
+      [
+        'standard',
+        'plugins/linteljs/hooks/codexHooks.json',
+        undefined,
+      ],
     ];
     expect(shapes).toEqual(expected);
 
@@ -195,6 +206,7 @@ describe('codexMarketplaceEmitter', () => {
   "description": "LintelJS project standards and safety hooks",
   "author": { "name": "Faran Ali" },
   "skills": "./skills/",
+  "hooks": "./hooks/codexHooks.json",
   "interface": {
     "displayName": "LintelJS",
     "shortDescription": "Project structure, type-safety, and verification rules",
@@ -206,5 +218,34 @@ describe('codexMarketplaceEmitter', () => {
   }
 }
 `);
+  });
+
+  it('ships Claude Code\'s hooks to Codex without the modules key Codex refuses', async () => {
+    const [
+      ,
+      ,
+      ,
+      hooksFile,
+    ] = codexMarketplaceEmitter(CODEX);
+
+    const hooksText = hooksFile === undefined ? '' : await shippedAssetsReader(hooksFile.content);
+    const claudeText = await shippedAssetsReader({ sources: ['project/plugins/linteljs/hooks/hooks.json'] });
+    const claudeHooks = parsedAs(claudeText, isJsonObject);
+    const codexFile = parsedAs(hooksText, isJsonObject) ?? {};
+    const codexKeys = Object.keys(codexFile);
+    const isTerminated = hooksText.endsWith('}\n');
+
+    expect(claudeHooks).toHaveProperty('modules');
+    expect(claudeHooks).toMatchObject(codexFile);
+    expect(codexKeys).toEqual(['hooks']);
+    expect(isTerminated).toBe(true);
+  });
+
+  it('drops the modules key and keeps every other one', () => {
+    const source = '{"modules":["./a.tsx"],"hooks":{"Stop":[]},"description":"d"}';
+
+    const written = codexHooks(source);
+
+    expect(written).toBe('{\n  "hooks": {\n    "Stop": []\n  },\n  "description": "d"\n}\n');
   });
 });

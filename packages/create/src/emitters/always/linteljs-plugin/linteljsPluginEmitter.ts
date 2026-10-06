@@ -172,7 +172,6 @@ export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
   const artifacts = [
     copied('plugins/linteljs/skills/linteljs/SKILL.md'),
     ...referenceArtifacts(answers),
-    copied('plugins/linteljs/hooks/hooks.json'),
     copied('plugins/linteljs/hooks/gitSafetyGuardHook.ts'),
     copied('plugins/linteljs/hooks/eslintFixWarningHook.ts'),
     copied('plugins/linteljs/hooks/bannedPatternGuardHook.ts'),

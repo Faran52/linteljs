@@ -9,6 +9,12 @@ const PROMPT = {
   hasSurvey: false,
   isWorking: false,
   maxRows: 10,
+  bodyColumns: 80,
+  scroll: {
+    offset: 0,
+    bodyRows: 1,
+  },
+  view: {},
 };
 
 const SURFACES = ['terminal', 'desktop'] as const;

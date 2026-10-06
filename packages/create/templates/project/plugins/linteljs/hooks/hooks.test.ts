@@ -21,6 +21,7 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
   const hooks: unknown = JSON.parse(hooksText);
 
   expect(hooks).toEqual({
+    modules: ['./checkBand.tsx'],
     hooks: {
       PreToolUse: [
         {
@@ -101,9 +102,15 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
   });
 });
 
-it.each(['.claude-plugin/plugin.json', '.codex-plugin/plugin.json'])('leaves %s to discover hooks.json', (manifest) => {
-  const file = readFileSync(join(import.meta.dirname, '..', manifest), 'utf8');
+it('leaves .claude-plugin/plugin.json to discover hooks.json', () => {
+  const file = readFileSync(join(import.meta.dirname, '..', '.claude-plugin/plugin.json'), 'utf8');
   expect(file).not.toContain('"hooks"');
+});
+
+// Codex refuses the `modules` key, so it reads the copy the emitter writes without it.
+it('points .codex-plugin/plugin.json at codexHooks.json', () => {
+  const file = readFileSync(join(import.meta.dirname, '..', '.codex-plugin/plugin.json'), 'utf8');
+  expect(file).toContain('"hooks": "./hooks/codexHooks.json"');
 });
 
 const CASES: [HookScript, object | string][] = [

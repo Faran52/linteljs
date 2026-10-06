@@ -1,4 +1,7 @@
 {
+  "modules": [
+    "./checkBand.tsx"
+  ],
   "hooks": {
     "PreToolUse": [
       {

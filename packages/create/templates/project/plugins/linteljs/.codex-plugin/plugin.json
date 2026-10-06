@@ -4,6 +4,7 @@
   "description": "LintelJS project standards and safety hooks",
   "author": { "name": "Faran Ali" },
   "skills": "./skills/",
+  "hooks": "./hooks/codexHooks.json",
   "interface": {
     "displayName": "LintelJS",
     "shortDescription": "Project structure, type-safety, and verification rules",

@@ -96,16 +96,35 @@ export const emitCodexMarketplace = (plugins: Plugin[]): string => {
   return `${JSON.stringify(marketplace, null, 2)}\n`;
 };
 
+// Codex refuses a hooks file holding a key it does not know, and `modules` is Claude Code's. No hook entry has a
+// `modules` key, so the reviver drops only the top-level one.
+export const codexHooks = (source: string): string => {
+  const hooks: unknown = JSON.parse(source, (key: string, value: unknown): unknown => {
+    return key === 'modules' ? undefined : value;
+  });
+
+  return `${JSON.stringify(hooks, null, 2)}\n`;
+};
+
 export const codexMarketplaceEmitter = (answers: Answers): Artifact[] => {
   if (!answers.agents.includes('codex')) {
     return [];
   }
 
   const marketplace = emitCodexMarketplace(answers.plugins);
+  const hooks: Artifact = {
+    stage: 'standard',
+    target: 'plugins/linteljs/hooks/codexHooks.json',
+    content: {
+      sources: ['project/plugins/linteljs/hooks/hooks.json'],
+      transform: codexHooks,
+    },
+  };
   const artifacts = [
     adapterArtifact('AGENTS.md', answers),
     emitted('standard', '.agents/plugins/marketplace.json', marketplace),
     copied('plugins/linteljs/.codex-plugin/plugin.json'),
+    hooks,
   ];
 
   return artifacts;

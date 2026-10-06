@@ -49,6 +49,7 @@
     "templates",
     "!templates/project/scripts/**/*.test.ts",
     "!templates/project/plugins/**/*.test.ts",
+    "!templates/project/plugins/**/*.test.tsx",
     "!templates/**/node_modules",
     "CHANGELOG.md",
     "README.md",

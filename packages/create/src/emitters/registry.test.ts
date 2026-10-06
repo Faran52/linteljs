@@ -233,7 +233,8 @@ describe('the project the answers write', () => {
 
   const SCRIPT = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/u;
   const SPECIFIER = /(?:from |import ?\(?)'([^']+)'/gu;
-  const NOT_A_PACKAGE = /^(?:\.|\/|node:|#|~|\$|astro:|virtual:)/u;
+  // The Claude Code engine provides `claude-code` to the check band.
+  const NOT_A_PACKAGE = /^(?:\.|\/|node:|#|~|\$|astro:|virtual:|claude-code$)/u;
   const RESOLVED = [
     '',
     '.ts',

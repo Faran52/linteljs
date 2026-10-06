@@ -7,7 +7,7 @@ import {
   update,
 } from 'claude-code';
 
-import type { CheckWord } from '../types';
+import type { CheckWord } from '../types/index.d.ts';
 
 const check = atom({
   plugin: 'linteljs',

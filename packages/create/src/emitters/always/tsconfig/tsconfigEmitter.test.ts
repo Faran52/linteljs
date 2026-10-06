@@ -127,6 +127,7 @@ describe('buildTsconfig', () => {
         'dist',
         'build',
         'coverage',
+        'plugins/linteljs',
       ],
     };
 

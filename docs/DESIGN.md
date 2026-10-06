@@ -1495,6 +1495,33 @@ and before an edit that changes a `package.json`'s `dependencies`, `devDependenc
 one is often the task, so the person decides each time. A bare `install` adds nothing the manifest does not list,
 and passes.
 
+### The check band, in the same plugin
+
+| fact | source |
+| --- | --- |
+| Claude Code loads a plugin's function hooks from the module `hooks/hooks.json` names under `modules`, beside its command hooks | the plugin-authoring reference bundled with Claude Code 2.1.289 |
+| Claude Code before about 2.1.250 ignores `modules` beside command hooks, and drops a plugin whose `hooks.json` holds `modules` alone with a hook-load error | tested 2026-10-06 |
+| Codex reads a plugin's `hooks/hooks.json` unless `.codex-plugin/plugin.json` names `hooks` (`./`-relative paths), and its `HooksFile` is `deny_unknown_fields` with `description` and `hooks` only | `codex-rs/core-plugins/src/loader.rs` and `codex-rs/config/src/hook_config.rs` at `c2abf86` |
+| `claude plugin validate` reads a plugin's state from an inline shape in the types contract's `interface PluginState` | probe, Claude Code 2.1.289 |
+
+`hooks/checkBand.tsx` runs `node hooks/checkStatus.ts` at session start and when a main-session turn ends, and
+draws the state word in the `AbovePrompt` band. It sits in the linteljs plugin rather than a plugin of its own:
+an older Claude Code ignores `modules` beside the command hooks and still runs them, where a plugin holding only
+the band would fail to load there. The floor is the version that draws it; below it the band is absent and
+nothing else changes.
+
+`hooks.json`, `checkBand.tsx`, `types/index.d.ts` and `.claude-plugin/plugin.json`, which names the types, are
+written for Claude Code alone, so each host's manifest names only files that host gets. Codex would refuse
+`modules`, so `.codex-plugin/plugin.json` names `hooks/codexHooks.json`, which the emitter writes from `hooks.json`
+without that key: one source, and Codex never reads the file it would reject. Cursor and Copilot have their own
+files already.
+
+The plugin is vendored tooling: generated projects ignore `plugins/linteljs/**` in ESLint, and every generated
+`tsconfig.json` excludes `plugins/linteljs` from the one shared emitter, since every target includes `**/*.tsx`
+and the band imports `claude-code`, which only the engine provides. Nothing in a project relied on that typecheck:
+the hooks are typechecked and tested here, and `sync` rewrites the folder. `claude plugin validate` and
+`claude plugin test` are the band's gate; its suite is not shipped.
+
 ### Cursor and Copilot: their own hooks files, the same scripts
 
 | fact | source |
@@ -1964,6 +1991,13 @@ of a version) and nothing from `expression-complexity`, `max-lines` or `max-line
 and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body for `expect` calls and
 finds no body, since the helper is passed by reference. Measured: `assertFunctionNames: ['runE2eCase']` does not help,
 because it matches calls inside the body and there is no call. Off for that directory alone.
+
+### `@linteljs/workspace/band-types`
+
+`plugins/linteljs/types/index.d.ts` is the check band's state contract, and `claude plugin validate` reads a
+plugin's state only from an inline shape in `interface PluginState`. Measured on Claude Code 2.1.289: with
+`linteljs: LinteljsState`, a named interface, validate fails with `linteljs.check is not declared`; inline, it
+passes, and `eslint` on the file reports 1 error, `no-inline-object-types`. Off for that one file.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

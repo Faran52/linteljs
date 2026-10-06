@@ -237,6 +237,13 @@ const config = [
     files: ['packages/create/e2e/targets/*.e2e.test.ts'],
     rules: { 'vitest/expect-expect': 'off' },
   },
+
+  // Plugin state is read from an inline shape. docs/DESIGN.md: `@linteljs/workspace/band-types`
+  {
+    name: '@linteljs/workspace/band-types',
+    files: ['packages/create/templates/project/plugins/linteljs/types/index.d.ts'],
+    rules: { '@linteljs/no-inline-object-types': 'off' },
+  },
 ];
 
 export default config;

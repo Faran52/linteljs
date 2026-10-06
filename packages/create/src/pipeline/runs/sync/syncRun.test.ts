@@ -282,7 +282,16 @@ describe('syncPlugin', () => {
 
     const { removed } = await syncPlugin(cwd, CODEX_ONLY);
 
-    expect(removed).toEqual([CLAUDE_MARKETPLACE, CLAUDE_PLUGIN]);
+    expect(removed).toEqual([
+      CLAUDE_MARKETPLACE,
+      CLAUDE_PLUGIN,
+      'plugins/linteljs/hooks/checkBand.tsx',
+      'plugins/linteljs/hooks/hooks.json',
+      'plugins/linteljs/types/index.d.ts',
+    ]);
+
+    const hasTypes = await exists(join(cwd, 'plugins/linteljs/types'));
+    expect(hasTypes).toBe(false);
     const hasClaudePlugin = await exists(join(cwd, 'plugins/linteljs/.claude-plugin'));
     expect(hasClaudePlugin).toBe(false);
     const hasFolder = await exists(join(cwd, 'plugins/linteljs'));

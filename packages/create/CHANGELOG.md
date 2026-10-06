@@ -129,6 +129,11 @@ when a version's change lives in a sibling it is described there instead:
   the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit` read that checkout's run. A file whose first line marks it generated (`@generated`,
   `do not edit` and the like) cannot be edited, in Claude Code, Codex and Copilot. Adding or removing a dependency,
   by a manager command or a `package.json` edit, asks you first; Cursor asks on the command only.
+- In Claude Code a band above the prompt shows the commit gate's state for the work tree (`passed`, `failed`,
+  `running`, `stale`), read at session start and after each main-session turn. It is a function-hooks module,
+  `hooks/checkBand.tsx`, that `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
+  and older versions run the other hooks without it. Codex reads `hooks/codexHooks.json`, the same hooks without
+  `modules`, and every generated `tsconfig.json` excludes `plugins/linteljs`.
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
   `onFail: "error"`; Bun gets `engines.bun` only. CI runs the Node major that ran `create`.
 - New releases wait two days before they install, so a half-published version is not picked up the minute it
