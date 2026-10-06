@@ -91,21 +91,28 @@ const requireFreePort = async (port: number): Promise<void> => {
   });
 };
 
+const answersPing = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${url}-/ping`);
+
+    return response.ok;
+  }
+  catch {
+    // Not listening yet.
+    return false;
+  }
+};
+
 const waitForPing = async (url: string, child: ChildProcess): Promise<void> => {
   for (let attempt = 0; attempt < PING_ATTEMPTS; attempt += 1) {
     if (child.exitCode !== null) {
       throw new Error(`verdaccio exited with ${String(child.exitCode)} before serving ${url}`);
     }
 
-    try {
-      const response = await fetch(`${url}-/ping`);
+    const answered = await answersPing(url);
 
-      if (response.ok) {
-        return;
-      }
-    }
-    catch {
-      // Not listening yet.
+    if (answered) {
+      return;
     }
 
     await sleep(PING_INTERVAL);

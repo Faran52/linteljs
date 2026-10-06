@@ -128,12 +128,9 @@ const missingStylexRules = (project: string): string => {
   return missing;
 };
 
-const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<void> => {
-  const name = answers.target;
-  const project = join(root, name);
-
+const expectCreated = async ({ answers, variant }: E2eCase, root: string): Promise<RunResult> => {
   const flags = variant === undefined ? undefined : CREATE_FLAGS[variant];
-  const create = await createProject(root, name, answers, flags);
+  const create = await createProject(root, answers.target, answers, flags);
   // A skipped fix pass reports nothing.
   const expectedFixes = flags === undefined ? CLEAN_FIXES : null;
 
@@ -146,6 +143,10 @@ const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<v
 
   expect(fixes).toEqual(expectedFixes);
 
+  return create;
+};
+
+const expectInstalled = async ({ answers, variant }: E2eCase, create: RunResult, project: string): Promise<void> => {
   // The install a user runs after `--no-install`, under the same lifecycle.
   const installLater = async (): Promise<RunResult> => {
     return runPm(answers.packageManager, ['install'], project);
@@ -164,7 +165,9 @@ const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<v
   expect(installed).toBe('install: ok');
   expect(create.output).not.toContain('next: ');
   expect(noise).toEqual([]);
+};
 
+const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<void> => {
   const hasHooks = existsSync(join(project, '.husky/_'));
 
   expect(hasHooks).toBe(true);
@@ -188,7 +191,9 @@ const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<v
 
   expect(manifest)
     .not.toHaveProperty('linteljs');
+};
 
+const expectWorking = async ({ answers, variant }: E2eCase, project: string): Promise<void> => {
   // npm exits non-zero on a peer it resolved to an invalid range.
   if (answers.packageManager === 'npm') {
     const listing = await runPm('npm', ['ls', '--all'], project);
@@ -210,6 +215,15 @@ const checkCase = async ({ answers, variant }: E2eCase, root: string): Promise<v
 
     expect(seen).toEqual([]);
   }
+};
+
+const checkCase = async (item: E2eCase, root: string): Promise<void> => {
+  const project = join(root, item.answers.target);
+  const create = await expectCreated(item, root);
+
+  await expectInstalled(item, create, project);
+  await expectRecorded(item, project);
+  await expectWorking(item, project);
 };
 
 export const runE2eCase = async (item: E2eCase): Promise<void> => {

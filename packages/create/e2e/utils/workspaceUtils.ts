@@ -62,6 +62,18 @@ export const versionOf = async (pm: PackageManager): Promise<string> => {
   return pending;
 };
 
+const flagIf = (flag: string, value: string | undefined): string[] => {
+  const pair = value === undefined ? [] : [flag, value];
+
+  return pair;
+};
+
+const listFlagIf = (flag: string, values: readonly string[] | undefined): string[] => {
+  const pair = values === undefined ? [] : [flag, values.join(',')];
+
+  return pair;
+};
+
 // A flag a target never asks for is refused, so those go only when set.
 export const answerFlags = (answers: Answers): string[] => {
   const flags = [
@@ -78,15 +90,15 @@ export const answerFlags = (answers: Answers): string[] => {
     '--plugins',
     answers.plugins.join(','),
     ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
-    ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
-    ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
-    ...(answers.form === undefined ? [] : ['--form', answers.form]),
-    ...(answers.router === undefined ? [] : ['--router', answers.router]),
-    ...(answers.store === undefined ? [] : ['--store', answers.store]),
-    ...(answers.styling === undefined ? [] : ['--styling', answers.styling]),
-    ...(answers.data === undefined ? [] : ['--data', answers.data]),
-    ...(answers.mocking === undefined ? [] : ['--mocking', answers.mocking]),
-    ...(answers.languages === undefined ? [] : ['--languages', answers.languages.join(',')]),
+    ...flagIf('--hosted', answers.hostedFramework),
+    ...listFlagIf('--surfaces', answers.surfaces),
+    ...flagIf('--form', answers.form),
+    ...flagIf('--router', answers.router),
+    ...flagIf('--store', answers.store),
+    ...flagIf('--styling', answers.styling),
+    ...flagIf('--data', answers.data),
+    ...flagIf('--mocking', answers.mocking),
+    ...listFlagIf('--languages', answers.languages),
   ];
 
   return flags;
