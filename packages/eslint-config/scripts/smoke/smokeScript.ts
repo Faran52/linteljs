@@ -15,6 +15,7 @@ import {
 } from 'node:path';
 import { execPath } from 'node:process';
 
+import { fieldOf, isObjectValue } from '../../../../scripts/utils/guardUtils.ts';
 import { run, unpackTarball } from '../../../../scripts/utils/processUtils.ts';
 import { log } from '../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
@@ -27,14 +28,10 @@ const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
 
 const isPackedManifest = (value: unknown): value is PackedManifest => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
+  const name = fieldOf(value, 'name');
+  const exports = fieldOf(value, 'exports');
 
-  const hasName = 'name' in value && typeof value.name === 'string';
-  const hasExports = 'exports' in value && typeof value.exports === 'object' && value.exports !== null;
-
-  return hasName && hasExports;
+  return typeof name === 'string' && isObjectValue(exports);
 };
 
 log('packing and extracting the tarball');

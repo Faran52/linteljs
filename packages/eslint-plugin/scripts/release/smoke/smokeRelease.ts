@@ -13,6 +13,7 @@ import { pathToFileURL } from 'node:url';
 
 import { sumBy } from 'es-toolkit';
 
+import { fieldOf } from '../../../../../scripts/utils/guardUtils.ts';
 import { unpackTarball } from '../../../../../scripts/utils/processUtils.ts';
 import { log } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
@@ -52,14 +53,10 @@ const alphabetically = (left: string, right: string): number => {
 };
 
 const isPluginShape = (value: unknown): value is PluginShape => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
+  const rules = fieldOf(value, 'rules');
+  const configs = fieldOf(value, 'configs');
 
-  const hasRules = 'rules' in value && Boolean(value.rules);
-  const hasConfigs = 'configs' in value && Boolean(value.configs);
-
-  return hasRules && hasConfigs;
+  return Boolean(rules) && Boolean(configs);
 };
 
 const defaultExportOf = async (href: string): Promise<unknown> => {

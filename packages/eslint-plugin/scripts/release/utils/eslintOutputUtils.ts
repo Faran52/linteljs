@@ -28,6 +28,17 @@ const streamOf = (error: unknown, name: 'stderr' | 'stdout'): string => {
 };
 
 // ESLint exits non-zero whenever it reports; only output that will not parse fails.
+// A lint with findings exits non-zero and still prints its JSON.
+const stdoutOfFailure = (error: unknown): string => {
+  const stdout = streamOf(error, 'stdout');
+
+  if (stdout.trim() === '') {
+    throw new Error(`eslint produced no parseable output:\n${streamOf(error, 'stderr')}`, { cause: error });
+  }
+
+  return stdout;
+};
+
 export const lintResultOf = async (args: string[], cwd: string): Promise<LintResult> => {
   let stdout: string;
 
@@ -38,11 +49,7 @@ export const lintResultOf = async (args: string[], cwd: string): Promise<LintRes
     }));
   }
   catch (error) {
-    stdout = streamOf(error, 'stdout');
-
-    if (stdout.trim() === '') {
-      throw new Error(`eslint produced no parseable output:\n${streamOf(error, 'stderr')}`, { cause: error });
-    }
+    stdout = stdoutOfFailure(error);
   }
 
   const parsed: unknown = JSON.parse(stdout);

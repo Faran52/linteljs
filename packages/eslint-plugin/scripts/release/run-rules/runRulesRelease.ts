@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { fieldOf, isObjectValue } from '../../../../../scripts/utils/guardUtils.ts';
+
 interface LintMessage {
   ruleId: string | null;
   fatal?: boolean;
@@ -39,19 +41,15 @@ const FIXTURE = [
 ].join('\n');
 
 const isLegacyEslint = (value: unknown): value is LegacyEslint => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
+  const linter = fieldOf(value, 'Linter');
 
-  return 'Linter' in value && typeof value.Linter === 'function' && 'defineRule' in value.Linter.prototype;
+  return typeof linter === 'function' && 'defineRule' in linter.prototype;
 };
 
 const isBuiltPlugin = (value: unknown): value is BuiltPlugin => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
+  const rules = fieldOf(value, 'rules');
 
-  return 'rules' in value && typeof value.rules === 'object' && value.rules !== null;
+  return isObjectValue(rules);
 };
 
 // `require`, since ESLint 6 and the bundle are CommonJS; resolved from where the container copies it.
