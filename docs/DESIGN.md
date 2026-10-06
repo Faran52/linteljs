@@ -1852,8 +1852,28 @@ package tsconfig instead gives `tsc` 25 errors, 3 of them `TS2307: Cannot find m
 the implicit `any`s that follow from it. `claude plugin validate` and `claude plugin test` are their gate.
 
 `.claude/skills/linteljs/**` is this repo's own mod, the same kind of module. Measured: without the entry,
-`eslint` on the folder reports 8 errors, one per `.ts` and `.tsx` file, each `was not found by the project
-service`. `claude plugin validate` and `claude plugin test` on the folder are its gate.
+`eslint` on the folder reports 13 errors, one per `.ts` and `.tsx` file, each `was not found by the project
+service`. `claude plugin validate` and `claude plugin test` on the folder are its gate. Fallow needs no entry for
+it: `fallow list` discovers no file under `.claude/`, so neither `dead-code` nor `dupes` sees the mod or its copy
+of the check band.
+
+The decisions the mod's code cannot show:
+
+- **The check band is a copy.** `claude plugin validate` refuses an import from outside the plugin's folder, a
+  symlink, and a second `modules` entry, so the shipped `checkBand.tsx` and its suite are carried byte for byte.
+  An `it.each` in the shipped `hooks.test.ts` fails the moment either copy drifts from its source.
+- **It is named `linteljs`.** The band's atom is keyed to plugin `linteljs`; under another name the copy would
+  need an edit, and it would stop being a copy.
+- **The CI band listens on classic events.** The check band holds `session.start` and `turn.complete`, so the CI
+  band refreshes on `classic.SessionStart` and `classic.Stop` (the main session's), at most every 3 minutes.
+- **Green only when main's runs were read.** Actions being operational says nothing about main, so a band that
+  could not reach `gh` draws yellow, never green.
+- **Stale worktrees warn, never deny.** A worktree no agent of this session owns may belong to another session's
+  live agent, so a deny would block work that is not stale. A HEAD ahead of `origin/HEAD` adds an `ff-only` note
+  to the spawned agent's prompt, since a new worktree starts at origin's default branch.
+- **A refused note is swallowed.** The leftover-worktree warning goes through `session.append`, which the engine
+  may refuse; the refusal is caught so the spawn and its base note still go ahead. Every gating hook carries a
+  `.catch` for the same reason: a broken guard must not take the tool down with it.
 
 ### `'**/utils/*.ts': '*Utils'`
 

@@ -3,6 +3,7 @@ paths:
   - "packages/**/*"
   - "scripts/**/*"
   - "docs/**/*"
+  - ".claude/skills/**/*"
   - "*.{ts,js,json,yaml}"
 ---
 
@@ -76,6 +77,30 @@ frameworks this workspace does not install and files named `*.test.ts`.
   plugin the published surface against `__mocks__/ruleMetadata.json`), the plugin's `ruleModules.test.ts` and
   `fixerSafety.test.ts`, `create/src/types.test.ts`, and `hooks.test.ts`. `pnpm test:isolated` skips exactly
   these, listed in `scripts/isolated-coverage/constants.ts`.
+
+## The repo mod
+
+`.claude/skills/linteljs/` is this repo's own Claude Code mod. The engine finds the plugin folder there with no
+`settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the three below. It is
+named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its gate is
+`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`; ESLint ignores
+the folder and Fallow does not discover it (both measured in `docs/DESIGN.md`).
+
+- **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
+  `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds
+  each copy equal to its source; change the shipped file, then copy it. `checkStatus.ts` runs the shipped script.
+- **CI band** (`ciBand.tsx`): main's latest `ci`, `e2e` and `audit` runs from `gh run list` and the GitHub
+  Actions component from githubstatus, refreshed on `classic.SessionStart` and `classic.Stop` at most every 3
+  minutes. Green only when main's runs were read and passed and Actions is operational.
+- **Repo guards** (`repoGuards.ts`, deciding through `utils/guardUtils.ts` and `utils/shellUtils.ts`):
+  - read guard: a `Read` or shell read of a file too large or noisy to take whole is denied with the targeted tool;
+  - no polling in subagents: `Monitor`, sleep loops and `watch` from a subagent are denied;
+  - banned text: an `Edit`, `Write` or staged diff adding a registry mirror URL, a coverage ignore or a Stryker
+    disable comment is denied, outside the files that hold them as data;
+  - at `git commit`: a `*.tmp.ts` staged or at a root, banned text in the staged diff, and a message commitlint
+    refuses each deny the commit;
+  - at a worktree agent's spawn: leftover worktrees no live agent owns are a warning, and a HEAD that differs
+    from `origin/HEAD` prepends an `ff-only` note to the agent's prompt.
 
 ## `docs/` and the root
 
