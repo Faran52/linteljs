@@ -1477,6 +1477,8 @@ while the check runs leaves the pass stale. Only the check itself counts, run as
 (a log inside it is a file that changes while the check runs): a pipe hides its exit status and a chain adds to
 it, so `pnpm check | tail` and `pnpm check; echo $?` record nothing. The one chain that counts is a leading
 `cd <dir> && <check>`: `&&` runs the check only once the move worked, so the line's exit is the check's.
+Leading `NAME=value` assignments count (`CI=1 pnpm check`), unless a value is computed (`CI="$(...)"`); a
+wrapper (`env`, `time`, `sudo`, `bash -c`) does not, since what follows the assignments must read as the check.
 The project is the one the command runs in, not the session's: a leading `cd <dir> &&` moves the whole line, and
 each `git -C <dir>` moves a commit on from there, so an agent whose shell sits in another checkout is judged on the
 worktree it names. `--git-dir` and `--work-tree` are not followed, and a `cd` after `;` or `||` moves nothing. A
@@ -1520,8 +1522,12 @@ files already.
 The plugin is vendored tooling: generated projects ignore `plugins/linteljs/**` in ESLint, and every generated
 `tsconfig.json` excludes `plugins/linteljs` from the one shared emitter, since every target includes `**/*.tsx`
 and the band imports `claude-code`, which only the engine provides. Nothing in a project relied on that typecheck:
-the hooks are typechecked and tested here, and `sync` rewrites the folder. `claude plugin validate` and
-`claude plugin test` are the band's gate; its suite is not shipped.
+the hooks are typechecked and tested here, and `sync` rewrites the folder. The band's gate is
+`claude plugin test .claude/skills/linteljs`, which runs the repo mod's byte-equal copy of `checkBand.tsx` and its
+suite (`hooks.test.ts` holds the copies equal); its suite is not shipped. `claude plugin test` runs every
+`*.test.ts(x)` under the folder it is given and cannot select files, so on the shipped folder it also runs the
+Node hook suites, which do not load there. Measured on Claude Code 2.1.291: on the shipped folder 4 pass and 21
+fail, all 21 "the file did not load"; on the repo mod 26 pass.
 
 ### Cursor and Copilot: their own hooks files, the same scripts
 
@@ -1854,7 +1860,8 @@ them, `pnpm typecheck:mods` runs `tsc` on both, and `modModules()` in `eslint.co
 tsconfigs check to ESLint. In CI no engine runs to write them, so `scripts/typecheck-mods/` skips and
 `UNTYPED_MODS` ignores every mod whose `index.d.ts` is missing. That lasts until Anthropic publishes the types
 for 2.1.289 or later: `claude plugin validate` and `claude plugin test` strip types without checking them
-(anthropics/claude-code#99771), so they are the mods' only gate in CI. `.fallowrc.json` ignores `.claude/**`.
+(anthropics/claude-code#99771), so they are the mods' only gate in CI, `claude plugin test` on the repo mod
+alone (the check band's suite runs there as a copy). `.fallowrc.json` ignores `.claude/**`.
 Measured: without it `fallow list` finds the repo mod's 13 files, and `fallow` fails on 12 unused files (the
 engine loads `register.tsx` by name, and `claude plugin test` runs the suites), the check band copy as a clone
 group, and 20 health findings scored on Fallow's estimate, since `claude plugin test` writes no coverage.
