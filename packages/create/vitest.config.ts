@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 // A vitest project does not inherit the root's `test.exclude`; without this the e2e files run.
 export default defineConfig({
+  // Not each file's nearest: a mod's tsconfig extends engine-written types that CI lacks.
+  tsconfig: 'tsconfig.json',
   resolve: {
     tsconfigPaths: true,
   },
