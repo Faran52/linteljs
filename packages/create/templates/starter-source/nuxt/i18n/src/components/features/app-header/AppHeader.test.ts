@@ -8,7 +8,7 @@ import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
 
 import AppHeader from './AppHeader.vue';
-import { styles } from './styles';
+import { styles } from './appHeaderStyles';
 
 const last = languages.at(-1)?.id ?? 'en';
 

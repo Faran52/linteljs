@@ -62,10 +62,13 @@ export const componentStyles = (paths: ComponentPaths = COMPONENT_PATHS): Starte
     });
 };
 
-const directoryOf = (path: string): string => {
-  const lastSlash = path.lastIndexOf('/');
+// `ui/app-mark/AppMark` to `ui/app-mark/appMarkStyles.ts`.
+const stylesOf = (path: string): string => {
+  const stemStart = path.lastIndexOf('/') + 1;
+  const upper = path.charAt(stemStart);
+  const initial = upper.toLowerCase();
 
-  return path.slice(0, lastSlash);
+  return `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
 };
 
 // Ships with its component, since a module nothing imports fails the coverage gate.
@@ -92,8 +95,8 @@ export const componentStyleModules = (
 
   return COMPONENTS
     .flatMap(([key, ships]): StarterFile[] => {
-      const target = `${directoryOf(paths[key])}/styles.ts`;
-      const asset = at(target, `${directoryOf(COMPONENT_PATHS[key])}/styles.ts`);
+      const target = stylesOf(paths[key]);
+      const asset = at(target, stylesOf(COMPONENT_PATHS[key]));
 
       const variants: StarterFile[] = [
         {

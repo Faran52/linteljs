@@ -1,4 +1,4 @@
-import { styles } from './styles';
+import { styles } from './markStyles';
 
 import type { JSX } from 'solid-js';
 

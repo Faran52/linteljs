@@ -3,7 +3,7 @@
 
   import { PAGES } from '@config/routes';
 
-  import { styles } from './styles';
+  import { styles } from './appHeaderStyles';
 
   interface Props {
     name: string;

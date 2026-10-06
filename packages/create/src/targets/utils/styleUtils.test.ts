@@ -80,18 +80,18 @@ describe('componentStyleModules', () => {
   it('writes the class-name module without stylex and the compiled one and its tokens with it', () => {
     const actual = pickedBy(componentStyleModules());
     const expected = [
-      'src/components/features/app-header/styles.ts base',
-      'src/components/ui/mark/styles.ts base',
-      'src/components/ui/button/styles.ts base',
+      'src/components/features/app-header/appHeaderStyles.ts base',
+      'src/components/ui/mark/markStyles.ts base',
+      'src/components/ui/button/buttonStyles.ts base',
     ];
     expect(actual).toEqual(expected);
 
     const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
     const stylexModules = [
-      'src/components/features/app-header/styles.ts stylex',
-      'src/components/ui/mark/styles.ts stylex',
-      'src/components/ui/button/styles.ts stylex',
+      'src/components/features/app-header/appHeaderStyles.ts stylex',
+      'src/components/ui/mark/markStyles.ts stylex',
+      'src/components/ui/button/buttonStyles.ts stylex',
       'src/styles/tokens.stylex.ts stylex',
     ];
     expect(picked).toEqual(stylexModules);
@@ -99,8 +99,8 @@ describe('componentStyleModules', () => {
 
   it('takes another target\'s bytes into its own directories', () => {
     const expected = {
-      target: 'src/components/ui/app-mark/styles.ts',
-      source: 'src/components/ui/mark/styles.ts',
+      target: 'src/components/ui/app-mark/appMarkStyles.ts',
+      source: 'src/components/ui/mark/markStyles.ts',
       shared: 'solid',
     };
     expect(componentStyleModules('solid', RENAMED)[2]).toMatchObject(expected);
@@ -111,7 +111,7 @@ describe('componentStyleModules', () => {
   it('reads React\'s StyleX sheet into Solid\'s tree, spread with attrs', () => {
     const [plain, sheet] = componentStyleModules('solid', RENAMED);
     const expected = {
-      target: 'src/components/features/app-header/styles.ts',
+      target: 'src/components/features/app-header/appHeaderStyles.ts',
       variant: 'stylex',
       shared: 'react',
       stylexAttrs: true,

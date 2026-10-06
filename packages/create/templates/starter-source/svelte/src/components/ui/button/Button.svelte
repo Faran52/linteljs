@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { styles } from './styles';
+  import { styles } from './buttonStyles';
 
   import type { Snippet } from 'svelte';
 

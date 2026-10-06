@@ -202,8 +202,10 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
       ? [
           ...components
             .flatMap(([path, ships]): GateRow[] => {
-              const directory = path.slice(0, path.lastIndexOf('/'));
-              const styles = `${directory}/styles.ts`;
+              const stemStart = path.lastIndexOf('/') + 1;
+              const upper = path.charAt(stemStart);
+              const initial = upper.toLowerCase();
+              const styles = `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
               const rows: GateRow[] = [
                 [styles, under(ships, [undefined, 'tailwind'])],
                 [`${styles}@stylex`, under(ships, ['stylex'])],

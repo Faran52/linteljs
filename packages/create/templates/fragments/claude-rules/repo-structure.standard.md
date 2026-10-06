@@ -9,6 +9,10 @@ Create it then, not before.
 - **A component, page or hook is a subject directory**: kebab-case, holding one entry file named for the
   directory (`button/Button.tsx`, `use-extended-query/useExtendedQuery.ts`), its test beside it, and anything
   only it reads. Never leave loose files at the root of `components/`, `pages/` or a hooks folder.
+- **A component's styles sit beside it**: its stylesheet (`Button.css`), or its class map
+  `<subject>Styles.ts` (`button/buttonStyles.ts`), the one file a change of styling swaps, so the component reads
+  the same either way. Its component's suite covers it. `.stylex.ts` is StyleX's name for `defineVars` and
+  `defineConsts` files (`styles/tokens.stylex.ts`), never a component's sheet.
 - **A file in a `utils/` folder ends in `Utils`** (`fetchExtendedUtils.ts`, or `fetch-extended-utils.ts` where
   files are kebab-case), with its test beside it. `utils/` is the one folder that holds loose module files.
 - **Every other module is a subject directory.** In `store/`, `providers/`, `services/` and `apis/`, the

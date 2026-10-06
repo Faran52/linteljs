@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { PAGES } from '@config/routes';
 
 import AppHeader from './AppHeader.vue';
-import { styles } from './styles';
+import { styles } from './appHeaderStyles';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   const router = createRouter({

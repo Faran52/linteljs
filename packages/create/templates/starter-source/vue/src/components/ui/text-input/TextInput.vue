@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { styles } from './styles';
+import { styles } from './textInputStyles';
 
 import type { TextInputProps } from './types';
 

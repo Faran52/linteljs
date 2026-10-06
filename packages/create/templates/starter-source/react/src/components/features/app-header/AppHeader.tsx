@@ -1,6 +1,6 @@
 import { ROUTES } from '@pages/routes';
 
-import { styles } from './styles';
+import { styles } from './appHeaderStyles';
 
 import type { FC } from 'react';
 

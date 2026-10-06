@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { styles } from './styles';
+import { styles } from './appMarkStyles';
 </script>
 
 <template>

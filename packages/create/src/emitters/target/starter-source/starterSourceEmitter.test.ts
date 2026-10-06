@@ -657,28 +657,28 @@ describe('a StyleX sheet', () => {
   it.each<[TargetId, string, string]>([
     [
       'solid',
-      'src/components/ui/button/styles.ts',
-      'src/components/ui/button/styles.ts',
+      'src/components/ui/button/buttonStyles.ts',
+      'src/components/ui/button/buttonStyles.ts',
     ],
     [
       'svelte',
-      'src/components/ui/mark/styles.ts',
-      'src/components/ui/mark/styles.ts',
+      'src/components/ui/mark/markStyles.ts',
+      'src/components/ui/mark/markStyles.ts',
     ],
     [
       'astro',
-      'src/components/features/app-header/styles.ts',
-      'src/components/features/app-header/styles.ts',
+      'src/components/features/app-header/appHeaderStyles.ts',
+      'src/components/features/app-header/appHeaderStyles.ts',
     ],
     [
       'vue',
-      'src/components/ui/app-button/styles.ts',
-      'src/components/ui/button/styles.ts',
+      'src/components/ui/app-button/appButtonStyles.ts',
+      'src/components/ui/button/buttonStyles.ts',
     ],
     [
       'nuxt',
-      'src/components/ui/text-input/styles.ts',
-      'src/components/ui/text-input/styles.ts',
+      'src/components/ui/text-input/textInputStyles.ts',
+      'src/components/ui/text-input/textInputStyles.ts',
     ],
   ])('writes %s its %s as React writes %s, spread with attrs', async (target, written, react) => {
     const text = await textOf({
@@ -699,7 +699,7 @@ describe('a StyleX sheet', () => {
     const text = await textOf({
       target,
       ...stylex,
-    }, 'src/components/ui/button/styles.ts');
+    }, 'src/components/ui/button/buttonStyles.ts');
 
     expect(text).toContain('button: stylex.props(sheet.button),');
   });
@@ -708,7 +708,7 @@ describe('a StyleX sheet', () => {
     const text = await textOf({
       target: 'solid',
       ...stylex,
-    }, 'src/components/ui/button/styles.ts');
+    }, 'src/components/ui/button/buttonStyles.ts');
 
     expect(text).toContain('button: stylex.attrs(sheet.button),');
   });
@@ -831,7 +831,7 @@ describe('the shared palette', () => {
 describe('the header brand', () => {
   it('wraps the name in the plain sheet and in StyleX', async () => {
     const sheet = await textOf({}, 'src/components/features/app-header/AppHeader.css');
-    const stylex = await textOf({ styling: 'stylex' }, 'src/components/features/app-header/styles.ts');
+    const stylex = await textOf({ styling: 'stylex' }, 'src/components/features/app-header/appHeaderStyles.ts');
     const plainBrand = /\.brand \{[^\}]*\}/v.exec(sheet)?.[0] ?? '';
     const stylexBrand = /brand: \{[^\}]*\}/v.exec(stylex)?.[0] ?? '';
 

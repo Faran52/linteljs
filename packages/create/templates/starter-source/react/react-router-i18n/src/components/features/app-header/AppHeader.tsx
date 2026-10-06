@@ -5,7 +5,7 @@ import { ROUTES } from '@pages/routes';
 
 import { LanguageSelect } from '../language-select/LanguageSelect';
 
-import { styles } from './styles';
+import { styles } from './appHeaderStyles';
 
 import type { FC } from 'react';
 
