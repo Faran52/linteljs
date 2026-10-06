@@ -1818,6 +1818,12 @@ Measured for `setupTests.mswJest.ts`, the Jest twin of the MSW setup: without it
 it reports 9 errors, every one `no-unsafe-call`, `no-unsafe-member-access` or `no-unsafe-assignment`, because the
 `jest` global and `./msw/node` resolve to nothing here.
 
+`packages/create/templates/project/plugins/**/*.tsx` is the check band and its test, Claude Code mods that import
+`claude-code` and `claude-code/testing`, modules only the Claude Code engine provides. Measured: without the entry,
+`eslint` on the two files reports 2 errors, each `was not found by the project service`; adding them to the
+package tsconfig instead gives `tsc` 25 errors, 3 of them `TS2307: Cannot find module 'claude-code'` and the rest
+the implicit `any`s that follow from it. `claude plugin validate` and `claude plugin test` are their gate.
+
 ### `'**/utils/*.ts': '*Utils'`
 
 `check-file` takes a raw glob as the naming pattern: the rule validates the value with `is-glob` and micromatches the

@@ -98,6 +98,8 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.reactNativeI18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.vueI18n.ts',
       'packages/create/templates/starter-source/**',
+      // docs/DESIGN.md: Ignores, the check band
+      'packages/create/templates/project/plugins/**/*.tsx',
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
