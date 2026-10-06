@@ -4,9 +4,7 @@ export const isObjectValue = (value: unknown): value is object => {
 };
 
 export const fieldOf = (value: unknown, key: string): unknown => {
-  if (!isObjectValue(value) || !(key in value)) {
-    return undefined;
-  }
+  const field: unknown = isObjectValue(value) ? Reflect.get(value, key) : undefined;
 
-  return value[key];
+  return field;
 };
