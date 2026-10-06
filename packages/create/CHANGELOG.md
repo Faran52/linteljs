@@ -265,6 +265,8 @@ when a version's change lives in a sibling it is described there instead:
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
 - The contact form's message rule names its field, in every shipped language: an empty or short message reads
   "Write a message of at least ten characters." rather than a bare count.
+- Angular's Reactive Forms contact form holds Send after a refused send until both fields pass, as every other
+  target does, where Send stayed open.
 - React Native's header starts its title on the screen's 24, the inset its language label already ends on, so
   both header ends line up with the page below.
 

@@ -37,6 +37,8 @@ export class Contact {
 
   protected readonly sending = signal(false);
 
+  private readonly attempted = signal(false);
+
   private readonly submit = useSubmitContact();
 
   // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
@@ -54,11 +56,23 @@ export class Contact {
     this.form.controls[name].setValue(value);
   }
 
+  // Open until a send is tried, then held until the form passes, as on every other target.
+  protected canSend(): boolean {
+    if (!this.attempted()) {
+      return true;
+    }
+
+    const found = validateContact(this.form.getRawValue());
+
+    return Object.keys(found).length === 0;
+  }
+
   protected blur(name: keyof ContactValues): void {
     this.form.controls[name].markAsTouched();
   }
 
   protected async send(): Promise<void> {
+    this.attempted.set(true);
     this.form.markAllAsTouched();
 
     const values = this.form.getRawValue();

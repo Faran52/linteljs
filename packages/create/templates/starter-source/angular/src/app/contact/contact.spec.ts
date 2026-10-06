@@ -89,7 +89,7 @@ describe('Contact', () => {
     expect(stale).toBeNull();
   });
 
-  it('keeps Send open while a field is still to fill', async () => {
+  it('keeps Send open before a send is tried, while a field is still to fill', async () => {
     const harness = await render();
     const root = await fill(harness, '#email', 'someone@example.com');
 
@@ -100,6 +100,19 @@ describe('Contact', () => {
 
     expect(disabled).toBe(false);
     expect(busy).toBe('false');
+  });
+
+  it('holds Send after a refused send until both fields are valid', async () => {
+    const harness = await render();
+    const refused = await submit(harness);
+    const held = refused.querySelector('button')?.disabled;
+
+    await fill(harness, '#email', 'someone@example.com');
+    const root = await fill(harness, '#message', 'Ten characters, at least.');
+    const reopened = root.querySelector('button')?.disabled;
+
+    expect(held).toBe(true);
+    expect(reopened).toBe(false);
   });
 
   it('holds Send while the message is on its way', async () => {
