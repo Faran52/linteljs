@@ -47,6 +47,8 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
+- `typescript` is a target: a library with no framework, built by `tsdown` to `dist/` with its declarations. It
+  asks no styling, form library, data fetching or API mocking question, and leaves out `frontend-design`.
 - A scoped project name is accepted: `create @acme/app` writes `app/`, records `@acme/app` in `package.json`, and
   titles the page `app`. `--existing` titles it after the name `package.json` records, else after the directory.
 - Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,

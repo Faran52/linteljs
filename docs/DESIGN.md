@@ -419,8 +419,8 @@ Each was tried against the workspace and the starter source with `base` as it st
 
 ## Targets
 
-Ten: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, and a Manifest V3
-browser extension, for which `compatlens` is the reference.
+Eleven: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, a Manifest V3
+browser extension, for which `compatlens` is the reference, and a TypeScript library with no framework.
 
 Two of them host a UI framework rather than being one. Astro renders `.astro` templates and hydrates islands; the
 extension renders whatever its surfaces are written in. Both take the same `hostedFramework` answer, composed from
@@ -1684,15 +1684,15 @@ against the catalog.
 
 Every answer that changes emitted code is covered, in a matrix of cases rather than the whole product. `matrix.ts`
 enumerates them; nothing is listed by hand. Per target, every legal combination of the varying axes is enumerated
-under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 144
+under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 151
 cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
 `languages`, `testing`, and each library on or off as an axis of its own. `agents`, `plugins` and `surfaces` are
 always their full value, and `typeSafety` is always `strict`: neither changes what is installed, and `relaxed` only
 loosens rules over the same files. `languages` is none or all six, since a project without it must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
 an exact-tag match.
 
-On top of the pairs, 41 more. Per target, the first case answering the most (every library, every optional answer
-the target offers) runs once on each other manager, npm, Yarn 4 and bun: 30 smoke cases. A smoke is the whole case,
+On top of the pairs, 44 more. Per target, the first case answering the most (every library, every optional answer
+the target offers) runs once on each other manager, npm, Yarn 4 and bun: 33 smoke cases. A smoke is the whole case,
 so it holds each manager's config files, the husky install script under the lifecycle husky documents for it
 (`prepare` for npm, pnpm and bun, `postinstall` for Yarn 4), the layout Metro has to read through symlinks, npm's
 `npm ls --all`, and `INSTALL_NOISE` at the same strictness as pnpm. On React, the same case runs again with
@@ -1736,8 +1736,8 @@ same-origin link the page holds, each loaded fresh so the server answers it too.
 error, a status other than 200 or a page without an `h1` fails the case. `channel: 'chrome'` rather than a
 downloaded browser, because the CDN playwright downloads from can be blocked where npm is not. The extension and
 React Native have no pass: an extension's pages are loaded by the browser from `dist/`, not served, and React
-Native's web build is not what ships. On a server-rendered target with `languages`, the pass picks a language in
-the page and holds that the raw HTML of the next route already carries its `lang` and `dir`. Framework mode also
+Native's web build is not what ships. A library has no page. On a server-rendered target with `languages`, the pass
+picks a language in the page and holds that the raw HTML of the next route already carries its `lang` and `dir`. Framework mode also
 requests a path no route claims and holds that its catch-all answers 404 with an `h1`, in the chosen `lang` and
 `dir`. Measured: 1.8 s on Next, 3.7 s on React, 5.6 s on Angular, on top of a 50 to 60 second case.
 

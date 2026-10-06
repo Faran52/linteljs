@@ -28,8 +28,8 @@ why of everything below.
   route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200, a
   missing `h1` or an animation running under reduced motion. A ninth runs the widest React Router framework-mode
   case on npm, and adds a 404 from its catch-all. With `languages`, a server-rendered pass holds that the raw HTML
-  carries the chosen `lang` and `dir`. Skipped on webextension (its pages are loaded from `dist/`, not served) and
-  React Native (its web build is not what ships).
+  carries the chosen `lang` and `dir`. Skipped on webextension (its pages are loaded from `dist/`, not served),
+  React Native (its web build is not what ships) and typescript (a library has no page).
 - **It installs the checkout, never npm**: a local Verdaccio on one fixed port publishes the three packages and
   installs the CLI from them. `E2E_UPSTREAM` replaces npmjs as its uplink; start such a run on an empty
   `.e2e-cache/registry`.

@@ -6,6 +6,7 @@ export const dataAnswer = {
   key: 'data',
   flag: 'data',
   prompt: 'Data fetching',
+  note: 'not on typescript',
   slot: (target) => {
     return target.libraryProject !== true;
   },

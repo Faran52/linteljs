@@ -86,6 +86,16 @@ describe('answerUsage', () => {
     expect(notesRouter).toBe(true);
   });
 
+  it.each([
+    'styling',
+    'form',
+    'data',
+    'mocking',
+  ])('notes that --%s is not offered on the typescript target', (flag) => {
+    const line = lineFor(flag);
+    expect(line).toMatch(/ \(not on typescript\)$/u);
+  });
+
   it('does not scope --form to react, since only one of its values is', () => {
     const line = lineFor('form');
     expect(line).toContain('react-hook-form');

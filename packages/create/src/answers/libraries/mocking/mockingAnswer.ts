@@ -5,6 +5,7 @@ export const mockingAnswer = {
   key: 'mocking',
   flag: 'mocking',
   prompt: 'API mocking',
+  note: 'not on typescript',
   slot: (target) => {
     return target.libraryProject !== true;
   },

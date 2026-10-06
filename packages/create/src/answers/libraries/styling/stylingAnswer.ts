@@ -5,6 +5,7 @@ export const stylingAnswer = {
   key: 'styling',
   flag: 'styling',
   prompt: 'Styling',
+  note: 'not on typescript',
   slot: (target) => {
     return target.libraryProject !== true;
   },

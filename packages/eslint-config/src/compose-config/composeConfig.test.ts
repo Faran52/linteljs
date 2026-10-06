@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import {
   enabledRuleIdsFor,
+  frameworkRuleIdsFor,
   messagesForFile,
   NEXT_PROJECT,
   ruleIdsFor,
@@ -79,6 +80,20 @@ describe('composeConfig', () => {
     const ruleIds = await ruleIdsForFile(config, TYPED_FILE);
 
     expect(ruleIds).toContain('@typescript-eslint/no-floating-promises');
+  });
+
+  it('composes a target with no framework from typescript and vitest, with no framework rule', async () => {
+    const config = await composeConfig({
+      typescript: true,
+      vitest: true,
+    });
+
+    const typed = await ruleIdsForFile(config, TYPED_FILE);
+    expect(typed).toContain('@typescript-eslint/no-floating-promises');
+    const enabled = await enabledRuleIdsFor(config, 'src/model/greeting/greetingModel.test.ts');
+    expect(enabled).toContain('vitest/no-focused-tests');
+    const leaked = await frameworkRuleIdsFor(config, 'src/model/greeting/greetingModel.test.ts');
+    expect(leaked).toStrictEqual([]);
   });
 
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {

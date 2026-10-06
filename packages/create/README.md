@@ -41,13 +41,17 @@ The generated `eslint.config.ts` calls `composeConfig` from `@linteljs/eslint-co
 the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typecheck, coverage at 100% (unless
 `--testing none`), and the build.
 
-The starter is linteljs's own, not a framework scaffolder's. Every target but the web extension gets a header with
+The starter is linteljs's own, not a framework scaffolder's. Every app target but the web extension gets a header with
 tabs, Home, About and Version pages, and a status page for each 403, 404 and crash the target can produce. React,
 Next, React Native, Vue, Svelte and Solid add a Contact page with a form library, and Angular always has one. The
 starter follows the system colour scheme at WCAG AA contrast in both, carries a description meta and, where a
 public directory is served, a `robots.txt`. It ships the chosen languages and remembers the choice; the
 server-rendered targets read it from a `language` cookie and render it from the first byte. It passes its own
 `check` before you change a line.
+
+The `typescript` target is a library with no framework: `src/index.ts` exports a tested `greeting`, `tsdown` builds
+it to `dist/` with its declarations, and `package.json` carries `exports`, `types` and `files`. It asks no styling,
+form library, data fetching or API mocking question.
 
 ## Questions and options
 
@@ -57,18 +61,18 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Question | Flag | Choices | Default |
 | --- | --- | --- | --- |
 | Project name | positional | a valid npm package name, scoped or not; the directory drops the scope | the name `package.json` records, else the directory's |
-| Framework | `--target` | `react`, `next`, `vue`, `nuxt`, `svelte`, `solid`, `angular`, `astro`, `webextension`, `react-native` | `react` |
+| Framework | `--target` | `react`, `next`, `vue`, `nuxt`, `svelte`, `solid`, `angular`, `astro`, `webextension`, `react-native`, `typescript` | `react` |
 | Browser | `--browser` | `chrome`, `firefox` (webextension) | `chrome` |
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
 | Testing | `--testing` | `vitest`, `none` (react-native runs the suites on Jest, through `jest-expo`) | `vitest` |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
-| Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native) | none |
-| Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only) | none |
+| Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |
+| Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only; not on typescript) | none |
 | Router | `--router` | `react-router`, `react-router-framework`, `tanstack-router` (react) | none |
 | State store | `--store` | the stores the target offers | none |
-| Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`) | none |
-| API mocking | `--mocking` | `msw` | none |
+| Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`; not on typescript) | none |
+| API mocking | `--mocking` | `msw` (not on typescript) | none |
 | Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
 | AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor` | `claude-code` |

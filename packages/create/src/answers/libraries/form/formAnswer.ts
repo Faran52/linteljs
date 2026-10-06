@@ -7,6 +7,7 @@ export const formAnswer = {
   key: 'form',
   flag: 'form',
   prompt: 'Form library',
+  note: 'not on typescript',
   slot: (target) => {
     return target.libraryProject !== true;
   },

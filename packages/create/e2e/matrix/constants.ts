@@ -18,5 +18,10 @@ export const STYLING_CHOICES = keysOf(ANSWERS.styling.values);
 export const SURFACES = keysOf(ANSWERS.surfaces.values);
 export const TESTING_CHOICES = keysOf(ANSWERS.testing.values);
 
-// No browser pass: an extension's pages are not served, and React Native's web build is not what ships.
-export const NO_BROWSER_PASS: ReadonlySet<TargetId> = new Set(['webextension', 'react-native']);
+// No browser pass: an extension's pages are not served, React Native's web build is not what ships, and a
+// library has no page.
+export const NO_BROWSER_PASS: ReadonlySet<TargetId> = new Set([
+  'webextension',
+  'react-native',
+  'typescript',
+]);

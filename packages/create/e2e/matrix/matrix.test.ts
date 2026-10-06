@@ -523,7 +523,7 @@ describe('targetCases', () => {
       .toSorted(byLabel);
     const browsed = TARGET_IDS
       .filter((target) => {
-        return target !== 'webextension' && target !== 'react-native';
+        return target !== 'webextension' && target !== 'react-native' && target !== 'typescript';
       })
       .map((target) => {
         return `${target} pnpm browser`;
