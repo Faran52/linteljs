@@ -136,12 +136,13 @@ project from 1.x, whose answers sit in `lintel.config.json`, runs `create --exis
 banned git operations, warn when ESLint runs without `--fix`, check each file an agent writes for banned
 patterns, deny an edit to a file whose first line marks it generated, and ask you before a dependency is added or
 removed. The hooks inspect commands, never run them. In Claude Code a commit is held until the project's `check`
-has passed on the work tree it would commit (run on its own or redirected to a file, never piped or chained), and
-a hook warns once when a session's context passes 150K tokens; `.claude/settings.json` adds a `[CTX nK]` badge
-for the session and for each subagent: green, amber past 130K, red past 150K. A status line of your own is kept.
-A band above the prompt shows the gate's state for the work tree, `passed`, `failed`, `running` or `stale`; it
-needs Claude Code 2.1.250 or so, and an older one runs every other hook without it. The plugin is linteljs's
-tooling, so your `tsconfig.json` and ESLint config leave `plugins/linteljs/` out.
+has passed on the work tree it would commit: run on its own, after a leading `cd <dir> &&`, or redirected to a
+file outside the work tree (`check > /tmp/check.log 2>&1`), never piped or chained. A hook warns once when a
+session's context passes 150K tokens; `.claude/settings.json` adds a `[CTX nK]` badge for the session and for
+each subagent: green, amber past 130K, red past 150K. A status line of your own is kept. A band above the prompt
+shows the gate's state for the work tree (passed, failed, running, stale or not run); it needs Claude Code
+2.1.250 or so, and an older one runs every other hook without it. The plugin is linteljs's tooling, so your
+`tsconfig.json` and ESLint config leave `plugins/linteljs/` out.
 
 | Path | Written for | Owned by |
 | --- | --- | --- |
@@ -154,8 +155,8 @@ tooling, so your `tsconfig.json` and ESLint config leave `plugins/linteljs/` out
 Nothing is installed on your behalf: your agent asks you to trust the directory and approve the plugin and hooks,
 and the project passes its gate if you decline. Codex runs plugin hooks only once trusted through `/hooks`, and
 runs a cached copy of the plugin, so reinstall it after a `sync` that changes `plugins/linteljs/`. Cursor has no
-edit event a hook can answer, so there the banned-pattern check runs on commit only and the generated-file
-guard not at all.
+edit event a hook can answer, so there the banned-pattern check runs on commit only, the generated-file guard
+not at all, and the dependency ask on a manager command only.
 
 ## More
 

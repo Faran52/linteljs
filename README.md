@@ -24,7 +24,7 @@ need Node 22.18 or newer.
 | --- | --- |
 | [`@linteljs/create`](packages/create) | Start a project, or bring an existing one under the standard. Every package manager, option and flag is in its README. |
 | [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers, by hand or through `composeConfig`. |
-| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 26 rules on their own. `recommended` holds the ones the config builds on. |
+| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the rules on their own. `recommended` holds the ones the config builds on. |
 
 ## Existing projects
 

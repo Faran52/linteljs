@@ -29,6 +29,8 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
 - `pnpm check` chains `build && lint && lint:types && lint:starters && lint:css && typecheck && test:coverage`.
   `build` goes first because the packages typecheck against each other's built declarations. `lint:css` passes on
   an empty glob: this workspace has no CSS, and it ships the gate to every target.
+- A commit is held until `pnpm check` has passed on the work tree it would commit. Run it on its own or redirected
+  to a file outside the tree (`pnpm check > /tmp/check.log 2>&1`), never piped or chained, or it does not count.
 
 ## Verification
 
@@ -82,3 +84,5 @@ Detail per package is in `.claude/rules/`; these hold everywhere.
   `packages/create/templates/project/plugins/linteljs/hooks/`, with `.husky/`, `lint-staged.config.js` (which also
   runs the shipped `typecheckStaged.ts`) and `commitlint.config.js`. `scripts/checkBannedPatterns.ts` runs the
   shipped checker less this workspace's exemptions, each argued in `type-standards.md`.
+- `.claude/skills/linteljs/` is the repo's own Claude Code mod (the check band, a CI band and repo guards),
+  described in `repo-structure.md`.

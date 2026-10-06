@@ -50,11 +50,12 @@ before that package publishes. The types it redeclares are held equal by `packag
 
 Each script is `scripts/<group>/<kebab>/<camel><Group>.ts` with its own `utils/*Utils.ts` and `constants.ts`
 (`packages/eslint-plugin/scripts/audit/real-code/realCodeAudit.ts`). A `scripts/` with no groups suffixes
-`Script` (`scripts/lint-starters/lintStartersScript.ts`). Root scripts carry no suites; what one decides that needs a test lives in a
-package (`lint:starters` reads its cases from `packages/create/e2e/starter-cover/`). Helpers several scripts read go in the nearest shared
-`utils/`, the root `scripts/utils/` for all packages. Every script reports through the shipped
-`packages/create/templates/project/scripts/utils/loggerUtils.ts` (`@linteljs/workspace/scripts-logger`) and runs
-as `tsx <path>`, which resolves the `@` aliases from the tsconfig in the working directory.
+`Script` (`scripts/lint-starters/lintStartersScript.ts`). Root scripts carry no suites; what one decides that
+needs a test lives in a package (`lint:starters` reads its cases from `packages/create/e2e/starter-cover/`).
+Helpers several scripts read go in the nearest shared `utils/`, the root `scripts/utils/` for all packages.
+Every script reports through the shipped `packages/create/templates/project/scripts/utils/loggerUtils.ts`
+(`@linteljs/workspace/scripts-logger`) and runs as `tsx <path>`, which resolves the `@` aliases from the tsconfig
+in the working directory.
 `scripts/checkBannedPatterns.ts` stays flat and on plain `node`: the banned-pattern hook looks for it at the path
 a generated project has, and it runs the shipped checker less this workspace's `SKIPPED` list.
 
@@ -71,8 +72,8 @@ frameworks this workspace does not install and files named `*.test.ts`.
 - `__mocks__/` sits at each package root, aliased `@mocks/*` in that package's tsconfig.
   `packages/eslint-config/__mocks__/fixtures/` holds the defective input the layer tests lint.
 - The shipped scripts' suites (`checkBannedPatterns.test.ts`, `typecheckStaged.test.ts`, and each of their
-  `utils/`) and the hook suites sit beside what they test under `templates/project/`, one per shipped file, excluded from the tarball by
-  `package.json`. The hook suites share `packages/create/__mocks__/runHook.ts`.
+  `utils/`) and the hook suites sit beside what they test under `templates/project/`, one per shipped file,
+  excluded from the tarball by `package.json`. The hook suites share `packages/create/__mocks__/runHook.ts`.
 - Suites named for what they cover rather than one file: `meta.test.ts` in each package (the tree, and in the
   plugin the published surface against `__mocks__/ruleMetadata.json`), the plugin's `ruleModules.test.ts` and
   `fixerSafety.test.ts`, `create/src/types.test.ts`, and `hooks.test.ts`. `pnpm test:isolated` skips exactly

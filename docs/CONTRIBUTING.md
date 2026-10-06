@@ -28,7 +28,7 @@ E2E_PM=pnpm pnpm --filter @linteljs/create test:e2e
 Run it for anything that changes what a generated project receives: it sees what the unit gate
 cannot, such as a package that installs but is never imported.
 
-`pnpm lint:starters`, a leg of `pnpm check`, lints the starter source. It writes 70 cases that between them
+`pnpm lint:starters`, a leg of `pnpm check`, lints the starter source. It writes the cases that between them
 carry every starter text into real projects under `~/.cache/linteljs/typed/`, installs them against this
 checkout's packed config and plugin, and runs each project's own `eslint . --max-warnings 0`, type-aware rules
 included. It lints only the cases whose generated tree changed since their last clean lint; `--all` lints every
@@ -80,6 +80,10 @@ still passes with the fix reverted has pinned nothing.
 
 Conventional commits, and no trailers: no `Co-Authored-By`, no tool footer, whatever your editor
 suggests by default. Stage your own files by path.
+
+In Claude Code the shipped hooks run here too: a commit is held until `pnpm check` has passed on
+the work tree, run on its own or redirected to a file outside it, never piped or chained, and a
+dependency change asks you first. `.claude/skills/linteljs/` adds the repo's own guards and bands.
 
 No em-dashes anywhere: not in code comments, JSDoc, documentation, commit messages or rule
 descriptions.

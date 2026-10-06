@@ -71,8 +71,9 @@ when a version's change lives in a sibling it is described there instead:
   alias and within one relatively. A `./` or `../` import into an aliased directory the file is not inside is
   fixed to the alias, so a root `src/App.tsx` reaches `./components/...` through `@components/...`. Where tsc
   resolves nothing, as for a `.vue` file without vue-tsc, the file at the exact path the import spells counts.
-  Without type information, or in a project that sets `baseUrl`, it reports nothing. `aliasExempt` silences files by glob, and `enforceRelativeImports` fixes every alias import in them
-  to a relative one. Fixable, in `recommended`.
+  Without type information, or in a project that sets `baseUrl`, it reports nothing. `aliasExempt` silences files
+  by glob, and `enforceRelativeImports` fixes every alias import in them to a relative one. Fixable, in
+  `recommended`.
 - `react-no-global-namespace` reports `React.X` reached through `@types/react`'s global namespace, in a type, a
   value or a JSX tag, and in a Svelte `<script>`. Fixable: it imports the name from `react`. Not in
   `recommended`; the React and React Native layers of `@linteljs/eslint-config` enable it.

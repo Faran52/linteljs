@@ -1473,9 +1473,10 @@ the payload's token count and falls back to the transcript; a subagent row reads
 commit. That tree is the work tree, untracked files included and ignored ones not, written as a tree object from a
 scratch copy of the index so the real index is never touched. It is taken when the check starts: a file changed
 while the check runs leaves the pass stale. Only the check itself counts, run as `pnpm check` (or the manager's
-`run check`, and `npm run check` on npm), on its own or with its output redirected: a pipe hides its exit status and
-a chain adds to it, so `pnpm check | tail` and `pnpm check; echo $?` record nothing. The one chain that counts is a
-leading `cd <dir> && <check>`: `&&` runs the check only once the move worked, so the line's exit is the check's.
+`run check`, and `npm run check` on npm), on its own or with its output redirected to a file outside the work tree
+(a log inside it is a file that changes while the check runs): a pipe hides its exit status and a chain adds to
+it, so `pnpm check | tail` and `pnpm check; echo $?` record nothing. The one chain that counts is a leading
+`cd <dir> && <check>`: `&&` runs the check only once the move worked, so the line's exit is the check's.
 The project is the one the command runs in, not the session's: a leading `cd <dir> &&` moves the whole line, and
 each `git -C <dir>` moves a commit on from there, so an agent whose shell sits in another checkout is judged on the
 worktree it names. `--git-dir` and `--work-tree` are not followed, and a `cd` after `;` or `||` moves nothing. A
@@ -1626,7 +1627,7 @@ stay visible, and fails on any other test file with no source beside it.
 ## The shipped starter source, and the gate that reads it
 
 `templates/starter-source/**` is outside every `tsconfig` include, ignored by the root `eslint.config.ts`, and
-outside the vitest include. It cannot become ordinary source: it imports 60 distinct external packages this
+outside the vitest include. It cannot become ordinary source: it imports dozens of external packages this
 workspace resolves none of (`@angular/*`, `expo`, `react-native`, `next`, `svelte`, `vue`, `solid-js`, `pinia`, every
 `@tanstack/*` binding, every testing library, and the `$app`, `#lib` and `@/*` specifiers three frameworks resolve
 themselves). Making it ordinary source means installing ten targets' runtime and test dependencies into a workspace
@@ -1682,7 +1683,7 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer that changes emitted code is covered, in 185 cases rather than the whole product. `matrix.ts`
+Every answer that changes emitted code is covered, in a matrix of cases rather than the whole product. `matrix.ts`
 enumerates them; nothing is listed by hand. Per target, every legal combination of the varying axes is enumerated
 under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 144
 cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
@@ -1758,7 +1759,7 @@ names one manager, and the suite runs its cases on whatever binary of it is on P
 manager. Unset, a run takes every manager whose binary answers with a version this suite would record as that
 manager.
 
-The jobs are not even and do not need to be: pnpm carries 154 cases, npm 11, and Yarn 4 and bun 10 each.
+The jobs are not even and do not need to be: pnpm carries most cases, and npm, Yarn 4 and bun a smoke each.
 Measured on one machine at concurrency two, a 16-case subset (12 pnpm, 4 smokes) took 980 seconds, about 61
 seconds a case; a React Native smoke on npm took 197.
 
@@ -1778,7 +1779,7 @@ exist, and the suite publishes `@linteljs/*` under a version no run has used, so
 `verifyLintOutput` asserts the resolved version is this run's.
 
 npm's cache lives in `.e2e/npm-cache` and teardown removes it. npm never evicts, and kept across runs it reached 34
-GB; the npm smoke is 11 cases, so a cold cache costs one run little.
+GB; the npm smoke is a handful of cases, so a cold cache costs one run little.
 
 ## Releasing
 
