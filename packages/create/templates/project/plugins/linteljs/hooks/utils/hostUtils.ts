@@ -115,7 +115,7 @@ export const readPayload = (source: number | string = 0): object | undefined => 
 // Cursor also runs Claude Code's hooks, so a payload for any other event is that second copy and stays silent.
 export const readCommand = (
   payload: object,
-  cursorEvent: CursorEvent,
+  cursorEvent?: CursorEvent,
   platform: NodeJS.Platform = process.platform,
 ): CommandInput | undefined => {
   const host = hostOf(payload);

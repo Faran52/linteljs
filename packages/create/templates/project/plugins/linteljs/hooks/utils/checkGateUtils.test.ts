@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import {
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -9,8 +10,10 @@ import {
 import { tmpdir } from 'node:os';
 import {
   basename,
+  delimiter,
   dirname,
   join,
+  relative,
 } from 'node:path';
 
 import {
@@ -107,6 +110,7 @@ describe('managerOf', () => {
     [{ packageManager: 'yarn@4.1.0' }, 'yarn'],
     [{ packageManager: 'pnpm' }, 'pnpm'],
     [{ devEngines: { packageManager: 'pnpm' } }, 'npm'],
+    [{ devEngines: { packageManager: { name: 1 } }, packageManager: 'yarn@4.1.0' }, 'yarn'],
     [{}, 'npm'],
     [undefined, 'npm'],
   ])('reads %j as %s', (manifest, expected) => {
@@ -134,6 +138,43 @@ describe('projectOf', () => {
     vi.stubEnv('PATH', path);
     const project = projectOf(root);
     expect(project).toBeUndefined();
+  });
+
+  it('runs the first git in an absolute PATH entry, past a relative one and one with no git', () => {
+    const planted = scratchDirectory('planted');
+    const empty = scratchDirectory('empty');
+    const failing = '#!/bin/sh\nexit 1\n';
+    writeFileSync(join(planted, 'git'), failing, { mode: 0o755 });
+    const relativePlanted = relative(process.cwd(), planted);
+
+    const path = [
+      relativePlanted,
+      empty,
+      '/usr/bin',
+    ].join(delimiter);
+
+    vi.stubEnv('PATH', path);
+
+    const project = projectOf(root);
+    rmSync(planted, { recursive: true });
+    rmSync(empty, { recursive: true });
+
+    expect(project?.root).toBe(root);
+  });
+
+  it('keeps what git writes to stderr out of the hook\'s output', () => {
+    rmSync(join(root, '.git'), {
+      force: true,
+      recursive: true,
+    });
+
+    const write = vi.spyOn(process.stderr, 'write');
+
+    projectOf(root);
+    const calls = write.mock.calls.length;
+    write.mockRestore();
+
+    expect(calls).toBe(0);
   });
 
   it('answers nothing for a project with no check script, or outside a repository', () => {
@@ -170,6 +211,18 @@ describe('treeOf', () => {
     expect(ignored).toBe(first);
     expect(untracked).not.toBe(first);
     expect(stagedAfter).toBe(staged);
+  });
+
+  it('keeps a tracked file that is now ignored', () => {
+    writeFileSync(join(root, 'tracked.txt'), 'x');
+    git('add', 'tracked.txt');
+    writeFileSync(join(root, '.gitignore'), 'tracked.txt\n');
+    const project = projectOf(root);
+    const tree = project === undefined ? undefined : treeOf(project);
+    const listing = git('ls-tree', '--name-only', tree ?? 'HEAD');
+    const names = listing.split('\n');
+
+    expect(names).toContain('tracked.txt');
   });
 
   it('builds a tree before the repository has an index', () => {
@@ -254,6 +307,7 @@ describe('startCheck and finishCheck', () => {
     "CI='a b' pnpm check",
     'FOO=a BAR=b pnpm run check > /tmp/x.log 2>&1',
     'cd . && CI=1 pnpm check > /tmp/check.log 2>&1',
+    'pnpm check < /dev/null',
   ])('counts `%s`', (command) => {
     runCheck(command);
     const state = checkState(root);
@@ -276,6 +330,7 @@ describe('startCheck and finishCheck', () => {
     'cd . extra && pnpm check',
     'pnpm check --fix',
     'pnpm check > $(mktemp)',
+    "pnpm check 'a>b'",
     'CI=$(true) pnpm check',
     'CI="$(true)" pnpm check',
     'CI="$()" pnpm check',
@@ -367,6 +422,15 @@ describe('startCheck and finishCheck', () => {
     expect(record).toMatchObject({ result: 'passed' });
   });
 
+  it('records nothing for a project with no check script', () => {
+    writeManifest({});
+    runCheck('pnpm check');
+    writeManifest({ scripts: { check: 'true' } });
+    const state = checkState(root);
+
+    expect(state).toBe('none');
+  });
+
   it('records nothing when no tree can be built', () => {
     writeFileSync(join(root, '.git/linteljs'), 'a file where the directory goes');
     startCheck(shell('pnpm check'));
@@ -418,13 +482,38 @@ describe('commitGateReason', () => {
     expect(reason).toContain('not run on these files');
   });
 
-  it('reads `~` in a moved directory as the home directory', () => {
+  it.each([
+    ['cd ~ && git commit', '/'],
+    ['cd ~/sub && git commit', '/'],
+    ['cd sub~ && git commit', '{root}'],
+  ])('reads a leading `~` in `%s` as the home directory, and no other', (command, cwd) => {
     vi.stubEnv('HOME', root);
+    mkdirSync(join(root, 'sub'));
+    mkdirSync(join(root, 'sub~'));
     const reason = commitGateReason({
-      ...shell('cd ~ && git commit'),
-      cwd: '/',
+      ...shell(command),
+      cwd: cwd.replace('{root}', root),
     });
     expect(reason).toContain('not run on these files');
+  });
+
+  it.each([
+    'cd /; git commit',
+    'cd $() && git commit',
+    'git commit -C HEAD',
+  ])('judges `%s` where the session is', (command) => {
+    const reason = commitGateReason(shell(command));
+    expect(reason).toContain('not run on these files');
+  });
+
+  it('says how to run the check', () => {
+    const reason = commitGateReason(shell('git commit'));
+
+    expect(reason).toBe('Commit held: `pnpm check` has not passed on these files (it has not run on these files). '
+      + 'Run `pnpm check` on its own, or with its output redirected to a file outside the work tree '
+      + '(`pnpm check > /tmp/check.log 2>&1`), and commit once it passes, from the work tree or after '
+      + '`cd <dir> &&`, with leading `NAME=value` assignments or none. A run piped into another command or '
+      + 'chained with one is not counted: its exit status is not the check\'s.');
   });
 
   it('holds a call whose second commit is in a project not yet checked', () => {
@@ -477,6 +566,7 @@ describe('commitGateReason', () => {
     'git status',
     'git log --grep commit',
     'echo git commit',
+    'echo commit',
     'git -C',
     'git commit -m "open',
   ])('passes `%s`, which commits nothing', (command) => {

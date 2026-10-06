@@ -71,55 +71,47 @@ const isResult = (value: Json | undefined): value is Result => {
 
 const GIT_NAMES = ['git', 'git.exe'];
 
+const ENCODING = 'utf8';
+
 // From an absolute PATH entry, so a `git` planted in the working directory is never the one run.
-const gitBinary = (): string => {
-  const directories = (process.env['PATH'] ?? '')
+const gitCandidates = (): string[] => {
+  const directories = (process.env['PATH'] ?? delimiter)
     .split(delimiter)
     .filter((directory) => {
       return isAbsolute(directory);
     });
-  const binary = directories
+
+  return directories
     .flatMap((directory) => {
       return GIT_NAMES
         .map((name) => {
           return join(directory, name);
         });
-    })
-    .find((candidate) => {
-      return existsSync(candidate);
     });
+};
 
-  if (binary === undefined) {
-    throw new Error('git is not on PATH');
+// A piped stderr is kept from the hook's own output.
+const git = (cwd: string, arguments_: string[], index?: string): string | undefined => {
+  for (const binary of gitCandidates()) {
+    if (existsSync(binary)) {
+      const output = execFileSync(binary, arguments_, {
+        cwd,
+        encoding: ENCODING,
+        env: {
+          ...process.env,
+          GIT_INDEX_FILE: index,
+        },
+        stdio: 'pipe',
+      });
+
+      return output.trim();
+    }
   }
 
-  return binary;
+  return undefined;
 };
 
-const git = (cwd: string, arguments_: string[], index?: string): string => {
-  const environment = index === undefined
-    ? process.env
-    : {
-        ...process.env,
-        GIT_INDEX_FILE: index,
-      };
-
-  const binary = gitBinary();
-  const output = execFileSync(binary, arguments_, {
-    cwd,
-    encoding: 'utf8',
-    env: environment,
-    stdio: [
-      'ignore',
-      'pipe',
-      'ignore',
-    ],
-  });
-
-  return output.trim();
-};
-
-const attempt = (read: () => string): string | undefined => {
+const attempt = (read: () => string | undefined): string | undefined => {
   try {
     return read();
   }
@@ -133,6 +125,12 @@ const attempt = (read: () => string): string | undefined => {
 const textAt = (value: Json | undefined, key: string): string | undefined => {
   const field = fieldAt(value, key);
   return typeof field === 'string' ? field : undefined;
+};
+
+const jsonAt = (path: string): object | undefined => {
+  return jsonObjectOf(() => {
+    return readFileSync(path, ENCODING);
+  });
 };
 
 // `devEngines` names the manager on every manager, bun included; `packageManager` is the older field.
@@ -166,20 +164,20 @@ export const projectOf = (cwd: string): Project | undefined => {
     ]);
   });
 
-  const [
-    root = '',
-    directory = '',
-    index = '',
-  ] = paths?.split('\n') ?? [];
-  const packageJson = jsonObjectOf(() => {
-    const path = join(root, 'package.json');
-    return readFileSync(path, 'utf8');
-  });
+  if (paths === undefined) {
+    return undefined;
+  }
 
+  const [
+    root = cwd,
+    directory = cwd,
+    index = cwd,
+  ] = paths.split('\n');
+  const packageJson = jsonAt(join(root, 'package.json'));
   const scripts = fieldAt(packageJson, 'scripts');
   const check = textAt(scripts, 'check');
 
-  if (paths === undefined || check === undefined) {
+  if (check === undefined) {
     return undefined;
   }
 
@@ -193,8 +191,8 @@ export const projectOf = (cwd: string): Project | undefined => {
   return project;
 };
 
-// The work tree as a tree object, untracked files included and ignored ones not, built in a scratch index so
-// the real one is never touched. A copy of the real index lets git skip rehashing unchanged files.
+// The work tree as a tree object, built in a copy of the real index so the real one is never touched: untracked
+// files join it, ignored ones do not unless already tracked, and unchanged files are not rehashed.
 export const treeOf = (project: Project): string | undefined => {
   const scratch = join(project.directory, 'index');
 
@@ -220,10 +218,7 @@ const statePath = (project: Project): string => {
 };
 
 const readRecord = (project: Project): CheckRecord | undefined => {
-  const state = jsonObjectOf(() => {
-    const path = statePath(project);
-    return readFileSync(path, 'utf8');
-  });
+  const state = jsonAt(statePath(project));
   const tree = textAt(state, 'tree');
   const result = fieldAt(state, 'result');
 
@@ -259,15 +254,15 @@ const directoryOf = (cwd: string, directory: string): string => {
 };
 
 // Where a `cd <dir>` alone moves to.
-const movedTo = (move: ParsedCommand | undefined): string | undefined => {
+const movedTo = ({ opaque, tokens }: ParsedCommand): string | undefined => {
   const [
-    name = '',
+    name,
     directory,
     ...rest
-  ] = move?.tokens ?? [];
+  ] = tokens;
   const named = commandName(name);
 
-  return move?.opaque === false && rest.length === 0 && CD_NAMES.has(named) ? directory : undefined;
+  return !opaque && rest.length === 0 && CD_NAMES.has(named) ? directory : undefined;
 };
 
 // A leading `cd <dir> &&` runs the rest in <dir>, and only when the move worked, so its exit is the rest's.
@@ -275,7 +270,7 @@ const locate = (cwd: string, command: string, dialect: Dialect): Located => {
   const and = command.indexOf('&&');
   const head = command.slice(0, Math.max(and, 0));
   const [move] = parseCommand(head, dialect) ?? [];
-  const target = movedTo(move);
+  const target = move === undefined ? undefined : movedTo(move);
   const rest = target === undefined ? command : command.slice(and + 2);
   // An unreadable line commits nothing here: the git guard denies it.
   const located: Located = {
@@ -289,7 +284,7 @@ const locate = (cwd: string, command: string, dialect: Dialect): Located => {
 
 // Claude Code's own calls only: Cursor runs a copy of these hooks, and no other host is given them.
 const claudeCommandOf = (payload: object): Located | undefined => {
-  const input = hostOf(payload) === 'claude' ? readCommand(payload, 'beforeShellExecution') : undefined;
+  const input = hostOf(payload) === 'claude' ? readCommand(payload) : undefined;
   const cwd = cwdOf(payload);
 
   return input === undefined ? undefined : locate(cwd, input.command, input.dialect);
@@ -341,23 +336,28 @@ const isPlainAssignment = (word: string): boolean => {
   return isAssignment(word) && !word.includes(COMPUTED);
 };
 
-// The check alone counts, its output redirected or not, after leading environment assignments and a leading
-// `cd <dir> &&`, or none: a pipe hides its exit status, and any other chain adds to it.
-const checkProjectOf = (payload: object): Project | undefined => {
-  const located = claudeCommandOf(payload);
-  const words = located?.words ?? [];
-  const project = located === undefined ? undefined : projectOf(located.cwd);
+// With every word an assignment, the slice keeps the last one, which no check equals.
+const commandOf = (words: string[]): string => {
   const start = words
     .findIndex((word) => {
       return !isPlainAssignment(word);
     });
+  const run = withoutRedirects(words.slice(start));
 
-  if (project === undefined || start === -1) {
+  return run.join(' ');
+};
+
+// The check alone counts, its output redirected or not, after leading environment assignments and a leading
+// `cd <dir> &&`, or none: a pipe hides its exit status, and any other chain adds to it.
+const checkProjectOf = (payload: object): Project | undefined => {
+  const located = claudeCommandOf(payload);
+  const project = located === undefined ? undefined : projectOf(located.cwd);
+  const command = located?.words === undefined ? undefined : commandOf(located.words);
+
+  if (project === undefined) {
     return undefined;
   }
 
-  const run = withoutRedirects(words.slice(start));
-  const command = run.join(' ');
   const ran = command === checkOf(project) || command === `${project.manager} run check`;
 
   return ran ? project : undefined;
@@ -381,9 +381,14 @@ export const checkState = (cwd: string): CheckState | undefined => {
 // The tree is taken as the check starts, so a file changed while it runs leaves the pass stale.
 export const startCheck = (payload: object): void => {
   const project = checkProjectOf(payload);
-  const tree = project === undefined ? undefined : treeOf(project);
 
-  if (project !== undefined && tree !== undefined) {
+  if (project === undefined) {
+    return;
+  }
+
+  const tree = treeOf(project);
+
+  if (tree !== undefined) {
     writeRecord(project, {
       tree,
       result: 'running',
@@ -394,9 +399,14 @@ export const startCheck = (payload: object): void => {
 // Claude Code sends `PostToolUse` for a command that exited 0 and `PostToolUseFailure` for one that did not.
 export const finishCheck = (payload: object): void => {
   const project = checkProjectOf(payload);
-  const checkRecord = project === undefined ? undefined : readRecord(project);
 
-  if (project === undefined || checkRecord?.result !== 'running') {
+  if (project === undefined) {
+    return;
+  }
+
+  const checkRecord = readRecord(project);
+
+  if (checkRecord?.result !== 'running') {
     return;
   }
 
@@ -413,7 +423,13 @@ const WHY: Record<Exclude<CheckState, 'passed'>, string> = {
   stale: 'files changed since it passed',
 };
 
-const heldReason = (project: Project, state: Exclude<CheckState, 'passed'>): string => {
+const heldReason = (project: Project): string | undefined => {
+  const state = stateOf(project);
+
+  if (state === 'passed') {
+    return undefined;
+  }
+
   const check = checkOf(project);
 
   return `Commit held: \`${check}\` has not passed on these files (${WHY[state]}). Run \`${check}\` on its own, `
@@ -424,14 +440,18 @@ const heldReason = (project: Project, state: Exclude<CheckState, 'passed'>): str
 };
 
 export const commitGateReason = (payload: object): string | undefined => {
-  const { commands = [], cwd = '' } = claudeCommandOf(payload) ?? {};
+  const located = claudeCommandOf(payload);
 
-  for (const options of commands.map(commitOptionsOf)) {
-    const project = options === undefined ? undefined : projectOf(gitCwdOf(options, cwd));
-    const state = project === undefined ? 'passed' : stateOf(project);
+  if (located === undefined) {
+    return undefined;
+  }
 
-    if (project !== undefined && state !== 'passed') {
-      return heldReason(project, state);
+  for (const options of located.commands.map(commitOptionsOf)) {
+    const project = options === undefined ? undefined : projectOf(gitCwdOf(options, located.cwd));
+    const reason = project === undefined ? undefined : heldReason(project);
+
+    if (reason !== undefined) {
+      return reason;
     }
   }
 
