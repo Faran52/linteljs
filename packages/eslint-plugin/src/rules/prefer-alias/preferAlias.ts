@@ -30,6 +30,15 @@ interface Options {
 }
 
 // typescript-eslint's services, which ESLint types as `any`.
+interface SourceSite {
+  node: SourceNode;
+  specifier: string;
+  file: string;
+  resolved: string | undefined;
+  own: Alias | undefined;
+  exempt: boolean;
+}
+
 interface NodeMap {
   get: (node: SourceNode) => Node;
 }
@@ -145,38 +154,37 @@ export const preferAlias = createRule('prefer-alias', {
       });
     };
 
-    const checkSource = (node: SourceNode, specifier: string): void => {
-      const tsNode = typed.nodeOf(node);
-      const file = tsNode.getSourceFile().fileName;
-      // What tsc resolved the specifier to, if anything.
-      const [declaration] = checker.getSymbolAtLocation(tsNode)?.declarations ?? [];
-      const resolved = declaration?.getSourceFile().fileName;
-      const own = aliasHolding(aliases, file);
-      const exempt = aliasExempt
-        ?.some((glob) => {
-          const relativePath = posix.relative(base, file);
+    const checkRelative = ({
+      node,
+      specifier,
+      file,
+      resolved,
+      own,
+      exempt,
+    }: SourceSite): void => {
+      const path = posix.join(posix.dirname(file), specifier);
+      const alias = exempt ? undefined : aliasHolding(aliases, path);
 
-          return matchesGlob(glob, relativePath);
-        }) === true;
-
-      if (specifier.startsWith('.')) {
-        const path = posix.join(posix.dirname(file), specifier);
-        const alias = exempt ? undefined : aliasHolding(aliases, path);
-
-        if (!alias || alias === own || landingOf(resolved, path) === undefined) {
-          return;
-        }
-
-        const replacement = throughAlias(alias, path);
-
-        // Only when tsc would read the alias back to the same path.
-        if (!pinned.includes(replacement) && aliasMatching(aliases, replacement) === alias) {
-          report(node, 'preferAlias', specifier, replacement);
-        }
-
+      if (!alias || alias === own || landingOf(resolved, path) === undefined) {
         return;
       }
 
+      const replacement = throughAlias(alias, path);
+
+      // Only when tsc would read the alias back to the same path.
+      if (!pinned.includes(replacement) && aliasMatching(aliases, replacement) === alias) {
+        report(node, 'preferAlias', specifier, replacement);
+      }
+    };
+
+    const checkAliased = ({
+      node,
+      specifier,
+      file,
+      resolved,
+      own,
+      exempt,
+    }: SourceSite): void => {
       const alias: Alias | undefined = pinned.includes(specifier) ? undefined : aliasMatching(aliases, specifier);
 
       if (!alias) {
@@ -203,6 +211,34 @@ export const preferAlias = createRule('prefer-alias', {
 
       if (aliasHolding(aliases, path) === own) {
         report(node, 'preferRelative', specifier, replacement);
+      }
+    };
+
+    const checkSource = (node: SourceNode, specifier: string): void => {
+      const tsNode = typed.nodeOf(node);
+      const file = tsNode.getSourceFile().fileName;
+      // What tsc resolved the specifier to, if anything.
+      const [declaration] = checker.getSymbolAtLocation(tsNode)?.declarations ?? [];
+      const exempt = aliasExempt
+        ?.some((glob) => {
+          const relativePath = posix.relative(base, file);
+
+          return matchesGlob(glob, relativePath);
+        }) === true;
+      const site: SourceSite = {
+        node,
+        specifier,
+        file,
+        resolved: declaration?.getSourceFile().fileName,
+        own: aliasHolding(aliases, file),
+        exempt,
+      };
+
+      if (specifier.startsWith('.')) {
+        checkRelative(site);
+      }
+      else {
+        checkAliased(site);
       }
     };
 
