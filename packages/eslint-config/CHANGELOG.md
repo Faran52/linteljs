@@ -129,6 +129,8 @@ when a version's change lives in a sibling it is described there instead:
 - `vuejs-accessibility/label-has-for` accepts a label bound by `for` alone.
 - Angular's `@typescript-eslint/no-extraneous-class` allows a decorated class.
 - `vue/multi-word-component-names` is no longer restated over `vue/flat/recommended`.
+- `@stylistic/comma-dangle` keeps the comma in a `.tsx` generic arrow, `<T,>(value: T) => value`. Its fix
+  wrote `<T>`, which a `.tsx` file parses as JSX.
 
 ## 1.5.3
 

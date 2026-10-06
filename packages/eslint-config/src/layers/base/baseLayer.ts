@@ -121,6 +121,13 @@ export const base = (options: BaseOptions = {}): Layer => {
       languageOptions: { parser: tseslint.parser },
     },
 
+    // The parser reads JSX off the extension, but `@stylistic/comma-dangle` keeps `<T,>` only when this flag is set.
+    {
+      name: '@linteljs/base/tsx',
+      files: ['**/*.tsx'],
+      languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+    },
+
     // Script parsers only: Angular markup crashes `@stylistic/indent`.
     ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', scriptFiles),
     // `recommended` with its JSX rules left to the JSX frameworks: a `.ts` or `.vue` file holds no JSX.

@@ -131,6 +131,13 @@ describe('base: stylistic', () => {
     expect(fixed).toBe(expected);
   });
 
+  it('keeps the comma a .tsx generic arrow needs to parse', async () => {
+    const code = 'export const first = <T,>(items: T[]): T | undefined => items[0];\n';
+    const reported = await ruleIdsFor(base(), code, 'src/first.tsx');
+
+    expect(reported).not.toContain('@stylistic/comma-dangle');
+  });
+
   it('leaves two object properties on one line', async () => {
     const reported = await ruleIdsFor(base(), 'export const value = { a: 1, b: 2 };\n', TS_FILE);
 
@@ -351,6 +358,7 @@ describe('base: ignores', () => {
         '@linteljs/base/gitignore',
         '@linteljs/base/ignores',
         '@linteljs/base/typescript-syntax',
+        '@linteljs/base/tsx',
         '@linteljs/base',
         '@linteljs/base/typescript-rules',
         '@linteljs/base/scripts',
