@@ -42,8 +42,8 @@ Claim nothing that has not been run.
   only has to do its job. Delete it when done, and never commit or import one.
 
 - New or touched code carries zero loose types, TypeScript errors and ESLint findings before it is declared done.
-- One code file has exactly one test file beside it; a data-only `constants.ts` and a pure re-export barrel have
-  none. `pnpm test:isolated` holds each source to its own suite.
+- One code file has exactly one test file beside it; a data-only `constants.ts`, a pure re-export barrel and the
+  root `scripts/` have none. A package's `scripts/` is tested like its `src/`. `pnpm test:isolated` holds each source to its own suite.
 - Prove a new test can fail: break the code, watch it go red, revert. A test that passes with the fix reverted
   has pinned nothing.
 - A fix to a rule or a fixer needs a case in the rule's own suite *and*, when it is about what a fixer emits, an

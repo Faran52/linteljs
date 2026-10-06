@@ -46,7 +46,8 @@ pipeline/   the stage machine, sync, and the passes over written source.
   (`targets/react/reactTarget.ts`, `spawns/git/gitSpawn.ts`), the group where a group changes it
   (`disk/read/project-shape/projectShapeReader.ts`, `pipeline/passes/fix/fixPass.ts`), and nothing where a
   ring has no one kind (`terminal/cli/cli.ts`, `terminal/prompts/prompts.ts`).
-- Every ring has an `index.ts` barrel and outer rings import it, never a file inside. `src/meta.test.ts` fails
+- Every ring but `config/` and `utils/` has an `index.ts` barrel and outer rings import it, never a file inside.
+  `config/` and `utils/` have none by design, and are imported by file. `src/meta.test.ts` fails
   an export nothing outside the ring takes, and carries one row per ring; a ring with a registry names it there
   and the suite holds the two against each other both ways.
 - A helper sits at the level of its readers: `<subject>/utils/` (held private there by the suite) for one,
