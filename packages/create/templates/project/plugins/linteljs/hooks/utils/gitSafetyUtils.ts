@@ -8,7 +8,7 @@ import {
   skipOptions,
 } from './commandParserUtils.ts';
 
-const GLOBAL_VALUED = new Set([
+export const GIT_GLOBAL_VALUED = new Set([
   '-C',
   '-c',
   '--git-dir',
@@ -74,7 +74,7 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
     return undefined;
   }
 
-  const index = opaque ? undefined : skipOptions(tokens, 1, GLOBAL_VALUED);
+  const index = opaque ? undefined : skipOptions(tokens, 1, GIT_GLOBAL_VALUED);
 
   if (index === undefined) {
     return UNREADABLE_REASON;

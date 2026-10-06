@@ -379,6 +379,53 @@ describe('parseCommand', () => {
   });
 
   it.each([
+    [
+      'pnpm check > out.log 2>&1',
+      'bash',
+      [[
+        'pnpm',
+        'check',
+        '>',
+        'out.log',
+        '2>&1',
+      ]],
+    ],
+    [
+      'a &>out.log <&3 & b',
+      'bash',
+      [[
+        'a',
+        '&>out.log',
+        '<&3',
+      ], ['b']],
+    ],
+    [
+      'a 2>&1 & b',
+      'powershell',
+      [[
+        'a',
+        '2>&1',
+      ], ['b']],
+    ],
+    [
+      'a &>out.log',
+      'powershell',
+      [['a'], ['>out.log']],
+    ],
+    [
+      'a \\>&b',
+      'bash',
+      [[
+        'a',
+        '>',
+      ], ['b']],
+    ],
+  ] as const)('reads the redirects in `%s` (%s) as words, not separators', (source, dialect, expected) => {
+    const tokens = tokensOf(source, dialect);
+    expect(tokens).toEqual(expected);
+  });
+
+  it.each([
     ['an unterminated quote', 'echo "unterminated'],
     ['a trailing escape', 'echo \\'],
     ['env with a missing operand', 'env -P'],

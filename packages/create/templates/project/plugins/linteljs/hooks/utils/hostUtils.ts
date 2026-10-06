@@ -5,7 +5,8 @@ import type { Dialect } from './commandParserUtils.ts';
 
 export type Host = 'claude' | 'copilot' | 'cursor';
 
-export type DecisionKind = 'block' | 'deny' | 'warn';
+// `ask` hands the call to the person, with the reason shown.
+export type DecisionKind = 'ask' | 'block' | 'deny' | 'warn';
 
 // The one event each command hook answers under Cursor; `.cursor/hooks.json` registers it there and nowhere else.
 export type CursorEvent = 'beforeShellExecution' | 'postToolUse';
@@ -27,10 +28,15 @@ export interface SessionInput {
   transcript: string;
 }
 
-type Field = 'command' | 'cursor_version' | 'cwd' | 'file_path' | 'filePath' | 'hook_event_name' | 'patch' | 'path'
-  | 'session_id' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
+type Field = 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path' | 'file_text' | 'filePath'
+  | 'hook_event_name' | 'new_str' | 'new_string' | 'old_str' | 'old_string' | 'patch' | 'path' | 'session_id'
+  | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
 
 export type Json = number | object | string;
+
+const isPermission = (kind: DecisionKind): kind is 'ask' | 'deny' => {
+  return kind === 'ask' || kind === 'deny';
+};
 
 // A session id names a state file, so nothing but a plain token is accepted.
 const SESSION_ID = /^[\w-]+$/u;
@@ -74,7 +80,7 @@ export const fieldAt = (value: Json | undefined, key: string): Json | undefined 
   return field?.[1];
 };
 
-const stringAt = (value: Json | undefined, key: Field): string | undefined => {
+export const stringAt = (value: Json | undefined, key: Field): string | undefined => {
   const field = fieldAt(value, key);
   return typeof field === 'string' ? field : undefined;
 };
@@ -99,7 +105,7 @@ export const hostOf = (payload: object): Host => {
   return 'toolName' in payload ? 'copilot' : 'claude';
 };
 
-const toolInputOf = (payload: object, host: Host): Json | undefined => {
+export const toolInputOf = (payload: object, host: Host): Json | undefined => {
   return host === 'copilot' ? toolArgumentsOf(payload) : fieldAt(payload, 'tool_input');
 };
 
@@ -200,9 +206,9 @@ export const readSession = (payload: object): SessionInput | undefined => {
 };
 
 const cursorDecision = (kind: DecisionKind, text: string): object => {
-  const decision = kind === 'deny'
+  const decision = isPermission(kind)
     ? {
-        permission: 'deny',
+        permission: kind,
         user_message: text,
         agent_message: text,
       }
@@ -212,9 +218,9 @@ const cursorDecision = (kind: DecisionKind, text: string): object => {
 };
 
 const copilotDecision = (kind: DecisionKind, text: string): object => {
-  const decision = kind === 'deny'
+  const decision = isPermission(kind)
     ? {
-        permissionDecision: 'deny',
+        permissionDecision: kind,
         permissionDecisionReason: text,
       }
     : { additionalContext: text };
@@ -233,10 +239,10 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
   }
 
   const decision = {
-    hookSpecificOutput: kind === 'deny'
+    hookSpecificOutput: isPermission(kind)
       ? {
           hookEventName: 'PreToolUse',
-          permissionDecision: 'deny',
+          permissionDecision: kind,
           permissionDecisionReason: text,
         }
       : {

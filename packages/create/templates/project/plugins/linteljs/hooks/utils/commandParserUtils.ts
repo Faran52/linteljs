@@ -303,6 +303,16 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
     return lineEnd === -1 ? source.length : lineEnd - 1;
   }
 
+  // `2>&1` and `<&3` in either shell, and bash's `&>file`, are redirects: that `&` ends no command.
+  const pair = source.slice(index, index + 2);
+  const redirect = (state.dialect === 'bash' ? /^(?:[<>]&|&>)/u : /^>&/u).exec(pair)?.[0];
+
+  if (redirect !== undefined) {
+    state.token += redirect;
+    state.active = true;
+    return index + 1;
+  }
+
   if (character === '\n') {
     emitSegment(state);
     state.body = state.heredocs.shift();

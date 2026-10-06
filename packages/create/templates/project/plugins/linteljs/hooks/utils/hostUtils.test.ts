@@ -348,6 +348,34 @@ describe('decisionOf', () => {
       'warn',
       { additional_context: 'why' },
     ],
+    [
+      'claude',
+      'ask',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'ask',
+          permissionDecisionReason: 'why',
+        },
+      },
+    ],
+    [
+      'copilot',
+      'ask',
+      {
+        permissionDecision: 'ask',
+        permissionDecisionReason: 'why',
+      },
+    ],
+    [
+      'cursor',
+      'ask',
+      {
+        permission: 'ask',
+        user_message: 'why',
+        agent_message: 'why',
+      },
+    ],
   ] as const)('writes a %s %s in that host\'s own words', (host, kind, decision) => {
     const hostDecision = decisionOf(host, kind, 'why');
     expect(hostDecision).toEqual(decision);
