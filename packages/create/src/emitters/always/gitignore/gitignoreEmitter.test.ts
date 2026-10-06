@@ -11,6 +11,16 @@ import { gitignoreEmitter, mergeGitignore } from './gitignoreEmitter';
 
 const ENTRIES = ['coverage/', '*.tsbuildinfo'];
 
+const BASE = [
+  'node_modules/',
+  '.env',
+  '.env.*',
+  '!.env.example',
+  '.DS_Store',
+  'coverage/',
+  '*.tsbuildinfo',
+];
+
 const gitignoreFor = (overrides: Partial<Answers>, existing: string | null = null): string => {
   const [artifact] = gitignoreEmitter(answersFor(overrides));
 
@@ -82,38 +92,161 @@ describe('mergeGitignore', () => {
 });
 
 describe('gitignoreEmitter', () => {
-  it('ignores dependencies, env files and what the scripts produce on every target', () => {
-    const lines = linesOf(gitignoreFor({ target: 'vue' }));
+  it.each<[string, Partial<Answers>, string[]]>([
+    [
+      'angular',
+      { target: 'angular' },
+      [
+        '/dist',
+        '/tmp',
+        '/out-tsc',
+        '/bazel-out',
+        '/.angular/cache',
+      ],
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      ['dist/', '.astro/'],
+    ],
+    [
+      'next',
+      { target: 'next' },
+      [
+        '/.next/',
+        '/out/',
+        '/build',
+        '*.pem',
+        '.vercel',
+        'next-env.d.ts',
+      ],
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      [
+        '.output',
+        '.data',
+        '.nuxt',
+        '.nitro',
+        '.cache',
+        'dist',
+      ],
+    ],
+    [
+      'react',
+      { target: 'react' },
+      [
+        'dist',
+        'dist-ssr',
+        '*.local',
+      ],
+    ],
+    [
+      'react framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      ['/.react-router/', '/build/'],
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      [
+        '.expo/',
+        'dist/',
+        'web-build/',
+        '.kotlin/',
+        '*.orig.*',
+        '*.jks',
+        '*.p8',
+        '*.p12',
+        '*.key',
+        '*.mobileprovision',
+        '.metro-health-check*',
+        '*.pem',
+        '/ios',
+        '/android',
+      ],
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      [
+        'dist',
+        'dist-ssr',
+        '*.local',
+      ],
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      [
+        '.output',
+        '.vercel',
+        '.netlify',
+        '.wrangler',
+        '/.svelte-kit',
+        '/build',
+        '!.env.test',
+        'vite.config.js.timestamp-*',
+        'vite.config.ts.timestamp-*',
+      ],
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      [
+        'dist',
+        'dist-ssr',
+        '*.local',
+      ],
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      [
+        'dist',
+        'dist-ssr',
+        '*.local',
+      ],
+    ],
+  ])('writes the exact block for %s', (_label, overrides, own) => {
+    const lines = linesOf(gitignoreFor({
+      ...overrides,
+      packageManager: 'pnpm',
+    }));
 
-    expect(lines).toEqual(expect.arrayContaining([
-      'node_modules/',
-      '.env',
-      '.env.*',
-      '!.env.example',
-      '.DS_Store',
-      'coverage/',
-      '*.tsbuildinfo',
-    ]));
-  });
-
-  it("adds the target's own build output", () => {
-    const lines = linesOf(gitignoreFor({ target: 'astro' }));
-    expect(lines).toEqual(expect.arrayContaining(['dist/', '.astro/']));
-  });
-
-  it('keeps an env file the target commits after the pattern that would ignore it', () => {
-    const lines = linesOf(gitignoreFor({ target: 'svelte' }));
-
-    const unignored = lines.indexOf('!.env.test');
-    expect(unignored).toBeGreaterThan(lines.indexOf('.env.*'));
+    expect(lines).toEqual([
+      '# linteljs',
+      ...BASE,
+      ...own,
+      '',
+    ]);
   });
 
   it("adds Yarn's own state on Yarn alone", () => {
-    const yarn = linesOf(gitignoreFor({ packageManager: 'yarn' }));
-    const pnpm = linesOf(gitignoreFor({ packageManager: 'pnpm' }));
+    const lines = linesOf(gitignoreFor({
+      target: 'vue',
+      packageManager: 'yarn',
+    }));
 
-    expect(yarn).toContain('.yarn/*');
-    expect(pnpm).not.toContain('.yarn/*');
+    expect(lines).toEqual([
+      '# linteljs',
+      ...BASE,
+      '.yarn/*',
+      '!.yarn/patches',
+      '!.yarn/plugins',
+      '!.yarn/releases',
+      '!.yarn/sdks',
+      '!.yarn/versions',
+      '.pnp.*',
+      'dist',
+      'dist-ssr',
+      '*.local',
+      '',
+    ]);
   });
 
   it('keeps what the project already ignores', () => {

@@ -19,15 +19,17 @@ export const mergeGitignore = (existing: string | null, entries: string[]): stri
     return entry.startsWith('!');
   };
 
-  const firstAppended = entries
-    .findIndex((entry) => {
-      return !isNegation(entry) && !lines.includes(entry);
-    });
+  const isAppended = (entry: string): boolean => {
+    return !isNegation(entry) && !lines.includes(entry);
+  };
+
   // Last match wins, so a negation our list orders after an appended pattern goes again after it. By list
   // order, not glob matching: repeating a negation the new pattern never matches is harmless.
   const missing = entries
     .filter((entry, index) => {
-      return !lines.includes(entry) || (firstAppended !== -1 && index > firstAppended && isNegation(entry));
+      return !lines.includes(entry) || (isNegation(entry) && entries
+        .slice(0, index)
+        .some(isAppended));
     });
 
   if (missing.length === 0) {

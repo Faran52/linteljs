@@ -1,5 +1,3 @@
-import { omit } from 'es-toolkit';
-
 import { type AliasMap, type Answers } from '@config/types';
 
 import {
@@ -45,7 +43,10 @@ export const buildAliases = (answers: Answers): AliasMap => {
   };
 
   // Dropped at the end, to keep the order above intact.
-  const kept: [string, string][] = Object.entries(omit(all, target.omitAliases ?? []));
+  const kept: [string, string][] = Object.entries(all)
+    .filter(([alias]) => {
+      return target.omitAliases?.includes(alias) !== true;
+    });
 
   // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
   const withIndexes = kept
