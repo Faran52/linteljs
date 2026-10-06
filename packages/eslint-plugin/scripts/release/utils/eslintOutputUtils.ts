@@ -28,7 +28,6 @@ const streamOf = (error: unknown, name: 'stderr' | 'stdout'): string => {
 };
 
 // ESLint exits non-zero whenever it reports; only output that will not parse fails.
-// A lint with findings exits non-zero and still prints its JSON.
 const stdoutOfFailure = (error: unknown): string => {
   const stdout = streamOf(error, 'stdout');
 

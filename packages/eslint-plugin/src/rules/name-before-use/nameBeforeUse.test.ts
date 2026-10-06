@@ -44,7 +44,7 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     'const lines = [[alpha].join(\' \'), beta];',
     'const value = { data: flag ? [alpha].join(\' \') : beta };',
 
-    // Wrappers stand where they stand.
+    // A type wrapper stands where its value does.
     'const items = [alpha] as const;',
     'const config = { alpha } satisfies Config;',
     'const value = <Config>{ alpha };',
