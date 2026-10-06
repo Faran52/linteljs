@@ -11,6 +11,8 @@ import {
   resolve,
 } from 'node:path';
 
+import { maxBy } from 'es-toolkit';
+
 export type SkipReason = 'compiled' | 'minified' | 'oversized';
 
 const SKIP_DIRS = new Set([
@@ -143,10 +145,9 @@ export const skipReason = (source: string): SkipReason | undefined => {
   }
 
   const lines = source.split('\n');
-  const longest = lines
-    .reduce((widest, line) => {
-      return Math.max(widest, line.length);
-    }, 0);
+  const longest = maxBy(lines, (line) => {
+    return line.length;
+  })?.length ?? 0;
 
   return source.length / lines.length > MAX_AVERAGE_LINE || longest > MAX_LINE ? 'minified' : undefined;
 };

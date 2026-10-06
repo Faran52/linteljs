@@ -1,4 +1,8 @@
-import { orderBy, sum } from 'es-toolkit';
+import {
+  minBy,
+  orderBy,
+  sum,
+} from 'es-toolkit';
 
 import { log, logWarn } from '../../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
@@ -102,16 +106,14 @@ const superlinearVerdict = (rows: BucketRow[]): string => {
       return row.files >= SUPERLINEAR_MIN_FILES;
     });
   const largest = usable.at(-1);
-  const [first] = usable;
+  const cheapest = minBy(usable, (row) => {
+    return row.nsPerByte;
+  });
 
-  if (usable.length < 2 || largest === undefined || first === undefined) {
+  if (usable.length < 2 || largest === undefined || cheapest === undefined) {
     return `too few files per size bucket to say whether time per byte climbs (need ${String(SUPERLINEAR_MIN_FILES)})`;
   }
 
-  const cheapest = usable
-    .reduce((best, row) => {
-      return row.nsPerByte < best.nsPerByte ? row : best;
-    }, first);
   const ratio = largest.nsPerByte / cheapest.nsPerByte;
   const span = largest === cheapest
     ? `${largest.label}, the largest bucket with a stable median, is also the cheapest per byte`

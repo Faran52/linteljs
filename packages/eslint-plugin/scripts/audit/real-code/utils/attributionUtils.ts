@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 
+import { maxBy } from 'es-toolkit';
+
 import {
   nameFor,
   parse,
@@ -309,22 +311,23 @@ export const dominantRule = (context: AuditContext, file: string): Dominant => {
 
   const baseline = timed([]);
 
-  return context.activeRules
-    .reduce((worst, rule) => {
-      const ms = timed([rule]) - baseline;
+  const rows = context.activeRules
+    .map((rule) => {
+      const row = {
+        baseline,
+        ms: timed([rule]) - baseline,
+        rule,
+      };
 
-      const slowest = ms > worst.ms
-        ? {
-            baseline,
-            ms,
-            rule,
-          }
-        : worst;
-
-      return slowest;
-    }, {
-      baseline,
-      ms: -Infinity,
-      rule: 'none',
+      return row;
     });
+  const none = {
+    baseline,
+    ms: -Infinity,
+    rule: 'none',
+  };
+
+  return maxBy(rows, (row) => {
+    return row.ms;
+  }) ?? none;
 };

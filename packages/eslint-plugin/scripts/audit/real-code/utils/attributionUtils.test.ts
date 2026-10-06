@@ -367,6 +367,17 @@ describe('dominantRule', () => {
     expect(dominant.baseline).toBeGreaterThanOrEqual(0);
   });
 
+  it('names no rule when none is active', () => {
+    const context = planted({});
+
+    context.activeRules = [];
+
+    const dominant = dominantRule(context, unionFile());
+
+    expect(dominant.rule).toBe('none');
+    expect(dominant.ms).toBe(-Infinity);
+  });
+
   it('leaves the first pass out of the baseline', () => {
     const context = planted({});
     const verify = context.linter.verifyAndFix.bind(context.linter);
