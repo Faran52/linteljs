@@ -111,7 +111,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   return patched;
 };
 
-// Merged: two of three migrations had to add dependencies their answers already implied.
+// Merged: a migrated project often lacks dependencies its answers imply.
 export const packageJsonEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
   const merge = (current: string | null): string => {
     const manifest: PackageJson = current === null ? { name } : parsePackageJson(current);
