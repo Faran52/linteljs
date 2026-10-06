@@ -1,7 +1,6 @@
 /**
- * `eslint-plugin-jsx-a11y-x` ships a `lib/index.d.ts` whose `configs` is typed as one frozen literal, so a layer
- * reading `configs.recommended` gets that literal rather than a `Linter.Config`. Declared in ESLint's own terms
- * instead, with the one preset the layers read.
+ * `eslint-plugin-jsx-a11y-x` types `configs` as one frozen literal rather than a `Linter.Config`. Declared in
+ * ESLint's own terms, with the one preset the layers read.
  *
  * Delete this file once the plugin's own declarations describe a flat config.
  */

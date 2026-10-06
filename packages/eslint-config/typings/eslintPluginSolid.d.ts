@@ -1,12 +1,9 @@
 /**
- * `eslint-plugin-solid` ships rule types built against ESLint 8's `Rule.RuleModule`, whose
- * `create` signature no longer matches the one ESLint 10 declares. Nothing about the plugin's
- * runtime is wrong (its presets load and its rules report), but its published types make
- * `configs['flat/typescript']` unassignable to `Linter.Config`, and the fix is not ours to
- * make upstream.
+ * `eslint-plugin-solid` types its rules against ESLint 8's `Rule.RuleModule`, whose `create`
+ * signature differs from ESLint 10's, so `configs['flat/typescript']` is unassignable to
+ * `Linter.Config` though the plugin runs fine. Declared here in ESLint's own terms.
  *
- * Declared here in ESLint's own terms instead. Delete this file once the plugin republishes
- * against ESLint 9 or newer.
+ * Delete this file once the plugin publishes types against ESLint 9 or newer.
  */
 declare module 'eslint-plugin-solid' {
   import type { ESLint, Linter } from 'eslint';

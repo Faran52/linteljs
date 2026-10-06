@@ -56,7 +56,7 @@ const subpaths = Object.keys(manifest.exports)
   });
 assert.ok(subpaths.length > 1, 'exports map has no layer subpaths');
 
-// `@linteljs/create` writes `base({ frameworkGroup: reactGroup })`; nothing here would notice one missing.
+// `@linteljs/create` writes `base({ frameworkGroup: reactGroup })`, so each framework entry exports its group.
 const GROUP_EXPORTS = {
   './react': 'reactGroup',
   './react-native': 'reactNativeGroup',

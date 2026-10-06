@@ -31,7 +31,7 @@ const REACT_SONARJS_RULES = {
 export const reactCore = (): Layer => {
   const layer: Layer = [
     ...presetOf(eslintReact.configs['recommended-typescript'], 'eslint-react/typescript', SCRIPT_FILES),
-    // `configs.flat.recommended`: the bare name is still the eslintrc form.
+    // `configs.flat.recommended`: the bare name is the eslintrc form.
     ...presetOf(reactHooks.configs.flat.recommended, 'react-hooks/flat/recommended', SCRIPT_FILES),
 
     // `@eslint-react` 5 republishes these under its own prefix, so both presets would report every hook defect twice.

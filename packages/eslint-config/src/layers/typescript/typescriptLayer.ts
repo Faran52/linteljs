@@ -2,7 +2,6 @@ import tseslint from 'typescript-eslint';
 
 import type { Layer, TypescriptOptions } from '../../types';
 
-// `projectService` types config files outside every tsconfig `include`.
 export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }: TypescriptOptions = {}): Layer => {
   const layer: Layer = [
     ...tseslint.configs.strictTypeChecked,
@@ -12,6 +11,7 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
       name: '@linteljs/typescript',
       files: ['**/*.{ts,tsx,mts,cts}'],
       languageOptions: {
+        // Not a `project` glob: `projectService` types a config file outside every tsconfig `include`.
         parserOptions: { projectService: true },
       },
       rules: {
@@ -22,7 +22,7 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
       },
     },
 
-    // `strictTypeChecked` has no files glob; config files stay untyped.
+    // `strictTypeChecked` has no files glob; JavaScript and HTML stay untyped.
     {
       ...tseslint.configs.disableTypeChecked,
       name: '@linteljs/typescript/untyped',

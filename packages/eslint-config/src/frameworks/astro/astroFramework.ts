@@ -12,8 +12,8 @@ const ASTRO_FILES = ['**/*.astro'];
 // No tsconfig can contain these; `.js` virtual files are already type-free under `typescript()`.
 const ASTRO_TYPELESS = ['**/*.astro', '**/*.astro/*.ts'];
 
-// Scoped, because the plugin leaves its rule entry unglobbed.
 export const astro = (): Layer => {
+  // Scoped, because the plugin leaves its rule entry unglobbed.
   const recommended = presetOf(
     astroPlugin.configs['flat/recommended'],
     'astro/flat/recommended',

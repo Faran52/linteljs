@@ -15,7 +15,7 @@ export type NamingMap = Record<string, NamingRule>;
 
 export interface ResolverOptions {
   project?: string;
-  // Unset by default; see `baseLayer.ts` for why reordering is not safe.
+  // Unset by default: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
   conditionNames?: string[];
   noWarnOnMultipleProjects?: boolean;
 }

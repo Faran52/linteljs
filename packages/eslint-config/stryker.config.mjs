@@ -35,7 +35,7 @@ const config = {
   },
 
   // Every case is a real ESLint run, and the typed ones start a TypeScript project service. A mutant every suite
-  // covers runs them all: at 30s audit 37241561680 timed out presetUtils.ts:46, which its own suite kills in 3ms.
+  // covers runs them all: at 30s one in `presetUtils.ts` timed out that its own suite kills in 3ms.
   timeoutMS: 120000,
   concurrency: 6,
 
