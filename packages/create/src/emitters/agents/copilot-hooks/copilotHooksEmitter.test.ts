@@ -44,6 +44,24 @@ describe('copilotHooksEmitter', () => {
             command: 'node plugins/linteljs/hooks/gitSafetyGuardHook.ts',
             cwd: '.',
           },
+          {
+            type: 'command',
+            matcher: 'bash|powershell',
+            command: 'node plugins/linteljs/hooks/dependencyAskHook.ts',
+            cwd: '.',
+          },
+          {
+            type: 'command',
+            matcher: 'edit|create|str_replace_editor|apply_patch',
+            command: 'node plugins/linteljs/hooks/generatedFileGuardHook.ts',
+            cwd: '.',
+          },
+          {
+            type: 'command',
+            matcher: 'edit|create|str_replace_editor|apply_patch',
+            command: 'node plugins/linteljs/hooks/dependencyAskHook.ts',
+            cwd: '.',
+          },
         ],
         postToolUse: [
           {
@@ -78,7 +96,7 @@ describe('copilotHooksEmitter', () => {
         return match[1];
       });
 
-    expect(scripts).toHaveLength(3);
+    expect(scripts).toHaveLength(6);
 
     const allShipped = scripts
       .every((script) => {

@@ -8,10 +8,16 @@ type HookList = [string, object[]];
 
 const HOOKS_DIRECTORY = 'plugins/linteljs/hooks/';
 
-// Cursor also runs Claude Code's hooks, which answer under Cursor only on the event given here.
-// No banned-pattern guard: Cursor documents no file path on the edit event that can answer the agent.
+/**
+ * Cursor also runs Claude Code's hooks, which answer under Cursor only on the event given here.
+ * No banned-pattern or generated-file guard: Cursor documents no file path on the edit event that can
+ * answer the agent. No commit gate: its afterShellExecution carries no exit status to record a check by.
+ */
 export const CURSOR_HOOKS: Record<string, object[]> = {
-  beforeShellExecution: [{ command: `node ${HOOKS_DIRECTORY}gitSafetyGuardHook.ts` }],
+  beforeShellExecution: [
+    { command: `node ${HOOKS_DIRECTORY}gitSafetyGuardHook.ts` },
+    { command: `node ${HOOKS_DIRECTORY}dependencyAskHook.ts` },
+  ],
   postToolUse: [
     {
       command: `node ${HOOKS_DIRECTORY}eslintFixWarningHook.ts`,
