@@ -22,10 +22,10 @@ const withoutForm = (answers: Answers): boolean => {
 };
 
 const ROUTE_MODULES = [
-  'home',
-  'about',
-  'version',
-  'not-found',
+  'home/HomeRoute',
+  'about/AboutRoute',
+  'version/VersionRoute',
+  'not-found/NotFoundRoute',
 ] as const;
 
 export const frameworkRouteFiles = (): StarterFile[] => {
@@ -51,7 +51,7 @@ export const frameworkRouteFiles = (): StarterFile[] => {
       variant: 'with-form',
     },
     {
-      target: 'src/routes/contact.tsx',
+      target: 'src/routes/contact/ContactRoute.tsx',
       when: withForm,
       variant: 'react-router-framework',
     },
@@ -86,8 +86,8 @@ export const frameworkRouteTests = (): StarterTest[] => {
       variant: 'with-form',
     },
     {
-      target: 'src/routes/contact.test.tsx',
-      covers: 'src/routes/contact.tsx',
+      target: 'src/routes/contact/ContactRoute.test.tsx',
+      covers: 'src/routes/contact/ContactRoute.tsx',
       when: withForm,
       variant: 'react-router-framework',
     },

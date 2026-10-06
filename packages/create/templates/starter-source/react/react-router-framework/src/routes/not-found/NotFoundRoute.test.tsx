@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import NotFound, { loader } from './not-found';
+import NotFound, { loader } from './NotFoundRoute';
 
 describe('NotFound route', () => {
   it('answers every path no page claims with a 404', () => {

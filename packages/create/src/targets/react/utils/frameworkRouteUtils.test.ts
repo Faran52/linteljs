@@ -21,17 +21,17 @@ const FRAMEWORK: Partial<Answers> = {
 };
 
 const PAGES = [
-  'src/routes/home.tsx react-router-framework',
-  'src/routes/about.tsx react-router-framework',
-  'src/routes/version.tsx react-router-framework',
-  'src/routes/not-found.tsx react-router-framework',
+  'src/routes/home/HomeRoute.tsx react-router-framework',
+  'src/routes/about/AboutRoute.tsx react-router-framework',
+  'src/routes/version/VersionRoute.tsx react-router-framework',
+  'src/routes/not-found/NotFoundRoute.tsx react-router-framework',
 ];
 
 const PAGE_SUITES = [
-  'src/routes/home.test.tsx react-router-framework',
-  'src/routes/about.test.tsx react-router-framework',
-  'src/routes/version.test.tsx react-router-framework',
-  'src/routes/not-found.test.tsx react-router-framework',
+  'src/routes/home/HomeRoute.test.tsx react-router-framework',
+  'src/routes/about/AboutRoute.test.tsx react-router-framework',
+  'src/routes/version/VersionRoute.test.tsx react-router-framework',
+  'src/routes/not-found/NotFoundRoute.test.tsx react-router-framework',
 ];
 
 describe('isFrameworkMode', () => {
@@ -84,7 +84,7 @@ describe('frameworkRouteFiles', () => {
     const expected = [
       ...PAGES,
       'src/routes.ts with-form',
-      'src/routes/contact.tsx react-router-framework',
+      'src/routes/contact/ContactRoute.tsx react-router-framework',
     ];
     expect(files).toEqual(expected);
   });
@@ -117,7 +117,7 @@ describe('frameworkRouteTests', () => {
     const expected = [
       ...PAGE_SUITES,
       'src/routes.test.ts with-form',
-      'src/routes/contact.test.tsx react-router-framework',
+      'src/routes/contact/ContactRoute.test.tsx react-router-framework',
     ];
     expect(suites).toEqual(expected);
   });
@@ -129,13 +129,13 @@ describe('frameworkRouteTests', () => {
       });
 
     const expected = [
-      'src/routes/home.tsx src/routes/home.test.tsx',
-      'src/routes/about.tsx src/routes/about.test.tsx',
-      'src/routes/version.tsx src/routes/version.test.tsx',
-      'src/routes/not-found.tsx src/routes/not-found.test.tsx',
+      'src/routes/home/HomeRoute.tsx src/routes/home/HomeRoute.test.tsx',
+      'src/routes/about/AboutRoute.tsx src/routes/about/AboutRoute.test.tsx',
+      'src/routes/version/VersionRoute.tsx src/routes/version/VersionRoute.test.tsx',
+      'src/routes/not-found/NotFoundRoute.tsx src/routes/not-found/NotFoundRoute.test.tsx',
       'src/routes.ts src/routes.test.ts',
       'src/routes.ts src/routes.test.ts',
-      'src/routes/contact.tsx src/routes/contact.test.tsx',
+      'src/routes/contact/ContactRoute.tsx src/routes/contact/ContactRoute.test.tsx',
     ];
     expect(pairs).toEqual(expected);
   });

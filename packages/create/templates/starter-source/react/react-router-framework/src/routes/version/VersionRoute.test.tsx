@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Version from './version';
+import Version from './VersionRoute';
 
 describe('Version route', () => {
   it('renders the version page', () => {

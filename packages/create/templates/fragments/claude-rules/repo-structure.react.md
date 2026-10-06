@@ -38,7 +38,7 @@ src/
   pages/<kebab>/  {Name}Page.tsx and its private slots
   pages/routes.tsx  ROUTES, the one list of pages the header and the router read
   routes/router.tsx  the react-router route table <!-- when react-router -->
-  root.tsx  routes.ts  routes/  framework mode's shell, route table and route modules <!-- when react-router-framework -->
+  root.tsx  routes.ts  routes/<kebab>/{Name}Route.tsx  framework mode's shell, route table and route modules <!-- when react-router-framework -->
 ```
 
 ## Placement

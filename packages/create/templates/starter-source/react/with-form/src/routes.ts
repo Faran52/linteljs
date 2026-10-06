@@ -6,9 +6,9 @@ import {
 
 // Literal paths: the config reads this file before any page module loads.
 export default [
-  index('routes/home.tsx'),
-  route('contact', 'routes/contact.tsx'),
-  route('about', 'routes/about.tsx'),
-  route('version', 'routes/version.tsx'),
-  route('*', 'routes/not-found.tsx'),
+  index('routes/home/HomeRoute.tsx'),
+  route('contact', 'routes/contact/ContactRoute.tsx'),
+  route('about', 'routes/about/AboutRoute.tsx'),
+  route('version', 'routes/version/VersionRoute.tsx'),
+  route('*', 'routes/not-found/NotFoundRoute.tsx'),
 ] satisfies RouteConfig;

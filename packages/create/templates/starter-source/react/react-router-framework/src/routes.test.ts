@@ -8,10 +8,10 @@ describe('routes', () => {
       return entry.file;
     });
     const expected = [
-      'routes/home.tsx',
-      'routes/about.tsx',
-      'routes/version.tsx',
-      'routes/not-found.tsx',
+      'routes/home/HomeRoute.tsx',
+      'routes/about/AboutRoute.tsx',
+      'routes/version/VersionRoute.tsx',
+      'routes/not-found/NotFoundRoute.tsx',
     ];
     expect(mapped).toEqual(expected);
   });

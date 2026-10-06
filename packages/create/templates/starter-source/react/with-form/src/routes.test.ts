@@ -7,11 +7,11 @@ describe('routes', () => {
     });
 
     const expected = [
-      'routes/home.tsx',
-      'routes/contact.tsx',
-      'routes/about.tsx',
-      'routes/version.tsx',
-      'routes/not-found.tsx',
+      'routes/home/HomeRoute.tsx',
+      'routes/contact/ContactRoute.tsx',
+      'routes/about/AboutRoute.tsx',
+      'routes/version/VersionRoute.tsx',
+      'routes/not-found/NotFoundRoute.tsx',
     ];
     expect(files).toEqual(expected);
   });
