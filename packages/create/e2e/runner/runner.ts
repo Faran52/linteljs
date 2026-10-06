@@ -172,7 +172,7 @@ const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<vo
 
   expect(hasHooks).toBe(true);
 
-  const hasLintConfig = existsSync(join(project, 'eslint.config.js'));
+  const hasLintConfig = existsSync(join(project, 'eslint.config.ts'));
 
   expect(hasLintConfig).toBe(true);
 

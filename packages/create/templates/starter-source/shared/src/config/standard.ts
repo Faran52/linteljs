@@ -1,6 +1,6 @@
 export const STANDARD_PATHS = [
   {
-    path: 'eslint.config.js',
+    path: 'eslint.config.ts',
     holds: 'The layers, imported from @linteljs/eslint-config',
   },
   {

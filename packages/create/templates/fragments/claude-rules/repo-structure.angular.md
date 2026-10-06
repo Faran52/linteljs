@@ -9,7 +9,7 @@ paths:
 
 Use this rule when adding, moving, renaming, or importing a source file.
 
-Filename and folder case are enforced by `check-file` in `eslint.config.js` and are not restated
+Filename and folder case are enforced by `check-file` in `eslint.config.ts` and are not restated
 here, because a prose copy of a lint rule is the part that rots. The reserved `*.component.ts` /
 `*.service.ts` family is Angular's own convention, not a rule this config checks. This file carries
 placement and direction, which no rule can see.

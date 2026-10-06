@@ -224,7 +224,7 @@ describe('main: what it prints and what it returns', () => {
     expect(code).toBe(1);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain(message);
-    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.ts'));
     expect(eslintConfigJsExists).toBe(false);
   });
 
@@ -282,7 +282,7 @@ describe('main: cancelled mid-questionnaire', () => {
     expect(printed).toContain(RUN_CANCELLED_MESSAGE);
     expect(printed).not.toContain('answer every question');
     expect(errors).toEqual([]);
-    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.ts'));
     expect(eslintConfigJsExists).toBe(false);
   });
 });
@@ -369,9 +369,9 @@ describe('main: create', () => {
     ]);
 
     expect(code).toBe(0);
-    const nestedConfigExists = await exists(join(project, 'demo-app', 'eslint.config.js'));
+    const nestedConfigExists = await exists(join(project, 'demo-app', 'eslint.config.ts'));
     expect(nestedConfigExists).toBe(true);
-    const rootConfigExists = await exists(join(project, 'eslint.config.js'));
+    const rootConfigExists = await exists(join(project, 'eslint.config.ts'));
     expect(rootConfigExists).toBe(false);
     const name = await nameAt(join(project, 'demo-app'));
     expect(name).toBe('demo-app');
@@ -493,8 +493,8 @@ describe('main: patching a project that already exists', () => {
 describe('main: sync', () => {
   const NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';
   const VERSIONS_QUESTION = 'Update them in package.json?';
-  const ESLINT_QUESTION = 'Move it to eslint.config.js.bak and write eslint.config.js?';
-  const ESLINT_DIFFERS = 'eslint.config.js differs from the config linteljs writes.\n';
+  const ESLINT_QUESTION = 'Move it to eslint.config.ts.bak and write eslint.config.ts?';
+  const ESLINT_DIFFERS = 'eslint.config.ts differs from the config linteljs writes.\n';
 
   const manifestText = async (): Promise<string> => {
     return await readFile(join(project, 'package.json'), 'utf8');
@@ -615,12 +615,12 @@ describe('main: sync', () => {
 
   it('writes a missing eslint config without asking', async () => {
     await generated();
-    await rm(join(project, 'eslint.config.js'));
+    await rm(join(project, 'eslint.config.ts'));
 
     const { code, printed } = await runMain(['sync']);
 
     expect(code).toBe(0);
-    expect(printed).toBe('wrote eslint.config.js\n');
+    expect(printed).toBe('wrote eslint.config.ts\n');
   });
 
   it.each<[string, string[], string]>([
@@ -636,7 +636,7 @@ describe('main: sync', () => {
     ],
   ])('%s an edited eslint config as answered', async (_, answers, expected) => {
     await generated();
-    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
+    await writeFile(join(project, 'eslint.config.ts'), '// ours\n', 'utf8');
 
     const asked = scripted(answers);
     const { code, printed } = await runMain(['sync'], asked);
@@ -644,14 +644,14 @@ describe('main: sync', () => {
     expect(code).toBe(0);
     expect(asked.calls).toEqual([ESLINT_QUESTION]);
     expect(printed).toMatch(new RegExp(`^${ESLINT_DIFFERS}`, 'u'));
-    const file = await readFile(join(project, 'eslint.config.js'), 'utf8');
+    const file = await readFile(join(project, 'eslint.config.ts'), 'utf8');
     const kept = file === '// ours\n' ? file : '';
     expect(kept).toBe(expected);
   });
 
   it('keeps an edited eslint config with no terminal and no --yes, says so, and fails', async () => {
     await generated();
-    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
+    await writeFile(join(project, 'eslint.config.ts'), '// ours\n', 'utf8');
 
     const {
       code,
@@ -662,7 +662,7 @@ describe('main: sync', () => {
     expect(code).toBe(1);
     expect(printed).toBe(ESLINT_DIFFERS);
     expect(errors).toEqual([NEEDS_YES]);
-    const file = await readFile(join(project, 'eslint.config.js'), 'utf8');
+    const file = await readFile(join(project, 'eslint.config.ts'), 'utf8');
     expect(file).toBe('// ours\n');
   });
 
@@ -682,15 +682,15 @@ describe('main: sync', () => {
 
   it('moves an edited eslint config past an earlier backup under --yes', async () => {
     await generated();
-    await writeFile(join(project, 'eslint.config.js'), '// ours\n', 'utf8');
-    await writeFile(join(project, 'eslint.config.js.bak'), '// earlier\n', 'utf8');
+    await writeFile(join(project, 'eslint.config.ts'), '// ours\n', 'utf8');
+    await writeFile(join(project, 'eslint.config.ts.bak'), '// earlier\n', 'utf8');
 
     const { printed } = await runMain(['sync', '--yes']);
 
-    expect(printed).toContain('moved eslint.config.js to eslint.config.js.bak.1, wrote eslint.config.js');
-    const earlier = await readFile(join(project, 'eslint.config.js.bak'), 'utf8');
+    expect(printed).toContain('moved eslint.config.ts to eslint.config.ts.bak.1, wrote eslint.config.ts');
+    const earlier = await readFile(join(project, 'eslint.config.ts.bak'), 'utf8');
     expect(earlier).toBe('// earlier\n');
-    const backup = await readFile(join(project, 'eslint.config.js.bak.1'), 'utf8');
+    const backup = await readFile(join(project, 'eslint.config.ts.bak.1'), 'utf8');
     expect(backup).toBe('// ours\n');
   });
 
@@ -763,7 +763,7 @@ describe('main: sync', () => {
     expect(joined).toContain('linteljs.config.json was not found; this is not a LintelJS-managed project');
     expect(asked.calls).toEqual([]);
     expect(printed).toBe('');
-    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.ts'));
     expect(eslintConfigJsExists).toBe(false);
     const configPathExists = await exists(join(project, CONFIG_PATH));
     expect(configPathExists).toBe(false);

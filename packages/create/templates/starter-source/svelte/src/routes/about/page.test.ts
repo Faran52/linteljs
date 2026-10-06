@@ -20,7 +20,7 @@ describe('about page', () => {
   it('says where the standard lives', () => {
     render(Page);
 
-    const element = screen.getByText('eslint.config.js');
+    const element = screen.getByText('eslint.config.ts');
     expect(element).toBeTruthy();
   });
 });

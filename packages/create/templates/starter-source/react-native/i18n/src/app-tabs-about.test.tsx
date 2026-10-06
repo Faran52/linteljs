@@ -29,7 +29,7 @@ describe('the about screen', () => {
   it('says where the standard lives', async () => {
     await renderScreen(<AboutScreen />);
 
-    const element = screen.getByText('eslint.config.js');
+    const element = screen.getByText('eslint.config.ts');
     expect(element).toBeTruthy();
   });
 

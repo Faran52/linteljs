@@ -1,7 +1,7 @@
 // Each `holds` is a key into `src/i18n/locales/`.
 export const STANDARD_PATHS = [
   {
-    path: 'eslint.config.js',
+    path: 'eslint.config.ts',
     holds: 'standardEslint',
   },
   {

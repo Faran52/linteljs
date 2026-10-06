@@ -9,7 +9,7 @@ paths:
 
 Use this rule when adding, moving, renaming, or importing a source file in a library.
 
-Filename case and folder case are enforced by `check-file` in `eslint.config.js`. They are not
+Filename case and folder case are enforced by `check-file` in `eslint.config.ts`. They are not
 restated here, because a prose copy of a lint rule is the part that rots. This file carries placement
 and direction, which no rule can see.
 
@@ -60,7 +60,7 @@ Imports run one way, from the outer ring inward. The innermost ring reaches noth
 - The outer ring is everything touching the world: disk, argv, environment, a terminal, a socket. It
   may reach anything.
 
-Enforce this with `import-x/no-restricted-paths` in `eslint.config.js`, scoped to source. A test
+Enforce this with `import-x/no-restricted-paths` in `eslint.config.ts`, scoped to source. A test
 legitimately arranges across rings, so the zones cover `src/` and not the specs beside it. A direction
 that is only a comment is a direction that is already broken somewhere you have not looked.
 

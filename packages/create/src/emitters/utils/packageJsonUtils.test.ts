@@ -1147,6 +1147,7 @@ describe('dependencyDrift', () => {
       'eslint',
       'eslint-plugin-jsx-a11y-x',
       'eslint-plugin-react-hooks',
+      'jiti',
     ];
     expect(peerNames).toEqual(expectedPeers);
     const eslintPeer = {

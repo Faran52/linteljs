@@ -171,8 +171,8 @@ describe('planSync', () => {
     expect(eslintPeer).toEqual(expectedEslint);
   });
 
-  it('calls eslint.config.js unchanged when it is what linteljs writes', async () => {
-    await plant('eslint.config.js', emitEslintConfig(HOSTED_DEFAULTS));
+  it('calls eslint.config.ts unchanged when it is what linteljs writes', async () => {
+    await plant('eslint.config.ts', emitEslintConfig(HOSTED_DEFAULTS));
 
     const { eslintConfig } = await planSync(cwd, HOSTED_DEFAULTS);
 
@@ -183,20 +183,20 @@ describe('planSync', () => {
     [
       'no backup yet',
       [],
-      'eslint.config.js.bak',
+      'eslint.config.ts.bak',
     ],
     [
       'a .bak',
-      ['eslint.config.js.bak'],
-      'eslint.config.js.bak.1',
+      ['eslint.config.ts.bak'],
+      'eslint.config.ts.bak.1',
     ],
     [
       'a .bak and a .bak.1',
-      ['eslint.config.js.bak', 'eslint.config.js.bak.1'],
-      'eslint.config.js.bak.2',
+      ['eslint.config.ts.bak', 'eslint.config.ts.bak.1'],
+      'eslint.config.ts.bak.2',
     ],
   ])('backs an edited config up past every earlier backup, with %s', async (_, earlier, backup) => {
-    await plant('eslint.config.js', '// ours\n');
+    await plant('eslint.config.ts', '// ours\n');
 
     for (const target of earlier) {
       await plant(target, '// earlier\n');
@@ -206,7 +206,7 @@ describe('planSync', () => {
 
     const expected = {
       status: 'changed',
-      path: 'eslint.config.js',
+      path: 'eslint.config.ts',
       backup,
     };
     expect(eslintConfig).toEqual(expected);
@@ -227,11 +227,16 @@ describe('planSync', () => {
   });
 
   it('calls a config linteljs would write changed under another spelling', async () => {
-    await plant('eslint.config.mjs', emitEslintConfig(HOSTED_DEFAULTS));
+    await plant('eslint.config.js', emitEslintConfig(HOSTED_DEFAULTS));
 
     const { eslintConfig } = await planSync(cwd, HOSTED_DEFAULTS);
 
-    expect(eslintConfig.status).toBe('changed');
+    const expected = {
+      status: 'changed',
+      path: 'eslint.config.js',
+      backup: 'eslint.config.js.bak',
+    };
+    expect(eslintConfig).toEqual(expected);
   });
 });
 
@@ -449,7 +454,7 @@ describe('writeLintConfig', () => {
   it('writes a missing config', async () => {
     await writeLintConfig(cwd, HOSTED_DEFAULTS, { status: 'missing' });
 
-    const written = await read('eslint.config.js');
+    const written = await read('eslint.config.ts');
     expect(written).toBe(emitted);
   });
 
@@ -463,7 +468,7 @@ describe('writeLintConfig', () => {
     expect(backup).toBe('// ours\n');
     const hasOriginal = await exists(join(cwd, 'eslint.config.mjs'));
     expect(hasOriginal).toBe(false);
-    const written = await read('eslint.config.js');
+    const written = await read('eslint.config.ts');
     expect(written).toBe(emitted);
   });
 
@@ -471,16 +476,16 @@ describe('writeLintConfig', () => {
     const external = join(cwd, 'external.js');
 
     await writeFile(external, '// external\n', 'utf8');
-    await symlink(external, join(cwd, 'eslint.config.js'));
+    await symlink(external, join(cwd, 'eslint.config.ts'));
     const plan = await planSync(cwd, HOSTED_DEFAULTS);
 
     await writeLintConfig(cwd, HOSTED_DEFAULTS, plan.eslintConfig);
 
     const kept = await readFile(external, 'utf8');
     expect(kept).toBe('// external\n');
-    const backup = await read('eslint.config.js.bak');
+    const backup = await read('eslint.config.ts.bak');
     expect(backup).toBe('// external\n');
-    const written = await read('eslint.config.js');
+    const written = await read('eslint.config.ts');
     expect(written).toBe(emitted);
   });
 });

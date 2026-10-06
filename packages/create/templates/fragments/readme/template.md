@@ -18,7 +18,7 @@ is canonical for the rest, the development server script included.
 
 ## Where the standard lives
 
-- `eslint.config.js` composes layers from `@linteljs/eslint-config` and holds no rule logic of its own, so a
+- `eslint.config.ts` composes layers from `@linteljs/eslint-config` and holds no rule logic of its own, so a
   rule fixed there reaches this project on update. `stylelint.config.js` and `tsconfig.json` are emitted the
   same way.
 - The rules a linter cannot enforce (placement, import direction, types, state, tests) are in
@@ -26,7 +26,7 @@ is canonical for the rest, the development server script included.
   `.cursor/rules/` for Cursor when you chose them. Each chosen agent's own file (`CLAUDE.md`, `AGENTS.md`,
   `.github/copilot-instructions.md`, `.cursor/rules/linteljs.mdc`) points at them and is yours to edit.
 - `{{SYNC}}` rewrites `plugins/linteljs/`, then asks before it moves the `@linteljs/*` versions,
-  adds the ESLint config's missing peers, or backs up a changed `eslint.config.js` to `.bak` and writes a fresh one.
+  adds the ESLint config's missing peers, or backs up a changed `eslint.config.ts` to `.bak` and writes a fresh one.
   `--yes` accepts every step.
 
 ## Hooks

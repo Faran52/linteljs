@@ -41,7 +41,7 @@ export const SYNC_COMMAND: Record<PackageManager, string> = {
   bun: 'bunx @linteljs/create sync',
 };
 
-export const ESLINT_CONFIG_PATH = 'eslint.config.js';
+export const ESLINT_CONFIG_PATH = 'eslint.config.ts';
 
 // The one tree `sync` owns whole, and so the one it may delete in.
 export const PLUGIN_ROOT = 'plugins/linteljs/';

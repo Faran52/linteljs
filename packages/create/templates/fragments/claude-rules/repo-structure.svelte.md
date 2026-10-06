@@ -9,7 +9,7 @@ paths:
 
 Use this rule when adding, moving, renaming, or importing a source file.
 
-Filename case and folder case are enforced by `check-file` in `eslint.config.js`. They are not
+Filename case and folder case are enforced by `check-file` in `eslint.config.ts`. They are not
 restated here, because a prose copy of a lint rule is the part that rots. This file carries placement and
 direction, which no rule can see.
 

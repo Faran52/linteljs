@@ -37,7 +37,7 @@ It asks the questions below, then runs five stages, each skippable with `--skip 
 4. **install:** the project's package manager.
 5. **fix:** ESLint and Stylelint with `--fix`.
 
-The generated `eslint.config.js` calls `composeConfig` from `@linteljs/eslint-config/compose-config`, which fixes
+The generated `eslint.config.ts` calls `composeConfig` from `@linteljs/eslint-config/compose-config`, which fixes
 the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typecheck, coverage at 100% (unless
 `--testing none`), and the build.
 
@@ -122,7 +122,7 @@ would strand are yours to port. Otherwise it takes four steps:
 3. The peers `@linteljs/eslint-config` needs that are missing or behind get their own y/N; on yes they are
    written to `package.json` and the `<pm> install` to run is printed.
 4. A missing ESLint config is written without asking. One that differs from what linteljs would write gets a
-   y/N; on yes it moves to the first free `.bak`, `.bak.1` and so on, and a fresh `eslint.config.js` is written.
+   y/N; on yes it moves to the first free `.bak`, `.bak.1` and so on, and a fresh `eslint.config.ts` is written.
 
 `--yes` accepts every step. Without a terminal and without `--yes`, a step that would ask writes nothing, says so
 on stderr, and the run exits 1. Declining a step exits 0. Nothing else is touched: your other dependencies and

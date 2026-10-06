@@ -108,6 +108,7 @@ export const VERSIONS: Record<string, string> = {
   'eslint-plugin-vuejs-accessibility': '^2.6.0',
   'happy-dom': '^20.14.5',
   'husky': '^9.1.7',
+  'jiti': '^2.7.0',
   'lint-staged': '^17.6.0',
   'postcss-html': '^2.0.0',
   'next': '^16.3.8',
@@ -217,6 +218,8 @@ export const SHARED_DEV_DEPENDENCIES = [
   'eslint',
   '@linteljs/eslint-config',
   'husky',
+  // ESLint loads `eslint.config.ts` through it.
+  'jiti',
   'lint-staged',
   'stylelint',
   'stylelint-config-recess-order',

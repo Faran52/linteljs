@@ -854,12 +854,12 @@ describe('the router', () => {
 });
 
 describe('eslintConfigEmitter', () => {
-  it('writes the emitted text to eslint.config.js at the lint stage', () => {
+  it('writes the emitted text to eslint.config.ts at the lint stage', () => {
     const artifacts = eslintConfigEmitter(answersFor({}));
     const text = emitEslintConfig(answersFor({}));
     const expected = [{
       stage: 'lint',
-      target: 'eslint.config.js',
+      target: 'eslint.config.ts',
       content: { text },
     }];
     expect(artifacts).toEqual(expected);

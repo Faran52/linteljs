@@ -13,10 +13,10 @@ import {
 
 describe('emitted', () => {
   it('carries the given stage and target with the text as its content', () => {
-    const actual = emitted('lint', 'eslint.config.js', 'export default {};');
+    const actual = emitted('lint', 'eslint.config.ts', 'export default {};');
     const expected = {
       stage: 'lint',
-      target: 'eslint.config.js',
+      target: 'eslint.config.ts',
       content: { text: 'export default {};' },
     };
     expect(actual).toEqual(expected);

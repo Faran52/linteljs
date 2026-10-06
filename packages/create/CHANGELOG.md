@@ -23,8 +23,10 @@ when a version's change lives in a sibling it is described there instead:
   `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not.
   A v1 file is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into
   `form`, `styling` and `data`, and `store: true` becomes the target's first store.
-- **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
-  `sync` offers to move the old file to `.bak` and write the new one.
+- **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
+  `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
+  config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers
+  `jiti` with the `@linteljs/eslint-config` peers.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
@@ -34,9 +36,9 @@ when a version's change lives in a sibling it is described there instead:
   - `plugins/linteljs/` is rewritten. A path recorded there and no longer written is deleted, and the directories
     left empty with it. Nothing outside `plugins/linteljs/` is deleted.
   - The `@linteljs/*` versions behind are shown as a table, then a y/N. The `@linteljs/eslint-config` peers
-    missing or behind get their own y/N, then the `<pm> install` to run is printed.
+    and `jiti` missing or behind get their own y/N, then the `<pm> install` to run is printed.
   - A missing ESLint config is written. One that differs gets a y/N that moves it to the first free `.bak`,
-    `.bak.1` and so on, then writes `eslint.config.js`.
+    `.bak.1` and so on, then writes `eslint.config.ts`.
   - `--yes` accepts every step. Without a terminal and without `--yes`, a step writes nothing, says so on stderr,
     and the run exits 1. Declining exits 0.
   - Every other file, `.github/workflows/ci.yml`, `.claude/settings.json`, the agent files, `scripts/` and the
@@ -114,7 +116,7 @@ when a version's change lives in a sibling it is described there instead:
   `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
   is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one
   too, first in `paths`: `@pages` on React and Solid, with `@routes` before it under React Router in code, `@views`
-  on Vue and Nuxt, `@layouts` on Astro. With `react-router-framework`, `eslint.config.js` sets
+  on Vue and Nuxt, `@layouts` on Astro. With `react-router-framework`, `eslint.config.ts` sets
   `aliasExempt: ['src/routes.ts']` and `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route
   typegen reads that file without the aliases.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
@@ -256,7 +258,7 @@ when a version's change lives in a sibling it is described there instead:
   since its manifest names no popup; one with no page at all gets no html layer.
 - Emitted files stay within `max-len` and still parse on unusual values: a long project name, a long gate command
   and a recorded `resolveConditions` wrap, and an ignore or alias path ending in a backslash or holding a newline
-  no longer breaks `eslint.config.js` or `nuxt.config.ts`.
+  no longer breaks `eslint.config.ts` or `nuxt.config.ts`.
 - The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
   parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
 - A config whose single choice names an inherited property, such as `"target": "toString"`, is refused, and an

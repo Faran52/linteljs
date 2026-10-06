@@ -385,7 +385,8 @@ export const dependencyDrift = (existing: PackageJson, answers: Answers): Depend
       upgrades.push(upgrade);
     }
 
-    if (ESLINT_CONFIG_PEERS.includes(name)) {
+    // ESLint cannot load the `eslint.config.ts` sync writes without `jiti`.
+    if (ESLINT_CONFIG_PEERS.includes(name) || name === 'jiti') {
       peers.push(upgrade);
     }
   }

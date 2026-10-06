@@ -10,7 +10,7 @@ paths:
 Use this rule when adding, moving, renaming, or importing a source file.
 
 Filename case, folder case and the App Router's reserved filenames are enforced by `check-file` in
-`eslint.config.js`. They are not restated here, because a prose copy of a lint rule is the part that
+`eslint.config.ts`. They are not restated here, because a prose copy of a lint rule is the part that
 rots. This file carries placement and direction, which no rule can see.
 
 A spec takes the name of the file it tests, whatever case that is. The naming rule deliberately

@@ -84,7 +84,7 @@ describe('runPipeline against a directory that already exists', () => {
     const written = await generate({});
 
     expect(written).toEqual(expect.arrayContaining([
-      'eslint.config.js',
+      'eslint.config.ts',
       'stylelint.config.js',
       'package.json',
       CONFIG_PATH,
@@ -173,8 +173,8 @@ describe('runPipeline against a directory that already exists', () => {
     });
 
     expect(written).toContain('package.json');
-    expect(written).not.toContain('eslint.config.js');
-    const eslintConfigJsExists = await exists(join(cwd, 'eslint.config.js'));
+    expect(written).not.toContain('eslint.config.ts');
+    const eslintConfigJsExists = await exists(join(cwd, 'eslint.config.ts'));
     expect(eslintConfigJsExists).toBe(false);
   });
 

@@ -11,7 +11,7 @@ describe('removableIn', () => {
   it('takes what sits under plugins/linteljs/ and nothing outside it', () => {
     const removable = removableIn([
       emitted('standard', 'plugins/linteljs/hooks/hooks.json', ''),
-      emitted('standard', 'eslint.config.js', ''),
+      emitted('standard', 'eslint.config.ts', ''),
       emitted('standard', 'plugins/other/file.md', ''),
     ]);
 

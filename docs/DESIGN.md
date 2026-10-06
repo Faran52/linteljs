@@ -114,7 +114,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
 
   A project that recorded `typescript: false` is refused, not converted: `parseLinteljsConfig` rejects a property
   it does not know, naming it, so both routes that plan from a recorded block (`sync`, and `create --existing`)
-  stop before writing. Converting would rewrite that project's `eslint.config.js`, `tsconfig.json` and scripts as
+  stop before writing. Converting would rewrite that project's `eslint.config.ts`, `tsconfig.json` and scripts as
   TypeScript over source that is not, which is not recoverable without git. It is the parser that refuses and
   there is no second list of known answers elsewhere: a second list that drops what it does not name in silence is
   how a devtools-panel project gets replanned as a popup one.
@@ -1093,7 +1093,7 @@ webextension popup.
 ### Recorded answers
 
 `aliases`, `ignores`, `resolveConditions` and `browsers` are recorded, not asked: facts about a project, discovered
-after generation and edited into `linteljs.config.json` by hand. `aliases` exists because `eslint.config.js` is
+after generation and edited into `linteljs.config.json` by hand. `aliases` exists because `eslint.config.ts` is
 emitted whole, so an alias added there would be lost to the next config linteljs writes; recorded, one line reaches the ESLint config,
 the tsconfig paths and the resolver together. `browsers` is separate from `browser` because `browser` decides the
 background shape, ambient types and starter code, while `browsers` decides how many manifests come out: a project
@@ -1347,7 +1347,7 @@ The runner-switch refusal runs first (see the Jest section). Then:
 - **The `@linteljs/eslint-config` peers missing or behind** get their own y/N, after which the `<pm> install` to
   run is printed. Every other dependency, the framework included, stays the project's.
 - **The ESLint config** is written without asking when none exists. One that differs gets a y/N, which moves the
-  first spelling ESLint would load to the first free `.bak`, `.bak.1` and so on, then writes `eslint.config.js`.
+  first spelling ESLint would load to the first free `.bak`, `.bak.1` and so on, then writes `eslint.config.ts`.
   A moved file is never lost, so the project can diff the two and carry its additions over.
 
 `--yes` accepts every step. With no terminal and no `--yes`, a step that would ask writes nothing, says so on

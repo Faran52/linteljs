@@ -291,7 +291,7 @@ describe('stageReport on a terminal', () => {
         const report = stageReport(OPTIONS);
 
         report.onStage('lint', 1, 5);
-        report.onWrite('eslint.config.js');
+        report.onWrite('eslint.config.ts');
         report.onNotice('said by lint');
         report.onStageDone('lint', 10);
         report.onStage('package', 2, 5);
