@@ -50,7 +50,7 @@ export const artifactWriter = async (
 
   const text = await shippedAssetsReader(artifact.content, current);
 
-  await projectFileWriter(cwd, artifact.target, text);
+  await projectFileWriter(cwd, artifact.target, text, 'bytes' in artifact.content ? 'latin1' : undefined);
 
   if (artifact.executable === true) {
     // Husky and Claude Code invoke these directly, and npm does not preserve the mode bit for every consumer.

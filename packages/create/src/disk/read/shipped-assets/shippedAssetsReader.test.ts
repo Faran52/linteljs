@@ -47,6 +47,15 @@ describe('shippedAssetsReader', () => {
     expect(shippedAssets).toBe('export default {};');
   });
 
+  it('reads a bytes template as one Latin-1 character per byte', async () => {
+    const source = 'starter-source/react-native/assets/images/icon.png';
+
+    const shippedAssets = await shippedAssetsReader({ bytes: source });
+    const shipped = await readFile(join(TEMPLATES_ROOT, source));
+    const expected = shipped.toString('latin1');
+    expect(shippedAssets).toBe(expected);
+  });
+
   it('hands a merge the current text and returns what it composes', async () => {
     const shippedAssets = await shippedAssetsReader({
       merge: (current) => {

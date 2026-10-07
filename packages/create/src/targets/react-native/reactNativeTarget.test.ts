@@ -198,6 +198,25 @@ describe('the starter gates', () => {
   });
 });
 
+describe('the app icons', () => {
+  it('ship from the starter tree under assets/images, as app.json names them', () => {
+    const record = recordFor();
+    const images = record.starterFiles
+      .filter((file) => {
+        return file.target.startsWith('assets/');
+      });
+
+    const expected = [
+      { target: 'assets/images/adaptive-foreground.png' },
+      { target: 'assets/images/icon.png' },
+      { target: 'assets/images/icon-dark.png' },
+      { target: 'assets/images/splash.png' },
+      { target: 'assets/images/splash-dark.png' },
+    ];
+    expect(images).toEqual(expected);
+  });
+});
+
 describe('the favicon', () => {
   it('is the shared Mark, in the public directory Expo serves on the web', () => {
     const record = recordFor();

@@ -12,9 +12,15 @@ import { targetFor } from '@targets';
 import { LANGUAGE_NAMES } from '../../libraries/i18n-config/constants';
 import { emitted } from '../../utils/artifactUtils';
 
-import { GRADLE_DAEMON_JVM_PLUGIN, IOS_LOCALES } from './constants';
+import {
+  ADAPTIVE_ICON,
+  GRADLE_DAEMON_JVM_PLUGIN,
+  ICON,
+  IOS_ICON,
+  IOS_LOCALES,
+  SPLASH_SCREEN,
+} from './constants';
 
-// No icons: the starter ships no images, and a path to a missing file fails the first `expo export`.
 // Declared locales are what iOS reports the device's language against, and what each system's per-app setting lists.
 export const emitExpoConfig = (name: string, locales: Language[]): string => {
   const ios = locales
@@ -43,8 +49,15 @@ export const emitExpoConfig = (name: string, locales: Language[]): string => {
       orientation: 'portrait',
       userInterfaceStyle: 'automatic',
       newArchEnabled: true,
-      ios: { supportsTablet: true },
-      android: { predictiveBackGestureEnabled: false },
+      icon: ICON,
+      ios: {
+        supportsTablet: true,
+        icon: IOS_ICON,
+      },
+      android: {
+        predictiveBackGestureEnabled: false,
+        adaptiveIcon: ADAPTIVE_ICON,
+      },
       web: {
         bundler: 'metro',
         output: 'static',
@@ -55,6 +68,7 @@ export const emitExpoConfig = (name: string, locales: Language[]): string => {
         'expo-router',
         ['expo-build-properties', { ios: { enableSceneSupport: true } }],
         GRADLE_DAEMON_JVM_PLUGIN,
+        ['expo-splash-screen', SPLASH_SCREEN],
         ...localization,
       ],
       // `typedRoutes` is what makes `Href` a union of this project's own routes rather than a string.

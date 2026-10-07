@@ -896,6 +896,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'expo-linking': '~',
   'expo-localization': '~',
   'expo-router': '~',
+  'expo-splash-screen': '~',
   'expo-status-bar': '~',
   'jest-expo': '~',
   'lightningcss': '',

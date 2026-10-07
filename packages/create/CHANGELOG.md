@@ -115,6 +115,9 @@ when a version's change lives in a sibling it is described there instead:
   WCAG AA in both schemes, 4.5:1 on the page, a card and a muted surface, and a field's border 3:1.
 - Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme. The mark animates
   only under `prefers-reduced-motion: no-preference`, on the web and, through Reanimated, on React Native.
+- React Native ships the Mark as its app icon, with a dark iOS variant, an Android adaptive icon and a light and
+  dark splash screen through `expo-splash-screen`, a new dependency. The images sit under `assets/images/`, and
+  `app.json` names them.
 - **Aliases.** Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside
   `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
   is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one

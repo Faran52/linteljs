@@ -349,6 +349,7 @@ export const reactNativeTarget: TargetBuilder = () => {
       'expo-router',
       'expo-constants',
       'expo-linking',
+      'expo-splash-screen',
       'expo-status-bar',
       'react',
       'react-dom',

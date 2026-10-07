@@ -12,6 +12,7 @@ export const projectFileWriter = async (
   cwd: string,
   target: string,
   text: string,
+  encoding?: BufferEncoding,
 ): Promise<void> => {
   const path = await safeProjectPath(cwd, target);
 
@@ -28,7 +29,7 @@ export const projectFileWriter = async (
     );
 
     try {
-      await file.writeFile(text);
+      await file.writeFile(text, encoding);
     }
     finally {
       await file.close();

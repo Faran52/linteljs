@@ -510,6 +510,12 @@ describe('the project the answers write', () => {
           .flatMap(({ artifacts }) => {
             return artifacts
               .flatMap(({ content }) => {
+                if ('bytes' in content) {
+                  const image = [content.bytes];
+
+                  return image;
+                }
+
                 return 'sources' in content ? content.sources : [];
               });
           });

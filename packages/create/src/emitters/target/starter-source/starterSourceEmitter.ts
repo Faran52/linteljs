@@ -115,6 +115,18 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const isJest = testRunnerOf(answers) === 'jest';
 
   const artifactOf = (file: Starter): Artifact => {
+    // Bytes, not text: no rewrite applies, and a UTF-8 round trip would corrupt it.
+    if (file.target.endsWith('.png')) {
+      const image: Artifact = {
+        stage: 'standard',
+        target: file.target,
+        content: { bytes: sourceOf(target.id, file) },
+        seed: true,
+      };
+
+      return image;
+    }
+
     const sources = [sourceOf(target.id, file)];
     const rewritten = importsRewritten(file, renames);
     const transform = 'transform' in file ? file.transform : undefined;

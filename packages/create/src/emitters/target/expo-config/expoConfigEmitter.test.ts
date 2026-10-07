@@ -11,6 +11,15 @@ import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
 const SCENE_SUPPORT = ['expo-build-properties', { ios: { enableSceneSupport: true } }];
 const DAEMON_JVM = './src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts';
+const SPLASH_SCREEN = ['expo-splash-screen', {
+  image: './assets/images/splash.png',
+  imageWidth: 200,
+  backgroundColor: '#faf9f7',
+  dark: {
+    image: './assets/images/splash-dark.png',
+    backgroundColor: '#1f2128',
+  },
+}];
 
 describe('emitExpoConfig', () => {
   it('names the app, its slug and its scheme after the project', () => {
@@ -25,8 +34,21 @@ describe('emitExpoConfig', () => {
         orientation: 'portrait',
         userInterfaceStyle: 'automatic',
         newArchEnabled: true,
-        ios: { supportsTablet: true },
-        android: { predictiveBackGestureEnabled: false },
+        icon: './assets/images/icon.png',
+        ios: {
+          supportsTablet: true,
+          icon: {
+            light: './assets/images/icon.png',
+            dark: './assets/images/icon-dark.png',
+          },
+        },
+        android: {
+          predictiveBackGestureEnabled: false,
+          adaptiveIcon: {
+            foregroundImage: './assets/images/adaptive-foreground.png',
+            backgroundColor: '#faf9f7',
+          },
+        },
         web: {
           bundler: 'metro',
           output: 'static',
@@ -35,6 +57,7 @@ describe('emitExpoConfig', () => {
           'expo-router',
           SCENE_SUPPORT,
           DAEMON_JVM,
+          SPLASH_SCREEN,
         ],
         experiments: {
           typedRoutes: true,
@@ -53,6 +76,7 @@ describe('emitExpoConfig', () => {
           'expo-router',
           SCENE_SUPPORT,
           DAEMON_JVM,
+          SPLASH_SCREEN,
           ['expo-localization', {
             supportedLocales: {
               ios: ['en', 'ar'],
@@ -74,6 +98,7 @@ describe('emitExpoConfig', () => {
           'expo-router',
           SCENE_SUPPORT,
           DAEMON_JVM,
+          SPLASH_SCREEN,
           ['expo-localization', {
             supportedLocales: {
               ios: ['zh-Hans', 'zh-Hant'],

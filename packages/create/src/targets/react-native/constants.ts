@@ -3,6 +3,11 @@ import type { AccessorNames } from '../utils/mockUtils';
 
 // `app.json` carries the project's name three times, so it is emitted.
 export const ALWAYS: readonly string[] = [
+  'assets/images/adaptive-foreground.png',
+  'assets/images/icon.png',
+  'assets/images/icon-dark.png',
+  'assets/images/splash.png',
+  'assets/images/splash-dark.png',
   'expo-env.d.ts',
   'src/typings/assets.d.ts',
   'src/app/+not-found.tsx',

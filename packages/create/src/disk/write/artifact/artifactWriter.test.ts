@@ -21,6 +21,8 @@ import {
 
 import { emitted, merged } from '@emitters/utils/artifactUtils';
 
+import { TEMPLATES_ROOT } from '../../read/shipped-assets/shippedAssetsReader';
+
 import { artifactWriter } from './artifactWriter';
 
 import type { Artifact } from '@emitters';
@@ -192,6 +194,31 @@ describe('artifactWriter', () => {
     expect(wrote).toBe(true);
     const hook = await stat(join(cwd, 'hook.sh'));
     expect(hook.mode & 0o111).toBe(0o111);
+  });
+
+  it('copies a bytes artifact byte for byte', async () => {
+    const source = 'starter-source/react-native/assets/images/icon.png';
+    const artifact = {
+      stage: 'standard',
+      target: 'assets/images/icon.png',
+      content: { bytes: source },
+    } satisfies Artifact;
+
+    const wrote = await artifactWriter(cwd, artifact);
+    expect(wrote).toBe(true);
+    const written = await readFile(join(cwd, 'assets/images/icon.png'));
+    const shipped = await readFile(join(TEMPLATES_ROOT, source));
+    const isSame = written.equals(shipped);
+    expect(isSame).toBe(true);
+  });
+
+  it('writes text as UTF-8', async () => {
+    const wrote = await artifactWriter(cwd, emitted('standard', 'notes.md', 'café\n'));
+    expect(wrote).toBe(true);
+    const notes = await readFile(join(cwd, 'notes.md'));
+    const expected = Buffer.from('café\n', 'utf8');
+    const isSame = notes.equals(expected);
+    expect(isSame).toBe(true);
   });
 
   it('leaves an ordinary artifact without an execute bit', async () => {

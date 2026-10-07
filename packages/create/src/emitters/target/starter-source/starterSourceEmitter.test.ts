@@ -597,6 +597,20 @@ describe('a shared file written under the target naming', () => {
   });
 });
 
+describe('an image', () => {
+  it('copies its bytes with no rewrite', () => {
+    const icon = artifactFor({ target: 'react-native' }, 'assets/images/icon.png');
+
+    const expected = {
+      stage: 'standard',
+      target: 'assets/images/icon.png',
+      content: { bytes: 'starter-source/react-native/assets/images/icon.png' },
+      seed: true,
+    };
+    expect(icon).toEqual(expected);
+  });
+});
+
 describe('a client boundary', () => {
   it.each<[string, string, Partial<Answers>]>([
     [

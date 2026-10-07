@@ -133,7 +133,12 @@ interface MergedText {
   merge: (current: string | null) => string;
 }
 
-export type ArtifactContent = CopiedAssets | EmittedText | MergedText;
+// One template, written byte for byte.
+interface CopiedBytes {
+  bytes: string;
+}
+
+export type ArtifactContent = CopiedAssets | CopiedBytes | EmittedText | MergedText;
 
 export interface Artifact {
   stage: Stage;

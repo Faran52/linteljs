@@ -31,6 +31,11 @@ export const shippedAssetsReader = async (
     return content.text;
   }
 
+  // One character per byte, so `artifactWriter` writes an image back unchanged.
+  if ('bytes' in content) {
+    return await readFile(join(TEMPLATES_ROOT, content.bytes), 'latin1');
+  }
+
   const reads = content.sources
     .map(async (source) => {
       const bytes = await readFile(join(TEMPLATES_ROOT, source));
