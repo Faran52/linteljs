@@ -612,8 +612,9 @@ reads every language's contact words from the locale files at build time and han
 and the island follows `<html lang>`, which the language switcher sets, so it re-renders on a switch with no
 react-i18next and no locale bundle of its own; its server render takes the fallback language, as the page's does,
 so hydration matches. Astro hosting nothing has no contact page: no
-framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. The islands for Vue,
-Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
+framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. Hosting Vue, the
+island is Vue's own `ContactView` under the same page, installing its data provider on the island's app. The
+islands for Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
 without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
 rather than a forgotten file.
 

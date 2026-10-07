@@ -52,6 +52,8 @@ import {
   TEMPLATES_ROOT,
 } from '@disk';
 import { targetCases } from '@e2e/matrix/matrix';
+import { STARTER_CASES } from '@e2e/starter-cover/constants';
+import { starterCases } from '@e2e/starter-cover/starterCover';
 import { targetFor } from '@targets';
 
 import {
@@ -251,9 +253,9 @@ describe('the project the answers write', () => {
   // Written by `svelte-kit sync` and the i18n compiler, never by the scaffolder.
   const GENERATED = '.svelte-kit/';
 
-  const projectsFor = (target: TargetId): Project[] => {
+  const projectsFor = (target: TargetId, cases = targetCases(target)): Project[] => {
     // A monorepo case is the widest case moved under apps/, which these path checks read as written at the root.
-    return targetCases(target)
+    return cases
       .filter(({ answers }) => {
         return answers.layout !== 'monorepo';
       })
@@ -512,9 +514,16 @@ describe('the project the answers write', () => {
   });
 
   it('reads every starter asset some project is written from, and no other', async () => {
+    // The starter cases too, since the pairwise subset may pair a starter only with `testing: none`.
+    const starters = starterCases(STARTER_CASES);
     const copiedSources = TARGET_IDS
       .flatMap((target) => {
-        return projectsFor(target)
+        const ownStarters = starters
+          .filter(({ answers }) => {
+            return answers.target === target;
+          });
+
+        return projectsFor(target, [...targetCases(target), ...ownStarters])
           .flatMap(({ artifacts }) => {
             return artifacts
               .flatMap(({ content }) => {

@@ -47,15 +47,25 @@ export const VIEW_SUITES: readonly string[] = [
 // A client script over the shared locales: no library, so nothing to install.
 export const ASTRO_I18N: I18nParts = { dependencies: [] };
 
-// React's contact page and the parts it reads, under `src/views/` since Astro routes `src/pages/`.
-export const ISLAND_COMPONENTS: Pick<ComponentPaths, 'button' | 'textInput'> = {
-  button: 'src/components/ui/button/Button',
-  textInput: 'src/components/ui/text-input/TextInput',
+// Each island's own button and text input, at its framework's paths.
+export const ISLAND_COMPONENTS: Record<'react' | 'vue', Pick<ComponentPaths, 'button' | 'textInput'>> = {
+  react: {
+    button: 'src/components/ui/button/Button',
+    textInput: 'src/components/ui/text-input/TextInput',
+  },
+  vue: {
+    button: 'src/components/ui/app-button/AppButton',
+    textInput: 'src/components/ui/text-input/TextInput',
+  },
 };
 
+// Under `src/views/`, since Astro routes `src/pages/`.
 export const CONTACT_VIEW = 'src/views/contact';
 
 export const USE_CONTACT_FORM = 'use-contact-form/useContactForm';
 
 // The page's contact words in every language, read at build time.
 export const CONTACT_COPY = `${CONTACT_VIEW}/utils/contactCopyUtils`;
+
+// How the page asset imports React's island; another framework's island rewrites this line.
+export const REACT_ISLAND_IMPORT = "import { ContactIsland } from '@views/contact/ContactIsland';";
