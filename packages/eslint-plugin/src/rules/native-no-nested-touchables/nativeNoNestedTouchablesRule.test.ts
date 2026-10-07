@@ -1,6 +1,6 @@
 import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { nativeNoNestedTouchables } from './nativeNoNestedTouchables.ts';
+import { nativeNoNestedTouchables } from './nativeNoNestedTouchablesRule.ts';
 
 tsxRuleTester.run('native-no-nested-touchables', nativeNoNestedTouchables, {
   valid: [

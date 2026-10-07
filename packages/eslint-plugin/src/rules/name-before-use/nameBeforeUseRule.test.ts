@@ -1,6 +1,6 @@
 import { tsRuleTester, tsxRuleTester } from '@mocks/ruleTesters';
 
-import { nameBeforeUse } from './nameBeforeUse.ts';
+import { nameBeforeUse } from './nameBeforeUseRule.ts';
 
 const awaitError = { messageId: 'nameAwait' };
 const callError = { messageId: 'nameNestedCall' };

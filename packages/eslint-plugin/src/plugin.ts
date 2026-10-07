@@ -1,5 +1,5 @@
 import { TYPESCRIPT_FILES } from './constants.ts';
-import { rules } from './rules/index.ts';
+import { rules } from './rules/registry.ts';
 
 import type { ESLint, Linter } from 'eslint';
 import type { LintelRuleModule, RuleLanguage } from './types.ts';

@@ -17,7 +17,7 @@ import {
   it,
 } from 'vitest';
 
-import { rules } from './rules/index.ts';
+import { rules } from './rules/registry.ts';
 
 import type { FixShape } from './types.ts';
 

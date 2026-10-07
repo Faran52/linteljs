@@ -1,6 +1,6 @@
 import { tsRuleTester } from '@mocks/ruleTesters';
 
-import { noDuplicateInterface } from './noDuplicateInterface.ts';
+import { noDuplicateInterface } from './noDuplicateInterfaceRule.ts';
 
 tsRuleTester.run('no-duplicate-interface', noDuplicateInterface, {
   valid: [

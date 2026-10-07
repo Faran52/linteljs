@@ -16,15 +16,15 @@ the plugin's alone and wins inside the package.
   `getDeclaredVariables` directly: go through `src/utils/compatUtils.ts`, which reads the modern shape
   first and the legacy one second.
 - **No casts to satisfy a type, tests included.** Three survive as tracked debt; add none:
-  `as RuleNode` in `preferArrowFunctions.ts`, `{} as LintelConfigs` in `src/plugin.ts`,
+  `as RuleNode` in `preferArrowFunctionsRule.ts`, `{} as LintelConfigs` in `src/plugin.ts`,
   `as Partial<T>` in `src/utils/ruleUtils.ts`.
 - **Arrow functions everywhere.** The plugin lints itself with `@linteljs/prefer-arrow-functions`.
 
 ## Layout
 
-- `src/rules/<kebab-id>/` holds `<camelCaseExport>.ts`, its test, `README.md` and a `utils/` for helpers only
+- `src/rules/<kebab-id>/` holds `<camelCaseExport>Rule.ts`, its test, `README.md` and a `utils/` for helpers only
   it reads; the directory name is the id, spelled once. No `index.ts` in a rule directory.
-- `src/rules/index.ts` is the registry (code, not a barrel) and `index.test.ts` holds the listing and each id
+- `src/rules/registry.ts` is the registry and `registry.test.ts` holds the listing and each id
   to it; `src/index.ts` is the package barrel and `src/plugin.ts` assembles the presets.
 - Adding a rule is the `add-eslint-rule` skill (`.claude/skills/add-eslint-rule/SKILL.md`).
 - Two presets and no third: `recommended` (rules with `meta.docs.recommended`) and `all`, both derived from the

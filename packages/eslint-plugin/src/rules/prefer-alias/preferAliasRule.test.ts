@@ -6,7 +6,7 @@ import {
   typedRuleTester,
 } from '@mocks/ruleTesters';
 
-import { preferAlias } from './preferAlias.ts';
+import { preferAlias } from './preferAliasRule.ts';
 
 const at = (path: string): string => {
   return join(ALIASED_PROJECT, 'src', path);

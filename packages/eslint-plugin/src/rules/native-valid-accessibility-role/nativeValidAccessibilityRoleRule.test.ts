@@ -1,6 +1,6 @@
 import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRole.ts';
+import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRoleRule.ts';
 
 const ACCESSIBILITY_ROLES = [
   'adjustable',

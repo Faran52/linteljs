@@ -13,7 +13,7 @@ import ts from 'typescript';
 import tseslint from 'typescript-eslint';
 import vueParser from 'vue-eslint-parser';
 
-import { rules } from '../src/rules/index.ts';
+import { rules } from '../src/rules/registry.ts';
 
 import { ALIASED_PROJECT } from './ruleTesters.ts';
 

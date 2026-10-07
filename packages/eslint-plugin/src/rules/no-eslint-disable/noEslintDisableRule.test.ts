@@ -1,6 +1,6 @@
 import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { noEslintDisable } from './noEslintDisable.ts';
+import { noEslintDisable } from './noEslintDisableRule.ts';
 
 tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
   valid: [

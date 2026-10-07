@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { alphabetically } from '@mocks/fixerSamples';
-import { moduleNameOf, rulesDir } from '@mocks/ruleTree';
+import { ruleFileOf, rulesDir } from '@mocks/ruleTree';
 import { ESLint, type Linter } from 'eslint';
 import {
   describe,
@@ -41,11 +41,11 @@ const filesIn = (ruleName: string): string[] => {
 };
 
 const requiredFiles = (ruleName: string): string[] => {
-  const module = moduleNameOf(ruleName);
+  const file = ruleFileOf(ruleName);
 
   const files = [
-    `${module}.ts`,
-    `${module}.test.ts`,
+    `${file}.ts`,
+    `${file}.test.ts`,
     'README.md',
   ];
 

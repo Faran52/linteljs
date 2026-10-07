@@ -1,6 +1,6 @@
 import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { nativeValidAccessibilityActions } from './nativeValidAccessibilityActions.ts';
+import { nativeValidAccessibilityActions } from './nativeValidAccessibilityActionsRule.ts';
 
 tsxRuleTester.run('native-valid-accessibility-actions', nativeValidAccessibilityActions, {
   valid: [

@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { sortHookDependencies } from './sortHookDependencies.ts';
+import { sortHookDependencies } from './sortHookDependenciesRule.ts';
 
 jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
   valid: [

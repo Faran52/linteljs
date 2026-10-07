@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { memberNewline } from './memberNewline.ts';
+import { memberNewline } from './memberNewlineRule.ts';
 
 const mustSplit = [{ messageId: 'mustSplit' }];
 

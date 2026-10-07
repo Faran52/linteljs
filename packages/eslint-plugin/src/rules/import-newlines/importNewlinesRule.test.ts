@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { importNewlines } from './importNewlines.ts';
+import { importNewlines } from './importNewlinesRule.ts';
 
 const LONG = 'a'.repeat(130);
 

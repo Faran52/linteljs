@@ -243,7 +243,7 @@ const config = [
   {
     name: '@linteljs/workspace/ast-identity',
     files: [
-      'packages/eslint-plugin/src/rules/prefer-arrow-functions/preferArrowFunctions.ts',
+      'packages/eslint-plugin/src/rules/prefer-arrow-functions/preferArrowFunctionsRule.ts',
       'packages/eslint-plugin/src/rules/prefer-arrow-functions/utils/safetyUtils.ts',
       'packages/eslint-plugin/src/utils/promiseChainUtils.ts',
     ],

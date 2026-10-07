@@ -14,8 +14,8 @@ export {
   meta,
   PLUGIN_NAME,
 } from './plugin.ts';
-export type { RuleName } from './rules/index.ts';
-export { rules } from './rules/index.ts';
+export type { RuleName } from './rules/registry.ts';
+export { rules } from './rules/registry.ts';
 export type {
   FixShape,
   LintelRuleModule,

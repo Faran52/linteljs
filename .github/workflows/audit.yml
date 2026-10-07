@@ -39,7 +39,7 @@ jobs:
           node-version: 26.10.0
           cache: pnpm
 
-      # The audits import `src/rules/index.ts`, and `node_modules` is the first corpus source.
+      # The audits import `src/rules/registry.ts`, and `node_modules` is the first corpus source.
       - run: pnpm install --frozen-lockfile
 
       # Not cached: a never-changing key would freeze the corpus.

@@ -9,7 +9,7 @@ import linteljs, {
   meta,
   PLUGIN_NAME,
 } from './plugin.ts';
-import { rules } from './rules/index.ts';
+import { rules } from './rules/registry.ts';
 
 const PRESET_NAMES = ['recommended', 'all'] as const;
 

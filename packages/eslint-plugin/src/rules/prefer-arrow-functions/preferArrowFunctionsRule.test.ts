@@ -4,7 +4,7 @@ import {
   tsxRuleTester,
 } from '@mocks/ruleTesters';
 
-import { preferArrowFunctions } from './preferArrowFunctions.ts';
+import { preferArrowFunctions } from './preferArrowFunctionsRule.ts';
 
 jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
   valid: [

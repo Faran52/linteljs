@@ -18,3 +18,7 @@ export const moduleNameOf = (ruleName: string): string => {
       return letter.toUpperCase();
     });
 };
+
+export const ruleFileOf = (ruleName: string): string => {
+  return `${moduleNameOf(ruleName)}Rule`;
+};

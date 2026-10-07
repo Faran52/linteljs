@@ -1,6 +1,6 @@
 import { tsRuleTester } from '@mocks/ruleTesters';
 
-import { noInlineObjectTypes } from './noInlineObjectTypes.ts';
+import { noInlineObjectTypes } from './noInlineObjectTypesRule.ts';
 
 tsRuleTester.run('no-inline-object-types', noInlineObjectTypes, {
   valid: [

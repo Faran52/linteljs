@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { arrayNewline } from './arrayNewline.ts';
+import { arrayNewline } from './arrayNewlineRule.ts';
 
 const errors = [{ messageId: 'elementsOnNewline' }];
 

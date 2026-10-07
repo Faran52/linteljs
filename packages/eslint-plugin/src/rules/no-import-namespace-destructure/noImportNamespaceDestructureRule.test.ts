@@ -1,6 +1,6 @@
 import { jsRuleTester } from '@mocks/ruleTesters';
 
-import { noImportNamespaceDestructure } from './noImportNamespaceDestructure.ts';
+import { noImportNamespaceDestructure } from './noImportNamespaceDestructureRule.ts';
 
 jsRuleTester.run('no-import-namespace-destructure', noImportNamespaceDestructure, {
   valid: [

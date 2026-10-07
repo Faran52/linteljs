@@ -1,6 +1,6 @@
 import tseslint from 'typescript-eslint';
 
-import { rules } from '../../../src/rules/index.ts';
+import { rules } from '../../../src/rules/registry.ts';
 
 import type { Linter } from 'eslint';
 import type { LintelRuleModule } from '../../../src/types.ts';

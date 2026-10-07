@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { exportSpecifierNewline } from './exportSpecifierNewline.ts';
+import { exportSpecifierNewline } from './exportSpecifierNewlineRule.ts';
 
 const declare = 'const alpha = 1, bravo = 2, charlie = 3;\n';
 const declareTypes = 'type Alpha = string;\ntype Bravo = number;\ntype Charlie = boolean;\n';

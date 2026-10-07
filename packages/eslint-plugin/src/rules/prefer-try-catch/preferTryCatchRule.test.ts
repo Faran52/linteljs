@@ -1,6 +1,6 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { preferTryCatch } from './preferTryCatch.ts';
+import { preferTryCatch } from './preferTryCatchRule.ts';
 
 jsRuleTester.run('prefer-try-catch', preferTryCatch, {
   valid: [

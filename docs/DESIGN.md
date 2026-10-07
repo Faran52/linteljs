@@ -1615,7 +1615,7 @@ the merged run hides a module covered only by another file's test. A file with n
 `constants.ts` is data and has to stay data: a function or branch in one fails the run, since a table asserted equal
 to itself proves nothing. A barrel of nothing but `export ... from` has no code, told by its source rather than its
 name. Anything else without a suite fails however much it looks like a table, which is why `compose-config`'s loader
-tables sit in `utils/loaderUtils.ts` with a suite, and why `answers/registry.ts` and the plugin's `rules/index.ts`
+tables sit in `utils/loaderUtils.ts` with a suite, and why `answers/registry.ts` and the plugin's `rules/registry.ts`
 have suites asserting what a reader depends on.
 
 The suites that cover a package rather than one file (`meta.test.ts`, `types.test.ts`, `fixerSafety.test.ts`,

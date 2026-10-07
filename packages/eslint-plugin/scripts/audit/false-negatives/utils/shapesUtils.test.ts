@@ -1,4 +1,4 @@
-import { rules } from '../../../../src/rules/index.ts';
+import { rules } from '../../../../src/rules/registry.ts';
 
 import { SHAPES, TS_ONLY_RULES } from './shapesUtils.ts';
 

@@ -1,12 +1,16 @@
 import { alphabetically } from '@mocks/fixerSamples';
-import { moduleNameOf, ruleDirectories } from '@mocks/ruleTree';
+import {
+  moduleNameOf,
+  ruleDirectories,
+  ruleFileOf,
+} from '@mocks/ruleTree';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { rules } from './index.ts';
+import { rules } from './registry.ts';
 
 describe('rules', () => {
   it('registers exactly the rules that have a directory', () => {
@@ -19,7 +23,7 @@ describe('rules', () => {
   const registered = Object.entries(rules);
 
   it.each(registered)('registers %s as the rule its own directory exports', async (name, rule) => {
-    const loaded: unknown = await import(`./${name}/${moduleNameOf(name)}.ts`);
+    const loaded: unknown = await import(`./${name}/${ruleFileOf(name)}.ts`);
 
     const expected = [moduleNameOf(name)];
     expect(loaded).toHaveProperty(expected, rule);

@@ -5,7 +5,7 @@ import {
 } from '@mocks/ruleTesters';
 import { Linter } from 'eslint';
 
-import { chainCallNewline } from './chainCallNewline.ts';
+import { chainCallNewline } from './chainCallNewlineRule.ts';
 
 const error = { messageId: 'callOnNewline' };
 

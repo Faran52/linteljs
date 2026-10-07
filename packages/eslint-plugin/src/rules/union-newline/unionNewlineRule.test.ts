@@ -1,6 +1,6 @@
 import { tsRuleTester } from '@mocks/ruleTesters';
 
-import { unionNewline } from './unionNewline.ts';
+import { unionNewline } from './unionNewlineRule.ts';
 
 tsRuleTester.run('union-newline', unionNewline, {
   valid: [

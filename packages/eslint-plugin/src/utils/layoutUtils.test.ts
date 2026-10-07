@@ -8,7 +8,7 @@ import {
   it,
 } from 'vitest';
 
-import { importNewlines } from '../rules/import-newlines/importNewlines.ts';
+import { importNewlines } from '../rules/import-newlines/importNewlinesRule.ts';
 
 import {
   adjacentPairs,

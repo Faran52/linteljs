@@ -33,7 +33,7 @@ const config = {
   mutate: [
     ...globs,
     '!src/**/*.test.ts',
-    '!src/rules/index.ts',
+    '!src/rules/registry.ts',
     ...excluded,
   ],
 
