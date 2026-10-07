@@ -11,6 +11,8 @@ export const PROJECTS = join(CACHE_ROOT, 'projects');
 
 export const STAMPS = join(CACHE_ROOT, 'stamps');
 
+export const SCRATCH = join(CACHE_ROOT, 'scratch');
+
 // The label is too long to sit in the line the generated config writes it on.
 export const PROJECT_NAME = 'starter';
 

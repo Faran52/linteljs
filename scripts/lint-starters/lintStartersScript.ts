@@ -22,12 +22,14 @@ import {
   logError,
   logWarn,
 } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
+import { run } from '../utils/processUtils.ts';
 
 import {
   CACHE_ROOT,
   CONFIG_PACKAGE,
   PLUGIN_PACKAGE,
   PROJECTS,
+  SCRATCH,
   STAMPS,
 } from './constants.ts';
 import {
@@ -65,6 +67,17 @@ if (!existsSync(CACHE_ROOT)) {
 }
 
 mkdirSync(STAMPS, { recursive: true });
+
+// Inside a repository, a scratch project skips the `git init` generating runs.
+const initialized = existsSync(join(SCRATCH, '.git'));
+
+if (!initialized) {
+  run('git', [
+    'init',
+    '--quiet',
+    SCRATCH,
+  ], '.');
+}
 
 const tarballs: Tarballs = {
   config: packed(CONFIG_PACKAGE),
@@ -169,22 +182,31 @@ const isUnchanged = (stampPath: string, stamp: string): boolean => {
   return !every && !fixing && readStamp(stampPath) === stamp;
 };
 
-// Install every time, so a changed tarball path reinstalls; `prepare` by hand, even when unchanged, since a no-op
-// install skips it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
+/**
+ * Generated apart first, so an unchanged project, and what `prepare` wrote in it, is left as it is. A changed one
+ * installs every time, so a changed tarball path reinstalls, and runs `prepare` by hand, since a no-op install skips
+ * it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
+ */
 const lintCase = async (item: E2eCase): Promise<Outcome> => {
   const slug = slugOf(item.label);
   const dir = join(PROJECTS, slug);
+  const scratch = join(SCRATCH, slug);
   const stampPath = join(STAMPS, slug);
 
-  await generate(item, dir, tarballs);
+  await generate(item, scratch, tarballs);
 
-  const stamp = stampOf(dir);
+  const stamp = stampOf(scratch);
+
+  rmSync(scratch, {
+    recursive: true,
+    force: true,
+  });
 
   if (isUnchanged(stampPath, stamp)) {
-    const reprepared = await spawnIn(appDirOf(item, dir), prepareArgs);
-
-    return reprepared.ok ? 'unchanged' : fail(item.label, 'prepare', reprepared.output);
+    return 'unchanged';
   }
+
+  await generate(item, dir, tarballs);
 
   // A kept lockfile keeps what a changed project no longer needs, such as an esbuild `allowBuilds` refuses.
   rmSync(join(dir, 'pnpm-lock.yaml'), { force: true });

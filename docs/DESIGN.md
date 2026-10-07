@@ -1733,15 +1733,17 @@ the end-to-end matrix, which runs every pair. Each case is the pipeline's own ou
 skipped) under `~/.cache/linteljs/typed/projects/`, with `@linteljs/eslint-config` and, through a pnpm override,
 `@linteljs/eslint-plugin` read from `pnpm pack` tarballs named by their hash, so the layers and rules are this
 checkout's. Every lint runs `pnpm install` (a changed tarball is a changed path, so it reinstalls) and `prepare`
-by hand, since regenerating deletes what `prepare` wrote and a no-op install does not rerun it. A skipped case
-reruns `prepare` too, so `.nuxt/` and `.svelte-kit/` survive for a check run by hand in the project.
+by hand, since regenerating deletes what `prepare` wrote and a no-op install does not rerun it. Each case is first
+generated into a scratch directory inside a git repository (so generating skips its own `git init`) and hashed
+there, so a skipped case leaves its project, `.nuxt/` and `.svelte-kit/` included, as it was for a check run by
+hand, and spawns nothing: with every case unchanged, 29.5 seconds became 14.5.
 
 The nine StyleX cases also run `test` and `build` after lint: StyleX resolves `@styles` theme imports only when it
 compiles, so a broken alias lints clean. The step costs 42 seconds of a warm `--all` run.
 
 A case whose generated tree (less `node_modules`, the lockfile and `.git`) hashes as it did at its last clean lint is
 skipped; `--all` lints every case. Measured on ten cores, five at a time: cold, 8.4 minutes; warm
-with `--all`, 4.5 minutes; warm with nothing changed, 16 seconds. So `check` runs the changed mode and CI runs
+with `--all`, 4.5 minutes; warm with nothing changed, 14.5 seconds. So `check` runs the changed mode and CI runs
 `--all` first, with the cache keyed on `create`'s templates and source. A missing cache prints a notice and runs
 cold rather than skip. `lint:starters:fix` writes a fix back to a template copied whole and untransformed, and only
 when every case writing it fixed it the same way, since one text can land under two targets' rules.
