@@ -161,6 +161,15 @@ describe('argumentError', () => {
       ],
       'Not a stage: lnt, fx.',
     ],
+    [
+      'a monorepo over an existing project',
+      [
+        '--existing',
+        '--layout',
+        'monorepo',
+      ],
+      '--existing runs in a single repo',
+    ],
   ])('refuses %s', (_case, argv, message) => {
     const parsed = parseCliArgs(argv);
     const messageStartsWith = argumentError(parsed)?.startsWith(message);
@@ -178,6 +187,16 @@ describe('argumentError', () => {
     ['a valid name', ['demo-app']],
     ['no name', []],
     ['sync', ['sync']],
+    ['a monorepo in a new directory', [
+      'demo-app',
+      '--layout',
+      'monorepo',
+    ]],
+    ['a single repo over an existing project', [
+      '--existing',
+      '--layout',
+      'single',
+    ]],
   ])('refuses nothing for %s', (_case, argv) => {
     const actual = argumentError(parseCliArgs(argv));
     expect(actual).toBeUndefined();

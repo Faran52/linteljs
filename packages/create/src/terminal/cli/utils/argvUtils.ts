@@ -8,7 +8,7 @@ import { type AnswerKey, type JsonValue } from '@answers';
 
 import { PROJECT_NAME_RULE } from '../../constants';
 import { isValidProjectName } from '../../utils/nameUtils';
-import { CLI_OPTIONS } from '../constants';
+import { CLI_OPTIONS, EXISTING_MONOREPO } from '../constants';
 
 import {
   answerOptions,
@@ -137,6 +137,10 @@ export const argumentError = (options: CliOptions): string | undefined => {
 
   if (options.unknownSkips.length > 0) {
     return `Not a stage: ${options.unknownSkips.join(', ')}. Pass one of: ${STAGES.join(', ')}.`;
+  }
+
+  if (options.existing && options.answers?.layout === 'monorepo') {
+    return EXISTING_MONOREPO;
   }
 
   return projectNameError(options);

@@ -172,7 +172,11 @@ const askedFrom = async (
 
   const known = options.existing ? await existingName(options.cwd) : options.name;
   const prefilled = known === '' ? {} : { name: known };
-  const asked = await ask(prompter, prefilled);
+  const fixed = options.existing ? { layout: 'single' } : {};
+  const asked = await ask(prompter, {
+    ...prefilled,
+    fixed,
+  });
   const answered: HostedAsk = {
     name: asked.name,
     answers: hosted(asked.answers, host),

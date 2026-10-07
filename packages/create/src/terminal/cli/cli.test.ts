@@ -46,6 +46,7 @@ import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
+import { EXISTING_MONOREPO } from './constants';
 import { parseCliArgs } from './utils/argvUtils';
 
 import type { Answers } from '@config/types';
@@ -307,24 +308,21 @@ describe('main: create', () => {
   });
 
   it('runs the questionnaire when --yes was not passed, and records what it answered with the host', async () => {
-    const { printed } = await runMain(
-      ['--existing', '--no-install'],
-      scripted([
-        'svelte',
-        undefined,
-        undefined,
-        ['zod'],
-        undefined,
-        undefined,
-        'tanstack-store',
-        undefined,
-        undefined,
-        [],
-        undefined,
-        ['claude-code', 'codex'],
-        [],
-      ]),
-    );
+    const asked = scripted([
+      'svelte',
+      undefined,
+      ['zod'],
+      undefined,
+      undefined,
+      'tanstack-store',
+      undefined,
+      undefined,
+      [],
+      undefined,
+      ['claude-code', 'codex'],
+      [],
+    ]);
+    const { printed } = await runMain(['--existing', '--no-install'], asked);
 
     const config = await configAt();
     const expected = {
@@ -340,6 +338,7 @@ describe('main: create', () => {
       plugins: [],
     };
     expect(config).toEqual(expected);
+    expect(asked.calls).not.toContain('Repository layout');
 
     expect(printed).toContain('wrote AGENTS.md');
   });
@@ -458,6 +457,25 @@ describe('main: create', () => {
 });
 
 describe('main: patching a project that already exists', () => {
+  it('refuses a recorded monorepo, before writing anything', async () => {
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      layout: 'monorepo',
+    });
+
+    const { code, errors } = await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+    ]);
+    const eslintConfigExists = await exists(join(project, 'eslint.config.ts'));
+
+    expect(code).toBe(1);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain(EXISTING_MONOREPO);
+    expect(eslintConfigExists).toBe(false);
+  });
+
   it('plans from the config it recorded under --yes, and fills only what the host can say about it', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,

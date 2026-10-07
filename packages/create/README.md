@@ -88,7 +88,8 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
 @linteljs/create [name] [options]
 @linteljs/create sync [options]
 
-  --existing        run in this directory, which already exists, rather than making <name>/
+  --existing        run in this directory, which already exists, rather than making <name>/;
+                    a single repo, so it asks no layout
   --no-install      skip the install and the eslint --fix pass that needs it
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)

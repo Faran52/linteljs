@@ -505,6 +505,33 @@ describe('ask', () => {
     expect(recorded.labels).toMatchObject(expected);
   });
 
+  describe('an answer already fixed', () => {
+    it('skips its question and keeps it', async () => {
+      const { result, recorded } = await askWith(
+        [
+          'demo-app',
+          'svelte',
+          'none',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ],
+        { fixed: { layout: 'monorepo' } },
+      );
+
+      expect(result.answers.layout).toBe('monorepo');
+      expect(result.answers.testing).toBe('none');
+      expect(recorded.calls).not.toContain('Repository layout');
+    });
+  });
+
   describe('a name already resolved', () => {
     it('skips the name question and uses it as given', async () => {
       const { result, recorded } = await askWith(

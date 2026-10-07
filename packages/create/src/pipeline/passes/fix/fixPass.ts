@@ -88,7 +88,11 @@ export const fixPass = async (
   const binarySpawn: BinarySpawn = async (name, args) => {
     const inApp = await localBinarySpawn(cwd, name, args);
 
-    return inApp ?? await localBinarySpawn(cwd, name, args, installRoot);
+    if (inApp !== null || installRoot === cwd) {
+      return inApp;
+    }
+
+    return await localBinarySpawn(cwd, name, args, installRoot);
   };
 
   const result = await binarySpawn('eslint', [

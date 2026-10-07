@@ -73,6 +73,7 @@ export interface Prompter {
 
 export interface AskInput {
   name?: string | undefined;
+  fixed?: Partial<Record<AnswerKey, JsonValue>>;
 }
 
 export interface Asked {
@@ -377,9 +378,13 @@ export const confirm = async (prompter: Prompter, message: string): Promise<bool
 // Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
-  const answered: Partial<Record<AnswerKey, JsonValue>> = {};
+  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...input.fixed };
+  const open = ANSWER_KEYS
+    .filter((key) => {
+      return !Object.hasOwn(answered, key);
+    });
 
-  for (const key of ANSWER_KEYS) {
+  for (const key of open) {
     const value = await askIfNeeded(prompter, answered, key);
 
     writeIfPresent(answered, key, value);

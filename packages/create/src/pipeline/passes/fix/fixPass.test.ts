@@ -16,11 +16,31 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import { DEFAULT_ANSWERS } from '@answers';
 
 import { fixPass, nextStep } from './fixPass';
+
+const spawned: string[] = [];
+
+vi.mock('@spawns', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spawns')>();
+
+  const localBinarySpawn: typeof actual.localBinarySpawn = async (cwd, name, args, installRoot) => {
+    spawned.push(name);
+
+    return await actual.localBinarySpawn(cwd, name, args, installRoot);
+  };
+
+  const spawns = {
+    ...actual,
+    localBinarySpawn,
+  };
+
+  return spawns;
+});
 
 let cwd = '';
 
@@ -78,6 +98,20 @@ describe('fixPass', () => {
 
     const expected = ['next: pnpm install && pnpm lint:fix'];
     expect(notices).toEqual(expected);
+  });
+
+  it('looks for eslint once in a single repo, and again at a separate install root', async () => {
+    spawned.length = 0;
+    await fixPass(cwd, DEFAULT_ANSWERS);
+    const single = [...spawned];
+
+    spawned.length = 0;
+    const app = join(cwd, 'apps', 'shop');
+    await mkdir(app, { recursive: true });
+    await fixPass(app, DEFAULT_ANSWERS, undefined, cwd);
+
+    expect(single).toEqual(['eslint']);
+    expect(spawned).toEqual(['eslint', 'eslint']);
   });
 
   it('does nothing observable when no callback is given', async () => {
@@ -237,6 +271,20 @@ describe('fixPass', () => {
 
     const expected = ['eslint --fix: nothing to fix'];
     expect(notices).toEqual(expected);
+  });
+
+  it('runs the app\'s own eslint once, without looking at the install root', async () => {
+    await plantEslint("console.log('[]');\n");
+    spawned.length = 0;
+
+    await fixPass(cwd, DEFAULT_ANSWERS, undefined, join(cwd, 'root'));
+
+    const expected = [
+      'eslint',
+      'stylelint',
+      'stylelint',
+    ];
+    expect(spawned).toEqual(expected);
   });
 
   it('runs the binaries hoisted to the install root inside the app', async () => {
