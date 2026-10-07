@@ -12,7 +12,7 @@ import i18next from 'i18next';
 import { renderScreen } from '@mocks/renderScreen';
 
 import { languages, languageStorageKey } from '@/i18n/config';
-import { MAX_FONT_SCALE } from '@/styles/starter';
+import { MAX_FONT_SCALE } from '@/styles/starterStyles';
 
 import { LanguageSelect } from './LanguageSelect';
 

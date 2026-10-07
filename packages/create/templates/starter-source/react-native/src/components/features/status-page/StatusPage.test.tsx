@@ -3,7 +3,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { renderScreen } from '@mocks/renderScreen';
 
 import { STATUSES } from '@/config/statuses';
-import { MAX_FONT_SCALE } from '@/styles/starter';
+import { MAX_FONT_SCALE } from '@/styles/starterStyles';
 
 import { StatusPage } from './StatusPage';
 

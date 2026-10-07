@@ -4,7 +4,7 @@ import {
   View,
 } from 'react-native';
 
-import { useStarterStyles } from '@styles/starter';
+import { useStarterStyles } from '@styles/starterStyles';
 
 import type { FC } from 'react';
 

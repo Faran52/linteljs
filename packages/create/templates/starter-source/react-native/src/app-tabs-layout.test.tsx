@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 
-import { MAX_FONT_SCALE } from '@/styles/starter';
+import { MAX_FONT_SCALE } from '@/styles/starterStyles';
 
 import TabsLayout from './app/(tabs)/_layout';
 

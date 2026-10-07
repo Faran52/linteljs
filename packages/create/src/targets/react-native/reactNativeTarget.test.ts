@@ -112,7 +112,7 @@ const GATES: GateRow[] = [
   ...mswGates(true, false),
   ['__mocks__/msw/native.ts', [{ mocking: ['msw'] }]],
   ['__mocks__/msw/polyfills.ts', [{ mocking: ['msw'] }]],
-  ['src/index.ts', [{ mocking: ['msw'] }]],
+  ['src/main.ts', [{ mocking: ['msw'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),
   ...contactCopyGates('src/app/(tabs)/contact.tsx'),
   ...contactCopyGates('src/app-tabs-contact.test.tsx'),

@@ -180,7 +180,7 @@ describe('patchPackageJson', () => {
       target: 'react-native',
       mocking: 'msw',
     }));
-    expect(mockedExpoPackage).toHaveProperty('main', 'src/index.ts');
+    expect(mockedExpoPackage).toHaveProperty('main', 'src/main.ts');
     const defaultPackage = patchPackageJson({}, answersFor({}));
     expect(defaultPackage).not.toHaveProperty('main');
   });

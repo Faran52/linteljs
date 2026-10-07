@@ -187,6 +187,7 @@ describe('referenceArtifacts', () => {
     ['popup', {}],
     ['background', {}],
     ['devtools-panel', { surfaces: ['devtools-panel'] }],
+    ['tailwind', { styling: 'tailwind' }],
     ['msw', { mocking: 'msw' }],
     ['tanstack-query', { data: 'tanstack-query' }],
     ['rtk-query', { data: 'rtk-query' }],
@@ -216,8 +217,8 @@ describe('referenceArtifacts', () => {
 
   it('refuses a condition no answer decides', () => {
     expect(() => {
-      return forAnswers(DEFAULT_ANSWERS, 'line <!-- when tailwind -->');
-    }).toThrow('Unknown rule condition: tailwind');
+      return forAnswers(DEFAULT_ANSWERS, 'line <!-- when sass -->');
+    }).toThrow('Unknown rule condition: sass');
   });
 
   it.each(TARGET_IDS)('leaves no condition marker in the %s structure rule', async (target) => {

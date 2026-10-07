@@ -1,4 +1,4 @@
-import { stylesFor } from './starter';
+import { stylesFor } from './starterStyles';
 
 describe('stylesFor', () => {
   it('answers the dark tokens for a dark scheme', () => {

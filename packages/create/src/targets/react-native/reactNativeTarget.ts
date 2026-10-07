@@ -61,7 +61,7 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
     expoProject: true,
     // expo-router owns the entry, so there is no root `App.tsx` for Expo's default to find. Under msw, an entry
     // of its own starts the mock server first, outside coverage.
-    packageMain: hasMsw(answers) ? 'src/index.ts' : 'expo-router/entry',
+    packageMain: hasMsw(answers) ? 'src/main.ts' : 'expo-router/entry',
     framework: 'react-native',
     html: false,
     stores: [
@@ -140,7 +140,7 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
       ...filesAt([
         '__mocks__/msw/native.ts',
         '__mocks__/msw/polyfills.ts',
-        'src/index.ts',
+        'src/main.ts',
       ], {
         when: hasMsw,
       }),
@@ -298,8 +298,8 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
         covers: 'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts',
       },
       {
-        target: 'src/styles/starter.test.ts',
-        covers: 'src/styles/starter.ts',
+        target: 'src/styles/starterStyles.test.ts',
+        covers: 'src/styles/starterStyles.ts',
       },
       {
         target: 'src/components/ui/text-input/TextInput.test.tsx',

@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { useStarterStyles } from '@styles/starter';
+import { useStarterStyles } from '@styles/starterStyles';
 
 import { useContactForm } from '@hooks/use-contact-form/useContactForm';
 

@@ -49,6 +49,8 @@ src/
   typings/              ambient .d.ts only
   config-plugins/       Expo config plugins, one subject each
   i18n/                 the languages and their messages <!-- when languages -->
+  main.ts               package.json's main: expo-router's entry, after MSW starts in development <!-- when msw -->
+  global.css            the Tailwind entry NativeWind compiles, imported once by app/_layout.tsx <!-- when tailwind -->
 ```
 
 A `.web.tsx` beside a `.tsx` is Expo's platform split. Add one only where the platforms genuinely

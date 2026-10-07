@@ -5,7 +5,7 @@ import { Tabs } from 'expo-router';
 import { HeaderTitle } from 'expo-router/react-navigation';
 
 import { PAGES } from '@config/routes';
-import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starterStyles';
 
 import { LanguageSelect } from '@features/language-select/LanguageSelect';
 

@@ -7,7 +7,7 @@ export const IOS_LOCALES: Readonly<Record<string, string>> = {
 // A starter file, so Gradle's daemon JDK survives every `expo prebuild`.
 export const GRADLE_DAEMON_JVM_PLUGIN = './src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts';
 
-// The starter's `assets/images/`, on the backgrounds of its `src/styles/starter.ts`.
+// The starter's `assets/images/`, on the backgrounds of its `src/styles/starterStyles.ts`.
 const LIGHT_BACKGROUND = '#faf9f7';
 
 const DARK_BACKGROUND = '#1f2128';

@@ -207,7 +207,7 @@ when a version's change lives in a sibling it is described there instead:
   `{ status: 200 }` or a 422 carrying the field errors. Without MSW the submit validates and resolves locally.
 - **With MSW, the dev server answers it.** React, Solid, Vue, Angular, Next and SvelteKit start the MSW browser
   worker from their entry in development, so the contact form's POST is answered in the browser too. React
-  Native starts `msw/native` in development from its own entry, `src/index.ts`, so the POST is answered on a
+  Native starts `msw/native` in development from its own entry, `src/main.ts`, so the POST is answered on a
   device or simulator, with the two globals msw needs and Hermes lacks polyfilled.
 - **With MSW, the contact copy says the form posts.** The pages, their suites and every locale file say it posts
   to `/api/contact`, mocked in development, instead of saying nothing is sent: an `msw` variant of each English page,

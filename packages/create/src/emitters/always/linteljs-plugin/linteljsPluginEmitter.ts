@@ -30,6 +30,7 @@ type Condition
     | 'popup'
     | 'background'
     | 'devtools-panel'
+    | 'tailwind'
     | Mocking
     | Data
     | Router;
@@ -57,6 +58,9 @@ const CONDITIONS: Record<Condition, (answers: Answers) => boolean> = {
   },
   'devtools-panel': (answers) => {
     return hasSurface(answers, 'devtools-panel');
+  },
+  'tailwind': (answers) => {
+    return answers.styling === 'tailwind';
   },
   'msw': (answers) => {
     return answers.mocking === 'msw';

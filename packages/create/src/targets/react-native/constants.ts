@@ -15,7 +15,7 @@ export const ALWAYS: readonly string[] = [
   'src/components/features/document-head/DocumentHead.tsx',
   'src/components/ui/mark/Mark.tsx',
   'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts',
-  'src/styles/starter.ts',
+  'src/styles/starterStyles.ts',
 ];
 
 // React Native has no CSS, so the stylesheets are not shared. Expo serves `public/` on the web.

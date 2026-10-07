@@ -2,7 +2,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 import { CHECK, NAME } from '@config/linteljs';
-import { useStarterStyles } from '@styles/starter';
+import { useStarterStyles } from '@styles/starterStyles';
 
 import { Mark } from '@ui/mark/Mark';
 

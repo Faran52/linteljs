@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starterStyles';
 
 import { languages } from '@i18n/config';
 import { chooseLanguage } from '@i18n/i18n';

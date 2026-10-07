@@ -716,7 +716,7 @@ below the boundary, it shows the 403 page, with no retry, since trying again can
 Where the boundary runs only inside its framework (Next's `error.tsx`, SvelteKit's `+error.svelte`, Nuxt's
 `error.vue`), the suite renders the file as the page it is and hands it the status or the reset. `global-error.tsx`
 is a document and leaves coverage with `layout.tsx`. Astro's `404.astro` is a page no suite executes, like its others; the build's `404.html` is
-the check. React Native's page is the same markup in `StyleSheet` rules from `styles/starter.ts`, which the plain and
+the check. React Native's page is the same markup in `StyleSheet` rules from `styles/starterStyles.ts`, which the plain and
 NativeWind starters share. Its suites stand a `Text` in for `Link`, since expo-router's entry loads Expo's
 TypeScript source, which no test transform strips, and its boundary, `Try`, loads the same, so `CrashPage` is
 handed an error and a `retry` rather than a throwing child.
@@ -929,8 +929,8 @@ for it anyway). The web extension starts none: its popup fetches nothing under `
 no request.
 
 React Native has no service worker, so with MSW it starts `msw/native`, which patches `fetch` inside the app. Its
-`main` becomes `src/index.ts`, which loads `expo-router/entry` and, under `__DEV__`, imports
-`__mocks__/msw/polyfills.ts` and then `native.ts`; `src/index.ts` is outside coverage like every entry, so
+`main` becomes `src/main.ts`, which loads `expo-router/entry` and, under `__DEV__`, imports
+`__mocks__/msw/polyfills.ts` and then `native.ts`; `src/main.ts` is outside coverage like every entry, so
 `_layout.tsx` stays measured, and Metro folds `__DEV__` away so a release bundle carries neither. Without MSW `main`
 stays `expo-router/entry`. The order is a promise chain because the import sort moves a side-effect import last.
 Hermes has `TextEncoder`, `Event` and `EventTarget` but not `MessageEvent` or `BroadcastChannel`, which msw's

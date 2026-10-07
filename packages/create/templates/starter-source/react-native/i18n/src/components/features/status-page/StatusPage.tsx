@@ -7,7 +7,7 @@ import {
 
 import { Link } from 'expo-router';
 
-import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starter';
+import { MAX_FONT_SCALE, useStarterStyles } from '@styles/starterStyles';
 
 import type { ReactNode } from 'react';
 
