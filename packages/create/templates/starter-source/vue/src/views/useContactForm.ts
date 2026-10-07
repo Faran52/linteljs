@@ -4,12 +4,13 @@ import { useForm } from '@tanstack/vue-form';
 
 import {
   type ContactKey,
+  type ContactSubmission,
   type ContactValues,
   errorText,
   type Translate,
-  useSubmitContact,
-} from '@apis/contact';
-import { type ContactSubmission, validateContactForm } from '@apis/contact/formValidator';
+  validateContactForm,
+} from '@services/contact-form/contactFormService';
+import { useSubmitContact } from '@apis/contact';
 
 import type { TextInputProps } from '@ui/text-input/types';
 

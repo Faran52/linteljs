@@ -19,7 +19,7 @@ Create it then, not before.
   directory is the subject in kebab-case and holds one entry named for the subject plus the folder's kind, in
   the case this project gives that file, with its test beside it: `store/counter/counterStore.ts`,
   `providers/data/DataProvider.tsx`, `apis/contact/contactApi.ts`, `services/billing/billingService.ts`.
-  Anything only it reads sits in the same directory (an `apis/` subject's `schemas.ts`, its own `utils/`).
+  Anything only it reads sits in the same directory (its schemas, its own `utils/`).
   `config/` is data, one flat file per table.
 - **Helpers go in a `utils/` folder at the level of their readers**: the subject's own `utils/` while one
   subject reads them, the nearest shared parent's when a second does, `lib/utils/` when the whole app does.
@@ -32,8 +32,9 @@ Create it then, not before.
   Never a type the code could import from its owner, and never anything with a runtime value.
 - `lib/providers/` (where the layout has it): one provider per directory, named for what it provides
   (`data/DataProvider`). Components read the provider's hook; they never build the context themselves.
-- `lib/services/`: domain logic, one directory per domain, named for it. A service may not import from `apis/`
-  or touch HTTP; it takes data and answers data, so it tests without a network.
+- `lib/services/`: domain logic, one directory per domain, named for it. A form's words and rules live here
+  (`services/contact-form/contactFormService.ts`). `apis/` may read a service; a service may not import from
+  `apis/` or touch HTTP. It takes data and answers data, so it tests without a network.
 - `lib/apis/`: the only layer that knows HTTP. One directory per resource, holding its endpoint calls and the
   schemas of what they send and receive, every call going through the project's one fetch helper in
   `lib/utils/`. Components and services never call `fetch` themselves.

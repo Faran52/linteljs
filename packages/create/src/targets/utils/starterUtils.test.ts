@@ -7,11 +7,9 @@ import {
 
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorFile,
-  formValidatorTest,
-  submissionTest,
 } from './starterUtils';
 
 describe('filesAt', () => {
@@ -51,13 +49,12 @@ describe('contactApiFiles', () => {
     expect(actual).toEqual([]);
   });
 
-  it('writes the barrel, the plain wrapper and the submission with a form alone', () => {
+  it('writes the barrel and the plain wrapper with a form alone', () => {
     const actual = pickedBy(contactApiFiles(), { form: 'tanstack-form' });
 
     const expected = [
       'src/lib/apis/contact/index.ts base',
       'src/lib/apis/contact/contactApi.ts base',
-      'src/lib/apis/contact/submission.ts base',
     ];
     expect(actual).toEqual(expected);
   });
@@ -71,7 +68,6 @@ describe('contactApiFiles', () => {
     const expected = [
       'src/lib/apis/contact/index.ts base',
       'src/lib/apis/contact/contactApi.ts tanstack-query',
-      'src/lib/apis/contact/submission.ts base',
     ];
     expect(actual).toEqual(expected);
   });
@@ -86,12 +82,11 @@ describe('contactApiFiles', () => {
       true,
       true,
       undefined,
-      true,
     ];
     expect(shared).toEqual(expected);
   });
 
-  it('reads both wrappers from the named tree, the barrel and the submission still from the shared one', () => {
+  it('reads both wrappers from the named tree, the barrel still from the shared one', () => {
     const shared = contactApiFiles({ shared: 'react' })
       .map(({ shared: tree }) => {
         return tree;
@@ -101,7 +96,6 @@ describe('contactApiFiles', () => {
       true,
       'react',
       'react',
-      true,
     ];
     expect(shared).toStrictEqual(expected);
   });
@@ -119,7 +113,6 @@ describe('contactApiFiles', () => {
       'solid',
       'solid',
       'solid',
-      true,
     ];
     expect(shared).toStrictEqual(expected);
   });
@@ -137,93 +130,54 @@ describe('contactApiFiles', () => {
   });
 });
 
-describe('contactSchemaFiles', () => {
+describe('contactFormFiles', () => {
   it('writes nothing without a form', () => {
-    const actual = pickedBy(contactSchemaFiles(), { libraries: ['zod'] });
+    const actual = pickedBy(contactFormFiles(), { libraries: ['zod'] });
 
     expect(actual).toEqual([]);
   });
 
-  it('writes the plain schema with a form, and the zod one with zod', () => {
-    const plain = pickedBy(contactSchemaFiles(), { form: 'react-hook-form' });
-    const zod = pickedBy(contactSchemaFiles(), {
-      form: 'react-hook-form',
+  it('writes the plain service with a form, and the zod one with zod', () => {
+    const plain = pickedBy(contactFormFiles(), { form: 'react-hook-form' });
+    const zod = pickedBy(contactFormFiles(), {
+      form: 'tanstack-form',
       libraries: ['zod'],
     });
 
-    const expected = ['src/lib/apis/contact/schemas.ts base'];
+    const expected = ['src/lib/services/contact-form/contactFormService.ts base'];
     expect(plain).toEqual(expected);
-    const zodSchema = ['src/lib/apis/contact/schemas.ts zod'];
-    expect(zod).toEqual(zodSchema);
+    const zodService = ['src/lib/services/contact-form/contactFormService.ts zod'];
+    expect(zod).toEqual(zodService);
   });
 
   it('reads both from the shared tree', () => {
-    const shared = contactSchemaFiles()
+    const shared = contactFormFiles()
       .map(({ shared: tree }) => {
         return tree;
       });
 
-    const expected = [
-      true,
-      true,
-      true,
-    ];
+    const expected = [true, true];
     expect(shared).toEqual(expected);
   });
-
-  it('adds the form validator with TanStack Form', () => {
-    const actual = pickedBy(contactSchemaFiles(), { form: 'tanstack-form' });
-
-    const expected = ['src/lib/apis/contact/schemas.ts base', 'src/lib/apis/contact/formValidator.ts base'];
-    expect(actual).toEqual(expected);
-  });
 });
 
-describe('formValidatorFile', () => {
-  it('lands the shared validator under the stem it is given', () => {
-    const file = formValidatorFile('src/lib/apis/contact/form-validator');
-
-    const expected = {
-      target: 'src/lib/apis/contact/form-validator.ts',
-      source: 'src/lib/apis/contact/formValidator.ts',
-      shared: true,
-    };
-    expect(file).toMatchObject(expected);
-  });
-});
-
-describe('formValidatorTest', () => {
+describe('contactFormTest', () => {
   it('names the shared suite under the stem and suffix it is given', () => {
-    const plain = formValidatorTest();
-    const spec = formValidatorTest('src/lib/apis/contact/form-validator', 'spec');
+    const plain = contactFormTest();
+    const spec = contactFormTest('src/lib/services/contact-form/contact-form-service', 'spec');
 
     const expected = {
-      target: 'src/lib/apis/contact/formValidator.test.ts',
-      covers: 'src/lib/apis/contact/formValidator.ts',
-      source: 'src/lib/apis/contact/formValidator.test.ts',
+      target: 'src/lib/services/contact-form/contactFormService.test.ts',
+      covers: 'src/lib/services/contact-form/contactFormService.ts',
+      source: 'src/lib/services/contact-form/contactFormService.test.ts',
       shared: true,
     };
     expect(plain).toStrictEqual(expected);
     const expectedSpec = {
-      target: 'src/lib/apis/contact/form-validator.spec.ts',
-      covers: 'src/lib/apis/contact/form-validator.ts',
+      target: 'src/lib/services/contact-form/contact-form-service.spec.ts',
+      covers: 'src/lib/services/contact-form/contact-form-service.ts',
+      source: 'src/lib/services/contact-form/contactFormService.test.ts',
     };
     expect(spec).toMatchObject(expectedSpec);
-  });
-});
-
-describe('submissionTest', () => {
-  it('suffixes the shared suite as the target names its tests', () => {
-    const plain = submissionTest();
-    const spec = submissionTest('spec');
-
-    const expected = {
-      target: 'src/lib/apis/contact/submission.test.ts',
-      covers: 'src/lib/apis/contact/submission.ts',
-      source: 'src/lib/apis/contact/submission.test.ts',
-      shared: true,
-    };
-    expect(plain).toStrictEqual(expected);
-    expect(spec.target).toBe('src/lib/apis/contact/submission.spec.ts');
   });
 });

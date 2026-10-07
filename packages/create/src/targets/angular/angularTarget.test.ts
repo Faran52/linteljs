@@ -75,8 +75,10 @@ describe('angularTarget', () => {
   });
 
   it.each([
-    ['src/lib/apis/contact/submission.ts', 'src/lib/apis/contact/submission.spec.ts'],
-    ['src/lib/apis/contact/form-validator.ts', 'src/lib/apis/contact/form-validator.spec.ts'],
+    [
+      'src/lib/services/contact-form/contact-form-service.ts',
+      'src/lib/services/contact-form/contact-form-service.spec.ts',
+    ],
   ])('writes the shared suite over %s under the spec name the CLI would give it', (covers, expected) => {
     const record = recordFor();
     const suite = record.starterTests
@@ -99,7 +101,7 @@ describe('angularTarget', () => {
       .filter((path) => {
         return !written.includes(path);
       });
-    expect(aliased).toHaveLength(2);
+    expect(aliased).toHaveLength(3);
     expect(unwritten).toEqual([]);
   });
 
@@ -176,9 +178,8 @@ const GATES: GateRow[] = [
 
       return row;
     }),
-  ['src/lib/apis/contact/schemas.ts', [{ libraries: [[]] }]],
-  ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],
-  ['src/lib/apis/contact/form-validator.ts', [{ form: ['tanstack-form'] }]],
+  ['src/lib/services/contact-form/contact-form-service.ts', [{ libraries: [[]] }]],
+  ['src/lib/services/contact-form/contact-form-service.ts@zod', [{ libraries: [['zod']] }]],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/query-options-utils.spec.ts', TANSTACK_QUERY],

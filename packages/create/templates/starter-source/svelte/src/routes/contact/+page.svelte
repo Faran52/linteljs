@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CONTACT_TEXT } from '#lib/apis/contact/index.ts';
+  import { CONTACT_TEXT } from '#lib/services/contact-form/contactFormService.ts';
 
   import Button from '@ui/button/Button.svelte';
   import TextInput from '@ui/text-input/TextInput.svelte';

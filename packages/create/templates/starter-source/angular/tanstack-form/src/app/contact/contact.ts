@@ -2,14 +2,14 @@ import { Component, signal } from '@angular/core';
 
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
-import { useSubmitContact } from '@apis/contact/contact-api';
-import { validateContactForm } from '@apis/contact/form-validator';
 import {
   CONTACT_TEXT,
   type ContactValues,
   errorText,
   type Translate,
-} from '@apis/contact/schemas';
+  validateContactForm,
+} from '@services/contact-form/contact-form-service';
+import { useSubmitContact } from '@apis/contact/contact-api';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';

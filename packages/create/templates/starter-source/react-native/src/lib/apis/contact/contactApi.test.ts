@@ -11,7 +11,7 @@ import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { useSubmitContact } from './contactApi';
 
-import type { ContactValues } from './schemas';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 interface WrapperProps {
   readonly children: ReactNode;

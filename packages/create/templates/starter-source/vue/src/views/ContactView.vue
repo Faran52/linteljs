@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CONTACT_TEXT } from '@apis/contact';
+import { CONTACT_TEXT } from '@services/contact-form/contactFormService';
 
 import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';

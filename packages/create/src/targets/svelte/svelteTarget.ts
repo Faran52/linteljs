@@ -27,10 +27,9 @@ import {
 import { sfcNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -180,7 +179,7 @@ export const svelteTarget: TargetBuilder = () => {
           return hasForm(answers) && hasTests(answers);
         },
       },
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       {
         target: 'src/config/routes.ts',
         when: (answers) => {
@@ -262,8 +261,7 @@ export const svelteTarget: TargetBuilder = () => {
           return answers.data === undefined;
         },
       },
-      submissionTest(),
-      formValidatorTest(),
+      contactFormTest(),
     ],
     build: 'vite build',
     // The kit's plugin owns the dev server.

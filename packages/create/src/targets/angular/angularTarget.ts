@@ -16,10 +16,8 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import {
+  contactFormTest,
   filesAt,
-  formValidatorFile,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import { tailwindThemeFile } from '../utils/styleUtils';
 
@@ -27,8 +25,9 @@ import {
   ACCESSORS,
   ALWAYS,
   ANGULAR_I18N,
+  CONTACT_FORM_SERVICE,
+  CONTACT_FORM_SOURCE,
   CONTACT_PAGE_FILES,
-  FORM_VALIDATOR,
   SHARED,
 } from './constants';
 import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
@@ -66,6 +65,7 @@ export const angularTarget: TargetBuilder = () => {
     extraAliases: {
       '@utils/fetchExtendedUtils': './src/lib/utils/fetch-extended-utils.ts',
       '@utils/statusUtils': './src/lib/utils/status-utils.ts',
+      '@services/contact-form/contactFormService': `./${CONTACT_FORM_SERVICE}.ts`,
     },
     styleEntry: 'src/styles.css',
     starterStyles: [
@@ -101,11 +101,6 @@ export const angularTarget: TargetBuilder = () => {
         source: 'src/lib/apis/contact/contactApi.ts',
         shared: true,
       },
-      {
-        target: 'src/lib/apis/contact/submission.ts',
-        shared: true,
-      },
-      formValidatorFile(FORM_VALIDATOR),
       ...accessorFiles(ACCESSORS),
       ...angularI18nFiles(),
       // Reactive Forms ship with Angular, so every project with a locale has the Contact page.
@@ -142,14 +137,16 @@ export const angularTarget: TargetBuilder = () => {
           return variants;
         }),
       {
-        target: 'src/lib/apis/contact/schemas.ts',
+        target: `${CONTACT_FORM_SERVICE}.ts`,
+        source: CONTACT_FORM_SOURCE,
         when: (answers) => {
           return !hasLibrary(answers, 'zod');
         },
         shared: true,
       },
       {
-        target: 'src/lib/apis/contact/schemas.ts',
+        target: `${CONTACT_FORM_SERVICE}.ts`,
+        source: CONTACT_FORM_SOURCE,
         when: (answers) => {
           return hasLibrary(answers, 'zod');
         },
@@ -183,8 +180,7 @@ export const angularTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contact-api.spec.ts',
         covers: 'src/lib/apis/contact/contact-api.ts',
       },
-      submissionTest('spec'),
-      formValidatorTest(FORM_VALIDATOR, 'spec'),
+      contactFormTest(CONTACT_FORM_SERVICE, 'spec'),
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

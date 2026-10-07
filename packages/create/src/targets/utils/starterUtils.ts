@@ -12,9 +12,7 @@ interface ContactApiOptions {
   barrel?: TargetId;
 }
 
-const SUBMISSION = 'src/lib/apis/contact/submission';
-
-const FORM_VALIDATOR = 'src/lib/apis/contact/formValidator';
+const CONTACT_FORM = 'src/lib/services/contact-form/contactFormService';
 
 // Each path as a starter file carrying the same fields.
 export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'target'> = {}): StarterFile[] => {
@@ -56,73 +54,40 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
       variant: 'tanstack-query',
       ...trees,
     },
-    {
-      target: `${SUBMISSION}.ts`,
-      when: (answers) => {
-        return hasForm(answers) && (answers.data === undefined || answers.data === 'tanstack-query');
-      },
-      shared: true,
-    },
   ];
 
   return files;
 };
 
-// Angular names its suites `.spec.ts`; the file under test is one word, so the same name in either case.
-export const submissionTest = (suffix = 'test'): StarterTest => {
-  const test: StarterTest = {
-    target: `${SUBMISSION}.${suffix}.ts`,
-    covers: `${SUBMISSION}.ts`,
-    source: 'src/lib/apis/contact/submission.test.ts',
-    shared: true,
-  };
-
-  return test;
-};
-
-// TanStack Form's form-level validator over the contact rules, under Angular's kebab stem where it is passed one.
-export const formValidatorFile = (stem = FORM_VALIDATOR): StarterFile => {
-  const file: StarterFile = {
-    target: `${stem}.ts`,
-    source: `${FORM_VALIDATOR}.ts`,
-    when: (answers) => {
-      return answers.form === 'tanstack-form';
-    },
-    shared: true,
-  };
-
-  return file;
-};
-
-export const formValidatorTest = (stem = FORM_VALIDATOR, suffix = 'test'): StarterTest => {
+// The contact form's words and rules, under Angular's kebab stem where it is passed one.
+export const contactFormTest = (stem = CONTACT_FORM, suffix = 'test'): StarterTest => {
   const test: StarterTest = {
     target: `${stem}.${suffix}.ts`,
     covers: `${stem}.ts`,
-    source: `${FORM_VALIDATOR}.test.ts`,
+    source: `${CONTACT_FORM}.test.ts`,
     shared: true,
   };
 
   return test;
 };
 
-export const contactSchemaFiles = (): StarterFile[] => {
+export const contactFormFiles = (): StarterFile[] => {
   const files: StarterFile[] = [
     {
-      target: 'src/lib/apis/contact/schemas.ts',
+      target: `${CONTACT_FORM}.ts`,
       when: (answers) => {
         return hasForm(answers) && !hasLibrary(answers, 'zod');
       },
       shared: true,
     },
     {
-      target: 'src/lib/apis/contact/schemas.ts',
+      target: `${CONTACT_FORM}.ts`,
       when: (answers) => {
         return hasForm(answers) && hasLibrary(answers, 'zod');
       },
       variant: 'zod',
       shared: true,
     },
-    formValidatorFile(),
   ];
 
   return files;

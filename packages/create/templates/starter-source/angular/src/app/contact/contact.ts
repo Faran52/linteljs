@@ -5,14 +5,14 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 
-import { useSubmitContact } from '@apis/contact/contact-api';
 import {
   CONTACT_TEXT,
   type ContactValues,
   errorText,
   type Translate,
   validateContact,
-} from '@apis/contact/schemas';
+} from '@services/contact-form/contact-form-service';
+import { useSubmitContact } from '@apis/contact/contact-api';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';

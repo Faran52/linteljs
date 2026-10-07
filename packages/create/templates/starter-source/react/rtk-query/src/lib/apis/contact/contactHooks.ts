@@ -1,6 +1,6 @@
 import { contactApi, type ContactResult } from './contactEndpoints';
 
-import type { ContactValues } from './schemas';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 const { useSubmitContactMutation } = contactApi;
 

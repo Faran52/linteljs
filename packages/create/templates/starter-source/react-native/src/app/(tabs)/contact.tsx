@@ -13,7 +13,7 @@ import {
 
 import { useStarterStyles } from '@styles/starter';
 
-import { CONTACT_TEXT, type Translate } from '@apis/contact';
+import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';
 
 import { useContactForm } from '@hooks/use-contact-form/useContactForm';
 

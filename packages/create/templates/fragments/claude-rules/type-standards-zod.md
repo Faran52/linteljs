@@ -2,6 +2,7 @@
 paths:
   - "src/lib/apis/**/*.ts"
   - "**/schemas.ts"
+  - "src/lib/services/**/*.ts"
 ---
 
 # Schema Standards

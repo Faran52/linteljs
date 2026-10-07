@@ -512,11 +512,10 @@ api modules it renders identically. Logic with no framework in it is shared even
 not: a framework's i18n module keeps its reactive state and its `t`, and reads language matching, direction,
 detection order and placeholder filling from `shared/i18n/src/i18n/utils/languageUtils.ts`, and the language cookie
 and `Accept-Language` parsing from `cookieUtils.ts` beside it, each with its one suite; every contact api wrapper, plain or a TanStack Query mutation, reads `submitContact` from
-`shared/src/lib/apis/contact/submission.ts`. Every extended query adapter builds its query and mutation options
+`shared/src/lib/services/contact-form/contactFormService.ts`. Every extended query adapter builds its query and mutation options
 from `shared/src/lib/utils/queryOptionsUtils.ts`, typed structurally and handed the adapter's client for
 invalidation, and every TanStack Form contact form takes `validateContactForm` from
-`shared/src/lib/apis/contact/formValidator.ts`, one file for the plain and the zod rules since it calls whichever
-`schemas.ts` ships. A copy of framework-free logic in two targets is a defect; the shell that imports it stays
+the same service, which ships in a plain and a zod variant. A copy of framework-free logic in two targets is a defect; the shell that imports it stays
 per target. Anything with a framework in it
 is not shared: React's `className` is not Vue's `class`, React destructures props and Solid may not, and React's
 route element is a node where Solid's has to be a function. A target that writes a shared file under its own naming (Angular's `status-utils.ts`) keeps the one

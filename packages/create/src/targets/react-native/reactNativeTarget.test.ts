@@ -129,7 +129,6 @@ const GATES: GateRow[] = [
   ['src/components/ui/index.ts@with-form', WITH_FORM],
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
   ['src/hooks/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
-  ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
   ['src/hooks/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],

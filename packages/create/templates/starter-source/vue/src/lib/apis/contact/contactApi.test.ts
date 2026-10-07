@@ -10,7 +10,7 @@ import { dataProvider } from '@lib/providers/data/dataProvider';
 
 import { useSubmitContact } from './contactApi';
 
-import type { ContactValues } from './schemas';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 const probeFor = (values: ContactValues): ReturnType<typeof defineComponent> => {
   return defineComponent({

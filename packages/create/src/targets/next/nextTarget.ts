@@ -33,10 +33,9 @@ import {
 import { componentNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -130,8 +129,7 @@ const nextStarterTests = (): StarterTest[] => {
       covers: 'src/lib/apis/contact/contactApi.ts',
       shared: 'react',
     },
-    submissionTest(),
-    formValidatorTest(),
+    contactFormTest(),
     ...rtkContactTests(),
   ];
 
@@ -306,7 +304,7 @@ export const nextTarget: TargetBuilder = () => {
       },
       ...contactApiFiles({ shared: 'react' }),
       ...rtkContactFiles(),
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       {
         target: 'src/lib/providers/store/StoreProvider.tsx',
         when: (answers) => {

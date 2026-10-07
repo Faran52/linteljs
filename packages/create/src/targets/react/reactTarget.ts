@@ -33,10 +33,9 @@ import {
 import { componentNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -156,8 +155,7 @@ const reactStarterTests = (): StarterTest[] => {
       target: 'src/lib/apis/contact/contactApi.test.ts',
       covers: 'src/lib/apis/contact/contactApi.ts',
     },
-    submissionTest(),
-    formValidatorTest(),
+    contactFormTest(),
     ...rtkContactTests(),
   ];
 
@@ -265,7 +263,7 @@ const baseReactTarget = (): TargetRecord => {
         },
         variant: 'tanstack-query',
       },
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       ...CONTACT_HOOK_FORMS
         .map((form): StarterFile => {
           const file: StarterFile = {

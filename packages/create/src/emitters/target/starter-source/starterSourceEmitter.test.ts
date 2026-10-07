@@ -362,13 +362,13 @@ describe('the starter source', () => {
         target,
         form: 'tanstack-form',
         libraries,
-      })['src/lib/apis/contact/schemas.ts'];
+      })['src/lib/services/contact-form/contactFormService.ts'];
     };
 
     const zodSchemas = schemasFor(['zod']);
-    expect(zodSchemas).toBe('starter-source/shared/zod/src/lib/apis/contact/schemas.ts');
+    expect(zodSchemas).toBe('starter-source/shared/zod/src/lib/services/contact-form/contactFormService.ts');
     const plainSchemas = schemasFor([]);
-    expect(plainSchemas).toBe('starter-source/shared/src/lib/apis/contact/schemas.ts');
+    expect(plainSchemas).toBe('starter-source/shared/src/lib/services/contact-form/contactFormService.ts');
   });
 
   it.each<[TargetId, string, string]>([

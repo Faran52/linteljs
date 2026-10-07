@@ -26,10 +26,9 @@ import {
 import { componentNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 
 import {
@@ -184,7 +183,7 @@ export const reactNativeTarget: TargetBuilder = () => {
         }),
       ...contactApiFiles({ shared: 'react' }),
       ...rtkContactFiles(),
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       // TanStack Query needs an ancestor; RTK Query rides the Redux provider, whose store registers its middleware.
       {
         target: 'src/lib/providers/data/DataProvider.tsx',
@@ -324,8 +323,7 @@ export const reactNativeTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contactHooks.ts',
         variant: 'rtk-query',
       },
-      submissionTest(),
-      formValidatorTest(),
+      contactFormTest(),
       ...reactNativeI18nTests(),
       LOCALES_TEST,
       languageUtilsTest(),

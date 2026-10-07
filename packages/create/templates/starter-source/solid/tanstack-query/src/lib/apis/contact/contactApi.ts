@@ -1,8 +1,10 @@
 import { useMutation } from '@tanstack/solid-query';
 
-import { type ContactResult, submitContact } from './submission';
-
-import type { ContactValues } from './schemas';
+import {
+  type ContactResult,
+  type ContactValues,
+  submitContact,
+} from '@services/contact-form/contactFormService';
 
 // A mutation, which puts the call in the cache and gives it a retry.
 export const createSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {

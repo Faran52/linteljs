@@ -1,6 +1,8 @@
-import { type ContactResult, submitContact } from './submission';
-
-import type { ContactValues } from './schemas';
+import {
+  type ContactResult,
+  type ContactValues,
+  submitContact,
+} from '@services/contact-form/contactFormService';
 
 export const useSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {
   return submitContact;

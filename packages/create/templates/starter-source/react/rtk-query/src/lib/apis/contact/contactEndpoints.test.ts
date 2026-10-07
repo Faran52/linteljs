@@ -9,7 +9,7 @@ import { baseApi } from '../base/baseApi';
 
 import { contactApi } from './contactEndpoints';
 
-import type { ContactValues } from './schemas';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 const submit = async (values: ContactValues) => {
   const store = configureStore({

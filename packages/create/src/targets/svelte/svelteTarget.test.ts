@@ -159,7 +159,6 @@ const GATES: GateRow[] = [
   ['src/config/routes.ts@with-form', WITH_FORM],
   ...homeGates('src/routes/+page.svelte'),
   ['src/routes/contact/useContactForm.ts', WITH_FORM],
-  ['src/lib/apis/contact/formValidator.ts', [{ form: ['tanstack-form'] }]],
   ['src/lib/apis/contact/contactApi.test.ts', [{ data: [undefined] }]],
   ['src/components/ui/text-input/TextInput.svelte', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

@@ -4,12 +4,13 @@ import { createForm } from '@tanstack/solid-form';
 
 import {
   type ContactKey,
+  type ContactSubmission,
   type ContactValues,
-  createSubmitContact,
   errorText,
   type Translate,
-} from '@apis/contact';
-import { type ContactSubmission, validateContactForm } from '@apis/contact/formValidator';
+  validateContactForm,
+} from '@services/contact-form/contactFormService';
+import { createSubmitContact } from '@apis/contact';
 
 import type { TextInputProps } from '@ui';
 

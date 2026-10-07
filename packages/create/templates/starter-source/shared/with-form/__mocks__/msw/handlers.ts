@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 
-import { type ContactValues, validateContact } from '@apis/contact/schemas';
+import { type ContactValues, validateContact } from '@services/contact-form/contactFormService';
 
 export const handlers = [
   http.get('/api/version', () => {

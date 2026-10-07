@@ -6,9 +6,9 @@ import {
   type ContactValues,
   errorText,
   type Translate,
-  useSubmitContact,
-} from '@apis/contact';
-import { validateContactForm } from '@apis/contact/formValidator';
+  validateContactForm,
+} from '@services/contact-form/contactFormService';
+import { useSubmitContact } from '@apis/contact';
 
 import type { TextInputProps } from '@ui';
 

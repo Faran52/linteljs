@@ -1,6 +1,6 @@
-import { baseApi } from '../base/baseApi';
+import { type ContactValues, validateContact } from '@services/contact-form/contactFormService';
 
-import { type ContactValues, validateContact } from './schemas';
+import { baseApi } from '../base/baseApi';
 
 import type {
   FetchBaseQueryError,

@@ -26,10 +26,9 @@ import {
 import { sfcNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -117,7 +116,7 @@ export const vueTarget: TargetBuilder = () => {
         when: hasForm,
       }),
       ...contactApiFiles(),
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       {
         target: 'src/views/routes.ts',
         when: (answers) => {
@@ -199,8 +198,7 @@ export const vueTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
-      submissionTest(),
-      formValidatorTest(),
+      contactFormTest(),
       {
         target: 'src/lib/providers/store/storeProvider.test.ts',
         covers: 'src/lib/providers/store/storeProvider.ts',

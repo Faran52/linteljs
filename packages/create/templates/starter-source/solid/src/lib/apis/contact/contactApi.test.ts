@@ -4,7 +4,7 @@ import { DataProvider } from '@lib/providers/data/DataProvider';
 
 import { createSubmitContact } from './contactApi';
 
-import type { ContactValues } from './schemas';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 const outcomeOf = async (values: ContactValues): Promise<string> => {
   const { result } = renderHook(createSubmitContact, { wrapper: DataProvider });

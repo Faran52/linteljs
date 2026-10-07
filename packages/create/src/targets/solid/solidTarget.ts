@@ -26,10 +26,9 @@ import {
 import { componentNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
-  contactSchemaFiles,
+  contactFormFiles,
+  contactFormTest,
   filesAt,
-  formValidatorTest,
-  submissionTest,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -129,7 +128,7 @@ export const solidTarget: TargetBuilder = () => {
         shared: 'solid',
         barrel: 'solid',
       }),
-      ...contactSchemaFiles(),
+      ...contactFormFiles(),
       {
         target: 'src/components/ui/index.ts',
         when: hasForm,
@@ -212,8 +211,7 @@ export const solidTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
-      submissionTest(),
-      formValidatorTest(),
+      contactFormTest(),
       {
         target: 'src/components/ui/button/Button.test.tsx',
         covers: 'src/components/ui/button/Button.tsx',

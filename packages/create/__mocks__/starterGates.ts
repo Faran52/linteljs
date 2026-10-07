@@ -154,15 +154,11 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
 
         return row;
       }),
-    ['src/lib/apis/contact/submission.ts', [{
-      form: ANSWERED,
-      data: [undefined, ...wrapped],
-    }]],
-    ['src/lib/apis/contact/schemas.ts', [{
+    ['src/lib/services/contact-form/contactFormService.ts', [{
       form: ANSWERED,
       libraries: [[]],
     }]],
-    ['src/lib/apis/contact/schemas.ts@zod', [{
+    ['src/lib/services/contact-form/contactFormService.ts@zod', [{
       form: ANSWERED,
       libraries: [['zod']],
     }]],

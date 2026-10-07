@@ -1,4 +1,4 @@
-import { CONTACT_TEXT, type Translate } from '@apis/contact';
+import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';
 
 import { Button, TextInput } from '@ui';
 
