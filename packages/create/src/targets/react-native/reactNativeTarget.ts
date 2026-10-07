@@ -295,6 +295,10 @@ export const reactNativeTarget: TargetBuilder = () => {
         target: 'src/components/ui/text-input/TextInput.test.tsx',
         covers: 'src/components/ui/text-input/TextInput.tsx',
       },
+      {
+        target: 'src/hooks/use-contact-form/useContactForm.test.ts',
+        covers: 'src/hooks/use-contact-form/useContactForm.ts',
+      },
       // React's own suites for these render through a DOM.
       {
         target: 'src/lib/providers/data/DataProvider.test.tsx',

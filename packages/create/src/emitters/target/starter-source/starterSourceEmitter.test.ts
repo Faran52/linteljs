@@ -276,6 +276,11 @@ describe('the starter source', () => {
   });
 
   it.each<[TargetId, string[]]>([
+    ['react-native', [
+      'src/app/(tabs)/contact.tsx',
+      'src/hooks/use-contact-form/useContactForm.ts',
+      'src/hooks/use-contact-form/useContactForm.test.ts',
+    ]],
     ['react', [
       'src/pages/contact/ContactPage.tsx',
       'src/components/ui/text-input/TextInput.tsx',
