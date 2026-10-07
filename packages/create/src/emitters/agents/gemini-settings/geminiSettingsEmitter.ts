@@ -3,6 +3,7 @@ import { type Answers, type Artifact } from '@config/types';
 import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 import { merged } from '../../utils/artifactUtils';
+import { withOurHooks } from '../utils/hookUtils';
 
 interface GeminiCommand {
   type: 'command';
@@ -46,31 +47,22 @@ const isOurs = (entry: object): boolean => {
 
 // Every entry this CLI wrote taken out, so a sync writes its current ones exactly once.
 const mergedHooks = (theirs: object): object => {
-  const hooks = new Map<string, object[]>();
+  const kept = Object.entries(theirs)
+    .map(([event, list]) => {
+      const entries = Array.isArray(list)
+        ? list
+            .filter(isJsonObject)
+            .filter((entry) => {
+              return !isOurs(entry);
+            })
+        : [];
 
-  for (const [event, list] of Object.entries(theirs)) {
-    const kept = Array.isArray(list)
-      ? list
-          .filter(isJsonObject)
-          .filter((entry) => {
-            return !isOurs(entry);
-          })
-      : [];
+      const pair: [string, object[]] = [event, entries];
 
-    hooks.set(event, kept);
-  }
-
-  for (const [event, ours] of Object.entries(GEMINI_HOOKS)) {
-    hooks.set(event, [...hooks.get(event) ?? [], ...ours]);
-  }
-
-  const kept = [...hooks]
-    .filter(([, list]) => {
-      return list.length > 0;
+      return pair;
     });
-  const withOurs = Object.fromEntries(kept);
 
-  return withOurs;
+  return withOurHooks(kept, GEMINI_HOOKS);
 };
 
 const mergedContext = (theirs: object): object => {

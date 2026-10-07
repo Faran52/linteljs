@@ -3,6 +3,7 @@ import { type Answers, type Artifact } from '@config/types';
 import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 import { merged } from '../../utils/artifactUtils';
+import { withOurHooks } from '../utils/hookUtils';
 
 type HookList = [string, object[]];
 
@@ -53,20 +54,11 @@ const theirHooks = (text: string | null): HookList[] => {
 };
 
 export const mergeCursorHooks = (current: string | null): string => {
-  const hooks = new Map(theirHooks(current));
-
-  for (const [event, ours] of Object.entries(CURSOR_HOOKS)) {
-    hooks.set(event, [...hooks.get(event) ?? [], ...ours]);
-  }
-
-  const kept = [...hooks]
-    .filter(([, list]) => {
-      return list.length > 0;
-    });
+  const hooks = withOurHooks(theirHooks(current), CURSOR_HOOKS);
 
   return `${JSON.stringify({
     version: 1,
-    hooks: Object.fromEntries(kept),
+    hooks,
   }, null, 2)}\n`;
 };
 
