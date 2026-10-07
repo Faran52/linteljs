@@ -36,6 +36,7 @@ import {
   writeDependencies,
   writeLintConfig,
 } from '@pipeline';
+import { runSpawn } from '@spawns';
 import { targetFor } from '@targets';
 
 import packageJson from '../../../package.json' with { type: 'json' };
@@ -261,7 +262,10 @@ const lintConfigStep = async (
 };
 
 // An app of the same name would give the workspace two packages under one name.
-const runAdd = async (cwd: string, answers: HostedAnswers, name: string): Promise<number> => {
+const runAdd = async (options: CliOptions, answers: HostedAnswers, name: string): Promise<number> => {
+  const { cwd, skip } = options;
+  const binary = answers.packageManager;
+
   if (answers.layout !== 'monorepo') {
     console.error(ADD_NEEDS_MONOREPO);
 
@@ -282,7 +286,15 @@ const runAdd = async (cwd: string, answers: HostedAnswers, name: string): Promis
     say(`wrote ${target}`);
   }
 
-  say(`Install it:\n  ${answers.packageManager} install`);
+  if (skip.includes('install')) {
+    say(`Install it:\n  ${binary} install`);
+
+    return 0;
+  }
+
+  // The lockfile takes the package now, so the frozen install CI runs passes.
+  say(`installing with ${binary}`);
+  await runSpawn(binary, ['install'], cwd);
 
   return 0;
 };
@@ -400,7 +412,7 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
     const { name, answers } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
     if (options.add !== undefined) {
-      return await runAdd(options.cwd, answers, options.add);
+      return await runAdd(options, answers, options.add);
     }
 
     if (options.command === 'sync') {

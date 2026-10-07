@@ -1394,6 +1394,9 @@ never an orchestrator edit, which would move up a level the `switch (target)` th
 - `sync --add <name>` is a birth, not a sync: it builds both lists for a `typescript` target on the workspace's
   manager, Node and type safety, keeps only what lands in the app's directory, and writes it under
   `packages/<name>/`, seeds included. The root files are the workspace's already, and its globs take the package.
+  Then it installs, as `create` does unless `--no-install`: the lockfile takes the new importer at once, so the
+  frozen install CI runs passes. Every install it or `create` runs sets pnpm's `frozen-lockfile` and Yarn's
+  immutable installs off, since both turn on under `CI` and refuse the lockfile change that is the point.
 
 `sync` reads `linteljs.config.json` rather than writing it, so a project that reformatted its config keeps those
 bytes. A 1.x project, whose answers sit in `lintel.config.json`, moves them with `create --existing`, which writes
@@ -1840,8 +1843,8 @@ so it holds each manager's config files, the husky install script under the life
 `npm ls --all`, and `INSTALL_NOISE` at the same strictness as pnpm. On React, the same case runs again with
 `--skip fix` and with `--no-install`, after which the harness installs and runs `check` itself, and as a monorepo
 on each of the four managers, which also commits through the hooks: lint-staged in the app, commitlint at the
-root. The pnpm monorepo runs once more with `sync --add lib` and an install before `check`, so an added package
-passes the workspace's gate. On every target a
+root. The pnpm monorepo runs once more with `sync --add lib` and a second install before `check`, which `CI`
+freezes, so an added package reaches the lockfile and passes the workspace's gate. On every target a
 browser serves, the same case runs a browser pass after `check`: 8 cases. React's widest case takes the
 declarative router, so the widest React Router framework-mode case runs a ninth browser pass, on npm, the one
 server-rendered React.

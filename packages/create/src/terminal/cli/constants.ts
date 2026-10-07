@@ -12,7 +12,7 @@ export const USAGE_HEAD = `@linteljs/create [name] [options]
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
-  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript library, and nothing else
+  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript library, and install it
   --version, -v
   --help, -h
 

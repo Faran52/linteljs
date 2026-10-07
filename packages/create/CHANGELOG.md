@@ -193,8 +193,11 @@ when a version's change lives in a sibling it is described there instead:
   directory under `apps/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
 - `sync --add <name>` writes a TypeScript library to a monorepo's `packages/<name>/`, with its own
   `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and starter
-  `src/`, on the recorded manager, Node and type safety. No root file changes. It refuses a single repo, a scoped
-  or invalid name, and a name `apps/` or `packages/` already holds.
+  `src/`, on the recorded manager, Node and type safety, then installs, so the lockfile takes the package and a
+  frozen CI install passes (`--no-install` leaves it to you). No other root file changes. It refuses a single repo,
+  a scoped or invalid name, and a name `apps/` or `packages/` already holds.
+- An install `create` or `sync --add` runs under `CI` no longer fails on pnpm's frozen lockfile when it changes
+  one, as Yarn's already did not.
 
 ### Changed
 

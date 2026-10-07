@@ -43,6 +43,7 @@ import {
 import { exists } from '@disk';
 import { parsePackageJson } from '@emitters';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { runSpawn } from '@spawns';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
@@ -58,6 +59,16 @@ interface Run {
   printed: string;
   errors: string[];
 }
+
+vi.mock('@spawns', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spawns')>();
+
+  const spawns = {
+    ...actual,
+    runSpawn: vi.fn(actual.runSpawn),
+  };
+  return spawns;
+});
 
 vi.mock('./utils/argvUtils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./utils/argvUtils')>();
@@ -848,6 +859,7 @@ describe('main: sync', () => {
       'sync',
       '--add',
       'lib',
+      '--no-install',
     ], scripted([]));
 
     expect(code).toBe(0);
@@ -859,6 +871,25 @@ describe('main: sync', () => {
     expect(manifest.name).toBe('lib');
     const after = await outsidePackages(root);
     expect(after).toEqual(before);
+  });
+
+  it('installs after adding a library, so the lockfile takes it', async () => {
+    await monorepo();
+    const root = processCwd();
+
+    vi.mocked(runSpawn)
+      .mockResolvedValueOnce();
+
+    const { code, printed } = await runMain([
+      'sync',
+      '--add',
+      'lib',
+    ], scripted([]));
+
+    expect(code).toBe(0);
+    expect(printed).toContain('installing with pnpm\n');
+    expect(printed).not.toContain('Install it:');
+    expect(runSpawn).toHaveBeenCalledWith('pnpm', ['install'], root);
   });
 
   it.each([

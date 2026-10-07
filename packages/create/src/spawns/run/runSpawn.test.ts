@@ -62,6 +62,14 @@ describe('runSpawn', () => {
     await expect(lockfileAllowed).resolves.toBeUndefined();
   });
 
+  it('lets pnpm add an importer to an existing lockfile, even under CI', async () => {
+    const script = 'process.exit(process.env.pnpm_config_frozen_lockfile === "false" ? 0 : 1)';
+
+    const lockfileAllowed = runSpawn('node', ['-e', script], cwd);
+
+    await expect(lockfileAllowed).resolves.toBeUndefined();
+  });
+
   it("keeps the caller's repository from the install, so husky's prepare finds this one", async () => {
     vi.stubEnv('GIT_DIR', '/elsewhere/.git');
     vi.stubEnv('LINTELJS_KEPT', 'yes');

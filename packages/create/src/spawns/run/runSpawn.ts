@@ -23,11 +23,12 @@ export const runSpawn = async (
           ]
         : 'inherit',
       shell: false,
-      // Angular's CLI otherwise prompts for analytics; Yarn 4 under CI refuses the lockfile a first install writes.
+      // Angular's CLI otherwise prompts for analytics; pnpm and Yarn 4 under CI refuse a lockfile the install changes.
       // Without the repository variables, husky's `prepare` sets its hooks path on this project, not the caller's.
       env: {
         ...repositoryFreeEnv(),
         NG_CLI_ANALYTICS: 'false',
+        pnpm_config_frozen_lockfile: 'false',
         YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',
       },
     });
