@@ -41,11 +41,11 @@ onBeforeUnmount(() => {
   observer?.disconnect();
 });
 
-const translate = (key: ContactCopyKey): string => {
+const phrase = (key: ContactCopyKey): string => {
   return props.copy[language.value]?.[key] ?? key;
 };
 </script>
 
 <template>
-  <ContactView :translate="translate" />
+  <ContactView :phrase="phrase" />
 </template>

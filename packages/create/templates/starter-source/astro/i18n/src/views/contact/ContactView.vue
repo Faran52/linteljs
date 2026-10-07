@@ -7,23 +7,23 @@ import { useContactForm } from './use-contact-form/useContactForm';
 import type { ContactCopyKey } from './utils/contactCopyUtils';
 
 interface Props {
-  translate: (key: ContactCopyKey) => string;
+  phrase: (key: ContactCopyKey) => string;
 }
 
 const props = defineProps<Props>();
 
 const form = useContactForm((key) => {
-  return props.translate(key);
+  return props.phrase(key);
 });
 </script>
 
 <template>
   <main class="page">
     <h1 class="page-title">
-      {{ translate('contact') }}
+      {{ phrase('contact') }}
     </h1>
     <p class="page-lede">
-      {{ translate('contactLede') }}
+      {{ phrase('contactLede') }}
     </p>
 
     <p
@@ -31,7 +31,7 @@ const form = useContactForm((key) => {
       class="sent"
       role="status"
     >
-      {{ translate('contactSent') }}
+      {{ phrase('contactSent') }}
     </p>
     <form
       v-else
@@ -52,7 +52,7 @@ const form = useContactForm((key) => {
         type="submit"
         :disabled="!form.canSubmit"
       >
-        {{ translate('contactSend') }}
+        {{ phrase('contactSend') }}
       </AppButton>
     </form>
   </main>

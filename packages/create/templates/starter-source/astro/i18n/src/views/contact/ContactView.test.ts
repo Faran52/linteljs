@@ -8,7 +8,7 @@ import ContactView from './ContactView.vue';
 const mounted = {
   global: { plugins: [dataProvider] },
   props: {
-    translate: (key: string): string => {
+    phrase: (key: string): string => {
       return `t:${key}`;
     },
   },
