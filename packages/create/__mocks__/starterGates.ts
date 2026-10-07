@@ -140,21 +140,32 @@ export const contactCopyGates = (key: string, condition: Condition = { form: ANS
 };
 
 // The submit posts under msw and resolves locally without; its suite follows it.
-export const submitGates = (stem: string, suffix = 'test', contact: Condition = {}): GateRow[] => {
-  const local: readonly Condition[] = [{ mocking: [undefined] }];
-  const msw: readonly Condition[] = [{ mocking: ['msw'] }];
-
+// `layer` holds on suites and sources alike; `contact` on the sources alone.
+export const submitGates = (
+  stem: string,
+  suffix = 'test',
+  contact: Condition = {},
+  layer: Condition = {},
+): GateRow[] => {
   const gates: GateRow[] = [
     [`${stem}.ts`, [{
       ...contact,
+      ...layer,
       mocking: [undefined],
     }]],
     [`${stem}.ts@msw`, [{
       ...contact,
+      ...layer,
       mocking: ['msw'],
     }]],
-    [`${stem}.${suffix}.ts`, local],
-    [`${stem}.${suffix}.ts@msw`, msw],
+    [`${stem}.${suffix}.ts`, [{
+      ...layer,
+      mocking: [undefined],
+    }]],
+    [`${stem}.${suffix}.ts@msw`, [{
+      ...layer,
+      mocking: ['msw'],
+    }]],
   ];
 
   return gates;
@@ -217,7 +228,12 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
       form: ANSWERED,
       libraries: [['zod']],
     }]],
-    ...submitGates('src/lib/services/contact-submit/contactSubmitService', 'test', { form: ANSWERED }),
+    ...submitGates(
+      'src/lib/apis/contact/contactEndpoints',
+      'test',
+      { form: ANSWERED },
+      { data: [undefined, ...wrapped] },
+    ),
   ];
 
   return gates;

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { type ContactResult, submitContact } from '@services/contact-submit/contactSubmitService';
+import { type ContactResult, submitContact } from './contactEndpoints';
 
 import type { ContactValues } from '@services/contact-form/contactFormService';
 

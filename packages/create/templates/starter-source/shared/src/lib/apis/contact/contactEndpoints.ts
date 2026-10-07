@@ -1,4 +1,4 @@
-import { type ContactValues, validateContact } from '../contact-form/contactFormService';
+import { type ContactValues, validateContact } from '@services/contact-form/contactFormService';
 
 export interface ContactResult {
   status: number;

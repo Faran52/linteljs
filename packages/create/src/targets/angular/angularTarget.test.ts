@@ -103,7 +103,7 @@ describe('angularTarget', () => {
       .filter((path) => {
         return !written.includes(path);
       });
-    expect(aliased).toHaveLength(4);
+    expect(aliased).toHaveLength(3);
     expect(unwritten).toEqual([]);
   });
 
@@ -152,7 +152,7 @@ const I18N_ONLY_PATHS = [
 
 const GATES: GateRow[] = [
   ...mswGates('always'),
-  ...submitGates('src/lib/services/contact-submit/contact-submit-service', 'spec'),
+  ...submitGates('src/lib/apis/contact/contact-endpoints', 'spec', {}, { data: [undefined, 'tanstack-query'] }),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/query-options-utils.ts', TANSTACK_QUERY],

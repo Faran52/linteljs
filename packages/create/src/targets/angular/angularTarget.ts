@@ -32,10 +32,10 @@ import {
   ACCESSORS,
   ALWAYS,
   ANGULAR_I18N,
+  CONTACT_ENDPOINTS,
   CONTACT_FORM_SERVICE,
   CONTACT_FORM_SOURCE,
   CONTACT_PAGE_FILES,
-  CONTACT_SUBMIT_SERVICE,
   SHARED,
 } from './constants';
 import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
@@ -74,7 +74,6 @@ export const angularTarget: TargetBuilder = () => {
       '@utils/fetchExtendedUtils': './src/lib/utils/fetch-extended-utils.ts',
       '@utils/statusUtils': './src/lib/utils/status-utils.ts',
       '@services/contact-form/contactFormService': `./${CONTACT_FORM_SERVICE}.ts`,
-      '@services/contact-submit/contactSubmitService': `./${CONTACT_SUBMIT_SERVICE}.ts`,
     },
     styleEntry: 'src/styles.css',
     starterStyles: [
@@ -169,7 +168,7 @@ export const angularTarget: TargetBuilder = () => {
         variant: 'zod',
         shared: true,
       },
-      ...contactSubmitFiles(CONTACT_SUBMIT_SERVICE, always),
+      ...contactSubmitFiles(CONTACT_ENDPOINTS, always),
       tailwindThemeFile(),
       // The Angular builder runs Tailwind 4 only through a PostCSS config, and reads JSON alone.
       {
@@ -198,7 +197,7 @@ export const angularTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contact-api.ts',
       },
       contactFormTest(CONTACT_FORM_SERVICE, 'spec'),
-      ...contactSubmitTests(CONTACT_SUBMIT_SERVICE, 'spec'),
+      ...contactSubmitTests(CONTACT_ENDPOINTS, 'spec'),
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

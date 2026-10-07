@@ -205,6 +205,8 @@ when a version's change lives in a sibling it is described there instead:
 - **With MSW, the contact form posts.** Under `mocking: msw` the starter's submit is a real `POST /api/contact`
   through the fetch adapter, and RTK Query's contact endpoint a `query` POST, which the MSW handler answers with
   `{ status: 200 }` or a 422 carrying the field errors. Without MSW the submit validates and resolves locally.
+  Either way the submit is `lib/apis/contact/contactEndpoints.ts`, beside the wrapper that reads it, since a
+  service may not import from `apis/`; RTK Query keeps its own endpoints there instead.
 - **With MSW, the dev server answers it.** React, Solid, Vue, Angular, Next and SvelteKit start the MSW browser
   worker from their entry in development, so the contact form's POST is answered in the browser too. React
   Native starts `msw/native` in development from its own entry, `src/main.ts`, so the POST is answered on a

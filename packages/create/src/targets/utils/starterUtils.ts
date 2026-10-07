@@ -20,7 +20,7 @@ interface ContactApiOptions {
 
 const CONTACT_FORM = 'src/lib/services/contact-form/contactFormService';
 
-const CONTACT_SUBMIT = 'src/lib/services/contact-submit/contactSubmitService';
+const CONTACT_SUBMIT = 'src/lib/apis/contact/contactEndpoints';
 
 // Each path as a starter file carrying the same fields.
 export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'target'> = {}): StarterFile[] => {
@@ -105,6 +105,11 @@ export const contactFormTest = (stem = CONTACT_FORM, suffix = 'test'): StarterTe
   return test;
 };
 
+// RTK Query ships its own endpoints under this name.
+const hasSharedSubmit = (answers: Answers): boolean => {
+  return answers.data !== 'rtk-query';
+};
+
 // The submit posts where MSW answers it, and resolves locally where nothing would.
 export const contactSubmitFiles = (stem = CONTACT_SUBMIT, hasContact = hasForm): StarterFile[] => {
   const files: StarterFile[] = [
@@ -112,7 +117,7 @@ export const contactSubmitFiles = (stem = CONTACT_SUBMIT, hasContact = hasForm):
       target: `${stem}.ts`,
       source: `${CONTACT_SUBMIT}.ts`,
       when: (answers) => {
-        return hasContact(answers) && !hasMsw(answers);
+        return hasContact(answers) && hasSharedSubmit(answers) && !hasMsw(answers);
       },
       shared: true,
     },
@@ -120,7 +125,7 @@ export const contactSubmitFiles = (stem = CONTACT_SUBMIT, hasContact = hasForm):
       target: `${stem}.ts`,
       source: `${CONTACT_SUBMIT}.ts`,
       when: (answers) => {
-        return hasContact(answers) && hasMsw(answers);
+        return hasContact(answers) && hasSharedSubmit(answers) && hasMsw(answers);
       },
       variant: 'msw',
       shared: true,
@@ -137,7 +142,7 @@ export const contactSubmitTests = (stem = CONTACT_SUBMIT, suffix = 'test'): Star
       covers: `${stem}.ts`,
       source: `${CONTACT_SUBMIT}.test.ts`,
       when: (answers) => {
-        return !hasMsw(answers);
+        return hasSharedSubmit(answers) && !hasMsw(answers);
       },
       shared: true,
     },
@@ -145,7 +150,9 @@ export const contactSubmitTests = (stem = CONTACT_SUBMIT, suffix = 'test'): Star
       target: `${stem}.${suffix}.ts`,
       covers: `${stem}.ts`,
       source: `${CONTACT_SUBMIT}.test.ts`,
-      when: hasMsw,
+      when: (answers) => {
+        return hasSharedSubmit(answers) && hasMsw(answers);
+      },
       variant: 'msw',
       shared: true,
     },

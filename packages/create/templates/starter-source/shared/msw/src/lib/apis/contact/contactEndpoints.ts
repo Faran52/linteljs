@@ -1,6 +1,6 @@
 import { request } from '@utils/fetchExtendedUtils';
 
-import type { ContactValues } from '../contact-form/contactFormService';
+import type { ContactValues } from '@services/contact-form/contactFormService';
 
 export interface ContactResult {
   status: number;

@@ -41,7 +41,7 @@ export const ACCESSORS: AccessorNames = {
 
 export const CONTACT_FORM_SERVICE = 'src/lib/services/contact-form/contact-form-service';
 
-export const CONTACT_SUBMIT_SERVICE = 'src/lib/services/contact-submit/contact-submit-service';
+export const CONTACT_ENDPOINTS = 'src/lib/apis/contact/contact-endpoints';
 
 export const CONTACT_FORM_SOURCE = 'src/lib/services/contact-form/contactFormService.ts';
 

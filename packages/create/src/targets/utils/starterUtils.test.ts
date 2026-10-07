@@ -198,12 +198,12 @@ describe('contactFormFiles', () => {
 
     const expected = [
       'src/lib/services/contact-form/contactFormService.ts base',
-      'src/lib/services/contact-submit/contactSubmitService.ts base',
+      'src/lib/apis/contact/contactEndpoints.ts base',
     ];
     expect(plain).toEqual(expected);
     const zodService = [
       'src/lib/services/contact-form/contactFormService.ts zod',
-      'src/lib/services/contact-submit/contactSubmitService.ts base',
+      'src/lib/apis/contact/contactEndpoints.ts base',
     ];
     expect(zod).toEqual(zodService);
   });
@@ -234,7 +234,7 @@ describe('contactSubmitFiles', () => {
     [
       'a form',
       { form: 'react-hook-form' },
-      ['src/lib/services/contact-submit/contactSubmitService.ts base'],
+      ['src/lib/apis/contact/contactEndpoints.ts base'],
     ],
     [
       'a form under msw',
@@ -242,7 +242,15 @@ describe('contactSubmitFiles', () => {
         form: 'react-hook-form',
         mocking: 'msw',
       },
-      ['src/lib/services/contact-submit/contactSubmitService.ts msw'],
+      ['src/lib/apis/contact/contactEndpoints.ts msw'],
+    ],
+    [
+      'a form under rtk-query, whose own endpoints take the name',
+      {
+        form: 'react-hook-form',
+        data: 'rtk-query',
+      },
+      [],
     ],
   ])('writes the submit that fits %s', (_case, overrides, expected) => {
     const actual = pickedBy(contactSubmitFiles(), overrides);
@@ -251,18 +259,18 @@ describe('contactSubmitFiles', () => {
   });
 
   it('writes under the stem it is given, from the shared source, wherever the target always has a contact page', () => {
-    const files = contactSubmitFiles('src/lib/services/contact-submit/contact-submit-service', always);
+    const files = contactSubmitFiles('src/lib/apis/contact/contact-endpoints', always);
     const picked = pickedBy(files, { mocking: 'msw' });
 
-    const expected = ['src/lib/services/contact-submit/contact-submit-service.ts msw'];
+    const expected = ['src/lib/apis/contact/contact-endpoints.ts msw'];
     expect(picked).toEqual(expected);
     const sources = files
       .map(({ source, shared }) => {
         return `${String(source)} ${String(shared)}`;
       });
     const expectedSources = [
-      'src/lib/services/contact-submit/contactSubmitService.ts true',
-      'src/lib/services/contact-submit/contactSubmitService.ts true',
+      'src/lib/apis/contact/contactEndpoints.ts true',
+      'src/lib/apis/contact/contactEndpoints.ts true',
     ];
     expect(sources).toEqual(expectedSources);
   });
@@ -283,12 +291,24 @@ describe('contactSubmitTests', () => {
   ])('picks the suite %s', (_case, overrides, variant) => {
     const actual = pickedBy(contactSubmitTests(), overrides);
 
-    const expected = [`src/lib/services/contact-submit/contactSubmitService.test.ts ${variant}`];
+    const expected = [`src/lib/apis/contact/contactEndpoints.test.ts ${variant}`];
     expect(actual).toEqual(expected);
   });
 
+  it.each<Partial<Answers>>([
+    { data: 'rtk-query' },
+    {
+      data: 'rtk-query',
+      mocking: 'msw',
+    },
+  ])('picks no suite under rtk-query, whose endpoints carry their own: %o', (overrides) => {
+    const actual = pickedBy(contactSubmitTests(), overrides);
+
+    expect(actual).toEqual([]);
+  });
+
   it('names each suite under the stem and suffix it is given, from the shared source', () => {
-    const tests = contactSubmitTests('src/lib/services/contact-submit/contact-submit-service', 'spec')
+    const tests = contactSubmitTests('src/lib/apis/contact/contact-endpoints', 'spec')
       .map(({
         target,
         covers,
@@ -299,9 +319,9 @@ describe('contactSubmitTests', () => {
       });
 
     const line = [
-      'src/lib/services/contact-submit/contact-submit-service.spec.ts',
-      'src/lib/services/contact-submit/contact-submit-service.ts',
-      'src/lib/services/contact-submit/contactSubmitService.test.ts',
+      'src/lib/apis/contact/contact-endpoints.spec.ts',
+      'src/lib/apis/contact/contact-endpoints.ts',
+      'src/lib/apis/contact/contactEndpoints.test.ts',
       'true',
     ].join(' ');
     expect(tests).toEqual([line, line]);
