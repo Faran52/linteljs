@@ -24,3 +24,12 @@ globalThis.Request = class extends NodeRequest {
     super(typeof input === 'string' && input.startsWith('/') ? new URL(input, 'http://localhost:8081') : input, init);
   }
 };
+
+// The preset's frame reads `jest` as it fires, failing a file whose store schedules one after teardown.
+globalThis.requestAnimationFrame = (callback) => {
+  const timer = setTimeout(() => {
+    callback(Date.now());
+  }, 0);
+
+  return Number(timer);
+};
