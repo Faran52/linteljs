@@ -554,6 +554,7 @@ describe('targetCases', () => {
     const expected = [
       ...browsed,
       'react npm browser',
+      'react pnpm add',
       'react bun monorepo',
       'react npm monorepo',
       'react pnpm monorepo',

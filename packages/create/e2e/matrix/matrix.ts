@@ -38,8 +38,8 @@ import {
 import { coveringSubset } from './utils/pairwiseUtils';
 
 // A run other than create, install and `check`: `browser` loads the built starter afterwards, `monorepo` writes
-// the target under apps/ and commits through the hooks.
-export type E2eVariant = 'browser' | 'skip-fix' | 'no-install' | 'monorepo';
+// the target under apps/ and commits through the hooks, `add` runs `sync --add` on that monorepo.
+export type E2eVariant = 'browser' | 'skip-fix' | 'no-install' | 'monorepo' | 'add';
 
 export interface E2eCase {
   label: string;
@@ -394,10 +394,24 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
 
   const varied = variants.map(asVariant);
   const monorepos = target === 'react' ? PACKAGE_MANAGERS.map(onMonorepo(widest)) : [];
+  const added = monorepos
+    .filter(({ answers }) => {
+      return answers.packageManager === 'pnpm';
+    })
+    .map((monorepo) => {
+      const add: E2eCase = {
+        ...monorepo,
+        label: `${widest.label} add`,
+        variant: 'add',
+      };
+
+      return add;
+    });
   const extra = [
     ...smokes,
     ...varied,
     ...monorepos,
+    ...added,
   ];
 
   return extra;

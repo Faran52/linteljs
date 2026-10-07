@@ -1741,14 +1741,15 @@ always their full value, and `typeSafety` is always `strict`: neither changes wh
 loosens rules over the same files. `languages` is none or all six, since a project without it must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
 an exact-tag match.
 
-On top of the pairs, 48 more. Per target, the first case answering the most (every library, every optional answer
+On top of the pairs, 49 more. Per target, the first case answering the most (every library, every optional answer
 the target offers) runs once on each other manager, npm, Yarn 4 and bun: 33 smoke cases. A smoke is the whole case,
 so it holds each manager's config files, the husky install script under the lifecycle husky documents for it
 (`prepare` for npm, pnpm and bun, `postinstall` for Yarn 4), the layout Metro has to read through symlinks, npm's
 `npm ls --all`, and `INSTALL_NOISE` at the same strictness as pnpm. On React, the same case runs again with
 `--skip fix` and with `--no-install`, after which the harness installs and runs `check` itself, and as a monorepo
 on each of the four managers, which also commits through the hooks: lint-staged in the app, commitlint at the
-root. On every target a
+root. The pnpm monorepo runs once more with `sync --add lib` and an install before `check`, so an added package
+passes the workspace's gate. On every target a
 browser serves, the same case runs a browser pass after `check`: 8 cases. React's widest case takes the
 declarative router, so the widest React Router framework-mode case runs a ninth browser pass, on npm, the one
 server-rendered React.

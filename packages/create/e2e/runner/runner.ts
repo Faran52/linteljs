@@ -211,6 +211,19 @@ const expectCommitted = async (project: string): Promise<void> => {
   expect(results).toEqual(['git add: ok', 'git commit: ok']);
 };
 
+const expectAdded = async ({ answers }: E2eCase, project: string): Promise<void> => {
+  const add = await run('node', [
+    registry.cliBin,
+    'sync',
+    '--add',
+    'lib',
+  ], project);
+  const install = await runPm(answers.packageManager, ['install'], project);
+  const results = [outcome(add, 'sync --add'), outcome(install, 'install')];
+
+  expect(results).toEqual(['sync --add: ok', 'install: ok']);
+};
+
 const expectWorking = async ({ answers, variant }: E2eCase, project: string): Promise<void> => {
   // npm exits non-zero on a peer it resolved to an invalid range.
   if (answers.packageManager === 'npm') {
@@ -222,12 +235,12 @@ const expectWorking = async ({ answers, variant }: E2eCase, project: string): Pr
 
   await verifyLintOutput(answers.packageManager, project);
 
-  if (variant === 'monorepo') {
+  if (answers.layout === 'monorepo') {
     await expectCommitted(project);
   }
 
   if (answers.styling === 'stylex') {
-    const built = variant === 'monorepo' ? join(project, 'apps', answers.target) : project;
+    const built = answers.layout === 'monorepo' ? join(project, 'apps', answers.target) : project;
     const unstyled = missingStylexRules(built);
 
     expect(unstyled).toBe('');
@@ -246,6 +259,11 @@ const checkCase = async (item: E2eCase, root: string): Promise<void> => {
 
   await expectInstalled(item, create, project);
   await expectRecorded(item, project);
+
+  if (item.variant === 'add') {
+    await expectAdded(item, project);
+  }
+
   await expectWorking(item, project);
 };
 
