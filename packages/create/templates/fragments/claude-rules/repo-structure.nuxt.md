@@ -38,7 +38,7 @@ src/
   views/<kebab>/  {Name}View.vue, one per route, and its private slots
   pages/          the routes themselves, one file per route
   app.vue  error.vue  the shell and the error page
-  plugins/        the i18n plugin <!-- when languages -->
+  plugins/        plugins Nuxt registers itself: data, i18n and msw.client, as selected
   i18n/           the languages and their messages <!-- when languages -->
 ```
 
