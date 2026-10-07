@@ -4,7 +4,7 @@
   import Button from '@ui/button/Button.svelte';
   import TextInput from '@ui/text-input/TextInput.svelte';
 
-  import { useContactForm } from './useContactForm';
+  import { useContactForm } from './use-contact-form/useContactForm';
 
   const form = useContactForm((key) => {
     return m[key]();

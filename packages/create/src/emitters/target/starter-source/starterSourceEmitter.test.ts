@@ -288,7 +288,8 @@ describe('the starter source', () => {
     ]],
     ['svelte', [
       'src/routes/contact/+page.svelte',
-      'src/routes/contact/useContactForm.ts',
+      'src/routes/contact/use-contact-form/useContactForm.ts',
+      'src/routes/contact/use-contact-form/useContactForm.test.ts',
       'src/components/ui/text-input/TextInput.svelte',
       'src/lib/apis/contact/index.ts',
     ]],

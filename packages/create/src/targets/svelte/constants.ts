@@ -85,8 +85,15 @@ export const QUERY_CONTEXT_MOCKS = [
   '__mocks__/ExtendedMutationProbe.svelte',
 ] as const;
 
+// The data slot is a component here, so a suite needing it needs one too.
+export const FORM_SUITE_MOCKS = [
+  '__mocks__/WithData.svelte',
+  '__mocks__/WithContactForm.svelte',
+  '__mocks__/ContactFormProbe.svelte',
+] as const;
+
 export const FORM_FILES = [
-  'src/routes/contact/useContactForm.ts',
+  'src/routes/contact/use-contact-form/useContactForm.ts',
   'src/components/ui/text-input/TextInput.svelte',
   'src/components/ui/text-input/types.ts',
 ] as const;

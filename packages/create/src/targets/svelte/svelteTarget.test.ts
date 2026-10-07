@@ -123,6 +123,11 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
+const FORM_SUITE: readonly Condition[] = [{
+  form: ANSWERED,
+  testing: ['vitest'],
+}];
+
 const TRANSLATED_GATES: GateRow[] = [
   ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
@@ -151,10 +156,9 @@ const GATES: GateRow[] = [
   ...contactGates(['tanstack-query']),
   ['src/routes/+layout.svelte', [{ styling: [undefined, 'tailwind'] }]],
   ['src/routes/+layout.svelte@stylex', STYLEX],
-  ['__mocks__/WithData.svelte', [{
-    form: ANSWERED,
-    testing: ['vitest'],
-  }]],
+  ['__mocks__/WithData.svelte', FORM_SUITE],
+  ['__mocks__/WithContactForm.svelte', FORM_SUITE],
+  ['__mocks__/ContactFormProbe.svelte', FORM_SUITE],
   ['__mocks__/WithExtendedQuery.svelte@tanstack-query', TANSTACK_QUERY],
   ['__mocks__/WithExtendedMutation.svelte@tanstack-query', TANSTACK_QUERY],
   ['__mocks__/ExtendedQueryProbe.svelte@tanstack-query', TANSTACK_QUERY],
@@ -162,7 +166,7 @@ const GATES: GateRow[] = [
   ['src/config/routes.ts', WITHOUT_FORM],
   ['src/config/routes.ts@with-form', WITH_FORM],
   ...homeGates('src/routes/+page.svelte'),
-  ['src/routes/contact/useContactForm.ts', WITH_FORM],
+  ['src/routes/contact/use-contact-form/useContactForm.ts', WITH_FORM],
   ['src/lib/apis/contact/contactApi.test.ts', [{ data: [undefined] }]],
   ['src/components/ui/text-input/TextInput.svelte', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

@@ -56,6 +56,8 @@ exports. Do not add a second library for state a rune already holds. Mind the se
   private partial; it moves to `components/` the moment a second route needs it.
 - Everything in a `routes/` folder that is not a reserved filename is private to that route. Never
   nest a private folder inside another.
+- A hook only one route reads sits in that route in a directory named for it, with its suite:
+  `routes/contact/use-contact-form/useContactForm.ts`.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today.
 - `+page.server.ts` and `+server.ts` are the only place server secrets appear. Everything they need
   comes from `$app/env/private`, never from a module also imported by a `.svelte` file.

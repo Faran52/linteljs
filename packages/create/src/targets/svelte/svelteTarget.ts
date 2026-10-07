@@ -42,6 +42,7 @@ import {
   ACCESSORS,
   ALWAYS,
   FORM_FILES,
+  FORM_SUITE_MOCKS,
   QUERY_CONTEXT_MOCKS,
   SHARED,
   SVELTE_I18N,
@@ -172,13 +173,11 @@ export const svelteTarget: TargetBuilder = () => {
         when: hasForm,
       }),
       ...contactApiFiles(),
-      // The data slot is a component here, so a suite needing it needs one too.
-      {
-        target: '__mocks__/WithData.svelte',
+      ...filesAt(FORM_SUITE_MOCKS, {
         when: (answers) => {
           return hasForm(answers) && hasTests(answers);
         },
-      },
+      }),
       ...contactFormFiles(),
       {
         target: 'src/config/routes.ts',
@@ -248,6 +247,10 @@ export const svelteTarget: TargetBuilder = () => {
       {
         target: 'src/routes/contact/page.test.ts',
         covers: 'src/routes/contact/+page.svelte',
+      },
+      {
+        target: 'src/routes/contact/use-contact-form/useContactForm.test.ts',
+        covers: 'src/routes/contact/use-contact-form/useContactForm.ts',
       },
       {
         target: 'src/components/ui/text-input/TextInput.test.ts',
