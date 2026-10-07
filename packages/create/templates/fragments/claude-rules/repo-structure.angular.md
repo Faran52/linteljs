@@ -41,6 +41,10 @@ src/
 `src/config/` replaces `src/environments/`. One config home, read through a typed accessor, rather
 than a file the build swaps out from under the code.
 
+`app.ts`, `app.config.ts` and `app.routes.ts` sit loose at the `app/` root by Angular CLI
+convention: the root component, its application config and the route table, which `main.ts`
+bootstraps.
+
 ## Placement
 
 - **Closest to its consumer.** A component used by one route lives in that route's folder under
