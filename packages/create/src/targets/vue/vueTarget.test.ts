@@ -137,8 +137,8 @@ const BILINGUAL_PATHS = [
   'src/config/standard.ts',
   'src/main.ts',
   'src/App.test.ts',
-  'src/views/AboutView.vue',
-  'src/views/VersionView.vue',
+  'src/views/about/AboutView.vue',
+  'src/views/version/VersionView.vue',
   'src/components/features/app-header/AppHeader.vue',
   'src/components/features/status-page/StatusPage.vue',
   'src/components/features/status-page/StatusPage.test.ts',
@@ -169,8 +169,8 @@ const TRANSLATED_GATES: GateRow[] = [
 
       return rows;
     }),
-  ['src/views/ContactView.vue', FORM_ENGLISH],
-  ['src/views/ContactView.vue@i18n', FORM_I18N],
+  ['src/views/contact/ContactView.vue', FORM_ENGLISH],
+  ['src/views/contact/ContactView.vue@i18n', FORM_I18N],
   ...I18N_ONLY_PATHS
     .map((key): GateRow => {
       const row: GateRow = [`${key}@i18n`, WITH_I18N];
@@ -186,8 +186,8 @@ const GATES: GateRow[] = [
   ...contactGates(['tanstack-query']),
   ['src/views/routes.ts', WITHOUT_FORM],
   ['src/views/routes.ts@with-form', WITH_FORM],
-  ...homeGates('src/views/HomeView.vue'),
-  ['src/views/useContactForm.ts', WITH_FORM],
+  ...homeGates('src/views/home/HomeView.vue'),
+  ['src/views/contact/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],

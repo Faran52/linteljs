@@ -35,7 +35,7 @@ src/
     providers/    provide/inject wrappers
     composables/  cross-cutting composables
     apis/         endpoint definitions and schemas
-  views/          one component per route
+  views/<kebab>/  {Name}View.vue, one per route, and its private slots
   router/         the route table
 ```
 

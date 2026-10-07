@@ -20,7 +20,7 @@ export const vueI18nFiles = (): StarterFile[] => {
     translated: TRANSLATED,
     pairs: [
       {
-        target: 'src/views/ContactView.vue',
+        target: 'src/views/contact/ContactView.vue',
         when: hasForm,
       },
     ],

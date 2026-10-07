@@ -35,14 +35,14 @@ src/
     providers/    provide/inject wrappers
     composables/  cross-cutting composables
     apis/         endpoint definitions and schemas
-  views/          one component per route
+  views/<kebab>/  {Name}View.vue, one per route, and its private slots
   pages/          the routes themselves, one file per route
 ```
 
 `pages/` is Nuxt's, and its filenames are the URL: `pages/about.vue` is `/about` and
 `pages/index.vue` is `/`. A page file names a view and nothing else, so the page written in
-`views/AboutView.vue` is testable without a router and the route file stays one line. There is no
-`router/`: the directory is the route table.
+`views/about/AboutView.vue` is testable without a router and the route file stays one line. There
+is no `router/`: the directory is the route table.
 
 `app.vue` is the shell every route renders inside. It carries what is mounted once, which is the
 header, and `<NuxtPage />` is where the route goes.

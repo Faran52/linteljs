@@ -101,13 +101,13 @@ export const vueTarget: TargetBuilder = () => {
         shared: true,
       }),
       ...translated<StarterFile>({
-        target: 'src/views/HomeView.vue',
+        target: 'src/views/home/HomeView.vue',
         when: (answers) => {
           return !hasStore(answers);
         },
       }),
       ...translated<StarterFile>({
-        target: 'src/views/HomeView.vue',
+        target: 'src/views/home/HomeView.vue',
         when: hasStore,
         variant: 'with-store',
       }),
@@ -187,8 +187,8 @@ export const vueTarget: TargetBuilder = () => {
         covers: 'src/components/features/error-boundary/ErrorBoundary.vue',
       },
       {
-        target: 'src/views/ContactView.test.ts',
-        covers: 'src/views/ContactView.vue',
+        target: 'src/views/contact/ContactView.test.ts',
+        covers: 'src/views/contact/ContactView.vue',
       },
       {
         target: 'src/components/ui/text-input/TextInput.test.ts',

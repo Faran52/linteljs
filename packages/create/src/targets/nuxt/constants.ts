@@ -13,8 +13,8 @@ export const FROM_VUE: readonly string[] = [
 
 // Each ships a translated twin, Vue's own.
 export const TRANSLATED_FROM_VUE: readonly string[] = [
-  'src/views/AboutView.vue',
-  'src/views/VersionView.vue',
+  'src/views/about/AboutView.vue',
+  'src/views/version/VersionView.vue',
   'src/components/features/status-page/StatusPage.vue',
 ];
 

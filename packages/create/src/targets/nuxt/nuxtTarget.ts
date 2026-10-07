@@ -152,7 +152,7 @@ export const nuxtTarget: TargetBuilder = () => {
       ...localeFiles(),
       languageUtilsFile(),
       COOKIE_UTILS,
-      ...translated<StarterFile>({ target: 'src/views/HomeView.vue' }),
+      ...translated<StarterFile>({ target: 'src/views/home/HomeView.vue' }),
       tailwindThemeFile(),
     ],
     starterTests: [
@@ -162,16 +162,16 @@ export const nuxtTarget: TargetBuilder = () => {
         names: SOURCE_ACCESSORS,
       }),
       ...translated<StarterTest>({
-        target: 'src/views/HomeView.test.ts',
-        covers: 'src/views/HomeView.vue',
+        target: 'src/views/home/HomeView.test.ts',
+        covers: 'src/views/home/HomeView.vue',
       }),
       {
-        target: 'src/views/AboutView.test.ts',
-        covers: 'src/views/AboutView.vue',
+        target: 'src/views/about/AboutView.test.ts',
+        covers: 'src/views/about/AboutView.vue',
       },
       {
-        target: 'src/views/VersionView.test.ts',
-        covers: 'src/views/VersionView.vue',
+        target: 'src/views/version/VersionView.test.ts',
+        covers: 'src/views/version/VersionView.vue',
       },
       {
         target: 'src/components/ui/app-mark/AppMark.test.ts',

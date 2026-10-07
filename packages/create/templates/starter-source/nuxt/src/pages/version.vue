@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import VersionView from '@views/VersionView.vue';
+import VersionView from '@views/version/VersionView.vue';
 </script>
 
 <template>

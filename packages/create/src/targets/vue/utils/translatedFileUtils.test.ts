@@ -25,8 +25,8 @@ const ENGLISH_FILES = [
   'true:src/config/statuses.ts',
   'true:src/config/standard.ts',
   'src/main.ts',
-  'src/views/AboutView.vue',
-  'src/views/VersionView.vue',
+  'src/views/about/AboutView.vue',
+  'src/views/version/VersionView.vue',
   'src/components/features/app-header/AppHeader.vue',
   'src/components/features/status-page/StatusPage.vue',
 ];
@@ -66,7 +66,7 @@ describe('vueI18nFiles', () => {
       const starterFiles = vueI18nFiles();
       const contact = writtenUnder(starterFiles, answers)
         .filter((file) => {
-          return file.startsWith('src/views/ContactView');
+          return file.startsWith('src/views/contact/ContactView');
         });
 
       return contact;
@@ -86,9 +86,9 @@ describe('vueI18nFiles', () => {
       languages: ['ko'],
     }));
 
-    const expected = ['src/views/ContactView.vue'];
+    const expected = ['src/views/contact/ContactView.vue'];
     expect(english).toEqual(expected);
-    const translatedContact = ['src/views/ContactView.vue@i18n'];
+    const translatedContact = ['src/views/contact/ContactView.vue@i18n'];
     expect(translated).toEqual(translatedContact);
     expect(formless).toEqual([]);
   });

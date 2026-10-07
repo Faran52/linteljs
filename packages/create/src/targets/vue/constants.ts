@@ -20,8 +20,8 @@ export const SHARED: readonly string[] = [
 // Each ships a translated twin.
 export const TRANSLATED: readonly string[] = [
   'src/main.ts',
-  'src/views/AboutView.vue',
-  'src/views/VersionView.vue',
+  'src/views/about/AboutView.vue',
+  'src/views/version/VersionView.vue',
   'src/components/features/app-header/AppHeader.vue',
   'src/components/features/status-page/StatusPage.vue',
 ];
@@ -54,7 +54,7 @@ export const VUE_I18N: I18nParts = {
 };
 
 export const FORM_FILES = [
-  'src/views/useContactForm.ts',
+  'src/views/contact/useContactForm.ts',
   'src/components/ui/text-input/TextInput.vue',
   'src/components/ui/text-input/types.ts',
 ] as const;
