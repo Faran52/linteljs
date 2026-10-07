@@ -105,6 +105,19 @@ const bandText = async ($: Engine, surface: Surface, hasSurvey = false): Promise
   return found?.text;
 };
 
+const glyphColor = async ($: Engine): Promise<string> => {
+  const band = await $.ui.mount({
+    plugin: 'linteljs',
+    surface: 'terminal',
+    component: 'AbovePrompt',
+    props: PROMPT,
+  });
+  const glyph = await band.find({ type: 'Text', text: /^.$/u });
+  await band.unmount();
+
+  return String(glyph?.props['color']);
+};
+
 test('draws the state word checkStatusHook.ts prints at session start', async ($, on) => {
   const runs = fakeStatus(on, { word: 'passed' });
 
@@ -117,7 +130,7 @@ test('draws the state word checkStatusHook.ts prints at session start', async ($
   for (const surface of SURFACES) {
     const text = await bandText($, surface);
 
-    expect(text).toBe('check passed on this tree');
+    expect(text).toBe('✓ check passed');
   }
 
   expect(runs[0]?.[0]).toBe('node');
@@ -135,9 +148,9 @@ test('reads the word again when a main turn ends, and not when a subagent\'s doe
   await complete($);
   const failed = await bandText($, 'terminal');
 
-  expect(stale).toBe('check stale: files changed since it passed');
+  expect(stale).toBe('◐ check stale');
   expect(afterAgent).toBe(stale);
-  expect(failed).toBe('check failed when it last ran');
+  expect(failed).toBe('✗ check failed');
 });
 
 test('stays away outside a checked project, and when the script cannot run', async ($, on) => {
@@ -153,7 +166,7 @@ test('stays away outside a checked project, and when the script cannot run', asy
   const unrunnable = await bandText($, 'terminal');
 
   expect(outside).toBeUndefined();
-  expect(running).toBe('check running, or stopped before it finished');
+  expect(running).toBe('◐ check running');
   expect(unrunnable).toBeUndefined();
 });
 
@@ -163,6 +176,33 @@ test('gives the band up to a survey', async ($, on) => {
   const shown = await bandText($, 'terminal');
   const surveyed = await bandText($, 'terminal', true);
 
-  expect(shown).toBe('check has not run on these files');
+  expect(shown).toBe('○ check none');
   expect(surveyed).toBeUndefined();
+});
+
+test('colours the glyph green, yellow, red or gray by state', async ($, on) => {
+  const printed: Printed = { word: '' };
+  fakeStatus(on, printed);
+  const colors: Record<string, string> = {};
+  const words = [
+    'passed',
+    'stale',
+    'failed',
+    'running',
+    'none',
+  ];
+
+  for (const word of words) {
+    printed.word = word;
+    await complete($);
+    colors[word] = await glyphColor($);
+  }
+
+  expect(colors).toEqual({
+    passed: 'green',
+    stale: 'yellow',
+    failed: 'red',
+    running: 'yellow',
+    none: 'gray',
+  });
 });

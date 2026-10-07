@@ -2017,8 +2017,9 @@ The decisions the mod's code cannot show:
   need an edit, and it would stop being a copy.
 - **The CI band listens on classic events.** The check band holds `session.start` and `turn.complete`, so the CI
   band refreshes on `classic.SessionStart` and `classic.Stop` (the main session's), at most every 3 minutes.
-- **Green only when main's runs were read.** Actions being operational says nothing about main, so a band that
-  could not reach `gh` draws yellow, never green.
+- **One line, drawn by the CI band.** The copy stays byte-equal, so `register.tsx` takes only its refresh and
+  the CI band's render draws the check state first, with the shipped `MARKS`. It declares its own `check` atom:
+  the engine refuses a `read` of an atom imported from another module.
 - **Stale worktrees warn, never deny.** A worktree no agent of this session owns may belong to another session's
   live agent, so a deny would block work that is not stale. A HEAD ahead of `origin/HEAD` adds an `ff-only` note
   to the spawned agent's prompt, since a new worktree starts at origin's default branch.

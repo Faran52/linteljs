@@ -2,6 +2,7 @@
 import {
   atom,
   type EngineInterface,
+  type On,
   read,
   type Register,
   update,
@@ -14,16 +15,17 @@ const check = atom({
   key: 'check',
 } as const, null);
 
-const BAND: Record<CheckWord, [string, string]> = {
-  passed: ['check passed on this tree', 'green'],
-  stale: ['check stale: files changed since it passed', 'yellow'],
-  failed: ['check failed when it last ran', 'red'],
-  running: ['check running, or stopped before it finished', 'yellow'],
-  none: ['check has not run on these files', 'gray'],
+// Each state's glyph and its colour.
+export const MARKS: Record<CheckWord, [string, string]> = {
+  passed: ['✓', 'green'],
+  stale: ['◐', 'yellow'],
+  failed: ['✗', 'red'],
+  running: ['◐', 'yellow'],
+  none: ['○', 'gray'],
 };
 
 const isWord = (text: string): text is CheckWord => {
-  return Object.hasOwn(BAND, text);
+  return Object.hasOwn(MARKS, text);
 };
 
 // Outside a git project with a `check` script the script prints nothing, and the band stays away.
@@ -47,7 +49,7 @@ const refresh = async ($: EngineInterface): Promise<void> => {
   });
 };
 
-export const register: Register = (on) => {
+export const registerCheckRefresh = (on: On): void => {
   on('session.start', async ($, e, next) => {
     const started = await next(e);
     await refresh($);
@@ -64,6 +66,10 @@ export const register: Register = (on) => {
 
     return completed;
   });
+};
+
+export const register: Register = (on) => {
+  registerCheckRefresh(on);
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const word = await read($, check);
@@ -73,12 +79,15 @@ export const register: Register = (on) => {
     }
 
     const { Box, Text } = $.ui.resolve(e);
-    const [text, color] = BAND[word];
+    const [glyph, color] = MARKS[word];
     const below = await next(e);
 
     return (
       <Box flexDirection="column">
-        <Text color={color}>{text}</Text>
+        <Text>
+          <Text color={color}>{glyph}</Text>
+          {` check ${word}`}
+        </Text>
         {below}
       </Box>
     );

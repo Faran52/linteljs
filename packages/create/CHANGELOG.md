@@ -157,8 +157,9 @@ when a version's change lives in a sibling it is described there instead:
   read that checkout's run. A file whose first line marks it generated (`@generated`, `do not edit` and the like)
   cannot be edited, in Claude Code, Codex and Copilot. The emitted agent instructions tell
   an agent how to run `check` so it counts and to leave a generated file alone.
-- In Claude Code a band above the prompt shows the commit gate's state for the work tree (passed, failed,
-  running, stale or not run), read at session start and after each main-session turn. It is a function-hooks module,
+- In Claude Code a band above the prompt shows the commit gate's state for the work tree as a coloured glyph and
+  a word (`✓ check passed`, `✗ check failed`, `◐ check running`, `◐ check stale`, `○ check none`), read at session
+  start and after each main-session turn. It is a function-hooks module,
   `hooks/checkBand.tsx`, that `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
   and older versions run the other hooks without it. Codex reads `hooks/codexHooks.json`, the same hooks without
   `modules`, and every generated `tsconfig.json` excludes `plugins/linteljs`.

@@ -1,13 +1,16 @@
-// The band under the check band: main's latest ci, e2e and audit runs, and whether GitHub Actions is up.
+// One line above the prompt: the check state, main's latest ci, e2e and audit runs, and whether GitHub Actions is up.
 import {
   atom,
   type EngineInterface,
   type On,
   read,
+  type RenderChildren,
   update,
 } from 'claude-code';
 
-import type { CiBand } from '../types/index.d.ts';
+import { MARKS } from './checkBand.tsx';
+
+import type { CiMark } from '../types/index.d.ts';
 
 interface Run {
   workflowName: string;
@@ -24,6 +27,12 @@ interface Status {
   components: Component[];
 }
 
+// The check band's atom, which the engine reads only as declared in the module that reads it.
+const check = atom({
+  plugin: 'linteljs',
+  key: 'check',
+} as const, null);
+
 const ci = atom({
   plugin: 'linteljs',
   key: 'ci',
@@ -36,6 +45,9 @@ const WORKFLOWS = [
 ];
 const REFRESH_MS = 180_000;
 const STATUS_URL = 'https://www.githubstatus.com/api/v2/components.json';
+const MAIN_LABEL = 'main';
+const ACTIONS_LABEL = 'actions ';
+const SEPARATOR = '  │  ';
 
 const isObject = (value: unknown): value is object => {
   return typeof value === 'object' && value !== null;
@@ -69,15 +81,15 @@ const parsedAs = <T,>(text: string | undefined, guard: (value: unknown) => value
   }
 };
 
-const wordOf = ({ status, conclusion }: Run): string => {
+const markOf = ({ status, conclusion }: Run): CiMark => {
   if (status !== 'completed') {
     return 'running';
   }
 
-  return conclusion === 'success' ? 'passed' : conclusion.replace('failure', 'failed');
+  return conclusion === 'success' ? 'passed' : 'failed';
 };
 
-const runWords = async ($: EngineInterface, cwd: string): Promise<string[]> => {
+const runMarks = async ($: EngineInterface, cwd: string): Promise<[string, CiMark][]> => {
   const argv = [
     'gh',
     'run',
@@ -108,13 +120,13 @@ const runWords = async ($: EngineInterface, cwd: string): Promise<string[]> => {
           return workflowName === name;
         });
 
-      const words = latest === undefined ? [] : [`${name} ${wordOf(latest)}`];
+      const marks: [string, CiMark][] = latest === undefined ? [] : [[name, markOf(latest)]];
 
-      return words;
+      return marks;
     });
 };
 
-const actionsWord = async ($: EngineInterface): Promise<string | undefined> => {
+const actionsMark = async ($: EngineInterface): Promise<CiMark | null> => {
   let text: string | undefined;
 
   try {
@@ -131,24 +143,15 @@ const actionsWord = async ($: EngineInterface): Promise<string | undefined> => {
       return name === 'Actions';
     });
 
-  return actions?.status.replaceAll('_', ' ');
-};
-
-// Green only when main's runs were read: Actions up says nothing about main.
-const colorOf = (words: string[], actions: string | undefined): CiBand['color'] => {
-  if (words
-    .some((word) => {
-      return !word.endsWith(' passed') && !word.endsWith(' running');
-    })) {
-    return 'red';
+  if (actions === undefined) {
+    return null;
   }
 
-  return actions === 'operational' && words.length > 0 && words
-    .every((word) => {
-      return word.endsWith(' passed');
-    })
-    ? 'green'
-    : 'yellow';
+  if (actions.status === 'operational') {
+    return 'passed';
+  }
+
+  return actions.status === 'degraded_performance' ? 'running' : 'failed';
 };
 
 // Main session only, and at most every few minutes; offline or without `gh` it draws what it could read.
@@ -161,16 +164,12 @@ const refresh = async ($: EngineInterface): Promise<void> => {
   }
 
   const root = await $.session.root();
-  const words = await runWords($, root);
-  const actions = await actionsWord($);
-  const parts = [
-    ...(words.length > 0 ? [`main: ${words.join(', ')}`] : []),
-    ...(actions === undefined ? [] : [`GitHub Actions ${actions}`]),
-  ];
+  const runs = await runMarks($, root);
+  const actions = await actionsMark($);
   const band = {
     at: now,
-    color: colorOf(words, actions),
-    text: parts.join(' · '),
+    runs,
+    actions,
   };
 
   await update($, ci, () => {
@@ -192,20 +191,52 @@ export const registerCiBand = (on: On): void => {
     return next(e);
   });
 
+  // The check band's render too, so both draw on one line; a segment with nothing read is left out.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const word = await read($, check);
     const band = await read($, ci);
+    const { Box, Text } = $.ui.resolve(e);
 
-    if (e.props.hasSurvey || band === null || band.text === '') {
+    const mark = ([glyph, color]: [string, string]): RenderChildren => {
+      return <Text color={color}>{glyph}</Text>;
+    };
+
+    const runs = band?.runs ?? [];
+    const actions = band?.actions ?? null;
+    const runParts = runs
+      .flatMap(([name, state]) => {
+        const part = [`  ${name} `, mark(MARKS[state])];
+
+        return part;
+      });
+    const checkSegment = word === null ? [] : [mark(MARKS[word]), ` check ${word}`];
+    const mainSegment = runs.length === 0 ? [] : [MAIN_LABEL, ...runParts];
+    const actionsSegment = actions === null ? [] : [ACTIONS_LABEL, mark(MARKS[actions])];
+    const segments = [
+      checkSegment,
+      mainSegment,
+      actionsSegment,
+    ]
+      .filter((segment) => {
+        return segment.length > 0;
+      });
+
+    if (e.props.hasSurvey || segments.length === 0) {
       return next(e);
     }
 
-    const { Box, Text } = $.ui.resolve(e);
-    const above = await next(e);
+    const line = segments
+      .flatMap((segment, index) => {
+        const separated = [<Text dimColor>{SEPARATOR}</Text>, ...segment];
+
+        return index === 0 ? segment : separated;
+      });
+    const below = await next(e);
 
     return (
       <Box flexDirection="column">
-        {above}
-        <Text color={band.color}>{band.text}</Text>
+        <Text>{line}</Text>
+        {below}
       </Box>
     );
   });

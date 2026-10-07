@@ -11,6 +11,7 @@ interface Ci {
   actions?: string;
   now: number;
   offline?: boolean;
+  check?: string;
 }
 
 interface Calls {
@@ -19,7 +20,7 @@ interface Calls {
 
 interface Drawn {
   text?: string;
-  color?: string;
+  marks?: string[];
 }
 
 const PROMPT = {
@@ -79,7 +80,7 @@ const fakeCi = (on: On, ci: Ci): Calls => {
     const ran = {
       value: {
         exitCode: 0,
-        stdout: isGh ? JSON.stringify(runs) : '',
+        stdout: isGh ? JSON.stringify(runs) : (ci.check ?? ''),
         stderr: '',
         isStdoutTruncated: false,
         isStderrTruncated: false,
@@ -118,6 +119,12 @@ const fakeCi = (on: On, ci: Ci): Calls => {
     return {};
   });
 
+  on('turn.complete', () => {
+    const completed = { text: '' };
+
+    return completed;
+  });
+
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e);
     return <Box />;
@@ -136,10 +143,15 @@ const drawn = async ($: Engine, surface: (typeof SURFACES)[number], hasSurvey = 
       hasSurvey,
     },
   });
-  const found = await band.find({ type: 'Text' });
+  const [line, ...parts] = await band.findAll({ type: 'Text' });
   await band.unmount();
 
-  const seen = found === undefined ? {} : { text: found.text, color: String(found.props['color']) };
+  // Each glyph's colour, and `dim` for a separator.
+  const marks = parts
+    .map(({ props }) => {
+      return props['dimColor'] === true ? 'dim' : String(props['color']);
+    });
+  const seen = line === undefined ? {} : { text: line.text, marks };
 
   return seen;
 };
@@ -162,7 +174,7 @@ const PASSED: Ci['runs'] = [
   ],
 ];
 
-test('draws main\'s runs and GitHub Actions green when everything passed', async ($, on) => {
+test('draws main\'s runs and GitHub Actions with a green mark each when everything passed', async ($, on) => {
   fakeCi(on, { runs: [...PASSED, [
     'ci',
     'completed',
@@ -175,13 +187,19 @@ test('draws main\'s runs and GitHub Actions green when everything passed', async
     const band = await drawn($, surface);
 
     expect(band).toEqual({
-      text: 'main: ci passed, e2e passed, audit passed · GitHub Actions operational',
-      color: 'green',
+      text: 'main  ci ✓  e2e ✓  audit ✓  │  actions ✓',
+      marks: [
+        'green',
+        'green',
+        'green',
+        'dim',
+        'green',
+      ],
     });
   }
 });
 
-test('draws red for a failed or cancelled run, and yellow for a running one or a degraded Actions', async ($, on) => {
+test('marks a failed run and a down Actions red, a running run and a degraded Actions yellow', async ($, on) => {
   const ci: Ci = { runs: [[
     'ci',
     'completed',
@@ -205,28 +223,78 @@ test('draws red for a failed or cancelled run, and yellow for a running one or a
     'success',
   ]];
 
+  ci.actions = 'degraded_performance';
   ci.now += MINUTES_3;
   await $.classic.SessionStart({ source: 'clear' });
   const running = await drawn($, 'terminal');
-  ci.runs = PASSED;
   ci.actions = 'partial_outage';
   ci.now += MINUTES_3;
   await $.classic.SessionStart({ source: 'clear' });
-  const degraded = await drawn($, 'terminal');
+  const down = await drawn($, 'terminal');
 
   expect(failed).toEqual({
-    text: 'main: ci failed, audit cancelled · GitHub Actions operational',
-    color: 'red',
+    text: 'main  ci ✗  audit ✗  │  actions ✓',
+    marks: [
+      'red',
+      'red',
+      'dim',
+      'green',
+    ],
   });
 
   expect(running).toEqual({
-    text: 'main: ci running, e2e passed · GitHub Actions operational',
-    color: 'yellow',
+    text: 'main  ci ◐  e2e ✓  │  actions ◐',
+    marks: [
+      'yellow',
+      'green',
+      'dim',
+      'yellow',
+    ],
   });
 
-  expect(degraded).toEqual({
-    text: 'main: ci passed, e2e passed, audit passed · GitHub Actions partial outage',
-    color: 'yellow',
+  expect(down).toEqual({
+    text: 'main  ci ◐  e2e ✓  │  actions ✗',
+    marks: [
+      'yellow',
+      'green',
+      'dim',
+      'red',
+    ],
+  });
+});
+
+test('draws the check state first, on the same line', async ($, on) => {
+  fakeCi(on, {
+    runs: PASSED,
+    now: 0,
+    check: 'stale\n',
+  });
+
+  await $.turn.complete({
+    answer: '',
+    durationMs: 1,
+    isAborted: false,
+    turnId: 't',
+    reason: 'answer',
+  });
+
+  const checkOnly = await drawn($, 'terminal');
+  await $.classic.SessionStart({ source: 'startup' });
+  const both = await drawn($, 'terminal');
+
+  expect(checkOnly).toEqual({ text: '◐ check stale', marks: ['yellow'] });
+
+  expect(both).toEqual({
+    text: '◐ check stale  │  main  ci ✓  e2e ✓  audit ✓  │  actions ✓',
+    marks: [
+      'yellow',
+      'dim',
+      'green',
+      'green',
+      'green',
+      'dim',
+      'green',
+    ],
   });
 });
 
@@ -246,7 +314,7 @@ test('stays quiet offline, and draws what it could read when one source answers'
   const statusOnly = await drawn($, 'terminal');
 
   expect(offline).toEqual({});
-  expect(statusOnly).toEqual({ text: 'GitHub Actions operational', color: 'yellow' });
+  expect(statusOnly).toEqual({ text: 'actions ✓', marks: ['green'] });
 });
 
 test('refreshes when a turn stops, at most every three minutes', async ($, on) => {
@@ -269,9 +337,9 @@ test('refreshes when a turn stops, at most every three minutes', async ($, on) =
   const refreshed = await drawn($, 'terminal');
 
   expect(ghBefore).toBe(1);
-  expect(throttled.color).toBe('green');
+  expect(throttled.text).toBe('main  ci ✓  e2e ✓  audit ✓  │  actions ✓');
   expect(calls.gh).toBe(2);
-  expect(refreshed.color).toBe('red');
+  expect(refreshed.text).toBe('main  ci ✗  │  actions ✓');
 });
 
 test('gives the band up to a survey', async ($, on) => {

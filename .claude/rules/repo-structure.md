@@ -97,12 +97,14 @@ tsconfig checks, and ignores them where the types are missing, as in CI. `.fallo
 - **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
   `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds
   each copy equal to its source; change the shipped file, then copy it. `checkStatusHook.ts` runs the shipped script.
+  `register.tsx` takes only its refresh (`registerCheckRefresh`): the CI band draws the check state on its line.
   This copy is where the band's suite runs: `claude plugin test` runs every `*.test.ts(x)` under the folder it is
   given and cannot select files, so on the shipped folder it also runs the Node hook suites, which fail there.
   The band's gate is `claude plugin test .claude/skills/linteljs`, never the shipped folder.
 - **CI band** (`ciBand.tsx`): main's latest `ci`, `e2e` and `audit` runs from `gh run list` and the GitHub
   Actions component from githubstatus, refreshed on `classic.SessionStart` and `classic.Stop` at most every 3
-  minutes. Green only when main's runs were read and passed and Actions is operational.
+  minutes. One line, `◐ check stale  │  main  ci ✓  e2e ✗  audit ✗  │  actions ✓`: each glyph coloured (✓ green,
+  ✗ red, ◐ yellow, ○ gray) from the shipped band's `MARKS`, a segment with nothing read left out.
 - **Repo guards** (`repoGuards.ts`, deciding through `utils/guardUtils.ts` and `utils/shellUtils.ts`):
   - read guard: a `Read` or shell read of a file too large or noisy to take whole is denied with the targeted tool;
   - no polling in subagents: `Monitor`, sleep loops and `watch` from a subagent are denied;
