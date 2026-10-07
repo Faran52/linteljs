@@ -20,6 +20,7 @@ import {
   mockFiles,
   mockTests,
   rtkContactFiles,
+  rtkEndpointTests,
   rtkFiles,
   rtkTests,
 } from '../utils/mockUtils';
@@ -28,6 +29,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 
@@ -133,7 +135,7 @@ export const reactNativeTarget: TargetBuilder = () => {
     testRunner: 'jest',
     starterFiles: [
       // No dev server, so no browser worker.
-      ...mockFiles(true, false),
+      ...mockFiles(hasForm, false),
       ...accessorFiles(ACCESSORS, {
         shared: 'react',
         names: SOURCE_ACCESSORS,
@@ -316,18 +318,14 @@ export const reactNativeTarget: TargetBuilder = () => {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
-      {
-        target: 'src/lib/apis/contact/contactEndpoints.test.ts',
-        covers: 'src/lib/apis/contact/contactEndpoints.ts',
-        variant: 'rtk-query',
-        shared: 'react',
-      },
+      ...rtkEndpointTests(),
       {
         target: 'src/lib/apis/contact/contactHooks.test.ts',
         covers: 'src/lib/apis/contact/contactHooks.ts',
         variant: 'rtk-query',
       },
       contactFormTest(),
+      ...contactSubmitTests(),
       ...reactNativeI18nTests(),
       LOCALES_TEST,
       languageUtilsTest(),

@@ -513,7 +513,7 @@ api modules it renders identically. Logic with no framework in it is shared even
 not: a framework's i18n module keeps its reactive state and its `t`, and reads language matching, direction,
 detection order and placeholder filling from `shared/i18n/src/i18n/utils/languageUtils.ts`, and the language cookie
 and `Accept-Language` parsing from `cookieUtils.ts` beside it, each with its one suite; every contact api wrapper, plain or a TanStack Query mutation, reads `submitContact` from
-`shared/src/lib/services/contact-form/contactFormService.ts`. Every extended query adapter builds its query and mutation options
+`shared/src/lib/services/contact-submit/contactSubmitService.ts`, local in its base and a POST in its `msw` variant. Every extended query adapter builds its query and mutation options
 from `shared/src/lib/utils/queryOptionsUtils.ts`, typed structurally and handed the adapter's client for
 invalidation, and every TanStack Form contact form takes `validateContactForm` from
 the same service, which ships in a plain and a zod variant. A copy of framework-free logic in two targets is a defect; the shell that imports it stays
@@ -877,9 +877,11 @@ providers in one project is a combination the shape of the answer should refuse.
 - **Either works with either form.** The form binds the inputs and the data layer owns the submit's pending and
   error state.
 
-The contact api validates and resolves locally, touching no network, so it works offline, in CI, in a 360px popup
-and on React Native. Under `rtk-query` it is not a function with a third spelling: it is an endpoint injected into
-`baseApi` through `injectEndpoints`, with `queryFn` as the documented place for an endpoint that is not a request,
+Without MSW the contact api validates and resolves locally, touching no network, so it works offline, in CI, in a
+360px popup and on React Native. With MSW it posts to `/api/contact`, which the handler answers, so the starter shows
+a real request. Under `rtk-query` it is not a function with a third spelling: it is an endpoint injected into
+`baseApi` through `injectEndpoints`, a `query` POST with MSW and, without it, a `queryFn`, the documented place for
+an endpoint that is not a request,
 because forcing RTK Query through a plain function throws away the cache, the invalidation and the generated hooks.
 The store registers the api's reducer and middleware; that coupling is RTK Query's design, and a starter that hid
 it would teach the wrong thing.

@@ -1,6 +1,6 @@
 import { hasLibrary } from '@utils/answerUtils';
 
-import { hasForm } from './gateUtils';
+import { hasForm, hasMsw } from './gateUtils';
 
 import type { TargetId } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
@@ -13,6 +13,8 @@ interface ContactApiOptions {
 }
 
 const CONTACT_FORM = 'src/lib/services/contact-form/contactFormService';
+
+const CONTACT_SUBMIT = 'src/lib/services/contact-submit/contactSubmitService';
 
 // Each path as a starter file carrying the same fields.
 export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'target'> = {}): StarterFile[] => {
@@ -71,6 +73,55 @@ export const contactFormTest = (stem = CONTACT_FORM, suffix = 'test'): StarterTe
   return test;
 };
 
+// The submit posts where MSW answers it, and resolves locally where nothing would.
+export const contactSubmitFiles = (stem = CONTACT_SUBMIT, hasContact = hasForm): StarterFile[] => {
+  const files: StarterFile[] = [
+    {
+      target: `${stem}.ts`,
+      source: `${CONTACT_SUBMIT}.ts`,
+      when: (answers) => {
+        return hasContact(answers) && !hasMsw(answers);
+      },
+      shared: true,
+    },
+    {
+      target: `${stem}.ts`,
+      source: `${CONTACT_SUBMIT}.ts`,
+      when: (answers) => {
+        return hasContact(answers) && hasMsw(answers);
+      },
+      variant: 'msw',
+      shared: true,
+    },
+  ];
+
+  return files;
+};
+
+export const contactSubmitTests = (stem = CONTACT_SUBMIT, suffix = 'test'): StarterTest[] => {
+  const tests: StarterTest[] = [
+    {
+      target: `${stem}.${suffix}.ts`,
+      covers: `${stem}.ts`,
+      source: `${CONTACT_SUBMIT}.test.ts`,
+      when: (answers) => {
+        return !hasMsw(answers);
+      },
+      shared: true,
+    },
+    {
+      target: `${stem}.${suffix}.ts`,
+      covers: `${stem}.ts`,
+      source: `${CONTACT_SUBMIT}.test.ts`,
+      when: hasMsw,
+      variant: 'msw',
+      shared: true,
+    },
+  ];
+
+  return tests;
+};
+
 export const contactFormFiles = (): StarterFile[] => {
   const files: StarterFile[] = [
     {
@@ -90,5 +141,7 @@ export const contactFormFiles = (): StarterFile[] => {
     },
   ];
 
-  return files;
+  const all = [...files, ...contactSubmitFiles()];
+
+  return all;
 };

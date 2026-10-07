@@ -1,7 +1,7 @@
 import { hasLibrary } from '@utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
-import { hasI18n } from '../utils/gateUtils';
+import { always, hasI18n } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -17,6 +17,8 @@ import {
 } from '../utils/mockUtils';
 import {
   contactFormTest,
+  contactSubmitFiles,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import { tailwindThemeFile } from '../utils/styleUtils';
@@ -28,6 +30,7 @@ import {
   CONTACT_FORM_SERVICE,
   CONTACT_FORM_SOURCE,
   CONTACT_PAGE_FILES,
+  CONTACT_SUBMIT_SERVICE,
   SHARED,
 } from './constants';
 import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
@@ -66,6 +69,7 @@ export const angularTarget: TargetBuilder = () => {
       '@utils/fetchExtendedUtils': './src/lib/utils/fetch-extended-utils.ts',
       '@utils/statusUtils': './src/lib/utils/status-utils.ts',
       '@services/contact-form/contactFormService': `./${CONTACT_FORM_SERVICE}.ts`,
+      '@services/contact-submit/contactSubmitService': `./${CONTACT_SUBMIT_SERVICE}.ts`,
     },
     styleEntry: 'src/styles.css',
     starterStyles: [
@@ -90,7 +94,7 @@ export const angularTarget: TargetBuilder = () => {
     coverageExclude: ['src/app/app.config.ts', 'src/app/app.routes.ts'],
     publicDirectory: 'public',
     starterFiles: [
-      ...mockFiles(false, true, 'src/lib/utils/fetch-extended-utils.ts'),
+      ...mockFiles(always, true, 'src/lib/utils/fetch-extended-utils.ts'),
       {
         target: 'src/lib/utils/status-utils.ts',
         source: 'src/lib/utils/statusUtils.ts',
@@ -153,6 +157,7 @@ export const angularTarget: TargetBuilder = () => {
         variant: 'zod',
         shared: true,
       },
+      ...contactSubmitFiles(CONTACT_SUBMIT_SERVICE, always),
       tailwindThemeFile(),
       // The Angular builder runs Tailwind 4 only through a PostCSS config, and reads JSON alone.
       {
@@ -181,6 +186,7 @@ export const angularTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contact-api.ts',
       },
       contactFormTest(CONTACT_FORM_SERVICE, 'spec'),
+      ...contactSubmitTests(CONTACT_SUBMIT_SERVICE, 'spec'),
       {
         target: 'src/app/app.spec.ts',
         covers: 'src/app/app.ts',

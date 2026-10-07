@@ -184,6 +184,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- **With MSW, the contact form posts.** Under `mocking: msw` the starter's submit is a real `POST /api/contact`
+  through the fetch adapter, and RTK Query's contact endpoint a `query` POST, which the MSW handler answers with
+  `{ status: 200 }` or a 422 carrying the field errors. Without MSW the submit validates and resolves locally.
 - **Svelte moves to SvelteKit 3 and `@sveltejs/adapter-auto` 8.** `#lib/*` comes from a `package.json` `imports`
   entry in place of `$lib`, and every import names its file with the extension; `tsconfig.json` extends
   `$app/tsconfig` and takes its types from `$app/types`. `$app/environment` is `$app/env`, the error page calls

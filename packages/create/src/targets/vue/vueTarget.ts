@@ -28,6 +28,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import {
@@ -87,7 +88,7 @@ export const vueTarget: TargetBuilder = () => {
       include: ['**/*.vue'],
     },
     starterFiles: [
-      ...mockFiles(true),
+      ...mockFiles(hasForm),
       ...componentStyles(COMPONENTS),
       // Vue renames two of the four, so each carries its own path.
       ...componentStyleModules('solid', COMPONENTS),
@@ -207,6 +208,7 @@ export const vueTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
       contactFormTest(),
+      ...contactSubmitTests(),
       {
         target: 'src/lib/providers/store/storeProvider.test.ts',
         covers: 'src/lib/providers/store/storeProvider.ts',

@@ -81,7 +81,8 @@ export const homeGates = (target: string): GateRow[] => {
   return gates;
 };
 
-export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
+// `always`: a target whose contact page ships without a form answer.
+export const mswGates = (contact: boolean | 'always', servesAWorker = true): GateRow[] => {
   const msw: readonly Condition[] = [{ mocking: ['msw'] }];
   const bare: readonly Condition[] = [{
     mocking: ['msw'],
@@ -95,12 +96,35 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
   const gates: GateRow[] = [
     ...servesAWorker ? [['__mocks__/msw/browser.ts', msw] as const] : [],
     ['__mocks__/msw/node.ts', msw],
-    ...contact
+    ...contact === 'always' ? [['__mocks__/msw/handlers.ts@with-form', msw]] as const : [],
+    ...contact === true
       ? [
           ['__mocks__/msw/handlers.ts', bare],
           ['__mocks__/msw/handlers.ts@with-form', withForm],
         ] as const
-      : [['__mocks__/msw/handlers.ts', msw]] as const,
+      : [],
+    ...contact === false ? [['__mocks__/msw/handlers.ts', msw]] as const : [],
+  ];
+
+  return gates;
+};
+
+// The submit posts under msw and resolves locally without; its suite follows it.
+export const submitGates = (stem: string, suffix = 'test', contact: Condition = {}): GateRow[] => {
+  const local: readonly Condition[] = [{ mocking: [undefined] }];
+  const msw: readonly Condition[] = [{ mocking: ['msw'] }];
+
+  const gates: GateRow[] = [
+    [`${stem}.ts`, [{
+      ...contact,
+      mocking: [undefined],
+    }]],
+    [`${stem}.ts@msw`, [{
+      ...contact,
+      mocking: ['msw'],
+    }]],
+    [`${stem}.${suffix}.ts`, local],
+    [`${stem}.${suffix}.ts@msw`, msw],
   ];
 
   return gates;
@@ -115,18 +139,33 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
   const hasRtkQuery = dataLayers.includes('rtk-query');
   const rtkQuery = hasRtkQuery
     ? [
-        'index',
-        'contactEndpoints',
-        'contactHooks',
-      ]
-        .map((stem): GateRow => {
-          const row: GateRow = [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
-            form: ANSWERED,
-            data: ['rtk-query'],
-          }]];
+        ...['index', 'contactHooks']
+          .map((stem): GateRow => {
+            const row: GateRow = [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
+              form: ANSWERED,
+              data: ['rtk-query'],
+            }]];
 
-          return row;
-        })
+            return row;
+          }),
+        ...['contactEndpoints.ts', 'contactEndpoints.test.ts']
+          .flatMap((file): GateRow[] => {
+            const rows: GateRow[] = [
+              [`src/lib/apis/contact/${file}@rtk-query`, [{
+                form: ANSWERED,
+                data: ['rtk-query'],
+                mocking: [undefined],
+              }]],
+              [`src/lib/apis/contact/${file}@rtk-query-msw`, [{
+                form: ANSWERED,
+                data: ['rtk-query'],
+                mocking: ['msw'],
+              }]],
+            ];
+
+            return rows;
+          }),
+      ]
     : [];
 
   const gates: GateRow[] = [
@@ -157,6 +196,7 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
       form: ANSWERED,
       libraries: [['zod']],
     }]],
+    ...submitGates('src/lib/services/contact-submit/contactSubmitService', 'test', { form: ANSWERED }),
   ];
 
   return gates;

@@ -104,7 +104,7 @@ export const nuxtTarget: TargetBuilder = () => {
       dropsPaths: true,
     },
     starterFiles: [
-      ...mockFiles(false),
+      ...mockFiles(),
       ...componentStyles(COMPONENTS),
       // Vue renames two of the four, so each carries its own path.
       ...componentStyleModules('solid', COMPONENTS),

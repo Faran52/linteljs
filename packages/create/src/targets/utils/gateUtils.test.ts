@@ -6,8 +6,10 @@ import {
 } from 'vitest';
 
 import {
+  always,
   hasForm,
   hasI18n,
+  hasMsw,
   hasStore,
   starterApplies,
 } from './gateUtils';
@@ -52,6 +54,34 @@ describe('the starter gates', () => {
     ];
     const expected = [store, form];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('always', () => {
+  it('holds whatever the answers', () => {
+    const actual = always();
+
+    expect(actual).toBe(true);
+  });
+});
+
+describe('hasMsw', () => {
+  it.each<[string, Partial<Answers>, boolean]>([
+    [
+      'no mocking',
+      {},
+      false,
+    ],
+    [
+      'msw',
+      { mocking: 'msw' },
+      true,
+    ],
+  ])('reads %s as %s', (_case, overrides, expected) => {
+    const answers = answersFor(overrides);
+
+    const actual = hasMsw(answers);
+    expect(actual).toBe(expected);
   });
 });
 

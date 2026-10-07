@@ -5,12 +5,17 @@ import {
   it,
 } from 'vitest';
 
+import { always } from './gateUtils';
 import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitFiles,
+  contactSubmitTests,
   filesAt,
 } from './starterUtils';
+
+import type { Answers } from '@config/types';
 
 describe('filesAt', () => {
   it('makes a bare file of each path when given no fields', () => {
@@ -137,27 +142,122 @@ describe('contactFormFiles', () => {
     expect(actual).toEqual([]);
   });
 
-  it('writes the plain service with a form, and the zod one with zod', () => {
+  it('writes the plain service with a form, and the zod one with zod, each beside the local submit', () => {
     const plain = pickedBy(contactFormFiles(), { form: 'react-hook-form' });
     const zod = pickedBy(contactFormFiles(), {
       form: 'tanstack-form',
       libraries: ['zod'],
     });
 
-    const expected = ['src/lib/services/contact-form/contactFormService.ts base'];
+    const expected = [
+      'src/lib/services/contact-form/contactFormService.ts base',
+      'src/lib/services/contact-submit/contactSubmitService.ts base',
+    ];
     expect(plain).toEqual(expected);
-    const zodService = ['src/lib/services/contact-form/contactFormService.ts zod'];
+    const zodService = [
+      'src/lib/services/contact-form/contactFormService.ts zod',
+      'src/lib/services/contact-submit/contactSubmitService.ts base',
+    ];
     expect(zod).toEqual(zodService);
   });
 
-  it('reads both from the shared tree', () => {
+  it('reads each from the shared tree', () => {
     const shared = contactFormFiles()
       .map(({ shared: tree }) => {
         return tree;
       });
 
-    const expected = [true, true];
+    const expected = [
+      true,
+      true,
+      true,
+      true,
+    ];
     expect(shared).toEqual(expected);
+  });
+});
+
+describe('contactSubmitFiles', () => {
+  it.each<[string, Partial<Answers>, string[]]>([
+    [
+      'no form',
+      { mocking: 'msw' },
+      [],
+    ],
+    [
+      'a form',
+      { form: 'react-hook-form' },
+      ['src/lib/services/contact-submit/contactSubmitService.ts base'],
+    ],
+    [
+      'a form under msw',
+      {
+        form: 'react-hook-form',
+        mocking: 'msw',
+      },
+      ['src/lib/services/contact-submit/contactSubmitService.ts msw'],
+    ],
+  ])('writes the submit that fits %s', (_case, overrides, expected) => {
+    const actual = pickedBy(contactSubmitFiles(), overrides);
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('writes under the stem it is given, from the shared source, wherever the target always has a contact page', () => {
+    const files = contactSubmitFiles('src/lib/services/contact-submit/contact-submit-service', always);
+    const picked = pickedBy(files, { mocking: 'msw' });
+
+    const expected = ['src/lib/services/contact-submit/contact-submit-service.ts msw'];
+    expect(picked).toEqual(expected);
+    const sources = files
+      .map(({ source, shared }) => {
+        return `${String(source)} ${String(shared)}`;
+      });
+    const expectedSources = [
+      'src/lib/services/contact-submit/contactSubmitService.ts true',
+      'src/lib/services/contact-submit/contactSubmitService.ts true',
+    ];
+    expect(sources).toEqual(expectedSources);
+  });
+});
+
+describe('contactSubmitTests', () => {
+  it.each<[string, Partial<Answers>, string]>([
+    [
+      'without msw',
+      {},
+      'base',
+    ],
+    [
+      'under msw',
+      { mocking: 'msw' },
+      'msw',
+    ],
+  ])('picks the suite %s', (_case, overrides, variant) => {
+    const actual = pickedBy(contactSubmitTests(), overrides);
+
+    const expected = [`src/lib/services/contact-submit/contactSubmitService.test.ts ${variant}`];
+    expect(actual).toEqual(expected);
+  });
+
+  it('names each suite under the stem and suffix it is given, from the shared source', () => {
+    const tests = contactSubmitTests('src/lib/services/contact-submit/contact-submit-service', 'spec')
+      .map(({
+        target,
+        covers,
+        source,
+        shared,
+      }) => {
+        return `${target} ${covers} ${String(source)} ${String(shared)}`;
+      });
+
+    const line = [
+      'src/lib/services/contact-submit/contact-submit-service.spec.ts',
+      'src/lib/services/contact-submit/contact-submit-service.ts',
+      'src/lib/services/contact-submit/contactSubmitService.test.ts',
+      'true',
+    ].join(' ');
+    expect(tests).toEqual([line, line]);
   });
 });
 

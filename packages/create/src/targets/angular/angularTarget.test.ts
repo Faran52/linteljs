@@ -3,6 +3,7 @@ import {
   byKey,
   type GateRow,
   mswGates,
+  submitGates,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
@@ -101,7 +102,7 @@ describe('angularTarget', () => {
       .filter((path) => {
         return !written.includes(path);
       });
-    expect(aliased).toHaveLength(3);
+    expect(aliased).toHaveLength(4);
     expect(unwritten).toEqual([]);
   });
 
@@ -149,7 +150,8 @@ const I18N_ONLY_PATHS = [
 ];
 
 const GATES: GateRow[] = [
-  ...mswGates(false),
+  ...mswGates('always'),
+  ...submitGates('src/lib/services/contact-submit/contact-submit-service', 'spec'),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/query-options-utils.ts', TANSTACK_QUERY],

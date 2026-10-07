@@ -1,4 +1,4 @@
-import { submitContact } from '@services/contact-form/contactFormService';
+import { submitContact } from '@services/contact-submit/contactSubmitService';
 
 import { useSubmitContact } from './contactApi';
 

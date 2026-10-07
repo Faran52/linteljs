@@ -12,6 +12,14 @@ export const hasForm = (answers: Answers): boolean => {
   return answers.form !== undefined;
 };
 
+export const always = (): boolean => {
+  return true;
+};
+
+export const hasMsw = (answers: Answers): boolean => {
+  return answers.mocking === 'msw';
+};
+
 // A starter with no `when` is always written.
 export const starterApplies = (file: StarterFile | StarterTest, answers: Answers): boolean => {
   return file.when === undefined || file.when(answers);

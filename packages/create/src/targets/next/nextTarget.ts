@@ -35,6 +35,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import {
@@ -136,6 +137,7 @@ const nextStarterTests = (): StarterTest[] => {
       source: 'src/pages/contact/use-contact-form/useContactForm.test.ts',
     },
     contactFormTest(),
+    ...contactSubmitTests(),
     ...rtkContactTests(),
   ];
 
@@ -206,7 +208,7 @@ export const nextTarget: TargetBuilder = () => {
     publicDirectory: 'public',
     clientBoundaries: CLIENT_BOUNDARIES,
     starterFiles: [
-      ...mockFiles(true),
+      ...mockFiles(hasForm),
       ...componentStyles(),
       ...componentStyleModules('react'),
       ...filesAt(STYLEX_CONFIGS, {

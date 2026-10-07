@@ -107,7 +107,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     prepare: 'astro sync',
     publicDirectory: 'public',
     starterFiles: [
-      ...mockFiles(false),
+      ...mockFiles(),
       ...componentStyles(COMPONENTS),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
       ...componentStyleModules('solid', COMPONENTS),

@@ -1,6 +1,10 @@
 import { OPTIONS_UTILS } from '../constants';
 
-import { hasForm } from './gateUtils';
+import {
+  always,
+  hasForm,
+  hasMsw,
+} from './gateUtils';
 
 import type { Answers, TargetId } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
@@ -22,17 +26,10 @@ export interface AccessorSource {
 
 const FETCH_ADAPTER = 'src/lib/utils/fetchExtendedUtils';
 
-const usesMsw = (answers: Answers): boolean => {
-  return answers.mocking === 'msw';
-};
-
-const answersContact = (contact: boolean, answers: Answers): boolean => {
-  return contact && hasForm(answers);
-};
-
 // The handlers sit under `__mocks__/msw/`, outside `src/`, so they never reach a bundle or the coverage include.
+// `hasContact`: whether the project has a contact page, whose POST the handlers answer.
 export const mockFiles = (
-  contact: boolean,
+  hasContact?: (answers: Answers) => boolean,
   servesAWorker = true,
   adapter = 'src/lib/utils/fetchExtendedUtils.ts',
 ): StarterFile[] => {
@@ -45,34 +42,36 @@ export const mockFiles = (
     },
     {
       target: '__mocks__/msw/node.ts',
-      when: usesMsw,
+      when: hasMsw,
       shared: true,
     },
     // Passed in: reading the registry back from here would close a cycle.
     ...servesAWorker
       ? [{
         target: '__mocks__/msw/browser.ts',
-        when: usesMsw,
+        when: hasMsw,
         shared: true,
       } satisfies StarterFile]
       : [],
-    {
-      target: '__mocks__/msw/handlers.ts',
-      when: (answers) => {
-        return usesMsw(answers) && !answersContact(contact, answers);
-      },
-      shared: true,
-    },
-    ...contact
-      ? [{
+    ...hasContact === always
+      ? []
+      : [{
         target: '__mocks__/msw/handlers.ts',
         when: (answers) => {
-          return usesMsw(answers) && hasForm(answers);
+          return hasMsw(answers) && hasContact?.(answers) !== true;
+        },
+        shared: true,
+      } satisfies StarterFile],
+    ...hasContact === undefined
+      ? []
+      : [{
+        target: '__mocks__/msw/handlers.ts',
+        when: (answers) => {
+          return hasMsw(answers) && hasContact(answers);
         },
         variant: 'with-form',
         shared: true,
-      } satisfies StarterFile]
-      : [],
+      } satisfies StarterFile],
   ];
 
   return files;
@@ -206,14 +205,36 @@ const usesRtkContact = (answers: Answers): boolean => {
   return hasForm(answers) && usesRtkQuery(answers);
 };
 
-const RTK_CONTACT_STEMS = ['contactEndpoints', 'contactHooks'] as const;
+const RTK_CONTACT = 'src/lib/apis/contact';
+
+// The endpoint posts where MSW answers it, and resolves locally where nothing would.
+const endpointVariants = <TStarter extends StarterFile | StarterTest>(starter: TStarter): TStarter[] => {
+  const variants: TStarter[] = [
+    {
+      ...starter,
+      when: (answers: Answers) => {
+        return usesRtkContact(answers) && !hasMsw(answers);
+      },
+      variant: 'rtk-query',
+    },
+    {
+      ...starter,
+      when: (answers: Answers) => {
+        return usesRtkContact(answers) && hasMsw(answers);
+      },
+      variant: 'rtk-query-msw',
+    },
+  ];
+
+  return variants;
+};
 
 // React's tree holds them, which Next shares.
 export const rtkContactFiles = (): StarterFile[] => {
-  const files = ['index', ...RTK_CONTACT_STEMS]
+  const files = ['index', 'contactHooks']
     .map((stem): StarterFile => {
       const file: StarterFile = {
-        target: `src/lib/apis/contact/${stem}.ts`,
+        target: `${RTK_CONTACT}/${stem}.ts`,
         when: usesRtkContact,
         variant: 'rtk-query',
         shared: 'react',
@@ -222,19 +243,35 @@ export const rtkContactFiles = (): StarterFile[] => {
       return file;
     });
 
-  return files;
+  const endpoints = endpointVariants<StarterFile>({
+    target: `${RTK_CONTACT}/contactEndpoints.ts`,
+    shared: 'react',
+  });
+
+  const all = [...files, ...endpoints];
+
+  return all;
+};
+
+export const rtkEndpointTests = (): StarterTest[] => {
+  const tests = endpointVariants<StarterTest>({
+    target: `${RTK_CONTACT}/contactEndpoints.test.ts`,
+    covers: `${RTK_CONTACT}/contactEndpoints.ts`,
+    shared: 'react',
+  });
+
+  return tests;
 };
 
 export const rtkContactTests = (): StarterTest[] => {
-  return RTK_CONTACT_STEMS
-    .map((stem): StarterTest => {
-      const test: StarterTest = {
-        target: `src/lib/apis/contact/${stem}.test.ts`,
-        covers: `src/lib/apis/contact/${stem}.ts`,
-        variant: 'rtk-query',
-        shared: 'react',
-      };
+  const hooks: StarterTest = {
+    target: `${RTK_CONTACT}/contactHooks.test.ts`,
+    covers: `${RTK_CONTACT}/contactHooks.ts`,
+    variant: 'rtk-query',
+    shared: 'react',
+  };
 
-      return test;
-    });
+  const tests = [hooks, ...rtkEndpointTests()];
+
+  return tests;
 };

@@ -1,4 +1,4 @@
-import { hasForm } from './gateUtils';
+import { always, hasForm } from './gateUtils';
 
 import type { Answers } from '@config/types';
 import type { StarterFile } from '../types';
@@ -30,10 +30,6 @@ const COMPONENT_PATHS: ComponentPaths = {
   mark: 'src/components/ui/mark/Mark',
   button: 'src/components/ui/button/Button',
   textInput: 'src/components/ui/text-input/TextInput',
-};
-
-const always = (): boolean => {
-  return true;
 };
 
 const COMPONENTS: readonly (readonly [keyof ComponentPaths, (answers: Answers) => boolean])[] = [

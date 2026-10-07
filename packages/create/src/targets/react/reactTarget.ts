@@ -35,6 +35,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import {
@@ -163,6 +164,7 @@ const reactStarterTests = (): StarterTest[] => {
       covers: 'src/pages/contact/use-contact-form/useContactForm.ts',
     },
     contactFormTest(),
+    ...contactSubmitTests(),
     ...rtkContactTests(),
   ];
 
@@ -317,7 +319,7 @@ const baseReactTarget = (): TargetRecord => {
           return answers.store !== 'redux-toolkit';
         },
       },
-      ...mockFiles(true),
+      ...mockFiles(hasForm),
       ...componentStyles(),
       ...rtkFiles(),
       ...accessorFiles(REACT_ACCESSORS),

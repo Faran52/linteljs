@@ -28,6 +28,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import {
@@ -90,7 +91,7 @@ export const solidTarget: TargetBuilder = () => {
     // Without these, vitest resolves the server build and a rendered component has no reactive owner.
     testConditions: ['development', 'browser'],
     starterFiles: [
-      ...mockFiles(true),
+      ...mockFiles(hasForm),
       ...componentStyles(),
       ...componentStyleModules('solid'),
       ...accessorFiles(ACCESSORS),
@@ -220,6 +221,7 @@ export const solidTarget: TargetBuilder = () => {
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
       contactFormTest(),
+      ...contactSubmitTests(),
       {
         target: 'src/components/ui/button/Button.test.tsx',
         covers: 'src/components/ui/button/Button.tsx',

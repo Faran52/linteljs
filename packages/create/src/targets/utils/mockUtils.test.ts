@@ -5,6 +5,7 @@ import {
   it,
 } from 'vitest';
 
+import { always, hasForm } from './gateUtils';
 import {
   accessorFiles,
   type AccessorNames,
@@ -28,7 +29,7 @@ const HOOKS: AccessorNames = {
 
 describe('mockFiles', () => {
   it('writes the adapter alone without msw', () => {
-    const actual = pickedBy(mockFiles(true));
+    const actual = pickedBy(mockFiles(hasForm));
     const expected = ['src/lib/utils/fetchExtendedUtils.ts base'];
     expect(actual).toEqual(expected);
   });
@@ -48,7 +49,7 @@ describe('mockFiles', () => {
       'with-form',
     ],
   ])('writes the worker, the node server and the handlers for %s under msw', (_case, overrides, handlers) => {
-    const actual = pickedBy(mockFiles(true), overrides);
+    const actual = pickedBy(mockFiles(hasForm), overrides);
     const expected = [
       'src/lib/utils/fetchExtendedUtils.ts base',
       '__mocks__/msw/node.ts base',
@@ -59,25 +60,29 @@ describe('mockFiles', () => {
   });
 
   it('writes the bare handlers under a form where the target writes no contact page', () => {
-    const files = mockFiles(false);
-
-    const picked = pickedBy(files, {
+    const picked = pickedBy(mockFiles(), {
       mocking: 'msw',
       form: 'tanstack-form',
     });
 
     expect(picked).toContain('__mocks__/msw/handlers.ts base');
+    expect(picked).not.toContain('__mocks__/msw/handlers.ts with-form');
+  });
 
-    const withForm = files
-      .filter(({ variant }) => {
-        return variant === 'with-form';
+  it('writes the contact handler without a form where the target always has a contact page', () => {
+    const picked = pickedBy(mockFiles(always), { mocking: 'msw' });
+
+    expect(picked).toContain('__mocks__/msw/handlers.ts with-form');
+
+    const handlers = mockFiles(always)
+      .filter(({ target }) => {
+        return target === '__mocks__/msw/handlers.ts';
       });
-
-    expect(withForm).toEqual([]);
+    expect(handlers).toHaveLength(1);
   });
 
   it('leaves the browser worker out for a target that serves none, and lands the adapter where it is asked', () => {
-    const files = mockFiles(true, false, 'src/lib/utils/fetch-extended-utils.ts');
+    const files = mockFiles(hasForm, false, 'src/lib/utils/fetch-extended-utils.ts');
 
     const targets = files
       .map(({ target }) => {
@@ -259,39 +264,76 @@ describe('the rtk query api', () => {
 });
 
 describe('the rtk query contact api', () => {
-  it('writes the endpoints, the hooks and their barrel under a form with rtk query alone', () => {
+  it.each<[string, Partial<Answers>, string]>([
+    [
+      'without msw',
+      {},
+      'rtk-query',
+    ],
+    [
+      'under msw',
+      { mocking: 'msw' },
+      'rtk-query-msw',
+    ],
+  ])('writes the contact api under a form with rtk query alone, %s', (_case, overrides, endpoints) => {
     const withForm = pickedBy(rtkContactFiles(), {
+      ...overrides,
       form: 'tanstack-form',
       data: 'rtk-query',
     });
 
     const expected = [
       'src/lib/apis/contact/index.ts rtk-query',
-      'src/lib/apis/contact/contactEndpoints.ts rtk-query',
       'src/lib/apis/contact/contactHooks.ts rtk-query',
+      `src/lib/apis/contact/contactEndpoints.ts ${endpoints}`,
     ];
     expect(withForm).toEqual(expected);
 
-    const actual = pickedBy(rtkContactFiles(), { data: 'rtk-query' });
+    const actual = pickedBy(rtkContactFiles(), {
+      ...overrides,
+      data: 'rtk-query',
+    });
     expect(actual).toEqual([]);
-    const formOnly = pickedBy(rtkContactFiles(), { form: 'tanstack-form' });
+    const formOnly = pickedBy(rtkContactFiles(), {
+      ...overrides,
+      form: 'tanstack-form',
+    });
     expect(formOnly).toEqual([]);
   });
 
-  it('takes both from the react tree, a suite each', () => {
-    const tests = rtkContactTests()
-      .map(({
-        target,
-        covers,
-        shared,
-      }) => {
-        return `${target} ${covers} ${String(shared)}`;
-      });
+  it.each<[string, Partial<Answers>, string]>([
+    [
+      'without msw',
+      {},
+      'rtk-query',
+    ],
+    [
+      'under msw',
+      { mocking: 'msw' },
+      'rtk-query-msw',
+    ],
+  ])('takes both from the react tree, a suite each, %s', (_case, overrides, endpoints) => {
+    const picked = pickedBy(rtkContactTests(), {
+      ...overrides,
+      form: 'tanstack-form',
+      data: 'rtk-query',
+    });
 
     const expected = [
-      'src/lib/apis/contact/contactEndpoints.test.ts src/lib/apis/contact/contactEndpoints.ts react',
-      'src/lib/apis/contact/contactHooks.test.ts src/lib/apis/contact/contactHooks.ts react',
+      'src/lib/apis/contact/contactHooks.test.ts rtk-query',
+      `src/lib/apis/contact/contactEndpoints.test.ts ${endpoints}`,
     ];
-    expect(tests).toEqual(expected);
+    expect(picked).toEqual(expected);
+
+    const covered = rtkContactTests()
+      .map(({ covers, shared }) => {
+        return `${covers} ${String(shared)}`;
+      });
+    const expectedCovered = [
+      'src/lib/apis/contact/contactHooks.ts react',
+      'src/lib/apis/contact/contactEndpoints.ts react',
+      'src/lib/apis/contact/contactEndpoints.ts react',
+    ];
+    expect(covered).toEqual(expectedCovered);
   });
 });

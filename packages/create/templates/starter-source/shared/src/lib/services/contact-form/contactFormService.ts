@@ -18,10 +18,6 @@ export interface ContactFormErrors {
   fields: ContactErrors;
 }
 
-export interface ContactResult {
-  status: number;
-}
-
 // The form's words by their locale key: a project with languages reads the same keys from its locales.
 export const CONTACT_TEXT = {
   contactEmail: 'Email',
@@ -63,15 +59,4 @@ export const validateContactForm = ({ value }: ContactSubmission): ContactFormEr
   const errors = Object.keys(found).length > 0 ? { fields: found } : undefined;
 
   return errors;
-};
-
-// Local: a starter that posted somewhere would fail offline and in CI.
-export const submitContact = async (values: ContactValues): Promise<ContactResult> => {
-  const errors = validateContact(values);
-
-  if (Object.keys(errors).length > 0) {
-    throw new Error('Contact details are not valid');
-  }
-
-  return await Promise.resolve({ status: 200 });
 };

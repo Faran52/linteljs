@@ -29,6 +29,7 @@ import {
   contactApiFiles,
   contactFormFiles,
   contactFormTest,
+  contactSubmitTests,
   filesAt,
 } from '../utils/starterUtils';
 import {
@@ -127,7 +128,7 @@ export const svelteTarget: TargetBuilder = () => {
     coverageExclude: ['src/routes/+layout.svelte'],
     publicDirectory: 'static',
     starterFiles: [
-      ...mockFiles(true),
+      ...mockFiles(hasForm),
       ...componentStyles(),
       ...componentStyleModules('solid'),
       ...stylexDocument('src/routes/+layout.svelte'),
@@ -265,6 +266,7 @@ export const svelteTarget: TargetBuilder = () => {
         },
       },
       contactFormTest(),
+      ...contactSubmitTests(),
     ],
     build: 'vite build',
     // The kit's plugin owns the dev server.

@@ -20,6 +20,6 @@ describe('useSubmitContact', () => {
       message: '',
     });
 
-    await expect(sending).rejects.toThrow('Contact details are not valid');
+    await expect(sending).rejects.toThrow(Error);
   });
 });

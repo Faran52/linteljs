@@ -1,7 +1,6 @@
 import {
   CONTACT_TEXT,
   errorText,
-  submitContact,
   validateContact,
   validateContactForm,
 } from './contactFormService';
@@ -63,18 +62,5 @@ describe('validateContactForm', () => {
       },
     };
     expect(errors).toEqual(expected);
-  });
-});
-
-describe('submitContact', () => {
-  it('answers 200 for details the rules accept', async () => {
-    const submittedContact = await submitContact(VALID);
-    const expected = { status: 200 };
-    expect(submittedContact).toEqual(expected);
-  });
-
-  it('refuses details the rules refuse', async () => {
-    const submittedContactPromise = submitContact(INVALID);
-    await expect(submittedContactPromise).rejects.toThrow('Contact details are not valid');
   });
 });
