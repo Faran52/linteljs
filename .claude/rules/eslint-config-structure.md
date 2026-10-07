@@ -5,7 +5,7 @@ paths:
 
 # `@linteljs/eslint-config` structure
 
-- **Grouped by what a layer is**: `layers/<name>/<name>Layer.ts` for `base`, `typescript`, `vitest` and `html`;
+- **Grouped by what a layer is**: `layers/<name>/<name>Layer.ts` for `base`, `typescript`, `vitest`, `jest` and `html`;
   `frameworks/<name>/<name>Framework.ts` for the nine frameworks; `libraries/<name>/<name>Library.ts` for
   `stylex`, `tailwind`, `tanstack-query` and `tanstack-router`. Each has its suite beside it.
 - **The suffix is on the file, not the export**: `baseLayer.ts` exports `base`.

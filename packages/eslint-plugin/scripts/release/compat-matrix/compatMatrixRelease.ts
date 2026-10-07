@@ -25,9 +25,8 @@ import {
   TS_EXPECTED,
   TS_FIXTURE,
   TS_TOOLING,
-  tsFlatConfig,
-  tsLegacyConfig,
 } from './constants.ts';
+import { tsFlatConfig, tsLegacyConfig } from './utils/configUtils.ts';
 
 interface Outcome {
   failures: string[];
@@ -74,7 +73,7 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
 
   const tsConfigPath = join(dir, configName(major, true));
 
-  writeFileSync(tsConfigPath, isFlat(major) ? tsFlatConfig : tsLegacyConfig);
+  writeFileSync(tsConfigPath, isFlat(major) ? tsFlatConfig() : tsLegacyConfig());
 
   // `--legacy-peer-deps`: the 2019 parser's peer range omits these old majors; the TS_TOOLING pairing is the check.
   await execFileAsync('npm', [
