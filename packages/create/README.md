@@ -65,6 +65,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Browser | `--browser` | `chrome`, `firefox` (webextension) | `chrome` |
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
+| Repository layout | `--layout` | `single`, `monorepo` (the target under `apps/<name>`, with `packages/*`; not with `--existing`) | `single` |
 | Testing | `--testing` | `vitest`, `none` (react-native runs the suites on Jest, through `jest-expo`) | `vitest` |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |

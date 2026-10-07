@@ -26,6 +26,7 @@ For a rule, layer or target designer:
 - [Versions](#versions)
 - [React Native](#react-native)
 - [Package managers](#package-managers)
+- [Monorepo layout](#monorepo-layout)
 - [What a project owns](#what-a-project-owns)
 - [The agent hooks](#the-agent-hooks)
 - [Comments](#comments)
@@ -1308,6 +1309,30 @@ the major that ran `create`, read off the recorded `nodeVersion`.
 `--frozen-lockfile` rather than `--immutable`, so supporting it meant a manager id that was not its own command and a
 row for it in every table that varies by manager. A Yarn 1 agent or binary reads as `yarn` at version 1.x, so the floor refuses it with a message that names
 Yarn 1 rather than a version number.
+
+## Monorepo layout
+
+`--layout monorepo` writes the same project as `single`, moved: every file but the root tooling (git hooks, agent
+files, CI, `scripts/`, `plugins/`, the recorded config, the README) goes under `apps/<name>/`. The emitters do not
+know the layout; one move in the registry rebases their paths.
+
+- **Plain workspaces.** The root declares `apps/*` and `packages/*` to the manager's own workspaces
+  (`pnpm-workspace.yaml` for pnpm, `workspaces` for npm, yarn and bun), and its `check` runs every package's `check`
+  through the manager's recursive run. Turborepo, Nx and Bazel add a task graph and a cache a two-package repo does
+  not need, and each is one more config to keep right on four managers. They are deferred to 2.1.
+- **`apps/*` and `packages/*`.** The target is an app; a library a later `sync --add` writes is a package. The two
+  globs are the convention every manager's docs use, so a reader finds what they expect.
+- **ESLint per package.** Each package has its own `eslint.config.ts`, `tsconfig.json` and `lint-staged.config.js`
+  and lints, typechecks and tests itself, with the dependencies it installs. One root config would have to know
+  every package's target layers and resolve plugins from the root. lint-staged runs a package's tasks from its own
+  directory only when more than one config exists, so the root keeps one, and the pre-commit hook passes no
+  `--config`, which is lint-staged's single-config mode.
+- **The root lints like a single repo.** The root is a `typescript` project over its own `scripts/`: it lints and
+  typechecks them, ignores `apps/**` and `packages/**`, and ignores `plugins/linteljs/**` as a single repo does.
+- **Single only for `--existing`.** Converting a repo into a monorepo moves its files, which `--existing` never
+  does; the layout question is not asked there and `--layout monorepo` is refused.
+- **`sync --add` writes a `typescript` library in 2.0.** A second app (a backend, a second front end) asks a
+  target's whole question set again, and is 2.1.
 
 ## What a project owns
 

@@ -162,6 +162,12 @@ when a version's change lives in a sibling it is described there instead:
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
+- A repository layout answer, `--layout single|monorepo`, asked of every target. A monorepo writes the target
+  under `apps/<name>/` and keeps the git, agent and CI tooling at the root: a root `package.json` named
+  `<name>-workspace` declares `apps/*` and `packages/*` as workspaces (`pnpm-workspace.yaml` for pnpm), lints and
+  typechecks its own `scripts/`, and its `check` runs every package's `check`. Each package lints, typechecks and
+  tests itself. The README says where the app's scripts run, and the agent rules' globs
+  match inside any package. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
 
 ### Changed
 
