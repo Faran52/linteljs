@@ -19,7 +19,7 @@
     "scripts/**/*.ts",
 
     // The repo mod's one classic hook command, run by node; its tsconfig.json checks the rest as mod code.
-    ".claude/skills/linteljs/hooks/checkStatus.ts",
+    ".claude/skills/linteljs/hooks/checkStatusHook.ts",
 
     // The layers `eslint.config.ts` pulls in from source lean on these shims for plugins that ship no types.
     "packages/eslint-config/typings/**/*.d.ts"

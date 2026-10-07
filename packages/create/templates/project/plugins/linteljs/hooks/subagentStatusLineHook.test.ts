@@ -2,7 +2,7 @@ import { spawnHook } from '@mocks/runHook';
 import { expect, it } from 'vitest';
 
 it('prints one JSON line per subagent row', () => {
-  const output = spawnHook('subagentStatusLine.ts', {
+  const output = spawnHook('subagentStatusLineHook.ts', {
     transcript_path: '/missing/main.jsonl',
     tasks: [
       {
@@ -29,7 +29,7 @@ it('prints one JSON line per subagent row', () => {
 });
 
 it('prints nothing for a payload it cannot read', () => {
-  const output = spawnHook('subagentStatusLine.ts', '{');
+  const output = spawnHook('subagentStatusLineHook.ts', '{');
 
   expect(output).toBe('');
 });

@@ -101,8 +101,8 @@ describe('mergeClaudeSettings', () => {
     const main = merged.statusLine?.command;
     const subagent = merged.subagentStatusLine?.command;
 
-    expect(main).toContain('mainStatusLine.ts');
-    expect(subagent).toContain('subagentStatusLine.ts');
+    expect(main).toContain('mainStatusLineHook.ts');
+    expect(subagent).toContain('subagentStatusLineHook.ts');
   });
 
   it("leaves a project's own status lines alone", () => {

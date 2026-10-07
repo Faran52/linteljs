@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -111,6 +112,21 @@ it('leaves .claude-plugin/plugin.json to discover hooks.json', () => {
 it('points .codex-plugin/plugin.json at codexHooks.json', () => {
   const file = readFileSync(join(import.meta.dirname, '..', '.codex-plugin/plugin.json'), 'utf8');
   expect(file).toContain('"hooks": "./hooks/codexHooks.json"');
+});
+
+it('suffixes every hook script with Hook', () => {
+  const scripts = readdirSync(import.meta.dirname)
+    .filter((name) => {
+      return name.endsWith('.ts') && !name.endsWith('.test.ts') && name !== 'constants.ts';
+    });
+
+  const unsuffixed = scripts
+    .filter((name) => {
+      return !name.endsWith('Hook.ts');
+    });
+
+  expect(scripts).not.toHaveLength(0);
+  expect(unsuffixed).toEqual([]);
 });
 
 // The repo's own mod carries the band and its suite as copies, since the engine loads nothing outside a plugin.

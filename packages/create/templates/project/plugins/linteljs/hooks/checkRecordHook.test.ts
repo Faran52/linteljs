@@ -15,7 +15,7 @@ let root = '';
 const stateAfter = (event: string): string => {
   spawnHook('commitGateHook.ts', shellPayload(root, 'pnpm check'));
   const recorded = spawnHook('checkRecordHook.ts', shellPayload(root, 'pnpm check', event));
-  const state = spawnHook('checkStatus.ts', '', undefined, undefined, root);
+  const state = spawnHook('checkStatusHook.ts', '', undefined, undefined, root);
 
   expect(recorded).toBe('');
 
@@ -46,7 +46,7 @@ describe('checkRecordHook.ts', () => {
     const check = `cd ${root} && pnpm check`;
     spawnHook('commitGateHook.ts', shellPayload('/', check));
     spawnHook('checkRecordHook.ts', shellPayload('/', check, 'PostToolUse'));
-    const state = spawnHook('checkStatus.ts', '', undefined, undefined, root);
+    const state = spawnHook('checkStatusHook.ts', '', undefined, undefined, root);
     expect(state).toBe('passed');
   });
 

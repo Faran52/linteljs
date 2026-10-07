@@ -1484,7 +1484,7 @@ worktree it names. `--git-dir` and `--work-tree` are not followed, and a `cd` af
 line with several commits is held when any of them would be. The gate takes the run before
 the command (`running`, with the tree) and `checkRecordHook.ts` the result after it, from `PostToolUse` for exit 0
 and `PostToolUseFailure` otherwise. The record lives at `git rev-parse --git-path linteljs`, in the git directory,
-so it is never in the work tree it describes and each worktree keeps its own. `checkStatus.ts` prints the state
+so it is never in the work tree it describes and each worktree keeps its own. `checkStatusHook.ts` prints the state
 word (`none`, `running`, `passed`, `failed`, `stale`) for a status band to read.
 
 `generatedFileGuardHook.ts` denies an edit to a file whose first line carries a code generator's marker: `@generated`,
@@ -1501,7 +1501,7 @@ generated.
 | Codex reads a plugin's `hooks/hooks.json` unless `.codex-plugin/plugin.json` names `hooks` (`./`-relative paths), and its `HooksFile` is `deny_unknown_fields` with `description` and `hooks` only | `codex-rs/core-plugins/src/loader.rs` and `codex-rs/config/src/hook_config.rs` at `c2abf86` |
 | `claude plugin validate` reads a plugin's state from an inline shape in the types contract's `interface PluginState` | probe, Claude Code 2.1.289 |
 
-`hooks/checkBand.tsx` runs `node hooks/checkStatus.ts` at session start and when a main-session turn ends, and
+`hooks/checkBand.tsx` runs `node hooks/checkStatusHook.ts` at session start and when a main-session turn ends, and
 draws the state word in the `AbovePrompt` band. It sits in the linteljs plugin rather than a plugin of its own:
 an older Claude Code ignores `modules` beside the command hooks and still runs them, where a plugin holding only
 the band would fail to load there. The floor is the version that draws it; below it the band is absent and

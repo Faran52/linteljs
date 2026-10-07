@@ -29,7 +29,7 @@ const isWord = (text: string): text is CheckWord => {
 // Outside a git project with a `check` script the script prints nothing, and the band stays away.
 const printed = async ($: EngineInterface, cwd: string): Promise<string> => {
   try {
-    const status = await $.process.run(['node', `${$.plugin.root}/hooks/checkStatus.ts`], { cwd });
+    const status = await $.process.run(['node', `${$.plugin.root}/hooks/checkStatusHook.ts`], { cwd });
 
     return status.stdout.trim();
   }

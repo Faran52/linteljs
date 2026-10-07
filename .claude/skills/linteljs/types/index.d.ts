@@ -1,4 +1,4 @@
-// The state word `hooks/checkStatus.ts` prints, which the check band draws.
+// The state word `hooks/checkStatusHook.ts` prints, which the check band draws.
 export type CheckWord = 'failed' | 'none' | 'passed' | 'running' | 'stale';
 
 // What the CI band last read, and when, so a turn refreshes it at most every few minutes.

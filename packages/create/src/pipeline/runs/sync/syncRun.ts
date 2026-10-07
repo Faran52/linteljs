@@ -40,7 +40,11 @@ import {
   upgradedPackageJson,
 } from '@emitters';
 
-import { ESLINT_CONFIG_SPELLINGS } from './constants';
+import {
+  CLAUDE_SETTINGS_PATH,
+  ESLINT_CONFIG_SPELLINGS,
+  RENAMED_STATUS_LINES,
+} from './constants';
 
 import type { HostedAnswers, TestRunner } from '@config/types';
 
@@ -212,6 +216,30 @@ const pluginArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Art
     });
 };
 
+const migrateStatusLines = async (cwd: string): Promise<boolean> => {
+  const current = await readIfPresent(join(cwd, CLAUDE_SETTINGS_PATH));
+
+  if (current === null) {
+    return false;
+  }
+
+  const text = RENAMED_STATUS_LINES
+    .reduce((settings, [from, to]) => {
+      return settings.replaceAll(from, to);
+    }, current);
+
+  if (text === current) {
+    return false;
+  }
+
+  const artifact: Omit<Artifact, 'stage'> = {
+    target: CLAUDE_SETTINGS_PATH,
+    content: { text },
+  };
+
+  return await artifactWriter(cwd, artifact);
+};
+
 // The folder is linteljs's whole, so it is written without asking.
 export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<SyncResult> => {
   const written: string[] = [];
@@ -260,6 +288,12 @@ export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<S
   }
 
   await pruneEmpty(cwd, removed);
+
+  const isMigrated = await migrateStatusLines(cwd);
+
+  if (isMigrated) {
+    written.push(CLAUDE_SETTINGS_PATH);
+  }
 
   const result: SyncResult = {
     written,

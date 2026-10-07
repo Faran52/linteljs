@@ -27,7 +27,7 @@ const PROMPT = {
 
 const SURFACES = ['terminal', 'desktop'] as const;
 
-// What `checkStatus.ts` prints, or that node cannot run it, and every argv the band ran.
+// What `checkStatusHook.ts` prints, or that node cannot run it, and every argv the band ran.
 const fakeStatus = (on: On, printed: Printed): (readonly string[])[] => {
   const runs: (readonly string[])[] = [];
 
@@ -105,7 +105,7 @@ const bandText = async ($: Engine, surface: Surface, hasSurvey = false): Promise
   return found?.text;
 };
 
-test('draws the state word checkStatus.ts prints at session start', async ($, on) => {
+test('draws the state word checkStatusHook.ts prints at session start', async ($, on) => {
   const runs = fakeStatus(on, { word: 'passed' });
 
   await $.session.start({
@@ -121,7 +121,7 @@ test('draws the state word checkStatus.ts prints at session start', async ($, on
   }
 
   expect(runs[0]?.[0]).toBe('node');
-  expect(runs[0]?.[1]).toMatch(/\/hooks\/checkStatus\.ts$/u);
+  expect(runs[0]?.[1]).toMatch(/\/hooks\/checkStatusHook\.ts$/u);
 });
 
 test('reads the word again when a main turn ends, and not when a subagent\'s does', async ($, on) => {

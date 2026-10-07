@@ -10,13 +10,13 @@ import {
   it,
 } from 'vitest';
 
-describe('checkStatus.ts', () => {
+describe('checkStatusHook.ts', () => {
   it('prints the state of the project it runs in, and nothing outside one', () => {
     const root = checkedProject();
     const prefix = join(tmpdir(), 'linteljs-unchecked-');
     const outside = mkdtempSync(prefix);
-    const inside = spawnHook('checkStatus.ts', '', undefined, undefined, root);
-    const elsewhere = spawnHook('checkStatus.ts', '', undefined, undefined, outside);
+    const inside = spawnHook('checkStatusHook.ts', '', undefined, undefined, root);
+    const elsewhere = spawnHook('checkStatusHook.ts', '', undefined, undefined, outside);
 
     rmSync(root, {
       force: true,

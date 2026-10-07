@@ -26,10 +26,10 @@ export const emitClaudeSettings = (plugins: Plugin[]): string => {
     // Every current agent appends `Co-Authored-By` by default, and the generated rules ban rewriting a commit.
     includeCoAuthoredBy: false,
     statusLine: {
-      ...statusLineOf('mainStatusLine.ts'),
+      ...statusLineOf('mainStatusLineHook.ts'),
       refreshInterval: 5,
     },
-    subagentStatusLine: statusLineOf('subagentStatusLine.ts'),
+    subagentStatusLine: statusLineOf('subagentStatusLineHook.ts'),
     enabledPlugins: {
       'linteljs@linteljs': true,
       ...(plugins.includes('ponytail') ? { 'ponytail@ponytail': true } : {}),

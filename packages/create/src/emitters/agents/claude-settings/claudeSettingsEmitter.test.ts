@@ -14,12 +14,12 @@ import type { Answers } from '@config/types';
 const STATUS_LINES = {
   statusLine: {
     type: 'command',
-    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/mainStatusLine.ts"',
+    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/mainStatusLineHook.ts"',
     refreshInterval: 5,
   },
   subagentStatusLine: {
     type: 'command',
-    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/subagentStatusLine.ts"',
+    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/subagentStatusLineHook.ts"',
   },
 };
 

@@ -9,5 +9,5 @@
     "types"
   ],
   // A classic hook command run by node, checked as Node code by the root `tsconfig.root.json`.
-  "exclude": ["hooks/checkStatus.ts"]
+  "exclude": ["hooks/checkStatusHook.ts"]
 }

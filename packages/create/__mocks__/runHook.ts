@@ -45,8 +45,8 @@ export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'es
   | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
 
 // Scripts that answer in their own shape rather than a decision, so only `spawnHook` runs them.
-export type ContextScript = 'checkRecordHook.ts' | 'checkStatus.ts' | 'contextWarningHook.ts' | 'mainStatusLine.ts'
-  | 'subagentStatusLine.ts';
+export type ContextScript = 'checkRecordHook.ts' | 'checkStatusHook.ts' | 'contextWarningHook.ts'
+  | 'mainStatusLineHook.ts' | 'subagentStatusLineHook.ts';
 
 // The hooks that deny; the rest add context or block.
 const PERMISSIONS = new Map<HookScript, 'deny'>([

@@ -89,14 +89,14 @@ and `pnpm lint`:
 each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
 extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsconfig.mod.json`'s strict flags.
 `pnpm mod-types` has the engine write those types (gitignored, never packed); `scripts/typecheck-mods/` runs
-`tsc` on both, failing without them locally and skipping in CI. `hooks/checkStatus.ts` is a classic hook
+`tsc` on both, failing without them locally and skipping in CI. `hooks/checkStatusHook.ts` is a classic hook
 command, checked as Node code by `tsconfig.root.json`. The root `eslint.config.ts` lints the files each mod's
 tsconfig checks, and ignores them where the types are missing, as in CI. `.fallowrc.json` ignores `.claude/**`
 (`docs/DESIGN.md`).
 
 - **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
   `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds
-  each copy equal to its source; change the shipped file, then copy it. `checkStatus.ts` runs the shipped script.
+  each copy equal to its source; change the shipped file, then copy it. `checkStatusHook.ts` runs the shipped script.
   This copy is where the band's suite runs: `claude plugin test` runs every `*.test.ts(x)` under the folder it is
   given and cannot select files, so on the shipped folder it also runs the Node hook suites, which fail there.
   The band's gate is `claude plugin test .claude/skills/linteljs`, never the shipped folder.
