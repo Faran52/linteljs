@@ -124,7 +124,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     ],
     // Astro serves `/about` and `/about/` as one page, so the helper's comparison is real logic.
     starterTests: [
-      ...mockTests(false),
+      ...mockTests(),
       ...astroI18nTests(),
       LOCALES_TEST,
       languageUtilsTest(),

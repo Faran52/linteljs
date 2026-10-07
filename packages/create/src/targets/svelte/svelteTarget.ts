@@ -212,7 +212,7 @@ export const svelteTarget: TargetBuilder = () => {
     ],
     // SvelteKit reserves the `+` prefix, so a suite takes the rest of the name.
     starterTests: [
-      ...mockTests(true),
+      ...mockTests(),
       ...accessorTests(ACCESSORS),
       ...svelteI18nTests(),
       LOCALES_TEST,

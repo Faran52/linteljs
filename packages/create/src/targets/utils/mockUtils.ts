@@ -78,34 +78,14 @@ export const mockFiles = (
   return files;
 };
 
-export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER, suffix = 'test'): StarterTest[] => {
-  const tests: StarterTest[] = [
-    {
-      target: `${adapter}.${suffix}.ts`,
-      covers: `${adapter}.ts`,
-      source: `${FETCH_ADAPTER}.test.ts`,
-      shared: true,
-    },
-    {
-      target: '__mocks__/msw/handlers.test.ts',
-      covers: '__mocks__/msw/handlers.ts',
-      when: (answers) => {
-        return usesMsw(answers) && !answersContact(contact, answers);
-      },
-      shared: true,
-    },
-    ...contact
-      ? [{
-        target: '__mocks__/msw/handlers.test.ts',
-        covers: '__mocks__/msw/handlers.ts',
-        when: (answers) => {
-          return usesMsw(answers) && hasForm(answers);
-        },
-        variant: 'with-form',
-        shared: true,
-      } satisfies StarterTest]
-      : [],
-  ];
+// `__mocks__/` carries no suite: only `src/` holds one test file per code file.
+export const mockTests = (adapter = FETCH_ADAPTER, suffix = 'test'): StarterTest[] => {
+  const tests: StarterTest[] = [{
+    target: `${adapter}.${suffix}.ts`,
+    covers: `${adapter}.ts`,
+    source: `${FETCH_ADAPTER}.test.ts`,
+    shared: true,
+  }];
 
   return tests;
 };

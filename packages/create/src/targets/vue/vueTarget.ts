@@ -171,7 +171,7 @@ export const vueTarget: TargetBuilder = () => {
     ],
     // Mounting `App` walks the real router, so that suite covers the header and every page.
     starterTests: [
-      ...mockTests(true),
+      ...mockTests(),
       STATUS_UTILS_TEST,
       ...accessorTests(ACCESSORS),
       ...vueI18nTests(),

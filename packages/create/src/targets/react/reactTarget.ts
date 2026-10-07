@@ -71,7 +71,7 @@ import type {
 
 const reactStarterTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
-    ...mockTests(true),
+    ...mockTests(),
     STATUS_UTILS_TEST,
     ...rtkTests(),
     ...accessorTests(REACT_ACCESSORS),

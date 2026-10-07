@@ -99,13 +99,8 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
       ? [
           ['__mocks__/msw/handlers.ts', bare],
           ['__mocks__/msw/handlers.ts@with-form', withForm],
-          ['__mocks__/msw/handlers.test.ts', bare],
-          ['__mocks__/msw/handlers.test.ts@with-form', withForm],
         ] as const
-      : [
-          ['__mocks__/msw/handlers.ts', msw],
-          ['__mocks__/msw/handlers.test.ts', msw],
-        ] as const,
+      : [['__mocks__/msw/handlers.ts', msw]] as const,
   ];
 
   return gates;

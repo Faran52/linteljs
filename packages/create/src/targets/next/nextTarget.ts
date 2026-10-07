@@ -70,7 +70,7 @@ const STORES: readonly Store[] = [
 
 const nextStarterTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
-    ...mockTests(true),
+    ...mockTests(),
     STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS, {
       shared: 'react',

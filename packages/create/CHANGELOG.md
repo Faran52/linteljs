@@ -219,6 +219,8 @@ when a version's change lives in a sibling it is described there instead:
   `lib/providers/`, `lib/services/` and `lib/apis/` hold. The emitted `naming` map holds every file under a
   `utils/` folder to the suffix: `'**/utils/*.ts'` to `*Utils`, and `'src/**/utils/*.ts'` to `*-utils` on Angular.
 - The emitted type standard tells an agent that comments are minimal: a short why, or none, and none in tests.
+- The emitted testing rule asks for one suite per source file under `src/` only. The MSW handlers under
+  `__mocks__/` ship without a suite: the suites that run through them are their check.
 
 ### Fixed
 

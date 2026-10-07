@@ -145,7 +145,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     tailwindTheme: './styles/theme.css',
     ...hosted,
     starterFiles: [...mockFiles(false), ...surfaceFiles(answers, answers.browser)],
-    starterTests: [...mockTests(false), ...surfaceTests(answers)],
+    starterTests: [...mockTests(), ...surfaceTests(answers)],
     coverageExclude: surfaceCoverageExclude(answers),
     // crx builds only pages the manifest names; the panel is opened at runtime.
     ...(devtools ? { viteInputs: { panel: 'panel.html' } } : {}),

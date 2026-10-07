@@ -96,57 +96,21 @@ describe('mockFiles', () => {
 });
 
 describe('mockTests', () => {
-  it.each<[string, Partial<Answers>, string[]]>([
-    [
-      'no mocking',
-      {},
-      ['src/lib/utils/fetchExtendedUtils.test.ts base'],
-    ],
-    [
-      'msw and no form',
-      { mocking: 'msw' },
-      [
-        'src/lib/utils/fetchExtendedUtils.test.ts base',
-        '__mocks__/msw/handlers.test.ts base',
-      ],
-    ],
-    [
-      'msw and a form',
-      {
-        mocking: 'msw',
-        form: 'tanstack-form',
-      },
-      [
-        'src/lib/utils/fetchExtendedUtils.test.ts base',
-        '__mocks__/msw/handlers.test.ts with-form',
-      ],
-    ],
-  ])('follows the files it covers under %s', (_case, overrides, picked) => {
-    const actual = pickedBy(mockTests(true), overrides);
-    expect(actual).toEqual(picked);
-  });
-
-  it('covers the bare handlers under a form where the target writes no contact page', () => {
-    const tests = mockTests(false);
-
-    const picked = pickedBy(tests, {
+  it('ships no suite under __mocks__, whatever the mocking and form answers', () => {
+    const answers: Partial<Answers> = {
       mocking: 'msw',
       form: 'tanstack-form',
-    });
+    };
 
-    expect(picked).toContain('__mocks__/msw/handlers.test.ts base');
+    const actual = pickedBy(mockTests(), answers);
 
-    const withForm = tests
-      .filter(({ variant }) => {
-        return variant === 'with-form';
-      });
-
-    expect(withForm).toEqual([]);
+    const expected = ['src/lib/utils/fetchExtendedUtils.test.ts base'];
+    expect(actual).toEqual(expected);
   });
 
   it('names the suite after the adapter it covers, under the suffix it is given', () => {
-    const plain = mockTests(true, 'src/lib/utils/fetch-extended-utils')[0];
-    const spec = mockTests(true, 'src/lib/utils/fetch-extended-utils', 'spec')[0];
+    const plain = mockTests('src/lib/utils/fetch-extended-utils')[0];
+    const spec = mockTests('src/lib/utils/fetch-extended-utils', 'spec')[0];
 
     const expected = {
       target: 'src/lib/utils/fetch-extended-utils.test.ts',

@@ -253,7 +253,7 @@ export const reactNativeTarget: TargetBuilder = () => {
     ],
     // expo-router treats every file under the route root as a route; `expo export` fails on a suite there.
     starterTests: [
-      ...mockTests(true),
+      ...mockTests(),
       STATUS_UTILS_TEST,
       // React's hook suites import `@testing-library/react`, and this target has no DOM.
       ...accessorTests(ACCESSORS),

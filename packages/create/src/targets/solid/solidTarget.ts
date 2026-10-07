@@ -167,7 +167,7 @@ export const solidTarget: TargetBuilder = () => {
       tailwindThemeFile(),
     ],
     starterTests: [
-      ...mockTests(true),
+      ...mockTests(),
       STATUS_UTILS_TEST,
       ...accessorTests(ACCESSORS),
       ...solidI18nTests(),

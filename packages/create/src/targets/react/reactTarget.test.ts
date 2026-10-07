@@ -155,38 +155,26 @@ describe('reactTarget', () => {
     expect(source).toBe('with-form');
   });
 
-  it('picks the handler suite the same way the handlers are picked', () => {
-    const suitesFor = (overrides: Partial<Answers>): Record<string, string | undefined> => {
-      const answers: Answers = {
-        ...DEFAULT_ANSWERS,
-        target: 'react',
-        ...overrides,
-      };
-
-      const entries = recordFor(overrides).starterTests
-        .filter((test) => {
-          return test.when === undefined || test.when(answers);
-        })
-        .map((test) => {
-          const entry: [string, string | undefined] = [test.target, test.variant];
-          return entry;
-        });
-      const variantByTarget = Object.fromEntries(entries);
-      return variantByTarget;
-    };
-
-    const suites = suitesFor({});
-    expect(suites).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
-    const mswSuites = suitesFor({ mocking: 'msw' });
-    expect(mswSuites['__mocks__/msw/handlers.test.ts']).toBeUndefined();
-    expect(mswSuites).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
-
-    const suite = suitesFor({
+  it('ships no suite under __mocks__, with msw and a form', () => {
+    const overrides: Partial<Answers> = {
       mocking: 'msw',
       form: 'tanstack-form',
-    })['__mocks__/msw/handlers.test.ts'];
+    };
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+      ...overrides,
+    };
 
-    expect(suite).toBe('with-form');
+    const mockSuites = recordFor(overrides).starterTests
+      .filter((test) => {
+        return test.when === undefined || test.when(answers);
+      })
+      .filter((test) => {
+        return test.target.startsWith('__mocks__/');
+      });
+
+    expect(mockSuites).toEqual([]);
   });
 
   it('marks a .tsx file a component wherever it sits', () => {

@@ -152,7 +152,7 @@ export const nuxtTarget: TargetBuilder = () => {
       tailwindThemeFile(),
     ],
     starterTests: [
-      ...mockTests(false),
+      ...mockTests(),
       ...accessorTests(ACCESSORS, {
         shared: 'vue',
         names: SOURCE_ACCESSORS,

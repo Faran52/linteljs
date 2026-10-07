@@ -165,7 +165,7 @@ export const angularTarget: TargetBuilder = () => {
     ],
     // The header is outside the outlet, so opening each route covers the shell and every page.
     starterTests: [
-      ...mockTests(false, 'src/lib/utils/fetch-extended-utils', 'spec'),
+      ...mockTests('src/lib/utils/fetch-extended-utils', 'spec'),
       {
         target: 'src/lib/utils/status-utils.spec.ts',
         covers: 'src/lib/utils/status-utils.ts',
