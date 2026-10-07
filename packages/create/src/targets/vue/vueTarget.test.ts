@@ -1,4 +1,5 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
   contactCopyGates,
@@ -130,6 +131,7 @@ const BILINGUAL_PATHS = [
   'src/views/about/AboutView.vue',
   'src/views/version/VersionView.vue',
   'src/components/features/app-header/AppHeader.vue',
+  'src/components/features/app-header/AppHeader.test.ts',
   'src/components/features/status-page/StatusPage.vue',
   'src/components/features/status-page/StatusPage.test.ts',
 ];
@@ -180,6 +182,8 @@ const GATES: GateRow[] = [
   ['src/router/constants.ts', WITHOUT_FORM],
   ['src/router/constants.ts@with-form', WITH_FORM],
   ...homeGates('src/views/home/HomeView.vue'),
+  ['src/views/home/HomeView.test.ts', [{ store: [undefined] }]],
+  ['src/views/home/HomeView.test.ts@with-store', [{ store: ANSWERED }]],
   ['src/views/contact/use-contact-form/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

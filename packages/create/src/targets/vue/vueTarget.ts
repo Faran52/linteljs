@@ -46,11 +46,16 @@ import {
   FORM_FILES,
   SHARED,
   VUE_I18N,
+  VUE_SUITES,
 } from './constants';
 import { vueI18nFiles, vueI18nTests } from './utils/translatedFileUtils';
 
 import type { TargetBuilder } from '../registry';
-import type { StarterFile, TargetRecord } from '../types';
+import type {
+  StarterFile,
+  StarterTest,
+  TargetRecord,
+} from '../types';
 
 export const vueTarget: TargetBuilder = () => {
   const record: TargetRecord = {
@@ -175,7 +180,6 @@ export const vueTarget: TargetBuilder = () => {
       },
       tailwindThemeFile(),
     ],
-    // Mounting `App` walks the real router, so that suite covers the header and every page.
     starterTests: [
       ...mockTests(),
       STATUS_UTILS_TEST,
@@ -188,6 +192,24 @@ export const vueTarget: TargetBuilder = () => {
         target: 'src/router/router.test.ts',
         covers: 'src/router/router.ts',
       },
+      {
+        target: 'src/views/home/HomeView.test.ts',
+        covers: 'src/views/home/HomeView.vue',
+        when: (answers) => {
+          return !hasStore(answers);
+        },
+      },
+      {
+        target: 'src/views/home/HomeView.test.ts',
+        covers: 'src/views/home/HomeView.vue',
+        when: hasStore,
+        variant: 'with-store',
+      },
+      ...VUE_SUITES,
+      ...translated<StarterTest>({
+        target: 'src/components/features/app-header/AppHeader.test.ts',
+        covers: 'src/components/features/app-header/AppHeader.vue',
+      }),
       {
         target: 'src/components/ui/app-button/AppButton.test.ts',
         covers: 'src/components/ui/app-button/AppButton.vue',

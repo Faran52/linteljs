@@ -1,4 +1,4 @@
-import type { I18nParts } from '../types';
+import type { I18nParts, StarterTest } from '../types';
 import type { AccessorNames } from '../utils/mockUtils';
 import type { ComponentPaths } from '../utils/styleUtils';
 
@@ -15,6 +15,22 @@ export const SHARED: readonly string[] = [
   'src/styles/base.css',
   'public/favicon.svg',
   'public/robots.txt',
+];
+
+// One suite reads both spellings of each, and Nuxt takes them too.
+export const VUE_SUITES: readonly StarterTest[] = [
+  {
+    target: 'src/views/about/AboutView.test.ts',
+    covers: 'src/views/about/AboutView.vue',
+  },
+  {
+    target: 'src/views/version/VersionView.test.ts',
+    covers: 'src/views/version/VersionView.vue',
+  },
+  {
+    target: 'src/components/ui/app-mark/AppMark.test.ts',
+    covers: 'src/components/ui/app-mark/AppMark.vue',
+  },
 ];
 
 // Each ships a translated twin.

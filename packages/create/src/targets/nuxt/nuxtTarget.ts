@@ -41,6 +41,7 @@ import {
   ACCESSORS as SOURCE_ACCESSORS,
   I18N_ONLY,
   VUE_I18N,
+  VUE_SUITES,
 } from '../vue/constants';
 
 import {
@@ -224,18 +225,15 @@ export const nuxtTarget: TargetBuilder = () => {
         target: 'src/views/home/HomeView.test.ts',
         covers: 'src/views/home/HomeView.vue',
       }),
-      {
-        target: 'src/views/about/AboutView.test.ts',
-        covers: 'src/views/about/AboutView.vue',
-      },
-      {
-        target: 'src/views/version/VersionView.test.ts',
-        covers: 'src/views/version/VersionView.vue',
-      },
-      {
-        target: 'src/components/ui/app-mark/AppMark.test.ts',
-        covers: 'src/components/ui/app-mark/AppMark.vue',
-      },
+      ...VUE_SUITES
+        .map((suite): StarterTest => {
+          const shared: StarterTest = {
+            ...suite,
+            shared: 'vue',
+          };
+
+          return shared;
+        }),
       ...translated<StarterTest>({
         target: 'src/components/features/app-header/AppHeader.test.ts',
         covers: 'src/components/features/app-header/AppHeader.vue',
