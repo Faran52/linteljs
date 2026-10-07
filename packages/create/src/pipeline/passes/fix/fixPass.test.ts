@@ -3,6 +3,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -235,6 +236,27 @@ describe('fixPass', () => {
     });
 
     const expected = ['eslint --fix: nothing to fix'];
+    expect(notices).toEqual(expected);
+  });
+
+  it('runs the binaries hoisted to the install root inside the app', async () => {
+    const app = join(cwd, 'apps', 'shop');
+    await mkdir(app, { recursive: true });
+    await plantEslint("require('node:fs').writeFileSync('eslint-cwd', process.cwd());\nconsole.log('[]');\n");
+    await plantStylelint("require('node:fs').writeFileSync('stylelint-cwd', process.cwd());\n");
+
+    const notices: string[] = [];
+
+    await fixPass(app, DEFAULT_ANSWERS, (message) => {
+      notices.push(message);
+    }, cwd);
+
+    const directory = await realpath(app);
+    const eslintCwd = await readFile(join(app, 'eslint-cwd'), 'utf8');
+    const stylelintCwd = await readFile(join(app, 'stylelint-cwd'), 'utf8');
+    expect(eslintCwd).toBe(directory);
+    expect(stylelintCwd).toBe(directory);
+    const expected = ['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix'];
     expect(notices).toEqual(expected);
   });
 });

@@ -8,6 +8,8 @@ import {
   type Stage,
 } from '@config/types';
 
+import { appDirectoryOf } from '@utils/answerUtils';
+
 import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
@@ -122,20 +124,26 @@ const stageInstall = async (options: PipelineOptions): Promise<void> => {
   await runSpawn(binary, ['install'], options.cwd, options.output);
 };
 
+const appRoot = (options: PipelineOptions): string => {
+  const directory = appDirectoryOf(options.answers, options.name);
+
+  return join(options.cwd, directory);
+};
+
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   lint: writeArtifacts,
   package: writeArtifacts,
   standard: stageStandard,
   install: stageInstall,
   fix: async (options) => {
-    await fixPass(options.cwd, options.answers, options.onNotice);
+    await fixPass(appRoot(options), options.answers, options.onNotice, options.cwd);
   },
 };
 
 export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
   // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
   const seeds = seedArtifacts(options.answers, options.name);
-  const project = await projectShapeReader(options.cwd);
+  const project = await projectShapeReader(appRoot(options));
   const artifacts = [
     ...seeds,
     ...buildArtifacts(options.answers, project, options.name),

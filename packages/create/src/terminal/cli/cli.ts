@@ -52,7 +52,7 @@ import {
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
 
-import { SYNC_NEEDS_YES } from './constants';
+import { EXISTING_MONOREPO, SYNC_NEEDS_YES } from './constants';
 import {
   type AnswerFlags,
   argumentError,
@@ -362,6 +362,10 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
 
     if (options.command === 'sync') {
       return await runSync(options, answers, prompter ?? inquirerPrompter, hasTerminal);
+    }
+
+    if (options.existing && answers.layout === 'monorepo') {
+      throw new Error(EXISTING_MONOREPO);
     }
 
     const projectName = name === '' ? await existingName(options.cwd) : name;

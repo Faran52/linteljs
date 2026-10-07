@@ -14,9 +14,14 @@ interface Ran {
 export type LocalBinaryRun = NotRun | Ran;
 
 // Absent answers `null`: before `install` there is nothing to fix. Async, so the spinner keeps turning.
-export const localBinarySpawn = async (cwd: string, name: string, args: string[]): Promise<LocalBinaryRun | null> => {
+export const localBinarySpawn = async (
+  cwd: string,
+  name: string,
+  args: string[],
+  installRoot = cwd,
+): Promise<LocalBinaryRun | null> => {
   return await new Promise<LocalBinaryRun | null>((settle) => {
-    const child = spawn(join(cwd, 'node_modules', '.bin', name), args, {
+    const child = spawn(join(installRoot, 'node_modules', '.bin', name), args, {
       cwd,
       stdio: [
         'ignore',

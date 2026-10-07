@@ -15,6 +15,9 @@ interface EslintFixResult {
   output?: string;
 }
 
+// Counted by content: stylelint's JSON report names files, not which it rewrote.
+type BinarySpawn = (name: string, args: string[]) => ReturnType<typeof localBinarySpawn>;
+
 export const nextStep = (answers: Answers): string => {
   return `next: ${answers.packageManager} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
@@ -41,11 +44,15 @@ const changedFiles = (fixed: number, tool: string): string => {
   return fixed === 0 ? `${tool} --fix: nothing to fix` : `${tool} --fix: ${files} changed`;
 };
 
-// Counted by content: stylelint's JSON report names files, not which it rewrote.
-const fixStyles = async (cwd: string, answers: Answers, report: (message: string) => void): Promise<void> => {
+const fixStyles = async (
+  cwd: string,
+  answers: Answers,
+  report: (message: string) => void,
+  binarySpawn: BinarySpawn,
+): Promise<void> => {
   const glob = styleGlob(answers);
   const before = await globSnapshot(cwd, glob);
-  const result = await localBinarySpawn(cwd, 'stylelint', [
+  const result = await binarySpawn('stylelint', [
     glob,
     '--fix',
     '--allow-empty-input',
@@ -71,12 +78,20 @@ export const fixPass = async (
   cwd: string,
   answers: Answers,
   onNotice?: (message: string) => void,
+  installRoot = cwd,
 ): Promise<void> => {
   const report = (message: string): void => {
     onNotice?.(message);
   };
 
-  const result = await localBinarySpawn(cwd, 'eslint', [
+  // A workspace manager may hoist a workspace's binaries to the install root.
+  const binarySpawn: BinarySpawn = async (name, args) => {
+    const inApp = await localBinarySpawn(cwd, name, args);
+
+    return inApp ?? await localBinarySpawn(cwd, name, args, installRoot);
+  };
+
+  const result = await binarySpawn('eslint', [
     '.',
     '--fix',
     '--format',
@@ -98,5 +113,5 @@ export const fixPass = async (
 
   report(changedFiles(fixed, 'eslint'));
 
-  await fixStyles(cwd, answers, report);
+  await fixStyles(cwd, answers, report, binarySpawn);
 };

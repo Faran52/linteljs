@@ -33,6 +33,8 @@ pnpm dlx, npx, yarn dlx or bunx @linteljs/create sync.
 
 export const SYNC_NEEDS_YES = 'Skipped: sync asks before this step writes. Run it in a terminal, or pass --yes.';
 
+export const EXISTING_MONOREPO = '--existing runs in a single repo; create a monorepo in a new directory.';
+
 export const CLI_OPTIONS = {
   'existing': {
     type: 'boolean',

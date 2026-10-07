@@ -200,6 +200,17 @@ describe('main: what it prints and what it returns', () => {
       'Not a stage: lnt',
     ],
     [
+      'a monorepo over an existing project',
+      [
+        '--existing',
+        '--no-install',
+        '--yes',
+        '--layout',
+        'monorepo',
+      ],
+      '--existing runs in a single repo',
+    ],
+    [
       'an unknown option',
       ['--wat'],
       "Unknown option '--wat'",

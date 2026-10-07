@@ -1,4 +1,5 @@
 import {
+  chmod,
   mkdir,
   mkdtemp,
   readFile,
@@ -22,6 +23,7 @@ import {
 
 import {
   type Agent,
+  type Layout,
   type Library,
   type PackageManager,
   type Plugin,
@@ -43,6 +45,7 @@ interface AnswerOverrides {
   libraries?: Library[];
   agents?: Agent[];
   plugins?: Plugin[];
+  layout?: Layout;
 }
 
 let cwd = '';
@@ -497,6 +500,24 @@ describe('the fix stage', () => {
     const notices = await noticesFrom(['lint', 'install']);
     expect(notices).toEqual([]);
   });
+
+  it("fixes a monorepo's app inside its directory with the binaries at the root", async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'eslint'), "#!/bin/sh\npwd > eslint-cwd\necho '[]'\n", 'utf8');
+    await chmod(join(bin, 'eslint'), 0o755);
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: hostedAnswersFor({ layout: 'monorepo' }),
+      skip: ['install'],
+    });
+
+    const app = await realpath(join(cwd, 'apps', 'demo-app'));
+    const eslintCwd = await readFile(join(app, 'eslint-cwd'), 'utf8');
+    expect(eslintCwd).toBe(`${app}\n`);
+  });
 });
 
 describe('what create and sync each discover about a project', () => {
@@ -513,6 +534,20 @@ describe('what create and sync each discover about a project', () => {
 
     expect(file)
       .toContain('__mocks__/setupTests.ts');
+  });
+
+  it("reads a monorepo's setup spelling from its app directory", async () => {
+    const app = join(cwd, 'apps', 'demo-app');
+    await mkdir(join(app, '__mocks__'), { recursive: true });
+    await writeFile(join(app, '__mocks__/setupTests.ts'), '', 'utf8');
+
+    await generate({
+      target: 'react',
+      layout: 'monorepo',
+    });
+
+    const actual = await exists(join(app, '__mocks__/setupTests.tsx'));
+    expect(actual).toBe(false);
   });
 
   it('leaves sync nothing to change on a project it has just written', async () => {

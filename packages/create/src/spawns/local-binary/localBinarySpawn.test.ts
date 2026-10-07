@@ -2,6 +2,7 @@ import {
   chmod,
   mkdir,
   mkdtemp,
+  realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -49,6 +50,25 @@ describe('localBinarySpawn', () => {
     const expected = {
       status: 3,
       stdout: 'ok\n',
+      failed: false,
+    };
+    expect(actual).toEqual(expected);
+  });
+
+  it('runs a binary installed at another root in the directory it is given', async () => {
+    const app = join(cwd, 'apps', 'shop');
+    const bin = join(cwd, 'node_modules', '.bin');
+
+    await mkdir(app, { recursive: true });
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'probe'), '#!/bin/sh\npwd\n', 'utf8');
+    await chmod(join(bin, 'probe'), 0o755);
+
+    const actual = await localBinarySpawn(app, 'probe', [], cwd);
+    const directory = await realpath(app);
+    const expected = {
+      status: 0,
+      stdout: `${directory}\n`,
       failed: false,
     };
     expect(actual).toEqual(expected);
