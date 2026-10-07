@@ -26,12 +26,13 @@ import {
   ALWAYS,
   ASTRO_I18N,
   SHARED,
+  VIEW_SUITES,
 } from './constants';
 import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
 
 import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type { TargetRecord } from '../types';
+import type { StarterTest, TargetRecord } from '../types';
 
 // `vite: false`: Astro's Vite options live in `astro.config.mjs`, borrowed through `getViteConfig`.
 
@@ -65,9 +66,10 @@ export const astroTarget: TargetBuilder = (answers) => {
     },
     // A dynamic route is `[slug].astro`, so a directory may be one too.
     folderNaming: { 'src/**/': FOLDER_ROUTED },
-    routeAlias: { '@layouts/*': './src/layouts/*' },
-    // Vitest executes no template, so a module only a page imports would sit at zero.
-    coverageExclude: ['src/config/**'],
+    routeAlias: {
+      '@layouts/*': './src/layouts/*',
+      '@views/*': './src/views/*',
+    },
     styleEntry: 'src/styles/global.css',
     starterStyles: [
       './tokens.css',
@@ -136,6 +138,15 @@ export const astroTarget: TargetBuilder = (answers) => {
         target: 'src/lib/utils/currentPathUtils.test.ts',
         covers: 'src/lib/utils/currentPathUtils.ts',
       },
+      ...VIEW_SUITES
+        .map((view): StarterTest => {
+          const suite: StarterTest = {
+            target: `${view}.test.ts`,
+            covers: `${view}.astro`,
+          };
+
+          return suite;
+        }),
     ],
     // Unconditional so `--existing` installs it too.
     dependencies: ['astro', ...(hosted === undefined ? [] : hosted.dependencies)],

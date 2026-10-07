@@ -1,18 +1,5 @@
 ---
-import { CHECK, NAME } from '@config/linteljs';
-
-import Mark from '@ui/mark/Mark.astro';
-
-import Layout from '@layouts/Layout.astro';
+import HomeView from '@views/home/HomeView.astro';
 ---
 
-<Layout>
-  <main class="hero">
-    <Mark />
-    <h1 class="title">{NAME}</h1>
-    <p class="lede">Astro, rendered on the server, and the standard already applied.</p>
-    <p class="hint">
-      Run <code>{CHECK}</code> for the full gate.
-    </p>
-  </main>
-</Layout>
+<HomeView />

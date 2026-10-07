@@ -172,7 +172,6 @@ export default getViteConfig({
         'src/{main,index}.{ts,tsx}',
         '**/*.stylex.{ts,tsx}',
         '**/components/**/styles.{ts,tsx}',
-        'src/config/**',
       ],
       thresholds: {
         lines: 100,

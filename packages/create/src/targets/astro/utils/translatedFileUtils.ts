@@ -25,7 +25,6 @@ export const astroI18nFiles = (): StarterFile[] => {
   return files;
 };
 
-// Vitest renders no `.astro` template, so the client script carries the one suite.
 export const astroI18nTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
     {

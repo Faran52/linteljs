@@ -27,8 +27,9 @@ Use these rules when touching tests, mocks, or test setup.
 
 ## What a test can reach
 
-- **A `.astro` component is not unit-testable, and that is the point.** It runs during the build, has
-  no client runtime, and there is no renderer to mount it with. Do not reach for one.
+- **A view is rendered to a string, never mounted.** Its suite calls
+  `experimental_AstroContainer.create()` and `renderToString`, under `// @vitest-environment node`,
+  since the container finds no renderer under happy-dom. A page is not tested: it names a view.
 - Test what a template *computes*, not the template. A page that filters, sorts, formats or derives
   anything should hand that work to a function in `lib/`, which a test can call directly. If a
   template holds logic a test would want, the logic is in the wrong place.

@@ -68,7 +68,7 @@ describe('coverageExclude', () => {
     [
       'astro',
       { target: 'astro' },
-      ['src/config/**'],
+      [],
     ],
     [
       'webextension',

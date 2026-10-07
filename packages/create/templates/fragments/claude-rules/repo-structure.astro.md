@@ -23,6 +23,7 @@ testing.
 ```
 src/
   pages/          routes. The only router: a file here is a URL
+  views/<kebab>/  {Name}View.astro, one per route, and its suite
   layouts/        page shells, wrapping a route's content
   components/
     ui/           primitives, reusable by nature
@@ -41,7 +42,9 @@ src/
 **`src/pages/` is the router.** A file there is a route, so its name is the URL: `about.astro` is
 `/about`, `[slug].astro` is a dynamic segment, and `index.astro` is the directory's own path. Nothing
 that is not a route belongs in it, which is the one thing this layout enforces that a lint rule
-cannot.
+cannot. A suite there would be a route too, so a page names a view and nothing else: the page
+written in `views/about/AboutView.astro` sits beside its suite, which renders it through
+`experimental_AstroContainer` under `// @vitest-environment node`.
 
 `astro.config.mjs` is where the build lives. There is no `vite.config.ts`: Vite options go in this
 file's `vite` key, and an integration is how a framework, an adapter or a sitemap arrives.
@@ -75,11 +78,12 @@ hosted UI framework ships some, and only when a `client:*` directive says to.
 
 ## Direction
 
-Imports run one way: `pages → layouts → components → lib/services → lib/utils → config`.
+Imports run one way: `pages → views → layouts → components → lib/services → lib/utils → config`.
 
 - `config/*` imports only sibling config, assets, and third-party modules.
 - `lib/*` does not import from `pages/`, `layouts/` or `components/`.
 - `components/*` does not import from `pages/` or `layouts/`.
-- One page does not import from another. Shared markup is a layout or a component.
+- `pages/*` imports views and nothing else; nothing imports from `pages/`.
+- One view does not import from another. Shared markup is a layout or a component.
 - `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
   and never write a `src/` prefix.

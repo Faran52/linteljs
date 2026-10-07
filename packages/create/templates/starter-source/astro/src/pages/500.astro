@@ -1,7 +1,7 @@
 ---
 import { STATUSES } from '@config/statuses';
 
-import StatusLayout from '@layouts/StatusLayout.astro';
+import StatusView from '@views/status/StatusView.astro';
 ---
 
-<StatusLayout {...STATUSES.serverError} />
+<StatusView {...STATUSES.serverError} />

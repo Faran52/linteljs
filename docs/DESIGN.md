@@ -571,9 +571,9 @@ block. The rule reads identically on every target.
 ### Per-target notes
 
 - **Astro has nothing to hydrate.** A layout and a directory of pages, a link is a navigation, so there is no
-  router answer and no provider. `vitest` cannot execute a `.astro` file, so the one helper under coverage is
-  `isCurrentPath`, which exists for a real reason: Astro serves `/about` and `/about/` as the same page. The tables
-  the templates read are excluded; Astro's container API is the way to take them back.
+  router answer and no provider. Each page names a view in `views/`, whose suite renders it through Astro's
+  container, so the tables the templates read are measured. `isCurrentPath` exists for a real reason: Astro
+  serves `/about` and `/about/` as the same page.
 - **The extension popup is built node by node**, with `document.createElement`, not from a string of markup. An
   extension runs under a content security policy with no reason to trust markup, and a reference kept cannot be
   null, where querying back out of `innerHTML` is a guard for a case that cannot happen and a branch the 100% gate

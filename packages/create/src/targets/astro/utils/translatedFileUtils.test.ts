@@ -24,10 +24,10 @@ const writtenUnder = (files: (StarterFile | StarterTest)[], answers: Answers): s
 const ENGLISH_FILES = [
   'true:src/config/statuses.ts',
   'true:src/config/standard.ts',
-  'src/pages/index.astro',
-  'src/pages/about.astro',
-  'src/pages/version.astro',
-  'src/layouts/StatusLayout.astro',
+  'src/views/home/HomeView.astro',
+  'src/views/about/AboutView.astro',
+  'src/views/version/VersionView.astro',
+  'src/views/status/StatusView.astro',
   'src/components/features/app-header/AppHeader.astro',
 ];
 
