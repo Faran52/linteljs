@@ -7,7 +7,11 @@ import {
 
 import { coverageExclude, coverageInclude } from './coverageUtils';
 
-import type { Answers, TargetId } from '@config/types';
+import type {
+  Answers,
+  HostedFramework,
+  TargetId,
+} from '@config/types';
 
 describe('coverageInclude', () => {
   it.each<[TargetId, string]>([
@@ -16,6 +20,19 @@ describe('coverageInclude', () => {
     ['vue', ',vue'],
   ])('measures only what can be instrumented on %s, plus its component format', (target, format) => {
     const actual = coverageInclude(answersFor({ target }));
+    expect(actual).toBe(`src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}`);
+  });
+
+  it.each<[HostedFramework, string]>([
+    ['react', ''],
+    ['solid', ''],
+    ['svelte', ',svelte'],
+    ['vue', ',vue'],
+  ])('measures the components of the %s island astro hosts', (hostedFramework, format) => {
+    const actual = coverageInclude(answersFor({
+      target: 'astro',
+      hostedFramework,
+    }));
     expect(actual).toBe(`src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}`);
   });
 });

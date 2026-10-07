@@ -86,6 +86,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     ],
     tailwindTheme: './theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
+    ...(hosted?.sfcExtension === undefined ? {} : { sfcExtension: hosted.sfcExtension }),
     // `include` re-names `.astro/types.d.ts` because this replaces the inherited `include`.
     tsconfig: {
       extends: 'astro/tsconfigs/strict',
@@ -93,7 +94,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       include: [
         '.astro/types.d.ts',
         '**/*.astro',
-        ...(framework === 'vue' || framework === 'svelte' ? [`**/*.${framework}`] : []),
+        ...(hosted?.sfcExtension === undefined ? [] : [`**/*.${hosted.sfcExtension}`]),
       ],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
