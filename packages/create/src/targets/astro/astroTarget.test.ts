@@ -267,6 +267,8 @@ const ISLAND_GATES: GateRow[] = onIsland([
   ['src/views/contact/ContactIsland.test.tsx', [{}]],
   ['src/views/contact/ContactPage.tsx', [{ mocking: [undefined] }]],
   ['src/views/contact/ContactPage.tsx@msw', [{ mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.test.tsx', [{}]],
+  ['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]],
   ['src/views/contact/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
   ['src/components/ui/index.ts', [{}]],

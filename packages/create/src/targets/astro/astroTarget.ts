@@ -172,6 +172,14 @@ const islandTests = (): StarterTest[] => {
       target: `${CONTACT_VIEW}/ContactIsland.test.tsx`,
       covers: `${CONTACT_VIEW}/ContactIsland.tsx`,
     },
+    {
+      target: `${CONTACT_VIEW}/ContactPage.test.tsx`,
+      covers: `${CONTACT_VIEW}/ContactPage.tsx`,
+    },
+    {
+      target: `${CONTACT_VIEW}/${USE_CONTACT_FORM}.test.ts`,
+      covers: `${CONTACT_VIEW}/${USE_CONTACT_FORM}.ts`,
+    },
     contactFormTest(),
     ...contactSubmitTests(),
   ]);

@@ -606,8 +606,8 @@ Angular always renders one, on Reactive Forms, since `@angular/forms` ships with
 the page's component for `injectForm`. Nuxt's `pages/contact.vue` renders Vue's `ContactView`, with
 `plugins/data.ts` installing Vue's data provider. Astro's `pages/contact.astro` hydrates React's `ContactPage` as an
 island: `src/pages/` is Astro's router, so the page, its hook and the island sit under `views/contact/`, and
-`ContactIsland` wraps the data provider, since an island is its own React root. Its suite renders the island and
-carries the page's cases, so no store provider ships for a test alone. Astro hosting nothing has no contact page: no
+`ContactIsland` wraps the data provider, since an island is its own React root. The page and its hook keep suites
+of their own, wrapped in that provider alone, so no store provider ships for a test. Astro hosting nothing has no contact page: no
 framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. The islands for Vue,
 Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
 without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
