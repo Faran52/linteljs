@@ -22,6 +22,12 @@ describe('tsdownConfigEmitter', () => {
     expect(artifacts).toEqual(expected);
   });
 
+  it('bundles the barrel the package.json exports, as .js', () => {
+    expect(TSDOWN_CONFIG).toContain("entry: ['src/index.ts'],");
+    expect(TSDOWN_CONFIG).toContain("platform: 'neutral',");
+    expect(TSDOWN_CONFIG).toContain('dts: true,');
+  });
+
   it('writes nothing for an app', () => {
     const artifacts = tsdownConfigEmitter(hostedAnswersFor({ target: 'react' }), EMPTY_PROJECT, 'my-app');
 

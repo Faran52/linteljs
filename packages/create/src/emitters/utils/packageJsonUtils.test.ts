@@ -826,6 +826,27 @@ describe('buildDevDependencies', () => {
   });
 });
 
+describe('a library', () => {
+  it('installs no querystring package, which only an app\'s http.ts uses', () => {
+    const app = buildDependencies(answersFor({}));
+    const library = buildDependencies(answersFor({ target: 'typescript' }));
+
+    expect(app).toHaveProperty('qs');
+    expect(library).not.toHaveProperty('qs');
+  });
+
+  it('installs no DOM for its suites and no querystring types', () => {
+    const app = buildDevDependencies(answersFor({}));
+    const library = buildDevDependencies(answersFor({ target: 'typescript' }));
+
+    expect(app).toHaveProperty('happy-dom');
+    expect(app).toHaveProperty('@types/qs');
+    expect(library).toHaveProperty('vitest');
+    expect(library).not.toHaveProperty('happy-dom');
+    expect(library).not.toHaveProperty('@types/qs');
+  });
+});
+
 describe('the router', () => {
   it.each<[Router, string, string[]]>([
     [

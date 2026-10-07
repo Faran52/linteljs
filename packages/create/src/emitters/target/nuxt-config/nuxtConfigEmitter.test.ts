@@ -173,8 +173,16 @@ describe('nuxtConfigEmitter', () => {
 
   it('lists no stylesheet for a target with none', () => {
     const config = emitNuxtConfig(answersFor({ target: 'typescript' }), 'demo-app');
+    const nuxtConfig = emitNuxtConfig(answersFor({ target: 'nuxt' }), 'demo-app');
+    const nuxtLines = nuxtConfig.split('\n');
+    const added = config
+      .split('\n')
+      .filter((line) => {
+        return !nuxtLines.includes(line);
+      });
 
     expect(config).not.toContain('css:');
+    expect(added).toEqual([]);
   });
 
   it('escapes a trailing backslash in an alias path so the config still parses', () => {

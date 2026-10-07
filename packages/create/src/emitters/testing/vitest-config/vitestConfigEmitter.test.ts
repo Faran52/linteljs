@@ -276,6 +276,23 @@ export default defineConfig({
     }
   });
 
+  it('runs a library\'s suites in node, with no DOM storage to disable', () => {
+    const config = configFor({ target: 'typescript' }) ?? '';
+    const lines = config
+      .split('\n')
+      .map((line) => {
+        return line.trim();
+      });
+    const setupAt = lines
+      .findIndex((line) => {
+        return line.startsWith('setupFiles:');
+      });
+    const afterSetup = lines[setupAt + 1];
+
+    expect(config).toContain("environment: 'node',");
+    expect(afterSetup).toBe('coverage: {');
+  });
+
   it.each<[TargetId, string]>([
     ['svelte', "resolve: { conditions: ['browser'] },"],
     ['solid', "resolve: { conditions: ['development', 'browser'] },"],

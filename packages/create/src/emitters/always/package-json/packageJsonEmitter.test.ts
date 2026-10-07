@@ -210,6 +210,19 @@ describe('patchPackageJson', () => {
     expect(appKeys).not.toContain('files');
   });
 
+  it('writes no empty dependencies block for a library with no runtime library', () => {
+    const library = patchPackageJson({}, answersFor({
+      target: 'typescript',
+      libraries: [],
+    }));
+    const app = patchPackageJson({}, answersFor({}));
+    const libraryKeys = Object.keys(library);
+    const appKeys = Object.keys(app);
+
+    expect(libraryKeys).not.toContain('dependencies');
+    expect(appKeys).toContain('dependencies');
+  });
+
   it('keeps a library\'s own version and subpaths', () => {
     const own: PackageJson = {
       version: '1.4.0',
