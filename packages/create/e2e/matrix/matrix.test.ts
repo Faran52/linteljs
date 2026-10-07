@@ -507,6 +507,29 @@ describe('targetCases', () => {
     }
   });
 
+  it('runs the widest react case as a monorepo on every manager', () => {
+    const monorepos = pairedCases('react')
+      .filter(({ variant }) => {
+        return variant === 'monorepo';
+      });
+    const layouts = monorepos
+      .map(({ answers }) => {
+        return `${answers.packageManager} ${answers.layout} ${String(answers.libraries.length)}`;
+      });
+    const libraryCount = keysOf(ANSWERS.libraries.values).length;
+    const expected = [
+      'pnpm',
+      'npm',
+      'yarn',
+      'bun',
+    ]
+      .map((pm) => {
+        return `${pm} monorepo ${String(libraryCount)}`;
+      });
+
+    expect(layouts).toEqual(expected);
+  });
+
   it('runs the browser pass on every target a browser serves, and each create flag once', () => {
     const byLabel = (left: string, right: string): number => {
       return left.localeCompare(right);
@@ -531,6 +554,10 @@ describe('targetCases', () => {
     const expected = [
       ...browsed,
       'react npm browser',
+      'react bun monorepo',
+      'react npm monorepo',
+      'react pnpm monorepo',
+      'react yarn monorepo',
       'react pnpm no-install',
       'react pnpm skip-fix',
     ];

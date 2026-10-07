@@ -37,8 +37,9 @@ import {
 } from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
 
-// A run other than create, install and `check`: `browser` loads the built starter afterwards.
-export type E2eVariant = 'browser' | 'skip-fix' | 'no-install';
+// A run other than create, install and `check`: `browser` loads the built starter afterwards, `monorepo` writes
+// the target under apps/ and commits through the hooks.
+export type E2eVariant = 'browser' | 'skip-fix' | 'no-install' | 'monorepo';
 
 export interface E2eCase {
   label: string;
@@ -338,6 +339,23 @@ const answerCount = ({ answers }: E2eCase): number => {
   return Object.keys(answers).length;
 };
 
+const onMonorepo = (widest: E2eCase) => {
+  return (packageManager: PackageManager): E2eCase => {
+    const { answers, label } = asCase({
+      ...widest.answers,
+      packageManager,
+      layout: 'monorepo',
+    });
+    const monorepo: E2eCase = {
+      label: `${label} monorepo`,
+      answers,
+      variant: 'monorepo',
+    };
+
+    return monorepo;
+  };
+};
+
 // The first case answering the most, as one smoke per other manager and the browser pass under pnpm.
 const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
   const onManager = (packageManager: PackageManager): E2eCase => {
@@ -375,7 +393,12 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
   };
 
   const varied = variants.map(asVariant);
-  const extra = [...smokes, ...varied];
+  const monorepos = target === 'react' ? PACKAGE_MANAGERS.map(onMonorepo(widest)) : [];
+  const extra = [
+    ...smokes,
+    ...varied,
+    ...monorepos,
+  ];
 
   return extra;
 };

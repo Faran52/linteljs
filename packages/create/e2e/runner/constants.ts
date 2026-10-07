@@ -13,6 +13,7 @@ export const CREATE_FLAGS: Record<E2eVariant, readonly string[] | undefined> = {
   'browser': undefined,
   'skip-fix': ['--skip', 'fix'],
   'no-install': ['--no-install'],
+  'monorepo': undefined,
 };
 
 export const CLEAN_FIXES = ['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix'];

@@ -16,6 +16,7 @@ import {
   oneAtATime,
   outcome,
   registry,
+  run,
   runPm,
   type RunResult,
 } from '../utils/processUtils';
@@ -193,6 +194,23 @@ const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<vo
     .not.toHaveProperty('linteljs');
 };
 
+// Through the hooks: lint-staged in each package and commitlint at the root.
+const expectCommitted = async (project: string): Promise<void> => {
+  const added = await run('git', ['add', '--all'], project);
+  const committed = await run('git', [
+    '-c',
+    'user.name=e2e',
+    '-c',
+    'user.email=e2e@example.invalid',
+    'commit',
+    '--message',
+    'feat: start the workspace',
+  ], project);
+  const results = [outcome(added, 'git add'), outcome(committed, 'git commit')];
+
+  expect(results).toEqual(['git add: ok', 'git commit: ok']);
+};
+
 const expectWorking = async ({ answers, variant }: E2eCase, project: string): Promise<void> => {
   // npm exits non-zero on a peer it resolved to an invalid range.
   if (answers.packageManager === 'npm') {
@@ -204,8 +222,13 @@ const expectWorking = async ({ answers, variant }: E2eCase, project: string): Pr
 
   await verifyLintOutput(answers.packageManager, project);
 
+  if (variant === 'monorepo') {
+    await expectCommitted(project);
+  }
+
   if (answers.styling === 'stylex') {
-    const unstyled = missingStylexRules(project);
+    const built = variant === 'monorepo' ? join(project, 'apps', answers.target) : project;
+    const unstyled = missingStylexRules(built);
 
     expect(unstyled).toBe('');
   }

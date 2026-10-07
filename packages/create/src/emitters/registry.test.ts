@@ -248,7 +248,11 @@ describe('the project the answers write', () => {
   const GENERATED = '.svelte-kit/';
 
   const projectsFor = (target: TargetId): Project[] => {
+    // A monorepo case is the widest case moved under apps/, which these path checks read as written at the root.
     return targetCases(target)
+      .filter(({ variant }) => {
+        return variant !== 'monorepo';
+      })
       .flatMap(({ answers: chosen }) => {
         const variants: Answers[] = [chosen];
 

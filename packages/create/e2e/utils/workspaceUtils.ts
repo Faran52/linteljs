@@ -89,6 +89,8 @@ export const answerFlags = (answers: Answers): string[] => {
     answers.agents.join(','),
     '--plugins',
     answers.plugins.join(','),
+    '--layout',
+    answers.layout,
     ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
     ...flagIf('--hosted', answers.hostedFramework),
     ...listFlagIf('--surfaces', answers.surfaces),

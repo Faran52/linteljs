@@ -23,7 +23,8 @@ why of everything below.
   `surfaces` at their full value, `typeSafety` strict. `matrix.test.ts` holds that no reachable pair is lost and
   that each past defect's combination survives.
 - **One smoke per other manager**: each target's widest case runs once on npm, Yarn 4 and bun, so every
-  manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case.
+  manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case, and
+  its widest case as a monorepo on every manager, which also commits through the hooks.
 - **Browser pass**: on the eight served targets the widest pnpm case also serves its build, loads every linked
   route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200, a
   missing `h1` or an animation running under reduced motion. A ninth runs the widest React Router framework-mode
