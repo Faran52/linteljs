@@ -341,7 +341,7 @@ const svelteIsland = (): Island => {
       },
       ...filesAt([...parts, 'src/components/ui/text-input/types.ts'], { shared: 'svelte' }),
       ...gated(hasTests, [
-        ...filesAt(['__mocks__/WithContactForm.svelte', '__mocks__/ContactFormProbe.svelte'], { variant: 'svelte' }),
+        ...filesAt(['__mocks__/WithContactForm.svelte', '__mocks__/ContactFormProbe.svelte'], { shared: 'svelte' }),
         // The translated page takes its words, which `WithData` cannot hand it.
         {
           target: '__mocks__/WithData.svelte',

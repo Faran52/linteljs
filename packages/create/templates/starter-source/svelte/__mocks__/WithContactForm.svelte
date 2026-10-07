@@ -3,15 +3,9 @@
 
   import ContactFormProbe from './ContactFormProbe.svelte';
 
-  import type { Translate } from '#lib/services/contact-form/contactFormService.ts';
-  import type { ContactForm } from '../src/routes/contact/use-contact-form/useContactForm';
+  import type { ComponentProps } from 'svelte';
 
-  interface Props {
-    translate: Translate;
-    capture: (form: ContactForm) => void;
-  }
-
-  const { translate, capture }: Props = $props();
+  const { translate, capture }: ComponentProps<typeof ContactFormProbe> = $props();
 </script>
 
 <DataProvider>

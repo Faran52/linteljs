@@ -1,6 +1,7 @@
 import { posix } from 'node:path';
 
 import {
+  type AliasMap,
   type Answers,
   type Artifact,
   type TargetId,
@@ -15,6 +16,7 @@ import {
   targetFor,
 } from '@targets';
 
+import { buildAliases } from '../../utils/aliasUtils';
 import { testRunnerOf } from '../../utils/runnerUtils';
 
 import {
@@ -24,7 +26,7 @@ import {
   USE_CLIENT,
 } from './constants';
 import { inJestDialect } from './utils/jestDialectUtils';
-import { relativeSpecifier, stem } from './utils/starterPathUtils';
+import { importSpecifier, stem } from './utils/starterPathUtils';
 import { withWorkerStart } from './utils/workerStartUtils';
 
 type Starter = StarterFile | StarterTest;
@@ -67,8 +69,9 @@ const renamesOf = (files: Starter[]): Map<string, string> => {
   return new Map(renamedStems);
 };
 
-// One shared asset serves every target: a relative import follows its neighbour to the name this target writes.
-const importsRewritten = (file: Starter, renames: Map<string, string>) => {
+// One shared asset serves every target: a relative import follows its neighbour to the name and place this target
+// writes, through an alias where it crosses into an aliased directory.
+const importsRewritten = (file: Starter, renames: Map<string, string>, aliases: AliasMap) => {
   const assetDirectory = posix.dirname(file.source ?? file.target);
   const writtenDirectory = posix.dirname(file.target);
 
@@ -81,9 +84,9 @@ const importsRewritten = (file: Starter, renames: Map<string, string>) => {
           return whole;
         }
 
-        const relative = relativeSpecifier(writtenDirectory, written);
+        const rewritten = importSpecifier(writtenDirectory, written, aliases);
 
-        return `${quote}${relative}${quote}`;
+        return `${quote}${rewritten}${quote}`;
       });
   };
 };
@@ -112,6 +115,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       return starterApplies(test, answers);
     });
   const renames = renamesOf([...files, ...suites]);
+  const aliases = buildAliases(answers);
   const clientBoundaries = new Set(target.clientBoundaries);
   const isJest = testRunnerOf(answers) === 'jest';
   const workerStart = answers.mocking === 'msw' ? target.workerStart : undefined;
@@ -131,7 +135,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
     }
 
     const sources = [sourceOf(target.id, file)];
-    const rewritten = importsRewritten(file, renames);
+    const rewritten = importsRewritten(file, renames, aliases);
     const transform = 'transform' in file ? file.transform : undefined;
     const steps = [
       ...renames.size === 0 ? [] : [rewritten],

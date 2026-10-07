@@ -589,6 +589,16 @@ describe('a shared file written under the target naming', () => {
     expect(text).toContain(imported);
   });
 
+  it('imports a neighbour moved into an aliased directory through its alias', async () => {
+    const text = await textOf({
+      target: 'astro',
+      hostedFramework: 'svelte',
+      form: 'tanstack-form',
+    }, '__mocks__/ContactFormProbe.svelte');
+
+    expect(text).toContain("from '@views/contact/use-contact-form/useContactForm'");
+  });
+
   it('leaves a target that renames nothing reading the shared source as written', () => {
     const suite = artifactFor({ target: 'react' }, 'src/lib/utils/statusUtils.test.ts');
 
