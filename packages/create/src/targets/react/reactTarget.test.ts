@@ -217,6 +217,7 @@ const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-rou
 
 const GATES: GateRow[] = [
   ...mswGates(true),
+  ['__mocks__/WithProviders.tsx', [{ testing: ['vitest'], form: ANSWERED }]],
   ...componentStyleGates([
     'mark/Mark',
     'button/Button',

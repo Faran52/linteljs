@@ -1,4 +1,5 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
   contactCopyGates,
@@ -130,6 +131,7 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(true),
+  ['__mocks__/WithProviders.tsx', [{ testing: ['vitest'], form: ANSWERED }]],
   ['src/instrumentation-client.ts', [{ mocking: ['msw'] }]],
   ...componentStyleGates([
     'mark/Mark',

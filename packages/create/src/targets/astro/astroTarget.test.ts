@@ -386,6 +386,7 @@ const REACT_ISLAND_GATES: GateRow[] = onIsland(['react'], [
   ['src/views/contact/ContactPage.test.tsx@i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['__mocks__/WithProviders.tsx@react', [{ testing: ['vitest'] }]],
 ]);
 
 const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [

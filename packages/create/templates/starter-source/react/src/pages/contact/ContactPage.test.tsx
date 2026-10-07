@@ -5,18 +5,15 @@ import {
   waitFor,
 } from '@testing-library/react';
 
-import { DataProvider } from '@lib/providers/data/DataProvider';
-import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { WithProviders } from '@mocks/WithProviders';
 
 import { ContactPage } from './ContactPage';
 
 const renderPage = (): void => {
   render(
-    <StoreProvider>
-      <DataProvider>
-        <ContactPage />
-      </DataProvider>
-    </StoreProvider>,
+    <WithProviders>
+      <ContactPage />
+    </WithProviders>,
   );
 };
 

@@ -1,3 +1,5 @@
+import { hasTests } from '@utils/answerUtils';
+
 import {
   COMMON_REACT_PLUGINS,
   CONTACT_HOOK_FORMS,
@@ -246,6 +248,13 @@ export const nextTarget: TargetBuilder = () => {
       ...filesAt(FROM_REACT, {
         shared: 'react',
       }),
+      {
+        target: '__mocks__/WithProviders.tsx',
+        when: (answers) => {
+          return hasTests(answers) && hasForm(answers);
+        },
+        shared: 'react',
+      },
       // Next links an `app/icon.svg` itself.
       {
         target: 'src/app/icon.svg',

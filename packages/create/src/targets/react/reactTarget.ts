@@ -1,3 +1,5 @@
+import { hasTests } from '@utils/answerUtils';
+
 import {
   CONTACT_HOOK_FORMS,
   COOKIE_UTILS,
@@ -221,6 +223,12 @@ const baseReactTarget = (): TargetRecord => {
       ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
+      {
+        target: '__mocks__/WithProviders.tsx',
+        when: (answers) => {
+          return hasTests(answers) && hasForm(answers);
+        },
+      },
       {
         target: 'src/router/router.tsx',
         when: (answers) => {

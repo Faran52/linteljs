@@ -134,6 +134,10 @@ const reactIsland = (): Island => {
       ...filesAt([`${button}.tsx`, `${textInput}.tsx`], { shared: 'react' }),
       ...dataProviders('src/lib/providers/data/DataProvider.tsx', 'react'),
       ...contactApiFiles({ shared: 'react' }),
+      ...gated(hasTests, [{
+        target: '__mocks__/WithProviders.tsx',
+        variant: 'react',
+      }]),
     ],
     tests: [
       ...suitesOf([
@@ -141,16 +145,30 @@ const reactIsland = (): Island => {
         `${textInput}.tsx`,
         'src/lib/providers/data/DataProvider.tsx',
       ], 'react'),
-      ...['ContactIsland', 'ContactPage']
-        .flatMap((name) => {
-          return translated<StarterTest>({
-            target: `${CONTACT_VIEW}/${name}.test.tsx`,
-            covers: `${CONTACT_VIEW}/${name}.tsx`,
-          });
-        }),
+      ...translated<StarterTest>({
+        target: `${CONTACT_VIEW}/ContactIsland.test.tsx`,
+        covers: `${CONTACT_VIEW}/ContactIsland.tsx`,
+      }),
+      {
+        target: `${CONTACT_VIEW}/ContactPage.test.tsx`,
+        covers: `${CONTACT_VIEW}/ContactPage.tsx`,
+        source: `${CONTACT_PAGE}.test.tsx`,
+        when: (answers) => {
+          return !hasI18n(answers);
+        },
+        shared: 'react',
+      },
+      {
+        target: `${CONTACT_VIEW}/ContactPage.test.tsx`,
+        covers: `${CONTACT_VIEW}/ContactPage.tsx`,
+        when: hasI18n,
+        variant: 'i18n',
+      },
       {
         target: `${CONTACT_VIEW}/${USE_CONTACT_FORM}.test.ts`,
         covers: `${CONTACT_VIEW}/${USE_CONTACT_FORM}.ts`,
+        source: `src/pages/contact/${USE_CONTACT_FORM}.test.ts`,
+        shared: 'react',
       },
     ],
   };

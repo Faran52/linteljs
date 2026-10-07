@@ -1,34 +1,18 @@
 import {
-  createElement,
-  type FC,
-  type ReactNode,
-} from 'react';
-
-import {
   act,
   renderHook,
   waitFor,
 } from '@testing-library/react';
 
-import { DataProvider } from '@lib/providers/data/DataProvider';
-import { StoreProvider } from '@lib/providers/store/StoreProvider';
 import { type ContactKey } from '@services/contact-form/contactFormService';
 
-import { type ContactForm, useContactForm } from './useContactForm';
+import { WithProviders } from '@mocks/WithProviders';
 
-interface WrapperProps {
-  readonly children: ReactNode;
-}
+import { type ContactForm, useContactForm } from './useContactForm';
 
 interface FormResult {
   readonly current: ContactForm;
 }
-
-const wrapper: FC<WrapperProps> = ({ children }) => {
-  const data = createElement(DataProvider, null, children);
-
-  return createElement(StoreProvider, null, data);
-};
 
 const translate = (key: ContactKey): string => {
   return `t:${key}`;
@@ -37,7 +21,7 @@ const translate = (key: ContactKey): string => {
 const renderForm = (): FormResult => {
   const { result } = renderHook(() => {
     return useContactForm(translate);
-  }, { wrapper });
+  }, { wrapper: WithProviders });
 
   return result;
 };
