@@ -136,7 +136,7 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
   }
 
   const first = mustFind(run[0]);
-  const last = mustFind(run[run.length - 1]);
+  const last = mustFind(run.at(-1));
 
   // A `//` line can hold `*/` as text; merged into a block it would close it early and spill the rest as code.
   if (run
@@ -255,7 +255,7 @@ export const commentDelimiter = createRule('comment-delimiter', {
             continue;
           }
 
-          const previous = run[run.length - 1];
+          const previous = run.at(-1);
 
           if (previous !== undefined && !isAdjacent(sourceCode, previous, comment)) {
             flush();

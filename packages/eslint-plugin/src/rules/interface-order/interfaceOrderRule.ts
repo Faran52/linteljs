@@ -107,7 +107,7 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
     .filter((comment) => {
       return startLineOf(comment) <= previousEndLine;
     });
-  const lastRetained = staysBehind[staysBehind.length - 1];
+  const lastRetained = staysBehind.at(-1);
 
   const [startPos] = rangeOf(firstOwned ?? typeNode);
   const noteRange = trailingNoteOf(sourceCode, typeNode);

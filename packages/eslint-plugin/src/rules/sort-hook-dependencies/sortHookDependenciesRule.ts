@@ -77,7 +77,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
           return;
         }
 
-        const lastArg = node.arguments[node.arguments.length - 1];
+        const lastArg = node.arguments.at(-1);
 
         if (lastArg?.type !== 'ArrayExpression') {
           return;

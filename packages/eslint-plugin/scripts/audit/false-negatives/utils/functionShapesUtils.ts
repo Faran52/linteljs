@@ -517,7 +517,7 @@ export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build =>
         return undefined;
       }
 
-      const sorted = [...found.names].sort(compareNames);
+      const sorted = found.names.toSorted(compareNames);
       const target = wanted === 'asc' ? sorted : sorted.toReversed();
 
       if (target.join() === found.names.join()) {

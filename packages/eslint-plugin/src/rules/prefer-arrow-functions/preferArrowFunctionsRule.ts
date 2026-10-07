@@ -285,8 +285,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       },
 
       'ThisExpression': () => {
-        // Reversed on a copy, since the stack belongs to the two visitors.
-        const innermostFirst = [...functionStack].reverse();
+        const innermostFirst = functionStack.toReversed();
 
         for (const frame of innermostFirst) {
           containsThis.add(frame.node);
