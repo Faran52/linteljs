@@ -24,6 +24,7 @@ import {
   USE_CLIENT,
 } from './constants';
 import { inJestDialect } from './utils/jestDialectUtils';
+import { withMswCopy } from './utils/mswCopyUtils';
 import { relativeSpecifier, stem } from './utils/starterPathUtils';
 import { withWorkerStart } from './utils/workerStartUtils';
 
@@ -114,7 +115,8 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const renames = renamesOf([...files, ...suites]);
   const clientBoundaries = new Set(target.clientBoundaries);
   const isJest = testRunnerOf(answers) === 'jest';
-  const workerStart = answers.mocking === 'msw' ? target.workerStart : undefined;
+  const hasMsw = answers.mocking === 'msw';
+  const workerStart = hasMsw ? target.workerStart : undefined;
   const workerEntries = new Set(workerStart?.entries);
 
   const artifactOf = (file: Starter): Artifact => {
@@ -139,6 +141,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
       ...workerStart !== undefined && workerEntries.has(file.target) ? [withWorkerStart(workerStart)] : [],
       ...isJest && 'covers' in file ? [inJestDialect] : [],
+      ...hasMsw ? [withMswCopy] : [],
       ...transform === undefined
         ? []
         : [(source: string) => {

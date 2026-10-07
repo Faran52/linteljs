@@ -896,3 +896,30 @@ describe('the msw worker start', () => {
     expect(started).toBe(false);
   });
 });
+
+describe('the contact copy', () => {
+  it.each<[Partial<Answers>, string]>([
+    [{ mocking: 'msw' }, 'It posts to /api/contact'],
+    [{}, 'Nothing is sent anywhere.'],
+  ])('reads true of the form under %o', async (overrides, said) => {
+    const written = await textOf({
+      target: 'react',
+      form: 'tanstack-form',
+      ...overrides,
+    }, 'src/pages/contact/ContactPage.tsx');
+    const reads = written.includes(said);
+
+    expect(reads).toBe(true);
+  });
+
+  it('reads true in a locale under msw', async () => {
+    const text = await textOf({
+      target: 'angular',
+      mocking: 'msw',
+      languages: ['ja'],
+    }, 'src/i18n/locales/ja/common.json');
+    const locale = JSON.parse(text) as Record<string, string>;
+
+    expect(locale['contactSent']).toBe('ありがとうございます。メッセージを送信しました。');
+  });
+});
