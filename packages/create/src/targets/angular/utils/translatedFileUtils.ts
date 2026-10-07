@@ -17,7 +17,6 @@ export const angularI18nFiles = (): StarterFile[] => {
   });
 };
 
-// `App`'s suite covers the English header and pages; translated, each takes its own in another language.
 export const angularI18nTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
     ...I18N_ONLY_SUITES

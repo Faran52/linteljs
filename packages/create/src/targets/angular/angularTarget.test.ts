@@ -127,6 +127,10 @@ const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
   ...TRANSLATED,
+  'src/components/features/app-header/app-header.spec.ts',
+  'src/app/home/home.spec.ts',
+  'src/app/about/about.spec.ts',
+  'src/app/version/version.spec.ts',
   'src/app/contact/contact.spec.ts',
   'src/components/features/status-page/status-page.spec.ts',
 ];
@@ -140,10 +144,6 @@ const I18N_ONLY_PATHS = [
   'src/components/ui/code-text/code-text.ts',
   'src/components/ui/code-text/code-text.html',
   'src/components/ui/code-text/code-text.spec.ts',
-  'src/components/features/app-header/app-header.spec.ts',
-  'src/app/home/home.spec.ts',
-  'src/app/about/about.spec.ts',
-  'src/app/version/version.spec.ts',
   ...LANGUAGES
     .map((language) => {
       return `src/i18n/locales/${language}/common.json`;

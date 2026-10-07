@@ -91,8 +91,12 @@ describe('angularI18nTests', () => {
       'src/i18n/i18n.ts',
       'src/components/ui/code-text/code-text.ts',
       'src/components/features/app-header/app-header.ts',
+      'src/components/features/app-header/app-header.ts',
+      'src/app/home/home.ts',
       'src/app/home/home.ts',
       'src/app/about/about.ts',
+      'src/app/about/about.ts',
+      'src/app/version/version.ts',
       'src/app/version/version.ts',
       'src/app/contact/contact.ts',
       'src/app/contact/contact.ts',
@@ -102,10 +106,14 @@ describe('angularI18nTests', () => {
     expect(covers).toEqual(coveredFiles);
   });
 
-  it('writes the English contact and status suites otherwise', () => {
+  it('writes the English page, header and status suites otherwise', () => {
     const written = writtenUnder(angularI18nTests(), answersFor({ target: 'angular' }));
 
     const expected = [
+      'src/components/features/app-header/app-header.spec.ts',
+      'src/app/home/home.spec.ts',
+      'src/app/about/about.spec.ts',
+      'src/app/version/version.spec.ts',
       'src/app/contact/contact.spec.ts',
       'src/components/features/status-page/status-page.spec.ts',
     ];

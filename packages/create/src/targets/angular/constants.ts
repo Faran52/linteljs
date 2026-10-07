@@ -71,15 +71,15 @@ export const I18N_ONLY_FILES = [
   `${CODE_TEXT}.html`,
 ];
 
-export const I18N_ONLY_SUITES = [
-  'src/i18n/i18n',
-  CODE_TEXT,
+export const I18N_ONLY_SUITES = ['src/i18n/i18n', CODE_TEXT];
+
+export const TRANSLATED_SUITES = [
   'src/components/features/app-header/app-header',
   'src/app/home/home',
   'src/app/about/about',
   'src/app/version/version',
+  'src/app/contact/contact',
+  'src/components/features/status-page/status-page',
 ];
-
-export const TRANSLATED_SUITES = ['src/app/contact/contact', 'src/components/features/status-page/status-page'];
 
 export const CONTACT_PAGE_FILES = ['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const;

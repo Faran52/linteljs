@@ -208,6 +208,10 @@ export const angularTarget: TargetBuilder = () => {
         covers: 'src/components/ui/button/button.ts',
       },
       {
+        target: 'src/components/ui/mark/mark.spec.ts',
+        covers: 'src/components/ui/mark/mark.ts',
+      },
+      {
         target: 'src/lib/providers/crash-handler/crash-handler.spec.ts',
         covers: 'src/lib/providers/crash-handler/crash-handler.ts',
       },
