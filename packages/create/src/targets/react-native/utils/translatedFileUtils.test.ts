@@ -158,6 +158,7 @@ describe('reactNativeI18nTests', () => {
       `${STATUS_PAGE}.tsx`,
       'src/app/(tabs)/contact.tsx',
       'src/app/(tabs)/contact.tsx',
+      'src/app/(tabs)/contact.tsx',
       'src/i18n/i18n.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
     ];
@@ -190,5 +191,16 @@ describe('reactNativeI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
     ];
     expect(translated).toEqual(translatedSuites);
+  });
+
+  it('says the contact form posts in English under msw', () => {
+    const written = writtenUnder(reactNativeI18nTests(), answersFor({
+      target: 'react-native',
+      form: 'tanstack-form',
+      mocking: 'msw',
+    }));
+
+    const postedSuites = [...SUITES, 'src/app-tabs-contact.test.tsx@msw'];
+    expect(written).toEqual(postedSuites);
   });
 });

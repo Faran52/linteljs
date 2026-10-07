@@ -1,0 +1,30 @@
+<main class="page">
+  <h1 class="page-title">Contact</h1>
+  <p class="page-lede">Two fields, validated on blur. It posts to /api/contact, mocked in dev.</p>
+
+  @if (sent()) {
+    <p class="sent" role="status">Thanks. Your message was sent.</p>
+  } @else {
+    <form novalidate [formGroup]="form" (ngSubmit)="send()">
+      <app-text-input
+        name="email"
+        label="Email"
+        type="email"
+        [value]="form.controls.email.value"
+        [error]="errorOf('email')"
+        (valueChange)="set('email', $event)"
+        (blurred)="blur('email')"
+      />
+      <app-text-input
+        name="message"
+        label="Message"
+        [multiline]="true"
+        [value]="form.controls.message.value"
+        [error]="errorOf('message')"
+        (valueChange)="set('message', $event)"
+        (blurred)="blur('message')"
+      />
+      <app-button type="submit" [disabled]="sending() || !canSend()" [busy]="sending()">Send</app-button>
+    </form>
+  }
+</main>

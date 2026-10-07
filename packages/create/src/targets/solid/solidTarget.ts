@@ -31,6 +31,7 @@ import {
   contactFormTest,
   contactSubmitTests,
   filesAt,
+  mocked,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -209,10 +210,10 @@ export const solidTarget: TargetBuilder = () => {
         when: hasStore,
         variant: 'with-store',
       }),
-      {
+      ...mocked<StarterTest>({
         target: 'src/pages/contact/ContactPage.test.tsx',
         covers: 'src/pages/contact/ContactPage.tsx',
-      },
+      }),
       {
         target: 'src/pages/contact/create-contact-form/createContactForm.test.ts',
         covers: 'src/pages/contact/create-contact-form/createContactForm.ts',

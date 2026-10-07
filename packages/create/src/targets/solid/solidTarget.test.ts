@@ -1,8 +1,7 @@
 import {
-  ANSWERED,
   byKey,
   componentStyleGates,
-  type Condition,
+  contactCopyGates,
   contactGates,
   type GateRow,
   homeGates,
@@ -67,15 +66,6 @@ describe('solidTarget', () => {
   });
 });
 
-const FORM_ENGLISH: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: [undefined],
-}];
-const FORM_I18N: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: ANSWERED,
-}];
-
 const BILINGUAL_PATHS = [
   'src/main.tsx',
   'src/config/statuses.ts',
@@ -110,8 +100,9 @@ const TRANSLATED_GATES: GateRow[] = [
 
       return rows;
     }),
-  ['src/pages/contact/ContactPage.tsx', FORM_ENGLISH],
-  ['src/pages/contact/ContactPage.tsx@i18n', FORM_I18N],
+  ...contactCopyGates('src/pages/contact/ContactPage.tsx'),
+  ['src/pages/contact/ContactPage.test.tsx', [{ mocking: [undefined] }]],
+  ['src/pages/contact/ContactPage.test.tsx@msw', [{ mocking: ['msw'] }]],
   ...I18N_ONLY_PATHS
     .map((key): GateRow => {
       const row: GateRow = [`${key}@i18n`, WITH_I18N];

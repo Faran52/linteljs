@@ -109,6 +109,36 @@ export const mswGates = (contact: boolean | 'always', servesAWorker = true): Gat
   return gates;
 };
 
+// The contact copy: English without msw, its `msw` twin, and one i18n asset whose locale says either.
+export const contactCopyGates = (key: string, condition: Condition = { form: ANSWERED }, variant = ''): GateRow[] => {
+  const named = (suffix: string): string => {
+    const parts = [variant, suffix];
+
+    return `${key}@${parts
+      .filter(Boolean)
+      .join('-')}`;
+  };
+
+  const gates: GateRow[] = [
+    [variant === '' ? key : `${key}@${variant}`, [{
+      ...condition,
+      languages: [undefined],
+      mocking: [undefined],
+    }]],
+    [named('msw'), [{
+      ...condition,
+      languages: [undefined],
+      mocking: ['msw'],
+    }]],
+    [named('i18n'), [{
+      ...condition,
+      languages: ANSWERED,
+    }]],
+  ];
+
+  return gates;
+};
+
 // The submit posts under msw and resolves locally without; its suite follows it.
 export const submitGates = (stem: string, suffix = 'test', contact: Condition = {}): GateRow[] => {
   const local: readonly Condition[] = [{ mocking: [undefined] }];

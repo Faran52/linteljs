@@ -912,14 +912,62 @@ describe('the contact copy', () => {
     expect(reads).toBe(true);
   });
 
-  it('reads true in a locale under msw', async () => {
-    const text = await textOf({
-      target: 'angular',
-      mocking: 'msw',
-      languages: ['ja'],
-    }, 'src/i18n/locales/ja/common.json');
-    const locale = JSON.parse(text) as Record<string, string>;
+  it.each([
+    [
+      'en',
+      'Thanks. Your message was sent.',
+      'Thanks. Nothing was sent, this is a starter.',
+    ],
+    [
+      'ar',
+      'شكرًا. أُرسلت رسالتك.',
+      'شكرًا. لم يُرسَل شيء، فهذا مشروع بداية.',
+    ],
+    [
+      'ja',
+      'ありがとうございます。メッセージを送信しました。',
+      'ありがとうございます。これはスターターなので、何も送信されていません。',
+    ],
+    [
+      'ko',
+      '감사합니다. 메시지가 전송되었습니다.',
+      '감사합니다. 스타터이므로 아무것도 전송되지 않았습니다.',
+    ],
+    [
+      'zh-CN',
+      '谢谢。您的消息已发送。',
+      '谢谢。这是一个起步项目，没有发送任何内容。',
+    ],
+    [
+      'zh-TW',
+      '謝謝。您的訊息已傳送。',
+      '謝謝。這是一個入門專案，沒有傳送任何內容。',
+    ],
+  ] as const)('reads true in %s, with no msw twin left', async (language, posted, local) => {
+    const runs: Partial<Answers>[] = [{ mocking: 'msw' }, {}];
+    const locales = await Promise.all(runs
+      .map(async (overrides) => {
+        const text = await textOf({
+          target: 'angular',
+          languages: [language],
+          ...overrides,
+        }, `src/i18n/locales/${language}/common.json`);
 
-    expect(locale['contactSent']).toBe('ありがとうございます。メッセージを送信しました。');
+        return JSON.parse(text) as Record<string, string>;
+      }));
+    const said = locales
+      .map((locale) => {
+        return locale['contactSent'];
+      });
+    const twins = locales
+      .flatMap((locale) => {
+        return Object.keys(locale);
+      })
+      .filter((key) => {
+        return key.endsWith('Msw');
+      });
+
+    expect(said).toEqual([posted, local]);
+    expect(twins).toEqual([]);
   });
 });

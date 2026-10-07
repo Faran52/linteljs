@@ -918,9 +918,11 @@ missing; HTTP mocking never uses either. No URL polyfill: Expo resolves the rela
 server, and the handlers match `*/api/contact` on any origin. Verified on the iOS simulator and an Android emulator
 in Expo Go: the POST is answered by the handler and the form shows its success state.
 
-The starter text says what MSW changes. Without it the contact copy says nothing is sent; with it an emit step swaps
-those sentences, in the pages, their suites and every locale file, for ones saying the form posts to
-`/api/contact`, mocked in development, so the page never claims what the network tab contradicts.
+The starter text says what MSW changes. Without it the contact copy says nothing is sent; with it the copy says the
+form posts to `/api/contact`, mocked in development, so the page never claims what the network tab contradicts. The
+copy lives where the rest of the starter's words do: each locale file carries a `<key>Msw` twin on the line after its
+key, which the locale's transform puts in the key's place under MSW and drops otherwise; an English page, and a suite
+that quotes it, ships as an `msw` variant asset beside its base, the way every other answer picks a file.
 
 **The accessor takes each framework's own word:**
 

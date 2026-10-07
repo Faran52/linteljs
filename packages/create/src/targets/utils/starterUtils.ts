@@ -1,8 +1,12 @@
 import { hasLibrary } from '@utils/answerUtils';
 
-import { hasForm, hasMsw } from './gateUtils';
+import {
+  hasForm,
+  hasMsw,
+  starterApplies,
+} from './gateUtils';
 
-import type { TargetId } from '@config/types';
+import type { Answers, TargetId } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
 
 interface ContactApiOptions {
@@ -27,6 +31,31 @@ export const filesAt = (paths: readonly string[], fields: Omit<StarterFile, 'tar
 
       return file;
     });
+};
+
+export const variantOf = (file: StarterFile | StarterTest, suffix: string): string => {
+  return file.variant === undefined ? suffix : `${file.variant}-${suffix}`;
+};
+
+// A file whose words change once MSW answers the form, as an `msw` twin beside it.
+export const mocked = <T extends StarterFile | StarterTest>(file: T): T[] => {
+  const variants: T[] = [
+    {
+      ...file,
+      when: (answers: Answers) => {
+        return starterApplies(file, answers) && !hasMsw(answers);
+      },
+    },
+    {
+      ...file,
+      when: (answers: Answers) => {
+        return starterApplies(file, answers) && hasMsw(answers);
+      },
+      variant: variantOf(file, 'msw'),
+    },
+  ];
+
+  return variants;
 };
 
 // The contact form's fetch wrapper, plain or through TanStack Query, behind the barrel its page imports.

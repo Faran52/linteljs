@@ -3,6 +3,7 @@ import {
   byKey,
   componentStyleGates,
   type Condition,
+  contactCopyGates,
   contactGates,
   type GateRow,
   homeGates,
@@ -79,15 +80,6 @@ describe('svelteTarget', () => {
   });
 });
 
-const FORM_ENGLISH: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: [undefined],
-}];
-const FORM_I18N: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: ANSWERED,
-}];
-
 const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
@@ -135,8 +127,7 @@ const TRANSLATED_GATES: GateRow[] = [
 
       return rows;
     }),
-  ['src/routes/contact/+page.svelte', FORM_ENGLISH],
-  ['src/routes/contact/+page.svelte@i18n', FORM_I18N],
+  ...contactCopyGates('src/routes/contact/+page.svelte'),
   ...I18N_ONLY_PATHS
     .map((key): GateRow => {
       const row: GateRow = [`${key}@i18n`, WITH_I18N];

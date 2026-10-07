@@ -1,6 +1,7 @@
 import {
   ANSWERED,
   byKey,
+  contactCopyGates,
   type GateRow,
   mswGates,
   submitGates,
@@ -159,12 +160,17 @@ const GATES: GateRow[] = [
   ['.postcssrc.json@tailwind', TAILWIND],
   ...CONTACT_PATHS
     .flatMap((key): GateRow[] => {
-      const rows: GateRow[] = [
-        [key, [{ form: [undefined], languages: [undefined] }]],
-        [`${key}@i18n`, [{ form: [undefined], languages: ANSWERED }]],
-        [`${key}@tanstack-form`, [{ form: ['tanstack-form'], languages: [undefined] }]],
-        [`${key}@tanstack-form-i18n`, [{ form: ['tanstack-form'], languages: ANSWERED }]],
-      ];
+      const rows: GateRow[] = key.endsWith('.html')
+        ? [
+            ...contactCopyGates(key, { form: [undefined] }),
+            ...contactCopyGates(key, { form: ['tanstack-form'] }, 'tanstack-form'),
+          ]
+        : [
+            [key, [{ form: [undefined], languages: [undefined] }]],
+            [`${key}@i18n`, [{ form: [undefined], languages: ANSWERED }]],
+            [`${key}@tanstack-form`, [{ form: ['tanstack-form'], languages: [undefined] }]],
+            [`${key}@tanstack-form-i18n`, [{ form: ['tanstack-form'], languages: ANSWERED }]],
+          ];
 
       return rows;
     }),

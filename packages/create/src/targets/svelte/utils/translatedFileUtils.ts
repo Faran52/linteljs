@@ -32,12 +32,10 @@ const TRANSLATED_SUITES = [
 export const svelteI18nFiles = (): StarterFile[] => {
   return i18nFiles({
     translated: TRANSLATED,
-    pairs: [
-      {
-        target: 'src/routes/contact/+page.svelte',
-        when: hasForm,
-      },
-    ],
+    contact: {
+      target: 'src/routes/contact/+page.svelte',
+      when: hasForm,
+    },
     only: I18N_ONLY_FILES,
   });
 };

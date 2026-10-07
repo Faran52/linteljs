@@ -1,7 +1,7 @@
 import {
   ANSWERED,
   byKey,
-  type Condition,
+  contactCopyGates,
   contactGates,
   type GateRow,
   mswGates,
@@ -108,25 +108,14 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
-const FORM_ENGLISH: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: [undefined],
-}];
-const FORM_I18N: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: ANSWERED,
-}];
-
 const GATES: GateRow[] = [
   ...mswGates(true, false),
   ['__mocks__/msw/native.ts', [{ mocking: ['msw'] }]],
   ['__mocks__/msw/polyfills.ts', [{ mocking: ['msw'] }]],
   ['src/index.ts', [{ mocking: ['msw'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),
-  ['src/app/(tabs)/contact.tsx', FORM_ENGLISH],
-  ['src/app/(tabs)/contact.tsx@i18n', FORM_I18N],
-  ['src/app-tabs-contact.test.tsx', FORM_ENGLISH],
-  ['src/app-tabs-contact.test.tsx@i18n', FORM_I18N],
+  ...contactCopyGates('src/app/(tabs)/contact.tsx'),
+  ...contactCopyGates('src/app-tabs-contact.test.tsx'),
   ['src/config/routes.ts', WITHOUT_FORM],
   ['src/config/routes.ts@with-form', WITH_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],

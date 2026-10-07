@@ -5,7 +5,7 @@ import {
   it,
 } from 'vitest';
 
-import { always } from './gateUtils';
+import { always, hasForm } from './gateUtils';
 import {
   contactApiFiles,
   contactFormFiles,
@@ -13,9 +13,12 @@ import {
   contactSubmitFiles,
   contactSubmitTests,
   filesAt,
+  mocked,
+  variantOf,
 } from './starterUtils';
 
 import type { Answers } from '@config/types';
+import type { StarterFile } from '../types';
 
 describe('filesAt', () => {
   it('makes a bare file of each path when given no fields', () => {
@@ -44,6 +47,35 @@ describe('filesAt', () => {
       },
     ];
     expect(actual).toStrictEqual(expected);
+  });
+});
+
+describe('variantOf', () => {
+  it.each<[StarterFile, string]>([
+    [{ target: 'src/a.ts' }, 'msw'],
+    [{ target: 'src/a.ts', variant: 'with-form' }, 'with-form-msw'],
+  ])('names the variant of %o', (file, expected) => {
+    const actual = variantOf(file, 'msw');
+
+    expect(actual).toBe(expected);
+  });
+});
+
+describe('mocked', () => {
+  it.each<[Partial<Answers>, string[]]>([
+    [{ form: 'tanstack-form' }, ['src/a.ts with-form']],
+    [{ form: 'tanstack-form', mocking: 'msw' }, ['src/a.ts with-form-msw']],
+    [{ mocking: 'msw' }, []],
+  ])('writes the file or its msw twin, under its own condition, given %o', (overrides, expected) => {
+    const files = mocked({
+      target: 'src/a.ts',
+      when: hasForm,
+      variant: 'with-form',
+    });
+
+    const actual = pickedBy(files, overrides);
+
+    expect(actual).toEqual(expected);
   });
 });
 

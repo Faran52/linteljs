@@ -7,6 +7,7 @@ import {
 } from '../constants';
 import { always, hasI18n } from '../utils/gateUtils';
 import {
+  contactTranslated,
   languageUtilsFile,
   languageUtilsTest,
   localeFiles,
@@ -131,14 +132,16 @@ export const angularTarget: TargetBuilder = () => {
       // Reactive Forms ship with Angular, so the Contact page does too; TanStack Form swaps its component.
       ...CONTACT_PAGE_FILES
         .flatMap((target): StarterFile[] => {
+          // The template alone holds the copy.
+          const pairOf = target.endsWith('.html') ? contactTranslated : translated;
           const variants: StarterFile[] = [
-            ...translated<StarterFile>({
+            ...pairOf<StarterFile>({
               target,
               when: (answers) => {
                 return answers.form === undefined;
               },
             }),
-            ...translated<StarterFile>({
+            ...pairOf<StarterFile>({
               target,
               when: (answers) => {
                 return answers.form === 'tanstack-form';

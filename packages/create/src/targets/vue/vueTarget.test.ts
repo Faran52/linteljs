@@ -1,8 +1,7 @@
 import {
-  ANSWERED,
   byKey,
   componentStyleGates,
-  type Condition,
+  contactCopyGates,
   contactGates,
   type GateRow,
   homeGates,
@@ -123,15 +122,6 @@ describe('vueTarget', () => {
   });
 });
 
-const FORM_ENGLISH: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: [undefined],
-}];
-const FORM_I18N: readonly Condition[] = [{
-  form: ANSWERED,
-  languages: ANSWERED,
-}];
-
 const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
@@ -169,8 +159,7 @@ const TRANSLATED_GATES: GateRow[] = [
 
       return rows;
     }),
-  ['src/views/contact/ContactView.vue', FORM_ENGLISH],
-  ['src/views/contact/ContactView.vue@i18n', FORM_I18N],
+  ...contactCopyGates('src/views/contact/ContactView.vue'),
   ...I18N_ONLY_PATHS
     .map((key): GateRow => {
       const row: GateRow = [`${key}@i18n`, WITH_I18N];

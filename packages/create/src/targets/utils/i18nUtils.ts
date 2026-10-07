@@ -5,10 +5,22 @@ import { LANGUAGES } from '@config/constants';
 import { localesOf } from '@utils/answerUtils';
 import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
-import { TRANSLATED_CONFIGS } from '../constants';
+import {
+  MSW_TWIN,
+  TRANSLATED_CONFIGS,
+  TWINNED_KEY,
+} from '../constants';
 
-import { hasI18n, starterApplies } from './gateUtils';
-import { filesAt } from './starterUtils';
+import {
+  hasI18n,
+  hasMsw,
+  starterApplies,
+} from './gateUtils';
+import {
+  filesAt,
+  mocked,
+  variantOf,
+} from './starterUtils';
 
 import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../types';
@@ -16,29 +28,48 @@ import type { StarterFile, StarterTest } from '../types';
 export interface I18nFileLists {
   // Each rewritten by i18n, so each ships as the pair `translated` makes.
   readonly translated: readonly string[];
-  // Pairs whose base carries its own condition, such as the contact page's form.
+  // Pairs whose base carries its own condition, such as the root layout's styling.
   readonly pairs?: readonly StarterFile[];
+  // The contact page, as the three `contactTranslated` makes.
+  readonly contact?: StarterFile;
   // Written only when i18n is on.
   readonly only: readonly string[];
 }
 
+const englishHalf = <T extends StarterFile | StarterTest>(file: T): T => {
+  const half: T = {
+    ...file,
+    when: (answers: Answers) => {
+      return starterApplies(file, answers) && !hasI18n(answers);
+    },
+  };
+
+  return half;
+};
+
+const i18nHalf = <T extends StarterFile | StarterTest>(file: T): T => {
+  const half: T = {
+    ...file,
+    when: (answers: Answers) => {
+      return starterApplies(file, answers) && hasI18n(answers);
+    },
+    variant: variantOf(file, 'i18n'),
+  };
+
+  return half;
+};
+
 // A file i18n rewrites ships as a pair that exclude each other, its `i18n` asset beside its base's.
 export const translated = <T extends StarterFile | StarterTest>(file: T): T[] => {
-  const variants: T[] = [
-    {
-      ...file,
-      when: (answers: Answers) => {
-        return starterApplies(file, answers) && !hasI18n(answers);
-      },
-    },
-    {
-      ...file,
-      when: (answers: Answers) => {
-        return starterApplies(file, answers) && hasI18n(answers);
-      },
-      variant: file.variant === undefined ? 'i18n' : `${file.variant}-i18n`,
-    },
-  ];
+  const variants: T[] = [englishHalf(file), i18nHalf(file)];
+
+  return variants;
+};
+
+// The contact copy says whether the form posts: a locale key under i18n, an `msw` asset in English.
+export const contactTranslated = <T extends StarterFile | StarterTest>(file: T): T[] => {
+  const english = englishHalf(file);
+  const variants: T[] = [...mocked(english), i18nHalf(file)];
 
   return variants;
 };
@@ -47,6 +78,7 @@ export const translated = <T extends StarterFile | StarterTest>(file: T): T[] =>
 export const i18nFiles = ({
   translated: own,
   pairs = [],
+  contact,
   only,
 }: I18nFileLists): StarterFile[] => {
   const files: StarterFile[] = [
@@ -65,6 +97,7 @@ export const i18nFiles = ({
       .flatMap((file) => {
         return translated(file);
       }),
+    ...contact === undefined ? [] : contactTranslated(contact),
     ...filesAt(only, {
       when: hasI18n,
       variant: 'i18n',
@@ -99,7 +132,7 @@ const withoutContact = (source: string): string => {
 
 /**
  * Every target reads the same locales, so a key added once reaches all of them; a project with no contact page
- * gets none of its keys.
+ * gets none of its keys, and one with a contact page gets each key's `Msw` twin in its place under MSW.
  * No predicate: the target has no contact page.
  */
 export const localeFiles = (hasContact?: (answers: Answers) => boolean): StarterFile[] => {
@@ -113,7 +146,11 @@ export const localeFiles = (hasContact?: (answers: Answers) => boolean): Starter
         variant: 'i18n',
         shared: true,
         transform: (source, answers) => {
-          return hasContact?.(answers) === true ? source : withoutContact(source);
+          if (hasContact?.(answers) !== true) {
+            return withoutContact(source);
+          }
+
+          return hasMsw(answers) ? source.replaceAll(TWINNED_KEY, '  "$<key>": ') : source.replaceAll(MSW_TWIN, '');
         },
       };
 

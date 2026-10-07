@@ -3,6 +3,7 @@ import { pickedBy } from '@mocks/starterGates';
 
 import { hasForm } from './gateUtils';
 import {
+  contactTranslated,
   i18nFiles,
   languageUtilsFile,
   languageUtilsTest,
@@ -11,6 +12,7 @@ import {
   translated,
 } from './i18nUtils';
 
+import type { Answers } from '@config/types';
 import type { StarterFile } from '../types';
 
 const ENGLISH = answersFor({});
@@ -49,6 +51,67 @@ describe('translated', () => {
     const actual = [whenOf(base)(formless), whenOf(twin)(formless)];
     const expected = [false, false];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('contactTranslated', () => {
+  it.each<[Partial<Answers>, boolean[]]>([
+    [{}, [
+      true,
+      false,
+      false,
+    ]],
+    [{ mocking: 'msw' }, [
+      false,
+      true,
+      false,
+    ]],
+    [{ languages: ['ar'] }, [
+      false,
+      false,
+      true,
+    ]],
+    [{ languages: ['ar'], mocking: 'msw' }, [
+      false,
+      false,
+      true,
+    ]],
+  ])('writes English, its msw twin or the i18n asset under %o', (overrides, expected) => {
+    const answers = answersFor(overrides);
+    const variants = contactTranslated<StarterFile>({ target: 'src/Contact.tsx' });
+
+    const written = variants
+      .map((file) => {
+        return whenOf(file)(answers);
+      });
+
+    expect(written).toEqual(expected);
+  });
+
+  it('keeps the file\'s own condition, and suffixes its variant', () => {
+    const variants = contactTranslated<StarterFile>({
+      target: 'src/Contact.tsx',
+      when: hasForm,
+      variant: 'with-form',
+    });
+    const formless = answersFor({ mocking: 'msw' });
+
+    const names = variants
+      .map(({ variant }) => {
+        return variant;
+      });
+    const written = variants
+      .some((file) => {
+        return whenOf(file)(formless);
+      });
+
+    expect(names).toEqual([
+      'with-form',
+      'with-form-msw',
+      'with-form-i18n',
+    ]);
+
+    expect(written).toBe(false);
   });
 });
 
@@ -128,6 +191,23 @@ describe('i18nFiles', () => {
     expect(shared).toEqual(expected);
   });
 
+  it('writes the contact page\'s msw twin in English under msw', () => {
+    const files = i18nFiles({
+      translated: [],
+      contact: { target: 'src/Contact.tsx' },
+      only: [],
+    });
+
+    const actual = pickedBy(files, { mocking: 'msw' });
+
+    const expected = [
+      'src/config/statuses.ts base',
+      'src/config/standard.ts base',
+      'src/Contact.tsx msw',
+    ];
+    expect(actual).toEqual(expected);
+  });
+
   it('writes no pairs when given none', () => {
     const actual = i18nFiles({
       translated: [],
@@ -172,6 +252,29 @@ describe('localeFiles', () => {
     const written = english?.transform?.(source, ARABIC);
 
     expect(written).toBe(source);
+  });
+
+  it('drops each msw twin where nothing mocks the form', () => {
+    const [english] = localeFiles(hasForm);
+    const source = '{\n  "contactSent": "Thanks.",\n  "contactSentMsw": "Sent.",\n  "home": "Home"\n}\n';
+
+    const written = english?.transform?.(source, answersFor({ form: 'tanstack-form' }));
+
+    const expected = '{\n  "contactSent": "Thanks.",\n  "home": "Home"\n}\n';
+    expect(written).toBe(expected);
+  });
+
+  it('puts each msw twin in its key\'s place under msw', () => {
+    const [english] = localeFiles(hasForm);
+    const source = '{\n  "contactSent": "Thanks.",\n  "contactSentMsw": "Sent.",\n  "home": "Home"\n}\n';
+
+    const written = english?.transform?.(source, answersFor({
+      form: 'tanstack-form',
+      mocking: 'msw',
+    }));
+
+    const expected = '{\n  "contactSent": "Sent.",\n  "home": "Home"\n}\n';
+    expect(written).toBe(expected);
   });
 
   it('drops every contact key, and only those, where the project has no contact page', () => {
