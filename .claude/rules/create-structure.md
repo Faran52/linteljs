@@ -70,7 +70,7 @@ pipeline/   the stage machine, sync, and the passes over written source.
   through `artifactWriter`; `pipeline/passes/` is the one exception, editing source already written.
 - `emitters/utils/`: `artifactUtils.ts` (the content shapes), `managedUtils.ts` (the managed record),
   `shapeUtils.ts` (a project's own spelling of a file), `importUtils.ts` (import order), `stylingUtils.ts`,
-  `aliasUtils.ts`, `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
+  `aliasUtils.ts`, `layoutUtils.ts` (`inLayout`, a monorepo's move of every non-root artifact under `apps/<name>/`), `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
   literal), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and `pnpm-workspace/`),
   `runnerUtils.ts` (`testRunnerOf`, the runner a project's suites run on, from the record's `testRunner`, read by
   every subject that writes a runner's config, scripts, types or lint layer, and by `sync`'s runner-switch guard).

@@ -806,3 +806,30 @@ describe('the managed record', () => {
     expect(removable).not.toEqual(codeUnitOrder);
   });
 });
+
+describe('the monorepo layout', () => {
+  it('writes the app under apps/<name> and the tooling at the root', () => {
+    const answers = hostedAnswersFor({ layout: 'monorepo' });
+
+    const targets = [...seedArtifacts(answers, '@acme/shop'), ...buildArtifacts(answers, EMPTY_PROJECT, '@acme/shop')]
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual(expect.arrayContaining([
+      'apps/shop/package.json',
+      'apps/shop/eslint.config.ts',
+      'apps/shop/src/main.tsx',
+      '.husky/pre-commit',
+      'linteljs.config.json',
+      MANAGED_PATH,
+    ]));
+
+    const strays = targets
+      .filter((target) => {
+        return target === 'package.json' || target.startsWith('src/');
+      });
+
+    expect(strays).toEqual([]);
+  });
+});

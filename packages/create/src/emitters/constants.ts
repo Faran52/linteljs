@@ -356,3 +356,25 @@ export const ALLOWED_BUILDS = [
   'sharp',
   'unrs-resolver',
 ];
+
+// A monorepo keeps these at the git root; every other artifact moves into the app's directory.
+export const ROOT_DIRECTORIES = [
+  '.agents/',
+  '.claude/',
+  '.cursor/',
+  '.github/',
+  '.husky/',
+  'plugins/',
+  'scripts/',
+];
+
+export const ROOT_FILES = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'README.md',
+  'bunfig.toml',
+  'commitlint.config.js',
+  'linteljs.config.json',
+  'pnpm-workspace.yaml',
+  '.yarnrc.yml',
+];

@@ -1,3 +1,5 @@
+import { unscopedName } from './nameUtils';
+
 import type {
   Answers,
   Browser,
@@ -57,4 +59,8 @@ export const browsersOf = (answers: Answers): Browser[] => {
 
 export const hasTests = (answers: Answers): boolean => {
   return answers.testing !== 'none';
+};
+
+export const appDirectoryOf = (answers: Answers, name: string): string => {
+  return answers.layout === 'monorepo' ? `apps/${unscopedName(name)}` : '.';
 };

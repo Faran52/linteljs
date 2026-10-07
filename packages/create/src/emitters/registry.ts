@@ -45,6 +45,7 @@ import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 import { emitted } from './utils/artifactUtils';
+import { inLayout } from './utils/layoutUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
 // Insertion order is write order within a stage, so `linteljs-config` precedes `package-json`.
@@ -94,10 +95,10 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
 
 // A merge belongs here, not in a stage, or it reaches new projects and no old one.
 export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
-  const artifacts = Object.values(BUILD_EMITTERS)
+  const artifacts = inLayout(answers, name, Object.values(BUILD_EMITTERS)
     .flatMap((emit) => {
       return emit(answers, project, name);
-    });
+    }));
 
   // Computed here: an emitter would have to leave itself out of its own input.
   const removable = removableIn(artifacts);
@@ -114,8 +115,10 @@ export const seedArtifacts = (
   name: string,
   project: ProjectShape = EMPTY_PROJECT,
 ): Artifact[] => {
-  return Object.values(SEED_EMITTERS)
+  const artifacts = inLayout(answers, name, Object.values(SEED_EMITTERS)
     .flatMap((emit) => {
       return emit(answers, project, name);
-    });
+    }));
+
+  return artifacts;
 };

@@ -1,6 +1,7 @@
 import { answersFor } from '@mocks/answersFor';
 
 import {
+  appDirectoryOf,
   browsersOf,
   hasLibrary,
   hasSurface,
@@ -116,5 +117,14 @@ describe('localesOf', () => {
   ])('answers %s', (_label, chosen, expected) => {
     const locales = localesOf(answersFor(chosen));
     expect(locales).toEqual(expected);
+  });
+});
+
+describe('appDirectoryOf', () => {
+  it('answers the root for a single repo and apps/<name> for a monorepo', () => {
+    const single = appDirectoryOf(answersFor({}), '@acme/shop');
+    expect(single).toBe('.');
+    const monorepo = appDirectoryOf(answersFor({ layout: 'monorepo' }), '@acme/shop');
+    expect(monorepo).toBe('apps/shop');
   });
 });
