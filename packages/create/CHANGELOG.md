@@ -49,6 +49,9 @@ when a version's change lives in a sibling it is described there instead:
 - Nuxt is a target.
 - Nuxt renders the contact page with a form library, Vue's `ContactView` at `/contact`, and under MSW starts
   the browser worker from `plugins/msw.client.ts` in development, so the form posts to `/api/contact`.
+- Astro hosting React renders the contact page with a form library, React's `ContactPage` as an island at
+  `/contact`, and under MSW starts the browser worker from the page in development, so the form posts to
+  `/api/contact`. Astro hosting nothing has no contact page, since nothing there renders a form.
 - `typescript` is a target: a library with no framework, built by `tsdown` to `dist/` with its declarations, and
   packable from the start, with a `version`, `exports`, `types` and `files`. It asks no styling, form library,
   data fetching or API mocking question, and leaves out `frontend-design`.

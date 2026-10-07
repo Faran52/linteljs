@@ -1,0 +1,20 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { ContactIsland } from '@views/contact/ContactIsland';
+---
+
+<Layout titleKey="contact">
+  <ContactIsland client:load />
+</Layout>
+
+<script>
+  if (import.meta.env.DEV) {
+    import('@mocks/msw/browser')
+      .then(async ({ worker }) => {
+        await worker.start({ onUnhandledRequest: 'bypass' });
+      })
+      .catch((err: unknown) => {
+        console.error(err);
+      });
+  }
+</script>

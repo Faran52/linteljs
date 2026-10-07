@@ -2,9 +2,14 @@ import {
   ANSWERED,
   byKey,
   componentStyleGates,
+  type Condition,
+  contactGates,
   type GateRow,
   mswGates,
+  NOT_TANSTACK_QUERY,
+  pickedBy,
   TAILWIND,
+  TANSTACK_QUERY,
   walkGates,
   WITH_I18N,
   WITHOUT_I18N,
@@ -224,8 +229,86 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
+const ISLAND: Condition = {
+  form: ANSWERED,
+  hostedFramework: ['react'],
+};
+
+const NO_ISLAND: readonly Condition[] = [{ form: [undefined] }, { hostedFramework: [
+  undefined,
+  'vue',
+  'svelte',
+  'solid',
+] }];
+
+const onIsland = (rows: readonly GateRow[]): GateRow[] => {
+  return rows
+    .map(([key, conditions]): GateRow => {
+      const row: GateRow = [key, conditions
+        .map((condition) => {
+          const gated: Condition = {
+            ...ISLAND,
+            ...condition,
+          };
+
+          return gated;
+        })];
+
+      return row;
+    });
+};
+
+const ISLAND_GATES: GateRow[] = onIsland([
+  ['src/pages/contact.astro', [{ languages: [undefined], mocking: [undefined] }]],
+  ['src/pages/contact.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/pages/contact.astro@i18n', [{ languages: ANSWERED, mocking: [undefined] }]],
+  ['src/pages/contact.astro@i18n-msw', [{ languages: ANSWERED, mocking: ['msw'] }]],
+  ['src/views/contact/ContactIsland.tsx', [{}]],
+  ['src/views/contact/ContactIsland.test.tsx', [{}]],
+  ['src/views/contact/ContactPage.tsx', [{ mocking: [undefined] }]],
+  ['src/views/contact/ContactPage.tsx@msw', [{ mocking: ['msw'] }]],
+  ['src/views/contact/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
+  ['src/views/contact/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['src/components/ui/index.ts', [{}]],
+  ...['button/Button', 'text-input/TextInput']
+    .flatMap((path): GateRow[] => {
+      const rows: GateRow[] = [
+        [`src/components/ui/${path}.tsx`, [{}]],
+        [`src/components/ui/${path}.test.tsx`, [{}]],
+        [`../components/ui/${path}.css`, [{}]],
+      ];
+
+      return rows;
+    }),
+  ...componentStyleGates(['button/Button', 'text-input/TextInput'])
+    .filter(([key]) => {
+      return key.startsWith('src/components/ui/');
+    }),
+  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.test.tsx', [{}]],
+  ...contactGates(['tanstack-query']),
+  ['src/lib/services/contact-form/contactFormService.test.ts', [{}]],
+  ['__mocks__/msw/handlers.ts@with-form', [{ mocking: ['msw'] }]],
+  ['src/config/routes.ts@with-form', [{}]],
+]);
+
 const GATES: GateRow[] = [
-  ...mswGates(false),
+  ...mswGates(false)
+    .filter(([key]) => {
+      return key !== '__mocks__/msw/handlers.ts';
+    }),
+  ['__mocks__/msw/handlers.ts', NO_ISLAND
+    .map((condition) => {
+      const msw: Condition = {
+        ...condition,
+        mocking: ['msw'],
+      };
+
+      return msw;
+    })],
+  ['src/config/routes.ts', NO_ISLAND],
+  ...ISLAND_GATES,
   ...componentStyleGates(['mark/Mark']),
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'], languages: [undefined] }]],
@@ -295,5 +378,18 @@ describe('the status pages', () => {
       { target: 'src/pages/500.astro' },
     ];
     expect(pages).toEqual(expected);
+  });
+});
+
+describe('the contact page', () => {
+  it('is absent when no framework is hosted, since nothing could render the form', () => {
+    const { starterFiles, starterTests } = recordFor();
+    const picked = pickedBy([...starterFiles, ...starterTests], { form: 'tanstack-form' });
+
+    const contact = picked
+      .filter((entry) => {
+        return entry.includes('contact') || entry.includes('with-form');
+      });
+    expect(contact).toEqual([]);
   });
 });

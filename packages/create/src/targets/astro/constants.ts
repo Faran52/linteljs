@@ -14,16 +14,14 @@ export const ALWAYS: readonly string[] = [
   'src/typings/astro.d.ts',
 ];
 
-// Astro takes the spelling with no contact page: a form here would be an island, its own decision.
 export const SHARED: readonly string[] = [
-  'src/config/routes.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',
   'public/robots.txt',
 ];
 
-// No button and no text input: nothing here submits.
+// No button and no text input: the contact island brings its framework's own.
 export const COMPONENTS: Pick<ComponentPaths, 'header' | 'mark'> = {
   header: 'src/components/features/app-header/AppHeader',
   mark: 'src/components/ui/mark/Mark',
@@ -48,3 +46,11 @@ export const VIEW_SUITES: readonly string[] = [
 
 // A client script over the shared locales: no library, so nothing to install.
 export const ASTRO_I18N: I18nParts = { dependencies: [] };
+
+// React's contact page and the parts it reads, under `src/views/` since Astro routes `src/pages/`.
+export const ISLAND_COMPONENTS: Pick<ComponentPaths, 'button' | 'textInput'> = {
+  button: 'src/components/ui/button/Button',
+  textInput: 'src/components/ui/text-input/TextInput',
+};
+
+export const CONTACT_VIEW = 'src/views/contact';

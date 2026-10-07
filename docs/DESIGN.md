@@ -571,8 +571,8 @@ block. The rule reads identically on every target.
 
 ### Per-target notes
 
-- **Astro has nothing to hydrate.** A layout and a directory of pages, a link is a navigation, so there is no
-  router answer and no provider. Each page names a view in `views/`, whose suite renders it through Astro's
+- **Astro hydrates only the contact island.** A layout and a directory of pages, a link is a navigation, so there
+  is no router answer and no app-wide provider. Each page names a view in `views/`, whose suite renders it through Astro's
   container, so the tables the templates read are measured. `isCurrentPath` exists for a real reason: Astro
   serves `/about` and `/about/` as the same page.
 - **The extension popup is built node by node**, with `document.createElement`, not from a string of markup. An
@@ -604,8 +604,14 @@ The form, Zod and data answers are demonstrated on every target that renders a c
 its screen reuses React's contact hooks, api spellings and providers, so a data layer there is the one React runs.
 Angular always renders one, on Reactive Forms, since `@angular/forms` ships with the framework; TanStack Form swaps
 the page's component for `injectForm`. Nuxt's `pages/contact.vue` renders Vue's `ContactView`, with
-`plugins/data.ts` installing Vue's data provider. Astro and the extension install the form library without a demo, and Nuxt declares its stores without
-a counter; recorded here so the absence reads as a decision rather than a forgotten file.
+`plugins/data.ts` installing Vue's data provider. Astro's `pages/contact.astro` hydrates React's `ContactPage` as an
+island: `src/pages/` is Astro's router, so the page, its hook and the island sit under `views/contact/`, and
+`ContactIsland` wraps the data provider, since an island is its own React root. Its suite renders the island and
+carries the page's cases, so no store provider ships for a test alone. Astro hosting nothing has no contact page: no
+framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. The islands for Vue,
+Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
+without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
+rather than a forgotten file.
 
 ## The starter page
 
@@ -905,7 +911,7 @@ everywhere, `browser.ts` wherever a dev server serves a directory the worker can
 but React Native, and `native.ts` there. The entry starts the worker in development only and does not await it: nothing posts before a
 person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
 `root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
-`init` in `hooks.client.ts`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
+`init` in `hooks.client.ts`, Astro's `pages/contact.astro` in a client script under `import.meta.env.DEV`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
 for it anyway). The web extension starts none: its popup fetches nothing under `/api`, so a worker there would answer
 no request.
 
