@@ -63,10 +63,11 @@ describe('reactTarget', () => {
   });
 
   it.each([
-    ['react-router', { '@routes/*': './src/routes/*', '@pages/*': './src/pages/*' }],
-    ['react-router-framework', { '@pages/*': './src/pages/*' }],
-    ['tanstack-router', { '@pages/*': './src/pages/*' }],
-  ] as const)('aliases src/routes/ only where the %s starter imports it by path', (router, expected) => {
+    'react-router',
+    'react-router-framework',
+    'tanstack-router',
+  ] as const)('aliases the route table, then the pages it imports, for %s', (router) => {
+    const expected = { '@router/*': './src/router/*', '@pages/*': './src/pages/*' };
     const { routeAlias } = recordFor({ router });
 
     expect(routeAlias).toEqual(expected);
@@ -307,7 +308,6 @@ const GATES: GateRow[] = [
   }]],
   ['src/components/features/language-select/LanguageSelect.tsx@i18n', WITH_I18N],
   ['src/components/features/language-select/LanguageSelect.test.tsx@i18n', WITH_I18N],
-  ['src/routes/router.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/root.tsx@react-router-framework', [{
     router: ['react-router-framework'],
     styling: [undefined, 'tailwind'],
@@ -335,8 +335,8 @@ const GATES: GateRow[] = [
   ['src/routes/about/AboutRoute.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/version/VersionRoute.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/not-found/NotFoundRoute.tsx@react-router-framework', FRAMEWORK_MODE],
-  ['src/pages/routes.tsx', WITHOUT_FORM],
-  ['src/pages/routes.tsx@with-form', WITH_FORM],
+  ['src/router/router.tsx', WITHOUT_FORM],
+  ['src/router/router.tsx@with-form', WITH_FORM],
   ...homeGates('src/pages/home/HomePage.tsx'),
   ['src/pages/home/HomePage.test.tsx', WITHOUT_I18N],
   ['src/pages/home/HomePage.test.tsx@i18n', WITH_I18N],

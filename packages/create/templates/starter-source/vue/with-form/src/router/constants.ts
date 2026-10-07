@@ -1,17 +1,15 @@
-import { NAME } from '@config/linteljs';
+import AboutView from '@views/about/AboutView.vue';
+import ContactView from '@views/contact/ContactView.vue';
+import HomeView from '@views/home/HomeView.vue';
+import VersionView from '@views/version/VersionView.vue';
 
-import { AboutPage } from './about/AboutPage';
-import { ContactPage } from './contact/ContactPage';
-import { HomePage } from './home/HomePage';
-import { VersionPage } from './version/VersionPage';
-
-import type { ReactNode } from 'react';
+import type { Component } from 'vue';
 
 export interface Route {
   readonly id: string;
   readonly label: string;
   readonly path: string;
-  readonly element: ReactNode;
+  readonly component: Component;
 }
 
 // A non-empty tuple: typed as an array, the first entry is possibly-undefined for a case that cannot happen.
@@ -20,24 +18,24 @@ export const ROUTES: readonly [Route, ...Route[]] = [
     id: 'home',
     label: 'Home',
     path: '/',
-    element: <HomePage name={NAME} />,
+    component: HomeView,
   },
   {
     id: 'contact',
     label: 'Contact',
     path: '/contact',
-    element: <ContactPage />,
+    component: ContactView,
   },
   {
     id: 'about',
     label: 'About',
     path: '/about',
-    element: <AboutPage />,
+    component: AboutView,
   },
   {
     id: 'version',
     label: 'Version',
     path: '/version',
-    element: <VersionPage />,
+    component: VersionView,
   },
 ];

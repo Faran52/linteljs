@@ -63,7 +63,7 @@ export const vueTarget: TargetBuilder = () => {
     naming: sfcNaming('vue'),
     folderNaming: { 'src/**/': FOLDER },
     hooksAlias: { '@composables/*': './src/lib/composables/*' },
-    routeAlias: { '@views/*': './src/views/*' },
+    routeAlias: { '@router/*': './src/router/*', '@views/*': './src/views/*' },
     publicDirectory: 'public',
     styleEntry: 'src/styles/main.css',
     starterStyles: [
@@ -118,13 +118,13 @@ export const vueTarget: TargetBuilder = () => {
       ...contactApiFiles(),
       ...contactFormFiles(),
       {
-        target: 'src/views/routes.ts',
+        target: 'src/router/constants.ts',
         when: (answers) => {
           return !hasForm(answers);
         },
       },
       {
-        target: 'src/views/routes.ts',
+        target: 'src/router/constants.ts',
         when: hasForm,
         variant: 'with-form',
       },
@@ -178,6 +178,10 @@ export const vueTarget: TargetBuilder = () => {
       LOCALES_TEST,
       languageUtilsTest(),
       COOKIE_UTILS_TEST,
+      {
+        target: 'src/router/router.test.ts',
+        covers: 'src/router/router.ts',
+      },
       {
         target: 'src/components/ui/app-button/AppButton.test.ts',
         covers: 'src/components/ui/app-button/AppButton.vue',

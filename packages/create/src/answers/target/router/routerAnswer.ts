@@ -17,7 +17,7 @@ export const routerAnswer = {
   values: {
     'react-router': {
       label: 'React Router',
-      hint: 'Declarative routes in src/routes/router.tsx',
+      hint: 'Declarative routes in src/App.tsx',
       only: (target) => {
         return target.routers?.includes('react-router') === true;
       },

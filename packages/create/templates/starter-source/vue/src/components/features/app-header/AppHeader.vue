@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 
-import { ROUTES } from '@views/routes';
+import { ROUTES } from '@router/constants';
 
 import { styles } from './appHeaderStyles';
 

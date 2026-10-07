@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils';
 import { dataProvider } from '@lib/providers/data/dataProvider';
 import { storeProvider } from '@lib/providers/store/storeProvider';
 
-import { ROUTES } from '@views/routes';
+import { ROUTES } from '@router/constants';
+import { router } from '@router/router';
 
 import App from './App.vue';
-import { router } from './router';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   await router.push(path);

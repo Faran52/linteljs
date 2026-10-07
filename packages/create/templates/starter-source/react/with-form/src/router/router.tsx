@@ -1,8 +1,9 @@
 import { NAME } from '@config/linteljs';
 
-import { AboutPage } from './about/AboutPage';
-import { HomePage } from './home/HomePage';
-import { VersionPage } from './version/VersionPage';
+import { AboutPage } from '@pages/about/AboutPage';
+import { ContactPage } from '@pages/contact/ContactPage';
+import { HomePage } from '@pages/home/HomePage';
+import { VersionPage } from '@pages/version/VersionPage';
 
 import type { ReactNode } from 'react';
 
@@ -20,6 +21,12 @@ export const ROUTES: readonly [Route, ...Route[]] = [
     label: 'Home',
     path: '/',
     element: <HomePage name={NAME} />,
+  },
+  {
+    id: 'contact',
+    label: 'Contact',
+    path: '/contact',
+    element: <ContactPage />,
   },
   {
     id: 'about',

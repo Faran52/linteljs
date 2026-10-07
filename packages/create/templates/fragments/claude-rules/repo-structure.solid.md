@@ -36,7 +36,7 @@ src/
     primitives/   createX, reactive state owners
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
-  pages/routes.tsx  ROUTES, the one list of pages the header and the router read
+  router/router.tsx  ROUTES, the one list of pages the header and the router read
 ```
 
 The store is Solid's own: `createStore` from `solid-js/store`, which ships inside `solid-js`. No <!-- when no-store -->
@@ -66,6 +66,8 @@ Imports run one way:
   `components/` or `store/`.
 - `store/*` does not import from `pages/` or `components/`.
 - `components/*` does not import from `pages/`.
+- `router/*` imports pages and config. The header links every page `ROUTES` lists, the one import
+  into `router/` from below it.
 - One page domain does not import from another. Lift the shared part instead.
 - `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
   and never write a `src/` prefix.

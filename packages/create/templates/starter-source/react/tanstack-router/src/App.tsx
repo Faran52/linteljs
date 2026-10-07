@@ -13,7 +13,7 @@ import { AppHeader } from '@features/app-header/AppHeader';
 import { RouteError } from '@features/route-error/RouteError';
 import { StatusPage } from '@features/status-page/StatusPage';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import type { FC } from 'react';
 

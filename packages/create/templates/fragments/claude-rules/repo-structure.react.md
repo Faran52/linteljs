@@ -36,8 +36,7 @@ src/
     hooks/        cross-cutting hooks
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
-  pages/routes.tsx  ROUTES, the one list of pages the header and the router read
-  routes/router.tsx  the react-router route table <!-- when react-router -->
+  router/router.tsx  ROUTES, the one list of pages the header and the router read
   root.tsx  routes.ts  routes/<kebab>/{Name}Route.tsx  framework mode's shell, route table and route modules <!-- when react-router-framework -->
 ```
 
@@ -66,6 +65,8 @@ Imports run one way: `pages → components → store → utils / services / hook
   or `store/`.
 - `store/*` does not import from `pages/` or `components/`.
 - `components/*` does not import from `pages/`.
+- `router/*` imports pages and config. The header links every page `ROUTES` lists, the one import
+  into `router/` from below it.
 - One page domain does not import from another. Lift the shared part instead.
 - `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
   and never write a `src/` prefix.

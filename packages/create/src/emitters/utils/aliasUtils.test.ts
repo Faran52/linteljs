@@ -17,6 +17,8 @@ describe('buildAliases', () => {
   it('builds the default React alias map, ordered as the spine reads top-down', () => {
     const aliases = buildAliases(answersFor({ target: 'react' }));
     const expected = {
+      '@router/*': './src/router/*',
+      '@router': './src/router',
       '@pages/*': './src/pages/*',
       '@pages': './src/pages',
       '@components/*': './src/components/*',
@@ -48,13 +50,13 @@ describe('buildAliases', () => {
   it.each([
     [
       'solid',
-      '@pages/*',
-      './src/pages/*',
+      '@router/*',
+      './src/router/*',
     ],
     [
       'vue',
-      '@views/*',
-      './src/views/*',
+      '@router/*',
+      './src/router/*',
     ],
     [
       'nuxt',
@@ -74,14 +76,14 @@ describe('buildAliases', () => {
     expect(first).toEqual(expected);
   });
 
-  it('leads the react router data mode map with its routes, then the pages they import', () => {
-    const aliases = buildAliases(answersFor({ target: 'react', router: 'react-router' }));
+  it('leads the react map with its route table, then the pages it imports', () => {
+    const aliases = buildAliases(answersFor({ target: 'react' }));
     const leading = Object.keys(aliases)
       .slice(0, 4);
 
     const expected = [
-      '@routes/*',
-      '@routes',
+      '@router/*',
+      '@router',
       '@pages/*',
       '@pages',
     ];

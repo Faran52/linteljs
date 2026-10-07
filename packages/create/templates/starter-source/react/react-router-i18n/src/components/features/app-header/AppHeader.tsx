@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { LanguageSelect } from '../language-select/LanguageSelect';
 

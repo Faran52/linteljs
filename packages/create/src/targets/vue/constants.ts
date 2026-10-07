@@ -4,7 +4,7 @@ import type { ComponentPaths } from '../utils/styleUtils';
 
 export const ALWAYS: readonly string[] = [
   'src/App.vue',
-  'src/router/index.ts',
+  'src/router/router.ts',
   'src/components/ui/app-mark/AppMark.vue',
   'src/components/features/error-boundary/ErrorBoundary.vue',
 ];

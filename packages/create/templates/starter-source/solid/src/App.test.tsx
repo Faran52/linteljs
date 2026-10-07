@@ -9,7 +9,7 @@ import { CHECK } from '@config/linteljs';
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { App } from './App';
 

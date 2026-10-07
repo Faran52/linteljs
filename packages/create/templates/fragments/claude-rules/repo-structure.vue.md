@@ -36,7 +36,7 @@ src/
     composables/  cross-cutting composables
     apis/         endpoint definitions and schemas
   views/<kebab>/  {Name}View.vue, one per route, and its private slots
-  router/         the route table
+  router/         router.ts, and constants.ts with ROUTES, the one list of views the header reads
 ```
 
 Where Pinia was selected, its stores live in `lib/store/`, not the conventional `src/stores/`. One
@@ -69,5 +69,7 @@ Imports run one way:
 - `components/*` does not import from `views/`.
 - `router/*` imports views, config, and a component a route renders directly, such as the status
   page; never a store, util or service.
+- The header links every view `router/constants.ts` lists, the one import into `router/` from
+  below it.
 - `tsconfig.json` is canonical for path aliases. Use the configured ones; never invent a shorthand
   and never write a `src/` prefix.

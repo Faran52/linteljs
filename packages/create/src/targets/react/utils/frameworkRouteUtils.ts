@@ -12,7 +12,7 @@ export const hasRouter = (answers: Answers): boolean => {
   return answers.router !== undefined;
 };
 
-// The header links every page `pages/routes.tsx` lists, so the route config lists the contact page with it.
+// The header links every page `router/router.tsx` lists, so the route config lists the contact page with it.
 const withForm = (answers: Answers): boolean => {
   return isFrameworkMode(answers) && hasForm(answers);
 };

@@ -2,7 +2,7 @@ import { For, type JSX } from 'solid-js';
 
 import { t, translateId } from '@i18n';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { LanguageSelect } from '../language-select/LanguageSelect';
 

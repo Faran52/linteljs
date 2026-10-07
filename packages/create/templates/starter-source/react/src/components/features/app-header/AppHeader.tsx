@@ -1,4 +1,4 @@
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { styles } from './appHeaderStyles';
 

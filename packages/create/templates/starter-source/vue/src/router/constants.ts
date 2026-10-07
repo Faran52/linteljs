@@ -1,6 +1,6 @@
-import AboutView from './about/AboutView.vue';
-import HomeView from './home/HomeView.vue';
-import VersionView from './version/VersionView.vue';
+import AboutView from '@views/about/AboutView.vue';
+import HomeView from '@views/home/HomeView.vue';
+import VersionView from '@views/version/VersionView.vue';
 
 import type { Component } from 'vue';
 

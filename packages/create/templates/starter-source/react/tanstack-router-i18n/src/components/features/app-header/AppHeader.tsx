@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Link } from '@tanstack/react-router';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { LanguageSelect } from '../language-select/LanguageSelect';
 

@@ -51,6 +51,8 @@ const config = await composeConfig({
     'plugins/linteljs/**',
   ],
   aliases: {
+    '@router/*': './src/router/*',
+    '@router': './src/router',
     '@pages/*': './src/pages/*',
     '@pages': './src/pages',
     '@components/*': './src/components/*',

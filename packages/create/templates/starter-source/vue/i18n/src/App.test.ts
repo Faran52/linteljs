@@ -11,10 +11,10 @@ import {
 } from '@i18n/config';
 import { storedLanguage } from '@i18n/utils/cookieUtils';
 
-import { ROUTES } from '@views/routes';
+import { ROUTES } from '@router/constants';
+import { router } from '@router/router';
 
 import App from './App.vue';
-import { router } from './router';
 
 type Bundle = Readonly<Record<string, string>>;
 

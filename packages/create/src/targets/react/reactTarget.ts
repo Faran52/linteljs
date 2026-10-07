@@ -45,12 +45,11 @@ import {
 
 import {
   ALWAYS,
-  DATA_ROUTES_ALIAS,
   DECLARATIVE_ROUTERS,
-  PAGES_ALIAS,
   REACT_ACCESSORS,
   REACT_I18N,
   ROOT_VARIANTS,
+  ROUTER_ALIAS,
   ROUTERS,
   SHARED,
   WELL_KNOWN_404,
@@ -96,6 +95,10 @@ const reactStarterTests = (): StarterTest[] => {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
     }),
+    {
+      target: 'src/router/router.test.ts',
+      covers: 'src/router/router.tsx',
+    },
     {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
@@ -191,7 +194,7 @@ const baseReactTarget = (): TargetRecord => {
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,
-    routeAlias: PAGES_ALIAS,
+    routeAlias: ROUTER_ALIAS,
     publicDirectory: 'public',
     styleEntry: 'src/index.css',
     vitePlugin: REACT_VITE_PLUGIN,
@@ -208,13 +211,13 @@ const baseReactTarget = (): TargetRecord => {
       languageUtilsFile(),
       COOKIE_UTILS,
       {
-        target: 'src/pages/routes.tsx',
+        target: 'src/router/router.tsx',
         when: (answers) => {
           return answers.form === undefined;
         },
       },
       {
-        target: 'src/pages/routes.tsx',
+        target: 'src/router/router.tsx',
         when: hasForm,
         variant: 'with-form',
       },
@@ -361,13 +364,6 @@ const baseReactTarget = (): TargetRecord => {
 
           return file;
         }),
-      {
-        target: 'src/routes/router.tsx',
-        when: (answers) => {
-          return answers.router === 'react-router';
-        },
-        variant: 'react-router',
-      },
       // No `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's build owns the entry.
       // StyleX's dev CSS goes into `index.html`, so its framework document links it itself.
       ...ROOT_VARIANTS
@@ -461,7 +457,6 @@ export const reactTarget: TargetBuilder = (answers) => {
   const record: TargetRecord = {
     ...baseReactTarget(),
     ...(isFrameworkMode(answers) ? frameworkMode() : {}),
-    ...(answers.router === 'react-router' ? { routeAlias: DATA_ROUTES_ALIAS } : {}),
     i18n: REACT_I18N,
   };
 

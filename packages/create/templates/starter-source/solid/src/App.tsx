@@ -9,7 +9,7 @@ import { NAME } from '@config/linteljs';
 import { AppHeader } from '@features/app-header/AppHeader';
 import { ErrorBoundary } from '@features/error-boundary/ErrorBoundary';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 export interface AppProps {
   readonly initialPage?: string;

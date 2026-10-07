@@ -1,8 +1,8 @@
 import { NAME } from '@config/linteljs';
 
-import { AboutPage } from './about/AboutPage';
-import { HomePage } from './home/HomePage';
-import { VersionPage } from './version/VersionPage';
+import { AboutPage } from '@pages/about/AboutPage';
+import { HomePage } from '@pages/home/HomePage';
+import { VersionPage } from '@pages/version/VersionPage';
 
 import type { JSX } from 'solid-js';
 

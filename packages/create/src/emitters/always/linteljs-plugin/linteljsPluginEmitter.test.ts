@@ -172,11 +172,11 @@ describe('referenceArtifacts', () => {
     const plain = await textOf({ target: 'react' }, 'repo-structure.md');
     const routed = await textOf({
       target: 'react',
-      router: 'react-router',
+      router: 'react-router-framework',
     }, 'repo-structure.md');
 
-    expect(plain).not.toContain('routes/router.tsx');
-    expect(routed).toContain('\n  routes/router.tsx  the react-router route table\n');
+    expect(plain).not.toContain('routes/<kebab>/{Name}Route.tsx');
+    expect(routed).toContain('\n  root.tsx  routes.ts  routes/<kebab>/{Name}Route.tsx  framework mode\'s shell');
     expect(routed).not.toContain('<!-- when');
   });
 

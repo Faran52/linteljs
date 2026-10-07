@@ -56,7 +56,7 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
 describe('vueTarget', () => {
   it('routes whatever was answered', () => {
     const destinations = destinationsFor();
-    expect(destinations).toContain('src/router/index.ts');
+    expect(destinations).toContain('src/router/router.ts');
 
     const headers = destinationsFor({ languages: ['ar'] })
       .filter((target) => {
@@ -188,8 +188,8 @@ const GATES: GateRow[] = [
     'text-input/TextInput',
   ]),
   ...contactGates(['tanstack-query']),
-  ['src/views/routes.ts', WITHOUT_FORM],
-  ['src/views/routes.ts@with-form', WITH_FORM],
+  ['src/router/constants.ts', WITHOUT_FORM],
+  ['src/router/constants.ts@with-form', WITH_FORM],
   ...homeGates('src/views/home/HomeView.vue'),
   ['src/views/contact/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],

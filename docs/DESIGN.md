@@ -201,7 +201,7 @@ and placed later it lands on the same glob and takes the `parserOptions` carryin
 Vue or Nuxt project, because the program behind lint reads an SFC import as an error type and `vue-tsc --noEmit`
 checks that seam. Measured against the `lint:starters` projects, every answer on, with the two rules back on: Vue
 gave 11 findings, every one an SFC import (`createApp(App)` in `main.ts`, a route's `component:` in
-`router/index.ts` and `views/routes.ts`, a `mount(ContactView)` result in its suite). The seam is Nuxt's too: a
+`router/router.ts` and `router/constants.ts`, a `mount(ContactView)` result in its suite). The seam is Nuxt's too: a
 probe `.ts` importing `AppHeader.vue` gives the same error-typed finding, since Nuxt's generated types declare no
 `*.vue` module. A glob cannot name what imports an SFC (an entry, a router, a route table and any suite all do), and
 a list of today's starter paths would miss the first such file a project adds.
@@ -952,8 +952,8 @@ vocabulary for the same job.
 
 ### The router answer
 
-Only the React target has a `routers` slot: `react-router`, declarative, with its route table in
-`src/routes/router.tsx`; `react-router-framework`, see [Targets](#react-router-framework-mode-is-a-router-value-nuxt-is-a-target);
+Only the React target has a `routers` slot: `react-router`, declarative, built in `src/App.tsx` from
+`src/router/router.tsx`; `react-router-framework`, see [Targets](#react-router-framework-mode-is-a-router-value-nuxt-is-a-target);
 and `tanstack-router`. Next, SvelteKit, Nuxt, Expo and Astro route by file; Vue and Angular install their
 router unconditionally, because an application on either routes; Solid's is a `pnpm add`.
 

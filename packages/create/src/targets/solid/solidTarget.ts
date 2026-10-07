@@ -64,7 +64,7 @@ export const solidTarget: TargetBuilder = () => {
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: { '@primitives/*': './src/lib/primitives/*' },
-    routeAlias: { '@pages/*': './src/pages/*' },
+    routeAlias: { '@router/*': './src/router/*', '@pages/*': './src/pages/*' },
     publicDirectory: 'public',
     styleEntry: 'src/index.css',
     starterStyles: [
@@ -136,13 +136,13 @@ export const solidTarget: TargetBuilder = () => {
         shared: true,
       },
       {
-        target: 'src/pages/routes.tsx',
+        target: 'src/router/router.tsx',
         when: (answers) => {
           return !hasForm(answers);
         },
       },
       {
-        target: 'src/pages/routes.tsx',
+        target: 'src/router/router.tsx',
         when: hasForm,
         variant: 'with-form',
       },
@@ -176,6 +176,10 @@ export const solidTarget: TargetBuilder = () => {
       {
         target: 'src/App.test.tsx',
         covers: 'src/App.tsx',
+      },
+      {
+        target: 'src/router/router.test.ts',
+        covers: 'src/router/router.tsx',
       },
       {
         target: 'src/components/features/status-page/StatusPage.test.tsx',

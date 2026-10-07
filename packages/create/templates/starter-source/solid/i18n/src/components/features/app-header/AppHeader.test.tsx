@@ -7,7 +7,7 @@ import {
 import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
 
-import { ROUTES } from '@pages/routes';
+import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
 import { styles } from './appHeaderStyles';

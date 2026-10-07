@@ -203,27 +203,16 @@ describe('starter files for a router', () => {
     const written = targetsFor({});
 
     expect(written).toContain('src/main.tsx');
-    expect(written).not.toContain('src/routes/router.tsx');
     expect(written).not.toContain('src/routeTree.gen.ts');
   });
 
-  it.each<[Router, string, boolean]>([
-    [
-      'react-router',
-      "from 'react-router'",
-      true,
-    ],
-    [
-      'tanstack-router',
-      "from '@tanstack/react-router'",
-      false,
-    ],
-  ])('writes the %s app and nothing generated beside it', async (router, imported, table) => {
+  it.each<[Router, string]>([
+    ['react-router', "from 'react-router'"],
+    ['tanstack-router', "from '@tanstack/react-router'"],
+  ])('writes the %s app and nothing generated beside it', async (router, imported) => {
     const app = await textOf({ router }, 'src/App.tsx');
 
     expect(app).toContain(imported);
-    const included = targetsFor({ router }).includes('src/routes/router.tsx');
-    expect(included).toBe(table);
     const targets = targetsFor({ router });
     expect(targets).not.toContain('src/routeTree.gen.ts');
   });
@@ -322,12 +311,12 @@ describe('the starter source', () => {
   it.each<[TargetId, string, string]>([
     [
       'solid',
-      'src/pages/routes.tsx',
+      'src/router/router.tsx',
       'solid',
     ],
     [
       'vue',
-      'src/views/routes.ts',
+      'src/router/constants.ts',
       'vue',
     ],
     [

@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router';
 
 import { useI18n } from 'vue-i18n';
 
-import { ROUTES } from '@views/routes';
+import { ROUTES } from '@router/constants';
 
 import LanguageSelect from '../language-select/LanguageSelect.vue';
 
