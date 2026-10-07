@@ -8,7 +8,12 @@ import { type AnswerKey, type JsonValue } from '@answers';
 
 import { PROJECT_NAME_RULE } from '../../constants';
 import { isValidProjectName } from '../../utils/nameUtils';
-import { CLI_OPTIONS, EXISTING_MONOREPO } from '../constants';
+import {
+  ADD_NEEDS_SYNC,
+  CLI_OPTIONS,
+  EXISTING_MONOREPO,
+  PACKAGE_NAME_RULE,
+} from '../constants';
 
 import {
   answerOptions,
@@ -26,6 +31,8 @@ export interface CliOptions {
   answers?: AnswerFlags;
   skip: Stage[];
   existing: boolean;
+  // `sync --add <name>`: the package to write.
+  add?: string;
   // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
@@ -107,6 +114,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unknownSkips,
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
+    ...(values.add === undefined ? {} : { add: values.add }),
     existing: values.existing,
     // On `sync` an answer flag answers nothing, so it must not stand in for the confirmation.
     yes: values.yes || (answered && command === 'create'),
@@ -128,6 +136,21 @@ const projectNameError = (options: CliOptions): string | undefined => {
   return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
 };
 
+// The name becomes a path under packages/, so nothing that could leave it gets that far.
+const addError = (options: CliOptions): string | undefined => {
+  if (options.add === undefined) {
+    return undefined;
+  }
+
+  if (options.command !== 'sync') {
+    return ADD_NEEDS_SYNC;
+  }
+
+  const isPackageName = isValidProjectName(options.add) && !options.add.startsWith('@');
+
+  return isPackageName ? undefined : `Package name must be ${PACKAGE_NAME_RULE}.`;
+};
+
 export const argumentError = (options: CliOptions): string | undefined => {
   if (options.unexpectedArguments.length > 0) {
     const plural = options.unexpectedArguments.length === 1 ? '' : 's';
@@ -143,5 +166,5 @@ export const argumentError = (options: CliOptions): string | undefined => {
     return EXISTING_MONOREPO;
   }
 
-  return projectNameError(options);
+  return addError(options) ?? projectNameError(options);
 };

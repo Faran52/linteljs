@@ -54,7 +54,11 @@ import {
 import { targetCases } from '@e2e/matrix/matrix';
 import { targetFor } from '@targets';
 
-import { buildArtifacts, seedArtifacts } from './registry';
+import {
+  buildArtifacts,
+  packageArtifacts,
+  seedArtifacts,
+} from './registry';
 import { buildAliases } from './utils/aliasUtils';
 
 interface AnswerOverrides {
@@ -843,5 +847,35 @@ describe('the monorepo layout', () => {
       });
 
     expect(strays).toEqual([]);
+  });
+});
+
+describe('packageArtifacts', () => {
+  it('writes a TypeScript library\'s own files under packages/<name>, and no root file', () => {
+    const answers = hostedAnswersFor({
+      target: 'react',
+      layout: 'monorepo',
+    });
+
+    const targets = packageArtifacts(answers, 'lib')
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual(expect.arrayContaining([
+      'packages/lib/package.json',
+      'packages/lib/eslint.config.ts',
+      'packages/lib/tsconfig.json',
+      'packages/lib/lint-staged.config.js',
+      'packages/lib/tsdown.config.ts',
+      'packages/lib/src/index.ts',
+    ]));
+
+    const outside = targets
+      .filter((target) => {
+        return !target.startsWith('packages/lib/');
+      });
+
+    expect(outside).toEqual([]);
   });
 });

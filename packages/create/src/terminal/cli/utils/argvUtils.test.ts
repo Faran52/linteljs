@@ -30,6 +30,18 @@ describe('parseCliArgs', () => {
     expect(options.yes).toBe(true);
   });
 
+  it('carries --add only when given', () => {
+    const added = parseCliArgs([
+      'sync',
+      '--add',
+      'lib',
+    ]);
+    const plain = parseCliArgs(['sync']);
+
+    expect(added.add).toBe('lib');
+    expect(plain).not.toHaveProperty('add');
+  });
+
   it('no longer knows --force', () => {
     const parsing = (): ReturnType<typeof parseCliArgs> => {
       return parseCliArgs(['sync', '--force']);
@@ -170,6 +182,43 @@ describe('argumentError', () => {
       ],
       '--existing runs in a single repo',
     ],
+    [
+      'a package added on create',
+      [
+        'demo-app',
+        '--add',
+        'lib',
+      ],
+      '--add runs with sync',
+    ],
+    [
+      'a scoped package name',
+      [
+        'sync',
+        '--add',
+        '@acme/lib',
+      ],
+      "Package name must be an unscoped npm package name: lowercase letters, digits, '.', '-' and '_' only, "
+      + 'starting with a letter or digit, at most 214 characters, and not a reserved npm name.',
+    ],
+    [
+      'a package name that leaves packages/',
+      [
+        'sync',
+        '--add',
+        '../lib',
+      ],
+      'Package name must be',
+    ],
+    [
+      'a package added with an invalid project name',
+      [
+        'My-App',
+        '--add',
+        'lib',
+      ],
+      '--add runs with sync',
+    ],
   ])('refuses %s', (_case, argv, message) => {
     const parsed = parseCliArgs(argv);
     const messageStartsWith = argumentError(parsed)?.startsWith(message);
@@ -187,6 +236,11 @@ describe('argumentError', () => {
     ['a valid name', ['demo-app']],
     ['no name', []],
     ['sync', ['sync']],
+    ['a package added on sync', [
+      'sync',
+      '--add',
+      'lib',
+    ]],
     ['a monorepo in a new directory', [
       'demo-app',
       '--layout',

@@ -95,6 +95,7 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
+  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript library, and nothing else
   --version, -v
   --help, -h
 ```
@@ -135,6 +136,12 @@ on stderr, and the run exits 1. Declining a step exits 0. Nothing else is touche
 scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs, the agent files outside
 `plugins/linteljs/`, `linteljs.config.json`, your README and the starter source are yours after `create`. A
 project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to move them.
+
+In a monorepo, `sync --add <name>` writes a TypeScript library to `packages/<name>/` and does nothing else: its
+`package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and a starter
+`src/`, on the manager, Node and type safety `linteljs.config.json` records. No root file changes, since the
+workspace globs already take `packages/*`; run `<pm> install` after. `<name>` is an unscoped package name, and the
+run refuses a single repo and a name `apps/` or `packages/` already holds.
 
 ## Agents
 

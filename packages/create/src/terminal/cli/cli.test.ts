@@ -1,13 +1,14 @@
 import {
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rename,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import {
   chdir,
   cwd as processCwd,
@@ -792,6 +793,116 @@ describe('main: sync', () => {
     expect(backup).toBe('export default [];\n');
     const hasRootBackup = await exists(join(root, 'eslint.config.ts.bak'));
     expect(hasRootBackup).toBe(false);
+  });
+
+  const monorepo = async (): Promise<string> => {
+    await runMain([
+      'demo',
+      '--target',
+      'react',
+      '--layout',
+      'monorepo',
+      '--no-install',
+      '--yes',
+    ]);
+
+    const root = join(project, 'demo');
+    chdir(root);
+
+    return root;
+  };
+
+  // Every file outside packages/, with its text.
+  const outsidePackages = async (root: string): Promise<string[]> => {
+    const entries = await readdir(root, {
+      recursive: true,
+      withFileTypes: true,
+    });
+    const paths = entries
+      .filter((entry) => {
+        return entry.isFile();
+      })
+      .map((entry) => {
+        const path = join(entry.parentPath, entry.name);
+
+        return relative(root, path);
+      })
+      .filter((path) => {
+        return !path.startsWith('packages/');
+      });
+    const texts = paths
+      .map(async (path) => {
+        const text = await readFile(join(root, path), 'utf8');
+
+        return `${path}\n${text}`;
+      });
+
+    return await Promise.all(texts);
+  };
+
+  it('adds a library under packages/ in a monorepo, and changes no other file', async () => {
+    const root = await monorepo();
+    const before = await outsidePackages(root);
+
+    const { code, printed } = await runMain([
+      'sync',
+      '--add',
+      'lib',
+    ], scripted([]));
+
+    expect(code).toBe(0);
+    expect(printed).toContain('wrote packages/lib/package.json\n');
+    expect(printed).toContain('wrote packages/lib/src/index.ts\n');
+    expect(printed).toContain('Install it:\n  pnpm install\n');
+    const manifestText = await readFile(join(root, 'packages/lib/package.json'), 'utf8');
+    const manifest = parsePackageJson(manifestText);
+    expect(manifest.name).toBe('lib');
+    const after = await outsidePackages(root);
+    expect(after).toEqual(before);
+  });
+
+  it.each([
+    ['a package directory', 'packages/lib'],
+    ['an app directory', 'apps/lib'],
+  ])('refuses to add a package over %s, and writes nothing', async (_case, taken) => {
+    const root = await monorepo();
+    await mkdir(join(root, taken), { recursive: true });
+
+    const {
+      code,
+      errors,
+      printed,
+    } = await runMain([
+      'sync',
+      '--add',
+      'lib',
+    ], scripted([]));
+
+    expect(code).toBe(1);
+    expect(errors).toEqual([`${taken} exists: sync --add writes a new package.`]);
+    expect(printed).toBe('');
+    const entries = await readdir(join(root, taken));
+    expect(entries).toEqual([]);
+  });
+
+  it('refuses to add a package to a single repo, and writes nothing', async () => {
+    await generated();
+
+    const {
+      code,
+      errors,
+      printed,
+    } = await runMain([
+      'sync',
+      '--add',
+      'lib',
+    ], scripted([]));
+
+    expect(code).toBe(1);
+    expect(errors).toEqual(['sync --add writes a package into a monorepo, and this project is a single repo.']);
+    expect(printed).toBe('');
+    const hasPackages = await exists(join(project, 'packages'));
+    expect(hasPackages).toBe(false);
   });
 
   it('removes what a dropped host owned in the plugin folder, and nothing outside it', async () => {

@@ -405,6 +405,14 @@ export const ROOT_DEV_DEPENDENCIES = [
   'typescript',
 ];
 
+// What a package added to a monorepo shares with the workspace; every other answer is the library default.
+export const LIBRARY_ANSWERS = [
+  'packageManager',
+  'packageManagerVersion',
+  'nodeVersion',
+  'typeSafety',
+] as const;
+
 export const ROOT_FILES = [
   'AGENTS.md',
   'CLAUDE.md',

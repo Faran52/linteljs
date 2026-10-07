@@ -1346,6 +1346,9 @@ never an orchestrator edit, which would move up a level the `switch (target)` th
   `plugins/linteljs/` entries, plus the ESLint config and the `@linteljs/*` dependencies, each behind its own y/N.
 - `seedArtifacts` is what a `create` run plants and `sync` never touches: `linteljs.config.json`, the README, the
   manifest and the starter source.
+- `sync --add <name>` is a birth, not a sync: it builds both lists for a `typescript` target on the workspace's
+  manager, Node and type safety, keeps only what lands in the app's directory, and writes it under
+  `packages/<name>/`, seeds included. The root files are the workspace's already, and its globs take the package.
 
 `sync` reads `linteljs.config.json` rather than writing it, so a project that reformatted its config keeps those
 bytes. A 1.x project, whose answers sit in `lintel.config.json`, moves them with `create --existing`, which writes

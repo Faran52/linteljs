@@ -20,11 +20,13 @@ import {
 } from '@answers';
 import {
   entryExists,
+  globPaths,
   linteljsConfigReader,
   readIfPresent,
 } from '@disk';
 import { parsePackageJson, type Upgrade } from '@emitters';
 import {
+  addPackage,
   appRootOf,
   type LintConfigPlan,
   pipelineRun,
@@ -53,7 +55,11 @@ import {
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
 
-import { EXISTING_MONOREPO, SYNC_NEEDS_YES } from './constants';
+import {
+  ADD_NEEDS_MONOREPO,
+  EXISTING_MONOREPO,
+  SYNC_NEEDS_YES,
+} from './constants';
 import {
   type AnswerFlags,
   argumentError,
@@ -254,6 +260,33 @@ const lintConfigStep = async (
   return isApproved === null;
 };
 
+// An app of the same name would give the workspace two packages under one name.
+const runAdd = async (cwd: string, answers: HostedAnswers, name: string): Promise<number> => {
+  if (answers.layout !== 'monorepo') {
+    console.error(ADD_NEEDS_MONOREPO);
+
+    return 1;
+  }
+
+  const [taken] = globPaths(cwd, `{apps,packages}/${name}`);
+
+  if (taken !== undefined) {
+    console.error(`${taken} exists: sync --add writes a new package.`);
+
+    return 1;
+  }
+
+  const written = await addPackage(cwd, answers, name);
+
+  for (const target of written) {
+    say(`wrote ${target}`);
+  }
+
+  say(`Install it:\n  ${answers.packageManager} install`);
+
+  return 0;
+};
+
 const runSync = async (
   options: CliOptions,
   answers: HostedAnswers,
@@ -365,6 +398,10 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
 
   try {
     const { name, answers } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
+
+    if (options.add !== undefined) {
+      return await runAdd(options.cwd, answers, options.add);
+    }
 
     if (options.command === 'sync') {
       return await runSync(options, answers, prompter ?? inquirerPrompter, hasTerminal);

@@ -1,4 +1,5 @@
 import { answersFor } from '@mocks/answersFor';
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
@@ -6,9 +7,13 @@ import {
 } from 'vitest';
 
 import { emitted } from './artifactUtils';
-import { inLayout } from './layoutUtils';
+import {
+  inLayout,
+  inPackage,
+  libraryAnswersOf,
+} from './layoutUtils';
 
-import type { Artifact } from '@config/types';
+import type { Artifact, HostedAnswers } from '@config/types';
 
 const artifactsFor = (): Artifact[] => {
   const artifacts = [
@@ -76,5 +81,80 @@ describe('inLayout', () => {
       });
 
     expect(withRequires).toHaveLength(1);
+  });
+});
+
+describe('libraryAnswersOf', () => {
+  it('keeps the workspace\'s manager, Node and type safety, and defaults the rest for a library', () => {
+    const workspace: HostedAnswers = {
+      ...HOSTED_DEFAULTS,
+      target: 'react',
+      layout: 'monorepo',
+      packageManager: 'yarn',
+      packageManagerVersion: '4.9.0',
+      nodeVersion: '24.1.0',
+      typeSafety: 'relaxed',
+      testing: 'none',
+      libraries: ['zod'],
+      agents: ['codex'],
+    };
+
+    const library = libraryAnswersOf(workspace);
+
+    expect(library).toEqual({
+      ...HOSTED_DEFAULTS,
+      target: 'typescript',
+      layout: 'monorepo',
+      packageManager: 'yarn',
+      packageManagerVersion: '4.9.0',
+      nodeVersion: '24.1.0',
+      typeSafety: 'relaxed',
+    });
+  });
+});
+
+describe('inPackage', () => {
+  it('keeps only the app directory\'s artifacts, moved under packages/<name>', () => {
+    const answers = answersFor({ layout: 'monorepo' });
+    const laidOut = inLayout(answers, 'lib', artifactsFor());
+    const artifacts = inPackage(answers, 'lib', laidOut);
+
+    const targets = artifacts
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual([
+      'packages/lib/package.json',
+      'packages/lib/src/main.ts',
+      'packages/lib/docs/README.md',
+      'packages/lib/src/main.test.ts',
+    ]);
+
+    const requires = artifacts
+      .map((artifact) => {
+        return artifact.requires;
+      });
+
+    expect(requires).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      ['packages/lib/src/main.ts', 'scripts/checkBannedPatterns.ts'],
+    ]);
+
+    const withRequires = artifacts
+      .filter((artifact) => {
+        return 'requires' in artifact;
+      });
+
+    expect(withRequires).toHaveLength(1);
+  });
+
+  it('keeps nothing whose path only shares the app directory\'s prefix', () => {
+    const answers = answersFor({ layout: 'monorepo' });
+    const artifacts = inPackage(answers, 'lib', [emitted('standard', 'apps/library/package.json', '')]);
+
+    expect(artifacts).toEqual([]);
   });
 });

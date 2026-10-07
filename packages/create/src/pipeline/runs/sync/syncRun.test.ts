@@ -8,7 +8,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
@@ -30,6 +30,7 @@ import {
 } from '@emitters';
 
 import {
+  addPackage,
   appRootOf,
   planSync,
   runnerSwitch,
@@ -592,5 +593,46 @@ describe('appRootOf', () => {
     const root = appRootOf(cwd, HOSTED_DEFAULTS);
 
     expect(root).toBe(cwd);
+  });
+});
+
+describe('addPackage', () => {
+  const MONOREPO: HostedAnswers = {
+    ...HOSTED_DEFAULTS,
+    layout: 'monorepo',
+  };
+
+  it('writes the package, seeds and all, under packages/<name> and nothing outside it', async () => {
+    const written = await addPackage(cwd, MONOREPO, 'lib');
+
+    expect(written).toContain('packages/lib/src/index.ts');
+    expect(written).toContain('packages/lib/tsdown.config.ts');
+    const manifestText = await read('packages/lib/package.json');
+    const manifest = parsePackageJson(manifestText);
+    expect(manifest.name).toBe('lib');
+    const entries = await readdir(cwd, {
+      recursive: true,
+      withFileTypes: true,
+    });
+    const files = entries
+      .filter((entry) => {
+        return entry.isFile();
+      })
+      .map((entry) => {
+        const path = join(entry.parentPath, entry.name);
+
+        return relative(cwd, path);
+      });
+    const onDisk = new Set(files);
+    const reported = new Set(written);
+    expect(onDisk).toEqual(reported);
+    const topLevel = await readdir(cwd);
+    expect(topLevel).toEqual(['packages']);
+  });
+
+  it('keeps a starter suite whose source is written', async () => {
+    const written = await addPackage(cwd, MONOREPO, 'lib');
+
+    expect(written).toContain('packages/lib/src/model/greeting/greetingModel.test.ts');
   });
 });

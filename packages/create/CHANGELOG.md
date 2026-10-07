@@ -177,6 +177,10 @@ when a version's change lives in a sibling it is described there instead:
   tests itself. The README says where the app's scripts run, and the agent rules' globs
   match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
   directory under `apps/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
+- `sync --add <name>` writes a TypeScript library to a monorepo's `packages/<name>/`, with its own
+  `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and starter
+  `src/`, on the recorded manager, Node and type safety. No root file changes. It refuses a single repo, a scoped
+  or invalid name, and a name `apps/` or `packages/` already holds.
 
 ### Changed
 

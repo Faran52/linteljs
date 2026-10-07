@@ -34,6 +34,7 @@ import {
   type DependencyDrift,
   dependencyDrift,
   emitEslintConfig,
+  packageArtifacts,
   parsePackageJson,
   serializedPackageJson,
   TEST_RUNNERS,
@@ -301,6 +302,20 @@ export const writeDependencies = async (cwd: string, changes: Upgrade[]): Promis
   };
 
   await artifactWriter(cwd, artifact);
+};
+
+// The workspace globs already hold `packages/*`, so no root file changes. The directory is new: all of it writes.
+export const addPackage = async (cwd: string, answers: HostedAnswers, name: string): Promise<string[]> => {
+  const artifacts = packageArtifacts(answers, name);
+
+  for (const artifact of artifacts) {
+    await artifactWriter(cwd, artifact, true);
+  }
+
+  return artifacts
+    .map(({ target }) => {
+      return target;
+    });
 };
 
 export const writeLintConfig = async (cwd: string, answers: HostedAnswers, plan: LintConfigPlan): Promise<void> => {

@@ -12,6 +12,7 @@ export const USAGE_HEAD = `@linteljs/create [name] [options]
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
+  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript library, and nothing else
   --version, -v
   --help, -h
 
@@ -36,7 +37,17 @@ export const SYNC_NEEDS_YES = 'Skipped: sync asks before this step writes. Run i
 
 export const EXISTING_MONOREPO = '--existing runs in a single repo; create a monorepo in a new directory.';
 
+export const ADD_NEEDS_SYNC = '--add runs with sync: @linteljs/create sync --add <name>.';
+
+// The directory under packages/ and the package name both, so no scope.
+export const PACKAGE_NAME_RULE
+  = "an unscoped npm package name: lowercase letters, digits, '.', '-' and '_' only, starting with a letter or "
+    + 'digit, at most 214 characters, and not a reserved npm name';
+
+export const ADD_NEEDS_MONOREPO = 'sync --add writes a package into a monorepo, and this project is a single repo.';
+
 export const CLI_OPTIONS = {
+  'add': { type: 'string' },
   'existing': {
     type: 'boolean',
     default: false,

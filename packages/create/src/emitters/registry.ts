@@ -49,7 +49,11 @@ import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 import { emitted } from './utils/artifactUtils';
-import { inLayout } from './utils/layoutUtils';
+import {
+  inLayout,
+  inPackage,
+  libraryAnswersOf,
+} from './utils/layoutUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
 // Insertion order is write order within a stage, so `linteljs-config` precedes `package-json`.
@@ -141,4 +145,15 @@ export const seedArtifacts = (
     }));
 
   return artifacts;
+};
+
+// `sync --add`: a library's own files, seeds and all, as a new project gets them.
+export const packageArtifacts = (answers: HostedAnswers, name: string): Artifact[] => {
+  const library = libraryAnswersOf(answers);
+  const artifacts = [
+    ...seedArtifacts(library, name),
+    ...buildArtifacts(library, EMPTY_PROJECT, name),
+  ];
+
+  return inPackage(library, name, artifacts);
 };

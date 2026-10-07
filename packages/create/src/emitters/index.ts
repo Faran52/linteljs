@@ -3,6 +3,7 @@ export { styleGlob } from './always/utils/scriptUtils';
 export { TEST_RUNNERS } from './constants';
 export {
   buildArtifacts,
+  packageArtifacts,
   seedArtifacts,
 } from './registry';
 export { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
