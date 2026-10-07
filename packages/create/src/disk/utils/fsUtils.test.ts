@@ -21,6 +21,7 @@ import {
   allPresent,
   entryExists,
   exists,
+  globPaths,
   globSnapshot,
   hasCode,
   isExecutableFile,
@@ -179,6 +180,20 @@ describe('allPresent', () => {
     const presentAfter = await allPresent(cwd, CANDIDATES);
     const expectedAfter = ['a.tsx', 'a.ts'];
     expect(presentAfter).toEqual(expectedAfter);
+  });
+});
+
+describe('globPaths', () => {
+  it('answers every match, sorted, and skips what does not match', async () => {
+    await mkdir(join(cwd, 'apps', 'b'), { recursive: true });
+    await mkdir(join(cwd, 'apps', 'a'), { recursive: true });
+    await mkdir(join(cwd, 'apps', 'c'), { recursive: true });
+    await writeFile(join(cwd, 'apps', 'b', 'package.json'), '{}', 'utf8');
+    await writeFile(join(cwd, 'apps', 'a', 'package.json'), '{}', 'utf8');
+
+    const actual = globPaths(cwd, 'apps/*/package.json');
+
+    expect(actual).toEqual(['apps/a/package.json', 'apps/b/package.json']);
   });
 });
 

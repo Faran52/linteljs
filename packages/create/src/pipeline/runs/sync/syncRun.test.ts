@@ -30,6 +30,7 @@ import {
 } from '@emitters';
 
 import {
+  appRootOf,
   planSync,
   runnerSwitch,
   syncPlugin,
@@ -603,5 +604,49 @@ describe('runnerSwitch', () => {
     });
 
     expect(switched).toBeNull();
+  });
+});
+
+describe('appRootOf', () => {
+  const MONOREPO: HostedAnswers = {
+    ...HOSTED_DEFAULTS,
+    layout: 'monorepo',
+  };
+
+  const plantApp = async (name: string): Promise<void> => {
+    await mkdir(join(cwd, 'apps', name), { recursive: true });
+    await writeFile(join(cwd, 'apps', name, 'package.json'), '{}\n', 'utf8');
+  };
+
+  it('answers the directory under apps/ holding a manifest, whatever the root is named', async () => {
+    await mkdir(join(cwd, 'apps', 'empty'), { recursive: true });
+    await plantApp('web');
+
+    const root = appRootOf(cwd, MONOREPO);
+
+    expect(root).toBe(join(cwd, 'apps', 'web'));
+  });
+
+  it('answers the first app by name when several are present', async () => {
+    await plantApp('web');
+    await plantApp('admin');
+
+    const root = appRootOf(cwd, MONOREPO);
+
+    expect(root).toBe(join(cwd, 'apps', 'admin'));
+  });
+
+  it('answers the root of a monorepo with no app', () => {
+    const root = appRootOf(cwd, MONOREPO);
+
+    expect(root).toBe(cwd);
+  });
+
+  it('answers the root of a single repo even with an apps/ directory', async () => {
+    await plantApp('web');
+
+    const root = appRootOf(cwd, HOSTED_DEFAULTS);
+
+    expect(root).toBe(cwd);
   });
 });

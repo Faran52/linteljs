@@ -15,3 +15,5 @@ export const RENAMED_STATUS_LINES = [
   ['plugins/linteljs/hooks/mainStatusLine.ts', 'plugins/linteljs/hooks/mainStatusLineHook.ts'],
   ['plugins/linteljs/hooks/subagentStatusLine.ts', 'plugins/linteljs/hooks/subagentStatusLineHook.ts'],
 ] as const;
+
+export const APP_MANIFESTS = 'apps/*/package.json';

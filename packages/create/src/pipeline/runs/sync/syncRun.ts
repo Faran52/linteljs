@@ -1,5 +1,6 @@
 import {
   basename,
+  dirname,
   join,
   posix,
 } from 'node:path';
@@ -17,6 +18,7 @@ import { keysOf } from '@utils/objectUtils';
 import {
   artifactWriter,
   entryExists,
+  globPaths,
   managedPathsReader,
   projectShapeReader,
   readIfPresent,
@@ -41,6 +43,7 @@ import {
 } from '@emitters';
 
 import {
+  APP_MANIFESTS,
   CLAUDE_SETTINGS_PATH,
   ESLINT_CONFIG_SPELLINGS,
   RENAMED_STATUS_LINES,
@@ -77,6 +80,23 @@ export interface SyncResult {
 // A recorded path is the project's to edit: one that leaves the folder, or names a directory, is never deleted.
 const isPluginPath = (target: string): boolean => {
   return target.startsWith(PLUGIN_ROOT) && !target.endsWith('/') && posix.normalize(target) === target;
+};
+
+// Found rather than named, so a monorepo cloned under another directory name still syncs its app.
+export const appRootOf = (cwd: string, answers: HostedAnswers): string => {
+  if (answers.layout === 'single') {
+    return cwd;
+  }
+
+  const [manifest] = globPaths(cwd, APP_MANIFESTS);
+
+  if (manifest === undefined) {
+    return cwd;
+  }
+
+  const app = dirname(manifest);
+
+  return join(cwd, app);
 };
 
 const packageJsonPath = (cwd: string): string => {
@@ -207,7 +227,7 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
 };
 
 const pluginArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
-  const project = await projectShapeReader(cwd);
+  const project = await projectShapeReader(appRootOf(cwd, answers));
   const built = buildArtifacts(answers, project, basename(cwd));
 
   return built

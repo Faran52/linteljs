@@ -108,6 +108,13 @@ export const allPresent = async (cwd: string, candidates: string[]): Promise<str
 };
 
 // Path and content per match, so two snapshots differ exactly where a file was rewritten.
+export const globPaths = (cwd: string, pattern: string): string[] => {
+  return globSync(pattern, { cwd })
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
+};
+
 export const globSnapshot = async (cwd: string, pattern: string): Promise<string[]> => {
   const reads = globSync(pattern, { cwd })
     .map(async (path) => {

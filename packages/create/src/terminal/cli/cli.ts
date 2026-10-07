@@ -25,6 +25,7 @@ import {
 } from '@disk';
 import { parsePackageJson, type Upgrade } from '@emitters';
 import {
+  appRootOf,
   type LintConfigPlan,
   pipelineRun,
   planSync,
@@ -259,7 +260,9 @@ const runSync = async (
   prompter: Prompter,
   hasTerminal: boolean,
 ): Promise<number> => {
-  const switched = await runnerSwitch(options.cwd, answers);
+  const { cwd } = options;
+  const app = appRootOf(cwd, answers);
+  const switched = await runnerSwitch(app, answers);
 
   if (switched !== null) {
     const { from, to } = switched;
@@ -275,7 +278,6 @@ const runSync = async (
     return 1;
   }
 
-  const { cwd } = options;
   const { written, removed } = await syncPlugin(cwd, answers);
 
   for (const target of written) {
@@ -286,7 +288,7 @@ const runSync = async (
     say(`removed ${target}`);
   }
 
-  const plan = await planSync(cwd, answers);
+  const plan = await planSync(app, answers);
   const {
     upgrades,
     peers,
@@ -326,9 +328,9 @@ const runSync = async (
     question: 'Add or update them in package.json?',
     done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
   };
-  const isUpgradeBlocked = await dependencyStep(cwd, asker, upgradeStep);
-  const isPeerBlocked = await dependencyStep(cwd, asker, peerStep);
-  const isLintBlocked = await lintConfigStep(cwd, asker, answers, eslintConfig);
+  const isUpgradeBlocked = await dependencyStep(app, asker, upgradeStep);
+  const isPeerBlocked = await dependencyStep(app, asker, peerStep);
+  const isLintBlocked = await lintConfigStep(app, asker, answers, eslintConfig);
   const blocked = [
     isUpgradeBlocked,
     isPeerBlocked,

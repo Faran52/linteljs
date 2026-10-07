@@ -2,6 +2,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  rename,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -759,6 +760,38 @@ describe('main: sync', () => {
     expect(joined).toBe(message);
     expect(after).toBe(before);
     expect(hasJestConfig).toBe(false);
+  });
+
+  it('syncs a monorepo\'s app in apps/, under any root directory name', async () => {
+    await runMain([
+      'demo',
+      '--target',
+      'typescript',
+      '--layout',
+      'monorepo',
+      '--no-install',
+      '--yes',
+    ]);
+
+    const root = join(project, 'clone');
+    await rename(join(project, 'demo'), root);
+    chdir(root);
+
+    const current = await runMain(['sync', '--yes'], scripted([]));
+
+    expect(current.printed).toBe('Everything is already up to date.\n');
+
+    const app = join(root, 'apps', 'demo');
+    await writeFile(join(app, 'eslint.config.ts'), 'export default [];\n', 'utf8');
+
+    const { code, printed } = await runMain(['sync', '--yes'], scripted([]));
+
+    expect(code).toBe(0);
+    expect(printed).toContain('moved eslint.config.ts to eslint.config.ts.bak');
+    const backup = await readFile(join(app, 'eslint.config.ts.bak'), 'utf8');
+    expect(backup).toBe('export default [];\n');
+    const hasRootBackup = await exists(join(root, 'eslint.config.ts.bak'));
+    expect(hasRootBackup).toBe(false);
   });
 
   it('removes what a dropped host owned in the plugin folder, and nothing outside it', async () => {

@@ -167,7 +167,8 @@ when a version's change lives in a sibling it is described there instead:
   `<name>-workspace` declares `apps/*` and `packages/*` as workspaces (`pnpm-workspace.yaml` for pnpm), lints and
   typechecks its own `scripts/`, and its `check` runs every package's `check`. Each package lints, typechecks and
   tests itself. The README says where the app's scripts run, and the agent rules' globs
-  match inside any package. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
+  match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
+  directory under `apps/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
 
 ### Changed
 
