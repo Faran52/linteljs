@@ -8,7 +8,11 @@ import {
 } from '../constants';
 import { CONTACT_PAGE } from '../react/constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
-import { hasForm, starterApplies } from '../utils/gateUtils';
+import {
+  hasForm,
+  hasI18n,
+  starterApplies,
+} from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -36,9 +40,11 @@ import {
   ALWAYS,
   ASTRO_I18N,
   COMPONENTS,
+  CONTACT_COPY,
   CONTACT_VIEW,
   ISLAND_COMPONENTS,
   SHARED,
+  USE_CONTACT_FORM,
   VIEW_SUITES,
 } from './constants';
 import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
@@ -59,8 +65,6 @@ const INTEGRATIONS: Record<HostedFramework, string> = {
   svelte: '@astrojs/svelte',
   solid: '@astrojs/solid-js',
 };
-
-const USE_CONTACT_FORM = 'use-contact-form/useContactForm';
 
 // Only React hosts the contact page so far; the other frameworks' islands are still to come.
 const hasIsland = (answers: Answers): boolean => {
@@ -108,13 +112,27 @@ const islandFiles = (): StarterFile[] => {
   return onIsland([
     ...translated<StarterFile>({ target: 'src/pages/contact.astro' })
       .flatMap(mocked),
-    { target: `${CONTACT_VIEW}/ContactIsland.tsx` },
+    ...translated<StarterFile>({ target: `${CONTACT_VIEW}/ContactIsland.tsx` }),
     { target: 'src/components/ui/index.ts' },
+    // Under i18n the page reads the words the island hands it; React's own reads react-i18next.
     ...mocked<StarterFile>({
       target: `${CONTACT_VIEW}/ContactPage.tsx`,
       source: `${CONTACT_PAGE}.tsx`,
+      when: (answers) => {
+        return !hasI18n(answers);
+      },
       shared: 'react',
     }),
+    {
+      target: `${CONTACT_VIEW}/ContactPage.tsx`,
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    {
+      target: `${CONTACT_COPY}.ts`,
+      when: hasI18n,
+      variant: 'i18n',
+    },
     ...CONTACT_HOOK_FORMS
       .map((form): StarterFile => {
         const file: StarterFile = {
@@ -168,13 +186,18 @@ const islandTests = (): StarterTest[] => {
 
   return onIsland([
     ...fromReact,
+    ...['ContactIsland', 'ContactPage']
+      .flatMap((name) => {
+        return translated<StarterTest>({
+          target: `${CONTACT_VIEW}/${name}.test.tsx`,
+          covers: `${CONTACT_VIEW}/${name}.tsx`,
+        });
+      }),
     {
-      target: `${CONTACT_VIEW}/ContactIsland.test.tsx`,
-      covers: `${CONTACT_VIEW}/ContactIsland.tsx`,
-    },
-    {
-      target: `${CONTACT_VIEW}/ContactPage.test.tsx`,
-      covers: `${CONTACT_VIEW}/ContactPage.tsx`,
+      target: `${CONTACT_COPY}.test.ts`,
+      covers: `${CONTACT_COPY}.ts`,
+      when: hasI18n,
+      variant: 'i18n',
     },
     {
       target: `${CONTACT_VIEW}/${USE_CONTACT_FORM}.test.ts`,

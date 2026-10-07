@@ -607,7 +607,11 @@ the page's component for `injectForm`. Nuxt's `pages/contact.vue` renders Vue's 
 `plugins/data.ts` installing Vue's data provider. Astro's `pages/contact.astro` hydrates React's `ContactPage` as an
 island: `src/pages/` is Astro's router, so the page, its hook and the island sit under `views/contact/`, and
 `ContactIsland` wraps the data provider, since an island is its own React root. The page and its hook keep suites
-of their own, wrapped in that provider alone, so no store provider ships for a test. Astro hosting nothing has no contact page: no
+of their own, wrapped in that provider alone, so no store provider ships for a test. Under languages the page
+reads every language's contact words from the locale files at build time and hands them to the island as a prop,
+and the island follows `<html lang>`, which the language switcher sets, so it re-renders on a switch with no
+react-i18next and no locale bundle of its own; its server render takes the fallback language, as the page's does,
+so hydration matches. Astro hosting nothing has no contact page: no
 framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. The islands for Vue,
 Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
 without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
@@ -1076,7 +1080,8 @@ webextension popup.
   route and switching is a navigation to another page. The language select needs a runtime switch with the
   stored choice first and nothing detected stored, so pages render English at build time and each translated
   element carries `data-i18n` with its key, the values of its placeholders in its own `data-*` attributes.
-  No island renders text, so a host framework needs no i18n of its own.
+  The contact island renders its own text, so it takes its words from the page and watches `<html lang>`
+  rather than carry `data-i18n`, whose rewrite would fight its React root; a host framework needs no i18n of its own.
 - **An inline boot sets `lang` and `dir` before the first paint.** An Astro page is a full load each time, so a
   bundled module, which runs after parsing, would show each page left to right before Arabic turns it. The
   layout inlines `bootScript()` in the head with `is:inline`: the source of `bootLanguage`, a self-contained

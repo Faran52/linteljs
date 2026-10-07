@@ -54,3 +54,8 @@ export const ISLAND_COMPONENTS: Pick<ComponentPaths, 'button' | 'textInput'> = {
 };
 
 export const CONTACT_VIEW = 'src/views/contact';
+
+export const USE_CONTACT_FORM = 'use-contact-form/useContactForm';
+
+// The page's contact words in every language, read at build time.
+export const CONTACT_COPY = `${CONTACT_VIEW}/utils/contactCopyUtils`;

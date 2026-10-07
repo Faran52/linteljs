@@ -263,11 +263,24 @@ const ISLAND_GATES: GateRow[] = onIsland([
   ['src/pages/contact.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
   ['src/pages/contact.astro@i18n', [{ languages: ANSWERED, mocking: [undefined] }]],
   ['src/pages/contact.astro@i18n-msw', [{ languages: ANSWERED, mocking: ['msw'] }]],
-  ['src/views/contact/ContactIsland.tsx', [{}]],
-  ['src/views/contact/ContactIsland.test.tsx', [{}]],
-  ['src/views/contact/ContactPage.tsx', [{ mocking: [undefined] }]],
-  ['src/views/contact/ContactPage.tsx@msw', [{ mocking: ['msw'] }]],
-  ['src/views/contact/ContactPage.test.tsx', [{}]],
+  ...[
+    'ContactIsland.tsx',
+    'ContactIsland.test.tsx',
+    'ContactPage.test.tsx',
+  ]
+    .flatMap((name): GateRow[] => {
+      const rows: GateRow[] = [
+        [`src/views/contact/${name}`, [{ languages: [undefined] }]],
+        [`src/views/contact/${name}@i18n`, [{ languages: ANSWERED }]],
+      ];
+
+      return rows;
+    }),
+  ['src/views/contact/ContactPage.tsx', [{ languages: [undefined], mocking: [undefined] }]],
+  ['src/views/contact/ContactPage.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.tsx@i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/utils/contactCopyUtils.ts@i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/utils/contactCopyUtils.test.ts@i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]],
   ['src/views/contact/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],

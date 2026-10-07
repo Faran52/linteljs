@@ -1,8 +1,9 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { ContactIsland } from '@views/contact/ContactIsland';
+import { contactCopy } from '@views/contact/utils/contactCopyUtils';
 ---
 
 <Layout titleKey="contact">
-  <ContactIsland client:load />
+  <ContactIsland client:load copy={contactCopy()} />
 </Layout>
