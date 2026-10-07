@@ -144,12 +144,16 @@ describe('mockTests', () => {
     expect(withForm).toEqual([]);
   });
 
-  it('names the suite after the adapter it covers', () => {
+  it('names the suite after the adapter it covers, under the suffix it is given', () => {
+    const plain = mockTests(true, 'src/lib/utils/fetch-extended-utils')[0];
+    const spec = mockTests(true, 'src/lib/utils/fetch-extended-utils', 'spec')[0];
+
     const expected = {
       target: 'src/lib/utils/fetch-extended-utils.test.ts',
       covers: 'src/lib/utils/fetch-extended-utils.ts',
     };
-    expect(mockTests(true, 'src/lib/utils/fetch-extended-utils')[0]).toMatchObject(expected);
+    expect(plain).toMatchObject(expected);
+    expect(spec?.target).toBe('src/lib/utils/fetch-extended-utils.spec.ts');
   });
 });
 

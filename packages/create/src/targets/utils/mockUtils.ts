@@ -78,10 +78,10 @@ export const mockFiles = (
   return files;
 };
 
-export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER): StarterTest[] => {
+export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER, suffix = 'test'): StarterTest[] => {
   const tests: StarterTest[] = [
     {
-      target: `${adapter}.test.ts`,
+      target: `${adapter}.${suffix}.ts`,
       covers: `${adapter}.ts`,
       source: `${FETCH_ADAPTER}.test.ts`,
       shared: true,

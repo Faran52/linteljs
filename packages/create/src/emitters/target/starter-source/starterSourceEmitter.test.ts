@@ -586,7 +586,7 @@ describe('a locale file', () => {
 describe('a shared file written under the target naming', () => {
   it.each([
     ['src/lib/utils/status-utils.spec.ts', "from './status-utils'"],
-    ['src/lib/utils/fetch-extended-utils.test.ts', "from './fetch-extended-utils'"],
+    ['src/lib/utils/fetch-extended-utils.spec.ts', "from './fetch-extended-utils'"],
   ])('imports its renamed neighbour by the name the target writes: %s', async (target, imported) => {
     const text = await textOf({ target: 'angular' }, target);
 
