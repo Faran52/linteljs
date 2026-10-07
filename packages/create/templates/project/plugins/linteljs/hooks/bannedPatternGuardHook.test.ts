@@ -9,7 +9,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { copilotPayload, runHook } from '@mocks/runHook';
+import {
+  copilotPayload,
+  geminiPayload,
+  runHook,
+} from '@mocks/runHook';
 import {
   afterEach,
   beforeEach,
@@ -148,6 +152,16 @@ describe('bannedPatternGuardHook.ts', () => {
 
   it.each(['edit', 'create'])('checks the path Copilot\'s %s tool names, and reports it as added context', (tool) => {
     const output = runHook('bannedPatternGuardHook.ts', copilotPayload(tool, { path: 'src/app.ts' }, cwd));
+
+    expect(output).toContain('bad cast');
+    const actual = checkedPaths();
+    const expected = [join(cwd, 'src/app.ts')];
+    expect(actual).toEqual(expected);
+  });
+
+  it.each(['write_file', 'replace'])('checks the file Gemini CLI\'s %s tool names, as added context', (tool) => {
+    const payload = geminiPayload('AfterTool', tool, { file_path: 'src/app.ts' }, cwd);
+    const output = runHook('bannedPatternGuardHook.ts', payload);
 
     expect(output).toContain('bad cast');
     const actual = checkedPaths();

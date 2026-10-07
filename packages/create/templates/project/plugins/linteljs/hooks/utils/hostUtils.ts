@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import type { Dialect } from './commandParserUtils.ts';
 
-export type Host = 'claude' | 'copilot' | 'cursor';
+export type Host = 'claude' | 'copilot' | 'cursor' | 'gemini';
 
 export type DecisionKind = 'block' | 'deny' | 'warn';
 
@@ -37,6 +37,9 @@ export type Json = number | object | string;
 const SESSION_ID = /^[\w-]+$/u;
 
 const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)/u;
+
+// Claude Code's tool payload with Gemini CLI's own event names.
+const GEMINI_EVENTS = new Set<string | undefined>(['AfterTool', 'BeforeTool']);
 
 const isObject = (value: unknown): value is object => {
   return typeof value === 'object' && value !== null;
@@ -97,6 +100,12 @@ export const hostOf = (payload: object): Host => {
     return 'cursor';
   }
 
+  const event = stringAt(payload, 'hook_event_name');
+
+  if (GEMINI_EVENTS.has(event)) {
+    return 'gemini';
+  }
+
   return 'toolName' in payload ? 'copilot' : 'claude';
 };
 
@@ -132,7 +141,10 @@ export const readCommand = (
   }
 
   const tool = stringAt(payload, 'tool_name') ?? stringAt(payload, 'toolName');
-  const powershell = host === 'cursor' ? platform === 'win32' : tool?.toLowerCase() === 'powershell';
+  // Cursor names no shell, and Gemini CLI's one shell tool runs PowerShell on Windows.
+  const powershell = host === 'cursor' || host === 'gemini'
+    ? platform === 'win32'
+    : tool?.toLowerCase() === 'powershell';
   const commandInput: CommandInput = {
     host,
     command,
@@ -223,6 +235,23 @@ const copilotDecision = (kind: DecisionKind, text: string): object => {
   return decision;
 };
 
+// Under Gemini CLI a warning or a block answers only after the tool, where a denial would replace its result.
+const geminiDecision = (kind: DecisionKind, text: string): object => {
+  const decision = kind === 'deny'
+    ? {
+        decision: kind,
+        reason: text,
+      }
+    : {
+        hookSpecificOutput: {
+          hookEventName: 'AfterTool',
+          additionalContext: text,
+        },
+      };
+
+  return decision;
+};
+
 const claudeDecision = (kind: DecisionKind, text: string): object => {
   if (kind === 'block') {
     const block = {
@@ -259,6 +288,10 @@ export const decisionOf = (host: Host, kind: DecisionKind, text: string | undefi
 
   if (host === 'cursor') {
     return cursorDecision(kind, text);
+  }
+
+  if (host === 'gemini') {
+    return geminiDecision(kind, text);
   }
 
   return host === 'copilot' ? copilotDecision(kind, text) : claudeDecision(kind, text);

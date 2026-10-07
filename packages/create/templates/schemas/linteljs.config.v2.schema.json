@@ -173,7 +173,9 @@
           "claude-code",
           "codex",
           "copilot",
-          "cursor"
+          "cursor",
+          "gemini-cli",
+          "antigravity"
         ]
       },
       "uniqueItems": true

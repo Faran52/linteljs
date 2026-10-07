@@ -65,7 +65,7 @@ export type Language = 'en' | 'ar' | 'ja' | 'ko' | 'zh-CN' | 'zh-TW';
 
 export type TypeSafety = 'strict' | 'relaxed';
 
-export type Agent = 'claude-code' | 'codex' | 'copilot' | 'cursor';
+export type Agent = 'antigravity' | 'claude-code' | 'codex' | 'copilot' | 'cursor' | 'gemini-cli';
 
 export type Plugin = 'ponytail' | 'context7' | 'frontend-design';
 

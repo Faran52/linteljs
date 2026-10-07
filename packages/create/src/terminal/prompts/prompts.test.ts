@@ -443,6 +443,8 @@ describe('ask', () => {
         'Codex',
         'GitHub Copilot',
         'Cursor',
+        'Gemini CLI',
+        'Antigravity',
       ],
     };
     expect(recorded.labels).toMatchObject(expected);

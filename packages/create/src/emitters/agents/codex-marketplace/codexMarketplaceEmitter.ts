@@ -5,7 +5,6 @@ import {
 } from '@config/types';
 
 import { copied, emitted } from '../../utils/artifactUtils';
-import { adapterArtifact } from '../utils/adapterUtils';
 
 interface MarketplaceSource {
   source: 'git-subdir' | 'local' | 'url';
@@ -121,7 +120,6 @@ export const codexMarketplaceEmitter = (answers: Answers): Artifact[] => {
     },
   };
   const artifacts = [
-    adapterArtifact('AGENTS.md', answers),
     emitted('standard', '.agents/plugins/marketplace.json', marketplace),
     copied('plugins/linteljs/.codex-plugin/plugin.json'),
     hooks,

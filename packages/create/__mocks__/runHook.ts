@@ -39,7 +39,19 @@ interface CursorToolPayload {
   tool_input: ToolInput;
 }
 
-type Host = 'claude' | 'copilot' | 'cursor';
+interface GeminiPayload {
+  session_id: string;
+  transcript_path: string;
+  cwd: string;
+  hook_event_name: GeminiEvent;
+  timestamp: string;
+  tool_name: string;
+  tool_input: object;
+}
+
+type GeminiEvent = 'AfterTool' | 'BeforeTool';
+
+type Host = 'claude' | 'copilot' | 'cursor' | 'gemini';
 
 export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'eslintFixWarningHook.ts'
   | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
@@ -102,6 +114,26 @@ export const cursorToolPayload = (command: string, event: 'postToolUse' | 'preTo
   return payload;
 };
 
+// The base fields every Gemini CLI hook gets, and a tool event's own two.
+export const geminiPayload = (
+  event: GeminiEvent,
+  tool: string,
+  toolInput: object,
+  cwd = tmpdir(),
+): GeminiPayload => {
+  const payload: GeminiPayload = {
+    session_id: 'e1d9603e',
+    transcript_path: '/p/e1d9603e.json',
+    cwd,
+    hook_event_name: event,
+    timestamp: '2026-10-07T12:00:00.000Z',
+    tool_name: tool,
+    tool_input: toolInput,
+  };
+
+  return payload;
+};
+
 // Restated rather than imported, so a hook that detects its host wrongly fails here.
 const hostOf = (input: object | string): Host => {
   if (typeof input === 'string') {
@@ -110,6 +142,10 @@ const hostOf = (input: object | string): Host => {
 
   if ('cursor_version' in input) {
     return 'cursor';
+  }
+
+  if ('hook_event_name' in input && (input.hook_event_name === 'BeforeTool' || input.hook_event_name === 'AfterTool')) {
+    return 'gemini';
   }
 
   return 'toolName' in input ? 'copilot' : 'claude';
@@ -139,6 +175,22 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
           permissionDecisionReason: text,
         }
       : { additionalContext: text };
+
+    return decision;
+  }
+
+  if (host === 'gemini') {
+    const decision = permission !== undefined
+      ? {
+          decision: permission,
+          reason: text,
+        }
+      : {
+          hookSpecificOutput: {
+            hookEventName: 'AfterTool',
+            additionalContext: text,
+          },
+        };
 
     return decision;
   }

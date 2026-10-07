@@ -1591,6 +1591,29 @@ entries naming `plugins/linteljs/hooks/` and keeps the rest, and `sync` never to
 Code's Local agent also reads `.github/hooks/*.json` but sends its own payloads with tool names it leaves to the
 debug log, so nothing relies on it.
 
+### Gemini CLI and Antigravity: one AGENTS.md, hooks for Gemini CLI only
+
+| fact | source |
+| --- | --- |
+| Gemini CLI reads `GEMINI.md` by default and any other name listed in `.gemini/settings.json` `context.fileName` | geminicli.com/docs/reference/configuration, `context.fileName` |
+| Gemini CLI hooks live in `settings.json` under `hooks.<Event>` as `{ matcher, hooks: [{ type: "command", command }] }`, with `$GEMINI_PROJECT_DIR` in the docs' own command | geminicli.com/docs/hooks |
+| every hook gets `session_id`, `transcript_path`, `cwd`, `hook_event_name`, `timestamp`, and a tool event `tool_name` and `tool_input`; `BeforeTool` denies with `decision` and `reason`, and `AfterTool` appends `hookSpecificOutput.additionalContext` to the tool result | geminicli.com/docs/hooks/reference |
+| Antigravity reads `AGENTS.md` or `GEMINI.md` with no frontmatter, and drops a `.agents/rules/*.md` without a `trigger` of `always_on`, `model_decision`, `glob` (with `globs`) or `manual` | antigravity.google/docs/rules |
+
+`AGENTS.md` is the one adapter for Codex, Gemini CLI and Antigravity, written once whichever of them is chosen.
+Gemini CLI reads it through `context.fileName`, which keeps `GEMINI.md` listed so a project's own still loads.
+A second adapter would load twice in Antigravity, which reads both names.
+
+Gemini CLI sends Claude Code's field names with its own event names, so `utils/hostUtils.ts` tells it apart by
+`hook_event_name` and, as with Cursor, its one shell tool takes the platform's dialect. A denial answers before the
+tool; the eslint warning and the banned-pattern findings are added context after it, since an `AfterTool` block
+replaces the tool's result. No commit gate: its payload documents no exit status. `.gemini/settings.json` is merged
+like `.cursor/hooks.json`, and `sync` never touches it. Gemini CLI has no path-scoped rules, so it reaches the rules
+through the skill `AGENTS.md` names, as Codex does.
+
+Antigravity gets the rules in `.agents/rules/`, `trigger: glob` with Cursor's comma-joined `globs`, or `always_on`
+for a rule with no `paths:`. Its hooks and MCP files have no official schema yet, so it gets neither.
+
 ## Comments
 
 A comment states a why the code cannot: a measurement, an upstream issue, a constraint, a deliberate deviation. One

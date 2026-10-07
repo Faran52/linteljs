@@ -6,12 +6,15 @@ import {
   type ProjectShape,
 } from '@config/types';
 
+import { agentsMdEmitter } from './agents/agents-md/agentsMdEmitter';
+import { antigravityRulesEmitter } from './agents/antigravity-rules/antigravityRulesEmitter';
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './agents/codex-marketplace/codexMarketplaceEmitter';
 import { copilotHooksEmitter } from './agents/copilot-hooks/copilotHooksEmitter';
 import { copilotInstructionsEmitter } from './agents/copilot-instructions/copilotInstructionsEmitter';
 import { cursorHooksEmitter } from './agents/cursor-hooks/cursorHooksEmitter';
 import { cursorRulesEmitter } from './agents/cursor-rules/cursorRulesEmitter';
+import { geminiSettingsEmitter } from './agents/gemini-settings/geminiSettingsEmitter';
 import { bannedPatternsEmitter } from './always/banned-patterns/bannedPatternsEmitter';
 import { ciWorkflowEmitter } from './always/ci-workflow/ciWorkflowEmitter';
 import { commitGateEmitter } from './always/commit-gate/commitGateEmitter';
@@ -60,6 +63,9 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'agents/copilot-hooks': copilotHooksEmitter,
   'agents/cursor-rules': cursorRulesEmitter,
   'agents/cursor-hooks': cursorHooksEmitter,
+  'agents/agents-md': agentsMdEmitter,
+  'agents/gemini-settings': geminiSettingsEmitter,
+  'agents/antigravity-rules': antigravityRulesEmitter,
   'always/banned-patterns': bannedPatternsEmitter,
   'always/husky': huskyEmitter,
   'always/commit-gate': commitGateEmitter,

@@ -144,7 +144,7 @@ describe('codexMarketplaceEmitter', () => {
     expect(codexMarketplace).toEqual([]);
   });
 
-  it('writes the adapter, the marketplace of the chosen plugins and the plugin manifest', () => {
+  it('writes the marketplace of the chosen plugins and the plugin manifest', () => {
     const artifacts = codexMarketplaceEmitter(CODEX);
 
     const shapes = artifacts
@@ -164,11 +164,6 @@ describe('codexMarketplaceEmitter', () => {
     const expected = [
       [
         'standard',
-        'AGENTS.md',
-        true,
-      ],
-      [
-        'standard',
         '.agents/plugins/marketplace.json',
         undefined,
       ],
@@ -186,15 +181,11 @@ describe('codexMarketplaceEmitter', () => {
     expect(shapes).toEqual(expected);
 
     const expectedContent = { text: emitCodexMarketplace(CODEX.plugins) };
-    expect(artifacts[1]?.content).toEqual(expectedContent);
+    expect(artifacts[0]?.content).toEqual(expectedContent);
   });
 
   it('ships the exact minimal local plugin metadata', async () => {
-    const [
-      ,
-      ,
-      plugin,
-    ] = codexMarketplaceEmitter(CODEX);
+    const [, plugin] = codexMarketplaceEmitter(CODEX);
     const longDescription = "Applies the generated project's LintelJS structure, typing, testing, "
       + 'and verification standards.';
 
@@ -222,7 +213,6 @@ describe('codexMarketplaceEmitter', () => {
 
   it('ships Claude Code\'s hooks to Codex without the modules key Codex refuses', async () => {
     const [
-      ,
       ,
       ,
       hooksFile,

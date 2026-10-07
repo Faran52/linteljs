@@ -6,7 +6,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { copilotPayload, runHook } from '@mocks/runHook';
+import {
+  copilotPayload,
+  geminiPayload,
+  runHook,
+} from '@mocks/runHook';
 import {
   afterEach,
   beforeEach,
@@ -59,6 +63,12 @@ describe('generatedFileGuardHook.ts', () => {
 
   it('denies a Copilot edit to a generated file', () => {
     const reply = runHook('generatedFileGuardHook.ts', copilotPayload('edit', { path: 'routeTree.gen.ts' }, cwd));
+    expect(reply).toMatch(GENERATED);
+  });
+
+  it.each(['write_file', 'replace'])('denies Gemini CLI\'s %s on a generated file', (tool) => {
+    const payload = geminiPayload('BeforeTool', tool, { file_path: 'routeTree.gen.ts' }, cwd);
+    const reply = runHook('generatedFileGuardHook.ts', payload);
     expect(reply).toMatch(GENERATED);
   });
 

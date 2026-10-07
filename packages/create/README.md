@@ -76,7 +76,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | API mocking | `--mocking` | `msw` (not on typescript) | none |
 | Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
-| AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor` | `claude-code` |
+| AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor`, `gemini-cli`, `antigravity` | `claude-code` |
 | AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three; a library leaves out `frontend-design` |
 
 A list takes comma-separated values or the flag repeated.
@@ -154,15 +154,19 @@ shows the gate's state for the work tree (passed, failed, running, stale or not 
 | --- | --- | --- |
 | `plugins/linteljs/` | every project | linteljs |
 | `CLAUDE.md`, `.claude/settings.json` | Claude Code | you; linteljs merges its entries into the settings |
-| `AGENTS.md`, `.agents/plugins/marketplace.json` | Codex | you; linteljs |
+| `AGENTS.md` | Codex, Gemini CLI, Antigravity | you |
+| `.agents/plugins/marketplace.json` | Codex | linteljs |
 | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/hooks/linteljs.json` | Copilot | you; linteljs |
 | `.cursor/rules/`, `.cursor/hooks.json` | Cursor | you for `linteljs.mdc`; linteljs merges its hook entries |
+| `.gemini/settings.json` | Gemini CLI | you; linteljs merges its hook entries and adds `AGENTS.md` to `context.fileName` |
+| `.agents/rules/` | Antigravity | linteljs |
 
 Nothing is installed on your behalf: your agent asks you to trust the directory and approve the plugin and hooks,
 and the project passes its gate if you decline. Codex runs plugin hooks only once trusted through `/hooks`, and
 runs a cached copy of the plugin, so reinstall it after a `sync` that changes `plugins/linteljs/`. Cursor has no
 edit event a hook can answer, so there the banned-pattern check runs on commit only and the generated-file guard
-not at all.
+not at all. Gemini CLI runs the hooks from `.gemini/settings.json` once you trust the folder. Antigravity gets
+the rules and no hooks: its hooks file has no documented schema yet.
 
 ## More
 

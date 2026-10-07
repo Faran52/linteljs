@@ -11,6 +11,7 @@ import {
   copilotPayload,
   cursorShellPayload,
   cursorToolPayload,
+  geminiPayload,
 } from '@mocks/runHook';
 import {
   afterEach,
@@ -94,6 +95,12 @@ describe('hostOf', () => {
     ['copilot', copilotPayload('bash', { command: 'ls' })],
     ['cursor', cursorShellPayload('ls')],
     ['cursor', cursorToolPayload('ls', 'postToolUse')],
+    ['gemini', geminiPayload('BeforeTool', 'run_shell_command', { command: 'ls' })],
+    ['gemini', geminiPayload('AfterTool', 'write_file', { file_path: 'a.ts' })],
+    ['claude', {
+      hook_event_name: 'PreToolUse',
+      tool_input: { command: 'ls' },
+    }],
   ])('reads %s from the payload shape', (host, payload) => {
     const payloadHost = hostOf(payload);
     expect(payloadHost).toBe(host);
@@ -162,6 +169,20 @@ describe('readCommand', () => {
     expect(command).toEqual(expected);
   });
 
+  it.each([
+    ['darwin', 'bash'],
+    ['win32', 'powershell'],
+  ] as const)('reads Gemini CLI\'s shell command on %s as %s', (platform, dialect) => {
+    const payload = geminiPayload('BeforeTool', 'run_shell_command', { command: 'git status' });
+    const command = readCommand(payload, 'beforeShellExecution', platform);
+    const expected = {
+      host: 'gemini',
+      command: 'git status',
+      dialect,
+    };
+    expect(command).toEqual(expected);
+  });
+
   it('reads Cursor\'s tool events from the nested input', () => {
     const toolEvent = readCommand(cursorToolPayload('eslint src', 'postToolUse'), 'postToolUse', 'linux');
     expect(toolEvent?.command).toBe('eslint src');
@@ -214,6 +235,7 @@ describe('readSession', () => {
     ['a subagent\'s call', { ...main, agent_id: 'a1' }],
     ['a Cursor payload', { ...main, cursor_version: '2.4.0' }],
     ['a Copilot payload', { ...main, toolName: 'bash' }],
+    ['a Gemini CLI payload', { ...main, hook_event_name: 'AfterTool' }],
     ['no transcript', { session_id: 'abc' }],
     ['no session', { transcript_path: '/p/t.jsonl' }],
     ['a session that is not a plain token', { ...main, session_id: '../x' }],
@@ -269,6 +291,16 @@ describe('readEdit', () => {
     const expected = {
       host: 'claude',
       cwd: '',
+      paths: ['src/a.ts'],
+    };
+    expect(edit).toEqual(expected);
+  });
+
+  it('reads Gemini CLI\'s file and cwd', () => {
+    const edit = readEdit(geminiPayload('BeforeTool', 'replace', { file_path: 'src/a.ts' }, '/repo'));
+    const expected = {
+      host: 'gemini',
+      cwd: '/repo',
       paths: ['src/a.ts'],
     };
     expect(edit).toEqual(expected);
@@ -348,6 +380,34 @@ describe('decisionOf', () => {
       'warn',
       { additional_context: 'why' },
     ],
+    [
+      'gemini',
+      'deny',
+      {
+        decision: 'deny',
+        reason: 'why',
+      },
+    ],
+    [
+      'gemini',
+      'warn',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'AfterTool',
+          additionalContext: 'why',
+        },
+      },
+    ],
+    [
+      'gemini',
+      'block',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'AfterTool',
+          additionalContext: 'why',
+        },
+      },
+    ],
   ] as const)('writes a %s %s in that host\'s own words', (host, kind, decision) => {
     const hostDecision = decisionOf(host, kind, 'why');
     expect(hostDecision).toEqual(decision);
@@ -363,6 +423,8 @@ describe('decisionOf', () => {
     expect(claudeDecision).toBeUndefined();
     const copilotDecision = decisionOf('copilot', 'deny', undefined);
     expect(copilotDecision).toBeUndefined();
+    const geminiDecision = decisionOf('gemini', 'deny', undefined);
+    expect(geminiDecision).toBeUndefined();
   });
 });
 

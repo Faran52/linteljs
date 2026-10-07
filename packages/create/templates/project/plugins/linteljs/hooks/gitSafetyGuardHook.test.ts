@@ -3,6 +3,7 @@ import {
   copilotPayload,
   cursorShellPayload,
   cursorToolPayload,
+  geminiPayload,
   runHook,
   spawnHook,
 } from '@mocks/runHook';
@@ -40,7 +41,7 @@ describe('gitSafetyGuardHook.ts', () => {
     expect(reply).toBeUndefined();
   });
 
-  describe('on Copilot and Cursor', () => {
+  describe('on Copilot, Cursor and Gemini CLI', () => {
     it.each(['bash', 'powershell'])('denies a banned git operation Copilot runs in %s', (tool) => {
       const reply = runHook('gitSafetyGuardHook.ts', copilotPayload(tool, { command: 'git stash' }));
       expect(reply).toMatch(BLOCKED);
@@ -63,6 +64,16 @@ describe('gitSafetyGuardHook.ts', () => {
       expect(reply).toMatch(BLOCKED);
       const actual = spawnHook('gitSafetyGuardHook.ts', cursorShellPayload('git status'));
       expect(actual).toBe('{"permission":"allow"}\n');
+    });
+
+    it('denies a banned git operation before Gemini CLI runs it, and clears one with nothing to deny', () => {
+      const bannedRun = geminiPayload('BeforeTool', 'run_shell_command', { command: 'git stash' });
+      const clearRun = geminiPayload('BeforeTool', 'run_shell_command', { command: 'git status' });
+      const banned = runHook('gitSafetyGuardHook.ts', bannedRun);
+      const clear = runHook('gitSafetyGuardHook.ts', clearRun);
+
+      expect(banned).toMatch(BLOCKED);
+      expect(clear).toBeUndefined();
     });
 
     it('answers nothing to the copy Cursor runs from Claude Code\'s hooks', () => {

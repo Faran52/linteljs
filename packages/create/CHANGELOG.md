@@ -125,6 +125,11 @@ when a version's change lives in a sibling it is described there instead:
   on Vue and Nuxt, `@layouts` on Astro. With `react-router-framework`, `eslint.config.ts` sets
   `aliasExempt: ['src/routes.ts']` and `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route
   typegen reads that file without the aliases.
+- Gemini CLI and Antigravity are agent choices. `AGENTS.md` is written once for Codex, Gemini CLI and
+  Antigravity. Gemini CLI gets `.gemini/settings.json` (merged with a project's own), which adds `AGENTS.md` to
+  `context.fileName` and runs the git and generated-file guards before a tool and the eslint warning and the
+  banned-pattern check after it. Antigravity gets the rules in `.agents/rules/`, each with the `trigger` it
+  needs, and no hooks.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
   `.github/hooks/linteljs.json`. The command guards read PowerShell as well as Bash, and `--no-verify` is denied
   on any git subcommand.

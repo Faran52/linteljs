@@ -3,6 +3,7 @@ import {
   copilotPayload,
   cursorShellPayload,
   cursorToolPayload,
+  geminiPayload,
   runHook,
   spawnHook,
 } from '@mocks/runHook';
@@ -41,7 +42,7 @@ describe('eslintFixWarningHook.ts', () => {
     expect(reply).toBeUndefined();
   });
 
-  describe('on Copilot and Cursor', () => {
+  describe('on Copilot, Cursor and Gemini CLI', () => {
     it.each(['bash', 'powershell'])('warns after Copilot runs eslint without --fix in %s', (tool) => {
       const reply = runHook('eslintFixWarningHook.ts', copilotPayload(tool, { command: 'npx eslint src' }));
       expect(reply).toMatch(UNFIXED);
@@ -59,6 +60,16 @@ describe('eslintFixWarningHook.ts', () => {
 
       expect(reply)
         .toMatch(UNFIXED);
+    });
+
+    it('warns after Gemini CLI runs eslint without --fix, and clears a run with it', () => {
+      const unfixedRun = geminiPayload('AfterTool', 'run_shell_command', { command: 'npx eslint src' });
+      const fixedRun = geminiPayload('AfterTool', 'run_shell_command', { command: 'eslint src --fix' });
+      const unfixed = runHook('eslintFixWarningHook.ts', unfixedRun);
+      const fixed = runHook('eslintFixWarningHook.ts', fixedRun);
+
+      expect(unfixed).toMatch(UNFIXED);
+      expect(fixed).toBeUndefined();
     });
 
     it.each([

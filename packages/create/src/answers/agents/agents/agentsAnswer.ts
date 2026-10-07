@@ -23,6 +23,14 @@ export const agentsAnswer = {
       label: 'Cursor',
       hint: 'Reads .cursor/rules/',
     },
+    'gemini-cli': {
+      label: 'Gemini CLI',
+      hint: 'Reads AGENTS.md through .gemini/settings.json',
+    },
+    'antigravity': {
+      label: 'Antigravity',
+      hint: 'Reads AGENTS.md and .agents/rules/',
+    },
   },
   default: ['claude-code'],
 } as const satisfies MultiRecord<Agent>;
