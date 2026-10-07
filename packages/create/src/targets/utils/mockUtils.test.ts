@@ -13,7 +13,7 @@ import {
   mockFiles,
   mockTests,
   rtkContactFiles,
-  rtkContactTests,
+  rtkEndpointTests,
   rtkFiles,
   rtkTests,
 } from './mockUtils';
@@ -283,8 +283,7 @@ describe('the rtk query contact api', () => {
     });
 
     const expected = [
-      'src/lib/apis/contact/index.ts rtk-query',
-      'src/lib/apis/contact/contactHooks.ts rtk-query',
+      'src/lib/apis/contact/contactApi.ts rtk-query',
       `src/lib/apis/contact/contactEndpoints.ts ${endpoints}`,
     ];
     expect(withForm).toEqual(expected);
@@ -312,25 +311,23 @@ describe('the rtk query contact api', () => {
       { mocking: 'msw' },
       'rtk-query-msw',
     ],
-  ])('takes both from the react tree, a suite each, %s', (_case, overrides, endpoints) => {
-    const picked = pickedBy(rtkContactTests(), {
+  ])('takes the endpoint suite from the react tree, %s', (_case, overrides, endpoints) => {
+    const picked = pickedBy(rtkEndpointTests(), {
       ...overrides,
       form: 'tanstack-form',
       data: 'rtk-query',
     });
 
     const expected = [
-      'src/lib/apis/contact/contactHooks.test.ts rtk-query',
       `src/lib/apis/contact/contactEndpoints.test.ts ${endpoints}`,
     ];
     expect(picked).toEqual(expected);
 
-    const covered = rtkContactTests()
+    const covered = rtkEndpointTests()
       .map(({ covers, shared }) => {
         return `${covers} ${String(shared)}`;
       });
     const expectedCovered = [
-      'src/lib/apis/contact/contactHooks.ts react',
       'src/lib/apis/contact/contactEndpoints.ts react',
       'src/lib/apis/contact/contactEndpoints.ts react',
     ];

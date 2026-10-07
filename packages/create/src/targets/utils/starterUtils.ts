@@ -70,10 +70,7 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
   const files: StarterFile[] = [
     {
       target: 'src/lib/apis/contact/index.ts',
-      when: (answers) => {
-        // RTK Query, offered only beside its Redux store, keeps its own `createApi` barrel.
-        return hasForm(answers) && answers.data !== 'rtk-query';
-      },
+      when: hasForm,
       shared: barrel,
     },
     {

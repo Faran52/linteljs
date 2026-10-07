@@ -327,11 +327,6 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
         covers: 'src/lib/apis/contact/contactApi.ts',
       },
       ...rtkEndpointTests(),
-      {
-        target: 'src/lib/apis/contact/contactHooks.test.ts',
-        covers: 'src/lib/apis/contact/contactHooks.ts',
-        variant: 'rtk-query',
-      },
       contactFormTest(),
       ...contactSubmitTests(),
       ...reactNativeI18nTests(),

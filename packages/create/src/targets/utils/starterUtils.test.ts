@@ -168,7 +168,7 @@ describe('contactApiFiles', () => {
     expect(shared).toStrictEqual(expected);
   });
 
-  it('writes nothing with RTK Query, which keeps its own barrel', () => {
+  it('writes only the barrel with RTK Query, whose entry comes from the rtk tree', () => {
     const rtk = {
       form: 'tanstack-form',
       store: 'redux-toolkit',
@@ -177,7 +177,8 @@ describe('contactApiFiles', () => {
 
     const picked = pickedBy(contactApiFiles(), rtk);
 
-    expect(picked).toEqual([]);
+    const expected = ['src/lib/apis/contact/index.ts base'];
+    expect(picked).toEqual(expected);
   });
 });
 

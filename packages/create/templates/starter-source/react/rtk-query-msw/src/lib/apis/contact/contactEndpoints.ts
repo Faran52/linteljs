@@ -8,7 +8,7 @@ export interface ContactResult {
 
 // Injected into `baseApi`: a second `createApi` is a second cache its tags cannot reach.
 // A real request, which MSW answers from `__mocks__/msw/handlers.ts` in development and in the suites.
-export const contactApi = baseApi.injectEndpoints({
+export const contactEndpoints = baseApi.injectEndpoints({
   endpoints: (build) => {
     const endpoints = {
       submitContact: build.mutation<ContactResult, ContactValues>({

@@ -423,13 +423,12 @@ describe('the starter source', () => {
     });
 
     const endpoints = 'src/lib/apis/contact/contactEndpoints.ts';
-    const hooks = 'src/lib/apis/contact/contactHooks.ts';
+    const api = 'src/lib/apis/contact/contactApi.ts';
     const store = 'src/lib/store/counter/counterStore.ts';
 
     expect(sources[endpoints]).toBe(`starter-source/react/rtk-query/${endpoints}`);
-    expect(sources[hooks]).toBe(`starter-source/react/rtk-query/${hooks}`);
+    expect(sources[api]).toBe(`starter-source/react/rtk-query/${api}`);
     expect(sources[store]).toBe(`starter-source/react/rtk-query/${store}`);
-    expect(sources['src/lib/apis/contact/contactApi.ts']).toBeUndefined();
   });
 
   it('writes the svelte data wrapper only for a form with a suite', () => {

@@ -160,7 +160,7 @@ export const submitGates = (stem: string, suffix = 'test', contact: Condition = 
   return gates;
 };
 
-// RTK Query splits the module into endpoints and hooks, with its own barrel.
+// RTK Query's entry reads its endpoints from a file beside it.
 export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]): GateRow[] => {
   const wrapped = dataLayers
     .filter((data) => {
@@ -169,15 +169,10 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
   const hasRtkQuery = dataLayers.includes('rtk-query');
   const rtkQuery = hasRtkQuery
     ? [
-        ...['index', 'contactHooks']
-          .map((stem): GateRow => {
-            const row: GateRow = [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
-              form: ANSWERED,
-              data: ['rtk-query'],
-            }]];
-
-            return row;
-          }),
+        ['src/lib/apis/contact/contactApi.ts@rtk-query', [{
+          form: ANSWERED,
+          data: ['rtk-query'],
+        }]] satisfies GateRow,
         ...['contactEndpoints.ts', 'contactEndpoints.test.ts']
           .flatMap((file): GateRow[] => {
             const rows: GateRow[] = [
@@ -199,11 +194,7 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
     : [];
 
   const gates: GateRow[] = [
-    // Never under RTK Query, which keeps its own barrel.
-    ['src/lib/apis/contact/index.ts', [{
-      form: ANSWERED,
-      data: [undefined, ...wrapped],
-    }]],
+    ['src/lib/apis/contact/index.ts', [{ form: ANSWERED }]],
     ...rtkQuery,
     ['src/lib/apis/contact/contactApi.ts', [{
       form: ANSWERED,

@@ -7,7 +7,7 @@ import {
 
 import { baseApi } from '../base/baseApi';
 
-import { contactApi } from './contactEndpoints';
+import { contactEndpoints } from './contactEndpoints';
 
 import type { ContactValues } from '@services/contact-form/contactFormService';
 
@@ -19,10 +19,10 @@ const submit = async (values: ContactValues) => {
     },
   });
 
-  return await store.dispatch(contactApi.endpoints.submitContact.initiate(values));
+  return await store.dispatch(contactEndpoints.endpoints.submitContact.initiate(values));
 };
 
-describe('contactApi', () => {
+describe('contactEndpoints', () => {
   it('posts details the rules accept and answers the reply', async () => {
     const { data } = await submit({
       email: 'someone@example.com',

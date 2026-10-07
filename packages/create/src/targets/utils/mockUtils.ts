@@ -231,24 +231,19 @@ const endpointVariants = <TStarter extends StarterFile | StarterTest>(starter: T
 
 // React's tree holds them, which Next shares.
 export const rtkContactFiles = (): StarterFile[] => {
-  const files = ['index', 'contactHooks']
-    .map((stem): StarterFile => {
-      const file: StarterFile = {
-        target: `${RTK_CONTACT}/${stem}.ts`,
-        when: usesRtkContact,
-        variant: 'rtk-query',
-        shared: 'react',
-      };
-
-      return file;
-    });
+  const api: StarterFile = {
+    target: `${RTK_CONTACT}/contactApi.ts`,
+    when: usesRtkContact,
+    variant: 'rtk-query',
+    shared: 'react',
+  };
 
   const endpoints = endpointVariants<StarterFile>({
     target: `${RTK_CONTACT}/contactEndpoints.ts`,
     shared: 'react',
   });
 
-  const all = [...files, ...endpoints];
+  const all = [api, ...endpoints];
 
   return all;
 };
@@ -259,19 +254,6 @@ export const rtkEndpointTests = (): StarterTest[] => {
     covers: `${RTK_CONTACT}/contactEndpoints.ts`,
     shared: 'react',
   });
-
-  return tests;
-};
-
-export const rtkContactTests = (): StarterTest[] => {
-  const hooks: StarterTest = {
-    target: `${RTK_CONTACT}/contactHooks.test.ts`,
-    covers: `${RTK_CONTACT}/contactHooks.ts`,
-    variant: 'rtk-query',
-    shared: 'react',
-  };
-
-  const tests = [hooks, ...rtkEndpointTests()];
 
   return tests;
 };

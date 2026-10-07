@@ -16,7 +16,7 @@ type ContactOutcome = QueryReturnValue<ContactResult, FetchBaseQueryError, Fetch
 
 // Injected into `baseApi`: a second `createApi` is a second cache its tags cannot reach.
 // `queryFn`: the documented place for an endpoint that is not a request, so this stays offline.
-export const contactApi = baseApi.injectEndpoints({
+export const contactEndpoints = baseApi.injectEndpoints({
   endpoints: (build) => {
     const endpoints = {
       submitContact: build.mutation<ContactResult, ContactValues>({

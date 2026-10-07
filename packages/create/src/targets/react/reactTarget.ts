@@ -29,7 +29,7 @@ import {
   mockFiles,
   mockTests,
   rtkContactFiles,
-  rtkContactTests,
+  rtkEndpointTests,
   rtkFiles,
   rtkTests,
 } from '../utils/mockUtils';
@@ -168,7 +168,7 @@ const reactStarterTests = (): StarterTest[] => {
     },
     contactFormTest(),
     ...contactSubmitTests(),
-    ...rtkContactTests(),
+    ...rtkEndpointTests(),
   ];
 
   return tests;
