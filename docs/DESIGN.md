@@ -1745,8 +1745,10 @@ generated into a scratch directory inside a git repository (so generating skips 
 there, so a skipped case leaves its project, `.nuxt/` and `.svelte-kit/` included, as it was for a check run by
 hand, and spawns nothing: with every case unchanged, 29.5 seconds became 14.5.
 
-The nine StyleX cases also run `test` and `build` after lint: StyleX resolves `@styles` theme imports only when it
-compiles, so a broken alias lints clean. The step costs 42 seconds of a warm `--all` run.
+Every case with a suite then runs its own `test:coverage`, since `test` passed a Solid island whose project
+stopped at 95% branches. The script name is part of each stamp, so a case stamped green under another script runs
+again. The nine StyleX cases also run `build`: StyleX resolves `@styles` theme imports only when it compiles, so a
+broken alias lints clean.
 
 A case whose generated tree (less `node_modules`, the lockfile and `.git`) hashes as it did at its last clean lint is
 skipped; `--all` lints every case. Measured on ten cores, five at a time: cold, 8.4 minutes; warm
@@ -1787,8 +1789,10 @@ Measured on an M1 with ten cores, warm, every starter unchanged:
 | `test:coverage` | 104 s | 96.5 s | 122.1 to 122.2 s |
 | `check`, with `build` | 176 s | 146 s | 126 to 129 s |
 
-`lint:starters` fell when unchanged starters stopped being prepared again. At once, every step slows under
-contention, but the wall time is `test:coverage` plus `build`, about 18 seconds under the series (`CI=1 pnpm check`).
+`lint:starters` fell when unchanged starters stopped being prepared again. A changed case now also runs
+`test:coverage`: every case changed, 95 at five at a time, took 10.9 minutes against 4.5 for a warm `--all` before,
+about 35 seconds a case against 14. At once, every step slows under contention, but the wall time is `test:coverage`
+plus `build`, about 18 seconds under the series (`CI=1 pnpm check`).
 
 Tried and left out:
 

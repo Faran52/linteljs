@@ -1,5 +1,5 @@
-// Every starter text, written into a real project, installed and linted with type information; StyleX's also
-// tested and built.
+// Every starter text, written into a real project, installed, linted with type information and run to full
+// coverage; StyleX's also built.
 import {
   existsSync,
   mkdirSync,
@@ -31,6 +31,7 @@ import {
   PROJECTS,
   SCRATCH,
   STAMPS,
+  TEST_SCRIPT,
 } from './constants.ts';
 import {
   appDirOf,
@@ -150,9 +151,16 @@ const lintStep = (item: E2eCase, dir: string): Step => {
   return step;
 };
 
+// A starter that leaves code unrun fails its project's own 100% coverage gate.
+const coverageSteps = (item: E2eCase, dir: string): Step[] => {
+  const steps = [stepOf(TEST_SCRIPT, dir, ['run', TEST_SCRIPT])];
+
+  return item.answers.testing === 'none' ? [] : steps;
+};
+
 // StyleX resolves its theme imports only when it compiles, which lint never reaches.
 const stylexSteps = (item: E2eCase, dir: string): Step[] => {
-  const steps = [stepOf('test', dir, ['run', 'test']), stepOf('build', dir, ['run', 'build'])];
+  const steps = [stepOf('build', dir, ['run', 'build'])];
 
   return item.answers.styling === 'stylex' ? steps : [];
 };
@@ -171,6 +179,7 @@ const caseSteps = (item: E2eCase, dir: string): Step[] => {
     stepOf('install', dir, installArgs),
     stepOf('prepare', app, prepareArgs),
     lintStep(item, app),
+    ...coverageSteps(item, app),
     ...stylexSteps(item, app),
     ...rootLintSteps(item, dir),
   ];
@@ -195,7 +204,7 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 
   await generate(item, scratch, tarballs);
 
-  const stamp = stampOf(scratch);
+  const stamp = `${TEST_SCRIPT} ${stampOf(scratch)}`;
 
   rmSync(scratch, {
     recursive: true,
