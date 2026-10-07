@@ -29,6 +29,15 @@ export const next = (): Layer => {
         }],
       },
     },
+
+    {
+      // A name Next reads, which no naming convention spells.
+      name: '@linteljs/next/convention-filenames',
+      files: ['**/instrumentation-client.ts'],
+      rules: {
+        'check-file/filename-naming-convention': 'off',
+      },
+    },
   ];
 
   return layer;

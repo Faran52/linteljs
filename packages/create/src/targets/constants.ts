@@ -175,3 +175,17 @@ export const COOKIE_UTILS_TEST: StarterTest = {
 
 // The shared TanStack Query option builders every adapter reads, with no extension.
 export const OPTIONS_UTILS = 'src/lib/utils/queryOptionsUtils';
+
+// Not awaited: nothing posts before a person sends the form, and no entry needs a top-level await.
+export const WORKER_START = `import('@mocks/msw/browser')
+    .then(async ({ worker }) => {
+      await worker.start({ onUnhandledRequest: 'bypass' });
+    })
+    .catch((err: unknown) => {
+      console.error(err);
+    });`;
+
+// SSR too: React Router's `root.tsx` also renders on the server, which has no service worker.
+export const VITE_WORKER_START = `if (import.meta.env.DEV && !import.meta.env.SSR) {
+  ${WORKER_START}
+}`;

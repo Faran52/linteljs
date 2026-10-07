@@ -141,6 +141,7 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(true),
+  ['src/instrumentation-client.ts', [{ mocking: ['msw'] }]],
   ...componentStyleGates([
     'mark/Mark',
     'button/Button',

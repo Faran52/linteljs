@@ -5,6 +5,7 @@ import {
   PARTS,
   STATUS_UTILS_TEST,
   VITE_GITIGNORE,
+  VITE_WORKER_START,
 } from '../constants';
 import {
   hasForm,
@@ -55,6 +56,10 @@ export const vueTarget: TargetBuilder = () => {
   const record: TargetRecord = {
     id: 'vue',
     htmlEntry: 'src/main.ts',
+    workerStart: {
+      entries: ['src/main.ts'],
+      code: VITE_WORKER_START,
+    },
     framework: 'vue',
     html: true,
     sfcExtension: 'vue',

@@ -11,6 +11,7 @@ import {
   ROUTER_MOCK,
   STATUS_UTILS_TEST,
   VITE_GITIGNORE,
+  VITE_WORKER_START,
 } from '../constants';
 import { hasForm, hasStore } from '../utils/gateUtils';
 import {
@@ -175,6 +176,10 @@ const baseReactTarget = (): TargetRecord => {
   const record: TargetRecord = {
     id: 'react',
     htmlEntry: 'src/main.tsx',
+    workerStart: {
+      entries: ['src/main.tsx', 'src/root.tsx'],
+      code: VITE_WORKER_START,
+    },
     starterStyles: [
       './styles/tokens.css',
       './styles/base.css',

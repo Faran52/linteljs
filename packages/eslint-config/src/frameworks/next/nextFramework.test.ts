@@ -16,6 +16,8 @@ import react from '../react/reactFramework';
 
 import next, { nextGroup } from './nextFramework';
 
+const FILENAME_RULE = 'check-file/filename-naming-convention';
+
 const composed = (): ReturnType<typeof base> => {
   const layers = [
     ...base(),
@@ -133,7 +135,26 @@ describe('next', () => {
     const actual = ownBlockNames(next());
     const expected = [
       '@linteljs/next',
+      '@linteljs/next/convention-filenames',
     ];
     expect(actual).toEqual(expected);
+  });
+
+  it('holds check-file off instrumentation-client.ts, which the naming map rejects', async () => {
+    const naming = { 'src/**/!(*.test|*.spec).ts': 'CAMEL_CASE' } as const;
+    const code = 'export const value = 1;\n';
+    const path = 'src/instrumentation-client.ts';
+
+    const unexempted = await ruleIdsFor(base({ naming }), code, path);
+    const nextConfig = [
+      ...base({ naming }),
+      ...react(),
+      ...next(),
+      ...NEXT_PROJECT,
+    ];
+    const exempted = await ruleIdsFor(nextConfig, code, path);
+
+    expect(unexempted).toContain(FILENAME_RULE);
+    expect(exempted).not.toContain(FILENAME_RULE);
   });
 });

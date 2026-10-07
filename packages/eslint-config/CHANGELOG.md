@@ -112,6 +112,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `next()` holds the filename convention off `instrumentation-client.ts`, a name Next reads as it is.
 - Import sorting files `@styles` with `@config` and `@typings`, and `@i18n` with `@lib`, `@utils` and the other
   library aliases, rather than in the trailing group of aliases no bucket names.
 - An alias whose `paths` key has its wildcard mid-key, such as `@features/*/api`, sorts into its alias bucket.

@@ -5,6 +5,7 @@ import {
   ROUTER_MOCK,
   STATUS_UTILS_TEST,
   VITE_GITIGNORE,
+  VITE_WORKER_START,
 } from '../constants';
 import {
   hasForm,
@@ -57,6 +58,10 @@ export const solidTarget: TargetBuilder = () => {
   const record: TargetRecord = {
     id: 'solid',
     htmlEntry: 'src/main.tsx',
+    workerStart: {
+      entries: ['src/main.tsx'],
+      code: VITE_WORKER_START,
+    },
     framework: 'solid',
     html: true,
     stores: ['tanstack-store'],

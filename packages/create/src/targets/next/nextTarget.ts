@@ -11,6 +11,7 @@ import {
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
 import {
   hasForm,
+  hasMsw,
   hasStore,
 } from '../utils/gateUtils';
 import {
@@ -205,10 +206,15 @@ export const nextTarget: TargetBuilder = () => {
     },
     // The documents: what each renders is covered where it renders.
     coverageExclude: ['src/app/layout.tsx', 'src/app/global-error.tsx'],
+    workerEntry: 'src/instrumentation-client.ts',
     publicDirectory: 'public',
     clientBoundaries: CLIENT_BOUNDARIES,
     starterFiles: [
       ...mockFiles(hasForm),
+      {
+        target: 'src/instrumentation-client.ts',
+        when: hasMsw,
+      },
       ...componentStyles(),
       ...componentStyleModules('react'),
       ...filesAt(STYLEX_CONFIGS, {

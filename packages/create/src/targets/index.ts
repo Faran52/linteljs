@@ -14,5 +14,6 @@ export type {
   StarterTest,
   TargetRecord,
   TsconfigPlugin,
+  WorkerStart,
 } from './types';
 export { starterApplies } from './utils/gateUtils';

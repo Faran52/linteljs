@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import {
   hasForm,
+  hasMsw,
   hasStore,
 } from '../utils/gateUtils';
 import {
@@ -126,9 +127,14 @@ export const svelteTarget: TargetBuilder = () => {
     testConditions: ['browser'],
     // `<svelte:head>` compiles to a hydration branch a rendering suite cannot reach.
     coverageExclude: ['src/routes/+layout.svelte'],
+    workerEntry: 'src/hooks.client.ts',
     publicDirectory: 'static',
     starterFiles: [
       ...mockFiles(hasForm),
+      {
+        target: 'src/hooks.client.ts',
+        when: hasMsw,
+      },
       ...componentStyles(),
       ...componentStyleModules('solid'),
       ...stylexDocument('src/routes/+layout.svelte'),

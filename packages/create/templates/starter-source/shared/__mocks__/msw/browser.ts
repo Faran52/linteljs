@@ -2,5 +2,5 @@ import { setupWorker } from 'msw/browser';
 
 import { handlers } from './handlers';
 
-// Nothing starts this: start it behind an `import.meta.env.DEV` check, so a production bundle never carries it.
+// Started in development only, from the entry, so a production bundle never runs it.
 export const worker = setupWorker(...handlers);

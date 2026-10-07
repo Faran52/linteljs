@@ -30,6 +30,13 @@ export interface ConditionalStyle {
 
 export type StarterStyle = string | ConditionalStyle;
 
+export interface WorkerStart {
+  entries: readonly string[];
+  // Put above the first import, so it sorts first only where it names an earlier package.
+  imports?: string;
+  code: string;
+}
+
 // The asset sits at `target` under `templates/starter-source/<id>/`, so the path is spelled once.
 export interface StarterFile {
   target: string;
@@ -175,6 +182,10 @@ export interface TargetRecord {
   starterFiles: StarterFile[];
   // Written paths that open with `'use client';`.
   clientBoundaries?: readonly string[];
+  // Under msw, the entry this project writes starts the browser worker in development.
+  workerStart?: WorkerStart;
+  // Or a file of its own under msw, which starts it and stays out of coverage.
+  workerEntry?: string;
   viteInputs?: Record<string, string>;
   // Required: the generated project gates at 100% on what those files are.
   starterTests: StarterTest[];

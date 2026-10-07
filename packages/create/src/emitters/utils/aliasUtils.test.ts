@@ -236,4 +236,14 @@ describe('buildAliases', () => {
 
     expect(aliases).toBeUndefined();
   });
+
+  it('keeps @mocks without tests when msw is chosen, since the entry starts the worker through it', () => {
+    const aliases = buildAliases({
+      ...answersFor({}),
+      testing: 'none',
+      mocking: 'msw',
+    })['@mocks/*'];
+
+    expect(aliases).toBe('./__mocks__/*');
+  });
 });

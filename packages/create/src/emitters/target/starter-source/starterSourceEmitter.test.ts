@@ -851,3 +851,48 @@ describe('the header brand', () => {
     expect(stylexBrand).not.toMatch(/nowrap|ellipsis/v);
   });
 });
+
+describe('the msw worker start', () => {
+  it.each([
+    ['react', 'src/main.tsx'],
+    ['solid', 'src/main.tsx'],
+    ['vue', 'src/main.ts'],
+    ['angular', 'src/main.ts'],
+  ] as const)('starts the worker from the %s entry %s under msw', async (target, entry) => {
+    const written = await textOf({
+      target,
+      mocking: 'msw',
+    }, entry);
+    const started = written.includes("import('@mocks/msw/browser')");
+
+    expect(started).toBe(true);
+  });
+
+  it('starts it from React Router\'s document, off the server', async () => {
+    const written = await textOf({
+      target: 'react',
+      router: 'react-router-framework',
+      mocking: 'msw',
+    }, 'src/root.tsx');
+    const guarded = written.includes('!import.meta.env.SSR');
+
+    expect(guarded).toBe(true);
+  });
+
+  it('imports isDevMode first in Angular\'s entry', async () => {
+    const written = await textOf({
+      target: 'angular',
+      mocking: 'msw',
+    }, 'src/main.ts');
+    const first = written.split('\n')[0];
+
+    expect(first).toBe("import { isDevMode } from '@angular/core';");
+  });
+
+  it('leaves an entry alone without msw', async () => {
+    const written = await textOf({ target: 'react' }, 'src/main.tsx');
+    const started = written.includes('@mocks/msw/browser');
+
+    expect(started).toBe(false);
+  });
+});

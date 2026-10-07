@@ -31,9 +31,11 @@ export const coverageInclude = (answers: Answers): string => {
 
 // React Router's route table is configuration; TanStack Router builds its tree in `App.tsx`.
 export const coverageExclude = (answers: Answers): string[] => {
+  const target = targetFor(answers);
   const exclude = [
     ...SHARED_COVERAGE_EXCLUDE,
-    ...targetFor(answers).coverageExclude ?? [],
+    ...target.coverageExclude ?? [],
+    ...answers.mocking === 'msw' && target.workerEntry !== undefined ? [target.workerEntry] : [],
     ...(answers.router === undefined || answers.router === 'tanstack-router' ? [] : ['src/routes/**']),
   ];
 

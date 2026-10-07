@@ -1,6 +1,10 @@
 import { hasLibrary } from '@utils/answerUtils';
 
-import { DECLARATION_KEY, FOLDER } from '../constants';
+import {
+  DECLARATION_KEY,
+  FOLDER,
+  WORKER_START,
+} from '../constants';
 import { always, hasI18n } from '../utils/gateUtils';
 import {
   languageUtilsFile,
@@ -93,6 +97,11 @@ export const angularTarget: TargetBuilder = () => {
     // Declarations with no branch; `ng new` already ships the component spec.
     coverageExclude: ['src/app/app.config.ts', 'src/app/app.routes.ts'],
     publicDirectory: 'public',
+    workerStart: {
+      entries: ['src/main.ts'],
+      imports: "import { isDevMode } from '@angular/core';\n",
+      code: `if (isDevMode()) {\n  ${WORKER_START}\n}`,
+    },
     starterFiles: [
       ...mockFiles(always, true, 'src/lib/utils/fetch-extended-utils.ts'),
       {

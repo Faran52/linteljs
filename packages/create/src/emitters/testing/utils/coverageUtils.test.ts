@@ -114,6 +114,20 @@ describe('coverageExclude', () => {
     expect(actual).toEqual(expected);
   });
 
+  it.each([
+    ['next', 'src/instrumentation-client.ts'],
+    ['svelte', 'src/hooks.client.ts'],
+  ] as const)('leaves the %s worker entry %s out under msw only', (target, entry) => {
+    const withMsw = coverageExclude(answersFor({
+      target,
+      mocking: 'msw',
+    }));
+    const without = coverageExclude(answersFor({ target }));
+
+    expect(withMsw).toContain(entry);
+    expect(without).not.toContain(entry);
+  });
+
   it('keeps out a React Router route table, not a TanStack Router one', () => {
     const routed = coverageExclude(answersFor({ router: 'react-router' }));
     expect(routed).toContain('src/routes/**');

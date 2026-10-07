@@ -25,6 +25,7 @@ import {
 } from './constants';
 import { inJestDialect } from './utils/jestDialectUtils';
 import { relativeSpecifier, stem } from './utils/starterPathUtils';
+import { withWorkerStart } from './utils/workerStartUtils';
 
 type Starter = StarterFile | StarterTest;
 
@@ -113,6 +114,8 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const renames = renamesOf([...files, ...suites]);
   const clientBoundaries = new Set(target.clientBoundaries);
   const isJest = testRunnerOf(answers) === 'jest';
+  const workerStart = answers.mocking === 'msw' ? target.workerStart : undefined;
+  const workerEntries = new Set(workerStart?.entries);
 
   const artifactOf = (file: Starter): Artifact => {
     // Bytes, not text: no rewrite applies, and a UTF-8 round trip would corrupt it.
@@ -134,6 +137,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       ...renames.size === 0 ? [] : [rewritten],
       ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
+      ...workerStart !== undefined && workerEntries.has(file.target) ? [withWorkerStart(workerStart)] : [],
       ...isJest && 'covers' in file ? [inJestDialect] : [],
       ...transform === undefined
         ? []

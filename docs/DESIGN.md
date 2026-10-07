@@ -901,7 +901,11 @@ rather than the call site, so the code under test is the code that ships. The se
 `onUnhandledRequest: 'error'`, since an unhandled request is a test reaching the network, and is appended last so
 the interceptor listens before anything asks. The handlers live under `__mocks__/msw/`: `node.ts` for the test run
 everywhere, and `browser.ts` wherever a dev server serves a directory the worker can live in, which is every target
-but React Native.
+but React Native. The entry starts the worker in development only and does not await it: nothing posts before a
+person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
+`root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
+`init` in `hooks.client.ts`). The web extension starts none: its popup fetches nothing under `/api`, so a worker
+there would answer no request.
 
 **The accessor takes each framework's own word:**
 

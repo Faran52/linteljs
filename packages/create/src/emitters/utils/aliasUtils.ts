@@ -50,7 +50,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
     '@styles/*': './src/styles/*',
     '@config/*': './src/config/*',
     ...(localesOf(answers).length > 0 ? { '@i18n/*': './src/i18n/*' } : {}),
-    ...(hasTests(answers) ? { '@mocks/*': './__mocks__/*' } : {}),
+    ...(hasTests(answers) || answers.mocking === 'msw' ? { '@mocks/*': './__mocks__/*' } : {}),
     // A project's own last, so it can restate a standard one deliberately.
     ...answers.aliases,
   };
