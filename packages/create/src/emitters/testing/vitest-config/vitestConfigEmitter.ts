@@ -64,19 +64,26 @@ const testBlock = (
   const dom = target.libraryProject !== true;
   const poolLine = pool === undefined ? '' : `${indent}  pool: '${pool}',\n`;
   const execArgvLine = dom ? `${indent}  execArgv: ['--no-experimental-webstorage'],\n` : '';
+  const inlineLine = target.testInline === undefined
+    ? ''
+    : `${indent}  server: { deps: { inline: [${target.testInline
+      .map(String)
+      .join(', ')}] } },\n`;
 
   return `${indent}test: {
 ${indent}  globals: true,
 ${indent}  environment: '${dom ? 'happy-dom' : 'node'}',
-${poolLine}${indent}  setupFiles: ['./${setup}'],
+${poolLine}${inlineLine}${indent}  setupFiles: ['./${setup}'],
 ${execArgvLine}${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
 
+const conditionsLine = (testConditions: string[] | undefined, indent: string): string => {
+  return testConditions === undefined ? '' : `${indent}resolve: { conditions: [${quoted(testConditions)}] },\n`;
+};
+
 const mergedConfig = (block: string, testConditions: string[] | undefined): string => {
-  const conditions = testConditions === undefined
-    ? ''
-    : `    resolve: { conditions: [${quoted(testConditions)}] },\n`;
+  const conditions = conditionsLine(testConditions, '    ');
 
   return `import { defineConfig, mergeConfig } from 'vitest/config';
 
@@ -131,7 +138,7 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
     return `${target.vitestFactory.imports.join('\n')}
 
 export default ${target.vitestFactory.call}({
-${block}
+${conditionsLine(target.testConditions, '  ')}${block}
 });
 `;
   }

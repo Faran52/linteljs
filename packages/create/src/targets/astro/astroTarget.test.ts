@@ -25,7 +25,7 @@ import { LANGUAGES } from '@config/constants';
 import { DEFAULT_ANSWERS } from '@answers';
 
 import { astroTarget } from './astroTarget';
-import { REACT_ISLAND_IMPORT, TRANSLATED } from './constants';
+import { TRANSLATED } from './constants';
 
 import type { Answers, HostedFramework } from '@config/types';
 
@@ -240,7 +240,6 @@ const I18N_ONLY_PATHS = [
 const NO_ISLAND: readonly Condition[] = [{ form: [undefined] }, { hostedFramework: [
   undefined,
   'svelte',
-  'solid',
 ] }];
 
 const onIsland = (hosts: readonly HostedFramework[], rows: readonly GateRow[]): GateRow[] => {
@@ -282,14 +281,17 @@ const islandGates = (button: string, extension: string): GateRow[] => {
   return gates;
 };
 
-const SHARED_ISLAND_GATES: GateRow[] = onIsland(['react', 'vue'], [
+const SHARED_ISLAND_GATES: GateRow[] = onIsland([
+  'react',
+  'vue',
+  'solid',
+], [
   ['src/pages/contact.astro', [{ languages: [undefined], mocking: [undefined] }]],
   ['src/pages/contact.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
   ['src/pages/contact.astro@i18n', [{ languages: ANSWERED, mocking: [undefined] }]],
   ['src/pages/contact.astro@i18n-msw', [{ languages: ANSWERED, mocking: ['msw'] }]],
   ['src/views/contact/utils/contactCopyUtils.ts@i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/utils/contactCopyUtils.test.ts@i18n', [{ languages: ANSWERED }]],
-  ['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]],
   ['../components/ui/text-input/TextInput.css', [{}]],
   ...componentStyleGates(['text-input/TextInput'])
     .filter(([key]) => {
@@ -301,11 +303,28 @@ const SHARED_ISLAND_GATES: GateRow[] = onIsland(['react', 'vue'], [
   ['src/config/routes.ts@with-form', [{}]],
 ]);
 
+const JSX_ISLAND_GATES: GateRow[] = onIsland(['react', 'solid'], [
+  ['src/views/contact/ContactPage.tsx', [{ languages: [undefined], mocking: [undefined] }]],
+  ['src/views/contact/ContactPage.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/components/ui/index.ts', [{}]],
+  ...islandGates('button/Button', 'tsx'),
+  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.test.tsx', [{}]],
+  ['src/views/contact/ContactPage.test.tsx', [
+    { hostedFramework: ['react'], languages: [undefined] },
+    {
+      hostedFramework: ['solid'],
+      languages: [undefined],
+      mocking: [undefined],
+    },
+  ]],
+]);
+
 const REACT_ISLAND_GATES: GateRow[] = onIsland(['react'], [
   ...[
     'ContactIsland.tsx',
     'ContactIsland.test.tsx',
-    'ContactPage.test.tsx',
   ]
     .flatMap((name): GateRow[] => {
       const rows: GateRow[] = [
@@ -315,16 +334,10 @@ const REACT_ISLAND_GATES: GateRow[] = onIsland(['react'], [
 
       return rows;
     }),
-  ['src/views/contact/ContactPage.tsx', [{ languages: [undefined], mocking: [undefined] }]],
-  ['src/views/contact/ContactPage.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
   ['src/views/contact/ContactPage.tsx@i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/ContactPage.test.tsx@i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/views/contact/use-contact-form/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
-  ['src/components/ui/index.ts', [{}]],
-  ...islandGates('button/Button', 'tsx'),
-  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
-  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/data/DataProvider.test.tsx', [{}]],
 ]);
 
 const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
@@ -350,7 +363,26 @@ const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
   ['src/lib/providers/data/dataProvider.ts', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/dataProvider.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/providers/data/dataProvider.test.ts', [{}]],
-  ['src/lib/apis/contact/contactApi.test.ts', [{}]],
+]);
+
+const SOLID_ISLAND_GATES: GateRow[] = onIsland(['solid'], [
+  ...[
+    'ContactIsland.tsx',
+    'ContactIsland.test.tsx',
+  ]
+    .flatMap((name): GateRow[] => {
+      const rows: GateRow[] = [
+        [`src/views/contact/${name}@solid`, [{ languages: [undefined] }]],
+        [`src/views/contact/${name}@solid-i18n`, [{ languages: ANSWERED }]],
+      ];
+
+      return rows;
+    }),
+  ['src/views/contact/ContactPage.tsx@solid-i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/ContactPage.test.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.test.tsx@solid-i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/create-contact-form/createContactForm.ts', [{}]],
+  ['src/views/contact/create-contact-form/createContactForm.test.ts', [{}]],
 ]);
 
 const GATES: GateRow[] = [
@@ -369,8 +401,12 @@ const GATES: GateRow[] = [
     })],
   ['src/config/routes.ts', NO_ISLAND],
   ...SHARED_ISLAND_GATES,
+  ...JSX_ISLAND_GATES,
   ...REACT_ISLAND_GATES,
   ...VUE_ISLAND_GATES,
+  ...SOLID_ISLAND_GATES,
+  ...onIsland(['vue', 'solid'], [['src/lib/apis/contact/contactApi.test.ts', [{}]]]),
+  ...onIsland(['react', 'vue'], [['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]]]),
   ...componentStyleGates(['mark/Mark']),
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'], languages: [undefined] }]],
@@ -447,40 +483,6 @@ describe('the contact page', () => {
   it('is absent when no framework is hosted, since nothing could render the form', () => {
     const { starterFiles, starterTests } = recordFor();
     const picked = pickedBy([...starterFiles, ...starterTests], { form: 'tanstack-form' });
-
-    const contact = picked
-      .filter((entry) => {
-        return entry.includes('contact') || entry.includes('with-form');
-      });
-    expect(contact).toEqual([]);
-  });
-});
-
-describe('the contact island', () => {
-  it.each<[HostedFramework, string]>([
-    ['react', "import { ContactIsland } from '@views/contact/ContactIsland';"],
-    ['vue', "import ContactIsland from '@views/contact/ContactIsland.vue';"],
-  ])('imports the %s island on the page that hydrates it', (hostedFramework, line) => {
-    const answers = answersFor({
-      hostedFramework,
-      form: 'tanstack-form',
-    });
-    const page = astroTarget(answers).starterFiles
-      .find((file) => {
-        return file.target === 'src/pages/contact.astro' && file.when?.(answers) === true;
-      });
-
-    const source = page?.transform?.(`${REACT_ISLAND_IMPORT}\n`, answers);
-
-    expect(source).toBe(`${line}\n`);
-  });
-
-  it.each<HostedFramework>(['svelte', 'solid'])('is not offered hosting %s yet', (hostedFramework) => {
-    const { starterFiles, starterTests } = recordFor({ hostedFramework });
-    const picked = pickedBy([...starterFiles, ...starterTests], {
-      hostedFramework,
-      form: 'tanstack-form',
-    });
 
     const contact = picked
       .filter((entry) => {

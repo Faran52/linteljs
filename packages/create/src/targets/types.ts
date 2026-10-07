@@ -172,6 +172,9 @@ export interface TargetRecord {
   coverageExclude?: string[];
   // Without `browser`, vitest loads Svelte's server build and `mount()` throws.
   testConditions?: string[];
+  // Astro inlines the crawled Solid packages but vite-plugin-solid externalizes `solid-js`, so Node loaded
+  // `solid-js/store`'s dev build beside a core without `DEV`.
+  testInline?: RegExp[];
   // Angular's plugin runs `vmThreads`, whose VM context lacks `BroadcastChannel`, so msw fails on import.
   testPool?: string;
   // Next has no Vite config, so it compiles StyleX through Babel and PostCSS.

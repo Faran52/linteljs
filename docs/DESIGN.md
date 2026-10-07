@@ -614,8 +614,12 @@ and the island follows `<html lang>`, which the language switcher sets, so it re
 react-i18next and no locale bundle of its own; its server render takes the fallback language, as the page's does,
 so hydration matches. Astro hosting nothing has no contact page: no
 framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. Hosting Vue, the
-island is Vue's own `ContactView` under the same page, installing its data provider on the island's app. The
-islands for Svelte and Solid are still to come, so those hosts install the form library without a demo. The extension installs it
+island is Vue's own `ContactView` under the same page, installing its data provider on the island's app. Hosting Solid, it is Solid's `ContactPage` in a
+`ContactIsland` that brings its provider; under languages a forked page takes a `translate` prop, since Solid's
+own reads `@solid-primitives/i18n`, which Astro does not install. Its vitest config inlines `solid-js`: Astro
+inlines the Solid packages it crawls while vite-plugin-solid externalizes `solid-js`, so Node loaded the store's
+dev build beside a core without `DEV`. The island for Svelte is still to come, so that host installs the form
+library without a demo. The extension installs it
 without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
 rather than a forgotten file.
 

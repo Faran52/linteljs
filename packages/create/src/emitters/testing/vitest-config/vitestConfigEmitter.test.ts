@@ -16,6 +16,7 @@ import { emitVitestConfig, vitestConfigEmitter } from './vitestConfigEmitter';
 
 import type {
   Data,
+  HostedFramework,
   Router,
   Styling,
   Surface,
@@ -25,6 +26,7 @@ import type {
 
 interface AnswerOverrides {
   target?: TargetId;
+  hostedFramework?: HostedFramework;
   testing?: Testing;
   router?: Router;
   styling?: Styling;
@@ -299,6 +301,33 @@ export default defineConfig({
   ])('gives %s the resolve conditions its runtime needs', (target, expected) => {
     const config = configFor({ target });
     expect(config).toContain(expected);
+  });
+
+  it('gives a hosted solid island its resolve conditions through the factory', () => {
+    const config = configFor({
+      target: 'astro',
+      hostedFramework: 'solid',
+    });
+
+    expect(config).toContain("export default getViteConfig({\n  resolve: { conditions: ['development', 'browser'] },");
+  });
+
+  it('runs every solid-js build through Vite under a hosted solid island', () => {
+    const config = configFor({
+      target: 'astro',
+      hostedFramework: 'solid',
+    });
+
+    expect(config).toContain("    server: { deps: { inline: [/solid-js/] } },\n    setupFiles: ['./");
+  });
+
+  it('leaves the deps of a hosted react island to vitest', () => {
+    const config = configFor({
+      target: 'astro',
+      hostedFramework: 'react',
+    });
+
+    expect(config).not.toContain('server:');
   });
 
   it.each<TargetId>([
