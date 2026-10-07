@@ -119,6 +119,9 @@ const FORM_I18N: readonly Condition[] = [{
 
 const GATES: GateRow[] = [
   ...mswGates(true, false),
+  ['__mocks__/msw/native.ts', [{ mocking: ['msw'] }]],
+  ['__mocks__/msw/polyfills.ts', [{ mocking: ['msw'] }]],
+  ['src/index.ts', [{ mocking: ['msw'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),
   ['src/app/(tabs)/contact.tsx', FORM_ENGLISH],
   ['src/app/(tabs)/contact.tsx@i18n', FORM_I18N],

@@ -176,6 +176,11 @@ describe('patchPackageJson', () => {
   it('names the entry only for the target whose runtime reads it', () => {
     const expoPackage = patchPackageJson({}, answersFor({ target: 'react-native' }));
     expect(expoPackage).toHaveProperty('main', 'expo-router/entry');
+    const mockedExpoPackage = patchPackageJson({}, answersFor({
+      target: 'react-native',
+      mocking: 'msw',
+    }));
+    expect(mockedExpoPackage).toHaveProperty('main', 'src/index.ts');
     const defaultPackage = patchPackageJson({}, answersFor({}));
     expect(defaultPackage).not.toHaveProperty('main');
   });

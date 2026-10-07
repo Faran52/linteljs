@@ -7,7 +7,7 @@ import {
   STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
-import { hasForm } from '../utils/gateUtils';
+import { hasForm, hasMsw } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -55,12 +55,13 @@ const isRedux = (answers: Answers): boolean => {
 };
 
 // Not its own layer: `eslint-plugin-react-native` caps at `eslint ^9`, and `eslint-config-expo` collides with `base()`.
-export const reactNativeTarget: TargetBuilder = () => {
+export const reactNativeTarget: TargetBuilder = (answers) => {
   const record: TargetRecord = {
     id: 'react-native',
     expoProject: true,
-    // expo-router owns the entry, so there is no root `App.tsx` for Expo's default to find.
-    packageMain: 'expo-router/entry',
+    // expo-router owns the entry, so there is no root `App.tsx` for Expo's default to find. Under msw, an entry
+    // of its own starts the mock server first, outside coverage.
+    packageMain: hasMsw(answers) ? 'src/index.ts' : 'expo-router/entry',
     framework: 'react-native',
     html: false,
     stores: [
@@ -134,8 +135,15 @@ export const reactNativeTarget: TargetBuilder = () => {
     // jest-expo resolves as Metro does and renders through a test renderer, not a DOM.
     testRunner: 'jest',
     starterFiles: [
-      // No dev server, so no browser worker.
+      // No service worker on a device: msw/native patches fetch in the app.
       ...mockFiles(hasForm, false),
+      ...filesAt([
+        '__mocks__/msw/native.ts',
+        '__mocks__/msw/polyfills.ts',
+        'src/index.ts',
+      ], {
+        when: hasMsw,
+      }),
       ...accessorFiles(ACCESSORS, {
         shared: 'react',
         names: SOURCE_ACCESSORS,
