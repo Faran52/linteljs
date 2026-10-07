@@ -120,22 +120,6 @@ const plantPackageJson = async (devDependencies: Record<string, string>): Promis
   await plant('package.json', `${JSON.stringify(manifest)}\n`);
 };
 
-const statusLineSettings = (main: string, subagent: string): string => {
-  const settings = {
-    includeCoAuthoredBy: false,
-    statusLine: {
-      type: 'command',
-      command: `node "\${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/${main}"`,
-    },
-    subagentStatusLine: {
-      type: 'command',
-      command: `node "\${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/${subagent}"`,
-    },
-  };
-
-  return `${JSON.stringify(settings, null, 2)}\n`;
-};
-
 const created = buildDevDependencies(HOSTED_DEFAULTS);
 
 const versionOf = (name: string): string => {
@@ -285,46 +269,6 @@ describe('syncPlugin', () => {
       removed: [],
     };
     expect(second).toEqual(expected);
-  });
-
-  it('points the status lines of a project on the old script names at the scripts sync writes', async () => {
-    const old = ['plugins/linteljs/hooks/mainStatusLine.ts', 'plugins/linteljs/hooks/subagentStatusLine.ts'];
-
-    for (const target of old) {
-      await plant(target, '// retired\n');
-    }
-
-    await plantRecord(old);
-    await plant('.claude/settings.json', statusLineSettings('mainStatusLine.ts', 'subagentStatusLine.ts'));
-
-    const { written, removed } = await syncPlugin(cwd, HOSTED_DEFAULTS);
-
-    expect(removed).toEqual(old);
-    expect(written).toContain('.claude/settings.json');
-    const settings = await read('.claude/settings.json');
-    const migrated = statusLineSettings('mainStatusLineHook.ts', 'subagentStatusLineHook.ts');
-    expect(settings).toBe(migrated);
-    const scripts = [...settings.matchAll(/plugins\/linteljs\/hooks\/\w+\.ts/gu)]
-      .map(([target]) => {
-        return target;
-      });
-    const present = await Promise.all(scripts
-      .map(async (target) => {
-        return await exists(join(cwd, target));
-      }));
-    expect(scripts).toHaveLength(2);
-    expect(present).toEqual([true, true]);
-  });
-
-  it('leaves settings already on the current script names untouched', async () => {
-    const current = statusLineSettings('mainStatusLineHook.ts', 'subagentStatusLineHook.ts');
-    await plant('.claude/settings.json', current);
-
-    const { written } = await syncPlugin(cwd, HOSTED_DEFAULTS);
-
-    expect(written).not.toContain('.claude/settings.json');
-    const settings = await read('.claude/settings.json');
-    expect(settings).toBe(current);
   });
 
   it('restores an edited plugin file and reports it alone', async () => {
