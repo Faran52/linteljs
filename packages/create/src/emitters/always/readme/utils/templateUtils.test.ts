@@ -87,4 +87,45 @@ describe('sharedSlots', () => {
 
     expect(untestedRows).toBe('');
   });
+
+  it('says nothing of workspaces in a single repo', () => {
+    const { WORKSPACE: note } = sharedSlots('demo-app', answersFor({}));
+
+    expect(note).toBe('');
+  });
+
+  it.each([
+    [
+      'pnpm',
+      'react',
+      '`pnpm --filter @acme/shop dev`',
+    ],
+    [
+      'npm',
+      'react',
+      '`npm run dev -w @acme/shop`',
+    ],
+    [
+      'yarn',
+      'react',
+      '`yarn workspace @acme/shop dev`',
+    ],
+    [
+      'bun',
+      'typescript',
+      '`bun run --filter @acme/shop build`',
+    ],
+  ] as const)('names the app and a filtered run from the root of a %s %s monorepo', (packageManager, target, run) => {
+    const answers = answersFor({
+      packageManager,
+      target,
+      layout: 'monorepo',
+    });
+
+    const { WORKSPACE: note } = sharedSlots('@acme/shop', answers);
+
+    expect(note).toMatch(/^The app lives in `apps\/shop\/`, and every package carries these scripts\. /u);
+    expect(note).toContain('`check` runs them, then every package\'s `check`.');
+    expect(note).toContain(`from the root: ${run}.\n\n`);
+  });
 });

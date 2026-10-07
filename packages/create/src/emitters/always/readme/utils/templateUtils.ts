@@ -4,13 +4,13 @@ import {
   SYNC_COMMAND,
 } from '@config/constants';
 
-import { hasTests } from '@utils/answerUtils';
+import { appDirectoryOf, hasTests } from '@utils/answerUtils';
 
 import { ANSWERS } from '@answers';
 
 import { buildScripts } from '../../utils/scriptUtils';
 
-import type { Answers } from '@config/types';
+import type { Answers, PackageManager } from '@config/types';
 
 // An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
 
@@ -24,6 +24,33 @@ const testRows = (answers: Answers, run: string): string => {
     : '';
 };
 
+const filtered = (manager: PackageManager, name: string, script: string): string => {
+  const commands: Record<PackageManager, string> = {
+    pnpm: `pnpm --filter ${name} ${script}`,
+    npm: `npm run ${script} -w ${name}`,
+    yarn: `yarn workspace ${name} ${script}`,
+    bun: `bun run --filter ${name} ${script}`,
+  };
+
+  return commands[manager];
+};
+
+// A monorepo's root holds only `lint`, `typecheck` and a `check` over every package; the rest live in the app.
+const workspaceNote = (projectName: string, answers: Answers): string => {
+  if (answers.layout === 'single') {
+    return '';
+  }
+
+  const script = buildScripts(answers)['dev'] === undefined ? 'build' : 'dev';
+  const command = filtered(answers.packageManager, projectName, script);
+
+  const app = appDirectoryOf(answers, projectName);
+
+  return `The app lives in \`${app}/\`, and every package carries these scripts. At the `
+    + 'root, `lint` and `typecheck` cover the root\'s own `scripts/`, and `check` runs them, then every package\'s '
+    + `\`check\`. Run any other script in its package's directory, or from the root: \`${command}\`.\n\n`;
+};
+
 export const sharedSlots = (projectName: string, answers: Answers): Record<string, string> => {
   const run = RUN_PREFIX[answers.packageManager];
 
@@ -35,6 +62,7 @@ export const sharedSlots = (projectName: string, answers: Answers): Record<strin
     SYNC: SYNC_COMMAND[answers.packageManager],
     CHECK_CHAIN: buildScripts(answers).check,
     TEST_ROWS: testRows(answers, run),
+    WORKSPACE: workspaceNote(projectName, answers),
   };
 
   return slots;
