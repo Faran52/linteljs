@@ -266,6 +266,10 @@ export const nuxtTarget: TargetBuilder = () => {
         }),
       contactFormTest(),
       ...contactSubmitTests(),
+      {
+        target: 'src/app.test.ts',
+        covers: 'src/app.vue',
+      },
       ...translated<StarterTest>({
         target: 'src/error.test.ts',
         covers: 'src/error.vue',

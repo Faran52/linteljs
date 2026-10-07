@@ -576,6 +576,7 @@ describe('the files a webextension surface owns', () => {
     'popup': [
       'index.html',
       'src/lib/mark/mark.css',
+      'src/lib/mark/mark.test.ts',
       'src/lib/mark/mark.ts',
       'src/main.ts',
       'src/popup/renderPopup.test.ts',

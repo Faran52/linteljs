@@ -99,7 +99,15 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
 
 const surfaceTests = (answers: Answers): StarterTest[] => {
   const tests: StarterTest[] = [
-    ...hasSurface(answers, 'popup') ? popupI18nTests() : [],
+    ...hasSurface(answers, 'popup')
+      ? [
+          ...popupI18nTests(),
+          {
+            target: 'src/lib/mark/mark.test.ts',
+            covers: 'src/lib/mark/mark.ts',
+          },
+        ]
+      : [],
     ...hasSurface(answers, 'background')
       ? [{
           variant: answers.browser,
