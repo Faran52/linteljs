@@ -26,9 +26,11 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
 - `pnpm test` inside a package runs that package's suite alone (every package declares `test`, since pnpm's
   shorthand exits 0 where the script is missing). Coverage is a root-only gate:
   one global 100% block over the root `coverage.include`.
-- `pnpm check` chains `build && lint && lint:types && lint:starters && lint:css && typecheck && test:coverage`.
-  `build` goes first because the packages typecheck against each other's built declarations. `lint:css` passes on
-  an empty glob: this workspace has no CSS, and it ships the gate to every target.
+- `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck` and
+  `test:coverage` at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
+  a failed step prints a short excerpt and its log's path, so read that, not the whole run. `build` goes first
+  because the packages typecheck against each other's built declarations. `lint:css` passes on an empty glob:
+  this workspace has no CSS, and it ships the gate to every target.
 - A commit is held until `pnpm check` has passed on the work tree it would commit. Run it on its own or redirected
   to a file outside the tree (`pnpm check > /tmp/check.log 2>&1`), never piped or chained, or it does
   not count. Leading `NAME=value` assignments (`CI=1 pnpm check`) and a leading `cd <dir> &&` are fine.

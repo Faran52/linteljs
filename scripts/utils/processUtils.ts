@@ -5,6 +5,9 @@ import {
   rmSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { env } from 'node:process';
+
+import { BUILT_ENV } from '../gate/constants.ts';
 
 // stderr passes through, so a failing command explains itself.
 export const run = (command: string, args: string[], cwd: string): string => {
@@ -28,12 +31,16 @@ const emptyDir = (dir: string): void => {
   mkdirSync(dir, { recursive: true });
 };
 
-// `pnpm pack` runs `prepack` and rewrites `catalog:` the way a publish does.
+// `pnpm pack` runs `prepack` and rewrites `catalog:` the way a publish does. Under the gate, which has built already,
+// a rebuild would rewrite `dist` while its other steps read it.
 export const packTarball = (packageDir: string, outDir: string): string => {
   emptyDir(outDir);
 
+  const built = env[BUILT_ENV] === '1' ? ['--ignore-scripts'] : [];
+
   run('pnpm', [
     'pack',
+    ...built,
     '--pack-destination',
     outDir,
   ], packageDir);

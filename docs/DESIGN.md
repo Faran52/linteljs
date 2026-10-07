@@ -35,6 +35,7 @@ For work on this workspace itself:
 
 - [One shape for every ring](#one-shape-for-every-ring)
 - [The shipped starter source, and the gate that reads it](#the-shipped-starter-source-and-the-gate-that-reads-it)
+- [How `check` runs](#how-check-runs)
 - [One version per shared dependency](#one-version-per-shared-dependency)
 - [The end-to-end matrix](#the-end-to-end-matrix)
 - [Releasing](#releasing)
@@ -1751,6 +1752,47 @@ when every case writing it fixed it the same way, since one text can land under 
 `children?: React.ReactNode` with no React import is legal TypeScript, since `@types/react` declares `React`
 globally for JSX. It is a style this standard holds, so it is `@linteljs/react-no-global-namespace`: published,
 fixable, outside `recommended`, enabled by the React layer. The gate carries no copy of it.
+
+## How `check` runs
+
+`build` runs first, since the packages typecheck against each other's built declarations. `scripts/gate/gateScript.ts`
+then starts the other six at once, each writing its own log under `node_modules/.cache/linteljs-gate/` (ignored, so
+the commit gate's tree never sees it), and prints one line per step. A failed step adds the first 8 and last 6 lines
+of its log, so an agent reads a failure in about fifteen lines rather than the whole run; under `CI`, where nothing
+can read the file afterwards, it prints the whole log. The exit is 1 when any step fails.
+
+The six are independent only because none writes what another reads. `lint:starters` packs the packages, and
+`pnpm pack` runs `prepack`, which rebuilt `dist` while `typecheck` read it (TS2307 on `@linteljs/eslint-plugin`). The
+gate sets `LINTELJS_GATE_BUILT=1` for its steps and `packTarball` then packs with `--ignore-scripts`; a
+`pnpm lint:starters` on its own still builds through `prepack`.
+
+Under `CI` the six run one after another. A runner has 4 cores and `test:coverage` alone keeps them busy, so running
+the rest beside it would mostly stretch the suite; the series is the safe default there.
+
+Measured on an M1 with ten cores, warm, every starter unchanged:
+
+| step | chained, before | in series, after | at once, after |
+| --- | --- | --- | --- |
+| `lint` | 32.5 s | 29.7 s | 51.0 to 53.9 s |
+| `lint:types` | 0.4 s | 0.3 s | 0.4 s |
+| `lint:starters` | 29.5 s | 10.1 s | 53.4 to 54.0 s |
+| `lint:css` | 0.7 s | 0.5 s | 0.9 to 1.2 s |
+| `typecheck` | 5.4 s | 5.1 s | 15.8 to 17.2 s |
+| `test:coverage` | 104 s | 96.5 s | 122.1 to 122.2 s |
+| `check`, with `build` | 176 s | 146 s | 126 to 129 s |
+
+`lint:starters` fell when unchanged starters stopped being prepared again. At once, every step slows under
+contention, but the wall time is `test:coverage` plus `build`, about 18 seconds under the series (`CI=1 pnpm check`).
+
+Tried and left out:
+
+- **ESLint `--cache`.** The cache keys a file on its own text and the config, so a type change in one file leaves a
+  type-aware finding in an unchanged file that imports it hidden. Probed: a function changed from
+  `Promise<string>` to `string` made `await-thenable` fire in its unchanged reader; the cached run passed and the
+  uncached one failed.
+- **Vitest `pool: 'threads'` for `create` and `eslint-config`.** 143 seconds against 104, and 56 tests fail: a
+  worker thread cannot `process.chdir`, and `os.homedir()` there does not read a stubbed `HOME`.
+- **Incremental `tsc`.** Already on: `incremental` in `tsconfig.json`.
 
 ## One version per shared dependency
 
