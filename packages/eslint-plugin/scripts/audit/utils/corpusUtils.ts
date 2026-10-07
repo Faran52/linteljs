@@ -11,8 +11,6 @@ import {
   resolve,
 } from 'node:path';
 
-import { maxBy } from 'es-toolkit';
-
 export type SkipReason = 'compiled' | 'minified' | 'oversized';
 
 const SKIP_DIRS = new Set([
@@ -145,11 +143,12 @@ export const skipReason = (source: string): SkipReason | undefined => {
   }
 
   const lines = source.split('\n');
-  const longest = maxBy(lines, (line) => {
-    return line.length;
-  })?.length ?? 0;
+  const hasLongLine = lines
+    .some((line) => {
+      return line.length > MAX_LINE;
+    });
 
-  return source.length / lines.length > MAX_AVERAGE_LINE || longest > MAX_LINE ? 'minified' : undefined;
+  return source.length / lines.length > MAX_AVERAGE_LINE || hasLongLine ? 'minified' : undefined;
 };
 
 // Vendored copies of one file count once.

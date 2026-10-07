@@ -48,9 +48,12 @@ const SUPERLINEAR_RATIO = 3;
 // Nearest-rank, so the answer is a time some file took.
 const quantile = (sorted: number[], fraction: number): number => {
   const rank = Math.floor(sorted.length * fraction);
-  const index = Math.min(sorted.length - 1, rank);
 
-  return sorted[index] ?? 0;
+  return sorted
+    .slice(0, rank + 1)
+    .reduce((highest, value) => {
+      return Math.max(highest, value);
+    }, 0);
 };
 
 const medianOf = (values: number[]): number => {
@@ -181,7 +184,7 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
     + `${(timings.length / lintSeconds).toFixed(1)} files/s (${(wallMs / MS_PER_SECOND).toFixed(1)}s wall, `
     + 'the rest is reading, parsing and the audit)',
     `  per file: median ${quantile(sortedMs, MEDIAN).toFixed(2)}ms, p99 ${quantile(sortedMs, P99).toFixed(2)}ms, `
-    + `slowest ${(sortedMs.at(-1) ?? 0).toFixed(2)}ms`,
+    + `slowest ${quantile(sortedMs, 1).toFixed(2)}ms`,
     '  time per byte by size:',
     `    ${'size'.padEnd(BUCKET_WIDTH.size)}${'files'.padStart(BUCKET_WIDTH.files)}`
     + `${'median ms'.padStart(BUCKET_WIDTH.medianMs)}${'ns/byte'.padStart(BUCKET_WIDTH.nsPerByte)}`,
