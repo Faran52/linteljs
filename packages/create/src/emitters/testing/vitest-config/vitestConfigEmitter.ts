@@ -6,6 +6,7 @@ import {
 
 import {
   type PluginSpec,
+  type PluginSwap,
   targetFor,
   type TargetRecord,
 } from '@targets';
@@ -116,6 +117,26 @@ ${block}
 `;
 };
 
+const swappedConfig = (imports: string[], factoryCall: string, swap: PluginSwap): string => {
+  return `${imports.join('\n')}
+
+const factoryConfig = ${factoryCall};
+
+// Swaps the integration's \`${swap.name}\` plugin for one whose output tests can cover.
+export default defineConfig(async (env) => {
+  const config = await factoryConfig(env);
+  const plugins = (config.plugins ?? [])
+    .flat()
+    .filter((plugin) => {
+      return !(typeof plugin === 'object' && plugin !== null && 'name' in plugin && plugin.name === '${swap.name}');
+    });
+  const swapped = { ...config, plugins: [...plugins, ${swap.call}] };
+
+  return swapped;
+});
+`;
+};
+
 export const emitVitestConfig = (answers: Answers, setup: string): string | null => {
   if (testRunnerOf(answers) !== 'vitest') {
     return null;
@@ -135,12 +156,21 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
   if (target.vitestFactory !== undefined) {
-    return `${target.vitestFactory.imports.join('\n')}
-
-export default ${target.vitestFactory.call}({
+    const {
+      imports,
+      call,
+      swap,
+    } = target.vitestFactory;
+    const factoryCall = `${call}({
 ${conditionsLine(target.testConditions, '  ')}${block}
-});
-`;
+})`;
+
+    return swap === undefined
+      ? `${imports.join('\n')}
+
+export default ${factoryCall};
+`
+      : swappedConfig(imports, factoryCall, swap);
   }
 
   const stylex = stylingPlugin(answers.styling === 'stylex' ? 'stylex' : undefined);

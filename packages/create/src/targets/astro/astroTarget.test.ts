@@ -85,6 +85,34 @@ describe('the build it owns', () => {
     expect(record.vitestFactory?.imports).toEqual(expected);
   });
 
+  it('swaps the solid integration plugin for one without hmr under a solid host', () => {
+    const record = recordFor({ hostedFramework: 'solid' });
+
+    const expected = {
+      imports: [
+        "import { getViteConfig } from 'astro/config';",
+        "import solid from 'vite-plugin-solid';",
+        "import { defineConfig } from 'vitest/config';",
+      ],
+      call: 'getViteConfig',
+      swap: {
+        name: 'solid',
+        call: 'solid({ hot: false, ssr: true })',
+      },
+    };
+    expect(record.vitestFactory).toEqual(expected);
+  });
+
+  it.each([
+    'react',
+    'vue',
+    'svelte',
+  ] as const)('swaps no plugin under a %s host', (hostedFramework) => {
+    const record = recordFor({ hostedFramework });
+
+    expect(record.vitestFactory?.swap).toBeUndefined();
+  });
+
   it('gates on astro check, after a sync', () => {
     const record = recordFor();
 

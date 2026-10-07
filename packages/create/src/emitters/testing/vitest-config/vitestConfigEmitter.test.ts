@@ -309,7 +309,8 @@ export default defineConfig({
       hostedFramework: 'solid',
     });
 
-    expect(config).toContain("export default getViteConfig({\n  resolve: { conditions: ['development', 'browser'] },");
+    const expected = "const factoryConfig = getViteConfig({\n  resolve: { conditions: ['development', 'browser'] },";
+    expect(config).toContain(expected);
   });
 
   it('runs every solid-js build through Vite under a hosted solid island', () => {
@@ -319,6 +320,40 @@ export default defineConfig({
     });
 
     expect(config).toContain("    server: { deps: { inline: [/solid-js/] } },\n    setupFiles: ['./");
+  });
+
+  it('swaps the integration plugin of a hosted solid island for one without hmr', () => {
+    const config = configFor({
+      target: 'astro',
+      hostedFramework: 'solid',
+    });
+
+    expect(config).toContain(`import { defineConfig } from 'vitest/config';
+
+const factoryConfig = getViteConfig({`);
+
+    expect(config).toContain(`export default defineConfig(async (env) => {
+  const config = await factoryConfig(env);
+  const plugins = (config.plugins ?? [])
+    .flat()
+    .filter((plugin) => {
+      return !(typeof plugin === 'object' && plugin !== null && 'name' in plugin && plugin.name === 'solid');
+    });
+  const swapped = { ...config, plugins: [...plugins, solid({ hot: false, ssr: true })] };
+
+  return swapped;
+});
+`);
+  });
+
+  it('exports the factory config of a hosted react island as it is', () => {
+    const config = configFor({
+      target: 'astro',
+      hostedFramework: 'react',
+    });
+
+    expect(config).toContain('export default getViteConfig({');
+    expect(config).not.toContain('defineConfig');
   });
 
   it('leaves the deps of a hosted react island to vitest', () => {

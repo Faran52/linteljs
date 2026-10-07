@@ -121,9 +121,16 @@ export interface TsconfigDelta {
   dropsPaths?: true;
 }
 
+export interface PluginSwap {
+  name: string;
+  call: string;
+}
+
 interface VitestFactory {
   imports: string[];
   call: string;
+  // @astrojs/solid-js passes vite-plugin-solid no `hot`, so its refresh footer sat uncovered in every island.
+  swap?: PluginSwap;
 }
 
 // One record per target, so emitters stay free of `switch (target)`.

@@ -97,16 +97,29 @@ export const astroTarget: TargetBuilder = (answers) => {
       ],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
-    vitestFactory: {
-      imports: [
-        "import { getViteConfig } from 'astro/config';",
-        // Its own group, as the import sort keeps a side-effect import.
-        '',
-        // A bare import: the reference-types directive is banned by this standard.
-        "import 'vitest/config';",
-      ],
-      call: 'getViteConfig',
-    },
+    vitestFactory: framework === 'solid'
+      ? {
+          imports: [
+            "import { getViteConfig } from 'astro/config';",
+            "import solid from 'vite-plugin-solid';",
+            "import { defineConfig } from 'vitest/config';",
+          ],
+          call: 'getViteConfig',
+          swap: {
+            name: 'solid',
+            call: 'solid({ hot: false, ssr: true })',
+          },
+        }
+      : {
+          imports: [
+            "import { getViteConfig } from 'astro/config';",
+            // Its own group, as the import sort keeps a side-effect import.
+            '',
+            // A bare import: the reference-types directive is banned by this standard.
+            "import 'vitest/config';",
+          ],
+          call: 'getViteConfig',
+        },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
     ...(framework === 'solid' ? { testInline: [/solid-js/] } : {}),
     // `astro sync` first, since the types `astro check` reads are generated.
