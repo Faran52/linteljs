@@ -59,6 +59,8 @@ when a version's change lives in a sibling it is described there instead:
 - Astro hosting Solid renders the same contact page, Solid's `ContactPage` as an island, with the same mocked
   worker start and translated words. Its vitest config keeps Solid's `development` and `browser` conditions and
   runs `solid-js` through Vite, so the island's suites load one client build of Solid.
+- Astro hosting Svelte renders the same contact page, Svelte's `ContactPage` as an island, with the same mocked
+  worker start and translated words.
 - `typescript` is a target: a library with no framework, built by `tsdown` to `dist/` with its declarations, and
   packable from the start, with a `version`, `exports`, `types` and `files`. It asks no styling, form library,
   data fetching or API mocking question, and leaves out `frontend-design`.

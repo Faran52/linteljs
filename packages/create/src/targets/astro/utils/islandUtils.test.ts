@@ -22,6 +22,7 @@ const ISLAND_HOSTS: readonly HostedFramework[] = [
   'react',
   'vue',
   'solid',
+  'svelte',
 ];
 
 const answersFor = (overrides: Partial<Answers>): Answers => {
@@ -66,6 +67,7 @@ describe('the contact island', () => {
     ['react', "import { ContactIsland } from '@views/contact/ContactIsland';"],
     ['vue', "import ContactIsland from '@views/contact/ContactIsland.vue';"],
     ['solid', "import { ContactIsland } from '@views/contact/ContactIsland';"],
+    ['svelte', "import ContactIsland from '@views/contact/ContactIsland.svelte';"],
   ])('imports the %s island on the page that hydrates it', (hostedFramework, line) => {
     const answers = answersFor({ hostedFramework });
     const page = islandFiles()
@@ -87,11 +89,8 @@ describe('the contact island', () => {
     expect(islands).not.toEqual([]);
   });
 
-  it.each<[string, Partial<Answers>]>([
-    ['nothing', {}],
-    ['svelte', { hostedFramework: 'svelte' }],
-  ])('is not offered hosting %s', (_host, overrides) => {
-    const picked = pickedFor(overrides);
+  it('is not offered hosting nothing', () => {
+    const picked = pickedFor({});
 
     expect(picked).toEqual([]);
   });

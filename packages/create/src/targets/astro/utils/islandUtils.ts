@@ -1,3 +1,4 @@
+import { hasTests } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
 import { CONTACT_HOOK_FORMS } from '../../constants';
@@ -61,7 +62,7 @@ const suitesOf = (covered: readonly string[], shared: TargetId): StarterTest[] =
     .map((covers): StarterTest => {
       const test: StarterTest = {
         target: covers
-          .replace(/\.(?:ts|vue)$/u, '.test.ts')
+          .replace(/\.(?:ts|vue|svelte)$/u, '.test.ts')
           .replace(/\.tsx$/u, '.test.tsx'),
         covers,
         shared,
@@ -217,46 +218,52 @@ const vueIsland = (): Island => {
   return island;
 };
 
+// The island and the view it hands words to are Astro's own, plain or translated.
+const ownI18n = <T extends StarterFile | StarterTest>(host: IslandHost, file: T): T[] => {
+  const halves: T[] = [
+    {
+      ...file,
+      when: (answers: Answers) => {
+        return !hasI18n(answers);
+      },
+      variant: host,
+    },
+    {
+      ...file,
+      when: hasI18n,
+      variant: `${host}-i18n`,
+    },
+  ];
+
+  return halves;
+};
+
+// The framework's own asset, where no translation reaches it.
+const fromHost = <T extends StarterFile | StarterTest>(host: IslandHost, source: string, file: T): T[] => {
+  return mocked<T>({
+    ...file,
+    source,
+    when: (answers: Answers) => {
+      return !hasI18n(answers);
+    },
+    shared: host,
+  });
+};
+
 // Solid's own contact page and its form, moved to `src/views/`; Solid's i18n library is not Astro's, so under i18n
 // the island hands its page the words.
 const solidIsland = (): Island => {
   const { button, textInput } = ISLAND_COMPONENTS.solid;
   const form = 'create-contact-form/createContactForm';
 
-  const ownI18n = <T extends StarterFile | StarterTest>(file: T): T[] => {
-    const halves: T[] = [
-      {
-        ...file,
-        when: (answers: Answers) => {
-          return !hasI18n(answers);
-        },
-        variant: 'solid',
-      },
-      {
-        ...file,
-        when: hasI18n,
-        variant: 'solid-i18n',
-      },
-    ];
-
-    return halves;
-  };
-
   const fromSolid = <T extends StarterFile | StarterTest>(name: string, file: T): T[] => {
-    return mocked<T>({
-      ...file,
-      source: `src/pages/contact/${name}`,
-      when: (answers: Answers) => {
-        return !hasI18n(answers);
-      },
-      shared: 'solid',
-    });
+    return fromHost('solid', `src/pages/contact/${name}`, file);
   };
 
   const island: Island = {
     pageImport: REACT_ISLAND_IMPORT,
     files: [
-      ...ownI18n<StarterFile>({ target: `${CONTACT_VIEW}/ContactIsland.tsx` }),
+      ...ownI18n<StarterFile>('solid', { target: `${CONTACT_VIEW}/ContactIsland.tsx` }),
       ...fromSolid<StarterFile>('ContactPage.tsx', { target: `${CONTACT_VIEW}/ContactPage.tsx` }),
       {
         target: `${CONTACT_VIEW}/ContactPage.tsx`,
@@ -283,7 +290,7 @@ const solidIsland = (): Island => {
         'src/lib/providers/data/DataProvider.tsx',
         'src/lib/apis/contact/contactApi.ts',
       ], 'solid'),
-      ...ownI18n<StarterTest>({
+      ...ownI18n<StarterTest>('solid', {
         target: `${CONTACT_VIEW}/ContactIsland.test.tsx`,
         covers: `${CONTACT_VIEW}/ContactIsland.tsx`,
       }),
@@ -309,17 +316,103 @@ const solidIsland = (): Island => {
   return island;
 };
 
+// SvelteKit's contact route and its form, moved to `src/views/`; under i18n the island hands its page the words,
+// since Paraglide is SvelteKit's, not Astro's.
+const svelteIsland = (): Island => {
+  const { button, textInput } = ISLAND_COMPONENTS.svelte;
+  const page = `${CONTACT_VIEW}/ContactPage`;
+  const form = `${CONTACT_VIEW}/${USE_CONTACT_FORM}`;
+  const parts = [`${button}.svelte`, `${textInput}.svelte`];
+
+  const island: Island = {
+    pageImport: "import ContactIsland from '@views/contact/ContactIsland.svelte';",
+    files: [
+      ...ownI18n<StarterFile>('svelte', { target: `${CONTACT_VIEW}/ContactIsland.svelte` }),
+      ...fromHost<StarterFile>('svelte', 'src/routes/contact/+page.svelte', { target: `${page}.svelte` }),
+      {
+        target: `${page}.svelte`,
+        when: hasI18n,
+        variant: 'svelte-i18n',
+      },
+      {
+        target: `${form}.ts`,
+        source: `src/routes/contact/${USE_CONTACT_FORM}.ts`,
+        shared: 'svelte',
+      },
+      ...filesAt([...parts, 'src/components/ui/text-input/types.ts'], { shared: 'svelte' }),
+      ...gated(hasTests, [
+        ...filesAt(['__mocks__/WithContactForm.svelte', '__mocks__/ContactFormProbe.svelte'], { variant: 'svelte' }),
+        // The translated page takes its words, which `WithData` cannot hand it.
+        {
+          target: '__mocks__/WithData.svelte',
+          when: (answers) => {
+            return !hasI18n(answers);
+          },
+          shared: 'svelte',
+        },
+        {
+          target: '__mocks__/WithPhrase.svelte',
+          when: hasI18n,
+          variant: 'svelte-i18n',
+        },
+      ]),
+      ...dataProviders('src/lib/providers/data/DataProvider.svelte', 'svelte'),
+      ...contactApiFiles({ query: 'svelte' }),
+    ],
+    tests: [
+      ...suitesOf(parts, 'svelte'),
+      ...ownI18n<StarterTest>('svelte', {
+        target: `${CONTACT_VIEW}/ContactIsland.test.ts`,
+        covers: `${CONTACT_VIEW}/ContactIsland.svelte`,
+      }),
+      // One suite reads both spellings of SvelteKit's page.
+      {
+        target: `${page}.test.ts`,
+        covers: `${page}.svelte`,
+        source: 'src/routes/contact/page.test.ts',
+        when: (answers) => {
+          return !hasI18n(answers);
+        },
+        shared: 'svelte',
+      },
+      {
+        target: `${page}.test.ts`,
+        covers: `${page}.svelte`,
+        when: hasI18n,
+        variant: 'svelte-i18n',
+      },
+      {
+        target: `${form}.test.ts`,
+        covers: `${form}.ts`,
+        source: `src/routes/contact/${USE_CONTACT_FORM}.test.ts`,
+        shared: 'svelte',
+      },
+      // Under TanStack Query the page's suite covers the wrapper, as in SvelteKit.
+      {
+        target: 'src/lib/apis/contact/contactApi.test.ts',
+        covers: 'src/lib/apis/contact/contactApi.ts',
+        when: (answers) => {
+          return answers.data === undefined;
+        },
+        shared: 'svelte',
+      },
+    ],
+  };
+
+  return island;
+};
+
 const ISLANDS: Record<IslandHost, () => Island> = {
   react: reactIsland,
   vue: vueIsland,
   solid: solidIsland,
+  svelte: svelteIsland,
 };
 
-// Svelte's island is still to come, so a project hosting it has no contact page.
 export const hasIsland = (answers: Answers): boolean => {
   const host = answers.hostedFramework;
 
-  return hasForm(answers) && host !== undefined && Object.hasOwn(ISLANDS, host);
+  return hasForm(answers) && host !== undefined;
 };
 
 const hosts = (host: IslandHost) => {

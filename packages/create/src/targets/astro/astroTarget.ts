@@ -93,7 +93,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       include: [
         '.astro/types.d.ts',
         '**/*.astro',
-        ...(framework === 'vue' ? ['**/*.vue'] : []),
+        ...(framework === 'vue' || framework === 'svelte' ? [`**/*.${framework}`] : []),
       ],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
@@ -122,6 +122,8 @@ export const astroTarget: TargetBuilder = (answers) => {
         },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
     ...(framework === 'solid' ? { testInline: [/solid-js/] } : {}),
+    // Svelte's island reads SvelteKit's own spelling of `src/lib`.
+    ...(framework === 'svelte' ? { packageImports: { '#lib/*': './src/lib/*' } } : {}),
     // `astro sync` first, since the types `astro check` reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',

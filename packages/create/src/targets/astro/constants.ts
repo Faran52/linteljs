@@ -1,3 +1,4 @@
+import type { HostedFramework } from '@config/types';
 import type { I18nParts } from '../types';
 import type { ComponentPaths } from '../utils/styleUtils';
 
@@ -48,8 +49,12 @@ export const VIEW_SUITES: readonly string[] = [
 export const ASTRO_I18N: I18nParts = { dependencies: [] };
 
 // Each island's own button and text input, at its framework's paths.
-export const ISLAND_COMPONENTS: Record<'react' | 'vue' | 'solid', Pick<ComponentPaths, 'button' | 'textInput'>> = {
+export const ISLAND_COMPONENTS: Record<HostedFramework, Pick<ComponentPaths, 'button' | 'textInput'>> = {
   react: {
+    button: 'src/components/ui/button/Button',
+    textInput: 'src/components/ui/text-input/TextInput',
+  },
+  svelte: {
     button: 'src/components/ui/button/Button',
     textInput: 'src/components/ui/text-input/TextInput',
   },

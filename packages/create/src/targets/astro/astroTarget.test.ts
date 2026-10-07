@@ -192,6 +192,14 @@ describe('the hosted framework axis', () => {
     expect(reactInclude).not.toContain('**/*.vue');
   });
 
+  it('includes svelte files in the tsconfig only for the svelte host', () => {
+    const svelteInclude = recordFor({ hostedFramework: 'svelte' }).tsconfig.include;
+    const vueInclude = recordFor({ hostedFramework: 'vue' }).tsconfig.include;
+
+    expect(svelteInclude).toContain('**/*.svelte');
+    expect(vueInclude).not.toContain('**/*.svelte');
+  });
+
   it('brings the framework itself and its testing library beside astro', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
@@ -217,6 +225,14 @@ describe('the hosted framework axis', () => {
 
       expect(astroEntries).toHaveLength(0);
     }
+  });
+
+  it('maps `#lib` only under a svelte host, whose island reads it', () => {
+    const svelte = recordFor({ hostedFramework: 'svelte' }).packageImports;
+    const react = recordFor({ hostedFramework: 'react' }).packageImports;
+
+    expect(svelte).toEqual({ '#lib/*': './src/lib/*' });
+    expect(react).toBeUndefined();
   });
 
   it('adds a jsx import source only where the framework needs one', () => {
@@ -265,10 +281,7 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
-const NO_ISLAND: readonly Condition[] = [{ form: [undefined] }, { hostedFramework: [
-  undefined,
-  'svelte',
-] }];
+const NO_ISLAND: readonly Condition[] = [{ form: [undefined] }, { hostedFramework: [undefined] }];
 
 const onIsland = (hosts: readonly HostedFramework[], rows: readonly GateRow[]): GateRow[] => {
   return rows
@@ -288,17 +301,21 @@ const onIsland = (hosts: readonly HostedFramework[], rows: readonly GateRow[]): 
     });
 };
 
+// Each host's own button and text input; a suite's spelling is shared, so its row names every host.
 const islandGates = (button: string, extension: string): GateRow[] => {
-  const gates: GateRow[] = [
-    ...[button, 'text-input/TextInput']
-      .flatMap((path): GateRow[] => {
-        const rows: GateRow[] = [
-          [`src/components/ui/${path}.${extension}`, [{}]],
-          [`src/components/ui/${path}.test.${extension === 'vue' ? 'ts' : 'tsx'}`, [{}]],
-        ];
+  const paths = [button, 'text-input/TextInput'];
+  const gates = paths
+    .map((path): GateRow => {
+      const row: GateRow = [`src/components/ui/${path}.${extension}`, [{}]];
 
-        return rows;
-      }),
+      return row;
+    });
+
+  return gates;
+};
+
+const sheetGates = (button: string): GateRow[] => {
+  const gates: GateRow[] = [
     [`../components/ui/${button}.css`, [{}]],
     ...componentStyleGates([button])
       .filter(([key]) => {
@@ -309,10 +326,13 @@ const islandGates = (button: string, extension: string): GateRow[] => {
   return gates;
 };
 
+const BUTTON_SHEET_GATES = sheetGates('button/Button');
+
 const SHARED_ISLAND_GATES: GateRow[] = onIsland([
   'react',
   'vue',
   'solid',
+  'svelte',
 ], [
   ['src/pages/contact.astro', [{ languages: [undefined], mocking: [undefined] }]],
   ['src/pages/contact.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
@@ -385,8 +405,6 @@ const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
   ['src/views/contact/ContactView.vue', [{ languages: [undefined], mocking: [undefined] }]],
   ['src/views/contact/ContactView.vue@msw', [{ languages: [undefined], mocking: ['msw'] }]],
   ['src/views/contact/ContactView.vue@i18n', [{ languages: ANSWERED }]],
-  ['src/views/contact/use-contact-form/useContactForm.ts', [{}]],
-  ['src/components/ui/text-input/types.ts', [{}]],
   ...islandGates('app-button/AppButton', 'vue'),
   ['src/lib/providers/data/dataProvider.ts', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/dataProvider.ts@tanstack-query', TANSTACK_QUERY],
@@ -413,6 +431,33 @@ const SOLID_ISLAND_GATES: GateRow[] = onIsland(['solid'], [
   ['src/views/contact/create-contact-form/createContactForm.test.ts', [{}]],
 ]);
 
+const SVELTE_ISLAND_GATES: GateRow[] = onIsland(['svelte'], [
+  ...[
+    'ContactIsland.svelte',
+    'ContactIsland.test.ts',
+  ]
+    .flatMap((name): GateRow[] => {
+      const rows: GateRow[] = [
+        [`src/views/contact/${name}@svelte`, [{ languages: [undefined] }]],
+        [`src/views/contact/${name}@svelte-i18n`, [{ languages: ANSWERED }]],
+      ];
+
+      return rows;
+    }),
+  ['src/views/contact/ContactPage.svelte', [{ languages: [undefined], mocking: [undefined] }]],
+  ['src/views/contact/ContactPage.svelte@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.svelte@svelte-i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/ContactPage.test.ts', [{ languages: [undefined] }]],
+  ['src/views/contact/ContactPage.test.ts@svelte-i18n', [{ languages: ANSWERED }]],
+  ...islandGates('button/Button', 'svelte'),
+  ['src/lib/providers/data/DataProvider.svelte', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.svelte@tanstack-query', TANSTACK_QUERY],
+  ['__mocks__/WithContactForm.svelte@svelte', [{ testing: ['vitest'] }]],
+  ['__mocks__/ContactFormProbe.svelte@svelte', [{ testing: ['vitest'] }]],
+  ['__mocks__/WithData.svelte', [{ testing: ['vitest'], languages: [undefined] }]],
+  ['__mocks__/WithPhrase.svelte@svelte-i18n', [{ testing: ['vitest'], languages: ANSWERED }]],
+]);
+
 const GATES: GateRow[] = [
   ...mswGates(false)
     .filter(([key]) => {
@@ -433,8 +478,42 @@ const GATES: GateRow[] = [
   ...REACT_ISLAND_GATES,
   ...VUE_ISLAND_GATES,
   ...SOLID_ISLAND_GATES,
-  ...onIsland(['vue', 'solid'], [['src/lib/apis/contact/contactApi.test.ts', [{}]]]),
-  ...onIsland(['react', 'vue'], [['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]]]),
+  ...SVELTE_ISLAND_GATES,
+  ...onIsland([
+    'react',
+    'solid',
+    'svelte',
+  ], BUTTON_SHEET_GATES),
+  ...onIsland(['vue'], [
+    ...sheetGates('app-button/AppButton'),
+    ['src/components/ui/app-button/AppButton.test.ts', [{}]],
+  ]),
+  ...onIsland(['react', 'solid'], [
+    ['src/components/ui/button/Button.test.tsx', [{}]],
+    ['src/components/ui/text-input/TextInput.test.tsx', [{}]],
+  ]),
+  ...onIsland(['svelte'], [['src/components/ui/button/Button.test.ts', [{}]]]),
+  ...onIsland(['vue', 'svelte'], [['src/components/ui/text-input/TextInput.test.ts', [{}]]]),
+  ['src/lib/apis/contact/contactApi.test.ts', [
+    {
+      form: ANSWERED,
+      hostedFramework: ['vue', 'solid'],
+    },
+    {
+      form: ANSWERED,
+      hostedFramework: ['svelte'],
+      data: [undefined],
+    },
+  ]],
+  ...onIsland([
+    'react',
+    'vue',
+    'svelte',
+  ], [['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]]]),
+  ...onIsland(['vue', 'svelte'], [
+    ['src/views/contact/use-contact-form/useContactForm.ts', [{}]],
+    ['src/components/ui/text-input/types.ts', [{}]],
+  ]),
   ...componentStyleGates(['mark/Mark']),
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'], languages: [undefined] }]],

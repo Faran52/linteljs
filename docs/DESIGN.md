@@ -620,9 +620,10 @@ own reads `@solid-primitives/i18n`, which Astro does not install. Its vitest con
 inlines the Solid packages it crawls while vite-plugin-solid externalizes `solid-js`, so Node loaded the store's
 dev build beside a core without `DEV`. It also swaps the integration's vite-plugin-solid for one with
 `hot: false`: `@astrojs/solid-js` passes no `hot`, so every island carried an HMR footer no test runs, and a
-generated project stopped at 95% branches. The island for Svelte is still to come, so that host installs the form
-library without a demo. The extension installs it
-without a demo too, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
+generated project stopped at 95% branches. Hosting Svelte, it is SvelteKit's contact `+page.svelte`, which reads no
+`$app/*`, renamed `ContactPage.svelte` in a `ContactIsland` that brings its provider; under languages a forked page
+takes a `phrase` prop, and a `#lib/*` import maps SvelteKit's own spelling of `src/lib`. The extension installs the
+form library without a demo, and Nuxt declares its stores without a counter; recorded here so the absence reads as a decision
 rather than a forgotten file.
 
 ## The starter page
