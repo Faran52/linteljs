@@ -178,7 +178,7 @@ const checkFlavour = async (name: string, configFile: string, configSource: stri
 
 const esmPath = join(distDir, 'index.mjs');
 const esmEntry = pathToFileURL(esmPath).href;
-const cjsPath = join(distDir, 'index.cjs');
+const cjsPath = join(distDir, 'index.js');
 const esmSource = esmConfig(esmEntry);
 const cjsSource = cjsConfig(cjsPath);
 const esmPresetSource = esmPresetConfig(esmEntry);

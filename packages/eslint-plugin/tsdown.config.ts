@@ -3,6 +3,20 @@ import { defineConfig } from 'tsdown';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
+  // `index.js`, not `.cjs`, so a deep import of `dist/index.js` keeps resolving.
+  outExtensions: ({ format }) => {
+    const extensions = format === 'cjs'
+      ? {
+          js: '.js',
+          dts: '.d.ts',
+        }
+      : {
+          js: '.mjs',
+          dts: '.d.mts',
+        };
+
+    return extensions;
+  },
   dts: true,
   clean: true,
   treeshake: true,

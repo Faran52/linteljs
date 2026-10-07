@@ -57,6 +57,8 @@ the code. Everything else in that standard stands.
   the bundle for post-Node-22 APIs) and `pnpm compat` (ESLint 8.40 on eslintrc, 9 and 10 on flat config,
   byte-identical fixed text). Both need the network. CI runs them plus `oldest-runtime` on `node:22-alpine`
   with ESLint 8.40.0.
+- The CJS build is `index.js`, not `.cjs`, so deep imports of it keep resolving;
+  `scripts/build/dist-manifest/distManifestBuild.ts` marks `dist/` as `commonjs`.
 
 ## Tone
 

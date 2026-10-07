@@ -57,7 +57,7 @@ const require = createRequire(import.meta.url);
 const eslint: unknown = require('eslint');
 
 const entry = process.argv[2] === undefined
-  ? fileURLToPath(new URL('../../../dist/index.cjs', import.meta.url))
+  ? fileURLToPath(new URL('../../../dist/index.js', import.meta.url))
   : resolve(process.cwd(), process.argv[2]);
 const plugin: unknown = require(entry);
 
