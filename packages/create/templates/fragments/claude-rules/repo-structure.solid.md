@@ -37,6 +37,8 @@ src/
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
   router/router.tsx  ROUTES, the one list of pages the header and the router read
+  index.tsx  App.tsx  index.css  the entry, the shell and the global stylesheet
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 The store is Solid's own: `createStore` from `solid-js/store`, which ships inside `solid-js`. No <!-- when no-store -->

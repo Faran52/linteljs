@@ -38,6 +38,9 @@ src/
   pages/<kebab>/  {Name}Page.tsx and its private slots
   router/router.tsx  ROUTES, the one list of pages the header and the router read
   root.tsx  routes.ts  routes/<kebab>/{Name}Route.tsx  framework mode's shell, route table and route modules <!-- when react-router-framework -->
+  main.tsx  App.tsx  the entry and the shell, outside framework mode
+  index.css       the global stylesheet
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 ## Placement

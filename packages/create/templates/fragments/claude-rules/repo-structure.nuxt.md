@@ -37,6 +37,9 @@ src/
     apis/         endpoint definitions and schemas
   views/<kebab>/  {Name}View.vue, one per route, and its private slots
   pages/          the routes themselves, one file per route
+  app.vue  error.vue  the shell and the error page
+  plugins/        the i18n plugin <!-- when languages -->
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 `pages/` is Nuxt's, and its filenames are the URL: `pages/about.vue` is `/about` and

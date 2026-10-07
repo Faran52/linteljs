@@ -16,7 +16,7 @@ direction, which no rule can see.
 A spec takes the name of the file it tests, whatever case that is. The naming rule deliberately
 carries no glob for a spec: it mirrors a subject that is already policed, and a `.ts` spec of a
 component judged by the rule meant for a module could satisfy neither. Match the file you are
-testing.
+testing, less SvelteKit's reserved `+`, which marks a route file: `routes/about/page.test.ts`.
 
 ## Layout
 
@@ -35,8 +35,10 @@ src/
     providers/    context wrappers
     hooks/        cross-cutting hooks
     apis/         endpoint definitions and schemas
-  routes/         the router. Reserved filenames only
+  routes/         the router: reserved + files, their suites and what one route alone reads
   params/         param matchers
+  i18n/           the languages and their messages <!-- when languages -->
+  app.html  app.d.ts  app.css  the page shell, the app's ambient types and its stylesheet
   hooks.server.ts  hooks.client.ts
 ```
 

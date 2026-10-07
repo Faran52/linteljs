@@ -37,6 +37,8 @@ src/
     apis/         endpoint definitions and schemas
   views/<kebab>/  {Name}View.vue, one per route, and its private slots
   router/         router.ts, and constants.ts with ROUTES, the one list of views the header reads
+  main.ts  App.vue  the entry and the shell
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 Where Pinia was selected, its stores live in `lib/store/`, not the conventional `src/stores/`. One

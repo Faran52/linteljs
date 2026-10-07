@@ -183,6 +183,7 @@ describe('referenceArtifacts', () => {
   it.each<[string, Partial<Answers>]>([
     ['store', { store: 'zustand' }],
     ['no-store', {}],
+    ['languages', { languages: ['ja'] }],
     ['popup', {}],
     ['background', {}],
     ['devtools-panel', { surfaces: ['devtools-panel'] }],

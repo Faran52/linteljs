@@ -37,6 +37,7 @@ src/
     utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch HTTP
     apis/         endpoint definitions and schemas
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 **`src/pages/` is the router.** A file there is a route, so its name is the URL: `about.astro` is

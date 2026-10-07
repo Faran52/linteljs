@@ -58,6 +58,7 @@ src/
     utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch the platform
     apis/         endpoint definitions and schemas
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 Entry HTML stays flat at the repo root: the browser resolves `devtools_page` and panel pages

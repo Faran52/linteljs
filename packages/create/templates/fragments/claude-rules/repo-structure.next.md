@@ -39,6 +39,7 @@ src/
     hooks/        cross-cutting hooks
     server/       server-only modules
     apis/         endpoint definitions and schemas
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 There is no `src/pages/`. One router, and it is `app/`.

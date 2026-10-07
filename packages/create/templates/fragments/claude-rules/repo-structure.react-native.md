@@ -47,6 +47,8 @@ src/
     providers/          context providers
     apis/               endpoint definitions and schemas
   typings/              ambient .d.ts only
+  config-plugins/       Expo config plugins, one subject each
+  i18n/                 the languages and their messages <!-- when languages -->
 ```
 
 A `.web.tsx` beside a `.tsx` is Expo's platform split. Add one only where the platforms genuinely

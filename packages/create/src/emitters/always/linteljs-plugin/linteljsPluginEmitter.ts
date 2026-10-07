@@ -10,6 +10,7 @@ import {
   hasLibrary,
   hasSurface,
   hasTests,
+  localesOf,
 } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
@@ -22,7 +23,16 @@ export interface RuleSource {
   sources: string[];
 }
 
-type Condition = 'store' | 'no-store' | 'popup' | 'background' | 'devtools-panel' | Mocking | Data | Router;
+type Condition
+  = | 'store'
+    | 'no-store'
+    | 'languages'
+    | 'popup'
+    | 'background'
+    | 'devtools-panel'
+    | Mocking
+    | Data
+    | Router;
 
 const reference = (name: string): string => {
   return `plugins/linteljs/skills/linteljs/references/${name}`;
@@ -35,6 +45,9 @@ const CONDITIONS: Record<Condition, (answers: Answers) => boolean> = {
   },
   'no-store': (answers) => {
     return answers.store === undefined;
+  },
+  'languages': (answers) => {
+    return localesOf(answers).length > 0;
   },
   'popup': (answers) => {
     return hasSurface(answers, 'popup');

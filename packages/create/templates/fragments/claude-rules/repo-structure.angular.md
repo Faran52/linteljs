@@ -34,6 +34,8 @@ src/
     services/     injectable domain logic, may never touch HTTP
     providers/    DI providers and injection tokens
     apis/         endpoint definitions and schemas
+  main.ts  index.html  styles.css  the bootstrap, the page shell and the global stylesheet
+  i18n/           the languages and their messages <!-- when languages -->
 ```
 
 `src/config/` replaces `src/environments/`. One config home, read through a typed accessor, rather
