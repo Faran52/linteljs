@@ -1,6 +1,5 @@
 import {
   type AstNode,
-  nodeOf,
   type Program,
   walkAst,
 } from '../../utils/astUtils.ts';
@@ -60,12 +59,12 @@ export const hoistedProbe: Rule.RuleModule = {
     const visitors: Rule.RuleListener = {
       FunctionDeclaration: (node) => {
         const [variable] = sourceCode.getDeclaredVariables(node);
-        const start = node.range?.[0] ?? 0;
+        const [start] = sourceCode.getRange(node);
 
         const early = variable?.references
           .some((reference) => {
           // A call from inside another function body does not run at that point; `no-use-before-define` agrees.
-            return (reference.identifier.range?.[0] ?? start) < start
+            return Number(reference.identifier.range?.[0]) < start
               && !reader
                 .getAncestors(reference.identifier)
                 .some((ancestor) => {
@@ -126,26 +125,23 @@ const hazardOf = (node: AstNode, parent: AstNode | undefined, key: string | unde
 };
 
 const bodyHazard = (fn: AstNode): string | undefined => {
-  const body = nodeOf(fn.body);
   let found: string | undefined;
 
-  if (body !== undefined) {
-    walkAst(body, (node, parent, key) => {
-      if (found !== undefined || (node !== body && OWNS_ITS_THIS.has(node.type))) {
-        return false;
-      }
+  walkAst(fn, (node, parent, key) => {
+    if (found !== undefined || (node !== fn && OWNS_ITS_THIS.has(node.type))) {
+      return false;
+    }
 
-      found = hazardOf(node, parent, key);
+    found = hazardOf(node, parent, key);
 
-      return found === undefined;
-    });
-  }
+    return found === undefined;
+  });
 
   return found;
 };
 
-const isIdentifierIn = (node: AstNode | null | undefined, names: Set<string>): node is AstNode => {
-  return node?.type === 'Identifier' && names.has(node.name ?? '');
+const isIdentifierIn = (node: AstNode | null | undefined, names: ReadonlySet<string | undefined>): node is AstNode => {
+  return node?.type === 'Identifier' && names.has(node.name);
 };
 
 const isPlainMember = (node: AstNode | undefined): node is AstNode => {

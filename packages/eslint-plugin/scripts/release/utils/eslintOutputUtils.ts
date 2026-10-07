@@ -1,6 +1,5 @@
 import { execFile } from 'node:child_process';
 import { execPath } from 'node:process';
-import { promisify } from 'node:util';
 
 // Written out because the majors under test predate its types.
 export interface LintMessage {
@@ -13,7 +12,11 @@ export interface LintResult {
   output?: string;
 }
 
-const execFileAsync = promisify(execFile);
+interface Run {
+  error: Error | null;
+  stdout: string;
+  stderr: string;
+}
 
 const STDOUT_PREVIEW_CHARS = 200;
 
@@ -21,34 +24,28 @@ const isLintResult = (value: unknown): value is LintResult => {
   return typeof value === 'object' && value !== null && 'messages' in value && Array.isArray(value.messages);
 };
 
-const streamOf = (error: unknown, name: 'stderr' | 'stdout'): string => {
-  const value: unknown = error instanceof Error && name in error ? Reflect.get(error, name) : undefined;
-
-  return typeof value === 'string' ? value : '';
+const run = (args: string[], cwd: string): Promise<Run> => {
+  return new Promise((resolve) => {
+    execFile(execPath, args, { cwd, encoding: 'utf8' }, (error, stdout, stderr) => {
+      resolve({
+        error,
+        stdout,
+        stderr,
+      });
+    });
+  });
 };
 
 // ESLint exits non-zero whenever it reports; only output that will not parse fails.
-const stdoutOfFailure = (error: unknown): string => {
-  const stdout = streamOf(error, 'stdout');
+export const lintResultOf = async (args: string[], cwd: string): Promise<LintResult> => {
+  const {
+    error,
+    stdout,
+    stderr,
+  } = await run(args, cwd);
 
   if (stdout.trim() === '') {
-    throw new Error(`eslint produced no parseable output:\n${streamOf(error, 'stderr')}`, { cause: error });
-  }
-
-  return stdout;
-};
-
-export const lintResultOf = async (args: string[], cwd: string): Promise<LintResult> => {
-  let stdout: string;
-
-  try {
-    ({ stdout } = await execFileAsync(execPath, args, {
-      cwd,
-      encoding: 'utf8',
-    }));
-  }
-  catch (error) {
-    stdout = stdoutOfFailure(error);
+    throw new Error(`eslint produced no parseable output:\n${stderr}`, { cause: error });
   }
 
   const parsed: unknown = JSON.parse(stdout);
