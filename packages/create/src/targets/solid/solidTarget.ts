@@ -196,6 +196,19 @@ export const solidTarget: TargetBuilder = () => {
         target: 'src/components/features/error-boundary/ErrorBoundary.test.tsx',
         covers: 'src/components/features/error-boundary/ErrorBoundary.tsx',
       },
+      {
+        target: 'src/components/ui/mark/Mark.test.tsx',
+        covers: 'src/components/ui/mark/Mark.tsx',
+      },
+      // One suite reads both spellings of each.
+      {
+        target: 'src/pages/about/AboutPage.test.tsx',
+        covers: 'src/pages/about/AboutPage.tsx',
+      },
+      {
+        target: 'src/pages/version/VersionPage.test.tsx',
+        covers: 'src/pages/version/VersionPage.tsx',
+      },
       // Its button is a child of that page and nothing else renders it.
       ...translated<StarterTest>({
         target: 'src/pages/home/HomePage.test.tsx',
