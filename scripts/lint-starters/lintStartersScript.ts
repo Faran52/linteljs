@@ -31,8 +31,10 @@ import {
   STAMPS,
 } from './constants.ts';
 import {
+  appDirOf,
   fixedCopies,
   generate,
+  monorepoCaseOf,
   packed,
   pruneTarballs,
   slugOf,
@@ -111,15 +113,16 @@ const stepOf = (name: string, dir: string, args: string[]): Step => {
   return step;
 };
 
+const lintArgs = [
+  'exec',
+  'eslint',
+  '.',
+  '--max-warnings',
+  '0',
+];
+
 // A fix run keeps its copies whether or not the lint passed.
 const lintStep = (item: E2eCase, dir: string): Step => {
-  const lintArgs = [
-    'exec',
-    'eslint',
-    '.',
-    '--max-warnings',
-    '0',
-  ];
   const fixArgs = fixing ? ['--fix'] : [];
   const step: Step = ['lint', async () => {
     const linted = await spawnIn(dir, [...lintArgs, ...fixArgs]);
@@ -141,13 +144,22 @@ const stylexSteps = (item: E2eCase, dir: string): Step[] => {
   return item.answers.styling === 'stylex' ? steps : [];
 };
 
+// A monorepo's root lints its own scripts/ apart from the app.
+const rootLintSteps = (item: E2eCase, dir: string): Step[] => {
+  const steps = [stepOf('root lint', dir, lintArgs)];
+
+  return item.answers.layout === 'monorepo' ? steps : [];
+};
+
 const caseSteps = (item: E2eCase, dir: string): Step[] => {
   const installArgs = ['install', '--no-frozen-lockfile'];
+  const app = appDirOf(item, dir);
   const steps = [
     stepOf('install', dir, installArgs),
-    stepOf('prepare', dir, prepareArgs),
-    lintStep(item, dir),
-    ...stylexSteps(item, dir),
+    stepOf('prepare', app, prepareArgs),
+    lintStep(item, app),
+    ...stylexSteps(item, app),
+    ...rootLintSteps(item, dir),
   ];
 
   return steps;
@@ -169,7 +181,7 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
   const stamp = stampOf(dir);
 
   if (isUnchanged(stampPath, stamp)) {
-    const reprepared = await spawnIn(dir, prepareArgs);
+    const reprepared = await spawnIn(appDirOf(item, dir), prepareArgs);
 
     return reprepared.ok ? 'unchanged' : fail(item.label, 'prepare', reprepared.output);
   }
@@ -191,7 +203,10 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 
 const concurrency = Math.max(1, Math.floor(availableParallelism() / 2));
 const semaphore = new Semaphore(concurrency);
-const cases = starterCases(STARTER_CASES);
+const labelled = starterCases(STARTER_CASES);
+const [first] = labelled;
+const monorepos = first === undefined ? [] : [monorepoCaseOf(first)];
+const cases = [...labelled, ...monorepos];
 const runs = cases
   .map(async (item) => {
     await semaphore.acquire();
@@ -227,10 +242,10 @@ log(`${String(cases.length)} starter projects: ${String(linted)} linted, `
   + `${String(unchanged)} unchanged since their last clean lint, ${String(failed)} failed`);
 
 // A label that names no case would lint nothing and say nothing.
-const isShort = cases.length !== STARTER_CASES.length;
+const isShort = labelled.length !== STARTER_CASES.length;
 
 if (isShort) {
-  logError(`${String(STARTER_CASES.length - cases.length)} starter labels name no e2e case`);
+  logError(`${String(STARTER_CASES.length - labelled.length)} starter labels name no e2e case`);
 }
 
 process.exitCode = failed > 0 || isShort ? 1 : 0;

@@ -20,6 +20,8 @@ import {
 import { versions } from 'node:process';
 import { promisify } from 'node:util';
 
+import { appDirectoryOf } from '@utils/answerUtils';
+
 import { TEMPLATES_ROOT } from '@disk';
 import { writtenOf } from '@e2e/starter-cover/starterCover';
 import { templateOf } from '@e2e/starter-cover/utils/copiedUtils';
@@ -28,6 +30,7 @@ import { pipelineRun } from '@pipeline';
 
 import { packTarball, run } from '../../utils/processUtils.ts';
 import {
+  APPS,
   CONFIG_SPEC,
   HASH_PREFIX_LENGTH,
   KEPT,
@@ -96,6 +99,26 @@ export const pruneTarballs = (current: Tarballs): void => {
   }
 };
 
+export const monorepoCaseOf = (item: E2eCase): E2eCase => {
+  const monorepo: E2eCase = {
+    ...item,
+    label: `${item.label} monorepo`,
+    answers: {
+      ...item.answers,
+      layout: 'monorepo',
+    },
+  };
+
+  return monorepo;
+};
+
+export const appDirOf = (item: E2eCase, dir: string): string => {
+  const directory = appDirectoryOf(item.answers, PROJECT_NAME);
+
+  return join(dir, directory);
+};
+
+// A monorepo's apps keep their own node_modules too.
 const clear = (dir: string): void => {
   mkdirSync(dir, { recursive: true });
 
@@ -111,7 +134,14 @@ const clear = (dir: string): void => {
       force: true,
     };
 
-    rmSync(path, options);
+    if (entry === APPS) {
+      for (const app of readdirSync(path)) {
+        clear(join(path, app));
+      }
+    }
+    else {
+      rmSync(path, options);
+    }
   }
 };
 
@@ -135,11 +165,18 @@ export const generate = async (item: E2eCase, dir: string, tarballs: Tarballs): 
 
   await pipelineRun(options);
 
-  const manifest = join(dir, 'package.json');
-  const text = await readFile(manifest, 'utf8');
-  const local = text.replace(CONFIG_SPEC, `"@linteljs/eslint-config": "file:${tarballs.config}"`);
+  const app = appDirOf(item, dir);
+  const manifests = new Set([join(dir, 'package.json'), join(app, 'package.json')]);
 
-  await writeFile(manifest, local, 'utf8');
+  const patches = [...manifests]
+    .map(async (manifest) => {
+      const text = await readFile(manifest, 'utf8');
+      const local = text.replace(CONFIG_SPEC, `"@linteljs/eslint-config": "file:${tarballs.config}"`);
+
+      await writeFile(manifest, local, 'utf8');
+    });
+
+  await Promise.all(patches);
 
   // The config's own range on the plugin names a version npm may not have yet.
   const workspace = join(dir, 'pnpm-workspace.yaml');

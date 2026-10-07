@@ -24,6 +24,8 @@ export const KEPT = new Set([
   'pnpm-lock.yaml',
 ]);
 
+export const APPS = 'apps';
+
 // Install and git write these, not the generator.
 export const UNSTAMPED = new Set([...KEPT, '.git']);
 
