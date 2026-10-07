@@ -455,7 +455,11 @@ const SVELTE_ISLAND_GATES: GateRow[] = onIsland(['svelte'], [
   ['src/lib/providers/data/DataProvider.svelte@tanstack-query', TANSTACK_QUERY],
   ['__mocks__/WithContactForm.svelte', [{ testing: ['vitest'] }]],
   ['__mocks__/ContactFormProbe.svelte', [{ testing: ['vitest'] }]],
-  ['__mocks__/WithData.svelte', [{ testing: ['vitest'], languages: [undefined] }]],
+  ['__mocks__/WithData.svelte', [
+    { testing: ['vitest'], languages: [undefined] },
+    { testing: ['vitest'], data: [undefined] },
+  ]],
+  ['__mocks__/ContactApiProbe.svelte', [{ testing: ['vitest'], data: [undefined] }]],
   ['__mocks__/WithPhrase.svelte@svelte-i18n', [{ testing: ['vitest'], languages: ANSWERED }]],
 ]);
 

@@ -32,7 +32,7 @@ const ENGLISH_FILES = [
 ];
 
 const SUITES = [
-  'src/routes/layout.test.ts',
+  'src/components/features/app-header/AppHeader.test.ts',
   'src/routes/error.test.ts',
   'src/components/features/status-page/StatusPage.test.ts',
 ];
@@ -122,7 +122,7 @@ describe('svelteI18nTests', () => {
     ];
     expect(written).toEqual(expected);
 
-    expect(covers).toContain('src/routes/+layout.svelte');
+    expect(covers).toContain('src/components/features/app-header/AppHeader.svelte');
     expect(covers).toContain('src/components/ui/code-text/CodeText.svelte');
     expect(covers).toContain('src/i18n/i18n.ts');
     expect(covers).toContain('src/hooks.server.ts');

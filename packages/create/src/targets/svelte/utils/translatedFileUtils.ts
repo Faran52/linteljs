@@ -20,7 +20,10 @@ const I18N_ONLY_FILES = [
 
 // Each translated suite and the component it covers.
 const TRANSLATED_SUITES = [
-  ['src/routes/layout.test.ts', 'src/routes/+layout.svelte'],
+  [
+    'src/components/features/app-header/AppHeader.test.ts',
+    'src/components/features/app-header/AppHeader.svelte',
+  ],
   ['src/routes/error.test.ts', 'src/routes/+error.svelte'],
   [
     'src/components/features/status-page/StatusPage.test.ts',
@@ -40,7 +43,6 @@ export const svelteI18nFiles = (): StarterFile[] => {
   });
 };
 
-// The layout mounts the header, so its twin proves the language is detected once mounted.
 export const svelteI18nTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
     ...TRANSLATED_SUITES

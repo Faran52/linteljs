@@ -90,6 +90,7 @@ export const FORM_SUITE_MOCKS = [
   '__mocks__/WithData.svelte',
   '__mocks__/WithContactForm.svelte',
   '__mocks__/ContactFormProbe.svelte',
+  '__mocks__/ContactApiProbe.svelte',
 ] as const;
 
 export const FORM_FILES = [

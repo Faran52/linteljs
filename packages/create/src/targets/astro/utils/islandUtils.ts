@@ -360,11 +360,18 @@ const svelteIsland = (): Island => {
       ...filesAt([...parts, 'src/components/ui/text-input/types.ts'], { shared: 'svelte' }),
       ...gated(hasTests, [
         ...filesAt(['__mocks__/WithContactForm.svelte', '__mocks__/ContactFormProbe.svelte'], { shared: 'svelte' }),
-        // The translated page takes its words, which `WithData` cannot hand it.
+        // The translated page takes its words, which `WithData` cannot hand it; the api suite still needs it.
         {
           target: '__mocks__/WithData.svelte',
           when: (answers) => {
-            return !hasI18n(answers);
+            return !hasI18n(answers) || answers.data === undefined;
+          },
+          shared: 'svelte',
+        },
+        {
+          target: '__mocks__/ContactApiProbe.svelte',
+          when: (answers) => {
+            return answers.data === undefined;
           },
           shared: 'svelte',
         },

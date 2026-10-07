@@ -203,6 +203,13 @@ export const svelteTarget: TargetBuilder = () => {
         variant: 'tanstack-store',
       },
       {
+        target: '__mocks__/CounterProbe.svelte',
+        when: (answers) => {
+          return hasStore(answers) && hasTests(answers);
+        },
+        variant: 'tanstack-store',
+      },
+      {
         target: 'src/lib/providers/data/DataProvider.svelte',
         when: (answers) => {
           return answers.data !== 'tanstack-query';
@@ -263,13 +270,28 @@ export const svelteTarget: TargetBuilder = () => {
         target: 'src/components/ui/text-input/TextInput.test.ts',
         covers: 'src/components/ui/text-input/TextInput.svelte',
       },
-      // The TanStack Query wrapper needs a component to run in, so the Contact page's suite covers it.
       {
         target: 'src/lib/apis/contact/contactApi.test.ts',
         covers: 'src/lib/apis/contact/contactApi.ts',
-        when: (answers) => {
-          return answers.data === undefined;
-        },
+        when: hasForm,
+      },
+      {
+        target: 'src/routes/layout.test.ts',
+        covers: 'src/routes/+layout.svelte',
+      },
+      {
+        target: 'src/components/ui/mark/Mark.test.ts',
+        covers: 'src/components/ui/mark/Mark.svelte',
+      },
+      {
+        target: 'src/lib/providers/data/DataProvider.test.ts',
+        covers: 'src/lib/providers/data/DataProvider.svelte',
+      },
+      {
+        target: 'src/lib/store/counter/counterStore.test.ts',
+        covers: 'src/lib/store/counter/counterStore.ts',
+        when: hasStore,
+        variant: 'tanstack-store',
       },
       contactFormTest(),
       ...contactSubmitTests(),
