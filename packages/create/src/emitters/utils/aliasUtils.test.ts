@@ -18,31 +18,19 @@ describe('buildAliases', () => {
     const aliases = buildAliases(answersFor({ target: 'react' }));
     const expected = {
       '@router/*': './src/router/*',
-      '@router': './src/router',
       '@pages/*': './src/pages/*',
-      '@pages': './src/pages',
       '@components/*': './src/components/*',
-      '@components': './src/components',
       '@ui/*': './src/components/ui/*',
       '@ui': './src/components/ui',
       '@features/*': './src/components/features/*',
-      '@features': './src/components/features',
       '@lib/*': './src/lib/*',
-      '@lib': './src/lib',
       '@store/*': './src/lib/store/*',
-      '@store': './src/lib/store',
       '@hooks/*': './src/lib/hooks/*',
-      '@hooks': './src/lib/hooks',
       '@utils/*': './src/lib/utils/*',
-      '@utils': './src/lib/utils',
       '@services/*': './src/lib/services/*',
-      '@services': './src/lib/services',
       '@styles/*': './src/styles/*',
-      '@styles': './src/styles',
       '@config/*': './src/config/*',
-      '@config': './src/config',
       '@mocks/*': './__mocks__/*',
-      '@mocks': './__mocks__',
     };
     expect(aliases).toEqual(expected);
   });
@@ -83,9 +71,9 @@ describe('buildAliases', () => {
 
     const expected = [
       '@router/*',
-      '@router',
       '@pages/*',
-      '@pages',
+      '@components/*',
+      '@ui/*',
     ];
     expect(leading).toEqual(expected);
   });
@@ -112,23 +100,52 @@ describe('buildAliases', () => {
     expect(webextension['@hooks/*']).toBeUndefined();
   });
 
-  it('drops the exact key with the omitted alias it pairs', () => {
-    const angular = buildAliases(answersFor({ target: 'angular' }));
-
-    expect(angular['@hooks']).toBeUndefined();
-  });
-
-  it('adds @i18n and its exact key only when a locale is chosen', () => {
+  it('adds @i18n only when a locale is chosen', () => {
     const plain = buildAliases(answersFor({}));
     const localised = buildAliases(answersFor({ languages: ['ja'] }));
 
     expect(plain['@i18n/*']).toBeUndefined();
-    expect(plain['@i18n']).toBeUndefined();
     expect(localised['@i18n/*']).toBe('./src/i18n/*');
-    expect(localised['@i18n']).toBe('./src/i18n');
   });
 
-  it('pairs a project alias onto a directory, and leaves an exact one alone', () => {
+  it.each([
+    ['react', ['@ui']],
+    ['next', ['@ui']],
+    ['vue', []],
+    ['nuxt', []],
+    ['svelte', []],
+    ['solid', ['@ui']],
+    ['angular', []],
+    ['astro', []],
+    ['webextension', []],
+    ['react-native', []],
+    ['typescript', []],
+  ] as const)('gives %s an exact key only beside a barrel its starter writes', (target, expected) => {
+    const aliases = buildAliases(answersFor({ target }));
+
+    const exact = Object.keys(aliases)
+      .filter((alias) => {
+        return `${alias}/*` in aliases;
+      });
+
+    expect(exact).toEqual(expected);
+  });
+
+  it.each([
+    'react',
+    'next',
+    'solid',
+    'react-native',
+  ] as const)('keeps the exact @ui key on %s when the form variant writes the barrel', (target) => {
+    const aliases = buildAliases(answersFor({
+      target,
+      form: 'tanstack-form',
+    }));
+
+    expect(aliases['@ui']).toBe('./src/components/ui');
+  });
+
+  it('pairs no project alias, and leaves an exact one alone', () => {
     const standard = buildAliases(answersFor({}));
     const aliases = buildAliases(answersFor({
       aliases: {
@@ -137,6 +154,7 @@ describe('buildAliases', () => {
         '@entry': './src/entry.ts',
         '@flat/*': './src/flat.ts',
         '@glob': './src/glob/*',
+        '@kit': './src/components/ui/*',
       },
     }));
     const added = Object.keys(aliases)
@@ -146,14 +164,13 @@ describe('buildAliases', () => {
 
     const expected = [
       '@engine/*',
-      '@engine',
       '@entry',
       '@flat/*',
       '@glob',
+      '@kit',
     ];
     expect(added).toEqual(expected);
 
-    expect(aliases['@engine']).toBe('./src/engine');
     expect(aliases['@ui']).toBe('./src/ui-kit');
     expect(aliases['@entry']).toBe('./src/entry.ts');
     expect(aliases['@entry/*']).toBeUndefined();

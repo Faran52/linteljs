@@ -1,3 +1,5 @@
+import { posix } from 'node:path';
+
 import { type AliasMap, type Answers } from '@config/types';
 
 import {
@@ -10,17 +12,28 @@ import { starterApplies, targetFor } from '@targets';
 
 const WILDCARD = '/*';
 
+const startersOf = (answers: Answers): string[] => {
+  return targetFor(answers).starterFiles
+    .filter((file) => {
+      return starterApplies(file, answers);
+    })
+    .map((file) => {
+      return file.target;
+    });
+};
+
 // Zod's schemas go there; otherwise read off the starter, so the alias names a directory the project has.
-const writesApis = (answers: Answers): boolean => {
-  return hasLibrary(answers, 'zod') || targetFor(answers).starterFiles
+const writesApis = (answers: Answers, starters: string[]): boolean => {
+  return hasLibrary(answers, 'zod') || starters
     .some((file) => {
-      return file.target.startsWith('src/lib/apis/') && starterApplies(file, answers);
+      return file.startsWith('src/lib/apis/');
     });
 };
 
 // The order is the dependency direction, so a sorted import block reads as the architecture.
 export const buildAliases = (answers: Answers): AliasMap => {
   const target = targetFor(answers);
+  const starters = startersOf(answers);
 
   const all: AliasMap = {
     ...target.routeAlias,
@@ -32,7 +45,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...target.hooksAlias,
     '@utils/*': './src/lib/utils/*',
     '@services/*': './src/lib/services/*',
-    ...(writesApis(answers) ? { '@apis/*': './src/lib/apis/*' } : {}),
+    ...(writesApis(answers, starters) ? { '@apis/*': './src/lib/apis/*' } : {}),
     ...target.extraAliases,
     '@styles/*': './src/styles/*',
     '@config/*': './src/config/*',
@@ -48,11 +61,13 @@ export const buildAliases = (answers: Answers): AliasMap => {
       return target.omitAliases?.includes(alias) !== true;
     });
 
-  // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
+  // An exact key beside a `/*` one only where the starter writes that directory's barrel, so it imports as `@ui`.
   const withIndexes = kept
     .flatMap(([alias, directory]) => {
-      const pairs: [string, string][] = alias.endsWith(WILDCARD) && directory.endsWith(WILDCARD)
-        ? [[alias, directory], [alias.slice(0, -WILDCARD.length), directory.slice(0, -WILDCARD.length)]]
+      const root = directory.slice(0, -WILDCARD.length);
+      const hasBarrel = alias.endsWith(WILDCARD) && starters.includes(posix.join(root, 'index.ts'));
+      const pairs: [string, string][] = hasBarrel
+        ? [[alias, directory], [alias.slice(0, -WILDCARD.length), root]]
         : [[alias, directory]];
 
       return pairs;
