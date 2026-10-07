@@ -78,6 +78,10 @@ export const ANSWERS = [
     value: 'react',
   },
   {
+    label: 'Repository layout',
+    value: 'single',
+  },
+  {
     label: 'Testing',
     value: 'vitest',
   },
@@ -96,10 +100,6 @@ export const ANSWERS = [
   {
     label: 'AI plugins',
     value: 'ponytail, context7, frontend-design',
-  },
-  {
-    label: 'Repository layout',
-    value: 'single',
   },
 ] as const;
 `);

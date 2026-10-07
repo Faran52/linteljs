@@ -156,13 +156,13 @@ describe('answerRows', () => {
     const actual = answerRows(hostedAnswersFor({ store: 'zustand' }), ANSWERS);
     const expected = [
       ["label: 'Framework'", "value: 'react'"],
+      ["label: 'Repository layout'", "value: 'single'"],
       ["label: 'Testing'", "value: 'vitest'"],
       ["label: 'Libraries'", "value: 'es-toolkit'"],
       ["label: 'State store'", "value: 'zustand'"],
       ["label: 'Type safety'", "value: 'strict'"],
       ["label: 'AI agents'", "value: 'claude-code'"],
       ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
-      ["label: 'Repository layout'", "value: 'single'"],
     ];
     expect(actual).toEqual(expected);
   });

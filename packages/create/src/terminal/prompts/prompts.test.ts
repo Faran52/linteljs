@@ -62,6 +62,7 @@ describe('ask', () => {
     const { result } = await askWith([
       'demo-app',
       'svelte',
+      'monorepo',
       'none',
       ['zod'],
       'tailwind',
@@ -73,7 +74,6 @@ describe('ask', () => {
       'relaxed',
       undefined,
       undefined,
-      'monorepo',
     ]);
 
     const expected = {
@@ -226,8 +226,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      'ngrx-signals',
       undefined,
+      'ngrx-signals',
       undefined,
       undefined,
       undefined,
@@ -318,11 +318,11 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
       picked,
       undefined,
       ['claude-code'],
       [],
-      undefined,
     ]);
 
     expect(result.answers.languages).toEqual(recorded);
@@ -342,9 +342,9 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
       ['claude-code', 'codex'],
       [],
-      undefined,
     ]);
 
     const expected = {
@@ -368,9 +368,9 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
       ['codex'],
       ['frontend-design', 'ponytail'],
-      undefined,
     ]);
 
     const expected = {
@@ -462,8 +462,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      [],
       undefined,
+      [],
       undefined,
     ]);
 
@@ -490,8 +490,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      ['codex'],
       undefined,
+      ['codex'],
       undefined,
     ]);
 
@@ -543,8 +543,8 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
-      'redux-toolkit',
       undefined,
+      'redux-toolkit',
       undefined,
       undefined,
       undefined,
@@ -554,7 +554,7 @@ describe('the store question', () => {
     ]);
 
     expect(result.answers.store).toBe('redux-toolkit');
-    expect(recorded.calls[7]).toBe('State store');
+    expect(recorded.calls[8]).toBe('State store');
 
     const expected = [
       'None',
@@ -599,8 +599,8 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
-      'none',
       undefined,
+      'none',
       undefined,
       undefined,
       undefined,
@@ -709,10 +709,10 @@ describe('the form library and router questions', () => {
       'demo-app',
       undefined,
       undefined,
+      undefined,
       ['zod'],
       'tailwind',
       'react-hook-form',
-      undefined,
       undefined,
       undefined,
       undefined,
@@ -734,10 +734,10 @@ describe('the form library and router questions', () => {
       'demo-app',
       undefined,
       undefined,
+      undefined,
       ['zod'],
       undefined,
       'none',
-      undefined,
       undefined,
       undefined,
       undefined,
@@ -833,8 +833,8 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
-      'tanstack-router',
       undefined,
+      'tanstack-router',
       undefined,
       undefined,
       undefined,

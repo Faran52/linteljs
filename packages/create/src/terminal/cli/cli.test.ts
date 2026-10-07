@@ -301,6 +301,7 @@ describe('main: create', () => {
       scripted([
         'svelte',
         undefined,
+        undefined,
         ['zod'],
         undefined,
         undefined,
@@ -311,7 +312,6 @@ describe('main: create', () => {
         undefined,
         ['claude-code', 'codex'],
         [],
-        undefined,
       ]),
     );
 

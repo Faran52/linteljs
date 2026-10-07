@@ -62,6 +62,12 @@
         "solid"
       ]
     },
+    "layout": {
+      "enum": [
+        "single",
+        "monorepo"
+      ]
+    },
     "testing": {
       "enum": [
         "vitest",
@@ -182,12 +188,6 @@
         ]
       },
       "uniqueItems": true
-    },
-    "layout": {
-      "enum": [
-        "single",
-        "monorepo"
-      ]
     },
     "resolveConditions": {
       "type": "array",
