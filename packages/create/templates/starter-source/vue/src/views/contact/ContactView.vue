@@ -4,7 +4,7 @@ import { CONTACT_TEXT } from '@services/contact-form/contactFormService';
 import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';
 
-import { useContactForm } from './useContactForm';
+import { useContactForm } from './use-contact-form/useContactForm';
 
 const form = useContactForm((key) => {
   return CONTACT_TEXT[key];

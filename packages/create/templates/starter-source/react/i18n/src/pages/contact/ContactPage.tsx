@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button, TextInput } from '@ui';
 
-import { useContactForm } from './useContactForm';
+import { useContactForm } from './use-contact-form/useContactForm';
 
 import type { FC } from 'react';
 

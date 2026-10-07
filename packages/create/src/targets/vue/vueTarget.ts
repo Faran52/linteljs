@@ -195,6 +195,10 @@ export const vueTarget: TargetBuilder = () => {
         covers: 'src/views/contact/ContactView.vue',
       },
       {
+        target: 'src/views/contact/use-contact-form/useContactForm.test.ts',
+        covers: 'src/views/contact/use-contact-form/useContactForm.ts',
+      },
+      {
         target: 'src/components/ui/text-input/TextInput.test.ts',
         covers: 'src/components/ui/text-input/TextInput.vue',
       },

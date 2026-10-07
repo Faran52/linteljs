@@ -2,7 +2,7 @@ import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactForm
 
 import { Button, TextInput } from '@ui';
 
-import { useContactForm } from './useContactForm';
+import { useContactForm } from './use-contact-form/useContactForm';
 
 import type { FC } from 'react';
 

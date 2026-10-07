@@ -2,7 +2,7 @@ import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactForm
 
 import { Button, TextInput } from '@ui';
 
-import { createContactForm } from './createContactForm';
+import { createContactForm } from './create-contact-form/createContactForm';
 
 import type { JSX } from 'solid-js';
 

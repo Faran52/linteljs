@@ -47,6 +47,8 @@ There is no `src/pages/`. One router, and it is `app/`.
 
 - **Closest to its consumer.** A helper used by one route lives beside it in that route folder; it
   moves to `lib/utils/` the moment a second route needs it, not before and not after.
+- A hook only one route reads sits in that route folder in a directory named for it, with its
+  suite: `app/contact/use-contact-form/useContactForm.ts`.
 - A route folder holds its reserved files and a private `partials/` for components bound to that
   route's data. Anything reusable moves to `components/`. Never nest `partials/`.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today.

@@ -46,6 +46,6 @@ const HEADER = 'src/components/features/app-header/AppHeader';
 export const I18N_ONLY_SUITES = [...I18N_ONLY, HEADER];
 
 export const FORM_FILES = [
-  'src/pages/contact/createContactForm.ts',
+  'src/pages/contact/create-contact-form/createContactForm.ts',
   'src/components/ui/text-input/TextInput.tsx',
 ] as const;

@@ -158,6 +158,10 @@ const reactStarterTests = (): StarterTest[] => {
       target: 'src/lib/apis/contact/contactApi.test.ts',
       covers: 'src/lib/apis/contact/contactApi.ts',
     },
+    {
+      target: 'src/pages/contact/use-contact-form/useContactForm.test.ts',
+      covers: 'src/pages/contact/use-contact-form/useContactForm.ts',
+    },
     contactFormTest(),
     ...rtkContactTests(),
   ];
@@ -270,7 +274,7 @@ const baseReactTarget = (): TargetRecord => {
       ...CONTACT_HOOK_FORMS
         .map((form): StarterFile => {
           const file: StarterFile = {
-            target: 'src/pages/contact/useContactForm.ts',
+            target: 'src/pages/contact/use-contact-form/useContactForm.ts',
             when: (answers) => {
               return answers.form === form;
             },

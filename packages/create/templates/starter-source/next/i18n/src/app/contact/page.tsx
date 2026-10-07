@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button, TextInput } from '@ui';
 
-import { useContactForm } from './useContactForm';
+import { useContactForm } from './use-contact-form/useContactForm';
 
 import type { ReactNode } from 'react';
 

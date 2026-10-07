@@ -46,6 +46,8 @@ store library is installed, so do not add one for state a module in `lib/store/`
 
 - **Closest to its consumer.** A helper used by one page lives in that page's `utils/`; it moves to
   `lib/utils/` the moment a second page needs it, not before and not after.
+- A primitive only one page reads sits in that page in a directory named for it, with its suite:
+  `pages/contact/create-contact-form/createContactForm.ts`.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today. A
   component bound to its parent's data belongs in that parent's `partials/`, and you should be able
   to justify each one in a sentence. Never nest `partials/`.

@@ -283,7 +283,7 @@ describe('the starter source', () => {
     ]],
     ['solid', [
       'src/pages/contact/ContactPage.tsx',
-      'src/pages/contact/createContactForm.ts',
+      'src/pages/contact/create-contact-form/createContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
     ]],
     ['svelte', [
@@ -294,7 +294,8 @@ describe('the starter source', () => {
     ]],
     ['next', [
       'src/app/contact/page.tsx',
-      'src/app/contact/useContactForm.ts',
+      'src/app/contact/use-contact-form/useContactForm.ts',
+      'src/app/contact/use-contact-form/useContactForm.test.ts',
       'src/components/ui/text-input/TextInput.tsx',
     ]],
   ])('writes the %s page, its binding and its control only with a form', (target, files) => {
@@ -593,13 +594,13 @@ describe('a shared file written under the target naming', () => {
 describe('a client boundary', () => {
   it.each<[string, string, Partial<Answers>]>([
     [
-      'src/app/contact/useContactForm.ts',
-      'src/pages/contact/useContactForm.ts',
+      'src/app/contact/use-contact-form/useContactForm.ts',
+      'src/pages/contact/use-contact-form/useContactForm.ts',
       { form: 'react-hook-form' },
     ],
     [
-      'src/app/contact/useContactForm.ts',
-      'src/pages/contact/useContactForm.ts',
+      'src/app/contact/use-contact-form/useContactForm.ts',
+      'src/pages/contact/use-contact-form/useContactForm.ts',
       { form: 'tanstack-form' },
     ],
     [

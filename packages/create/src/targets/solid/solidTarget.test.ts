@@ -132,7 +132,7 @@ const GATES: GateRow[] = [
   ['src/router/router.tsx', WITHOUT_FORM],
   ['src/router/router.tsx@with-form', WITH_FORM],
   ...homeGates('src/pages/home/HomePage.tsx'),
-  ['src/pages/contact/createContactForm.ts', WITH_FORM],
+  ['src/pages/contact/create-contact-form/createContactForm.ts', WITH_FORM],
   ['src/components/ui/index.ts', WITHOUT_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],

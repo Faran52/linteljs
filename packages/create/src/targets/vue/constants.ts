@@ -54,7 +54,7 @@ export const VUE_I18N: I18nParts = {
 };
 
 export const FORM_FILES = [
-  'src/views/contact/useContactForm.ts',
+  'src/views/contact/use-contact-form/useContactForm.ts',
   'src/components/ui/text-input/TextInput.vue',
   'src/components/ui/text-input/types.ts',
 ] as const;

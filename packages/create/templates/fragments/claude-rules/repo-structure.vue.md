@@ -47,6 +47,8 @@ nowhere else to put it.
 
 - **Closest to its consumer.** A helper used by one view lives in that view's `utils/`; it moves to
   `lib/utils/` the moment a second view needs it, not before and not after.
+- A composable only one view reads sits in that view in a directory named for it, with its suite:
+  `views/contact/use-contact-form/useContactForm.ts`.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today. A
   component bound to its parent's data belongs in that parent's `partials/`, and you should be able
   to justify each one in a sentence. Never nest `partials/`.

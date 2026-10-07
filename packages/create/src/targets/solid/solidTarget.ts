@@ -208,6 +208,10 @@ export const solidTarget: TargetBuilder = () => {
         covers: 'src/pages/contact/ContactPage.tsx',
       },
       {
+        target: 'src/pages/contact/create-contact-form/createContactForm.test.ts',
+        covers: 'src/pages/contact/create-contact-form/createContactForm.ts',
+      },
+      {
         target: 'src/components/ui/text-input/TextInput.test.tsx',
         covers: 'src/components/ui/text-input/TextInput.tsx',
       },

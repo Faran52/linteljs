@@ -176,7 +176,7 @@ export const reactNativeTarget: TargetBuilder = () => {
             },
             variant: form,
             shared: 'react',
-            source: 'src/pages/contact/useContactForm.ts',
+            source: 'src/pages/contact/use-contact-form/useContactForm.ts',
           };
 
           return file;

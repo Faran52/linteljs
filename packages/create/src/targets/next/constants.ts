@@ -46,7 +46,7 @@ export const FROM_REACT: readonly string[] = [
 
 // React's assets, written as the client boundary under the server-component layout.
 export const CLIENT_BOUNDARIES: readonly string[] = [
-  'src/app/contact/useContactForm.ts',
+  'src/app/contact/use-contact-form/useContactForm.ts',
   'src/lib/providers/store/StoreProvider.tsx',
   'src/lib/providers/data/DataProvider.tsx',
 ];

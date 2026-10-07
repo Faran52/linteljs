@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';
 
-import { useContactForm } from './useContactForm';
+import { useContactForm } from './use-contact-form/useContactForm';
 
 const { t } = useI18n();
 const form = useContactForm((key) => {

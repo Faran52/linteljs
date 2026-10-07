@@ -44,6 +44,8 @@ src/
 
 - **Closest to its consumer.** A helper used by one page lives in that page's `utils/`; it moves to
   `lib/utils/` the moment a second page needs it, not before and not after.
+- A hook only one page reads sits in that page in a directory named for it, with its suite:
+  `pages/contact/use-contact-form/useContactForm.ts`.
 - A component reusable by nature belongs in `components/ui/` even with one consumer today. A
   component bound to its parent's data belongs in that parent's `partials/`, and you should be able
   to justify each one in a sentence.

@@ -129,6 +129,12 @@ const nextStarterTests = (): StarterTest[] => {
       covers: 'src/lib/apis/contact/contactApi.ts',
       shared: 'react',
     },
+    {
+      target: 'src/app/contact/use-contact-form/useContactForm.test.ts',
+      covers: 'src/app/contact/use-contact-form/useContactForm.ts',
+      shared: 'react',
+      source: 'src/pages/contact/use-contact-form/useContactForm.test.ts',
+    },
     contactFormTest(),
     ...rtkContactTests(),
   ];
@@ -286,13 +292,13 @@ export const nextTarget: TargetBuilder = () => {
       ...CONTACT_HOOK_FORMS
         .map((form): StarterFile => {
           const file: StarterFile = {
-            target: 'src/app/contact/useContactForm.ts',
+            target: 'src/app/contact/use-contact-form/useContactForm.ts',
             when: (answers) => {
               return answers.form === form;
             },
             variant: form,
             shared: 'react',
-            source: 'src/pages/contact/useContactForm.ts',
+            source: 'src/pages/contact/use-contact-form/useContactForm.ts',
           };
 
           return file;
