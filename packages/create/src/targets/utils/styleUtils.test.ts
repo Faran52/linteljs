@@ -74,6 +74,15 @@ describe('componentStyles', () => {
 
     expect(componentStyles()[1]).not.toHaveProperty('source');
   });
+
+  it('ships no stylesheet for a component the target leaves out', () => {
+    const targets = componentStyles({ mark: RENAMED.mark })
+      .map((file) => {
+        return file.target;
+      });
+
+    expect(targets).toEqual(['src/components/ui/app-mark/AppMark.css']);
+  });
 });
 
 describe('componentStyleModules', () => {
@@ -119,6 +128,20 @@ describe('componentStyleModules', () => {
 
     expect(sheet).toEqual(expect.objectContaining(expected));
     expect(plain).not.toHaveProperty('stylexAttrs');
+  });
+
+  it('ships no module for a component the target leaves out', () => {
+    const targets = componentStyleModules('solid', { mark: RENAMED.mark })
+      .map((file) => {
+        return file.target;
+      });
+    const expected = [
+      'src/components/ui/app-mark/appMarkStyles.ts',
+      'src/components/ui/app-mark/appMarkStyles.ts',
+      'src/styles/tokens.stylex.ts',
+    ];
+
+    expect(targets).toEqual(expected);
   });
 
   it.each([undefined, 'react'] as const)('spreads the StyleX sheet with props from %s', (from) => {

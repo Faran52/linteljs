@@ -227,7 +227,11 @@ const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-rou
 
 const GATES: GateRow[] = [
   ...mswGates(true),
-  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ...componentStyleGates([
+    'mark/Mark',
+    'button/Button',
+    'text-input/TextInput',
+  ]),
   ['src/main.tsx', [{
     router: [
       undefined,

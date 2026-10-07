@@ -141,7 +141,11 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(true),
-  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ...componentStyleGates([
+    'mark/Mark',
+    'button/Button',
+    'text-input/TextInput',
+  ]),
   ...contactGates(['tanstack-query', 'rtk-query']),
   ['.babelrc@stylex', STYLEX],
   ['postcss.config.mjs@stylex', STYLEX],

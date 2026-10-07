@@ -6,7 +6,6 @@ import {
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
-  WITH_FORM,
   WITH_I18N,
   WITHOUT_I18N,
 } from '@mocks/starterGates';
@@ -103,12 +102,11 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(false),
-  ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
+  ...componentStyleGates(['app-mark/AppMark', 'app-button/AppButton']),
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ['../components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/queryOptionsUtils.test.ts', TANSTACK_QUERY],

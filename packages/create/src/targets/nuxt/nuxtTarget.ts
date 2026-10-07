@@ -5,7 +5,7 @@ import {
   PARTS,
   TRANSLATED_CONFIGS,
 } from '../constants';
-import { hasForm, hasI18n } from '../utils/gateUtils';
+import { hasI18n } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -28,7 +28,6 @@ import {
 } from '../utils/styleUtils';
 import {
   ACCESSORS as SOURCE_ACCESSORS,
-  COMPONENTS,
   I18N_ONLY,
   VUE_I18N,
 } from '../vue/constants';
@@ -36,6 +35,7 @@ import {
 import {
   ACCESSORS,
   ALWAYS,
+  COMPONENTS,
   FROM_VUE,
   SHARED,
   TRANSLATED_FROM_VUE,
@@ -87,10 +87,6 @@ export const nuxtTarget: TargetBuilder = () => {
       '../components/features/app-header/AppHeader.css',
       '../components/ui/app-mark/AppMark.css',
       '../components/ui/app-button/AppButton.css',
-      {
-        path: '../components/ui/text-input/TextInput.css',
-        when: hasForm,
-      },
     ],
     tailwindTheme: '../styles/theme.css',
     nuxtProject: true,

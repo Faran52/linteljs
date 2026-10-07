@@ -6,7 +6,6 @@ import {
   mswGates,
   TAILWIND,
   walkGates,
-  WITH_FORM,
   WITH_I18N,
   WITHOUT_I18N,
 } from '@mocks/starterGates';
@@ -227,7 +226,7 @@ const I18N_ONLY_PATHS = [
 
 const GATES: GateRow[] = [
   ...mswGates(false),
-  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ...componentStyleGates(['mark/Mark']),
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'], languages: [undefined] }]],
   ['src/layouts/Layout.astro@i18n', [{ styling: [undefined, 'tailwind'], languages: ANSWERED }]],
@@ -245,7 +244,6 @@ const GATES: GateRow[] = [
 
       return row;
     }),
-  ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];
 
 describe('the starter gates', () => {

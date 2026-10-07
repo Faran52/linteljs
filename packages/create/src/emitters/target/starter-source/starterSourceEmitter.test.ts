@@ -677,8 +677,8 @@ describe('a StyleX sheet', () => {
     ],
     [
       'nuxt',
-      'src/components/ui/text-input/textInputStyles.ts',
-      'src/components/ui/text-input/textInputStyles.ts',
+      'src/components/ui/app-mark/appMarkStyles.ts',
+      'src/components/ui/mark/markStyles.ts',
     ],
   ])('writes %s its %s as React writes %s, spread with attrs', async (target, written, react) => {
     const text = await textOf({

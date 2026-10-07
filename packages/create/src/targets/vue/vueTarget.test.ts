@@ -182,7 +182,11 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(true),
-  ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
+  ...componentStyleGates([
+    'app-mark/AppMark',
+    'app-button/AppButton',
+    'text-input/TextInput',
+  ]),
   ...contactGates(['tanstack-query']),
   ['src/views/routes.ts', WITHOUT_FORM],
   ['src/views/routes.ts@with-form', WITH_FORM],

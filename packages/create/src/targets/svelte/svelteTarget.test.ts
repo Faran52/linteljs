@@ -143,7 +143,11 @@ const TRANSLATED_GATES: GateRow[] = [
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
   ...mswGates(true),
-  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ...componentStyleGates([
+    'mark/Mark',
+    'button/Button',
+    'text-input/TextInput',
+  ]),
   ...contactGates(['tanstack-query']),
   ['src/routes/+layout.svelte', [{ styling: [undefined, 'tailwind'] }]],
   ['src/routes/+layout.svelte@stylex', STYLEX],

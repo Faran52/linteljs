@@ -10,8 +10,6 @@ const SHARED_COVERAGE_EXCLUDE = [
   'src/{main,index}.{ts,tsx}',
   // Compiled to CSS by the bundler, so nothing of it is left at runtime.
   '**/*.stylex.{ts,tsx}',
-  // An `.astro` component has no vitest renderer, so a module only one imports is unreachable by any suite.
-  '**/components/**/styles.{ts,tsx}',
 ];
 
 // A bare `src/**` hands rolldown `src/app.html`, printing a parse failure while the gate passes.

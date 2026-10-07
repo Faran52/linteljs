@@ -1,3 +1,5 @@
+import type { ComponentPaths } from '../utils/styleUtils';
+
 export const ALWAYS: readonly string[] = [
   'src/app.vue',
   'src/error.vue',
@@ -5,6 +7,13 @@ export const ALWAYS: readonly string[] = [
   'src/pages/about.vue',
   'src/pages/version.vue',
 ];
+
+// No contact page, so no text input.
+export const COMPONENTS: Omit<ComponentPaths, 'textInput'> = {
+  header: 'src/components/features/app-header/AppHeader',
+  mark: 'src/components/ui/app-mark/AppMark',
+  button: 'src/components/ui/app-button/AppButton',
+};
 
 export const FROM_VUE: readonly string[] = [
   'src/components/ui/app-mark/AppMark.vue',

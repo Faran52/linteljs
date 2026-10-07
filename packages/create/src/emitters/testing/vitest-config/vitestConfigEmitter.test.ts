@@ -69,7 +69,6 @@ export default mergeConfig(
           'src/typings/**',
           'src/{main,index}.{ts,tsx}',
           '**/*.stylex.{ts,tsx}',
-          '**/components/**/styles.{ts,tsx}',
         ],
         thresholds: {
           lines: 100,
@@ -101,7 +100,6 @@ export default defineConfig({
         'src/typings/**',
         'src/{main,index}.{ts,tsx}',
         '**/*.stylex.{ts,tsx}',
-        '**/components/**/styles.{ts,tsx}',
         'src/app/layout.tsx',
         'src/app/global-error.tsx',
       ],
@@ -137,7 +135,6 @@ export default defineConfig({
         'src/typings/**',
         'src/{main,index}.{ts,tsx}',
         '**/*.stylex.{ts,tsx}',
-        '**/components/**/styles.{ts,tsx}',
         'src/app/app.config.ts',
         'src/app/app.routes.ts',
       ],
@@ -171,7 +168,6 @@ export default getViteConfig({
         'src/typings/**',
         'src/{main,index}.{ts,tsx}',
         '**/*.stylex.{ts,tsx}',
-        '**/components/**/styles.{ts,tsx}',
       ],
       thresholds: {
         lines: 100,

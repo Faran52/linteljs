@@ -109,7 +109,6 @@ describe('coverageExclude', () => {
       'src/typings/**',
       'src/{main,index}.{ts,tsx}',
       '**/*.stylex.{ts,tsx}',
-      '**/components/**/styles.{ts,tsx}',
       ...excluded,
     ];
     expect(actual).toEqual(expected);

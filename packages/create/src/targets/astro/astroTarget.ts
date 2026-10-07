@@ -6,7 +6,6 @@ import {
   FOLDER_ROUTED,
 } from '../constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
-import { hasForm } from '../utils/gateUtils';
 import {
   languageUtilsFile,
   languageUtilsTest,
@@ -25,6 +24,7 @@ import {
 import {
   ALWAYS,
   ASTRO_I18N,
+  COMPONENTS,
   SHARED,
   VIEW_SUITES,
 } from './constants';
@@ -76,11 +76,6 @@ export const astroTarget: TargetBuilder = (answers) => {
       './base.css',
       '../components/features/app-header/AppHeader.css',
       '../components/ui/mark/Mark.css',
-      '../components/ui/button/Button.css',
-      {
-        path: '../components/ui/text-input/TextInput.css',
-        when: hasForm,
-      },
     ],
     tailwindTheme: './theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
@@ -113,9 +108,9 @@ export const astroTarget: TargetBuilder = (answers) => {
     publicDirectory: 'public',
     starterFiles: [
       ...mockFiles(false),
-      ...componentStyles(),
+      ...componentStyles(COMPONENTS),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
-      ...componentStyleModules('solid'),
+      ...componentStyleModules('solid', COMPONENTS),
       ...astroI18nFiles(),
       // No contact page.
       ...localeFiles(),

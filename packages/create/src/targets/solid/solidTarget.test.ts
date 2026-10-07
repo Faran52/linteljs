@@ -122,7 +122,11 @@ const TRANSLATED_GATES: GateRow[] = [
 
 const GATES: GateRow[] = [
   ...mswGates(true),
-  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ...componentStyleGates([
+    'mark/Mark',
+    'button/Button',
+    'text-input/TextInput',
+  ]),
   ...contactGates(['tanstack-query']),
   ...TRANSLATED_GATES,
   ['src/pages/routes.tsx', WITHOUT_FORM],

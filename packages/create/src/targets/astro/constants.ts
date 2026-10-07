@@ -1,4 +1,5 @@
 import type { I18nParts } from '../types';
+import type { ComponentPaths } from '../utils/styleUtils';
 
 // A page names its view and nothing else, so no translated twin.
 export const ALWAYS: readonly string[] = [
@@ -21,6 +22,12 @@ export const SHARED: readonly string[] = [
   'public/favicon.svg',
   'public/robots.txt',
 ];
+
+// No button and no text input: nothing here submits.
+export const COMPONENTS: Pick<ComponentPaths, 'header' | 'mark'> = {
+  header: 'src/components/features/app-header/AppHeader',
+  mark: 'src/components/ui/mark/Mark',
+};
 
 // Each ships a translated twin under `i18n`.
 export const TRANSLATED: readonly string[] = [

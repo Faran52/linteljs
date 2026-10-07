@@ -40,7 +40,6 @@ const config = {
     '!src/typings/**',
     '!src/{main,index}.{ts,tsx}',
     '!**/*.stylex.{ts,tsx}',
-    '!**/components/**/styles.{ts,tsx}',
   ],
   coverageThreshold: {
     global: {

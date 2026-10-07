@@ -167,12 +167,16 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
   return gates;
 };
 
-export const componentStyleGates = (mark: string, button: string, modules: boolean): GateRow[] => {
+export const componentStyleGates = (ui: readonly string[]): GateRow[] => {
   const components: [string, readonly Condition[]][] = [
     ['src/components/features/app-header/AppHeader', [{}]],
-    [`src/components/ui/${mark}`, [{}]],
-    [`src/components/ui/${button}`, [{}]],
-    ['src/components/ui/text-input/TextInput', WITH_FORM],
+    ...ui
+      .map((path): [string, readonly Condition[]] => {
+        const ships = path === 'text-input/TextInput' ? WITH_FORM : [{}];
+        const component: [string, readonly Condition[]] = [`src/components/ui/${path}`, ships];
+
+        return component;
+      }),
   ];
 
   const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {
@@ -194,24 +198,20 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
 
         return row;
       }),
-    ...modules
-      ? [
-          ...components
-            .flatMap(([path, ships]): GateRow[] => {
-              const stemStart = path.lastIndexOf('/') + 1;
-              const upper = path.charAt(stemStart);
-              const initial = upper.toLowerCase();
-              const styles = `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
-              const rows: GateRow[] = [
-                [styles, under(ships, [undefined, 'tailwind'])],
-                [`${styles}@stylex`, under(ships, ['stylex'])],
-              ];
+    ...components
+      .flatMap(([path, ships]): GateRow[] => {
+        const stemStart = path.lastIndexOf('/') + 1;
+        const upper = path.charAt(stemStart);
+        const initial = upper.toLowerCase();
+        const styles = `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
+        const rows: GateRow[] = [
+          [styles, under(ships, [undefined, 'tailwind'])],
+          [`${styles}@stylex`, under(ships, ['stylex'])],
+        ];
 
-              return rows;
-            }),
-          ['src/styles/tokens.stylex.ts@stylex', STYLEX] as const,
-        ]
-      : [],
+        return rows;
+      }),
+    ['src/styles/tokens.stylex.ts@stylex', STYLEX],
   ];
 
   return gates;

@@ -15,6 +15,12 @@ interface AssetPath {
   readonly source?: string;
 }
 
+interface WrittenComponent {
+  readonly key: keyof ComponentPaths;
+  readonly path: string;
+  readonly ships: (answers: Answers) => boolean;
+}
+
 const isStylex = (answers: Answers): boolean => {
   return answers.styling === 'stylex';
 };
@@ -43,11 +49,35 @@ const at = (target: string, asset: string): AssetPath => {
   return assetPath;
 };
 
-// Ships with its component: an entry importing a file never written fails the build with ENOENT.
-export const componentStyles = (paths: ComponentPaths = COMPONENT_PATHS): StarterFile[] => {
+// A target leaves out a component it never writes, so no stylesheet ships without its reader.
+const writtenOf = (paths: Partial<ComponentPaths>): WrittenComponent[] => {
   return COMPONENTS
-    .map(([key, ships]): StarterFile => {
-      const target = `${paths[key]}.css`;
+    .flatMap(([key, ships]): WrittenComponent[] => {
+      const path = paths[key];
+
+      if (path === undefined) {
+        return [];
+      }
+
+      const written: WrittenComponent[] = [{
+        key,
+        path,
+        ships,
+      }];
+
+      return written;
+    });
+};
+
+// Ships with its component: an entry importing a file never written fails the build with ENOENT.
+export const componentStyles = (paths: Partial<ComponentPaths> = COMPONENT_PATHS): StarterFile[] => {
+  return writtenOf(paths)
+    .map(({
+      key,
+      path,
+      ships,
+    }): StarterFile => {
+      const target = `${path}.css`;
 
       const file: StarterFile = {
         target,
@@ -74,7 +104,7 @@ const stylesOf = (path: string): string => {
 // Ships with its component, since a module nothing imports fails the coverage gate.
 export const componentStyleModules = (
   from?: 'react' | 'solid',
-  paths: ComponentPaths = COMPONENT_PATHS,
+  paths: Partial<ComponentPaths> = COMPONENT_PATHS,
 ): StarterFile[] => {
   const shared = from === undefined ? {} : { shared: from };
   // Solid's tree spreads `class`, which `attrs` writes from React's sheet where `props` writes `className`.
@@ -93,9 +123,13 @@ export const componentStyleModules = (
     shared: true,
   };
 
-  return COMPONENTS
-    .flatMap(([key, ships]): StarterFile[] => {
-      const target = stylesOf(paths[key]);
+  return writtenOf(paths)
+    .flatMap(({
+      key,
+      path,
+      ships,
+    }): StarterFile[] => {
+      const target = stylesOf(path);
       const asset = at(target, stylesOf(COMPONENT_PATHS[key]));
 
       const variants: StarterFile[] = [
