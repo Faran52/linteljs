@@ -3,8 +3,8 @@ import { render, screen } from '@solidjs/testing-library';
 import { CHECK } from '@config/linteljs';
 
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import { HomePage } from './HomePage';
 

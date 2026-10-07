@@ -1,6 +1,7 @@
 import { CHECK, NAME } from '@config/linteljs';
 
 import { markSvg } from '@lib/mark/mark';
+import { languages } from '@i18n/config';
 import {
   chooseLanguage,
   detectLanguage,
@@ -8,8 +9,7 @@ import {
   type Language,
   partsOf,
   t,
-} from '@i18n';
-import { languages } from '@i18n/config';
+} from '@i18n/i18n';
 
 // The odd parts of a message sit inside `<code>`.
 const nodeOf = (part: string, index: number): Node => {

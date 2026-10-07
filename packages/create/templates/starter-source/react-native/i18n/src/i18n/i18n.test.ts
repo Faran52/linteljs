@@ -12,7 +12,7 @@ import {
   directionOf,
   initI18n,
   restoreLanguage,
-} from './index';
+} from './i18n';
 
 const last = languages.at(-1)?.id ?? 'en';
 

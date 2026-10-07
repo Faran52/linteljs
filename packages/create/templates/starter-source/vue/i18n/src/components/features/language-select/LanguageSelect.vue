@@ -3,8 +3,8 @@ import { computed } from 'vue';
 
 import { useI18n } from 'vue-i18n';
 
-import { chooseLanguage } from '@i18n';
 import { languages } from '@i18n/config';
+import { chooseLanguage } from '@i18n/i18n';
 
 const { t, locale } = useI18n();
 

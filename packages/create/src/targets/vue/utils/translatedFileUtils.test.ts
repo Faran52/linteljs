@@ -50,7 +50,7 @@ describe('vueI18nFiles', () => {
         }),
       'src/components/features/language-select/LanguageSelect.vue@i18n',
       'src/components/ui/code-text/CodeText.vue@i18n',
-      'src/i18n/index.ts@i18n',
+      'src/i18n/i18n.ts@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -113,13 +113,13 @@ describe('vueI18nTests', () => {
         }),
       'src/components/features/language-select/LanguageSelect.test.ts@i18n',
       'src/components/ui/code-text/CodeText.test.ts@i18n',
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
     ];
     expect(written).toEqual(expected);
 
     expect(covers).toContain('src/App.vue');
     expect(covers).toContain('src/components/ui/code-text/CodeText.vue');
-    expect(covers).toContain('src/i18n/index.ts');
+    expect(covers).toContain('src/i18n/i18n.ts');
   });
 
   it('keeps the English suites otherwise', () => {

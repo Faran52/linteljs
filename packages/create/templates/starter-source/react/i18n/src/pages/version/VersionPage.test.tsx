@@ -6,8 +6,8 @@ import {
 
 import { ANSWERS, STACK } from '@config/linteljs';
 
-import { initI18n } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { initI18n } from '@i18n/i18n';
 
 import { VersionPage } from './VersionPage';
 

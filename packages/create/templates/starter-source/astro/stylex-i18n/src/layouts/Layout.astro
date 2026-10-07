@@ -5,7 +5,7 @@ import {
   bootScript,
   type MessageKey,
   t,
-} from '@i18n';
+} from '@i18n/i18n';
 
 import AppHeader from '@features/app-header/AppHeader.astro';
 
@@ -41,7 +41,7 @@ const title = titleKey === undefined ? NAME : t(titleKey);
     <AppHeader name={NAME} />
     <slot />
     <script>
-      import { startLanguage } from '@i18n';
+      import { startLanguage } from '@i18n/i18n';
 
       startLanguage();
     </script>

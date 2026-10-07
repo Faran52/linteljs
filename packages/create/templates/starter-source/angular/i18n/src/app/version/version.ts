@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 import { ANSWERS, STACK } from '@config/linteljs';
 
-import { t } from '@i18n';
+import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/code-text';
 

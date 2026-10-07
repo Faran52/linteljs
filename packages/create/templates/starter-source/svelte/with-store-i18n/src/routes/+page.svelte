@@ -3,7 +3,7 @@
 
   import { CHECK, NAME } from '@config/linteljs';
 
-  import { m } from '@i18n';
+  import { m } from '@i18n/i18n';
 
   import Button from '@ui/button/Button.svelte';
   import CodeText from '@ui/code-text/CodeText.svelte';

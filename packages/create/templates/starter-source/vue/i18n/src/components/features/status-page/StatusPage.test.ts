@@ -3,8 +3,8 @@ import { mount } from '@vue/test-utils';
 
 import { STATUSES } from '@config/statuses';
 
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import StatusPage from './StatusPage.vue';
 

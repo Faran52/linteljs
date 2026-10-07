@@ -41,7 +41,7 @@ const translatedOf = (files: string[]): string[] => {
 };
 
 const I18N_ONLY = [
-  'src/i18n/index.ts@i18n',
+  'src/i18n/i18n.ts@i18n',
   'src/components/features/language-select/LanguageSelect.tsx@i18n',
 ];
 
@@ -138,7 +138,7 @@ describe('reactNativeI18nTests', () => {
 
     const expected = [
       ...translatedOf(SUITES),
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
     ];
     expect(written).toEqual(expected);
@@ -158,7 +158,7 @@ describe('reactNativeI18nTests', () => {
       `${STATUS_PAGE}.tsx`,
       'src/app/(tabs)/contact.tsx',
       'src/app/(tabs)/contact.tsx',
-      'src/i18n/index.ts',
+      'src/i18n/i18n.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
     ];
     expect(covers).toEqual(coveredFiles);
@@ -186,7 +186,7 @@ describe('reactNativeI18nTests', () => {
     const translatedSuites = [
       ...translatedOf(SUITES),
       'src/app-tabs-contact.test.tsx@i18n',
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
     ];
     expect(translated).toEqual(translatedSuites);

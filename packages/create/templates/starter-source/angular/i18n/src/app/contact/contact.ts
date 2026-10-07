@@ -11,7 +11,7 @@ import {
   validateContact,
 } from '@services/contact-form/contact-form-service';
 import { useSubmitContact } from '@apis/contact/contact-api';
-import { t } from '@i18n';
+import { t } from '@i18n/i18n';
 
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';

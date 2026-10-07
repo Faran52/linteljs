@@ -86,7 +86,7 @@ describe('emitManifest', () => {
       description: 'demo-app, a browser extension.',
       action: { default_popup: 'index.html' },
       background: {
-        service_worker: 'src/background/index.ts',
+        service_worker: 'src/background/background.ts',
         type: 'module',
       },
       permissions: [],
@@ -102,7 +102,7 @@ describe('emitManifest', () => {
     expect(manifest.action).toEqual(popup);
 
     const serviceWorker = {
-      service_worker: 'src/background/index.ts',
+      service_worker: 'src/background/background.ts',
       type: 'module',
     };
     expect(manifest.background).toEqual(serviceWorker);
@@ -112,14 +112,14 @@ describe('emitManifest', () => {
 
   it('spells the background entry the way the browser expects', () => {
     const serviceWorker = {
-      service_worker: 'src/background/index.ts',
+      service_worker: 'src/background/background.ts',
       type: 'module',
     };
 
     expect(manifestFor({ browser: 'chrome' }).background)
       .toEqual(serviceWorker);
 
-    const eventPage = { scripts: ['src/background/index.ts'] };
+    const eventPage = { scripts: ['src/background/background.ts'] };
 
     expect(manifestFor({ browser: 'firefox' }).background)
       .toEqual(eventPage);

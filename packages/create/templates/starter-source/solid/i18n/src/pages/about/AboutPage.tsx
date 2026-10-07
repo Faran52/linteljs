@@ -7,7 +7,7 @@ import {
 } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
-import { t } from '@i18n';
+import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/CodeText';
 

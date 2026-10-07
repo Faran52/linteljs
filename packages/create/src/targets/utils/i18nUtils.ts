@@ -123,7 +123,7 @@ export const localeFiles = (hasContact?: (answers: Answers) => boolean): Starter
 
 export const LOCALES_TEST: StarterTest = {
   target: 'src/i18n/locales.test.ts',
-  covers: 'src/i18n/index.ts',
+  covers: 'src/i18n/i18n.ts',
   when: hasI18n,
   variant: 'i18n',
   shared: true,

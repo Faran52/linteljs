@@ -1,6 +1,6 @@
 import { CHECK } from '@config/linteljs';
 
-import { t } from '@i18n';
+import { t } from '@i18n/i18n';
 
 import { Mark } from '@ui';
 import { CodeText } from '@ui/code-text/CodeText';

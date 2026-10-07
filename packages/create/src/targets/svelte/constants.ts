@@ -29,7 +29,7 @@ export const I18N_ONLY: readonly string[] = [
 
 // The request's language, detected on the server, and the suite of each.
 export const I18N_ONLY_SUITES = [
-  ['src/i18n/index.test.ts', 'src/i18n/index.ts'],
+  ['src/i18n/i18n.test.ts', 'src/i18n/i18n.ts'],
   ['src/hooks.server.test.ts', 'src/hooks.server.ts'],
   ['src/routes/layout.server.test.ts', 'src/routes/+layout.server.ts'],
 ] as const;

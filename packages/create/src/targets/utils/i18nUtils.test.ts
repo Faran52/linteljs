@@ -64,7 +64,7 @@ describe('i18nFiles', () => {
           },
         },
       ],
-      only: ['src/i18n/index.ts'],
+      only: ['src/i18n/i18n.ts'],
     });
   };
 
@@ -91,7 +91,7 @@ describe('i18nFiles', () => {
       'src/config/standard.ts i18n',
       'src/App.tsx i18n',
       'src/Contact.tsx i18n',
-      'src/i18n/index.ts i18n',
+      'src/i18n/i18n.ts i18n',
     ];
     expect(actual).toEqual(expected);
   });
@@ -103,7 +103,7 @@ describe('i18nFiles', () => {
       'src/config/statuses.ts i18n',
       'src/config/standard.ts i18n',
       'src/App.tsx i18n',
-      'src/i18n/index.ts i18n',
+      'src/i18n/i18n.ts i18n',
     ];
     expect(actual).toEqual(expected);
   });

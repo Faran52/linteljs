@@ -1,15 +1,12 @@
+import { languages, languageStorageKey } from './config';
 import {
-  languages,
-  languageStorageKey,
-  resources,
-} from './config';
-import {
+  applyDocumentDirection,
   chooseLanguage,
   detectLanguage,
   directionOf,
-  partsOf,
-  t,
-} from './index';
+  subscribeLanguage,
+} from './i18n';
+import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
 // A region on a regional tag such as zh-TW makes no tag, so the regional case takes a base one.
@@ -24,7 +21,7 @@ const browserSpeaks = (tags: string[]): void => {
 
 describe('i18n', () => {
   afterEach(() => {
-    localStorage.clear();
+    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
     vi.restoreAllMocks();
   });
 
@@ -40,8 +37,8 @@ describe('i18n', () => {
 
     const language = detectLanguage();
     expect(language).toBe(last);
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('reads a regional browser language as its own language', () => {
@@ -60,27 +57,49 @@ describe('i18n', () => {
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
-    localStorage.setItem(languageStorageKey, last);
+    document.cookie = languageCookie(last);
 
     const language = detectLanguage();
     expect(language).toBe(last);
 
-    localStorage.setItem(languageStorageKey, 'xx');
+    document.cookie = languageCookie('xx');
 
     const language2 = detectLanguage();
     expect(language2).toBe('en');
   });
 
-  it('stores a choice it offers, and ignores one it does not', () => {
-    chooseLanguage('xx');
+  it('reads a request cookie and languages in place of the browser', () => {
+    browserSpeaks(['fr-FR']);
+    const cookies = languageCookie(base);
 
-    const item = localStorage.getItem(languageStorageKey);
-    expect(item).toBeNull();
+    const language = detectLanguage(cookies, []);
+    expect(language).toBe(base);
+
+    const language2 = detectLanguage('', [last]);
+    expect(language2).toBe(last);
+  });
+
+  it('stores a choice and tells each listener, until it unsubscribes', () => {
+    const heard: string[] = [];
+    const unsubscribe = subscribeLanguage(() => {
+      heard.push(detectLanguage());
+    });
 
     chooseLanguage(last);
+    unsubscribe();
+    chooseLanguage('en');
 
-    const languageStorageKeyItem = localStorage.getItem(languageStorageKey);
-    expect(languageStorageKeyItem).toBe(last);
+    const expected = [last];
+    expect(heard).toEqual(expected);
+    const item = storedLanguage(document.cookie);
+    expect(item).toBe('en');
+  });
+
+  it('sets the document language and direction', () => {
+    applyDocumentDirection(last);
+
+    expect(document.documentElement.lang).toBe(last);
+    expect(document.documentElement.dir).toBe(directionOf(last));
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {
@@ -91,30 +110,5 @@ describe('i18n', () => {
 
     const direction = directionOf('xx');
     expect(direction).toBe('ltr');
-  });
-
-  it('renders a message in the language asked for', () => {
-    const text = t('language', last);
-
-    expect(text).toBe(resources[last].common.language);
-  });
-
-  it('fills a single-brace value, and leaves one it was not given in place', () => {
-    const filled = t('gateHint', 'en', { command: 'pnpm check' });
-    const unfilled = t('gateHint', 'en');
-
-    expect(filled).toBe('Run <code>pnpm check</code> for the full gate.');
-    expect(unfilled).toContain('{command}');
-  });
-
-  it('splits a message so the marked parts sit at the odd places', () => {
-    const parts = partsOf('Run <code>pnpm check</code> now.');
-
-    const expected = [
-      'Run ',
-      'pnpm check',
-      ' now.',
-    ];
-    expect(parts).toEqual(expected);
   });
 });

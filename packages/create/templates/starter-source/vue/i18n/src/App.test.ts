@@ -3,12 +3,12 @@ import { mount } from '@vue/test-utils';
 
 import { dataProvider } from '@lib/providers/data/dataProvider';
 import { storeProvider } from '@lib/providers/store/storeProvider';
-import { applyLanguage, directionOf } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { applyLanguage, directionOf } from '@i18n/i18n';
 import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { ROUTES } from '@router/constants';

@@ -51,7 +51,7 @@ describe('svelteI18nFiles', () => {
         }),
       'src/components/features/language-select/LanguageSelect.svelte@i18n',
       'src/components/ui/code-text/CodeText.svelte@i18n',
-      'src/i18n/index.ts@i18n',
+      'src/i18n/i18n.ts@i18n',
       'src/hooks.server.ts@i18n',
       'src/routes/+layout.server.ts@i18n',
     ];
@@ -116,7 +116,7 @@ describe('svelteI18nTests', () => {
         }),
       'src/components/features/language-select/LanguageSelect.test.ts@i18n',
       'src/components/ui/code-text/CodeText.test.ts@i18n',
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
       'src/hooks.server.test.ts@i18n',
       'src/routes/layout.server.test.ts@i18n',
     ];
@@ -124,7 +124,7 @@ describe('svelteI18nTests', () => {
 
     expect(covers).toContain('src/routes/+layout.svelte');
     expect(covers).toContain('src/components/ui/code-text/CodeText.svelte');
-    expect(covers).toContain('src/i18n/index.ts');
+    expect(covers).toContain('src/i18n/i18n.ts');
     expect(covers).toContain('src/hooks.server.ts');
     expect(covers).toContain('src/routes/+layout.server.ts');
   });

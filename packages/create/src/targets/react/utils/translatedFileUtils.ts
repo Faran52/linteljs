@@ -63,7 +63,7 @@ export const reactI18nFiles = (): StarterFile[] => {
       variant: 'i18n',
     },
     {
-      target: 'src/i18n/index.ts',
+      target: 'src/i18n/i18n.ts',
       when: hasI18n,
       variant: 'i18n',
     },
@@ -105,8 +105,8 @@ export const reactI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
     {
-      target: 'src/i18n/index.test.ts',
-      covers: 'src/i18n/index.ts',
+      target: 'src/i18n/i18n.test.ts',
+      covers: 'src/i18n/i18n.ts',
       when: hasI18n,
       variant: 'i18n',
     },

@@ -10,7 +10,7 @@ import {
 import type { StarterFile, StarterTest } from '../../types';
 
 const POPUP = 'src/popup/renderPopup';
-const INDEX = 'src/i18n/index';
+const INDEX = 'src/i18n/i18n';
 
 // The popup is plain DOM under every host, so it reads the shared locales through a resolver of its own.
 export const popupI18nFiles = (): StarterFile[] => {

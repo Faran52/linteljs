@@ -1,12 +1,15 @@
-import { languages, languageStorageKey } from './config';
 import {
-  applyLanguage,
+  languages,
+  languageStorageKey,
+  resources,
+} from './config';
+import {
   chooseLanguage,
   detectLanguage,
   directionOf,
-  i18n,
-} from './index';
-import { languageCookie, storedLanguage } from './utils/cookieUtils';
+  partsOf,
+  t,
+} from './i18n';
 
 const last = languages.at(-1)?.id ?? 'en';
 // A region on a regional tag such as zh-TW makes no tag, so the regional case takes a base one.
@@ -21,8 +24,7 @@ const browserSpeaks = (tags: string[]): void => {
 
 describe('i18n', () => {
   afterEach(() => {
-    document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
-    applyLanguage('en');
+    localStorage.clear();
     vi.restoreAllMocks();
   });
 
@@ -38,8 +40,8 @@ describe('i18n', () => {
 
     const language = detectLanguage();
     expect(language).toBe(last);
-    const item = storedLanguage(document.cookie);
-    expect(item).toBeUndefined();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('reads a regional browser language as its own language', () => {
@@ -58,48 +60,27 @@ describe('i18n', () => {
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
-    document.cookie = languageCookie(last);
+    localStorage.setItem(languageStorageKey, last);
 
     const language = detectLanguage();
     expect(language).toBe(last);
 
-    document.cookie = languageCookie('xx');
+    localStorage.setItem(languageStorageKey, 'xx');
 
     const language2 = detectLanguage();
     expect(language2).toBe('en');
   });
 
-  it('reads a request cookie and languages in place of the browser', () => {
-    browserSpeaks(['fr-FR']);
-    const cookies = languageCookie(base);
+  it('stores a choice it offers, and ignores one it does not', () => {
+    chooseLanguage('xx');
 
-    const language = detectLanguage(cookies, []);
-    expect(language).toBe(base);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
 
-    const language2 = detectLanguage('', [last]);
-    expect(language2).toBe(last);
-  });
-
-  it('stores a choice, and switches the text, language and direction', () => {
     chooseLanguage(last);
 
-    const language = i18n.global.locale.value;
-
-    const item = storedLanguage(document.cookie);
-    expect(item).toBe(last);
-    expect(language).toBe(last);
-    expect(document.documentElement.lang).toBe(last);
-    expect(document.documentElement.dir).toBe(directionOf(last));
-  });
-
-  it('applies a language without storing it', () => {
-    applyLanguage(last);
-
-    const language = i18n.global.locale.value;
-
-    expect(language).toBe(last);
-    const item = storedLanguage(document.cookie);
-    expect(item).toBeUndefined();
+    const languageStorageKeyItem = localStorage.getItem(languageStorageKey);
+    expect(languageStorageKeyItem).toBe(last);
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {
@@ -112,9 +93,28 @@ describe('i18n', () => {
     expect(direction).toBe('ltr');
   });
 
-  it('keeps an at sign as text', () => {
-    const text = i18n.global.t('standardEslint');
+  it('renders a message in the language asked for', () => {
+    const text = t('language', last);
 
-    expect(text).toContain('@linteljs/eslint-config');
+    expect(text).toBe(resources[last].common.language);
+  });
+
+  it('fills a single-brace value, and leaves one it was not given in place', () => {
+    const filled = t('gateHint', 'en', { command: 'pnpm check' });
+    const unfilled = t('gateHint', 'en');
+
+    expect(filled).toBe('Run <code>pnpm check</code> for the full gate.');
+    expect(unfilled).toContain('{command}');
+  });
+
+  it('splits a message so the marked parts sit at the odd places', () => {
+    const parts = partsOf('Run <code>pnpm check</code> now.');
+
+    const expected = [
+      'Run ',
+      'pnpm check',
+      ' now.',
+    ];
+    expect(parts).toEqual(expected);
   });
 });

@@ -8,12 +8,12 @@ import {
 import { STATUSES } from '@config/statuses';
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
-import { chooseLanguage } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { chooseLanguage } from '@i18n/i18n';
 
 import { StatusPage } from './StatusPage';
 

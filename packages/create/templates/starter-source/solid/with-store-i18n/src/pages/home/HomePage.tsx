@@ -1,7 +1,7 @@
 import { CHECK } from '@config/linteljs';
 
 import { createCounter } from '@store/counter/counterStore';
-import { t } from '@i18n';
+import { t } from '@i18n/i18n';
 
 import { Button, Mark } from '@ui';
 import { CodeText } from '@ui/code-text/CodeText';

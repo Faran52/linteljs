@@ -4,12 +4,12 @@ import { provideRouter } from '@angular/router';
 
 import { PAGES } from '@config/routes';
 
-import { applyLanguage, language } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { applyLanguage, language } from '@i18n/i18n';
 
 import { AppHeader } from './app-header';
 

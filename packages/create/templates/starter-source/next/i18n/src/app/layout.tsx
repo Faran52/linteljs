@@ -5,7 +5,7 @@ import { NAME } from '@config/linteljs';
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
-import { detectLanguage, directionOf } from '@i18n';
+import { detectLanguage, directionOf } from '@i18n/i18n';
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 import { AppHeader } from '@features/app-header/AppHeader';

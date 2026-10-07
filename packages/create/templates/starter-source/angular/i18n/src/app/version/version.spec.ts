@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import { Version } from './version';
 

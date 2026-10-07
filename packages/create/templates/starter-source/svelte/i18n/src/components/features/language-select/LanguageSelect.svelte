@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { languages } from '@i18n/config';
   import {
     chooseLanguage,
     locale,
     m,
-  } from '@i18n';
-  import { languages } from '@i18n/config';
+  } from '@i18n/i18n';
 
   import type { HTMLSelectAttributes } from 'svelte/elements';
 

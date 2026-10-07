@@ -2,8 +2,8 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { chooseLanguage } from '@i18n';
 import { languages } from '@i18n/config';
+import { chooseLanguage } from '@i18n/i18n';
 
 import type { ComponentProps, ReactNode } from 'react';
 

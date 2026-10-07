@@ -6,8 +6,8 @@ import {
   screen,
 } from '@testing-library/svelte';
 
-import { applyLanguage, directionOf } from '@i18n';
 import { languages, languageStorageKey } from '@i18n/config';
+import { applyLanguage, directionOf } from '@i18n/i18n';
 import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import LanguageSelect from './LanguageSelect.svelte';

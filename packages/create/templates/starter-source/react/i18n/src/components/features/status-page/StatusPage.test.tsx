@@ -7,8 +7,8 @@ import {
 
 import { STATUSES } from '@config/statuses';
 
-import { initI18n } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { initI18n } from '@i18n/i18n';
 
 import { StatusPage } from './StatusPage';
 

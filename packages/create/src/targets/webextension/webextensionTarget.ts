@@ -49,7 +49,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
     // `manifest.json` names the entry, so it must exist before the first `vite build`.
     files.push(
       {
-        target: 'src/background/index.ts',
+        target: 'src/background/background.ts',
         variant,
       },
       {
@@ -66,14 +66,14 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
         target: 'devtools.html',
       },
       {
-        target: 'src/devtools/index.ts',
+        target: 'src/devtools/devtools.ts',
         variant,
       },
       {
         target: 'panel.html',
       },
       {
-        target: 'src/panel/index.ts',
+        target: 'src/panel/panel.ts',
       },
       {
         target: 'src/panel/renderPanel.ts',
@@ -88,9 +88,9 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
   const coverageExclude: string[] = [
     // Only the popup reads the record, so without it nothing a suite runs imports the module.
     ...hasSurface(answers, 'popup') ? [] : ['src/config/linteljs.ts'],
-    ...hasSurface(answers, 'background') ? ['src/background/index.ts'] : [],
+    ...hasSurface(answers, 'background') ? ['src/background/background.ts'] : [],
     ...hasSurface(answers, 'devtools-panel')
-      ? ['src/devtools/index.ts', 'src/panel/index.ts']
+      ? ['src/devtools/devtools.ts', 'src/panel/panel.ts']
       : [],
   ];
 

@@ -1,11 +1,11 @@
 import { For, type JSX } from 'solid-js';
 
+import { languages } from '@i18n/config';
 import {
   chooseLanguage,
   language,
   t,
-} from '@i18n';
-import { languages } from '@i18n/config';
+} from '@i18n/i18n';
 
 export type LanguageSelectProps = Pick<JSX.SelectHTMLAttributes<HTMLSelectElement>, 'class' | 'style'>;
 

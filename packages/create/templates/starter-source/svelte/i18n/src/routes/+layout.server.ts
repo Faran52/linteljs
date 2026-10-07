@@ -1,4 +1,4 @@
-import type { Language } from '@i18n';
+import type { Language } from '@i18n/i18n';
 import type { ServerLoad } from '@sveltejs/kit';
 
 interface LayoutData {

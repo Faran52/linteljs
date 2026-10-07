@@ -55,7 +55,7 @@ import type {
 export const solidTarget: TargetBuilder = () => {
   const record: TargetRecord = {
     id: 'solid',
-    htmlEntry: 'src/index.tsx',
+    htmlEntry: 'src/main.tsx',
     framework: 'solid',
     html: true,
     stores: ['tanstack-store'],

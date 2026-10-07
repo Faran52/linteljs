@@ -52,9 +52,9 @@ export interface Manifest {
 
 const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
   const background: ServiceWorker | EventPage = browser === 'firefox'
-    ? { scripts: ['src/background/index.ts'] }
+    ? { scripts: ['src/background/background.ts'] }
     : {
-        service_worker: 'src/background/index.ts',
+        service_worker: 'src/background/background.ts',
         type: 'module',
       };
 

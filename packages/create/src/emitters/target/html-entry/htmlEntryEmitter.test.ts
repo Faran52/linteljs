@@ -89,7 +89,7 @@ describe('htmlEntryEmitter', () => {
     [
       'solid',
       { target: 'solid' },
-      'src/index.tsx',
+      'src/main.tsx',
       true,
     ],
     [

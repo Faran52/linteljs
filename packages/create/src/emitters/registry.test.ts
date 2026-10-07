@@ -559,15 +559,15 @@ describe('the files a webextension surface owns', () => {
       'src/popup/renderPopup.ts',
     ],
     'background': [
-      'src/background/index.ts',
+      'src/background/background.ts',
       'src/background/onInstalled.test.ts',
       'src/background/onInstalled.ts',
     ],
     'devtools-panel': [
       'devtools.html',
       'panel.html',
-      'src/devtools/index.ts',
-      'src/panel/index.ts',
+      'src/devtools/devtools.ts',
+      'src/panel/panel.ts',
       'src/panel/renderPanel.test.ts',
       'src/panel/renderPanel.ts',
     ],

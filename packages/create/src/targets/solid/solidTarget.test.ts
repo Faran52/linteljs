@@ -77,7 +77,7 @@ const FORM_I18N: readonly Condition[] = [{
 }];
 
 const BILINGUAL_PATHS = [
-  'src/index.tsx',
+  'src/main.tsx',
   'src/config/statuses.ts',
   'src/config/standard.ts',
   'src/pages/about/AboutPage.tsx',
@@ -92,8 +92,8 @@ const I18N_ONLY_PATHS = [
   'src/components/features/language-select/LanguageSelect.test.tsx',
   'src/components/ui/code-text/CodeText.tsx',
   'src/components/ui/code-text/CodeText.test.tsx',
-  'src/i18n/index.ts',
-  'src/i18n/index.test.ts',
+  'src/i18n/i18n.ts',
+  'src/i18n/i18n.test.ts',
   'src/i18n/locales.test.ts',
   'src/i18n/utils/languageUtils.ts',
   'src/i18n/utils/languageUtils.test.ts',

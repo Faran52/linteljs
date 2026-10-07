@@ -5,12 +5,12 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { initI18n } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { initI18n } from '@i18n/i18n';
 import { storedLanguage } from '@i18n/utils/cookieUtils';
 
 import { AppHeader } from './AppHeader';

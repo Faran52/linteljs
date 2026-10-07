@@ -1,11 +1,11 @@
 import { languages, languageStorageKey } from './config';
 import {
-  applyDocumentDirection,
+  applyLanguage,
   chooseLanguage,
   detectLanguage,
   directionOf,
-  subscribeLanguage,
-} from './index';
+  i18n,
+} from './i18n';
 import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';
@@ -22,6 +22,7 @@ const browserSpeaks = (tags: string[]): void => {
 describe('i18n', () => {
   afterEach(() => {
     document.cookie = `${languageStorageKey}=; max-age=-1; path=/`;
+    applyLanguage('en');
     vi.restoreAllMocks();
   });
 
@@ -79,27 +80,26 @@ describe('i18n', () => {
     expect(language2).toBe(last);
   });
 
-  it('stores a choice and tells each listener, until it unsubscribes', () => {
-    const heard: string[] = [];
-    const unsubscribe = subscribeLanguage(() => {
-      heard.push(detectLanguage());
-    });
-
+  it('stores a choice, and switches the text, language and direction', () => {
     chooseLanguage(last);
-    unsubscribe();
-    chooseLanguage('en');
 
-    const expected = [last];
-    expect(heard).toEqual(expected);
+    const language = i18n.global.locale.value;
+
     const item = storedLanguage(document.cookie);
-    expect(item).toBe('en');
-  });
-
-  it('sets the document language and direction', () => {
-    applyDocumentDirection(last);
-
+    expect(item).toBe(last);
+    expect(language).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
+  });
+
+  it('applies a language without storing it', () => {
+    applyLanguage(last);
+
+    const language = i18n.global.locale.value;
+
+    expect(language).toBe(last);
+    const item = storedLanguage(document.cookie);
+    expect(item).toBeUndefined();
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {
@@ -110,5 +110,11 @@ describe('i18n', () => {
 
     const direction = directionOf('xx');
     expect(direction).toBe('ltr');
+  });
+
+  it('keeps an at sign as text', () => {
+    const text = i18n.global.t('standardEslint');
+
+    expect(text).toContain('@linteljs/eslint-config');
   });
 });

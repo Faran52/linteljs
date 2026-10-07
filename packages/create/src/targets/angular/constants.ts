@@ -64,13 +64,13 @@ export const ANGULAR_I18N: I18nParts = { dependencies: [] };
 const CODE_TEXT = 'src/components/ui/code-text/code-text';
 
 export const I18N_ONLY_FILES = [
-  'src/i18n/index.ts',
+  'src/i18n/i18n.ts',
   `${CODE_TEXT}.ts`,
   `${CODE_TEXT}.html`,
 ];
 
 export const I18N_ONLY_SUITES = [
-  'src/i18n/index',
+  'src/i18n/i18n',
   CODE_TEXT,
   'src/components/features/app-header/app-header',
   'src/app/home/home',

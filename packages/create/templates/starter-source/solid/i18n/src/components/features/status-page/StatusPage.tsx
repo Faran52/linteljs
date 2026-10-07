@@ -4,7 +4,7 @@ import {
   Show,
 } from 'solid-js';
 
-import { type MessageKey, t } from '@i18n';
+import { type MessageKey, t } from '@i18n/i18n';
 
 import { Button } from '@ui';
 

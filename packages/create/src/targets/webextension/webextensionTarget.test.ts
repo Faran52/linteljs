@@ -93,7 +93,7 @@ describe('the browser axis', () => {
     const record = recordFor({ browser });
 
     const expected = {
-      target: 'src/background/index.ts',
+      target: 'src/background/background.ts',
       variant: browser,
     };
     expect(record.starterFiles).toContainEqual(expected);
@@ -123,7 +123,7 @@ describe('the surfaces axis', () => {
 
     expect(targets).toContain('src/popup/renderPopup.ts');
     expect(targets).toContain('src/background/onInstalled.ts');
-    const expected = ['src/background/index.ts'];
+    const expected = ['src/background/background.ts'];
     expect(record.coverageExclude).toEqual(expected);
     expect(record.viteInputs).toBeUndefined();
   });
@@ -137,9 +137,9 @@ describe('the surfaces axis', () => {
 
     const devtoolsPages = [
       'devtools.html',
-      'src/devtools/index.ts',
+      'src/devtools/devtools.ts',
       'panel.html',
-      'src/panel/index.ts',
+      'src/panel/panel.ts',
       'src/panel/renderPanel.ts',
     ];
 
@@ -156,8 +156,8 @@ describe('the surfaces axis', () => {
 
     const expected = [
       'src/config/linteljs.ts',
-      'src/devtools/index.ts',
-      'src/panel/index.ts',
+      'src/devtools/devtools.ts',
+      'src/panel/panel.ts',
     ];
     expect(record.coverageExclude).toEqual(expected);
 
@@ -178,7 +178,7 @@ describe('the surfaces axis', () => {
     });
 
     const expected = {
-      target: 'src/devtools/index.ts',
+      target: 'src/devtools/devtools.ts',
       variant: browser,
     };
     expect(starterFiles).toContainEqual(expected);
@@ -308,8 +308,8 @@ const TRANSLATED_POPUP: readonly Condition[] = [{
 }];
 
 const I18N_ONLY_PATHS = [
-  'src/i18n/index.ts',
-  'src/i18n/index.test.ts',
+  'src/i18n/i18n.ts',
+  'src/i18n/i18n.test.ts',
   'src/i18n/locales.test.ts',
   'src/i18n/utils/languageUtils.ts',
   'src/i18n/utils/languageUtils.test.ts',

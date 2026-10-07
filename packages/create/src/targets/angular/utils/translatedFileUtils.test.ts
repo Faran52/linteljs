@@ -49,7 +49,7 @@ describe('angularI18nFiles', () => {
         .map((file) => {
           return `${file}@i18n`;
         }),
-      'src/i18n/index.ts@i18n',
+      'src/i18n/i18n.ts@i18n',
       'src/components/ui/code-text/code-text.ts@i18n',
       'src/components/ui/code-text/code-text.html@i18n',
     ];
@@ -76,7 +76,7 @@ describe('angularI18nTests', () => {
       });
 
     const expected = [
-      'src/i18n/index.spec.ts@i18n',
+      'src/i18n/i18n.spec.ts@i18n',
       'src/components/ui/code-text/code-text.spec.ts@i18n',
       'src/components/features/app-header/app-header.spec.ts@i18n',
       'src/app/home/home.spec.ts@i18n',
@@ -88,7 +88,7 @@ describe('angularI18nTests', () => {
     expect(written).toEqual(expected);
 
     const coveredFiles = [
-      'src/i18n/index.ts',
+      'src/i18n/i18n.ts',
       'src/components/ui/code-text/code-text.ts',
       'src/components/features/app-header/app-header.ts',
       'src/app/home/home.ts',

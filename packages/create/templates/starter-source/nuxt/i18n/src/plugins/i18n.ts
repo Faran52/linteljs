@@ -11,7 +11,7 @@ import {
   detectLanguage,
   directionOf,
   i18n,
-} from '@i18n';
+} from '@i18n/i18n';
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 // Detected once from the request on the server, then carried to the client in the payload, so hydration matches.

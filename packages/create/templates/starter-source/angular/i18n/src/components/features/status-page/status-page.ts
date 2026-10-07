@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import { t, translateId } from '@i18n';
+import { t, translateId } from '@i18n/i18n';
 
 import { Button } from '@ui/button/button';
 

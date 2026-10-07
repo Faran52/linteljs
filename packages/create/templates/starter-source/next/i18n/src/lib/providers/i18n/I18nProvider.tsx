@@ -8,13 +8,13 @@ import {
 
 import { NextIntlClientProvider } from 'next-intl';
 
+import { fallbackLanguage, resources } from '@i18n/config';
 import {
   applyDocumentDirection,
   detectLanguage,
   type Language,
   subscribeLanguage,
-} from '@i18n';
-import { fallbackLanguage, resources } from '@i18n/config';
+} from '@i18n/i18n';
 
 export interface I18nProviderProps {
   readonly children: ReactNode;

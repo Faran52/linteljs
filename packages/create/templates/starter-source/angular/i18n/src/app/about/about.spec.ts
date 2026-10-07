@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { CHECK, SYNC } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import { About } from './about';
 

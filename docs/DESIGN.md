@@ -1004,7 +1004,7 @@ webextension popup.
   translated pages are client components, and each suite wraps its render in the provider, so Next's `i18n`
   parts carry no test setup.
 - **vue-i18n reads the shared locales as they are, once quoted.** Its message compiler reads `@` as the start of a
-  linked message, so `src/i18n/index.ts` quotes each as the literal `{'@'}` at load, and the shared files stay
+  linked message, so `src/i18n/i18n.ts` quotes each as the literal `{'@'}` at load, and the shared files stay
   plain. A translation that carries `<code>` is never rendered as HTML: `CodeText` splits the message on its
   marks and renders each command as text inside its own `<code>`, so `warnHtmlMessage` is off rather than met
   with `v-html`. The test setup installs the one `i18n` on every mount, in English until a suite switches.
@@ -1026,7 +1026,7 @@ webextension popup.
   language select, and the strategy is `baseLocale` so Paraglide neither reads nor writes storage itself.
 - **Solid takes @solid-primitives/i18n.** Version 2.2.1 has no dependencies and no install scripts, so
   `allowBuilds` is unchanged, and a Solid project with it audits at no known vulnerabilities under
-  `pnpm audit --prod`. Its own resolver reads `{{name}}`, so `src/i18n/index.ts` hands `translator` a
+  `pnpm audit --prod`. Its own resolver reads `{{name}}`, so `src/i18n/i18n.ts` hands `translator` a
   single-brace one, which leaves a value it was not given in place, as the other libraries do.
 - **`translator` is imported as `createTranslator`.** `solid/reactivity` reads a `create*` call as a reactive
   primitive, so the dictionary accessor passed to it counts as tracked, which it is: every `t()` reads the
@@ -1034,7 +1034,7 @@ webextension popup.
 - **Angular takes no library, not `@angular/localize`.** Angular's own i18n extracts messages at build time and
   emits one build per locale, so a language is a URL and a deploy, and switching it is a page load into another
   bundle; the shared `common.json` would also have to become XLIFF. The language select needs a runtime switch
-  over the shared files, so `src/i18n/index.ts` holds a module-level `signal` and `t` reads the locales through
+  over the shared files, so `src/i18n/i18n.ts` holds a module-level `signal` and `t` reads the locales through
   it with the single-brace resolver. A template that calls `t` re-renders on a switch, so each component exposes
   `t` and nothing subscribes. `main.ts` applies the detected language before bootstrap, and with no SSR there is
   no hydration step. Nothing is installed, so `allowBuilds` is unchanged and an Angular project with languages

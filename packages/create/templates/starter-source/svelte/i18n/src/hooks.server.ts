@@ -1,4 +1,4 @@
-import { detectLanguage, directionOf } from '@i18n';
+import { detectLanguage, directionOf } from '@i18n/i18n';
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 import type { Handle, ResolveOptions } from '@sveltejs/kit/hooks';

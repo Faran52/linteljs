@@ -1,4 +1,4 @@
-import type { Language } from '@i18n';
+import type { Language } from '@i18n/i18n';
 
 // SvelteKit's own ambient interfaces. See https://svelte.dev/docs/kit/types#app.d.ts
 declare global {

@@ -49,7 +49,7 @@ export const TRANSLATED = [
   `${STATUS_PAGE}.tsx`,
 ];
 
-export const I18N_ONLY_FILES = ['src/i18n/index.ts', `${LANGUAGE_SELECT}.tsx`];
+export const I18N_ONLY_FILES = ['src/i18n/i18n.ts', `${LANGUAGE_SELECT}.tsx`];
 
 // Each suite, and the file it covers.
 export const TRANSLATED_SUITES = [
@@ -62,6 +62,6 @@ export const TRANSLATED_SUITES = [
 ] as const;
 
 export const I18N_ONLY_SUITES = [
-  ['src/i18n/index.test.ts', 'src/i18n/index.ts'],
+  ['src/i18n/i18n.test.ts', 'src/i18n/i18n.ts'],
   [`${LANGUAGE_SELECT}.test.tsx`, `${LANGUAGE_SELECT}.tsx`],
 ] as const;

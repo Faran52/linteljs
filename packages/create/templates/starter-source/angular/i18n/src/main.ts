@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 
-import { applyLanguage, detectLanguage } from '@i18n';
+import { applyLanguage, detectLanguage } from '@i18n/i18n';
 
 import { App } from './app/app';
 import { appConfig } from './app/app.config';

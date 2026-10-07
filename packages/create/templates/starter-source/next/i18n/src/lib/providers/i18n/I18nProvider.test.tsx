@@ -7,12 +7,12 @@ import {
 } from '@testing-library/react';
 import { useTranslations } from 'next-intl';
 
-import { chooseLanguage } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
+import { chooseLanguage } from '@i18n/i18n';
 import { languageCookie } from '@i18n/utils/cookieUtils';
 
 import { I18nProvider } from './I18nProvider';

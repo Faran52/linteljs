@@ -25,7 +25,7 @@ export const ACCESSORS: AccessorNames = {
 
 // Each ships a translated twin under `i18n`.
 export const TRANSLATED: readonly string[] = [
-  'src/index.tsx',
+  'src/main.tsx',
   'src/pages/about/AboutPage.tsx',
   'src/pages/version/VersionPage.tsx',
   'src/components/features/app-header/AppHeader.tsx',

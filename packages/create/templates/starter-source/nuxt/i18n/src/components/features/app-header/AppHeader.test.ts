@@ -4,8 +4,8 @@ import { mount } from '@vue/test-utils';
 
 import { PAGES } from '@config/routes';
 
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import AppHeader from './AppHeader.vue';
 import { styles } from './appHeaderStyles';

@@ -16,7 +16,7 @@ export const nextI18nFiles = (): StarterFile[] => {
       .map((component) => {
         return `${component}.tsx`;
       }),
-    'src/i18n/index.ts',
+    'src/i18n/i18n.ts',
   ];
   return i18nFiles({
     translated: TRANSLATED,
@@ -61,8 +61,8 @@ export const nextI18nTests = (): StarterTest[] => {
         return test;
       }),
     {
-      target: 'src/i18n/index.test.ts',
-      covers: 'src/i18n/index.ts',
+      target: 'src/i18n/i18n.test.ts',
+      covers: 'src/i18n/i18n.ts',
       when: hasI18n,
       variant: 'i18n',
     },

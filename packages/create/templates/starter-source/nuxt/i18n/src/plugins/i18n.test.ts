@@ -5,11 +5,11 @@ import {
   ref,
 } from 'vue';
 
+import { languages, languageStorageKey } from '@i18n/config';
 import {
   applyLanguage,
   i18n,
-} from '@i18n';
-import { languages, languageStorageKey } from '@i18n/config';
+} from '@i18n/i18n';
 import { languageCookie } from '@i18n/utils/cookieUtils';
 
 import './i18n';

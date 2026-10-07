@@ -9,7 +9,7 @@ const I18N_ONLY_FILES = [
     .map((component) => {
       return `${component}.vue`;
     }),
-  'src/i18n/index.ts',
+  'src/i18n/i18n.ts',
 ];
 
 const TRANSLATED_SUITES = ['src/App', 'src/components/features/status-page/StatusPage'];
@@ -50,8 +50,8 @@ export const vueI18nTests = (): StarterTest[] => {
         return test;
       }),
     {
-      target: 'src/i18n/index.test.ts',
-      covers: 'src/i18n/index.ts',
+      target: 'src/i18n/i18n.test.ts',
+      covers: 'src/i18n/i18n.ts',
       when: hasI18n,
       variant: 'i18n',
     },

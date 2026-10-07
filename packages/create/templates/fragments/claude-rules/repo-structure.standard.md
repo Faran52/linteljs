@@ -32,6 +32,9 @@ Create it then, not before.
   reads sits in that subject's `constants.ts`; `config/` holds what the whole app reads. The types only a
   subject reads sit beside it the same way, in `types.ts` (`text-input/types.ts`).
 - **A file is named for what it holds**, never for a mechanism: no `helpers.ts`, `utils.ts` or `common.ts`.
+- **`index.ts` is a re-export barrel only**, nothing but `export ... from` lines. Code that runs or defines
+  anything is an entry named for its subject (`i18n/i18n.ts`, `background/background.ts`, `main.tsx`). A route
+  file the router names `index` is the router's.
 
 ## The folders a new file most often lands in
 

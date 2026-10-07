@@ -73,7 +73,7 @@ describe('coverageExclude', () => {
     [
       'webextension',
       { target: 'webextension' },
-      ['src/background/index.ts'],
+      ['src/background/background.ts'],
     ],
     [
       'a webextension with a popup alone',
@@ -91,8 +91,8 @@ describe('coverageExclude', () => {
       },
       [
         'src/config/linteljs.ts',
-        'src/devtools/index.ts',
-        'src/panel/index.ts',
+        'src/devtools/devtools.ts',
+        'src/panel/panel.ts',
       ],
     ],
     [

@@ -12,7 +12,7 @@ import {
   directionOf,
   locale,
   m,
-} from './index';
+} from './i18n';
 import { languageCookie, storedLanguage } from './utils/cookieUtils';
 
 const last = languages.at(-1)?.id ?? 'en';

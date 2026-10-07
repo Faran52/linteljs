@@ -1,6 +1,6 @@
 import { For, type JSX } from 'solid-js';
 
-import { t, translateId } from '@i18n';
+import { t, translateId } from '@i18n/i18n';
 
 import { ROUTES } from '@router/router';
 

@@ -4,8 +4,8 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
-import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import { ROUTES } from '@router/router';
 

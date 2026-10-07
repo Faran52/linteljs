@@ -5,7 +5,7 @@ import { TRANSLATED } from '../constants';
 
 import type { StarterFile, StarterTest } from '../../types';
 
-const INDEX = 'src/i18n/index';
+const INDEX = 'src/i18n/i18n';
 
 const I18N_ONLY_FILES = [`${INDEX}.ts`, 'src/components/ui/code-text/CodeText.astro'];
 

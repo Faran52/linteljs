@@ -14,12 +14,12 @@ import { NAME } from '@config/linteljs';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { fallbackLanguage } from '@i18n/config';
 import {
   detectLanguage,
   directionOf,
   initI18n,
-} from '@i18n';
-import { fallbackLanguage } from '@i18n/config';
+} from '@i18n/i18n';
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 import { AppHeader } from '@features/app-header/AppHeader';

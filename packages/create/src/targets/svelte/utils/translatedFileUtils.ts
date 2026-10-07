@@ -13,7 +13,7 @@ const I18N_ONLY_FILES = [
     .map((component) => {
       return `${component}.svelte`;
     }),
-  'src/i18n/index.ts',
+  'src/i18n/i18n.ts',
   'src/hooks.server.ts',
   'src/routes/+layout.server.ts',
 ];

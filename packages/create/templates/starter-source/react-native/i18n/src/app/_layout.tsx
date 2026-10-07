@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
-import { initI18n, restoreLanguage } from '@i18n';
+import { initI18n, restoreLanguage } from '@i18n/i18n';
 
 import { DocumentHead } from '@features/document-head/DocumentHead';
 

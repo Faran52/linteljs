@@ -6,7 +6,7 @@ import {
   applyLanguage,
   detectLanguage,
   i18n,
-} from '@i18n';
+} from '@i18n/i18n';
 
 import { router } from '@router/router';
 

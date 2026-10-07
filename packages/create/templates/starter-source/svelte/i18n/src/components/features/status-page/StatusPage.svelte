@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
 
-  import { m } from '@i18n';
+  import { m } from '@i18n/i18n';
 
   import Button from '@ui/button/Button.svelte';
 

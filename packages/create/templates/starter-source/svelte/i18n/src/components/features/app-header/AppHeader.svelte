@@ -3,8 +3,8 @@
 
   import { PAGES } from '@config/routes';
 
-  import { locale, m } from '@i18n';
   import { fallbackLanguage } from '@i18n/config';
+  import { locale, m } from '@i18n/i18n';
 
   import LanguageSelect from '../language-select/LanguageSelect.svelte';
 

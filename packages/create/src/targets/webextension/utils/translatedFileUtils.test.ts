@@ -33,7 +33,7 @@ describe('popupI18nFiles', () => {
 
     const expected = [
       'src/popup/renderPopup.ts@i18n',
-      'src/i18n/index.ts@i18n',
+      'src/i18n/i18n.ts@i18n',
       'true:src/i18n/locales/en/common.json@i18n',
       'true:src/i18n/locales/ar/common.json@i18n',
       'true:src/i18n/utils/languageUtils.ts@i18n',
@@ -55,7 +55,7 @@ describe('popupI18nTests', () => {
 
     const expected = [
       'src/popup/renderPopup.test.ts@i18n',
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
       'true:src/i18n/locales.test.ts@i18n',
       'true:src/i18n/utils/languageUtils.test.ts@i18n',
     ];

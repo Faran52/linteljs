@@ -81,9 +81,9 @@ describe('the asset a destination derives', () => {
       target,
       browser,
       surfaces: ['background'],
-    })['src/background/index.ts'];
+    })['src/background/background.ts'];
 
-    expect(source).toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
+    expect(source).toBe(`starter-source/webextension/${browser}/src/background/background.ts`);
   });
 
   it.each<Router>([

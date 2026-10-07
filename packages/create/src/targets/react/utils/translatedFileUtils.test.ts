@@ -30,7 +30,7 @@ describe('reactI18nFiles', () => {
       'src/pages/version/VersionPage.tsx@i18n',
       `${HEADER}@i18n`,
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
-      'src/i18n/index.ts@i18n',
+      'src/i18n/i18n.ts@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -136,7 +136,7 @@ describe('reactI18nTests', () => {
       'src/pages/version/VersionPage.test.tsx@i18n',
       'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
-      'src/i18n/index.test.ts@i18n',
+      'src/i18n/i18n.test.ts@i18n',
     ];
     expect(translated).toEqual(expected);
 

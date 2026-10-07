@@ -39,7 +39,7 @@ jest.mock('expo-localization', () => {
 
 // Every suite renders translated text, so each starts with i18n running in English.
 beforeAll(() => {
-  const { initI18n } = jest.requireActual<typeof import('@i18n')>('@i18n');
+  const { initI18n } = jest.requireActual<typeof import('@i18n/i18n')>('@i18n/i18n');
 
   initI18n();
 });

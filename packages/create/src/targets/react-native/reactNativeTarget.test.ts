@@ -95,8 +95,8 @@ const BILINGUAL_PATHS = [
 ];
 
 const I18N_ONLY_PATHS = [
-  'src/i18n/index.ts',
-  'src/i18n/index.test.ts',
+  'src/i18n/i18n.ts',
+  'src/i18n/i18n.test.ts',
   'src/i18n/locales.test.ts',
   'src/i18n/utils/languageUtils.ts',
   'src/i18n/utils/languageUtils.test.ts',
