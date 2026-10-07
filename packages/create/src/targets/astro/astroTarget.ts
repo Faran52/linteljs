@@ -25,6 +25,7 @@ import {
   ALWAYS,
   ASTRO_I18N,
   COMPONENTS,
+  FRAMEWORK_RECORD,
   SHARED,
   VIEW_SUITES,
 } from './constants';
@@ -98,33 +99,18 @@ export const astroTarget: TargetBuilder = (answers) => {
       ],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
-    vitestFactory: framework === 'solid'
-      ? {
-          imports: [
-            "import { getViteConfig } from 'astro/config';",
-            "import solid from 'vite-plugin-solid';",
-            "import { defineConfig } from 'vitest/config';",
-          ],
-          call: 'getViteConfig',
-          swap: {
-            name: 'solid',
-            call: 'solid({ hot: false, ssr: true })',
-          },
-        }
-      : {
-          imports: [
-            "import { getViteConfig } from 'astro/config';",
-            // Its own group, as the import sort keeps a side-effect import.
-            '',
-            // A bare import: the reference-types directive is banned by this standard.
-            "import 'vitest/config';",
-          ],
-          call: 'getViteConfig',
-        },
+    vitestFactory: {
+      imports: [
+        "import { getViteConfig } from 'astro/config';",
+        // Its own group, as the import sort keeps a side-effect import.
+        '',
+        // A bare import: the reference-types directive is banned by this standard.
+        "import 'vitest/config';",
+      ],
+      call: 'getViteConfig',
+    },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    ...(framework === 'solid' ? { testInline: [/solid-js/] } : {}),
-    // Svelte's island reads SvelteKit's own spelling of `src/lib`.
-    ...(framework === 'svelte' ? { packageImports: { '#lib/*': './src/lib/*' } } : {}),
+    ...(framework === undefined ? {} : FRAMEWORK_RECORD[framework]),
     // `astro sync` first, since the types `astro check` reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',
@@ -196,17 +182,6 @@ export const astroTarget: TargetBuilder = (answers) => {
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).
     allowBuilds: ['esbuild', ...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
-    // Until `@astrojs/react` peers the `oxc-transform-react` its plugin's newer releases do.
-    ...(framework === 'react'
-      ? {
-          overrides: [
-            {
-              parent: '@astrojs/react',
-              name: '@vitejs/plugin-react',
-            },
-          ],
-        }
-      : {}),
     i18n: ASTRO_I18N,
   };
 

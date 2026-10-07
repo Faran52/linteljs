@@ -29,6 +29,44 @@ import { LIBRARY_FIELDS, SUPERSEDED } from './constants';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
+// The fields only some package managers read: their overrides and their install-script allowlist.
+const managerFields = (existing: PackageJson, answers: Answers): PackageJson => {
+  const pm = answers.packageManager;
+  const overrides = buildOverrides(answers);
+  // pnpm reads its overrides from `pnpm-workspace.yaml`; yarn names the field `resolutions`.
+  const overrideField = pm === 'npm' || pm === 'bun' ? 'overrides' : 'resolutions';
+  const allowedBuilds = allowedBuildNames(answers);
+  const allowedScripts = Object.fromEntries(allowedBuilds
+    .map((name) => {
+      const allowed: [string, boolean] = [name, true];
+
+      return allowed;
+    }));
+  const fields: PackageJson = {
+    ...(Object.keys(overrides).length === 0 || pm === 'pnpm'
+      ? {}
+      : {
+          [overrideField]: {
+            ...existing[overrideField],
+            ...overrides,
+          },
+        }),
+    // bun blocks every install script it has not been told about, and reads the list from here.
+    ...(pm === 'bun' ? { trustedDependencies: allowedBuilds } : {}),
+    // npm 12 blocks every unlisted install script and reads the list from here, not `.npmrc`.
+    ...(pm === 'npm'
+      ? {
+          allowScripts: {
+            ...existing.allowScripts,
+            ...allowedScripts,
+          },
+        }
+      : {}),
+  };
+
+  return fields;
+};
+
 export const patchPackageJson = (existing: PackageJson, answers: Answers): PackageJson => {
   const target = targetFor(answers);
   const packageJson = { ...existing };
@@ -48,16 +86,6 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     : allDevDependencies;
   const pm = answers.packageManager;
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
-  const overrides = buildOverrides(answers);
-  // pnpm reads its overrides from `pnpm-workspace.yaml`; yarn names the field `resolutions`.
-  const overrideField = pm === 'npm' || pm === 'bun' ? 'overrides' : 'resolutions';
-  const allowedBuilds = allowedBuildNames(answers);
-  const allowedScripts = Object.fromEntries(allowedBuilds
-    .map((name) => {
-      const allowed: [string, boolean] = [name, true];
-
-      return allowed;
-    }));
   const patched: PackageJson = {
     ...packageJson,
     type: 'module',
@@ -103,25 +131,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     // Empty only on a library, which ships no `http.ts`.
     ...(Object.keys(dependencies).length === 0 ? {} : { dependencies }),
     devDependencies,
-    ...(Object.keys(overrides).length === 0 || pm === 'pnpm'
-      ? {}
-      : {
-          [overrideField]: {
-            ...existing[overrideField],
-            ...overrides,
-          },
-        }),
-    // bun blocks every install script it has not been told about, and reads the list from here.
-    ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuilds } : {}),
-    // npm 12 blocks every unlisted install script and reads the list from here, not `.npmrc`.
-    ...(answers.packageManager === 'npm'
-      ? {
-          allowScripts: {
-            ...existing.allowScripts,
-            ...allowedScripts,
-          },
-        }
-      : {}),
+    ...managerFields(existing, answers),
   };
 
   return patched;

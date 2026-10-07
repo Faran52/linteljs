@@ -301,12 +301,31 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
   return versioned(names, target.versions);
 };
 
+const runnerDevDependencies = (answers: Answers, target: TargetRecord): string[] => {
+  const runner = testRunnerOf(answers);
+
+  if (runner === undefined) {
+    return [];
+  }
+
+  const {
+    devDependencies,
+    domDevDependencies,
+    yarnPeers,
+  } = TEST_RUNNERS[runner];
+
+  const names = [
+    ...target.libraryProject === true ? [] : domDevDependencies,
+    ...devDependencies,
+    ...answers.packageManager === 'yarn' ? yarnPeers : [],
+    ...target.testDevDependencies ?? [],
+  ];
+
+  return names;
+};
+
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
-  const runner = testRunnerOf(answers);
-  const domDevDependencies = runner === undefined || target.libraryProject === true
-    ? []
-    : TEST_RUNNERS[runner].domDevDependencies;
 
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
@@ -327,14 +346,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
-    ...domDevDependencies,
-    ...(runner === undefined
-      ? []
-      : [
-          ...TEST_RUNNERS[runner].devDependencies,
-          ...answers.packageManager === 'yarn' ? TEST_RUNNERS[runner].yarnPeers : [],
-          ...target.testDevDependencies ?? [],
-        ]),
+    ...runnerDevDependencies(answers, target),
     ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),

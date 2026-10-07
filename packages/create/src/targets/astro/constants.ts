@@ -1,5 +1,5 @@
 import type { HostedFramework } from '@config/types';
-import type { I18nParts } from '../types';
+import type { I18nParts, TargetRecord } from '../types';
 import type { ComponentPaths } from '../utils/styleUtils';
 
 // A page names its view and nothing else, so no translated twin.
@@ -78,3 +78,37 @@ export const CONTACT_COPY = `${CONTACT_VIEW}/utils/contactCopyUtils`;
 
 // How the page asset imports React's island; another framework's island rewrites this line.
 export const REACT_ISLAND_IMPORT = "import { ContactIsland } from '@views/contact/ContactIsland';";
+
+// What one hosted framework alone changes in the record.
+export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'overrides'
+  | 'packageImports'
+  | 'testInline'
+  | 'vitestFactory'>> = {
+  // Until `@astrojs/react` peers the `oxc-transform-react` its plugin's newer releases do.
+  react: {
+    overrides: [
+      {
+        parent: '@astrojs/react',
+        name: '@vitejs/plugin-react',
+      },
+    ],
+  },
+  vue: {},
+  // Svelte's island reads SvelteKit's own spelling of `src/lib`.
+  svelte: { packageImports: { '#lib/*': './src/lib/*' } },
+  solid: {
+    vitestFactory: {
+      imports: [
+        "import { getViteConfig } from 'astro/config';",
+        "import solid from 'vite-plugin-solid';",
+        "import { defineConfig } from 'vitest/config';",
+      ],
+      call: 'getViteConfig',
+      swap: {
+        name: 'solid',
+        call: 'solid({ hot: false, ssr: true })',
+      },
+    },
+    testInline: [/solid-js/],
+  },
+};
