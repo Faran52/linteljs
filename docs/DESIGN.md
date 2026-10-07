@@ -900,12 +900,27 @@ in CI, and on every target with no server. With it the api layer makes a real re
 rather than the call site, so the code under test is the code that ships. The setup fragment sets
 `onUnhandledRequest: 'error'`, since an unhandled request is a test reaching the network, and is appended last so
 the interceptor listens before anything asks. The handlers live under `__mocks__/msw/`: `node.ts` for the test run
-everywhere, and `browser.ts` wherever a dev server serves a directory the worker can live in, which is every target
-but React Native. The entry starts the worker in development only and does not await it: nothing posts before a
+everywhere, `browser.ts` wherever a dev server serves a directory the worker can live in, which is every target
+but React Native, and `native.ts` there. The entry starts the worker in development only and does not await it: nothing posts before a
 person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
 `root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
 `init` in `hooks.client.ts`). The web extension starts none: its popup fetches nothing under `/api`, so a worker
 there would answer no request.
+
+React Native has no service worker, so with MSW it starts `msw/native`, which patches `fetch` inside the app. Its
+`main` becomes `src/index.ts`, which loads `expo-router/entry` and, under `__DEV__`, imports
+`__mocks__/msw/polyfills.ts` and then `native.ts`; `src/index.ts` is outside coverage like every entry, so
+`_layout.tsx` stays measured, and Metro folds `__DEV__` away so a release bundle carries neither. Without MSW `main`
+stays `expo-router/entry`. The order is a promise chain because the import sort moves a side-effect import last.
+Hermes has `TextEncoder`, `Event` and `EventTarget` but not `MessageEvent` or `BroadcastChannel`, which msw's
+WebSocket support needs to exist when it loads, so the polyfills alias them to `Event` and `EventTarget` when
+missing; HTTP mocking never uses either. No URL polyfill: Expo resolves the relative `/api/contact` against the dev
+server, and the handlers match `*/api/contact` on any origin. Verified on the iOS simulator and an Android emulator
+in Expo Go: the POST is answered by the handler and the form shows its success state.
+
+The starter text says what MSW changes. Without it the contact copy says nothing is sent; with it an emit step swaps
+those sentences, in the pages, their suites and every locale file, for ones saying the form posts to
+`/api/contact`, mocked in development, so the page never claims what the network tab contradicts.
 
 **The accessor takes each framework's own word:**
 

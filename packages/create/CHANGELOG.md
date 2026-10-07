@@ -188,7 +188,11 @@ when a version's change lives in a sibling it is described there instead:
   through the fetch adapter, and RTK Query's contact endpoint a `query` POST, which the MSW handler answers with
   `{ status: 200 }` or a 422 carrying the field errors. Without MSW the submit validates and resolves locally.
 - **With MSW, the dev server answers it.** React, Solid, Vue, Angular, Next and SvelteKit start the MSW browser
-  worker from their entry in development, so the contact form's POST is answered in the browser too.
+  worker from their entry in development, so the contact form's POST is answered in the browser too. React
+  Native starts `msw/native` in development from its own entry, `src/index.ts`, so the POST is answered on a
+  device or simulator, with the two globals msw needs and Hermes lacks polyfilled.
+- **With MSW, the contact copy says the form posts.** The pages, their suites and every locale file say it posts
+  to `/api/contact`, mocked in development, instead of saying nothing is sent.
 - **Svelte moves to SvelteKit 3 and `@sveltejs/adapter-auto` 8.** `#lib/*` comes from a `package.json` `imports`
   entry in place of `$lib`, and every import names its file with the extension; `tsconfig.json` extends
   `$app/tsconfig` and takes its types from `$app/types`. `$app/environment` is `$app/env`, the error page calls
