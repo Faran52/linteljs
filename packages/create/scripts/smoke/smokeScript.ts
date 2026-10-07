@@ -1,45 +1,17 @@
 // The `bin`, `files` and `templates/` are only wrong once packed.
 import assert from 'node:assert/strict';
-import {
-  existsSync,
-  readdirSync,
-  rmSync,
-} from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execPath } from 'node:process';
 
 import { run, unpackTarball } from '../../../../scripts/utils/processUtils.ts';
 import { log } from '../../templates/project/scripts/utils/loggerUtils.ts';
 
+import { assertPacked, filesIn } from './utils/assetsUtils.ts';
+import { assertHelp } from './utils/helpUtils.ts';
+
 const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
-
-// At a word boundary, so a longer flag it prefixes cannot stand in for it.
-const FLAGS = [
-  '--existing',
-  '--no-install',
-  '--seed',
-  '--skip',
-  '--yes',
-  '-y',
-  '--help',
-  '-h',
-];
-const STAGES = [
-  'lint',
-  'package',
-  'standard',
-  'install',
-  'fix',
-];
-
-// Negated in `files`, so a generated project inherits no test and no mod typecheck.
-const EXCLUDED_TEST = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.tsx?$/;
-const EXCLUDED_MOD_TYPECHECK = /^project\/plugins\/linteljs\/(?:tsconfig\.json|\.claude-plugin\/types\/.*)$/;
-
-const isExcluded = (name: string): boolean => {
-  return EXCLUDED_TEST.test(name) || EXCLUDED_MOD_TYPECHECK.test(name);
-};
 
 log('packing and extracting the tarball');
 
@@ -49,15 +21,7 @@ log('running the packed binary');
 
 const help = run(execPath, [join(pkgDir, 'dist', 'create-linteljs.mjs'), '--help'], smokeDir);
 
-for (const flag of FLAGS) {
-  assert.match(help, new RegExp(`${flag}(?![\\w-])`), `--help does not mention ${flag}`);
-}
-
-for (const stage of STAGES) {
-  assert.match(help, new RegExp(`\\b${stage}\\b`), `--help does not mention the ${stage} stage`);
-}
-
-assert.match(help, /@linteljs\/create sync/, '--help does not mention the sync command');
+assertHelp(help);
 
 // `templatesRootFrom` walks up from the flattened `dist/`, a depth only the packed layout has.
 const hasDist = existsSync(join(pkgDir, 'dist', 'index.mjs'));
@@ -68,38 +32,14 @@ assert.ok(hasTemplates, 'no templates/ beside dist/ for the walk-up to find');
 
 log('comparing the shipped asset tree against the tarball');
 
-const filesIn = (dir: string): string[] => {
-  // A glob's `*` skips dotfiles.
-  return readdirSync(dir, {
-    recursive: true,
-    withFileTypes: true,
-  })
-    .filter((entry) => {
-      return entry.isFile();
-    })
-    .map((entry) => {
-      return join(entry.parentPath, entry.name).slice(dir.length + 1);
-    });
-};
-
 const packedFiles = filesIn(join(pkgDir, 'templates'));
-const packed = new Set(packedFiles);
 const shipped = filesIn(join(root, 'templates'));
-const leaked = shipped
-  .filter((name) => {
-    return isExcluded(name) && packed.has(name);
-  });
-const missing = shipped
-  .filter((name) => {
-    return !isExcluded(name) && !packed.has(name);
-  });
 
-assert.deepEqual(leaked, [], `excluded by \`files\` but packed:\n  ${leaked.join('\n  ')}`);
-assert.deepEqual(missing, [], `assets in the repo that \`files\` did not pack:\n  ${missing.join('\n  ')}`);
+assertPacked(shipped, packedFiles);
 
 rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
 
-log(`packed artifact smoke test passed: the binary documents its flags, ${String(packed.size)} assets packed`);
+log(`packed artifact smoke test passed: the binary documents its flags, ${String(packedFiles.length)} assets packed`);

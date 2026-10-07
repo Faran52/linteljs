@@ -2198,10 +2198,11 @@ file joins the gate the moment it is included.
 The end-to-end harness sits in `packages/create/e2e/`, outside every `src/`, so the include never reaches it: it
 spawns, publishes and needs the registry, and a helper there would land as a 0% file against a 100% threshold. Its
 pure suites (`matrix/`, `starter-cover/`) still run in the default suite, held by their assertions rather than the
-gate. Beyond each package's `src/`, the include names ten `utils/` modules of the plugin's audits (five of
-real-code, one of mutation-summary, four of false-negatives), the pure half of a script that otherwise spawns,
-each with its own suite. A package script's entry (`smokeScript.ts`, `collectBuildsScript.ts`,
-`writeSchemasScript.ts`) has none: it spawns or writes, and what it decides that needs a test goes in its `utils/`.
+gate. Beyond each package's `src/`, the include names the `utils/` modules of the package scripts (the plugin's
+audits and release scripts, and `collect-builds` and `smoke` in create), the pure half of a script that otherwise
+spawns, each with its own suite. A script's entry (`smokeScript.ts`, `collectBuildsScript.ts`) has none: it reads
+its arguments, spawns or writes, and logs, and every decision it makes is in its `utils/`. `writeSchemasScript.ts`
+has no `utils/`: it writes what `schemaFor` answers, which `answers/utils/schemaUtils.test.ts` holds.
 It also takes every `utils/` file under `packages/create/templates/project/`: the logic
 of every shipped hook and gate script, and the shipped logger. They reach every generated project, and a guard there is security code. Each hook
 and gate script is a thin entry over its `utils/` module: it reads stdin or argv, calls one function and exits, so

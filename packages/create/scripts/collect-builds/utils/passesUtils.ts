@@ -155,3 +155,11 @@ export const PASSES: Record<Collected, Pass> = {
     },
   },
 };
+
+export const installCommand = (pm: Collected): [string, string[]] => {
+  const [binary, prefix] = pm === 'npm' ? NPM : [pm, []];
+
+  const command: [string, string[]] = [binary, [...prefix, ...PASSES[pm].install]];
+
+  return command;
+};

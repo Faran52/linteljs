@@ -76,6 +76,31 @@ describe('NPM', () => {
   });
 });
 
+describe('installCommand', () => {
+  it('installs with pnpm itself', async () => {
+    const { installCommand } = await freshPasses();
+
+    const command = installCommand('pnpm');
+
+    expect(command).toEqual(['pnpm', ['install']]);
+  });
+
+  it('installs through the CLI COLLECT_NPM names, without audit or fund', async () => {
+    vi.stubEnv('COLLECT_NPM', '/opt/npm/cli.js');
+
+    const { installCommand } = await freshPasses();
+
+    const command = installCommand('npm');
+
+    expect(command).toEqual([execPath, [
+      '/opt/npm/cli.js',
+      'install',
+      '--no-audit',
+      '--no-fund',
+    ]]);
+  });
+});
+
 describe('run', () => {
   it('answers stdout before stderr, with the registry and caches in the environment', async () => {
     vi.stubEnv('npm_config_user_agent', undefined);
