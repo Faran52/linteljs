@@ -915,7 +915,7 @@ describe('the contact copy', () => {
       target: 'react',
       form: 'tanstack-form',
       ...overrides,
-    }, 'src/pages/contact/ContactPage.tsx');
+    }, 'src/lib/services/contact-form/constants.ts');
     const reads = written.includes(said);
 
     expect(reads).toBe(true);

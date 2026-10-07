@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import {
   CONTACT_TEXT,
   type ContactValues,
@@ -24,6 +25,8 @@ const inEnglish: Translate = (key) => {
   templateUrl: './contact.html',
 })
 export class Contact {
+  protected readonly copy = CONTACT_COPY;
+
   protected readonly sent = signal(false);
 
   private readonly submit = useSubmitContact();

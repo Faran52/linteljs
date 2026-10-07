@@ -7,6 +7,8 @@ import {
   waitFor,
 } from '@testing-library/react-native';
 
+import { CONTACT_COPY } from '@services/contact-form/constants';
+
 import { renderScreen } from '@mocks/renderScreen';
 
 import ContactScreen from './app/(tabs)/contact';
@@ -67,7 +69,7 @@ describe('the contact screen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Send' }));
 
     const element = await screen.findByRole('status');
-    expect(element).toHaveTextContent('Thanks. Nothing was sent, this is a starter.');
+    expect(element).toHaveTextContent(CONTACT_COPY.sent);
   });
 
   it('is the one main landmark on the page, and a keyboard can reach its scroll', async () => {

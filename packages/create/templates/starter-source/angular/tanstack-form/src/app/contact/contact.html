@@ -1,9 +1,9 @@
 <main class="page">
   <h1 class="page-title">Contact</h1>
-  <p class="page-lede">Two fields, validated on blur. Nothing is sent anywhere.</p>
+  <p class="page-lede">{{ copy.lede }}</p>
 
   @if (sent()) {
-    <p class="sent" role="status">Thanks. Nothing was sent, this is a starter.</p>
+    <p class="sent" role="status">{{ copy.sent }}</p>
   } @else {
     <form novalidate (submit)="send($event)">
       <app-text-input

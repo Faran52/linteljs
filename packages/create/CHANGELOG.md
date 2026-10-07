@@ -212,8 +212,9 @@ when a version's change lives in a sibling it is described there instead:
   Native starts `msw/native` in development from its own entry, `src/main.ts`, so the POST is answered on a
   device or simulator, with the two globals msw needs and Hermes lacks polyfilled.
 - **With MSW, the contact copy says the form posts.** The pages, their suites and every locale file say it posts
-  to `/api/contact`, mocked in development, instead of saying nothing is sent: an `msw` variant of each English page,
-  and a `Msw` twin of each key in the locale files.
+  to `/api/contact`, mocked in development, instead of saying nothing is sent: the English pages read their words from
+  one `CONTACT_COPY` in `src/lib/services/contact-form/constants.ts`, whose `msw` variant says it posts, and each
+  locale file carries a `Msw` twin of each key.
 - **Svelte moves to SvelteKit 3 and `@sveltejs/adapter-auto` 8.** `#lib/*` comes from a `package.json` `imports`
   entry in place of `$lib`, and every import names its file with the extension; `tsconfig.json` extends
   `$app/tsconfig` and takes its types from `$app/types`. `$app/environment` is `$app/env`, the error page calls

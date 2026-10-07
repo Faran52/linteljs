@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { CONTACT_COPY } from '#lib/services/contact-form/constants.ts';
   import { CONTACT_TEXT } from '#lib/services/contact-form/contactFormService.ts';
 
   import Button from '@ui/button/Button.svelte';
@@ -13,10 +14,10 @@
 
 <main class="page">
   <h1 class="page-title">Contact</h1>
-  <p class="page-lede">Two fields, validated on blur. Nothing is sent anywhere.</p>
+  <p class="page-lede">{CONTACT_COPY.lede}</p>
 
   {#if form.sent}
-    <p class="sent" role="status">Thanks. Nothing was sent, this is a starter.</p>
+    <p class="sent" role="status">{CONTACT_COPY.sent}</p>
   {:else}
     <form novalidate onsubmit={form.onSubmit}>
       <TextInput {...form.fields.email} />

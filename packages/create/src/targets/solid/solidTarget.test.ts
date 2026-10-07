@@ -1,6 +1,9 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
+  CONTACT_COPY_KEY,
+  contactCopyConstantGates,
   contactCopyGates,
   contactGates,
   type GateRow,
@@ -101,8 +104,6 @@ const TRANSLATED_GATES: GateRow[] = [
       return rows;
     }),
   ...contactCopyGates('src/pages/contact/ContactPage.tsx'),
-  ['src/pages/contact/ContactPage.test.tsx', [{ mocking: [undefined] }]],
-  ['src/pages/contact/ContactPage.test.tsx@msw', [{ mocking: ['msw'] }]],
   ...I18N_ONLY_PATHS
     .map((key): GateRow => {
       const row: GateRow = [`${key}@i18n`, WITH_I18N];
@@ -118,7 +119,11 @@ const GATES: GateRow[] = [
     'button/Button',
     'text-input/TextInput',
   ]),
-  ...contactGates(['tanstack-query']),
+  ...contactGates(['tanstack-query'])
+    .filter(([key]) => {
+      return !key.startsWith(CONTACT_COPY_KEY);
+    }),
+  ...contactCopyConstantGates({ form: ANSWERED }),
   ...TRANSLATED_GATES,
   ['src/router/router.tsx', WITHOUT_FORM],
   ['src/router/router.tsx@with-form', WITH_FORM],

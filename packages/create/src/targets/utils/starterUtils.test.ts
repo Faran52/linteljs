@@ -8,6 +8,7 @@ import {
 import { always, hasForm } from './gateUtils';
 import {
   contactApiFiles,
+  contactCopyFiles,
   contactFormFiles,
   contactFormTest,
   contactSubmitFiles,
@@ -198,11 +199,13 @@ describe('contactFormFiles', () => {
 
     const expected = [
       'src/lib/services/contact-form/contactFormService.ts base',
+      'src/lib/services/contact-form/constants.ts base',
       'src/lib/apis/contact/contactEndpoints.ts base',
     ];
     expect(plain).toEqual(expected);
     const zodService = [
       'src/lib/services/contact-form/contactFormService.ts zod',
+      'src/lib/services/contact-form/constants.ts base',
       'src/lib/apis/contact/contactEndpoints.ts base',
     ];
     expect(zod).toEqual(zodService);
@@ -219,8 +222,52 @@ describe('contactFormFiles', () => {
       true,
       true,
       true,
+      true,
+      true,
     ];
     expect(shared).toEqual(expected);
+  });
+});
+
+describe('contactCopyFiles', () => {
+  it.each<[string, Partial<Answers>, string[]]>([
+    [
+      'no form',
+      {},
+      [],
+    ],
+    [
+      'a form',
+      { form: 'react-hook-form' },
+      ['src/lib/services/contact-form/constants.ts base'],
+    ],
+    [
+      'a form under msw',
+      {
+        form: 'react-hook-form',
+        mocking: 'msw',
+      },
+      ['src/lib/services/contact-form/constants.ts msw'],
+    ],
+    [
+      'a translated form, whose locale files say it',
+      {
+        form: 'react-hook-form',
+        languages: ['en'],
+      },
+      [],
+    ],
+  ])('writes the English copy that fits %s', (_case, overrides, expected) => {
+    const actual = pickedBy(contactCopyFiles(), overrides);
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('takes the condition it is passed', () => {
+    const actual = pickedBy(contactCopyFiles(always), {});
+
+    const expected = ['src/lib/services/contact-form/constants.ts base'];
+    expect(actual).toEqual(expected);
   });
 });
 

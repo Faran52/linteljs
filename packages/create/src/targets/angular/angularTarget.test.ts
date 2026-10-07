@@ -1,6 +1,7 @@
 import {
   ANSWERED,
   byKey,
+  contactCopyConstantGates,
   contactCopyGates,
   type GateRow,
   mswGates,
@@ -152,6 +153,7 @@ const I18N_ONLY_PATHS = [
 
 const GATES: GateRow[] = [
   ...mswGates('always'),
+  ...contactCopyConstantGates({ languages: [undefined] }),
   ...submitGates('src/lib/apis/contact/contact-endpoints', 'spec', {}, { data: [undefined, 'tanstack-query'] }),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],

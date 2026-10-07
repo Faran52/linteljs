@@ -6,6 +6,7 @@ import {
 } from '@solidjs/testing-library';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
+import { CONTACT_COPY } from '@services/contact-form/constants';
 
 import { ContactPage } from './ContactPage';
 
@@ -72,7 +73,7 @@ describe('ContactPage', () => {
 
     const element = screen.getByRole('heading', { name: 'Contact' });
     expect(element).toBeTruthy();
-    const element2 = screen.getByText('Two fields, validated on blur. Nothing is sent anywhere.');
+    const element2 = screen.getByText(CONTACT_COPY.lede);
     expect(element2).toBeTruthy();
   });
 
@@ -84,6 +85,6 @@ describe('ContactPage', () => {
 
     const sent = await screen.findByRole('status');
 
-    expect(sent.textContent).toBe('Thanks. Nothing was sent, this is a starter.');
+    expect(sent.textContent).toBe(CONTACT_COPY.sent);
   });
 });

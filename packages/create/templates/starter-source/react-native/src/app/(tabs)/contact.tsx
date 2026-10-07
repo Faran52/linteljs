@@ -13,6 +13,7 @@ import {
 
 import { useStarterStyles } from '@styles/starterStyles';
 
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';
 
 import { useContactForm } from '@hooks/use-contact-form/useContactForm';
@@ -59,11 +60,11 @@ const ContactScreen = (): ReactNode => {
       keyboardShouldPersistTaps="handled"
     >
       <Text style={text.pageTitle}>Contact</Text>
-      <Text style={text.lede}>Two fields, validated on blur. Nothing is sent anywhere.</Text>
+      <Text style={text.lede}>{CONTACT_COPY.lede}</Text>
 
       {sent
         ? (
-            <Text style={text.sent} role="status">Thanks. Nothing was sent, this is a starter.</Text>
+            <Text style={text.sent} role="status">{CONTACT_COPY.sent}</Text>
           )
         : (
             <View style={layout.form}>

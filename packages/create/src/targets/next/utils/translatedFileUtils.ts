@@ -20,10 +20,12 @@ export const nextI18nFiles = (): StarterFile[] => {
   ];
   return i18nFiles({
     translated: TRANSLATED,
-    contact: {
-      target: 'src/app/contact/page.tsx',
-      when: hasForm,
-    },
+    pairs: [
+      {
+        target: 'src/app/contact/page.tsx',
+        when: hasForm,
+      },
+    ],
     only: i18nOnly,
   });
 };

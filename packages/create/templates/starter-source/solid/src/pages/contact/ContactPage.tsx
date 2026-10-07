@@ -1,3 +1,4 @@
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';
 
 import { Button, TextInput } from '@ui';
@@ -16,10 +17,10 @@ export const ContactPage = (): JSX.Element => {
   return (
     <main class="page">
       <h1 class="page-title">Contact</h1>
-      <p class="page-lede">Two fields, validated on blur. Nothing is sent anywhere.</p>
+      <p class="page-lede">{CONTACT_COPY.lede}</p>
 
       {form.sent()
-        ? <p class="sent" role="status">Thanks. Nothing was sent, this is a starter.</p>
+        ? <p class="sent" role="status">{CONTACT_COPY.sent}</p>
         : (
             <form novalidate onSubmit={form.onSubmit}>
               <TextInput {...form.fields.email} />

@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import {
   hasForm,
+  hasI18n,
   hasStore,
 } from '../utils/gateUtils';
 import {
@@ -27,11 +28,11 @@ import {
 import { componentNaming } from '../utils/namingUtils';
 import {
   contactApiFiles,
+  contactCopyFiles,
   contactFormFiles,
   contactFormTest,
   contactSubmitTests,
   filesAt,
-  mocked,
 } from '../utils/starterUtils';
 import {
   componentStyleModules,
@@ -136,6 +137,10 @@ export const solidTarget: TargetBuilder = () => {
         barrel: 'solid',
       }),
       ...contactFormFiles(),
+      // The page's suite reads the English words, which an English locale renders too.
+      ...contactCopyFiles((answers) => {
+        return hasForm(answers) && hasI18n(answers);
+      }),
       {
         target: 'src/components/ui/index.ts',
         when: hasForm,
@@ -223,10 +228,10 @@ export const solidTarget: TargetBuilder = () => {
         when: hasStore,
         variant: 'with-store',
       }),
-      ...mocked<StarterTest>({
+      {
         target: 'src/pages/contact/ContactPage.test.tsx',
         covers: 'src/pages/contact/ContactPage.tsx',
-      }),
+      },
       {
         target: 'src/pages/contact/create-contact-form/createContactForm.test.ts',
         covers: 'src/pages/contact/create-contact-form/createContactForm.ts',

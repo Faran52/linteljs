@@ -123,16 +123,33 @@ export const contactCopyGates = (key: string, condition: Condition = { form: ANS
     [variant === '' ? key : `${key}@${variant}`, [{
       ...condition,
       languages: [undefined],
-      mocking: [undefined],
-    }]],
-    [named('msw'), [{
-      ...condition,
-      languages: [undefined],
-      mocking: ['msw'],
     }]],
     [named('i18n'), [{
       ...condition,
       languages: ANSWERED,
+    }]],
+  ];
+
+  return gates;
+};
+
+export const CONTACT_COPY_KEY = 'src/lib/services/contact-form/constants.ts';
+
+// The English copy, one pair shared by every page, says whether the form posts.
+export const contactCopyConstantGates = (
+  condition: Condition = {
+    form: ANSWERED,
+    languages: [undefined],
+  },
+): GateRow[] => {
+  const gates: GateRow[] = [
+    [CONTACT_COPY_KEY, [{
+      ...condition,
+      mocking: [undefined],
+    }]],
+    [`${CONTACT_COPY_KEY}@msw`, [{
+      ...condition,
+      mocking: ['msw'],
     }]],
   ];
 
@@ -228,6 +245,7 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
       form: ANSWERED,
       libraries: [['zod']],
     }]],
+    ...contactCopyConstantGates(),
     ...submitGates(
       'src/lib/apis/contact/contactEndpoints',
       'test',

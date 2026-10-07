@@ -18,10 +18,12 @@ const TRANSLATED_SUITES = ['src/App', 'src/components/features/status-page/Statu
 export const vueI18nFiles = (): StarterFile[] => {
   return i18nFiles({
     translated: TRANSLATED,
-    contact: {
-      target: 'src/views/contact/ContactView.vue',
-      when: hasForm,
-    },
+    pairs: [
+      {
+        target: 'src/views/contact/ContactView.vue',
+        when: hasForm,
+      },
+    ],
     only: I18N_ONLY_FILES,
   });
 };

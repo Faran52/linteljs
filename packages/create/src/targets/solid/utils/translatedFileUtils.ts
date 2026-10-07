@@ -20,10 +20,12 @@ const I18N_ONLY_FILES = [
 export const solidI18nFiles = (): StarterFile[] => {
   return i18nFiles({
     translated: TRANSLATED,
-    contact: {
-      target: 'src/pages/contact/ContactPage.tsx',
-      when: hasForm,
-    },
+    pairs: [
+      {
+        target: 'src/pages/contact/ContactPage.tsx',
+        when: hasForm,
+      },
+    ],
     only: I18N_ONLY_FILES,
   });
 };

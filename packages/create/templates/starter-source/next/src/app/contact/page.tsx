@@ -1,5 +1,6 @@
 'use client';
 
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';
 
 import { Button, TextInput } from '@ui';
@@ -25,11 +26,11 @@ const ContactPage = (): ReactNode => {
   return (
     <main className="page">
       <h1 className="page-title">Contact</h1>
-      <p className="page-lede">Two fields, validated on blur. Nothing is sent anywhere.</p>
+      <p className="page-lede">{CONTACT_COPY.lede}</p>
 
       {sent
         ? (
-            <p className="sent" role="status">Thanks. Nothing was sent, this is a starter.</p>
+            <p className="sent" role="status">{CONTACT_COPY.sent}</p>
           )
         : (
             <form noValidate onSubmit={onSubmit}>

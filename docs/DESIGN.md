@@ -944,8 +944,9 @@ in Expo Go: the POST is answered by the handler and the form shows its success s
 The starter text says what MSW changes. Without it the contact copy says nothing is sent; with it the copy says the
 form posts to `/api/contact`, mocked in development, so the page never claims what the network tab contradicts. The
 copy lives where the rest of the starter's words do: each locale file carries a `<key>Msw` twin on the line after its
-key, which the locale's transform puts in the key's place under MSW and drops otherwise; an English page, and a suite
-that quotes it, ships as an `msw` variant asset beside its base, the way every other answer picks a file.
+key, which the locale's transform puts in the key's place under MSW and drops otherwise; the English pages, and the
+suites that quote them, read one `CONTACT_COPY` from `src/lib/services/contact-form/constants.ts`, which ships as an
+`msw` variant asset beside its base, the way every other answer picks a file.
 
 **The accessor takes each framework's own word:**
 

@@ -368,8 +368,7 @@ const SHARED_ISLAND_GATES: GateRow[] = onIsland([
 ]);
 
 const JSX_ISLAND_GATES: GateRow[] = onIsland(['react', 'solid'], [
-  ['src/views/contact/ContactPage.tsx', [{ languages: [undefined], mocking: [undefined] }]],
-  ['src/views/contact/ContactPage.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.tsx', [{ languages: [undefined] }]],
   ['src/components/ui/index.ts', [{}]],
   ...islandGates('button/Button', 'tsx'),
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
@@ -377,11 +376,7 @@ const JSX_ISLAND_GATES: GateRow[] = onIsland(['react', 'solid'], [
   ['src/lib/providers/data/DataProvider.test.tsx', [{}]],
   ['src/views/contact/ContactPage.test.tsx', [
     { hostedFramework: ['react'], languages: [undefined] },
-    {
-      hostedFramework: ['solid'],
-      languages: [undefined],
-      mocking: [undefined],
-    },
+    { hostedFramework: ['solid'], languages: [undefined] },
   ]],
 ]);
 
@@ -419,8 +414,7 @@ const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
 
       return rows;
     }),
-  ['src/views/contact/ContactView.vue', [{ languages: [undefined], mocking: [undefined] }]],
-  ['src/views/contact/ContactView.vue@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactView.vue', [{ languages: [undefined] }]],
   ['src/views/contact/ContactView.vue@i18n', [{ languages: ANSWERED }]],
   ...islandGates('app-button/AppButton', 'vue'),
   ['src/lib/providers/data/dataProvider.ts', NOT_TANSTACK_QUERY],
@@ -442,7 +436,6 @@ const SOLID_ISLAND_GATES: GateRow[] = onIsland(['solid'], [
       return rows;
     }),
   ['src/views/contact/ContactPage.tsx@solid-i18n', [{ languages: ANSWERED }]],
-  ['src/views/contact/ContactPage.test.tsx@msw', [{ languages: [undefined], mocking: ['msw'] }]],
   ['src/views/contact/ContactPage.test.tsx@solid-i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/create-contact-form/createContactForm.ts', [{}]],
   ['src/views/contact/create-contact-form/createContactForm.test.ts', [{}]],
@@ -461,8 +454,7 @@ const SVELTE_ISLAND_GATES: GateRow[] = onIsland(['svelte'], [
 
       return rows;
     }),
-  ['src/views/contact/ContactPage.svelte', [{ languages: [undefined], mocking: [undefined] }]],
-  ['src/views/contact/ContactPage.svelte@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactPage.svelte', [{ languages: [undefined] }]],
   ['src/views/contact/ContactPage.svelte@svelte-i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/ContactPage.test.ts', [{ languages: [undefined] }]],
   ['src/views/contact/ContactPage.test.ts@svelte-i18n', [{ languages: ANSWERED }]],

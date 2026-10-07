@@ -104,14 +104,14 @@ const reactIsland = (): Island => {
       ...translated<StarterFile>({ target: `${CONTACT_VIEW}/ContactIsland.tsx` }),
       { target: 'src/components/ui/index.ts' },
       // Under i18n the page reads the words the island hands it; React's own reads react-i18next.
-      ...mocked<StarterFile>({
+      {
         target: `${CONTACT_VIEW}/ContactPage.tsx`,
         source: `${CONTACT_PAGE}.tsx`,
         when: (answers) => {
           return !hasI18n(answers);
         },
         shared: 'react',
-      }),
+      },
       {
         target: `${CONTACT_VIEW}/ContactPage.tsx`,
         when: hasI18n,
@@ -190,13 +190,13 @@ const vueIsland = (): Island => {
     pageImport: "import ContactIsland from '@views/contact/ContactIsland.vue';",
     files: [
       ...translated<StarterFile>({ target: `${CONTACT_VIEW}/ContactIsland.vue` }),
-      ...mocked<StarterFile>({
+      {
         target: `${view}.vue`,
         when: (answers) => {
           return !hasI18n(answers);
         },
         shared: 'vue',
-      }),
+      },
       {
         target: `${view}.vue`,
         when: hasI18n,
@@ -258,14 +258,17 @@ const ownI18n = <T extends StarterFile | StarterTest>(host: IslandHost, file: T)
 
 // The framework's own asset, where no translation reaches it.
 const fromHost = <T extends StarterFile | StarterTest>(host: IslandHost, source: string, file: T): T[] => {
-  return mocked<T>({
+  const own: T = {
     ...file,
     source,
     when: (answers: Answers) => {
       return !hasI18n(answers);
     },
     shared: host,
-  });
+  };
+  const files = [own];
+
+  return files;
 };
 
 // Solid's own contact page and its form, moved to `src/views/`; Solid's i18n library is not Astro's, so under i18n

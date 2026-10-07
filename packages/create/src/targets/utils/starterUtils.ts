@@ -2,6 +2,7 @@ import { hasLibrary } from '@utils/answerUtils';
 
 import {
   hasForm,
+  hasI18n,
   hasMsw,
   starterApplies,
 } from './gateUtils';
@@ -105,6 +106,19 @@ export const contactFormTest = (stem = CONTACT_FORM, suffix = 'test'): StarterTe
   return test;
 };
 
+const hasEnglishForm = (answers: Answers): boolean => {
+  return hasForm(answers) && !hasI18n(answers);
+};
+
+// The English page's words, which say whether the form posts; under i18n the locale files say it.
+export const contactCopyFiles = (when = hasEnglishForm): StarterFile[] => {
+  return mocked<StarterFile>({
+    target: 'src/lib/services/contact-form/constants.ts',
+    when,
+    shared: true,
+  });
+};
+
 // RTK Query ships its own endpoints under this name.
 const hasSharedSubmit = (answers: Answers): boolean => {
   return answers.data !== 'rtk-query';
@@ -180,7 +194,11 @@ export const contactFormFiles = (): StarterFile[] => {
     },
   ];
 
-  const all = [...files, ...contactSubmitFiles()];
+  const all = [
+    ...files,
+    ...contactCopyFiles(),
+    ...contactSubmitFiles(),
+  ];
 
   return all;
 };

@@ -5,6 +5,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import {
   CONTACT_TEXT,
   type ContactValues,
@@ -35,6 +36,8 @@ export class Contact {
     email: new FormControl('', { nonNullable: true }),
     message: new FormControl('', { nonNullable: true }),
   });
+
+  protected readonly copy = CONTACT_COPY;
 
   protected readonly sent = signal(false);
 

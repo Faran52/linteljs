@@ -11,7 +11,6 @@ import {
   hasMsw,
 } from '../utils/gateUtils';
 import {
-  contactTranslated,
   languageUtilsFile,
   languageUtilsTest,
   localeFiles,
@@ -167,7 +166,7 @@ export const nuxtTarget: TargetBuilder = () => {
         when: hasI18n,
         variant: 'i18n',
       },
-      ...contactTranslated<StarterFile>({
+      ...translated<StarterFile>({
         target: 'src/views/contact/ContactView.vue',
         when: hasForm,
         shared: 'vue',

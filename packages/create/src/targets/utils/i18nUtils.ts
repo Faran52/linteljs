@@ -18,7 +18,6 @@ import {
 } from './gateUtils';
 import {
   filesAt,
-  mocked,
   variantOf,
 } from './starterUtils';
 
@@ -30,8 +29,6 @@ export interface I18nFileLists {
   readonly translated: readonly string[];
   // Pairs whose base carries its own condition, such as the root layout's styling.
   readonly pairs?: readonly StarterFile[];
-  // The contact page, as the three `contactTranslated` makes.
-  readonly contact?: StarterFile;
   // Written only when i18n is on.
   readonly only: readonly string[];
 }
@@ -66,19 +63,10 @@ export const translated = <T extends StarterFile | StarterTest>(file: T): T[] =>
   return variants;
 };
 
-// The contact copy says whether the form posts: a locale key under i18n, an `msw` asset in English.
-export const contactTranslated = <T extends StarterFile | StarterTest>(file: T): T[] => {
-  const english = englishHalf(file);
-  const variants: T[] = [...mocked(english), i18nHalf(file)];
-
-  return variants;
-};
-
 // What i18n rewrites in a starter: the shared configs, then the target's own lists.
 export const i18nFiles = ({
   translated: own,
   pairs = [],
-  contact,
   only,
 }: I18nFileLists): StarterFile[] => {
   const files: StarterFile[] = [
@@ -97,7 +85,6 @@ export const i18nFiles = ({
       .flatMap((file) => {
         return translated(file);
       }),
-    ...contact === undefined ? [] : contactTranslated(contact),
     ...filesAt(only, {
       when: hasI18n,
       variant: 'i18n',

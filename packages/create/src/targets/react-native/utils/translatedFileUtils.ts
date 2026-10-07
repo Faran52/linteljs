@@ -1,6 +1,5 @@
 import { hasForm, hasI18n } from '../../utils/gateUtils';
 import {
-  contactTranslated,
   i18nFiles,
   translated,
 } from '../../utils/i18nUtils';
@@ -32,11 +31,11 @@ export const reactNativeI18nFiles = (): StarterFile[] => {
         },
         variant: 'tailwind',
       },
+      {
+        target: 'src/app/(tabs)/contact.tsx',
+        when: hasForm,
+      },
     ],
-    contact: {
-      target: 'src/app/(tabs)/contact.tsx',
-      when: hasForm,
-    },
     only: I18N_ONLY_FILES,
   });
 };
@@ -50,7 +49,7 @@ export const reactNativeI18nTests = (): StarterTest[] => {
           covers,
         });
       }),
-    ...contactTranslated<StarterTest>({
+    ...translated<StarterTest>({
       target: 'src/app-tabs-contact.test.tsx',
       covers: 'src/app/(tabs)/contact.tsx',
       when: hasForm,

@@ -7,7 +7,6 @@ import {
 } from '../constants';
 import { always, hasI18n } from '../utils/gateUtils';
 import {
-  contactTranslated,
   languageUtilsFile,
   languageUtilsTest,
   localeFiles,
@@ -21,6 +20,7 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import {
+  contactCopyFiles,
   contactFormTest,
   contactSubmitFiles,
   contactSubmitTests,
@@ -131,16 +131,14 @@ export const angularTarget: TargetBuilder = () => {
       // Reactive Forms ship with Angular, so the Contact page does too; TanStack Form swaps its component.
       ...CONTACT_PAGE_FILES
         .flatMap((target): StarterFile[] => {
-          // The template alone holds the copy.
-          const pairOf = target.endsWith('.html') ? contactTranslated : translated;
           const variants: StarterFile[] = [
-            ...pairOf<StarterFile>({
+            ...translated<StarterFile>({
               target,
               when: (answers) => {
                 return answers.form === undefined;
               },
             }),
-            ...pairOf<StarterFile>({
+            ...translated<StarterFile>({
               target,
               when: (answers) => {
                 return answers.form === 'tanstack-form';
@@ -168,6 +166,9 @@ export const angularTarget: TargetBuilder = () => {
         variant: 'zod',
         shared: true,
       },
+      ...contactCopyFiles((answers) => {
+        return !hasI18n(answers);
+      }),
       ...contactSubmitFiles(CONTACT_ENDPOINTS, always),
       tailwindThemeFile(),
       // The Angular builder runs Tailwind 4 only through a PostCSS config, and reads JSON alone.

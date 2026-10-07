@@ -1,5 +1,5 @@
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { contactTranslated, translated } from '../../utils/i18nUtils';
+import { translated } from '../../utils/i18nUtils';
 import { ALWAYS_PAGES, CONTACT_PAGE } from '../constants';
 
 import { hasRouter, isFrameworkMode } from './frameworkRouteUtils';
@@ -32,7 +32,7 @@ export const reactI18nFiles = (): StarterFile[] => {
       .flatMap((page) => {
         return translated<StarterFile>({ target: `${page}.tsx` });
       }),
-    ...contactTranslated<StarterFile>({
+    ...translated<StarterFile>({
       target: `${CONTACT_PAGE}.tsx`,
       when: hasForm,
     }),

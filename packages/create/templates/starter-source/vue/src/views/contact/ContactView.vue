@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CONTACT_COPY } from '@services/contact-form/constants';
 import { CONTACT_TEXT } from '@services/contact-form/contactFormService';
 
 import AppButton from '@ui/app-button/AppButton.vue';
@@ -17,7 +18,7 @@ const form = useContactForm((key) => {
       Contact
     </h1>
     <p class="page-lede">
-      Two fields, validated on blur. Nothing is sent anywhere.
+      {{ CONTACT_COPY.lede }}
     </p>
 
     <p
@@ -25,7 +26,7 @@ const form = useContactForm((key) => {
       class="sent"
       role="status"
     >
-      Thanks. Nothing was sent, this is a starter.
+      {{ CONTACT_COPY.sent }}
     </p>
     <form
       v-else
