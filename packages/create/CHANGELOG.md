@@ -47,6 +47,8 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
+- Nuxt renders the contact page with a form library, Vue's `ContactView` at `/contact`, and under MSW starts
+  the browser worker from `plugins/msw.client.ts` in development, so the form posts to `/api/contact`.
 - `typescript` is a target: a library with no framework, built by `tsdown` to `dist/` with its declarations, and
   packable from the start, with a `version`, `exports`, `types` and `files`. It asks no styling, form library,
   data fetching or API mocking question, and leaves out `frontend-design`.

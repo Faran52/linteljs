@@ -1,5 +1,3 @@
-import type { ComponentPaths } from '../utils/styleUtils';
-
 export const ALWAYS: readonly string[] = [
   'src/app.vue',
   'src/error.vue',
@@ -7,13 +5,6 @@ export const ALWAYS: readonly string[] = [
   'src/pages/about.vue',
   'src/pages/version.vue',
 ];
-
-// No contact page, so no text input.
-export const COMPONENTS: Omit<ComponentPaths, 'textInput'> = {
-  header: 'src/components/features/app-header/AppHeader',
-  mark: 'src/components/ui/app-mark/AppMark',
-  button: 'src/components/ui/app-button/AppButton',
-};
 
 export const FROM_VUE: readonly string[] = [
   'src/components/ui/app-mark/AppMark.vue',
@@ -28,11 +19,23 @@ export const TRANSLATED_FROM_VUE: readonly string[] = [
 ];
 
 export const SHARED: readonly string[] = [
-  'src/config/routes.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',
   'public/robots.txt',
 ];
 
-export { ACCESSORS as ACCESSORS } from '../vue/constants';
+// The contact page's sources whose suites are Vue's own.
+export const CONTACT_FROM_VUE: readonly string[] = [
+  'src/views/contact/ContactView.vue',
+  'src/views/contact/use-contact-form/useContactForm.ts',
+  'src/components/ui/text-input/TextInput.vue',
+  'src/lib/apis/contact/contactApi.ts',
+  'src/lib/providers/data/dataProvider.ts',
+];
+
+export {
+  ACCESSORS as ACCESSORS,
+  COMPONENTS as COMPONENTS,
+  FORM_FILES as FORM_FILES,
+} from '../vue/constants';

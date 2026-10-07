@@ -603,7 +603,8 @@ block. The rule reads identically on every target.
 The form, Zod and data answers are demonstrated on every target that renders a contact page, React Native among them:
 its screen reuses React's contact hooks, api spellings and providers, so a data layer there is the one React runs.
 Angular always renders one, on Reactive Forms, since `@angular/forms` ships with the framework; TanStack Form swaps
-the page's component for `injectForm`. Astro and the extension install the form library without a demo, and Nuxt declares its stores without
+the page's component for `injectForm`. Nuxt's `pages/contact.vue` renders Vue's `ContactView`, with
+`plugins/data.ts` installing Vue's data provider. Astro and the extension install the form library without a demo, and Nuxt declares its stores without
 a counter; recorded here so the absence reads as a decision rather than a forgotten file.
 
 ## The starter page
@@ -904,8 +905,9 @@ everywhere, `browser.ts` wherever a dev server serves a directory the worker can
 but React Native, and `native.ts` there. The entry starts the worker in development only and does not await it: nothing posts before a
 person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
 `root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
-`init` in `hooks.client.ts`). The web extension starts none: its popup fetches nothing under `/api`, so a worker
-there would answer no request.
+`init` in `hooks.client.ts`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
+for it anyway). The web extension starts none: its popup fetches nothing under `/api`, so a worker there would answer
+no request.
 
 React Native has no service worker, so with MSW it starts `msw/native`, which patches `fetch` inside the app. Its
 `main` becomes `src/index.ts`, which loads `expo-router/entry` and, under `__DEV__`, imports

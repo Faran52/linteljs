@@ -12,6 +12,8 @@ import type { StarterFile, StarterTest } from '../types';
 interface ContactApiOptions {
   // The tree holding both wrappers, where the plain one is not `starter-source/shared/`'s.
   shared?: TargetId;
+  // The tree holding the TanStack Query wrapper alone, where the plain one is `starter-source/shared/`'s.
+  query?: TargetId;
   // The tree holding the barrel, where the wrapper it re-exports is not named `useSubmitContact`.
   barrel?: TargetId;
 }
@@ -60,7 +62,11 @@ export const mocked = <T extends StarterFile | StarterTest>(file: T): T[] => {
 
 // The contact form's fetch wrapper, plain or through TanStack Query, behind the barrel its page imports.
 export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] => {
-  const { barrel = true, ...trees } = options;
+  const {
+    barrel = true,
+    shared,
+    query = shared,
+  } = options;
   const files: StarterFile[] = [
     {
       target: 'src/lib/apis/contact/index.ts',
@@ -75,7 +81,7 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
-      shared: trees.shared ?? true,
+      shared: shared ?? true,
     },
     {
       target: 'src/lib/apis/contact/contactApi.ts',
@@ -83,7 +89,7 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
         return hasForm(answers) && answers.data === 'tanstack-query';
       },
       variant: 'tanstack-query',
-      ...trees,
+      ...query === undefined ? {} : { shared: query },
     },
   ];
 

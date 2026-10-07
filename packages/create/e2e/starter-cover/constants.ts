@@ -21,6 +21,7 @@ export const STARTER_CASES: readonly string[] = [
   'vue pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
   'solid pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
   'nuxt pnpm vitest tanstack-form zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-form msw es-toolkit+ts-pattern+t3-env',
   'react-native pnpm vitest redux-toolkit rtk-query zod+es-toolkit+ts-pattern+t3-env',
   'react pnpm vitest tanstack-router msw languages zod+es-toolkit+ts-pattern+t3-env',
   'angular pnpm vitest es-toolkit+ts-pattern+t3-env',

@@ -137,6 +137,20 @@ describe('contactApiFiles', () => {
     expect(shared).toStrictEqual(expected);
   });
 
+  it('reads the TanStack wrapper alone from the tree named for it', () => {
+    const shared = contactApiFiles({ query: 'vue' })
+      .map(({ shared: tree }) => {
+        return tree;
+      });
+
+    const expected = [
+      true,
+      true,
+      'vue',
+    ];
+    expect(shared).toStrictEqual(expected);
+  });
+
   it('reads the barrel from the tree named for it', () => {
     const shared = contactApiFiles({
       shared: 'solid',

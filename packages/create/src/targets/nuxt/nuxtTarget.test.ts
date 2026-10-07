@@ -1,12 +1,17 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
+  contactCopyGates,
+  contactGates,
   type GateRow,
   mswGates,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
+  WITH_FORM,
   WITH_I18N,
+  WITHOUT_FORM,
   WITHOUT_I18N,
 } from '@mocks/starterGates';
 import {
@@ -101,8 +106,31 @@ const TRANSLATED_GATES: GateRow[] = [
 
 const GATES: GateRow[] = [
   ...TRANSLATED_GATES,
-  ...mswGates(false),
-  ...componentStyleGates(['app-mark/AppMark', 'app-button/AppButton']),
+  ...contactCopyGates('src/views/contact/ContactView.vue'),
+  ...mswGates(true),
+  ['src/plugins/msw.client.ts', [{ mocking: ['msw'] }]],
+  ...componentStyleGates([
+    'app-mark/AppMark',
+    'app-button/AppButton',
+    'text-input/TextInput',
+  ]),
+  ...contactGates(['tanstack-query']),
+  ['src/config/routes.ts', WITHOUT_FORM],
+  ['src/config/routes.ts@with-form', WITH_FORM],
+  ['src/pages/contact.vue', WITH_FORM],
+  ['src/plugins/data.ts', WITH_FORM],
+  ['src/views/contact/use-contact-form/useContactForm.ts', WITH_FORM],
+  ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
+  ['src/components/ui/text-input/types.ts', WITH_FORM],
+  ['src/lib/providers/data/dataProvider.ts', [{
+    form: ANSWERED,
+    data: [undefined, 'rtk-query'],
+  }]],
+  ['src/lib/providers/data/dataProvider.ts@tanstack-query', [{
+    form: ANSWERED,
+    data: ['tanstack-query'],
+  }]],
+  ['../components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/utils/queryOptionsUtils.ts', TANSTACK_QUERY],

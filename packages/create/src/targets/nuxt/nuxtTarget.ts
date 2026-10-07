@@ -5,8 +5,13 @@ import {
   PARTS,
   TRANSLATED_CONFIGS,
 } from '../constants';
-import { hasI18n } from '../utils/gateUtils';
 import {
+  hasForm,
+  hasI18n,
+  hasMsw,
+} from '../utils/gateUtils';
+import {
+  contactTranslated,
   languageUtilsFile,
   languageUtilsTest,
   localeFiles,
@@ -20,7 +25,13 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
-import { filesAt } from '../utils/starterUtils';
+import {
+  contactApiFiles,
+  contactFormFiles,
+  contactFormTest,
+  contactSubmitTests,
+  filesAt,
+} from '../utils/starterUtils';
 import {
   componentStyleModules,
   componentStyles,
@@ -36,6 +47,8 @@ import {
   ACCESSORS,
   ALWAYS,
   COMPONENTS,
+  CONTACT_FROM_VUE,
+  FORM_FILES,
   FROM_VUE,
   SHARED,
   TRANSLATED_FROM_VUE,
@@ -87,6 +100,10 @@ export const nuxtTarget: TargetBuilder = () => {
       '../components/features/app-header/AppHeader.css',
       '../components/ui/app-mark/AppMark.css',
       '../components/ui/app-button/AppButton.css',
+      {
+        path: '../components/ui/text-input/TextInput.css',
+        when: hasForm,
+      },
     ],
     tailwindTheme: '../styles/theme.css',
     nuxtProject: true,
@@ -103,8 +120,13 @@ export const nuxtTarget: TargetBuilder = () => {
       include: ['**/*.vue', '.nuxt/nuxt.d.ts'],
       dropsPaths: true,
     },
+    workerEntry: 'src/plugins/msw.client.ts',
     starterFiles: [
-      ...mockFiles(),
+      ...mockFiles(hasForm),
+      {
+        target: 'src/plugins/msw.client.ts',
+        when: hasMsw,
+      },
       ...componentStyles(COMPONENTS),
       // Vue renames two of the four, so each carries its own path.
       ...componentStyleModules('solid', COMPONENTS),
@@ -144,8 +166,49 @@ export const nuxtTarget: TargetBuilder = () => {
         when: hasI18n,
         variant: 'i18n',
       },
-      // No contact page.
-      ...localeFiles(),
+      ...contactTranslated<StarterFile>({
+        target: 'src/views/contact/ContactView.vue',
+        when: hasForm,
+        shared: 'vue',
+      }),
+      ...filesAt(['src/pages/contact.vue', 'src/plugins/data.ts'], {
+        when: hasForm,
+      }),
+      ...filesAt(FORM_FILES, {
+        when: hasForm,
+        shared: 'vue',
+      }),
+      {
+        target: 'src/lib/providers/data/dataProvider.ts',
+        when: (answers) => {
+          return hasForm(answers) && answers.data !== 'tanstack-query';
+        },
+        shared: 'vue',
+      },
+      {
+        target: 'src/lib/providers/data/dataProvider.ts',
+        when: (answers) => {
+          return hasForm(answers) && answers.data === 'tanstack-query';
+        },
+        variant: 'tanstack-query',
+        shared: 'vue',
+      },
+      ...contactApiFiles({ query: 'vue' }),
+      ...contactFormFiles(),
+      {
+        target: 'src/config/routes.ts',
+        when: (answers) => {
+          return !hasForm(answers);
+        },
+        shared: true,
+      },
+      {
+        target: 'src/config/routes.ts',
+        when: hasForm,
+        variant: 'with-form',
+        shared: true,
+      },
+      ...localeFiles(hasForm),
       languageUtilsFile(),
       COOKIE_UTILS,
       ...translated<StarterFile>({ target: 'src/views/home/HomeView.vue' }),
@@ -185,6 +248,26 @@ export const nuxtTarget: TargetBuilder = () => {
         target: 'src/pages/about.test.ts',
         covers: 'src/pages/about.vue',
       },
+      {
+        target: 'src/pages/contact.test.ts',
+        covers: 'src/pages/contact.vue',
+      },
+      {
+        target: 'src/plugins/data.test.ts',
+        covers: 'src/plugins/data.ts',
+      },
+      ...CONTACT_FROM_VUE
+        .map((covers): StarterTest => {
+          const test: StarterTest = {
+            target: covers.replace(/\.\w+$/v, '.test.ts'),
+            covers,
+            shared: 'vue',
+          };
+
+          return test;
+        }),
+      contactFormTest(),
+      ...contactSubmitTests(),
       ...translated<StarterTest>({
         target: 'src/error.test.ts',
         covers: 'src/error.vue',
