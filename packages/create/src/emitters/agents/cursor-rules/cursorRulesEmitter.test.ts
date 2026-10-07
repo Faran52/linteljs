@@ -61,6 +61,18 @@ describe('cursorArtifacts', () => {
     );
   });
 
+  it('scopes globs to every package of a monorepo', () => {
+    const answers = {
+      ...answersFor(['cursor']),
+      layout: 'monorepo' as const,
+    };
+    const artifacts = cursorArtifacts(answers);
+    const transform = transformOf(artifacts, '.cursor/rules/repo-structure.mdc');
+    const output = transform(RULE, null);
+
+    expect(output).toContain('globs: **/src/**/*.ts,**/src/**/*.tsx,**/tsconfig.json\n');
+  });
+
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {
     const artifacts = cursorArtifacts(answersFor(['cursor']));
     const transform = transformOf(artifacts, '.cursor/rules/type-standards.mdc');

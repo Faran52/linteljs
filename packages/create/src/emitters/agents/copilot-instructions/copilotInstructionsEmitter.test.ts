@@ -51,6 +51,19 @@ describe('copilotArtifacts', () => {
       .toBe('---\napplyTo: "src/**/*.ts,src/**/*.tsx,tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n');
   });
 
+  it('scopes applyTo to every package of a monorepo', () => {
+    const answers = {
+      ...answersFor(['copilot']),
+      layout: 'monorepo' as const,
+    };
+    const artifacts = copilotArtifacts(answers);
+    const transform = transformOf(artifacts, '.github/instructions/repo-structure.instructions.md');
+
+    const transformed = transform(RULE, null);
+
+    expect(transformed).toContain('applyTo: "**/src/**/*.ts,**/src/**/*.tsx,**/tsconfig.json"');
+  });
+
   it('installs the repository-wide file once and never rewrites it', () => {
     const [instructions] = copilotArtifacts(answersFor(['copilot']));
 

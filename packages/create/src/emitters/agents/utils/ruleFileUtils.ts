@@ -1,6 +1,10 @@
 import { basename } from 'node:path';
 
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type Layout,
+} from '@config/types';
 
 import { forAnswers, ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
 import { withoutClaudePaths } from '../../utils/frontmatterUtils';
@@ -28,8 +32,8 @@ const expanded = (glob: string): string[] => {
   return globs;
 };
 
-// Empty where the rule carries no `paths:` list.
-export const globsOf = (source: string): string => {
+// Empty where the rule carries no `paths:` list. A monorepo's packages sit below the root the tools read from.
+export const globsOf = (source: string, layout: Layout): string => {
   const listed = PATHS.exec(source)?.[1];
 
   return listed === undefined
@@ -41,6 +45,9 @@ export const globsOf = (source: string): string => {
           return /"(.+)"/u.exec(line)?.[1] ?? [];
         })
         .flatMap(expanded)
+        .map((glob) => {
+          return layout === 'monorepo' && !glob.startsWith('**/') ? `**/${glob}` : glob;
+        })
         .join(',');
 };
 

@@ -15,22 +15,28 @@ import { globsOf, ruleArtifacts } from './ruleFileUtils';
 
 describe('globsOf', () => {
   it('reads the shared paths list as one glob string, and an absent one as empty', () => {
-    const globs = globsOf(RULE);
+    const globs = globsOf(RULE, 'single');
     expect(globs).toBe('src/**/*.ts,src/**/*.tsx,tsconfig.json');
-    const noFrontmatterHereGlobs = globsOf('# No frontmatter here.\n');
+    const noFrontmatterHereGlobs = globsOf('# No frontmatter here.\n', 'single');
     expect(noFrontmatterHereGlobs).toBe('');
   });
 
   it('reads paths only from frontmatter that opens the file', () => {
-    const globs = globsOf('# Title\n\n---\npaths:\n  - "src/**"\n---\n');
+    const globs = globsOf('# Title\n\n---\npaths:\n  - "src/**"\n---\n', 'single');
     expect(globs).toBe('');
   });
 
   it('expands every brace group, since both tools split the string on its commas', () => {
-    const globs = globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n');
+    const globs = globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n', 'single');
 
     expect(globs)
       .toBe('**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx');
+  });
+
+  it('reaches into every package of a monorepo, and leaves a glob that already does', () => {
+    const globs = globsOf('---\npaths:\n  - "src/**/*.ts"\n  - "**/*.tsx"\n---\n', 'monorepo');
+
+    expect(globs).toBe('**/src/**/*.ts,**/*.tsx');
   });
 });
 

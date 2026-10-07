@@ -26,7 +26,7 @@ export const cursorArtifacts = (answers: Answers): Artifact[] => {
     },
     // Cursor spells any-file as `alwaysApply`, so globs and `alwaysApply` move together.
     ...ruleArtifacts(answers, '.cursor/rules', '.mdc', (source) => {
-      const globs = globsOf(source);
+      const globs = globsOf(source, answers.layout);
       const scope = globs === '' ? 'alwaysApply: true' : `globs: ${globs}\nalwaysApply: false`;
 
       return `---\ndescription: ${titleOf(source)}\n${scope}\n---\n\n`;

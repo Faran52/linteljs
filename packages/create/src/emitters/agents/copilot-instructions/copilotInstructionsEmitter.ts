@@ -8,7 +8,7 @@ export const copilotArtifacts = (answers: Answers): Artifact[] => {
     adapterArtifact('.github/copilot-instructions.md', answers),
     // Copilot reads `**` as any file.
     ...ruleArtifacts(answers, '.github/instructions', '.instructions.md', (source) => {
-      const globs = globsOf(source);
+      const globs = globsOf(source, answers.layout);
 
       return `---\napplyTo: "${globs === '' ? '**' : globs}"\n---\n\n`;
     }),
