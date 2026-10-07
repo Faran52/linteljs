@@ -686,6 +686,30 @@ describe('the store question', () => {
     expect(result.answers.store).toBeUndefined();
     expect(recorded.calls).not.toContain('State store');
   });
+
+  it('never asks the languages of an extension without a popup', async () => {
+    const { result, recorded } = await askWith([
+      'demo-app',
+      'webextension',
+      undefined,
+      ['devtools-panel'],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+
+    expect(result.answers.languages).toBeUndefined();
+    expect(recorded.calls).not.toContain('Languages');
+  });
 });
 
 describe('the project name question', () => {
