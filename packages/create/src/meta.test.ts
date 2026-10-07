@@ -26,7 +26,11 @@ import { MANAGER_FLOORS } from '@config/constants';
 import { keysOf } from '@utils/objectUtils';
 
 import { type AnswerRecord, ANSWERS } from '@answers';
-import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
+import {
+  BUILD_EMITTERS,
+  ROOT_EMITTERS,
+  SEED_EMITTERS,
+} from '@emitters/registry';
 import { TARGETS } from '@targets';
 
 import { type Ring, RINGS } from './rings';
@@ -91,6 +95,7 @@ const SHAPES: RingShape[] = [
     suffixes: {
       agents: 'Emitter',
       always: 'Emitter',
+      layout: 'Emitter',
       libraries: 'Emitter',
       manager: 'Emitter',
       target: 'Emitter',
@@ -98,7 +103,11 @@ const SHAPES: RingShape[] = [
       typesafety: 'Emitter',
     },
     registry: () => {
-      const emitterKeys = [...Object.keys(BUILD_EMITTERS), ...Object.keys(SEED_EMITTERS)];
+      const emitterKeys = [
+        ...Object.keys(BUILD_EMITTERS),
+        ...Object.keys(SEED_EMITTERS),
+        ...Object.keys(ROOT_EMITTERS),
+      ];
       return emitterKeys;
     },
   },

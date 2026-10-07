@@ -818,7 +818,9 @@ describe('the monorepo layout', () => {
 
     expect(targets).toEqual(expect.arrayContaining([
       'apps/shop/package.json',
+      'package.json',
       'apps/shop/eslint.config.ts',
+      'eslint.config.ts',
       'apps/shop/src/main.tsx',
       '.husky/pre-commit',
       'linteljs.config.json',
@@ -827,7 +829,7 @@ describe('the monorepo layout', () => {
 
     const strays = targets
       .filter((target) => {
-        return target === 'package.json' || target.startsWith('src/');
+        return target.startsWith('src/') || target === 'vite.config.ts';
       });
 
     expect(strays).toEqual([]);

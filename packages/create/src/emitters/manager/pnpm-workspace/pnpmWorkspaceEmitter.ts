@@ -1,5 +1,6 @@
 import { type Answers, type Artifact } from '@config/types';
 
+import { WORKSPACE_GLOBS } from '../../constants';
 import { merged } from '../../utils/artifactUtils';
 import { flatOverrides } from '../../utils/packageJsonUtils';
 
@@ -43,8 +44,16 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
   const keepsOverrides = Object.keys(overrides).length === 0 || /^overrides:/m.test(withAge);
   const withOverrides = keepsOverrides ? withAge : `${withAge.trimEnd()}\n\n${overridesBlock(overrides)}`;
 
+  const packagesBlock = `packages:\n${WORKSPACE_GLOBS
+    .map((glob) => {
+      return `  - '${glob}'\n`;
+    })
+    .join('')}\n`;
+  const listsPackages = answers.layout === 'single' || /^packages:/m.test(withOverrides);
+  const withPackages = listsPackages ? withOverrides : `${packagesBlock}${withOverrides}`;
+
   // `trimEnd`: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
-  return `${withOverrides.trimEnd()}\n`;
+  return `${withPackages.trimEnd()}\n`;
 };
 
 // Discarding it breaks an install that already wrote into it.

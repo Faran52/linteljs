@@ -368,6 +368,42 @@ export const ROOT_DIRECTORIES = [
   'scripts/',
 ];
 
+export const WORKSPACE_DIRECTORIES = ['apps', 'packages'];
+
+export const WORKSPACE_GLOBS = ['apps/*', 'packages/*'];
+
+// npm, yarn and bun read these only from the root manifest.
+export const ROOT_FIELDS = [
+  'packageManager',
+  'engines',
+  'devEngines',
+  'overrides',
+  'resolutions',
+  'trustedDependencies',
+  'allowScripts',
+] as const;
+
+// Husky and lint-staged run once, at the git root.
+export const HOOK_DEV_DEPENDENCIES = [
+  '@commitlint/cli',
+  '@commitlint/config-conventional',
+  'husky',
+  'lint-staged',
+];
+
+// Sorted, as a manifest lists them.
+export const ROOT_DEV_DEPENDENCIES = [
+  '@commitlint/cli',
+  '@commitlint/config-conventional',
+  '@linteljs/eslint-config',
+  '@types/node',
+  'eslint',
+  'husky',
+  'jiti',
+  'lint-staged',
+  'typescript',
+];
+
 export const ROOT_FILES = [
   'AGENTS.md',
   'CLAUDE.md',

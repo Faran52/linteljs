@@ -12,6 +12,7 @@ import {
 
 import { targetFor } from '@targets';
 
+import { HOOK_DEV_DEPENDENCIES, ROOT_FIELDS } from '../../constants';
 import { merged } from '../../utils/artifactUtils';
 import {
   allowedBuildNames,
@@ -38,10 +39,13 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...existing.dependencies,
     ...buildDependencies(answers),
   };
-  const devDependencies = {
+  const allDevDependencies: Record<string, string> = {
     ...omit(existing.devDependencies ?? {}, SUPERSEDED),
     ...buildDevDependencies(answers),
   };
+  const devDependencies = answers.layout === 'monorepo'
+    ? omit(allDevDependencies, HOOK_DEV_DEPENDENCIES)
+    : allDevDependencies;
   const pm = answers.packageManager;
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
   const overrides = buildOverrides(answers);
@@ -128,8 +132,10 @@ export const packageJsonEmitter = (answers: Answers, _project: ProjectShape, nam
   const merge = (current: string | null): string => {
     const manifest: PackageJson = current === null ? { name } : parsePackageJson(current);
     const patched = patchPackageJson(manifest, answers);
+    // The root manifest carries these: `workspace-root`.
+    const app = answers.layout === 'monorepo' ? omit(patched, ROOT_FIELDS) : patched;
 
-    return serializedPackageJson(patched);
+    return serializedPackageJson(app);
   };
 
   const artifacts = [merged('package', 'package.json', merge)];

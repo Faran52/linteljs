@@ -260,3 +260,19 @@ describe('buildScripts', () => {
     expect(scripts).not.toHaveProperty('prepare');
   });
 });
+
+describe('the monorepo layout', () => {
+  it('runs the root checker and leaves husky to the root', () => {
+    const scripts = buildScripts(answersFor({ layout: 'monorepo' }));
+    expect(scripts['lint:types']).toBe('node ../../scripts/checkBannedPatterns.ts src');
+    expect(scripts).not.toHaveProperty('prepare');
+
+    const svelte = buildScripts(answersFor({
+      layout: 'monorepo',
+      target: 'svelte',
+      packageManager: 'yarn',
+    }));
+
+    expect(svelte['postinstall']).toBe('svelte-kit sync');
+  });
+});

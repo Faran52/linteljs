@@ -354,3 +354,37 @@ describe('packageJsonEmitter', () => {
     expect(patched.scripts?.['lint']).toBe('eslint . --concurrency auto');
   });
 });
+
+describe('the monorepo layout', () => {
+  it('leaves the root fields and the commit hooks to the root manifest', () => {
+    const answers = answersFor({
+      layout: 'monorepo',
+      packageManager: 'npm',
+    });
+    const [artifact] = packageJsonEmitter(answers, EMPTY_PROJECT, 'demo-app');
+    const text = artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '{}';
+    const manifest = parsePackageJson(text);
+    const devDependencies = Object.keys(manifest.devDependencies ?? {});
+
+    expect(manifest.packageManager).toBeUndefined();
+    expect(manifest.engines).toBeUndefined();
+    expect(manifest.devEngines).toBeUndefined();
+    expect(manifest.allowScripts).toBeUndefined();
+    expect(devDependencies).toContain('eslint');
+    expect(devDependencies).not.toContain('husky');
+    expect(devDependencies).not.toContain('lint-staged');
+    expect(devDependencies).not.toContain('@commitlint/cli');
+    expect(devDependencies).not.toContain('@commitlint/config-conventional');
+  });
+
+  it('keeps the root fields and the commit hooks in a single repo', () => {
+    const answers = answersFor({ packageManager: 'npm' });
+    const [artifact] = packageJsonEmitter(answers, EMPTY_PROJECT, 'demo-app');
+    const text = artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '{}';
+    const manifest = parsePackageJson(text);
+    const devDependencies = Object.keys(manifest.devDependencies ?? {});
+
+    expect(manifest.packageManager).toMatch(/^npm@/u);
+    expect(devDependencies).toContain('husky');
+  });
+});

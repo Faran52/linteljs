@@ -58,7 +58,8 @@ pipeline/   the stage machine, sync, and the passes over written source.
 
 - `<group>/<subject>/<subjectEmitter>.ts`: the subject directory is named for the file it writes, the group for
   the answer that decides whether it writes anything (`agents/`, `manager/`, `target/`, `testing/`,
-  `libraries/`, `typesafety/`, and `always/` for none).
+  `libraries/`, `typesafety/`, and `always/` for none). `layout/workspace-root/` writes a monorepo's root manifest and tooling; `ROOT_EMITTERS` holds it, past
+  the move `inLayout` makes.
 - Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a branchless `flatMap`
   over `registry.ts`. `meta.test.ts` reads its source to hold that, and holds the registry's `<group>/<subject>`
   keys against the directory listing both ways.

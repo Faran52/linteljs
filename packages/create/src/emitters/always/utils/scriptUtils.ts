@@ -45,7 +45,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     'lint': 'eslint . --concurrency auto',
     'lint:fix': 'eslint . --fix --concurrency auto',
     // lint-staged scans staged files only; the checker walks `src`, so an unstaged new file is scanned too.
-    'lint:types': 'node scripts/checkBannedPatterns.ts src',
+    'lint:types': `node ${answers.layout === 'monorepo' ? '../../' : ''}scripts/checkBannedPatterns.ts src`,
     // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,
     'lint:css:fix': `stylelint "${styleGlob(answers)}" --fix --allow-empty-input`,
@@ -63,6 +63,14 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
 
   scripts['build'] = target.build;
 
+  const installScript = answers.packageManager === 'yarn' ? 'postinstall' : 'prepare';
+  // A monorepo runs husky from the root manifest.
+  const install = [
+    ...compile,
+    ...target.prepare === undefined ? [] : [target.prepare],
+    ...answers.layout === 'monorepo' ? [] : ['husky'],
+  ];
+
   const packageScripts: Record<string, string> & CheckScript = {
     ...scripts,
     check: gateScripts(answers)
@@ -71,12 +79,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
       })
       .join(' && '),
     // Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
-    [answers.packageManager === 'yarn' ? 'postinstall' : 'prepare']:
-      [
-        ...compile,
-        ...target.prepare === undefined ? [] : [target.prepare],
-        'husky',
-      ].join(' && '),
+    ...install.length === 0 ? {} : { [installScript]: install.join(' && ') },
   };
 
   return packageScripts;

@@ -163,3 +163,25 @@ it('adds allowBuilds to a next scaffold that has none', () => {
   expect(merged).toContain("allowBuilds:\n  '@parcel/watcher': true\n  '@swc/core': true");
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });
+
+describe('the monorepo layout', () => {
+  it('lists the workspaces once', () => {
+    const answers = answersFor({ layout: 'monorepo' });
+    const fresh = mergePnpmWorkspace(null, answers);
+    const listed = fresh.startsWith("packages:\n  - 'apps/*'\n  - 'packages/*'\n\nallowBuilds:");
+    expect(listed).toBe(true);
+
+    const again = mergePnpmWorkspace(fresh, answers);
+    expect(again).toBe(fresh);
+
+    const single = mergePnpmWorkspace(null, answersFor({}));
+    expect(single).not.toContain('packages:');
+  });
+
+  it('lists the workspaces when only a comment names packages', () => {
+    const existing = '# no packages: yet\nonlyBuiltDependencies:\n  - foo\n';
+    const merged = mergePnpmWorkspace(existing, answersFor({ layout: 'monorepo' }));
+    const listed = merged.startsWith("packages:\n  - 'apps/*'");
+    expect(listed).toBe(true);
+  });
+});

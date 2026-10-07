@@ -25,6 +25,7 @@ import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigEmitter } from './always/tsconfig/tsconfigEmitter';
+import { workspaceRootEmitter } from './layout/workspace-root/workspaceRootEmitter';
 import { i18nConfigEmitter } from './libraries/i18n-config/i18nConfigEmitter';
 import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
 import { bunfigEmitter } from './manager/bunfig/bunfigEmitter';
@@ -93,18 +94,31 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'target/starter-source': starterSourceEmitter,
 };
 
+// Written at the git root, so the layout's move skips them.
+export const ROOT_EMITTERS: Record<string, Emitter> = {
+  'layout/workspace-root': workspaceRootEmitter,
+};
+
 // A merge belongs here, not in a stage, or it reaches new projects and no old one.
 export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
   const artifacts = inLayout(answers, name, Object.values(BUILD_EMITTERS)
     .flatMap((emit) => {
       return emit(answers, project, name);
     }));
+  const rootArtifacts = Object.values(ROOT_EMITTERS)
+    .flatMap((emit) => {
+      return emit(answers, project, name);
+    });
 
   // Computed here: an emitter would have to leave itself out of its own input.
   const removable = removableIn(artifacts);
   const record = managedRecord(removable);
   const managed = emitted('standard', MANAGED_PATH, record);
-  const withManaged = [...artifacts, managed];
+  const withManaged = [
+    ...artifacts,
+    ...rootArtifacts,
+    managed,
+  ];
 
   return withManaged;
 };

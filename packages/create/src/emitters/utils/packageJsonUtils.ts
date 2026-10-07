@@ -58,6 +58,7 @@ export interface PackageJson {
   files?: string[];
   imports?: Record<string, string>;
   type?: string;
+  workspaces?: string[];
   packageManager?: string;
   engines?: Record<string, string>;
   devEngines?: Record<string, DevEngine>;
