@@ -1168,8 +1168,9 @@ off, and an Astro island carries `c(6)`, so the compiler is proven to run, not o
 experimental, and both it and `@astrojs/react` peer `oxc-transform-react ^0.145.0`, which on a zero major admits
 0.145 alone. The Babel pass is the fallback if a release breaks: the plugin still exports `reactCompilerPreset()`.
 Plugin 6.1.2 (2026-10-05) moved its peer to `^0.152.0` while `@astrojs/react` 7.0.0 kept `^0.145.0`, and npm
-refused the Astro tree with ERESOLVE. The plugin is held at exactly 6.1.1, and Astro declares it directly so npm
-dedupes `@astrojs/react`'s `^6.1.1` onto it. Lift both holds once `@astrojs/react` peers `^0.152.0`.
+refused the Astro tree with ERESOLVE, yarn with YN0060. The plugin is held at exactly 6.1.1, and Astro leaves it to
+`@astrojs/react` under an override scoped to that parent (withastro/astro#18151). The override is lifted once
+`@astrojs/react` peers `oxc-transform-react ^0.152`, and the hold with it.
 
 The compiler is off under `VITEST`, since the memo cache leaves one branch per component no suite reaches. Next
 keeps its own switch, off like everything else in `next.config.ts`. Framework mode builds through `reactRouter()`,

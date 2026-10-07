@@ -207,6 +207,21 @@ describe('buildOverrides', () => {
     expect(overrides).toEqual(expected);
   });
 
+  it.each([
+    ['npm', { '@astrojs/react': { '@vitejs/plugin-react': '6.1.1' } }],
+    ['pnpm', { '@astrojs/react>@vitejs/plugin-react': '6.1.1' }],
+    ['yarn', { '@astrojs/react/@vitejs/plugin-react': '6.1.1' }],
+    ['bun', { '@vitejs/plugin-react': '6.1.1' }],
+  ] as const)('holds the react plugin under `@astrojs/react` for %s', (packageManager, expected) => {
+    const overrides = buildOverrides(answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+      packageManager,
+    }));
+
+    expect(overrides).toEqual(expected);
+  });
+
   it('nests the npm pin under each parent', () => {
     const overrides = buildOverrides(answersFor({
       target: 'react-native',
@@ -712,14 +727,14 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('@react-native/metro-config');
   });
 
-  it('installs the held React plugin but not its Rolldown preset for an Astro React island', () => {
+  it('leaves the React plugin and its Rolldown preset to `@astrojs/react` for an Astro React island', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'astro',
       hostedFramework: 'react',
     }));
 
     expect(devDependencies).toHaveProperty('@astrojs/react');
-    expect(devDependencies).toHaveProperty('@vitejs/plugin-react');
+    expect(devDependencies).not.toHaveProperty('@vitejs/plugin-react');
     expect(devDependencies).not.toHaveProperty('@rolldown/plugin-babel');
   });
 

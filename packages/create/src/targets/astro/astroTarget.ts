@@ -186,13 +186,27 @@ export const astroTarget: TargetBuilder = (answers) => {
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      // With the build plugin `@astrojs/react` brings, so npm dedupes its copy onto the held version.
-      ...hosted?.devDependencies ?? [],
+      // Less the build plugin, which `@astrojs/react` brings and `overrides` holds.
+      ...hosted?.devDependencies
+        .filter((name) => {
+          return name !== '@vitejs/plugin-react';
+        }) ?? [],
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).
     allowBuilds: ['esbuild', ...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
+    // Until `@astrojs/react` peers the `oxc-transform-react` its plugin's newer releases do.
+    ...(framework === 'react'
+      ? {
+          overrides: [
+            {
+              parent: '@astrojs/react',
+              name: '@vitejs/plugin-react',
+            },
+          ],
+        }
+      : {}),
     i18n: ASTRO_I18N,
   };
 

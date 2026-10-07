@@ -179,8 +179,8 @@ when a version's change lives in a sibling it is described there instead:
 - The package also provides a `create` binary, which `yarn create @linteljs` looks for.
 - The React Compiler runs natively through `@vitejs/plugin-react`'s `compiler` and `oxc-transform-react`, with no
   Babel pass; Expo's `app.json` sets `experiments.reactCompiler`. `eslint-plugin-react-compiler` is gone, since
-  `eslint-plugin-react-hooks` 7 carries its rules. `@vitejs/plugin-react` is held at 6.1.1, and an Astro React
-  island declares it, since 6.1.2 peers a compiler `@astrojs/react` 7 refuses and npm failed the install.
+  `eslint-plugin-react-hooks` 7 carries its rules. `@vitejs/plugin-react` is held at 6.1.1, since 6.1.2 peers a
+  compiler `@astrojs/react` 7 refuses.
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
@@ -260,6 +260,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
+  a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
+  that `@astrojs/react` 7 refuses, which failed yarn and npm.
 - **The commit gate reads a check run as written.** `CI=1 pnpm check` and `cd <dir> && FOO=a pnpm run check
   > /tmp/check.log 2>&1` count; an assignment whose value is computed (`CI="$()" pnpm check`), an
   assignment chained before the check (`CI=1; pnpm check`) and a wrapper (`env`, `time`) no longer do.

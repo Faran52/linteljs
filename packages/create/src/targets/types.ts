@@ -156,6 +156,7 @@ export interface TargetRecord {
   // Absent, the question is not asked.
   routers?: readonly Router[];
   tailwind?: TailwindSlot;
+  overrides?: ScopedOverride[];
   hostsBrowser?: true;
   // Present once a target translates its starter: what `languages` adds to its dependencies and test setup.
   i18n?: I18nParts;

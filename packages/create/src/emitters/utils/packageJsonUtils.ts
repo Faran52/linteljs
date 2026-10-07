@@ -221,7 +221,11 @@ export const pinned = (overrides: ScopedOverride[], versions: Record<string, str
 };
 
 const pinsFor = (answers: Answers): Pin[] => {
-  const scoped = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides ?? [] : [];
+  const target = targetFor(answers);
+  const scoped = [
+    ...target.overrides ?? [],
+    ...(answers.styling === 'tailwind' ? target.tailwind?.overrides ?? [] : []),
+  ];
 
   const scopedNames = scoped
     .map(({ name }) => {

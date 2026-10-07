@@ -177,11 +177,27 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  it('declares the react build plugin, so npm dedupes the copy `@astrojs/react` brings onto the held version', () => {
-    const { devDependencies } = recordFor({ hostedFramework: 'react' });
+  it('leaves the react build plugin to `@astrojs/react` and holds it there with a scoped override', () => {
+    const {
+      devDependencies,
+      overrides,
+    } = recordFor({ hostedFramework: 'react' });
 
-    expect(devDependencies).toContain('@vitejs/plugin-react');
+    const expected = [
+      {
+        parent: '@astrojs/react',
+        name: '@vitejs/plugin-react',
+      },
+    ];
+    expect(devDependencies).not.toContain('@vitejs/plugin-react');
     expect(devDependencies).toContain('oxc-transform-react');
+    expect(overrides).toEqual(expected);
+  });
+
+  it('overrides nothing for a host other than react', () => {
+    const { overrides } = recordFor({ hostedFramework: 'vue' });
+
+    expect(overrides).toBeUndefined();
   });
 
   it('includes vue files in the tsconfig only for the vue host, so the project service finds its island', () => {
