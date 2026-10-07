@@ -1,6 +1,5 @@
 import { sortBy } from 'es-toolkit';
 
-import { scopeOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   gapIsBlank,
   getIndent,
@@ -190,7 +189,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const options = optionsOf<ChainCallNewlineOptions>(context);
     const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
     const step = getIndentStep(sourceCode);
@@ -209,7 +208,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         return false;
       }
 
-      const variable = resolveVariable(scopeOf(context, top), base.name);
+      const variable = resolveVariable(context.sourceCode.getScope(top), base.name);
 
       if (!variable || variable.defs.length === 0) {
         return true;

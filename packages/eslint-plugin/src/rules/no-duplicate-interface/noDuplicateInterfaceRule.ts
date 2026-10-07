@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
   mustFind,
@@ -37,7 +36,7 @@ export const noDuplicateInterface = createRule('no-duplicate-interface', {
       'TSInterfaceDeclaration > Identifier.id': (node: RuleNode) => {
         const scope = scopeOf(mustFind(node.parent));
         const names = namesByScope.get(scope) ?? new Set<string>();
-        const name = sourceCodeOf(context).getText(node);
+        const name = context.sourceCode.getText(node);
 
         if (names.has(name)) {
           context.report({

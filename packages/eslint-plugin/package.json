@@ -6,11 +6,11 @@
   "license": "MIT",
   "author": "Faran Ali",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.cts",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "publishConfig": {
     "access": "public",
@@ -32,7 +32,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && tsx scripts/build/dist-manifest/distManifestBuild.ts && tsx scripts/build/rule-docs/ruleDocsBuild.ts",
+    "build": "tsdown && tsx scripts/build/rule-docs/ruleDocsBuild.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.src.json",
     "test": "vitest run",
     "prepack": "pnpm run build",
@@ -53,8 +53,8 @@
         "default": "./dist/index.mjs"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
       }
     },
     "./package.json": "./package.json"
@@ -78,7 +78,7 @@
     "vue-eslint-parser": "catalog:"
   },
   "peerDependencies": {
-    "eslint": ">=6.0.0"
+    "eslint": ">=8.40.0"
   },
   "keywords": [
     "codestyle",

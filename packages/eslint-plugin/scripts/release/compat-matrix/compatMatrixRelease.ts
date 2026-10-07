@@ -15,6 +15,7 @@ import {
 } from '../utils/eslintOutputUtils.ts';
 
 import {
+  ESLINT_VERSIONS,
   EXPECTED,
   FIRST_FLAT_MAJOR,
   FIXTURE,
@@ -75,10 +76,10 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
 
   writeFileSync(tsConfigPath, isFlat(major) ? tsFlatConfig() : tsLegacyConfig());
 
-  // `--legacy-peer-deps`: the 2019 parser's peer range omits these old majors; the TS_TOOLING pairing is the check.
+  // `--legacy-peer-deps`: the parser's peer range starts above 8.40; the TS_TOOLING pairing is the check.
   await execFileAsync('npm', [
     'install',
-    `eslint@${String(major)}`,
+    `eslint@${ESLINT_VERSIONS[major]}`,
     tarball,
     ...TS_TOOLING[major],
     '--no-audit',
@@ -142,7 +143,7 @@ const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean
   return verdict;
 };
 
-// Each major is its own install, so all six run at once.
+// Each major is its own install, so all of them run at once.
 const check = async (major: Major, tarball: string): Promise<Outcome> => {
   try {
     const dir = await prepare(major, tarball);

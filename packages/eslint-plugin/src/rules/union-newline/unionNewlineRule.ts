@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
   gapIsBlank,
@@ -67,7 +66,7 @@ export const unionNewline = createRule('union-newline', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const options = optionsOf<UnionNewlineOptions>(context);
     const maxGenericMembers = options.maxGenericMembers ?? DEFAULT_MAX_GENERIC_MEMBERS;
     const indentsAt = indentReader(sourceCode);

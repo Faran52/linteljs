@@ -10,6 +10,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Breaking
 
+- **Node `>=22.0.0`**, up from 18.18. Node below 22 is dropped. ESLint stays `>=9`, flat config only.
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
   subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the
   import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`; the options are the same.

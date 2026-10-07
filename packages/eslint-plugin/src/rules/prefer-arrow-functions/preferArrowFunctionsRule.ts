@@ -1,9 +1,4 @@
 import {
-  declaredVariablesOf,
-  physicalFilenameOf,
-  sourceCodeOf,
-} from '../../utils/compatUtils.ts';
-import {
   createRule,
   isIdentifierNamed,
   mustFind,
@@ -55,7 +50,7 @@ type FunctionDeclarationNode = Extract<RuleNode, FunctionDeclarationMatch>;
 const SKIPPED_PROPERTY_KINDS = new Set(['get', 'set']);
 
 const nameVariableOf = (context: RuleContext, fn: FunctionLike): Scope.Variable | undefined => {
-  const [nameVariable] = declaredVariablesOf(context, fn);
+  const [nameVariable] = context.sourceCode.getDeclaredVariables(fn);
 
   return nameVariable;
 };
@@ -65,7 +60,7 @@ const isClassMemberValue = (fn: FunctionLike): boolean => {
   return fn.parent.type === 'PropertyDefinition';
 };
 
-// An identifier is never the Program, and ESLint 6 on links every node in a full pass before any listener.
+// An identifier is never the Program, and ESLint links every node in a full pass before any listener.
 const parentOf = (reference: Scope.Reference): RuleNode => {
   return mustFind((reference.identifier as RuleNode).parent);
 };
@@ -125,8 +120,8 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
-    const isTsx = physicalFilenameOf(context).endsWith('.tsx');
+    const { sourceCode } = context;
+    const isTsx = context.physicalFilename.endsWith('.tsx');
 
     // Off by default: no lint rule can tell a call that runs before declaration from one that only reads that way.
     const forceHoisted = optionsOf<PreferArrowFunctionsOptions>(context).forceHoisted ?? false;

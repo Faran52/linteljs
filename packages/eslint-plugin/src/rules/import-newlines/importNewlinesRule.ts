@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   breakGaps,
   gapsToBreak,
@@ -53,7 +52,7 @@ export const importNewlines = createRule('import-newlines', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const options = optionsOf<ImportNewlinesOptions>(context);
     const maxItems = options.maxItems ?? DEFAULT_MAX_ITEMS;
     const indentsAt = indentReader(sourceCode);

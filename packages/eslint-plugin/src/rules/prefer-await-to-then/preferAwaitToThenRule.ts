@@ -1,8 +1,3 @@
-import {
-  ancestorReaderOf,
-  ancestorsOf,
-  scopeOf,
-} from '../../utils/compatUtils.ts';
 import { isAwaitedOrAsyncReturn } from '../../utils/promiseChainUtils.ts';
 import {
   createRule,
@@ -56,7 +51,8 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
     const strict = optionsOf<PreferAwaitToThenOptions>(context).strict ?? false;
 
     const isInsideYieldOrAwait = (node: RuleNode): boolean => {
-      return ancestorsOf(context, node)
+      return context.sourceCode
+        .getAncestors(node)
         .some(
           (parent) => {
             return parent.type === 'AwaitExpression' || parent.type === 'YieldExpression';
@@ -65,7 +61,8 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
     };
 
     const isInsideConstructor = (node: RuleNode): boolean => {
-      return ancestorsOf(context, node)
+      return context.sourceCode
+        .getAncestors(node)
         .some(
           // Only a MethodDefinition carries this kind, so no type test is needed first.
           (parent: TypedNode & Kinded) => {
@@ -76,7 +73,7 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
 
     // The function scope, so a block at the top level of the file counts as top level.
     const isTopLevelScoped = (node: RuleNode): boolean => {
-      return scopeOf(context, node).variableScope.block.type === 'Program';
+      return context.sourceCode.getScope(node).variableScope.block.type === 'Program';
     };
 
     const visitors: Rule.RuleListener = {
@@ -85,7 +82,7 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
         const handedOff = !strict && (
           isInsideYieldOrAwait(node)
           || isInsideConstructor(node)
-          || isAwaitedOrAsyncReturn(ancestorReaderOf(context), node)
+          || isAwaitedOrAsyncReturn(context.sourceCode, node)
         );
 
         if (isTopLevelScoped(node) || handedOff) {

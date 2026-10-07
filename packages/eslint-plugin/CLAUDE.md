@@ -9,12 +9,11 @@ the plugin's alone and wins inside the package.
 - **Autofix never changes behaviour.** A transform that cannot be proven safe ships as a suggestion or
   report-only.
 - **Zero runtime dependencies.** No `dependencies` block. `eslint` is a peer, the rest are devDependencies.
-- **The published floors hold.** `engines.node` is `>=18.0.0` and `peerDependencies.eslint` is `>=6.0.0`,
+- **The published floors hold.** `engines.node` is `>=22.0.0` and `peerDependencies.eslint` is `>=8.40.0`,
   and consumers install against both, so narrowing either is a silent break. Hence `tsdown.config.ts`
-  targets `node18`, `tsconfig.src.json` holds `src/` to the ES2022 built-ins, and no rule reads
-  `context.sourceCode`, `context.physicalFilename` or `sourceCode.getScope`/`getAncestors`/
-  `getDeclaredVariables` directly: go through `src/utils/compatUtils.ts`, which reads the modern shape
-  first and the legacy one second.
+  targets `node22`, `tsconfig.src.json` holds `src/` to the ES2024 built-ins, and a rule reads only the
+  context API 8.40 has (`context.sourceCode`, `context.physicalFilename`, `sourceCode.getScope(node)`).
+  The eslintrc presets stay for ESLint 8 consumers.
 - **No casts to satisfy a type, tests included.** Three survive as tracked debt; add none:
   `as RuleNode` in `preferArrowFunctionsRule.ts`, `{} as LintelConfigs` in `src/plugin.ts`,
   `as Partial<T>` in `src/utils/ruleUtils.ts`.
@@ -35,14 +34,13 @@ the plugin's alone and wins inside the package.
 - One rule's helper: that rule's `utils/<name>Utils.ts`.
 - Shared between rules, `src/utils/`, one module each: `ruleUtils.ts` (ESLint's rule API: `createRule`,
   node aliases, `mustFind`, `optionsOf`, `resolveVariable`), `layoutUtils.ts` (reading or writing
-  whitespace), `promiseChainUtils.ts` (the fluent-chain walk), `compatUtils.ts` (accessors that moved
-  between ESLint majors), `jsxUtils.ts` (JSX elements and attributes, typed structurally because ESTree
-  has no JSX).
+  whitespace), `promiseChainUtils.ts` (the fluent-chain walk), `jsxUtils.ts` (JSX elements and attributes,
+  typed structurally because ESTree has no JSX).
 - Types in `src/types.ts`, data tables in `src/constants.ts`.
 - Scripts: `scripts/<group>/<subject>/<subject><Group>.ts`, run through tsx and reporting through
   `create/templates/project/scripts/utils/loggerUtils.ts`. `build/` runs inside `pnpm build`,
   `release/` packs and proves the tarball, `audit/` runs the rules on third-party code.
-  `release/run-rules/runRulesRelease.ts` runs on `node:18-alpine`, so it must parse on Node 18.
+  `release/run-rules/runRulesRelease.ts` runs on `node:22-alpine`, so it must parse on Node 22.
 
 ## Comments
 
@@ -56,10 +54,9 @@ the code. Everything else in that standard stands.
   axis; never lower a threshold.
 - Run `--fix` on this repo after touching a fixer.
 - Before a release: `pnpm smoke` (packs the tarball, runs ESLint through the ESM and CJS entries, scans
-  the bundle for post-Node-18 APIs) and `pnpm compat` (ESLint 6 to 10 side by side, byte-identical fixed
-  text). Both need the network. CI runs them plus `oldest-runtime` on `node:18-alpine`.
-- The CJS build is `index.js`, not `.cjs`, because ESLint before 6.8 sends a `.cjs` main to its YAML loader;
-  `scripts/build/dist-manifest/distManifestBuild.ts` marks `dist/` as `commonjs`.
+  the bundle for post-Node-22 APIs) and `pnpm compat` (ESLint 8.40 on eslintrc, 9 and 10 on flat config,
+  byte-identical fixed text). Both need the network. CI runs them plus `oldest-runtime` on `node:22-alpine`
+  with ESLint 8.40.0.
 
 ## Tone
 

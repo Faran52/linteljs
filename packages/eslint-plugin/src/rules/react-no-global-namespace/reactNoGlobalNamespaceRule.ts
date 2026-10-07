@@ -1,9 +1,3 @@
-import {
-  ancestorsOf,
-  physicalFilenameOf,
-  scopeOf,
-  sourceCodeOf,
-} from '../../utils/compatUtils.ts';
 import { getIndent, type Located } from '../../utils/layoutUtils.ts';
 import {
   createRule,
@@ -113,10 +107,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
     schema: [],
   },
   create: (context) => {
-    const source = sourceCodeOf(context);
+    const source = context.sourceCode;
 
     // An import would turn a declaration file into a module, and every global in it would stop being global.
-    const filename = physicalFilenameOf(context);
+    const filename = context.physicalFilename;
 
     if (DECLARATION_FILE.test(filename)
       || (source.ast.body.some(isAmbient) && !source.ast.body.some(isImport))) {
@@ -148,7 +142,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         return first;
       }
 
-      const chain = [...ancestorsOf(context, member), member];
+      const chain = [...context.sourceCode.getAncestors(member), member];
       const script = chain
         .findIndex((node) => {
           const type: string = node.type;
@@ -162,7 +156,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
     const reaches: Reach[] = [];
 
     const note = (member: RuleNode, name: string, isType: boolean, targets: AST.Range[]): void => {
-      const scope = scopeOf(context, member);
+      const scope = context.sourceCode.getScope(member);
 
       // A local `React` is the file's own binding.
       if (resolveVariable(scope, NAMESPACE) !== null) {

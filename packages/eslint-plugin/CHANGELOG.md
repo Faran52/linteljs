@@ -10,7 +10,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Breaking
 
-- **Node `>=18.0.0`**, up from 12, and **ESLint `>=6.0.0`**, up from 5.
+- **Node `>=22.0.0`**, up from 12, and **ESLint `>=8.40.0`**, up from 5. Node below 22 and ESLint below 8.40
+  are dropped. The eslintrc presets stay for ESLint 8.
+- **The CommonJS entry is `dist/index.cjs`**, not `dist/index.js`, and its types `dist/index.d.cts`. Resolving
+  through `main` or `exports` is unaffected; a deep import of `dist/index.js` breaks.
 - **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. The message id
   `consistNewline` is now `membersOnNewline`, and the messages say "Members".
 - **`member-newline` covers object literals, interfaces and type literals too**, at one threshold: three or more

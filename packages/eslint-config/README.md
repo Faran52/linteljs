@@ -10,7 +10,7 @@ layer order without hand-writing the stack.
 npm install --save-dev @linteljs/eslint-config eslint typescript jiti
 ```
 
-It needs Node 18.18 or later, ESLint 9 or later, and TypeScript 5.0 up to 6.0, the range the bundled
+It needs Node 22 or later, ESLint 9 or later, and TypeScript 5.0 up to 6.0, the range the bundled
 typescript-eslint supports. ESLint loads a TypeScript config through jiti.
 
 ```ts

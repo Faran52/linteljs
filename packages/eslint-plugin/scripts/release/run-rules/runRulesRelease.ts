@@ -52,17 +52,17 @@ const isBuiltPlugin = (value: unknown): value is BuiltPlugin => {
   return isObjectValue(rules);
 };
 
-// `require`, since ESLint 6 and the bundle are CommonJS; resolved from where the container copies it.
+// `require`, since ESLint 8 and the bundle are CommonJS; resolved from where the container copies it.
 const require = createRequire(import.meta.url);
 const eslint: unknown = require('eslint');
 
 const entry = process.argv[2] === undefined
-  ? fileURLToPath(new URL('../../../dist/index.js', import.meta.url))
+  ? fileURLToPath(new URL('../../../dist/index.cjs', import.meta.url))
   : resolve(process.cwd(), process.argv[2]);
 const plugin: unknown = require(entry);
 
 if (!isLegacyEslint(eslint) || !isBuiltPlugin(plugin)) {
-  throw new Error('eslint has no eslintrc Linter (this runner needs 5 to 8), or the built plugin no rules');
+  throw new Error('eslint has no eslintrc Linter (this runner needs 8), or the built plugin no rules');
 }
 
 const linter = new eslint.Linter();

@@ -1,4 +1,3 @@
-import { physicalFilenameOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import { lineTerminatorOf } from '../../utils/layoutUtils.ts';
 import {
   createRule,
@@ -227,13 +226,13 @@ export const commentDelimiter = createRule('comment-delimiter', {
     schema: [],
   },
   create: (context) => {
-    const filename = physicalFilenameOf(context);
+    const filename = context.physicalFilename;
 
     if (TEST_FILE_PATTERN.test(filename)) {
       return {};
     }
 
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const eol = lineTerminatorOf(sourceCode);
 
     const visitors: Rule.RuleListener = {

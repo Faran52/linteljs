@@ -1,4 +1,3 @@
-import { declaredVariablesOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
   type FunctionNode,
@@ -113,7 +112,8 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
           return;
         }
 
-        const declared = declaredVariablesOf(context, node)
+        const declared = context.sourceCode
+          .getDeclaredVariables(node)
           .find((variable) => {
             return variable.name === firstParam.name;
           });

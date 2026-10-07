@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
   optionsOf,
@@ -123,7 +122,7 @@ export const noEslintDisable = createRule('no-eslint-disable', {
 
     const visitors: Rule.RuleListener = {
       Program: () => {
-        for (const comment of sourceCodeOf(context).getAllComments()) {
+        for (const comment of context.sourceCode.getAllComments()) {
           const tail = DIRECTIVE.exec(comment.value)?.[1];
           const named = tail === undefined ? rulesTurnedOffBy(comment) : rulesNamedBy(tail);
 

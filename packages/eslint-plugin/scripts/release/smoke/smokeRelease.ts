@@ -178,7 +178,7 @@ const checkFlavour = async (name: string, configFile: string, configSource: stri
 
 const esmPath = join(distDir, 'index.mjs');
 const esmEntry = pathToFileURL(esmPath).href;
-const cjsPath = join(distDir, 'index.js');
+const cjsPath = join(distDir, 'index.cjs');
 const esmSource = esmConfig(esmEntry);
 const cjsSource = cjsConfig(cjsPath);
 const esmPresetSource = esmPresetConfig(esmEntry);
@@ -244,11 +244,11 @@ assert.deepEqual(
   'ESM and CJS entry points expose different rule sets',
 );
 
-// The `engines.node` floor is 18, where a bundler downlevels new syntax but leaves `array.toSorted()`.
-const POST_NODE_18: Record<string, number> = {
-  '.toSorted(': 20,
-  '.toReversed(': 20,
-  '.toSpliced(': 20,
+// The `engines.node` floor is 22, where a bundler downlevels new syntax but leaves `Promise.try()`.
+const POST_NODE_22: Record<string, number> = {
+  'Promise.try(': 23,
+  'RegExp.escape(': 24,
+  'Error.isError(': 24,
 };
 
 for (const file of readdirSync(distDir)) {
@@ -263,8 +263,8 @@ for (const file of readdirSync(distDir)) {
 
   assert.ok(!contents.includes('tslib'), `${file} references tslib, which is not a runtime dependency`);
 
-  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? Object.entries(POST_NODE_18) : []) {
-    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 18`);
+  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? Object.entries(POST_NODE_22) : []) {
+    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 22`);
   }
 }
 

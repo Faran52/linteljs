@@ -1148,6 +1148,14 @@ ran `create`, see [The executor's manager and Node](#the-executors-manager-and-n
 
 ## Versions
 
+### The published packages' floors
+
+From 2.0.0 both libraries need Node 22. The plugin peers ESLint `>=8.40.0`, the first release with
+`context.sourceCode`, so its rules read that API directly with no shim; 8.39 fails on the first rule. It keeps
+its eslintrc presets, since ESLint 8 (end of life 2024-10-05) still has users. The config is flat config only, on
+ESLint 9 or later. `pnpm compat` runs the packed plugin on 8.40.0 with eslintrc and on 9 and 10 with flat config,
+and CI's `oldest-runtime` runs it on `node:22-alpine` with ESLint 8.40.0.
+
 ### Solid stays on 1 until two peers move
 
 `@tanstack/solid-query` peers `solid-js ^1.6.0` and `@astrojs/solid-js` peers `solid-js ^1.9.13`. The first is a

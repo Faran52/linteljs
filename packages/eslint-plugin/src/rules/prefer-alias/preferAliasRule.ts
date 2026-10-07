@@ -1,7 +1,6 @@
 import { statSync } from 'node:fs';
 import { posix } from 'node:path';
 
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
   optionsOf,
@@ -48,7 +47,7 @@ interface TypedServices {
   esTreeNodeToTSNodeMap: NodeMap;
 }
 
-// ESLint 6 to 10 default `parserServices` to `{}`.
+// ESLint 8 to 10 default `parserServices` to `{}`.
 interface ServicesHost {
   parserServices: Partial<TypedServices>;
 }
@@ -118,7 +117,7 @@ export const preferAlias = createRule('prefer-alias', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const typed = typedOf(sourceCode);
     const project = typed && aliasedProjectOf(typed.program.getCompilerOptions());
 

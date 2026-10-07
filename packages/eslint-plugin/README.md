@@ -34,7 +34,7 @@ module.exports = [
 ];
 ```
 
-For ESLint 8 or older, use the legacy preset name:
+For ESLint 8 on eslintrc, use the legacy preset name:
 
 ```jsonc
 {
@@ -134,18 +134,18 @@ and [prefer-try-catch](https://github.com/Faran52/linteljs/tree/main/packages/es
 
 ## Compatibility
 
-The package supports ESLint `>=6.0.0` and Node `>=18.0.0`.
+It needs Node 22 or later and ESLint 8.40 or later, on flat config or eslintrc.
 
 | ESLint | Config format | Preset |
 | --- | --- | --- |
 | 10.x | Flat config | `configs['flat/recommended']` |
 | 9.x | Flat config | `configs['flat/recommended']` |
-| 8.x and below | eslintrc | `extends: ['plugin:@linteljs/recommended']` |
+| 8.40 to 8.x | eslintrc | `extends: ['plugin:@linteljs/recommended']` |
 
 The package has no runtime dependencies: what it uses is bundled. Its compatibility matrix packs the tarball,
-runs it with ESLint 6 through 10, and checks that fixed output is identical across them. A fixer must preserve
-behaviour, so a rule that cannot prove a rewrite safe reports without fixing. The bundle targets Node 18 and the
-source uses only ES2022 built-ins.
+runs it with ESLint 8.40, 9 and 10, and checks that fixed output is identical across them. A fixer must preserve
+behaviour, so a rule that cannot prove a rewrite safe reports without fixing. The bundle targets Node 22 and the
+source uses only ES2024 built-ins.
 
 ## Adding a rule
 

@@ -32,8 +32,8 @@ export default defineConfig({
   platform: 'node',
   // tsdown ties declaration sourcemaps to this flag, and they would point at a file never written.
   sourcemap: false,
-  // The floor `peerDependencies.eslint` implies: ESLint 9 runs on `^18.18.0`.
-  target: 'node18',
+  // The `engines.node` floor.
+  target: 'node22',
   deps: {
     // Never inline a peer: ESLint compares plugins by identity, and a bundled copy registers a second object.
     neverBundle: ['eslint'],

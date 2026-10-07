@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   breakGaps,
   gapsToBreak,
@@ -35,7 +34,7 @@ export const arrayNewline = createRule('array-newline', {
     schema: [],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 

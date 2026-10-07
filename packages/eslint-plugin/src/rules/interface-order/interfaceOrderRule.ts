@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
   getIndent,
@@ -64,14 +63,10 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  // Not `findLastIndex`: `src/` is held to the ES2022 built-ins.
-  const fromEnd = [...body]
-    .reverse()
-    .findIndex((statement) => {
+  return body
+    .findLastIndex((statement) => {
       return statement.type === 'ImportDeclaration' || isDirective(statement);
     });
-
-  return fromEnd === -1 ? -1 : body.length - 1 - fromEnd;
 };
 
 const findFirstRuntimeIndex = (body: ProgramEntry[], afterIndex: number): number => {
@@ -173,7 +168,7 @@ export const interfaceOrder = createRule('interface-order', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const eol = lineTerminatorOf(sourceCode);
     const trimBlankLines = optionsOf<InterfaceOrderOptions>(context).trimBlankLines ?? true;
 

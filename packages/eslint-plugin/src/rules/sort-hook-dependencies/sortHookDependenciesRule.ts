@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
   mustFind,
@@ -63,7 +62,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
     ],
   },
   create: (context) => {
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const options = optionsOf<SortHookDepsOptions>(context);
     const order = options.order ?? 'asc';
     const direction = order === 'asc' ? 1 : -1;

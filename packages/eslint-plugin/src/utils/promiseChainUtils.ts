@@ -54,10 +54,9 @@ export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): 
   }
 
   if (parent.type === 'ReturnStatement') {
-    // Not `findLast`: `src/` is held to the ES2022 built-ins.
-    const enclosing = [...reader.getAncestors(node)]
-      .reverse()
-      .find((ancestor) => {
+    const enclosing = reader
+      .getAncestors(node)
+      .findLast((ancestor) => {
         return FUNCTION_TYPES.has(ancestor.type);
       });
 

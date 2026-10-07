@@ -1,4 +1,3 @@
-import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   breakGaps,
   gapsToBreak,
@@ -84,7 +83,7 @@ export const memberNewline = createRule('member-newline', {
   create: (context) => {
     const options = optionsOf<MemberNewlineOptions>(context);
     const maxCount = options.maxProperties ?? DEFAULT_MAX_PROPERTIES;
-    const sourceCode = sourceCodeOf(context);
+    const { sourceCode } = context;
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 

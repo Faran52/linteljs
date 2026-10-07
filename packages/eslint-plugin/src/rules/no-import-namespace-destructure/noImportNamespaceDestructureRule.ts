@@ -1,4 +1,3 @@
-import { scopeOf } from '../../utils/compatUtils.ts';
 import { createRule, resolveVariable } from '../../utils/ruleUtils.ts';
 
 import type { Rule } from 'eslint';
@@ -27,7 +26,7 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
           return;
         }
 
-        const variable = resolveVariable(scopeOf(context, node), init.name);
+        const variable = resolveVariable(context.sourceCode.getScope(node), init.name);
 
         // Not the declaration's specifiers, which would also match the default in `import def, * as ns from 'mod'`.
         if (variable?.defs[0]?.node.type === 'ImportNamespaceSpecifier') {

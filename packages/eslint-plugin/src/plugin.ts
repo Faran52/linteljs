@@ -28,7 +28,7 @@ interface WithConfigs {
 
 type RuleEntry = [string, LintelRuleModule];
 
-// The eslintrc form derives the prefix from the package name; a mismatch breaks every ESLint 6 to 8 consumer.
+// The eslintrc form derives the prefix from the package name; a mismatch breaks every ESLint 8 consumer.
 export const PLUGIN_NAME = '@linteljs';
 
 // Named as well as default: a `.cjs` flat config reaches this through `require`'s namespace.

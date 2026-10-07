@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    // What ships runs on the `engines.node` floor, Node 18. `es2023` would admit `toSorted`, which is Node 20.
-    "lib": ["es2022"],
+    // What ships runs on the `engines.node` floor, Node 22. `es2025` would admit `Promise.try`, which is Node 23.
+    "lib": ["es2024"],
     "tsBuildInfoFile": "./node_modules/.cache/tsconfig.src.tsbuildinfo"
   },
 
