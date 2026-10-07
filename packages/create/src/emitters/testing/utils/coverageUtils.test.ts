@@ -109,7 +109,7 @@ describe('coverageExclude', () => {
       [
         'src/config/linteljs.ts',
         'src/devtools/devtools.ts',
-        'src/panel/panel.ts',
+        'src/panel/main.ts',
       ],
     ],
     [

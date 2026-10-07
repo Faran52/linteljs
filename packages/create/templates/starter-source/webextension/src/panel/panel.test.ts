@@ -1,4 +1,4 @@
-import { renderPanel } from './renderPanel';
+import { renderPanel } from './panel';
 
 describe('renderPanel', () => {
   it('writes a main landmark with one heading into the element it is handed', () => {

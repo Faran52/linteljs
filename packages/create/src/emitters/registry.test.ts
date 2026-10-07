@@ -579,8 +579,8 @@ describe('the files a webextension surface owns', () => {
       'src/lib/mark/mark.test.ts',
       'src/lib/mark/mark.ts',
       'src/main.ts',
-      'src/popup/renderPopup.test.ts',
-      'src/popup/renderPopup.ts',
+      'src/popup/popup.test.ts',
+      'src/popup/popup.ts',
     ],
     'background': [
       'src/background/background.ts',
@@ -591,9 +591,9 @@ describe('the files a webextension surface owns', () => {
       'devtools.html',
       'panel.html',
       'src/devtools/devtools.ts',
+      'src/panel/main.ts',
+      'src/panel/panel.test.ts',
       'src/panel/panel.ts',
-      'src/panel/renderPanel.test.ts',
-      'src/panel/renderPanel.ts',
     ],
   };
   const SURFACE_PATH = /^(?:[^/]+\.html|src\/(?:main\.ts|popup\/|background\/|devtools\/|panel\/|lib\/mark\/))/u;

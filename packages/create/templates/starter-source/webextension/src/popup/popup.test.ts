@@ -1,6 +1,6 @@
 import { CHECK, NAME } from '@config/linteljs';
 
-import { renderPopup } from './renderPopup';
+import { renderPopup } from './popup';
 
 describe('renderPopup', () => {
   const open = (): HTMLElement => {

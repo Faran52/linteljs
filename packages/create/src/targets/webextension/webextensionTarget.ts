@@ -73,10 +73,10 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
         target: 'panel.html',
       },
       {
-        target: 'src/panel/panel.ts',
+        target: 'src/panel/main.ts',
       },
       {
-        target: 'src/panel/renderPanel.ts',
+        target: 'src/panel/panel.ts',
       },
     );
   }
@@ -90,7 +90,7 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
     ...hasSurface(answers, 'popup') ? [] : ['src/config/linteljs.ts'],
     ...hasSurface(answers, 'background') ? ['src/background/background.ts'] : [],
     ...hasSurface(answers, 'devtools-panel')
-      ? ['src/devtools/devtools.ts', 'src/panel/panel.ts']
+      ? ['src/devtools/devtools.ts', 'src/panel/main.ts']
       : [],
   ];
 
@@ -117,8 +117,8 @@ const surfaceTests = (answers: Answers): StarterTest[] => {
       : [],
     ...hasSurface(answers, 'devtools-panel')
       ? [{
-          target: 'src/panel/renderPanel.test.ts',
-          covers: 'src/panel/renderPanel.ts',
+          target: 'src/panel/panel.test.ts',
+          covers: 'src/panel/panel.ts',
         }]
       : [],
   ];

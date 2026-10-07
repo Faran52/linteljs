@@ -32,7 +32,7 @@ describe('popupI18nFiles', () => {
     const written = writtenUnder(popupI18nFiles(), withLanguages);
 
     const expected = [
-      'src/popup/renderPopup.ts@i18n',
+      'src/popup/popup.ts@i18n',
       'src/i18n/i18n.ts@i18n',
       'true:src/i18n/locales/en/common.json@i18n',
       'true:src/i18n/locales/ar/common.json@i18n',
@@ -44,7 +44,7 @@ describe('popupI18nFiles', () => {
   it('writes the English popup otherwise', () => {
     const written = writtenUnder(popupI18nFiles(), english);
 
-    const expected = ['src/popup/renderPopup.ts'];
+    const expected = ['src/popup/popup.ts'];
     expect(written).toEqual(expected);
   });
 });
@@ -54,7 +54,7 @@ describe('popupI18nTests', () => {
     const written = writtenUnder(popupI18nTests(), withLanguages);
 
     const expected = [
-      'src/popup/renderPopup.test.ts@i18n',
+      'src/popup/popup.test.ts@i18n',
       'src/i18n/i18n.test.ts@i18n',
       'true:src/i18n/locales.test.ts@i18n',
       'true:src/i18n/utils/languageUtils.test.ts@i18n',
@@ -65,7 +65,7 @@ describe('popupI18nTests', () => {
   it('covers the English popup otherwise', () => {
     const written = writtenUnder(popupI18nTests(), english);
 
-    const expected = ['src/popup/renderPopup.test.ts'];
+    const expected = ['src/popup/popup.test.ts'];
     expect(written).toEqual(expected);
   });
 });

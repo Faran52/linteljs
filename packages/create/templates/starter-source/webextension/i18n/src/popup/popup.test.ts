@@ -6,7 +6,7 @@ import {
   resources,
 } from '@i18n/config';
 
-import { renderPopup } from './renderPopup';
+import { renderPopup } from './popup';
 
 const last = languages.at(-1)?.id ?? 'en';
 

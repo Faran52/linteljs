@@ -151,8 +151,8 @@ describe('starter tests', () => {
     ],
     [
       'webextension',
-      'src/popup/renderPopup.test.ts',
-      'src/popup/renderPopup.ts',
+      'src/popup/popup.test.ts',
+      'src/popup/popup.ts',
     ],
   ])('gates the %s suite %s on the file it covers', (target, suite, covers) => {
     const artifact = artifactFor({ target }, suite);
@@ -163,9 +163,9 @@ describe('starter tests', () => {
   });
 
   it('gates a suite that needs nothing else on the file it covers alone', () => {
-    const requires = artifactFor({ target: 'webextension' }, 'src/popup/renderPopup.test.ts')?.requires;
+    const requires = artifactFor({ target: 'webextension' }, 'src/popup/popup.test.ts')?.requires;
 
-    const expected = ['src/popup/renderPopup.ts'];
+    const expected = ['src/popup/popup.ts'];
     expect(requires).toEqual(expected);
   });
 

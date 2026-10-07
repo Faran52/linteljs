@@ -121,7 +121,7 @@ describe('the surfaces axis', () => {
         return file.target;
       });
 
-    expect(targets).toContain('src/popup/renderPopup.ts');
+    expect(targets).toContain('src/popup/popup.ts');
     expect(targets).toContain('src/background/onInstalled.ts');
     const expected = ['src/background/background.ts'];
     expect(record.coverageExclude).toEqual(expected);
@@ -139,8 +139,8 @@ describe('the surfaces axis', () => {
       'devtools.html',
       'src/devtools/devtools.ts',
       'panel.html',
+      'src/panel/main.ts',
       'src/panel/panel.ts',
-      'src/panel/renderPanel.ts',
     ];
 
     for (const page of devtoolsPages) {
@@ -157,13 +157,13 @@ describe('the surfaces axis', () => {
     const expected = [
       'src/config/linteljs.ts',
       'src/devtools/devtools.ts',
-      'src/panel/panel.ts',
+      'src/panel/main.ts',
     ];
     expect(record.coverageExclude).toEqual(expected);
 
     const panelSuite = {
-      target: 'src/panel/renderPanel.test.ts',
-      covers: 'src/panel/renderPanel.ts',
+      target: 'src/panel/panel.test.ts',
+      covers: 'src/panel/panel.ts',
     };
     expect(record.starterTests).toContainEqual(panelSuite);
   });
@@ -190,7 +190,7 @@ describe('the surfaces axis', () => {
         return file.target;
       });
 
-    expect(popupOnly).toContain('src/popup/renderPopup.ts');
+    expect(popupOnly).toContain('src/popup/popup.ts');
     expect(popupOnly).not.toContain('src/background/onInstalled.ts');
     expect(popupOnly).not.toContain('panel.html');
   });
@@ -319,7 +319,7 @@ const I18N_ONLY_PATHS = [
     }),
 ];
 
-const POPUP_PATHS = ['src/popup/renderPopup.ts', 'src/popup/renderPopup.test.ts'];
+const POPUP_PATHS = ['src/popup/popup.ts', 'src/popup/popup.test.ts'];
 
 const GATES: GateRow[] = [
   ...mswGates(false),

@@ -1,4 +1,4 @@
-import { renderPopup } from './popup/renderPopup';
+import { renderPopup } from './popup/popup';
 
 import './style.css';
 

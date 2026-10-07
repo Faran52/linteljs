@@ -1,7 +1,11 @@
-import { renderPanel } from './renderPanel';
+// A main landmark and one heading, as the popup has.
+export const renderPanel = (root: HTMLElement): void => {
+  const main = document.createElement('main');
+  const title = document.createElement('h1');
+  const status = document.createElement('p');
 
-const root = document.querySelector<HTMLDivElement>('#app');
-
-if (root !== null) {
-  renderPanel(root);
-}
+  title.textContent = 'Panel';
+  status.textContent = 'Ready.';
+  main.append(title, status);
+  root.append(main);
+};
