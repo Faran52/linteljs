@@ -18,6 +18,8 @@ export type Surface = 'popup' | 'background' | 'devtools-panel';
 
 export type HostedFramework = 'react' | 'vue' | 'svelte' | 'solid';
 
+export type Layout = 'single' | 'monorepo';
+
 export type Testing = 'vitest' | 'none';
 
 // The runner a target's suites run on: `testing` asks whether, the target decides which.
@@ -96,6 +98,7 @@ export interface Answers {
   typeSafety: TypeSafety;
   agents: Agent[];
   plugins: Plugin[];
+  layout: Layout;
   resolveConditions?: string[];
   // A value ending in `/*` names a directory, otherwise a barrel.
   aliases?: AliasMap;

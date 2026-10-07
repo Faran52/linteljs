@@ -31,11 +31,12 @@ interface SchemaProperty {
   additionalProperties?: SchemaProperty;
 }
 
-// `browser` stays out of `required`: `configFrom` defaults it for configs that predate it.
+// `browser` and `layout` stay out of `required`: `configFrom` defaults them for configs that predate them.
 const REQUIRED_KINDS = new Set(['choice', 'multi']);
+const DEFAULTED = new Set<AnswerKey>(['browser', 'layout']);
 
 const isRequired = (key: AnswerKey, record: AnswerRecord): boolean => {
-  return key !== 'browser' && REQUIRED_KINDS.has(record.kind);
+  return !DEFAULTED.has(key) && REQUIRED_KINDS.has(record.kind);
 };
 
 const withDescription = (record: AnswerRecord): Partial<SchemaProperty> => {

@@ -72,6 +72,7 @@ describe('parseLinteljsConfig', () => {
     const config = parseLinteljsConfig(withoutAxes);
 
     expect(config.browser).toBe('chrome');
+    expect(config.layout).toBe('single');
     expect(config.hostedFramework).toBeUndefined();
     expect(config.surfaces).toBeUndefined();
     const configSurfaces = surfacesOf(config);
@@ -86,6 +87,7 @@ describe('parseLinteljsConfig', () => {
       browser: 'firefox',
       hostedFramework: 'solid',
       surfaces: ['devtools-panel'],
+      layout: 'monorepo',
     };
 
     const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
@@ -102,6 +104,7 @@ describe('parseLinteljsConfig', () => {
   it.each([
     ['browser', 'safari'],
     ['hostedFramework', 'angular'],
+    ['layout', 'polyrepo'],
   ])('rejects an unknown %s', (field, value) => {
     const config = {
       $schema: CONFIG_SCHEMA_URL,

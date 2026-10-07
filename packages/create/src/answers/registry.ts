@@ -1,6 +1,7 @@
 import { agentsAnswer } from './agents/agents/agentsAnswer';
 import { pluginsAnswer } from './agents/plugins/pluginsAnswer';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from './constants';
+import { layoutAnswer } from './layout/layout/layoutAnswer';
 import { dataAnswer } from './libraries/data/dataAnswer';
 import { formAnswer } from './libraries/form/formAnswer';
 import { languagesAnswer } from './libraries/languages/languagesAnswer';
@@ -53,6 +54,7 @@ export const ANSWERS = {
   typeSafety: typeSafetyAnswer,
   agents: agentsAnswer,
   plugins: pluginsAnswer,
+  layout: layoutAnswer,
   resolveConditions: resolveConditionsAnswer,
   aliases: aliasesAnswer,
   browsers: browsersAnswer,
@@ -62,6 +64,7 @@ export const ANSWERS = {
 export const DEFAULT_ANSWERS: Answers = {
   target: ANSWERS.target.default,
   browser: ANSWERS.browser.default,
+  layout: ANSWERS.layout.default,
   testing: ANSWERS.testing.default,
   packageManager: ANSWERS.packageManager.default,
   libraries: [...ANSWERS.libraries.default],

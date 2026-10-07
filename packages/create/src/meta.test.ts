@@ -62,6 +62,7 @@ const SHAPES: RingShape[] = [
     name: 'answers',
     suffixes: {
       agents: 'Answer',
+      layout: 'Answer',
       libraries: 'Answer',
       recorded: 'Answer',
       target: 'Answer',

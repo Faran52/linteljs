@@ -41,6 +41,7 @@ export const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', null>
   typeSafety: null,
   agents: null,
   plugins: null,
+  layout: null,
   resolveConditions: null,
   aliases: null,
   browsers: null,

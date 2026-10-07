@@ -26,10 +26,11 @@ describe('schemaFor', () => {
     expect(packaged).toBe(generated);
   });
 
-  it('excuses only browser from the required list a choice or multi answer otherwise joins', () => {
+  it('excuses only browser and layout from the required list a choice or multi answer otherwise joins', () => {
     const schema = JSON.parse(schemaFor(ANSWERS)) as GeneratedSchema;
 
     expect(schema.required).not.toContain('browser');
+    expect(schema.required).not.toContain('layout');
 
     const expected = [
       '$schema',

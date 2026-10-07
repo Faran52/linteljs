@@ -73,8 +73,7 @@ describe('ask', () => {
       'relaxed',
       undefined,
       undefined,
-      undefined,
-      undefined,
+      'monorepo',
     ]);
 
     const expected = {
@@ -94,6 +93,7 @@ describe('ask', () => {
           'context7',
           'frontend-design',
         ],
+        layout: 'monorepo',
       },
     };
     expect(result).toEqual(expected);
@@ -106,6 +106,7 @@ describe('ask', () => {
       'firefox',
       ['popup', 'background'],
       'solid',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -141,6 +142,7 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     expect(result.answers.hostedFramework).toBeUndefined();
@@ -154,6 +156,7 @@ describe('ask', () => {
       'firefox',
       ['devtools-panel'],
       'solid',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -195,6 +198,7 @@ describe('ask', () => {
     const { recorded } = await askWith([
       'demo-app',
       'react',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -268,6 +272,7 @@ describe('ask', () => {
   it('uses every default when each prompt is left blank', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -404,6 +409,7 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     const expected = {
@@ -516,6 +522,7 @@ describe('ask', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
         ],
         { name: 'from-flag' },
       );
@@ -537,6 +544,7 @@ describe('the store question', () => {
       undefined,
       undefined,
       'redux-toolkit',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -598,6 +606,7 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     expect(result.answers.store).toBeUndefined();
@@ -606,6 +615,7 @@ describe('the store question', () => {
   it('defaults to no store', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -641,6 +651,7 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     expect(result.answers.store).toBeUndefined();
@@ -652,6 +663,7 @@ describe('the project name question', () => {
   it('refuses a name npm would not accept and passes one it would', async () => {
     const recorded = scripted([
       'my-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -708,6 +720,7 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     const expected = ['zod'];
@@ -724,6 +737,7 @@ describe('the form library and router questions', () => {
       ['zod'],
       undefined,
       'none',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -753,11 +767,14 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
     const hostedReact = await askWith([
       'demo-app',
       'astro',
       'react',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -817,6 +834,7 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       'tanstack-router',
+      undefined,
       undefined,
       undefined,
       undefined,

@@ -168,6 +168,7 @@ const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Lintel
     ...(browsersValue === undefined ? {} : { browsers: browsersValue }),
     ...(ignoresValue === undefined ? {} : { ignores: ignoresValue }),
     plugins: readAnswer(ANSWERS.plugins, parsed.plugins),
+    layout: parsed.layout === undefined ? ANSWERS.layout.default : readAnswer(ANSWERS.layout, parsed.layout),
   };
 
   return config;

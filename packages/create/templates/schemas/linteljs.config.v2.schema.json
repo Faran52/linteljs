@@ -183,6 +183,12 @@
       },
       "uniqueItems": true
     },
+    "layout": {
+      "enum": [
+        "single",
+        "monorepo"
+      ]
+    },
     "resolveConditions": {
       "type": "array",
       "items": {

@@ -311,6 +311,7 @@ describe('main: create', () => {
         undefined,
         ['claude-code', 'codex'],
         [],
+        undefined,
       ]),
     );
 
@@ -337,6 +338,7 @@ describe('main: create', () => {
 
     const asked = scripted([
       'asked-app',
+      undefined,
       undefined,
       undefined,
       undefined,

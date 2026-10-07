@@ -162,6 +162,7 @@ describe('answerRows', () => {
       ["label: 'Type safety'", "value: 'strict'"],
       ["label: 'AI agents'", "value: 'claude-code'"],
       ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
+      ["label: 'Repository layout'", "value: 'single'"],
     ];
     expect(actual).toEqual(expected);
   });
