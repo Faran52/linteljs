@@ -28,13 +28,24 @@ interface Result {
 }
 
 // pnpm's own binary, by absolute path, rather than a lookup on PATH.
-const { CI: ci, npm_execpath: manager } = env;
+const {
+  CI: ci,
+  npm_execpath: manager,
+  LINTELJS_GATE_SKIP: skip = '',
+} = env;
 
 if (manager === undefined) {
   throw new Error('Run the gate as `pnpm check`.');
 }
 
 mkdirSync(LOG_DIR, { recursive: true });
+
+// CI runs `test:coverage` as shards of its own.
+const skipped = skip.split(',');
+const steps = STEPS
+  .filter((step) => {
+    return !skipped.includes(step);
+  });
 
 const runStep = async (step: string): Promise<Result> => {
   const path = resolve(LOG_DIR, `${step.replaceAll(':', '-')}.log`);
@@ -104,8 +115,8 @@ const inSeries = async (prior: Promise<Result[]>, step: string): Promise<Result[
 };
 
 const results = ci === undefined
-  ? await Promise.all(STEPS.map(runStep))
-  : await STEPS.reduce(inSeries, Promise.resolve<Result[]>([]));
+  ? await Promise.all(steps.map(runStep))
+  : await steps.reduce(inSeries, Promise.resolve<Result[]>([]));
 const failed = results
   .filter((result) => {
     return result.code !== 0;

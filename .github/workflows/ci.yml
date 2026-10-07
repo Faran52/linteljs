@@ -21,16 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      # Third-party actions are pinned to a commit: a tag can be moved.
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26.10.0
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # Every starter case, warm or not: too slow for `check`, whose leg then lints only what changed.
       - uses: actions/cache@v4
@@ -43,6 +34,8 @@ jobs:
 
       # Build first: the packages typecheck against each other's built declarations.
       - run: pnpm check
+        env:
+          LINTELJS_GATE_SKIP: test:coverage
 
       # `oldest-runtime` cannot build for itself: pnpm and the bundler both need a modern Node.
       - uses: actions/upload-artifact@v7
@@ -51,18 +44,46 @@ jobs:
           path: packages/eslint-plugin/dist
           retention-days: 1
 
+  test:
+    name: tests, shard ${{ matrix.shard }} of 4
+    runs-on: ubuntu-latest
+    strategy:
+      # docs/DESIGN.md: Coverage runs in shards in CI
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+      - run: pnpm test:shard --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v7
+        with:
+          name: blob-${{ matrix.shard }}
+          path: .vitest/blob
+          include-hidden-files: true
+          retention-days: 1
+
+  coverage:
+    name: coverage, merged
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: blob-*
+          path: .vitest/blob
+          merge-multiple: true
+      - run: pnpm test:merge
+
   smoke:
     name: packed artifacts load
     runs-on: ubuntu-latest
     needs: check
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26.10.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # Unit tests cannot catch a broken `exports` map or a missing `files` entry.
       - run: pnpm --filter @linteljs/eslint-plugin smoke
@@ -75,12 +96,7 @@ jobs:
     needs: check
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26.10.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # `peerDependencies.eslint` is `>=8.40.0`: 8.40 on eslintrc, 9 and 10 on flat, byte-identical fixed output.
       - run: pnpm --filter @linteljs/eslint-plugin compat
@@ -105,12 +121,9 @@ jobs:
           path: packages/eslint-plugin/dist
 
       # The runner imports the root `scripts/`, so tsdown bundles it here. `--ignore-scripts` keeps `prepare` off `dist`.
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup
         with:
-          node-version: 26.10.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+          install-flags: --ignore-scripts
       - name: Build the runner for node 22
         working-directory: packages/eslint-plugin
         run: >-
@@ -124,5 +137,5 @@ jobs:
             set -e
             cp -r /src/dist /src/scripts /tmp/
             npm install --no-audit --no-fund --no-save eslint@${{ matrix.eslint }}
-            node scripts/release/run-rules/runRulesRelease.mjs dist/index.js
+            node scripts/release/run-rules/runRulesRelease.mjs dist/index.cjs
           '

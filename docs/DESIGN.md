@@ -1820,6 +1820,17 @@ Tried and left out:
   worker thread cannot `process.chdir`, and `os.homedir()` there does not read a stubbed `HOME`.
 - **Incremental `tsc`.** Already on: `incremental` in `tsconfig.json`.
 
+### Coverage runs in shards in CI
+
+`ci.yml` runs `check` with `LINTELJS_GATE_SKIP=test:coverage`, the gate dropping each step that variable names,
+and runs the suite as four `test:shard` jobs instead. Each writes a vitest blob with its coverage, thresholds off,
+since one shard covers about a quarter of the code. The `coverage` job merges the four with `test:merge`, which
+applies the one global 100% over the root `coverage.include`. Merged from three of the four, it fails at about 90%.
+
+Vitest splits by file, and one file, `composeConfig.test.ts` at 57 s, sets the floor. Measured on an M1 with ten
+cores, the slowest shard took 75 s at two and at three (the two slowest files share a shard), 67 s at four; past
+four, no shard drops below that one file, and every shard pays its own install and build.
+
 ## One version per shared dependency
 
 A dependency more than one package in this workspace declares reads `catalog:`, and its version lives once in the
@@ -1984,9 +1995,9 @@ measurement is missing from this section is an exemption to delete.
 
 ### Ignores
 
-`dist/`, `coverage/`, `.smoke/`, `.compat/` and `reports/` are tool output: `.smoke/` exists while a package's
-`smoke` script runs, `.compat/` during the plugin's `compat`, which installs six ESLint majors into it, and
-`reports/` is where `mutation` writes Stryker's HTML.
+`dist/`, `coverage/`, `.vitest/`, `.smoke/`, `.compat/` and `reports/` are tool output: `.vitest/blob/` holds
+CI's coverage shards, `.smoke/` exists while a package's `smoke` script runs, `.compat/` during the plugin's
+`compat`, which installs six ESLint majors into it, and `reports/` is where `mutation` writes Stryker's HTML.
 
 `__mocks__/fixtures/` is deliberately defective input for `eslint-config`'s own tests: an import cycle, an
 unawaited promise, and an SFC pair. Linting them reports the defect each exists to trigger, and the `.vue` and

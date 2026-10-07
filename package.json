@@ -20,6 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:shard": "vitest run --coverage --coverage.thresholds.100=false --reporter=blob --reporter=default",
+    "test:merge": "vitest run --merge-reports --coverage",
     "test:isolated": "tsx scripts/isolated-coverage/isolatedCoverageScript.ts",
     "build": "pnpm -r build",
     "check": "pnpm build && tsx scripts/gate/gateScript.ts",
