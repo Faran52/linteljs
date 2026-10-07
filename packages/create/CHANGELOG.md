@@ -233,6 +233,9 @@ when a version's change lives in a sibling it is described there instead:
   > /tmp/check.log 2>&1` count; an assignment whose value is computed (`CI="$()" pnpm check`), an
   assignment chained before the check (`CI=1; pnpm check`) and a wrapper (`env`, `time`) no longer do.
 
+- The husky hooks run lint-staged and commitlint through the project's own manager (`pnpm exec`, `yarn`,
+  `bunx`), where `npx` was refused by npm in a project whose `devEngines` names another manager, so no commit
+  went through. An existing project edits its two `.husky/` files the same way.
 - `linteljs.config.json` records only the answers its target asks. Every target but a web extension recorded
   `"browser": "chrome"`, an answer it never prompts for; reading a config fills it back in, so an existing one
   still loads.
