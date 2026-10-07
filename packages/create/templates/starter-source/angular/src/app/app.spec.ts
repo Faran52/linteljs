@@ -14,7 +14,7 @@ import {
 } from '@config/linteljs';
 import { PAGES } from '@config/routes';
 
-import { CrashHandler } from '@lib/providers/crash-handler/crash-handler';
+import { CrashHandler } from '@lib/providers/crash-handler-provider/crash-handler-provider';
 import { ForbiddenError } from '@utils/status-utils';
 
 import { App } from './app';

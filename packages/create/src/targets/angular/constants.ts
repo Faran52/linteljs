@@ -15,7 +15,7 @@ export const ALWAYS: readonly string[] = [
   'src/components/ui/button/button.html',
   'src/components/ui/text-input/text-input.ts',
   'src/components/ui/text-input/text-input.html',
-  'src/lib/providers/crash-handler/crash-handler.ts',
+  'src/lib/providers/crash-handler-provider/crash-handler-provider.ts',
 ];
 
 // The Contact page always ships, so its styles do too.

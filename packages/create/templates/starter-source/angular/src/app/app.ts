@@ -5,7 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { NAME } from '@config/linteljs';
 import { STATUSES } from '@config/statuses';
 
-import { CrashHandler } from '@lib/providers/crash-handler/crash-handler';
+import { CrashHandler } from '@lib/providers/crash-handler-provider/crash-handler-provider';
 
 import { AppHeader } from '@features/app-header/app-header';
 import { StatusPage } from '@features/status-page/status-page';

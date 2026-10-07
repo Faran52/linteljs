@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { ForbiddenError } from '@utils/status-utils';
 
-import { CrashHandler } from './crash-handler';
+import { CrashHandler } from './crash-handler-provider';
 
 describe('CrashHandler', () => {
   it('reports what it caught and names a crash', () => {

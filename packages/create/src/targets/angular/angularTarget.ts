@@ -212,8 +212,8 @@ export const angularTarget: TargetBuilder = () => {
         covers: 'src/components/ui/mark/mark.ts',
       },
       {
-        target: 'src/lib/providers/crash-handler/crash-handler.spec.ts',
-        covers: 'src/lib/providers/crash-handler/crash-handler.ts',
+        target: 'src/lib/providers/crash-handler-provider/crash-handler-provider.spec.ts',
+        covers: 'src/lib/providers/crash-handler-provider/crash-handler-provider.ts',
       },
       {
         target: 'src/components/ui/text-input/text-input.spec.ts',
