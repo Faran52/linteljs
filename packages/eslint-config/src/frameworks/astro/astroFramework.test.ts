@@ -35,7 +35,7 @@ const PAGE = (body: string): string => {
 describe('astro', () => {
   it('parses a template and reports an astro rule', async () => {
     const ruleIds = await ruleIdsFor(
-      astro(),
+      WITH_BASE(),
       PAGE('<div set:html={title} set:text={title} />'),
       'src/pages/index.astro',
     );
@@ -45,7 +45,7 @@ describe('astro', () => {
   });
 
   it('reports an image with no alt text in a template', async () => {
-    const ruleIds = await ruleIdsFor(astro(), PAGE('<img src="/a.png" />'), 'src/pages/index.astro');
+    const ruleIds = await ruleIdsFor(WITH_BASE(), PAGE('<img src="/a.png" />'), 'src/pages/index.astro');
 
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
@@ -61,6 +61,23 @@ describe('astro', () => {
 
     const filtered = enabled.filter(startsWith('astro/'));
     expect(filtered).toEqual([]);
+  });
+
+  it('lets astro:container go unresolved', async () => {
+    const code = "import { loadRenderers } from 'astro:container';\n\nexport const value = loadRenderers;\n";
+
+    const baseRuleIds = await ruleIdsFor(base(), code, 'src/lib/sample.ts');
+    expect(baseRuleIds).toContain('import-x/no-unresolved');
+
+    const astroRuleIds = await ruleIdsFor(WITH_BASE(), code, 'src/lib/sample.ts');
+    expect(astroRuleIds).not.toContain('import-x/no-unresolved');
+  });
+
+  it('still reports a specifier that does not resolve', async () => {
+    const code = "import { a } from 'not-installed';\n\nexport const value = a;\n";
+
+    const ruleIds = await ruleIdsFor(WITH_BASE(), code, 'src/lib/sample.ts');
+    expect(ruleIds).toContain('import-x/no-unresolved');
   });
 
   it('stacks under base without either losing its rules', async () => {
@@ -141,6 +158,7 @@ describe('astro', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(astro());
     const expected = [
+      '@linteljs/astro/framework-specifiers',
       '@linteljs/astro/typescript',
       '@linteljs/astro/jsx-layout',
       '@linteljs/astro/text-whitespace',

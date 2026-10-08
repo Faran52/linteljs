@@ -113,6 +113,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `astro()` lets Astro's virtual `astro:*` modules, such as `astro:container`, go unresolved under
+  `import-x/no-unresolved`.
 - `next()` holds the filename convention off `instrumentation-client.ts`, a name Next reads as it is.
 - Import sorting files `@styles` with `@config` and `@typings`, and `@i18n` with `@lib`, `@utils` and the other
   library aliases, rather than in the trailing group of aliases no bucket names.

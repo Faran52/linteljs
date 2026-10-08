@@ -12,6 +12,8 @@ const ASTRO_FILES = ['**/*.astro'];
 // No tsconfig can contain these; `.js` virtual files are already type-free under `typescript()`.
 const ASTRO_TYPELESS = ['**/*.astro', '**/*.astro/*.ts'];
 
+const VIRTUAL_MODULES = ['^astro:'];
+
 export const astro = (): Layer => {
   // Scoped, because the plugin leaves its rule entry unglobbed.
   const recommended = presetOf(
@@ -36,6 +38,12 @@ export const astro = (): Layer => {
   const layer: Layer = [
     ...recommended,
     ...a11y,
+    {
+      name: '@linteljs/astro/framework-specifiers',
+      rules: {
+        'import-x/no-unresolved': ['error', { ignore: VIRTUAL_MODULES }],
+      },
+    },
     // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree when that fails.
     {
       name: '@linteljs/astro/typescript',
