@@ -600,7 +600,8 @@ whose record carries `i18n` parts is asked.
   `useI18n` cannot resolve in vitest.
 - **SvelteKit takes Paraglide JS, not svelte-i18n**, which pinned an esbuild with an advisory; Paraglide audits
   clean and runs no build scripts. Its inlang plugin loads from `node_modules`, not the CDN, so a compile needs no
-  network.
+  network. Inlang reads it by path, not Node resolution, so a monorepo declares it at the root, the one
+  `node_modules` every manager installs a root dependency into, and points two levels up.
 - **Paraglide is a compile step**, run before `svelte-kit sync` in `prepare` and `typecheck`. Detection stays ours:
   `getLocale` reads a store and the strategy is `baseLocale`.
 - **Solid takes @solid-primitives/i18n**: no dependencies, no install scripts. It is imported as

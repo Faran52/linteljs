@@ -382,6 +382,24 @@ describe('the monorepo layout', () => {
     expect(devDependencies).not.toContain('@commitlint/config-conventional');
   });
 
+  it.each([
+    ['monorepo', false],
+    ['single', true],
+  ] as const)('leaves the inlang plugin to the root of a %s: %s in the app', (layout, isInApp) => {
+    const answers = answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+      layout,
+    });
+    const [artifact] = packageJsonEmitter(answers, EMPTY_PROJECT, 'demo-app');
+    const text = artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '{}';
+    const devDependencies = Object.keys(parsePackageJson(text).devDependencies ?? {});
+    const hasPlugin = devDependencies.includes('@inlang/plugin-message-format');
+
+    expect(hasPlugin).toBe(isInApp);
+    expect(devDependencies).toContain('@inlang/paraglide-js');
+  });
+
   it('keeps the root fields and the commit hooks in a single repo', () => {
     const answers = answersFor({ packageManager: 'npm' });
     const [artifact] = packageJsonEmitter(answers, EMPTY_PROJECT, 'demo-app');

@@ -12,7 +12,11 @@ import {
 
 import { targetFor } from '@targets';
 
-import { HOOK_DEV_DEPENDENCIES, ROOT_FIELDS } from '../../constants';
+import {
+  HOOK_DEV_DEPENDENCIES,
+  INLANG_PLUGIN,
+  ROOT_FIELDS,
+} from '../../constants';
 import { merged } from '../../utils/artifactUtils';
 import {
   allowedBuildNames,
@@ -82,7 +86,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...buildDevDependencies(answers),
   };
   const devDependencies = answers.layout === 'monorepo'
-    ? omit(allDevDependencies, HOOK_DEV_DEPENDENCIES)
+    ? omit(allDevDependencies, [...HOOK_DEV_DEPENDENCIES, INLANG_PLUGIN])
     : allDevDependencies;
   const pm = answers.packageManager;
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];

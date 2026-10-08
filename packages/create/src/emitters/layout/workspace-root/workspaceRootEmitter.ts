@@ -41,7 +41,12 @@ const rootAnswersOf = (answers: Answers): Answers => {
 const rootManifest = (answers: Answers, name: string): string => {
   const pm = answers.packageManager;
   const app = patchPackageJson({}, answers);
-  const devDependencies = buildDevDependencies(rootAnswersOf(answers));
+  const appDevDependencies = buildDevDependencies(answers);
+  const rootDevDependencies = buildDevDependencies(rootAnswersOf(answers));
+  const devDependencies = {
+    ...appDevDependencies,
+    ...rootDevDependencies,
+  };
 
   const manifest = {
     name: rootNameOf(name),

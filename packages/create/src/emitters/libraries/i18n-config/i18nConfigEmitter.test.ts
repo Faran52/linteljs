@@ -23,11 +23,11 @@ describe('i18nConfigEmitter', () => {
       target: 'solid',
       languages: ['ja'],
     }));
-    const settings: unknown = JSON.parse(emitInlangSettings(['en', 'ja']));
+    const settings: unknown = JSON.parse(emitInlangSettings(['en', 'ja'], 'single'));
 
     expect(svelte.at(1)?.target).toBe('project.inlang/settings.json');
     expect(svelte.at(1)?.seed).toBe(true);
-    const expectedContent = { text: emitInlangSettings(['en', 'ja']) };
+    const expectedContent = { text: emitInlangSettings(['en', 'ja'], 'single') };
     expect(svelte.at(1)?.content).toEqual(expectedContent);
 
     const expectedSettings = {
@@ -41,6 +41,20 @@ describe('i18nConfigEmitter', () => {
 
     expect(react).toHaveLength(1);
     expect(solid).toHaveLength(1);
+  });
+
+  it.each([
+    ['single', './node_modules/@inlang/plugin-message-format/dist/index.js'],
+    ['monorepo', '../../node_modules/@inlang/plugin-message-format/dist/index.js'],
+  ] as const)('reads the plugin from the node_modules a %s layout installs it to', (layout, module) => {
+    const [, settings] = i18nConfigEmitter(answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+      layout,
+    }));
+    const text = settings !== undefined && 'text' in settings.content ? settings.content.text : '';
+    const parsed: unknown = JSON.parse(text);
+    expect(parsed).toHaveProperty('modules', [module]);
   });
 
   it('writes the config alone for a language that slipped past the answers onto a target with no i18n', () => {

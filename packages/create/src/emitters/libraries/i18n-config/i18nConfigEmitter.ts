@@ -2,12 +2,14 @@ import {
   type Answers,
   type Artifact,
   type Language,
+  type Layout,
 } from '@config/types';
 
 import { localesOf } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
+import { INLANG_PLUGIN } from '../../constants';
 import { emitted } from '../../utils/artifactUtils';
 
 import { LANGUAGE_NAMES, LOOKUP_TAGS } from './constants';
@@ -73,12 +75,13 @@ export const emitI18nConfig = (languages: Language[]): string => {
 };
 
 // The compiler's plugin is read from `node_modules`: the documented module is a CDN URL fetched on every compile.
-export const emitInlangSettings = (languages: Language[]): string => {
+export const emitInlangSettings = (languages: Language[], layout: Layout): string => {
+  const root = layout === 'monorepo' ? '../..' : '.';
   const settings = {
     '$schema': 'https://inlang.com/schema/project-settings',
     'baseLocale': 'en',
     'locales': languages,
-    'modules': ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
+    'modules': [`${root}/node_modules/${INLANG_PLUGIN}/dist/index.js`],
     'plugin.inlang.messageFormat': { pathPattern: './src/i18n/locales/{locale}/common.json' },
   };
 
@@ -105,7 +108,7 @@ export const i18nConfigEmitter = (answers: Answers): Artifact[] => {
   const artifacts = [config];
 
   if (targetFor(answers).i18n?.compiler !== undefined) {
-    const settings = emitInlangSettings(languages);
+    const settings = emitInlangSettings(languages, answers.layout);
 
     artifacts.push(seeded(INLANG_SETTINGS, settings));
   }

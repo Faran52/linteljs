@@ -111,6 +111,22 @@ describe('workspaceRootEmitter', () => {
     ]);
   });
 
+  it('installs the inlang plugin at the root, where every manager puts the root\'s own dependencies', async () => {
+    const { devDependencies = {} } = await manifestOf({
+      target: 'svelte',
+      languages: ['ja'],
+    });
+
+    const firstThree = Object.keys(devDependencies)
+      .slice(0, 3);
+
+    expect(firstThree).toEqual([
+      '@commitlint/cli',
+      '@commitlint/config-conventional',
+      '@inlang/plugin-message-format',
+    ]);
+  });
+
   it('lints and typechecks the root, leaving every workspace to itself', async () => {
     const eslintConfig = await textAt({}, 'eslint.config.ts');
     expect(eslintConfig).toContain('\'apps/**\',\n    \'packages/**\',');

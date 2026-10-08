@@ -399,10 +399,15 @@ export const HOOK_DEV_DEPENDENCIES = [
   'lint-staged',
 ];
 
+// Inlang reads its plugin by path, not by Node resolution, and only the root's own dependencies land in the
+// root's `node_modules` under every manager.
+export const INLANG_PLUGIN = '@inlang/plugin-message-format';
+
 // Sorted, as a manifest lists them.
 export const ROOT_DEV_DEPENDENCIES = [
   '@commitlint/cli',
   '@commitlint/config-conventional',
+  INLANG_PLUGIN,
   '@linteljs/eslint-config',
   '@types/node',
   'eslint',

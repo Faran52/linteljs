@@ -267,6 +267,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **A SvelteKit app with languages in an npm, yarn or bun monorepo rendered nothing.** Those managers hoist the
+  inlang plugin to the root `node_modules`, where `project.inlang/settings.json` did not look, so Paraglide
+  compiled no messages and every page failed. A monorepo now installs the plugin at the root and reads it there.
 - **Under MSW, every install copies the worker.** The app's install script runs `msw init`, so
   `mockServiceWorker.js` reaches `public/` (`static/` on SvelteKit) on every manager and layout. msw's own
   postinstall wrote nothing in a monorepo installed from a warm pnpm store, which replays its cached build.
