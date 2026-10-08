@@ -63,6 +63,7 @@ const testBlock = (
 ): string => {
   const { testPool: pool } = target;
   const dom = target.libraryProject !== true;
+  const environment = target.testEnvironment ?? (dom ? 'happy-dom' : 'node');
   const poolLine = pool === undefined ? '' : `${indent}  pool: '${pool}',\n`;
   const execArgvLine = dom ? `${indent}  execArgv: ['--no-experimental-webstorage'],\n` : '';
   const inlineLine = target.testInline === undefined
@@ -71,7 +72,7 @@ const testBlock = (
 
   return `${indent}test: {
 ${indent}  globals: true,
-${indent}  environment: '${dom ? 'happy-dom' : 'node'}',
+${indent}  environment: '${environment}',
 ${poolLine}${inlineLine}${indent}  setupFiles: ['./${setup}'],
 ${execArgvLine}${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;

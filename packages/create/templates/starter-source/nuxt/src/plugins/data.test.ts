@@ -1,31 +1,8 @@
-import { type App, createApp } from 'vue';
+import { useNuxtApp } from 'nuxt/app';
 
 import { dataProvider } from '@lib/providers/data/dataProvider';
 
-import './data';
-
-interface NuxtApp {
-  vueApp: App;
-}
-
-type Setup = (nuxtApp: NuxtApp) => void;
-
-const nuxt = vi.hoisted(() => {
-  const setups: Setup[] = [];
-  const registry = { setups };
-
-  return registry;
-});
-
-vi.mock('nuxt/app', () => {
-  const nuxtApp = {
-    defineNuxtPlugin: (setup: Setup) => {
-      nuxt.setups.push(setup);
-    },
-  };
-
-  return nuxtApp;
-});
+import plugin from './data';
 
 vi.mock('@lib/providers/data/dataProvider', () => {
   const provider = { dataProvider: vi.fn() };
@@ -34,11 +11,11 @@ vi.mock('@lib/providers/data/dataProvider', () => {
 });
 
 describe('the data plugin', () => {
-  it('installs the data provider on the Nuxt app', () => {
-    const vueApp = createApp({});
+  it('installs the data provider on the Nuxt app', async () => {
+    const nuxtApp = useNuxtApp();
 
-    nuxt.setups[0]?.({ vueApp });
+    await plugin(nuxtApp);
 
-    expect(dataProvider).toHaveBeenCalledWith(vueApp);
+    expect(dataProvider).toHaveBeenCalledWith(nuxtApp.vueApp);
   });
 });

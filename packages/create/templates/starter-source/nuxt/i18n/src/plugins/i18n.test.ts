@@ -4,6 +4,9 @@ import {
   type Ref,
   ref,
 } from 'vue';
+import { useNuxtApp } from 'nuxt/app';
+
+import { mockNuxtImport } from '@nuxt/test-utils/runtime';
 
 import { languages, languageStorageKey } from '@i18n/config';
 import {
@@ -12,28 +15,18 @@ import {
 } from '@i18n/i18n';
 import { languageCookie } from '@i18n/utils/cookieUtils';
 
-import './i18n';
-
-// The two fields the plugin reads: any `ssrContext` marks the render as the server's.
-interface PluginApp {
-  vueApp: App;
-  ssrContext: object | undefined;
-}
-
-type Setup = (nuxtApp: PluginApp) => void;
+import plugin from './i18n';
 
 interface Head {
   htmlAttrs: Record<'lang' | 'dir', Readonly<Ref<string>>>;
 }
 
-// Captures the plugin's setup, run against a real app in each case, the heads it hands Nuxt and the request it reads.
+// Captures the heads the plugin hands Nuxt and serves the request it reads.
 const nuxt = vi.hoisted(() => {
-  const setups: Setup[] = [];
   const heads: Head[] = [];
   const request: Record<string, string> = {};
 
   const captured = {
-    setups,
     heads,
     request,
   };
@@ -41,37 +34,40 @@ const nuxt = vi.hoisted(() => {
   return captured;
 });
 
-vi.mock('nuxt/app', () => {
-  const nuxtApp = {
-    defineNuxtPlugin: (setup: Setup) => {
-      nuxt.setups.push(setup);
-    },
-    useHead: (head: Head) => {
-      nuxt.heads.push(head);
-    },
-    useRequestHeaders: () => {
-      return nuxt.request;
-    },
-    useState: <T>(_key: string, init: () => T) => {
-      const value = init();
-
-      return ref(value);
-    },
+mockNuxtImport('useHead', () => {
+  return (head: Head) => {
+    nuxt.heads.push(head);
   };
+});
 
-  return nuxtApp;
+mockNuxtImport('useRequestHeaders', () => {
+  return () => {
+    return nuxt.request;
+  };
+});
+
+// Fresh on each install: Nuxt's own keeps the first value for the whole run.
+mockNuxtImport('useState', () => {
+  return <T>(_key: string, init: () => T) => {
+    const value = init();
+
+    return ref(value);
+  };
 });
 
 const last = languages.at(-1)?.id ?? 'en';
 
-const install = (ssrContext?: object): App['use'] => {
+// Run against a fresh app in each case; any `ssrContext` marks the render as the server's.
+const install = async (ssrContext?: object): Promise<App['use']> => {
   const vueApp = createApp({});
   const use = vi.spyOn(vueApp, 'use');
-
-  nuxt.setups[0]?.({
+  const nuxtApp = {
+    ...useNuxtApp(),
     vueApp,
-    ssrContext,
-  });
+  };
+
+  Reflect.set(nuxtApp, 'ssrContext', ssrContext);
+  await plugin(nuxtApp);
 
   return use;
 };
@@ -91,28 +87,28 @@ describe('the i18n plugin', () => {
     vi.restoreAllMocks();
   });
 
-  it('installs the one i18n in the stored language on the client', () => {
+  it('installs the one i18n in the stored language on the client', async () => {
     document.cookie = languageCookie(last);
 
-    const use = install();
+    const use = await install();
 
     expect(use).toHaveBeenCalledWith(i18n);
     expect(i18n.global.locale.value).toBe(last);
   });
 
-  it('follows the browser on the client when nothing is stored, and stores nothing', () => {
+  it('follows the browser on the client when nothing is stored, and stores nothing', async () => {
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue([last]);
-    install();
+    await install();
 
     expect(i18n.global.locale.value).toBe(last);
     expect(document.cookie).toBe('');
   });
 
-  it('renders the stored language on the server, through an i18n of its own', () => {
+  it('renders the stored language on the server, through an i18n of its own', async () => {
     nuxt.request.cookie = `theme=dark; ${languageCookie(last)}`;
     nuxt.request['accept-language'] = 'en';
 
-    const use = install(SERVER);
+    const use = await install(SERVER);
 
     expect(use).not.toHaveBeenCalledWith(i18n);
     const language = headLanguage();
@@ -120,23 +116,23 @@ describe('the i18n plugin', () => {
     expect(i18n.global.locale.value).toBe('en');
   });
 
-  it('follows Accept-Language on the server when nothing is stored', () => {
+  it('follows Accept-Language on the server when nothing is stored', async () => {
     nuxt.request['accept-language'] = `fr;q=0.9, ${last}`;
-    install(SERVER);
+    await install(SERVER);
 
     const language = headLanguage();
     expect(language).toBe(last);
   });
 
-  it('renders English on the server for a request that names nothing', () => {
-    install(SERVER);
+  it('renders English on the server for a request that names nothing', async () => {
+    await install(SERVER);
 
     const language = headLanguage();
     expect(language).toBe('en');
   });
 
-  it.each(languages)('keeps the head lang and dir on $id', ({ id, dir }) => {
-    install();
+  it.each(languages)('keeps the head lang and dir on $id', async ({ id, dir }) => {
+    await install();
     applyLanguage(id);
 
     const htmlAttrs = nuxt.heads.at(-1)?.htmlAttrs;

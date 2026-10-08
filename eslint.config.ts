@@ -128,6 +128,8 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.i18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.reactNativeI18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.vueI18n.ts',
+      'packages/create/templates/fragments/test-setup/setupTests.nuxtI18n.ts',
+      'packages/create/templates/fragments/test-setup/setupTests.nuxtMsw.ts',
       'packages/create/templates/starter-source/**',
       ...UNTYPED_MODS,
     ],

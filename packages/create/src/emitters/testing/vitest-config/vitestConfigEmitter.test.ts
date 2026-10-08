@@ -199,16 +199,23 @@ const stylexAliases = { '@styles/*': [\`\${import.meta.dirname}/src/styles/*\`] 
 export default defineConfig({
   plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })],
 `);
+  });
 
-    const nuxt = configFor({
+  it('runs Nuxt\'s suites inside its own environment, on its own plugins', () => {
+    const config = configFor({
       target: 'nuxt',
       styling: 'stylex',
     });
+    const head = `import { defineVitestConfig } from '@nuxt/test-utils/config';
 
-    expect(nuxt).toContain("import vue from '@vitejs/plugin-vue';");
-    const plugins = "  plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } }), vue()],\n";
+export default defineVitestConfig({
+  test: {
+    globals: true,
+    environment: 'nuxt',
+`;
 
-    expect(nuxt).toContain(plugins);
+    expect(config).toContain(head);
+    expect(config).not.toContain('plugins');
   });
 
   it('writes nothing when testing is declined', () => {

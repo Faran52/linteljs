@@ -186,6 +186,10 @@ export interface TargetRecord {
   testInline?: RegExp;
   // Angular's plugin runs `vmThreads`, whose VM context lacks `BroadcastChannel`, so msw fails on import.
   testPool?: string;
+  // Absent: `happy-dom`, or `node` for a library.
+  testEnvironment?: string;
+  // Absent: the runner's own.
+  mswSetup?: string;
   // Next has no Vite config, so it compiles StyleX through Babel and PostCSS.
   stylexBuild?: string[];
   // Only where StyleX compiles through PostCSS; elsewhere the at-rule expands to nothing.

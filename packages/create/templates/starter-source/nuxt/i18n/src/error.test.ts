@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
-import { clearError, type NuxtError } from 'nuxt/app';
+
+import { mockNuxtImport } from '@nuxt/test-utils/runtime';
 
 import { STATUSES } from '@config/statuses';
 
@@ -7,10 +8,16 @@ import { resources } from '@i18n/config';
 
 import ErrorPage from './error.vue';
 
-vi.mock('nuxt/app', () => {
-  const nuxtApp = { clearError: vi.fn() };
+import type { NuxtError } from 'nuxt/app';
 
-  return nuxtApp;
+const { clearError } = vi.hoisted(() => {
+  const mocks = { clearError: vi.fn() };
+
+  return mocks;
+});
+
+mockNuxtImport('clearError', () => {
+  return clearError;
 });
 
 const global = { stubs: { AppHeader: true } };
@@ -22,11 +29,6 @@ const errorOf = (status: number): Pick<NuxtError, 'status'> => {
 };
 
 describe('the error page', () => {
-  beforeEach(() => {
-    vi.mocked(clearError)
-      .mockClear();
-  });
-
   it.each([STATUSES.forbidden, STATUSES.notFound])('shows the $code page under the header, with nothing to retry', ({
     code,
     message,

@@ -142,6 +142,18 @@ describe('the mocking answer', () => {
     const undefinedSources = sourcesFor(undefined);
     expect(undefinedSources).not.toContain('fragments/test-setup/setupTests.msw.ts');
   });
+
+  it('appends the target\'s own msw fragment where it has one', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'nuxt',
+      mocking: 'msw',
+    };
+    const [artifact] = testSetupEmitter(answers, FRESH);
+
+    const content = JSON.stringify(artifact?.content);
+    expect(content).toContain('"fragments/test-setup/setupTests.nuxtMsw.ts"]');
+  });
 });
 
 describe('the shipped test setup', () => {

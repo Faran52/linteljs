@@ -45,13 +45,21 @@ describe('nuxtTarget', () => {
     expect(record.vitePlugin).toBeUndefined();
   });
 
-  it('translates through vue-i18n, as Vue does', () => {
+  it('translates through vue-i18n, installed once Nuxt\'s test entry has run', () => {
     const record = recordFor();
     const expected = {
       dependencies: ['vue-i18n'],
-      testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
+      testSetup: 'fragments/test-setup/setupTests.nuxtI18n.ts',
     };
     expect(record.i18n).toEqual(expected);
+  });
+
+  it('tests under @nuxt/test-utils, without the Vue plugin Nuxt already runs', () => {
+    const record = recordFor();
+    expect(record.testEnvironment).toBe('nuxt');
+    expect(record.mswSetup).toBe('fragments/test-setup/setupTests.nuxtMsw.ts');
+    expect(record.testDevDependencies).toContain('@nuxt/test-utils');
+    expect(record.devDependencies).not.toContain('@vitejs/plugin-vue');
   });
 
   it('runs Vue\'s own suite beside each contact source it shares', () => {

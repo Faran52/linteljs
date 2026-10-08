@@ -88,6 +88,7 @@ export const VERSIONS: Record<string, string> = {
   '@vitest/coverage-v8': '^5.0.3',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.5.1',
+  '@nuxt/test-utils': '^4.3.3',
   'angular-eslint': '^22.5.0',
   'astro': '^7.3.5',
   'astro-eslint-parser': '^3.2.0',

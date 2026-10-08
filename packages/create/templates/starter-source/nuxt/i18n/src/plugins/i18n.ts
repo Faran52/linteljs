@@ -1,11 +1,3 @@
-import { computed } from 'vue';
-import {
-  defineNuxtPlugin,
-  useHead,
-  useRequestHeaders,
-  useState,
-} from 'nuxt/app';
-
 import {
   createLanguageI18n,
   detectLanguage,
@@ -15,6 +7,7 @@ import {
 import { acceptedTags } from '@i18n/utils/cookieUtils';
 
 // Detected once from the request on the server, then carried to the client in the payload, so hydration matches.
+// Nuxt's composables come auto-imported: `nuxt/app` re-exports `useHead` past what `mockNuxtImport` replaces.
 export default defineNuxtPlugin((nuxtApp) => {
   const onServer = nuxtApp.ssrContext !== undefined;
   const language = useState('language', () => {

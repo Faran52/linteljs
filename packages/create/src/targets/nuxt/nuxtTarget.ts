@@ -107,11 +107,13 @@ export const nuxtTarget: TargetBuilder = () => {
     ],
     tailwindTheme: '../styles/theme.css',
     nuxtProject: true,
-    // Vitest runs outside Nuxt's build, so the SFC transform has to be named for it.
-    vitestPlugin: {
-      imports: ["import vue from '@vitejs/plugin-vue';"],
-      calls: ['vue()'],
+    // Suites run inside a booted Nuxt app, on Nuxt's own Vite plugins and aliases.
+    vitestFactory: {
+      imports: ["import { defineVitestConfig } from '@nuxt/test-utils/config';"],
+      call: 'defineVitestConfig',
     },
+    testEnvironment: 'nuxt',
+    mswSetup: 'fragments/test-setup/setupTests.nuxtMsw.ts',
     // No `paths` of its own, so Nuxt's merged `#shared` and `#server` set survives.
     tsconfig: {
       jsx: 'preserve',
@@ -330,7 +332,7 @@ export const nuxtTarget: TargetBuilder = () => {
     typecheck: 'nuxt typecheck',
     // `nuxt prepare` writes `.nuxt/`, so nothing typechecks before it: it is the postinstall.
     prepare: 'nuxt prepare',
-    testDevDependencies: PARTS.vue.testDevDependencies,
+    testDevDependencies: [...PARTS.vue.testDevDependencies, '@nuxt/test-utils'],
     dependencies: [
       'nuxt',
       ...PARTS.vue.dependencies,
@@ -338,8 +340,10 @@ export const nuxtTarget: TargetBuilder = () => {
     ],
     // yarn installs no peer the project does not name.
     devDependencies: [
-      ...PARTS.vue.devDependencies,
-      '@vitejs/plugin-vue',
+      ...PARTS.vue.devDependencies
+        .filter((name) => {
+          return name !== '@vitejs/plugin-vue';
+        }),
       'rolldown',
       'vite',
     ],
@@ -350,7 +354,10 @@ export const nuxtTarget: TargetBuilder = () => {
       'esbuild',
     ],
     stateRules: ['vue-reactivity.md'],
-    i18n: VUE_I18N,
+    i18n: {
+      ...VUE_I18N,
+      testSetup: 'fragments/test-setup/setupTests.nuxtI18n.ts',
+    },
   };
 
   return record;
