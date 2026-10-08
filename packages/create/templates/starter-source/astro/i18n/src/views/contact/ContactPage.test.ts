@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import { dataProvider } from '@lib/providers/data/dataProvider';
 
-import ContactView from './ContactView.vue';
+import ContactPage from './ContactPage.vue';
 
 const mounted = {
   global: { plugins: [dataProvider] },
@@ -21,9 +21,9 @@ const fill = async (view: ReturnType<typeof mount>, selector: string, value: str
   await field.trigger('blur');
 };
 
-describe('ContactView', () => {
+describe('ContactPage', () => {
   it('names the page and its send button in the words it is handed', () => {
-    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+    const view: ReturnType<typeof mount> = mount(ContactPage, mounted);
 
     const title = view
       .get('h1')
@@ -37,7 +37,7 @@ describe('ContactView', () => {
   });
 
   it('says why a field is refused in the words it is handed', async () => {
-    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+    const view: ReturnType<typeof mount> = mount(ContactPage, mounted);
 
     await fill(view, 'input', 'not-an-address');
     await nextTick();
@@ -50,7 +50,7 @@ describe('ContactView', () => {
   });
 
   it('confirms in the words it is handed once both fields are valid', async () => {
-    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+    const view: ReturnType<typeof mount> = mount(ContactPage, mounted);
 
     await fill(view, 'input', 'someone@example.com');
     await fill(view, 'textarea', 'Ten characters, at least.');

@@ -76,8 +76,16 @@ export const USE_CONTACT_FORM = 'use-contact-form/useContactForm';
 // The page's contact words in every language, read at build time.
 export const CONTACT_COPY = `${CONTACT_VIEW}/utils/contactCopyUtils`;
 
-// How the page asset imports React's island; another framework's island rewrites this line.
+// How the view asset imports React's island; another framework's island rewrites this line.
 export const REACT_ISLAND_IMPORT = "import { ContactIsland } from '@views/contact/ContactIsland';";
+
+// Each host's Astro integration.
+export const INTEGRATIONS: Record<HostedFramework, string> = {
+  react: '@astrojs/react',
+  vue: '@astrojs/vue',
+  svelte: '@astrojs/svelte',
+  solid: '@astrojs/solid-js',
+};
 
 // What one hosted framework alone changes in the record.
 export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'overrides'

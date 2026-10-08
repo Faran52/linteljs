@@ -607,8 +607,10 @@ The form, Zod and data answers are demonstrated on every target that renders a c
 its screen reuses React's contact hooks, api spellings and providers, so a data layer there is the one React runs.
 Angular always renders one, on Reactive Forms, since `@angular/forms` ships with the framework; TanStack Form swaps
 the page's component for `injectForm`. Nuxt's `pages/contact.vue` renders Vue's `ContactView`, with
-`plugins/data.ts` installing Vue's data provider. Astro's `pages/contact.astro` hydrates React's `ContactPage` as an
-island: `src/pages/` is Astro's router, so the page, its hook and the island sit under `views/contact/`, and
+`plugins/data.ts` installing Vue's data provider. Astro's `pages/contact.astro` names `views/contact/ContactView.astro`,
+which hydrates React's `ContactPage` as an island. Its suite stubs the island and the renderer, since a server
+render compiles a Vue or Svelte island a second time and its coverage map with it, which leaves branches unhit:
+`src/pages/` is Astro's router, so the view, the page, its hook and the island sit under `views/contact/`, and
 `ContactIsland` wraps the data provider, since an island is its own React root. The page and its hook keep suites
 of their own, wrapped in that provider alone, so no store provider ships for a test. Under languages the page
 reads every language's contact words from the locale files at build time and hands them to the island as a prop,
@@ -618,7 +620,7 @@ so hydration matches. The web extension renders no contact page, hosting a frame
 `noContactPage` takes the form, data and mocking questions away there, as it does on the typescript library.
 Astro hosting nothing has no contact page: no
 framework is there to render a form, and a hand-rolled one would be a form demo no answer chose. Hosting Vue, the
-island is Vue's own `ContactView` under the same page, installing its data provider on the island's app. Hosting Solid, it is Solid's `ContactPage` in a
+island is Vue's own `ContactView`, written as `ContactPage` since `ContactView` names Astro's view, installing its data provider on the island's app. Hosting Solid, it is Solid's `ContactPage` in a
 `ContactIsland` that brings its provider; under languages a forked page takes a `translate` prop, since Solid's
 own reads `@solid-primitives/i18n`, which Astro does not install. Its vitest config inlines `solid-js`: Astro
 inlines the Solid packages it crawls while vite-plugin-solid externalizes `solid-js`, so Node loaded the store's
@@ -929,7 +931,7 @@ everywhere, `browser.ts` wherever a dev server serves a directory the worker can
 but React Native, and `native.ts` there. The entry starts the worker in development only and does not await it: nothing posts before a
 person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
 `root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
-`init` in `hooks.client.ts`, Astro's `pages/contact.astro` in a client script under `import.meta.env.DEV`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
+`init` in `hooks.client.ts`, Astro's `ContactView.astro` in a client script under `import.meta.env.DEV`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
 for it anyway). SvelteKit narrows Vite's `server.fs.allow` to its own directories, so under MSW its
 `vite.config.ts` adds `__mocks__`, which Vite merges into the kit's list; without it the dev server answers the
 handlers' import with a 403 and the worker never starts. Every other Vite target keeps Vite's default, the

@@ -34,7 +34,7 @@ import type {
 } from '../../types';
 
 interface Island {
-  // The line `pages/contact.astro` imports the island through.
+  // The line `ContactView.astro` imports the island through.
   pageImport: string;
   files: StarterFile[];
   tests: StarterTest[];
@@ -176,7 +176,8 @@ const reactIsland = (): Island => {
   return island;
 };
 
-// Vue's contact view already sits under `src/views/`; only the island and the view it translates are Astro's.
+// Vue's contact view is the island's page, since `ContactView` names Astro's own; only the island and the page it
+// translates are Astro's.
 const vueIsland = (): Island => {
   const { button, textInput } = ISLAND_COMPONENTS.vue;
   const fromVue = [
@@ -185,20 +186,22 @@ const vueIsland = (): Island => {
     `${textInput}.vue`,
   ];
   const view = `${CONTACT_VIEW}/ContactView`;
+  const page = `${CONTACT_VIEW}/ContactPage`;
 
   const island: Island = {
     pageImport: "import ContactIsland from '@views/contact/ContactIsland.vue';",
     files: [
       ...translated<StarterFile>({ target: `${CONTACT_VIEW}/ContactIsland.vue` }),
       {
-        target: `${view}.vue`,
+        target: `${page}.vue`,
+        source: `${view}.vue`,
         when: (answers) => {
           return !hasI18n(answers);
         },
         shared: 'vue',
       },
       {
-        target: `${view}.vue`,
+        target: `${page}.vue`,
         when: hasI18n,
         variant: 'i18n',
       },
@@ -217,16 +220,20 @@ const vueIsland = (): Island => {
         covers: `${CONTACT_VIEW}/ContactIsland.vue`,
       }),
       {
-        target: `${view}.test.ts`,
-        covers: `${view}.vue`,
+        target: `${page}.test.ts`,
+        covers: `${page}.vue`,
+        source: `${view}.test.ts`,
         when: (answers) => {
           return !hasI18n(answers);
         },
         shared: 'vue',
+        transform: (source) => {
+          return source.replaceAll('ContactView', 'ContactPage');
+        },
       },
       {
-        target: `${view}.test.ts`,
-        covers: `${view}.vue`,
+        target: `${page}.test.ts`,
+        covers: `${page}.vue`,
         when: hasI18n,
         variant: 'i18n',
       },
@@ -454,8 +461,8 @@ export const islandFiles = (): StarterFile[] => {
     .flatMap((host) => {
       const { pageImport, files } = ISLANDS[host]();
       const components = ISLAND_COMPONENTS[host];
-      const pages = translated<StarterFile>({
-        target: 'src/pages/contact.astro',
+      const views = translated<StarterFile>({
+        target: `${CONTACT_VIEW}/ContactView.astro`,
         transform: (source) => {
           return source.replace(REACT_ISLAND_IMPORT, pageImport);
         },
@@ -463,7 +470,7 @@ export const islandFiles = (): StarterFile[] => {
         .flatMap(mocked);
 
       const gatedFiles = gated(hosts(host), [
-        ...pages,
+        ...views,
         ...files,
         ...componentStyles(components),
         // Astro's own modules already bring the StyleX tokens.
@@ -479,6 +486,7 @@ export const islandFiles = (): StarterFile[] => {
   const all = [
     ...own,
     ...gated(hasIsland, [
+      { target: 'src/pages/contact.astro' },
       {
         target: `${CONTACT_COPY}.ts`,
         when: hasI18n,
@@ -499,7 +507,23 @@ export const islandFiles = (): StarterFile[] => {
 export const islandTests = (): StarterTest[] => {
   const own = keysOf(ISLANDS)
     .flatMap((host) => {
-      const gatedTests = gated(hosts(host), ISLANDS[host]().tests);
+      const gatedTests = gated(hosts(host), [
+        ...ISLANDS[host]().tests,
+        {
+          target: `${CONTACT_VIEW}/ContactView.test.ts`,
+          covers: `${CONTACT_VIEW}/ContactView.astro`,
+          // Vue and Svelte export their island as a single-file component's default.
+          transform: (source) => {
+            if (ISLANDS[host]().pageImport === REACT_ISLAND_IMPORT) {
+              return source;
+            }
+
+            return source
+              .replace("'@views/contact/ContactIsland'", `'@views/contact/ContactIsland.${host}'`)
+              .replace('ContactIsland: ', 'default: ');
+          },
+        },
+      ]);
 
       return gatedTests;
     });

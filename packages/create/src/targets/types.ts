@@ -21,6 +21,7 @@ export interface StarterTest {
   variant?: string;
   shared?: true | TargetId;
   source?: string;
+  transform?: (source: string, answers: Answers) => string;
 }
 
 export interface ConditionalStyle {

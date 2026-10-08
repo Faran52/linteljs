@@ -350,10 +350,12 @@ const SHARED_ISLAND_GATES: GateRow[] = onIsland([
   'solid',
   'svelte',
 ], [
-  ['src/pages/contact.astro', [{ languages: [undefined], mocking: [undefined] }]],
-  ['src/pages/contact.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
-  ['src/pages/contact.astro@i18n', [{ languages: ANSWERED, mocking: [undefined] }]],
-  ['src/pages/contact.astro@i18n-msw', [{ languages: ANSWERED, mocking: ['msw'] }]],
+  ['src/pages/contact.astro', [{}]],
+  ['src/views/contact/ContactView.astro', [{ languages: [undefined], mocking: [undefined] }]],
+  ['src/views/contact/ContactView.astro@msw', [{ languages: [undefined], mocking: ['msw'] }]],
+  ['src/views/contact/ContactView.astro@i18n', [{ languages: ANSWERED, mocking: [undefined] }]],
+  ['src/views/contact/ContactView.astro@i18n-msw', [{ languages: ANSWERED, mocking: ['msw'] }]],
+  ['src/views/contact/ContactView.test.ts', [{}]],
   ['src/views/contact/utils/contactCopyUtils.ts@i18n', [{ languages: ANSWERED }]],
   ['src/views/contact/utils/contactCopyUtils.test.ts@i18n', [{ languages: ANSWERED }]],
   ['../components/ui/text-input/TextInput.css', [{}]],
@@ -404,7 +406,6 @@ const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
   ...[
     'ContactIsland.vue',
     'ContactIsland.test.ts',
-    'ContactView.test.ts',
   ]
     .flatMap((name): GateRow[] => {
       const rows: GateRow[] = [
@@ -414,8 +415,9 @@ const VUE_ISLAND_GATES: GateRow[] = onIsland(['vue'], [
 
       return rows;
     }),
-  ['src/views/contact/ContactView.vue', [{ languages: [undefined] }]],
-  ['src/views/contact/ContactView.vue@i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/ContactPage.vue', [{ languages: [undefined] }]],
+  ['src/views/contact/ContactPage.vue@i18n', [{ languages: ANSWERED }]],
+  ['src/views/contact/ContactPage.test.ts@i18n', [{ languages: ANSWERED }]],
   ...islandGates('app-button/AppButton', 'vue'),
   ['src/lib/providers/data/dataProvider.ts', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/dataProvider.ts@tanstack-query', TANSTACK_QUERY],
@@ -456,7 +458,6 @@ const SVELTE_ISLAND_GATES: GateRow[] = onIsland(['svelte'], [
     }),
   ['src/views/contact/ContactPage.svelte', [{ languages: [undefined] }]],
   ['src/views/contact/ContactPage.svelte@svelte-i18n', [{ languages: ANSWERED }]],
-  ['src/views/contact/ContactPage.test.ts', [{ languages: [undefined] }]],
   ['src/views/contact/ContactPage.test.ts@svelte-i18n', [{ languages: ANSWERED }]],
   ...islandGates('button/Button', 'svelte'),
   ['src/lib/providers/data/DataProvider.svelte', NOT_TANSTACK_QUERY],
@@ -524,6 +525,7 @@ const GATES: GateRow[] = [
     'svelte',
   ], [['src/views/contact/use-contact-form/useContactForm.test.ts', [{}]]]),
   ...onIsland(['vue', 'svelte'], [
+    ['src/views/contact/ContactPage.test.ts', [{ languages: [undefined] }]],
     ['src/views/contact/use-contact-form/useContactForm.ts', [{}]],
     ['src/components/ui/text-input/types.ts', [{}]],
   ]),

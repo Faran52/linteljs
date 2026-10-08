@@ -68,16 +68,63 @@ describe('the contact island', () => {
     ['vue', "import ContactIsland from '@views/contact/ContactIsland.vue';"],
     ['solid', "import { ContactIsland } from '@views/contact/ContactIsland';"],
     ['svelte', "import ContactIsland from '@views/contact/ContactIsland.svelte';"],
-  ])('imports the %s island on the page that hydrates it', (hostedFramework, line) => {
+  ])('imports the %s island on the view that hydrates it', (hostedFramework, line) => {
     const answers = answersFor({ hostedFramework });
-    const page = islandFiles()
+    const view = islandFiles()
       .find((file) => {
-        return file.target === 'src/pages/contact.astro' && file.when?.(answers) === true;
+        return file.target === 'src/views/contact/ContactView.astro' && file.when?.(answers) === true;
       });
 
-    const source = page?.transform?.(`${REACT_ISLAND_IMPORT}\n`, answers);
+    const source = view?.transform?.(`${REACT_ISLAND_IMPORT}\n`, answers);
 
     expect(source).toBe(`${line}\n`);
+  });
+
+  it.each<[HostedFramework, string]>([
+    ['react', "vi.mock('@views/contact/ContactIsland', () => ({ ContactIsland: vi.fn() }));\n"],
+    ['solid', "vi.mock('@views/contact/ContactIsland', () => ({ ContactIsland: vi.fn() }));\n"],
+    ['vue', "vi.mock('@views/contact/ContactIsland.vue', () => ({ default: vi.fn() }));\n"],
+    ['svelte', "vi.mock('@views/contact/ContactIsland.svelte', () => ({ default: vi.fn() }));\n"],
+  ])('stubs the %s island the view suite renders', (hostedFramework, expected) => {
+    const answers = answersFor({ hostedFramework });
+    const suite = islandTests()
+      .find((test) => {
+        return test.target === 'src/views/contact/ContactView.test.ts' && test.when?.(answers) === true;
+      });
+
+    const source = suite?.transform?.(
+      "vi.mock('@views/contact/ContactIsland', () => ({ ContactIsland: vi.fn() }));\n",
+      answers,
+    );
+
+    expect(source).toBe(expected);
+  });
+
+  it.each(ISLAND_HOSTS)('routes the contact page hosting %s through its view alone', (hostedFramework) => {
+    const answers = answersFor({
+      hostedFramework,
+      mocking: 'msw',
+      languages: ['en', 'ar'],
+    });
+    const pages = islandFiles()
+      .filter((file) => {
+        return file.target.startsWith('src/pages/') && file.when?.(answers) === true;
+      });
+
+    expect(pages).toEqual([expect.objectContaining({ target: 'src/pages/contact.astro' })]);
+    expect(pages[0]).not.toHaveProperty('variant');
+  });
+
+  it('names the vue page for itself in its shared suite', () => {
+    const answers = answersFor({ hostedFramework: 'vue' });
+    const suite = islandTests()
+      .find((test) => {
+        return test.target === 'src/views/contact/ContactPage.test.ts' && test.when?.(answers) === true;
+      });
+
+    const source = suite?.transform?.("import ContactView from './ContactView.vue';\n", answers);
+
+    expect(source).toBe("import ContactPage from './ContactPage.vue';\n");
   });
 
   it.each(ISLAND_HOSTS)('ships an island hosting %s, under every answer it reads', (hostedFramework) => {

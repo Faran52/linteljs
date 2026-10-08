@@ -9,7 +9,7 @@ import {
 import { dataProvider } from '@lib/providers/data/dataProvider';
 import { fallbackLanguage } from '@i18n/config';
 
-import ContactView from './ContactView.vue';
+import ContactPage from './ContactPage.vue';
 
 import type { ContactCopy, ContactCopyKey } from './utils/contactCopyUtils';
 
@@ -47,5 +47,5 @@ const phrase = (key: ContactCopyKey): string => {
 </script>
 
 <template>
-  <ContactView :phrase="phrase" />
+  <ContactPage :phrase="phrase" />
 </template>

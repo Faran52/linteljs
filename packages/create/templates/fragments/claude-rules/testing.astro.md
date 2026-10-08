@@ -29,7 +29,10 @@ Use these rules when touching tests, mocks, or test setup.
 
 - **A view is rendered to a string, never mounted.** Its suite calls
   `experimental_AstroContainer.create()` and `renderToString`, under `// @vitest-environment node`,
-  since the container finds no renderer under happy-dom. A page is not tested: it names a view.
+  since the container finds no renderer under happy-dom. A page is not tested: it names a view. A
+  view holding an island mocks the island, which has its own suite, and hands the container a stub
+  renderer through `addServerRenderer` and `addClientRenderer`: a server render would compile the
+  island a second time, and its coverage with it.
 - Test what a template *computes*, not the template. A page that filters, sorts, formats or derives
   anything should hand that work to a function in `lib/`, which a test can call directly. If a
   template holds logic a test would want, the logic is in the wrong place.

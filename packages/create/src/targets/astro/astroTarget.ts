@@ -26,6 +26,7 @@ import {
   ASTRO_I18N,
   COMPONENTS,
   FRAMEWORK_RECORD,
+  INTEGRATIONS,
   SHARED,
   VIEW_SUITES,
 } from './constants';
@@ -37,18 +38,10 @@ import {
 } from './utils/islandUtils';
 import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
 
-import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type { StarterTest, TargetRecord } from '../types';
 
 // `vite: false`: Astro's Vite options live in `astro.config.mjs`, borrowed through `getViteConfig`.
-
-const INTEGRATIONS: Record<HostedFramework, string> = {
-  react: '@astrojs/react',
-  vue: '@astrojs/vue',
-  svelte: '@astrojs/svelte',
-  solid: '@astrojs/solid-js',
-};
 
 export const astroTarget: TargetBuilder = (answers) => {
   const framework = answers.hostedFramework;
