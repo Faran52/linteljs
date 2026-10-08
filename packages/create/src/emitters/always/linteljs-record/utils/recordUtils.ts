@@ -6,6 +6,7 @@ import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
 
 import { FRAMEWORK_PACKAGES, MAX_LINE } from '../../../constants';
+import { testRunnerOf } from '../../../utils/runnerUtils';
 import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -110,6 +111,11 @@ const printable = (value: Answers[AnswerKey]): string | undefined => {
   return undefined;
 };
 
+// `testing` records only yes or no; the page names the runner the target picked.
+const shown = (answers: Answers, key: AnswerKey): Answers[AnswerKey] => {
+  return key === 'testing' ? testRunnerOf(answers) ?? answers.testing : answers[key];
+};
+
 // An answer the target never asks still holds its default, so it is left out with the prompts that skip it.
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
   const target = targetFor(answers);
@@ -117,7 +123,7 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
   return keysOf(records)
     .flatMap((key: AnswerKey) => {
       const record = records[key];
-      const printed = printable(answers[key]);
+      const printed = printable(shown(answers, key));
       const unasked = record.slot?.(target) === false;
 
       const entryRows: [string, string][] = record.prompt === undefined || printed === undefined || unasked

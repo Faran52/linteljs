@@ -275,6 +275,8 @@ when a version's change lives in a sibling it is described there instead:
 - The Version page's stack names the framework on Solid and Angular too. Its version is read from `solid-js`
   and `@angular/core`, where the row was dropped for want of a package named for the framework.
 - A web extension popup's language select keeps a gap under the hint line instead of touching it.
+- The Version page's Testing row names the runner the project runs: `jest` on React Native, where it read
+  `vitest`, the recorded yes.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
   that `@astrojs/react` 7 refuses, which failed yarn and npm.

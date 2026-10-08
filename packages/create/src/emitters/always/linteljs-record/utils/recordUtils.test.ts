@@ -197,6 +197,29 @@ describe('answerRows', () => {
     expect(hasBrowser).toBe(expected);
   });
 
+  it.each([
+    [
+      'react-native',
+      'vitest',
+      'jest',
+    ],
+    [
+      'react',
+      'vitest',
+      'vitest',
+    ],
+    [
+      'react-native',
+      'none',
+      'none',
+    ],
+  ] as const)('prints the runner %s runs for testing %s: %s', (target, testing, runner) => {
+    const rows = answerRows(hostedAnswersFor({ target, testing }), ANSWERS);
+
+    const expected = ["label: 'Testing'", `value: '${runner}'`];
+    expect(rows).toContainEqual(expected);
+  });
+
   it('prints a list answer joined, and no row for an empty one', () => {
     const label = `label: '${ANSWERS.agents.prompt}'`;
 
