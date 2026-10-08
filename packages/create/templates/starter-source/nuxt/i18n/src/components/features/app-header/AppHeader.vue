@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-
 import { useI18n } from 'vue-i18n';
 
 import { PAGES } from '@config/routes';
-
-import LanguageSelect from '../language-select/LanguageSelect.vue';
 
 import { styles } from './appHeaderStyles';
 

@@ -1,5 +1,3 @@
-import { defineNuxtPlugin } from 'nuxt/app';
-
 export default defineNuxtPlugin(async () => {
   if (!import.meta.dev) {
     return;

@@ -27,6 +27,11 @@ import { defineNuxtConfig } from 'nuxt/config';
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   srcDir: 'src/',
+  components: [{
+    path: '~/components',
+    pathPrefix: false,
+    extensions: ['.vue'],
+  }],
   devtools: { enabled: false },
   app: {
     head: {
@@ -88,6 +93,11 @@ const stylexAliases = { '@styles/*': [join(import.meta.dirname, 'src/styles/*')]
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   srcDir: 'src/',
+  components: [{
+    path: '~/components',
+    pathPrefix: false,
+    extensions: ['.vue'],
+  }],
   devtools: { enabled: false },
   app: {
     head: {

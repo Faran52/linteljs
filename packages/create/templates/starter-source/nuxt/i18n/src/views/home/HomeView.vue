@@ -3,9 +3,6 @@ import { useI18n } from 'vue-i18n';
 
 import { CHECK, NAME } from '@config/linteljs';
 
-import AppMark from '@ui/app-mark/AppMark.vue';
-import CodeText from '@ui/code-text/CodeText.vue';
-
 const { t } = useI18n();
 </script>
 

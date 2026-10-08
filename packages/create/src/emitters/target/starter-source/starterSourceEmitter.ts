@@ -26,6 +26,7 @@ import {
   USE_CLIENT,
 } from './constants';
 import { inJestDialect } from './utils/jestDialectUtils';
+import { inNuxtDialect } from './utils/nuxtDialectUtils';
 import { importSpecifier, stem } from './utils/starterPathUtils';
 import { withWorkerStart } from './utils/workerStartUtils';
 
@@ -136,12 +137,14 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
     const sources = [sourceOf(target.id, file)];
     const rewritten = importsRewritten(file, renames, aliases);
     const transform = 'transform' in file ? file.transform : undefined;
+    const nuxtVue = target.nuxtProject === true && file.shared === 'vue';
     const steps = [
       ...renames.size === 0 ? [] : [rewritten],
       ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
       ...workerStart?.entries.includes(file.target) ? [withWorkerStart(workerStart)] : [],
       ...isJest && 'covers' in file ? [inJestDialect] : [],
+      ...nuxtVue && !('covers' in file) ? [inNuxtDialect(file.target)] : [],
       ...transform === undefined
         ? []
         : [(source: string) => {

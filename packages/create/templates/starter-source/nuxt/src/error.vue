@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { clearError, type NuxtError } from 'nuxt/app';
-
 import { NAME } from '@config/linteljs';
 import { STATUSES } from '@config/statuses';
 
-import AppHeader from '@features/app-header/AppHeader.vue';
-import StatusPage from '@features/status-page/StatusPage.vue';
+import type { NuxtError } from 'nuxt/app';
 
 // The status alone: it is all the page reads.
 interface Props {

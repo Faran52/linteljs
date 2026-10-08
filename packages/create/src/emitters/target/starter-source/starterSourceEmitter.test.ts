@@ -980,3 +980,20 @@ describe('the contact copy', () => {
     expect(twins).toEqual([]);
   });
 });
+
+describe('a shared Vue source under Nuxt', () => {
+  it('leans on Nuxt auto-imports where Vue imports by hand', async () => {
+    const target = 'src/components/features/status-page/StatusPage.vue';
+
+    const nuxt = await textOf({ target: 'nuxt' }, target);
+    const vue = await textOf({ target: 'vue' }, target);
+    expect(nuxt).not.toContain('AppButton.vue');
+    expect(vue).toContain("import AppButton from '@ui/app-button/AppButton.vue';");
+  });
+
+  it('keeps the imports of a Nuxt suite', async () => {
+    const suite = await textOf({ target: 'nuxt' }, 'src/components/features/status-page/StatusPage.test.ts');
+
+    expect(suite).toContain("from './StatusPage.vue'");
+  });
+});

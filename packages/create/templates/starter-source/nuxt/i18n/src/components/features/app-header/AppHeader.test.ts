@@ -1,6 +1,6 @@
 import { nextTick } from 'vue';
-import { createMemoryHistory, createRouter } from 'vue-router';
 import { mount } from '@vue/test-utils';
+import { useRouter } from 'nuxt/app';
 
 import { PAGES } from '@config/routes';
 
@@ -13,26 +13,12 @@ import { styles } from './appHeaderStyles';
 const last = languages.at(-1)?.id ?? 'en';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes: PAGES
-      .map((page) => {
-        const route = {
-          path: page.path,
-          component: { template: '<div />' },
-        };
-
-        return route;
-      }),
-  });
-
-  await router.push(path);
-  await router.isReady();
+  // The header reads Nuxt's own route, so the booted app navigates.
+  await useRouter().push(path);
 
   return mount(AppHeader, {
     props: { name: 'my-app' },
     global: {
-      plugins: [router],
       stubs: {
         NuxtLink: {
           props: ['to'],

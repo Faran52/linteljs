@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { CHECK, NAME } from '@config/linteljs';
-
-import AppMark from '@ui/app-mark/AppMark.vue';
 </script>
 
 <template>

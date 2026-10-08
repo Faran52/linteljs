@@ -54,6 +54,12 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
     "  srcDir: 'src/',",
+    // Registered by file name alone, and only the `.vue` files: a StyleX `*Styles.ts` beside one is no component.
+    '  components: [{',
+    "    path: '~/components',",
+    '    pathPrefix: false,',
+    "    extensions: ['.vue'],",
+    '  }],',
     '  devtools: { enabled: false },',
     '  app: {',
     '    head: {',
