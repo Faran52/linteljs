@@ -81,8 +81,7 @@ const runStep = async (step: string): Promise<Result> => {
   });
 };
 
-// pnpm's `$ command` echo and blank lines say nothing about the failure. CI shows all of it: nothing else can read
-// the log there.
+// pnpm's `$ command` echo and blank lines say nothing; CI shows all, since nothing else reads the log there.
 const excerptOf = (path: string): string[] => {
   const lines = readFileSync(path, 'utf8')
     .split('\n')

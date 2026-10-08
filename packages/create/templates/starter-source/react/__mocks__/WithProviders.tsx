@@ -7,7 +7,6 @@ export interface WithProvidersProps {
   readonly children: ReactNode;
 }
 
-// What a page renders inside, nested as the app nests it.
 export const WithProviders: FC<WithProvidersProps> = ({ children }) => {
   return (
     <StoreProvider>

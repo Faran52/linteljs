@@ -176,8 +176,7 @@ const reactIsland = (): Island => {
   return island;
 };
 
-// Vue's contact view is the island's page, since `ContactView` names Astro's own; only the island and the page it
-// translates are Astro's.
+// Vue's contact view is the island's page, since `ContactView` names Astro's own.
 const vueIsland = (): Island => {
   const { button, textInput } = ISLAND_COMPONENTS.vue;
   const fromVue = [
@@ -278,8 +277,7 @@ const fromHost = <T extends StarterFile | StarterTest>(host: IslandHost, source:
   return files;
 };
 
-// Solid's own contact page and its form, moved to `src/views/`; Solid's i18n library is not Astro's, so under i18n
-// the island hands its page the words.
+// Solid's i18n library is not Astro's, so under i18n the island hands its page the words.
 const solidIsland = (): Island => {
   const { button, textInput } = ISLAND_COMPONENTS.solid;
   const form = 'create-contact-form/createContactForm';
@@ -344,8 +342,7 @@ const solidIsland = (): Island => {
   return island;
 };
 
-// SvelteKit's contact route and its form, moved to `src/views/`; under i18n the island hands its page the words,
-// since Paraglide is SvelteKit's, not Astro's.
+// Paraglide is SvelteKit's, not Astro's, so under i18n the island hands its page the words.
 const svelteIsland = (): Island => {
   const { button, textInput } = ISLAND_COMPONENTS.svelte;
   const page = `${CONTACT_VIEW}/ContactPage`;
@@ -545,7 +542,6 @@ export const islandTests = (): StarterTest[] => {
   return all;
 };
 
-// Each island's button and text input sheets, under its own host.
 export const islandSheets = (): ConditionalStyle[] => {
   return keysOf(ISLAND_COMPONENTS)
     .flatMap((host) => {
