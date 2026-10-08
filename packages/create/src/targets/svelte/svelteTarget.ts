@@ -128,6 +128,7 @@ export const svelteTarget: TargetBuilder = () => {
     // `<svelte:head>` compiles to a hydration branch a rendering suite cannot reach.
     coverageExclude: ['src/routes/+layout.svelte'],
     workerEntry: 'src/hooks.client.ts',
+    serveMocks: true,
     publicDirectory: 'static',
     starterFiles: [
       ...mockFiles(hasForm),

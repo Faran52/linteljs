@@ -15,6 +15,7 @@ import type {
   HostedFramework,
   Language,
   Library,
+  Mocking,
   Router,
   Styling,
   Surface,
@@ -25,6 +26,7 @@ interface AnswerOverrides {
   target?: TargetId;
   hostedFramework?: HostedFramework;
   libraries?: Library[];
+  mocking?: Mocking;
   router?: Router;
   styling?: Styling;
   data?: Data;
@@ -347,6 +349,19 @@ describe('extra rollup inputs', () => {
 });
 
 describe('the router', () => {
+  it('lets SvelteKit serve the msw handlers, and only SvelteKit, only under msw', () => {
+    const svelte = configFor({
+      target: 'svelte',
+      mocking: 'msw',
+    });
+    const plain = configFor({ target: 'svelte' });
+    const react = configFor({ mocking: 'msw' });
+
+    expect(svelte).toContain("  server: { port: 3000, fs: { allow: ['__mocks__'] } },\n");
+    expect(plain).toContain('  server: { port: 3000 },\n');
+    expect(react).toContain('  server: { port: 3000 },\n');
+  });
+
   it('adds nothing for either router', () => {
     const tanstackConfig = configFor({ router: 'tanstack-router' });
     expect(tanstackConfig).not.toContain('tanstackRouter');

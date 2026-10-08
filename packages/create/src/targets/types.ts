@@ -198,6 +198,8 @@ export interface TargetRecord {
   // Or a file of its own under msw, which starts it and stays out of coverage.
   workerEntry?: string;
   viteInputs?: Record<string, string>;
+  // SvelteKit narrows Vite's serving allow list to its own directories, which leaves out `__mocks__/msw/`.
+  serveMocks?: true;
   // Required: the generated project gates at 100% on what those files are.
   starterTests: StarterTest[];
   typecheck: string;

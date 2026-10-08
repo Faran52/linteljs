@@ -927,7 +927,10 @@ but React Native, and `native.ts` there. The entry starts the worker in developm
 person sends the form, and no entry needs a top-level await (React, Solid and Vue in `main`, React Router's
 `root.tsx` off the server, Angular's `main.ts` under `isDevMode()`, Next's `instrumentation-client.ts`, SvelteKit's
 `init` in `hooks.client.ts`, Astro's `pages/contact.astro` in a client script under `import.meta.env.DEV`, Nuxt's `plugins/msw.client.ts` under `import.meta.dev`, which awaits it, since a plugin is a function and Nuxt waits
-for it anyway). The web extension starts none: its popup fetches nothing under `/api`, so a worker there would answer
+for it anyway). SvelteKit narrows Vite's `server.fs.allow` to its own directories, so under MSW its
+`vite.config.ts` adds `__mocks__`, which Vite merges into the kit's list; without it the dev server answers the
+handlers' import with a 403 and the worker never starts. Every other Vite target keeps Vite's default, the
+workspace root. The web extension starts none: its popup fetches nothing under `/api`, so a worker there would answer
 no request.
 
 React Native has no service worker, so with MSW it starts `msw/native`, which patches `fetch` inside the app. Its
