@@ -80,6 +80,8 @@ describe('the contact screen', () => {
     });
     expect(landmarks).toHaveLength(1);
     expect(landmarks[0]).toHaveProp('tabIndex', 0);
+    // iOS offsets a padded scroll view's content in RTL, so the padding sits on its content.
+    expect(landmarks[0]).not.toHaveStyle({ paddingHorizontal: 24 });
   });
 
   it('scrolls Send into view once the keyboard is up', async () => {

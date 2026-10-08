@@ -19,6 +19,7 @@ const VersionScreen = (): ReactNode => {
     // Focusable, so a keyboard can scroll what overflows on the web.
     <ScrollView
       style={layout.screen}
+      contentContainerStyle={layout.page}
       role="main"
       tabIndex={0}
     >

@@ -51,6 +51,7 @@ const ContactScreen = (): ReactNode => {
     <ScrollView
       ref={scrollRef}
       style={layout.screen}
+      contentContainerStyle={layout.page}
       role="main"
       tabIndex={0}
       automaticallyAdjustKeyboardInsets

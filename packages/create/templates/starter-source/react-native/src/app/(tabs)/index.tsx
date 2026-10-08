@@ -9,7 +9,11 @@ import type { ReactNode } from 'react';
 
 const HomeScreen = (): ReactNode => {
   const { layout, text } = useStarterStyles();
-  const heroStyle = [layout.screen, layout.hero];
+  const heroStyle = [
+    layout.screen,
+    layout.page,
+    layout.hero,
+  ];
 
   return (
     <View style={heroStyle} role="main">

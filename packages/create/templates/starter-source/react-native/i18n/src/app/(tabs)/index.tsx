@@ -14,7 +14,11 @@ const CHECK_VALUES = { command: CHECK };
 const HomeScreen = (): ReactNode => {
   const { t } = useTranslation();
   const { layout, text } = useStarterStyles();
-  const heroStyle = [layout.screen, layout.hero];
+  const heroStyle = [
+    layout.screen,
+    layout.page,
+    layout.hero,
+  ];
 
   return (
     <View style={heroStyle} role="main">

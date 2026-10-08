@@ -53,6 +53,9 @@ const sheetsFor = (colors: Palette) => {
     screen: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    // A scroll view's content container, not its style: iOS offsets a padded scroll view's content in RTL.
+    page: {
       paddingHorizontal: 24,
       paddingTop: 32,
     },

@@ -25,9 +25,9 @@ describe('stylesFor', () => {
   });
 
   it('starts the header on the screen\'s own inset', () => {
-    const { headerStart, screen } = stylesFor('light').layout;
+    const { headerStart, page } = stylesFor('light').layout;
 
-    expect(headerStart.marginStart).toBe(screen.paddingHorizontal);
+    expect(headerStart.marginStart).toBe(page.paddingHorizontal);
     expect(headerStart.flexShrink).toBe(1);
   });
 

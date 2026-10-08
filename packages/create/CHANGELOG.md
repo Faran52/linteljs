@@ -275,6 +275,9 @@ when a version's change lives in a sibling it is described there instead:
 - The Version page's stack names the framework on Solid and Angular too. Its version is read from `solid-js`
   and `@angular/core`, where the row was dropped for want of a package named for the framework.
 - A web extension popup's language select keeps a gap under the hint line instead of touching it.
+- React Native's Contact, About and Version screens sit centred in Arabic on iOS. Their padding moved from
+  the scroll view to its content, which iOS offset by the padding in a right-to-left layout, clipping the
+  right edge.
 - The Version page's Testing row names the runner the project runs: `jest` on React Native, where it read
   `vitest`, the recorded yes.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:

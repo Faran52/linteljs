@@ -65,5 +65,7 @@ describe('the version screen', () => {
     });
     expect(landmarks).toHaveLength(1);
     expect(landmarks[0]).toHaveProp('tabIndex', 0);
+    // iOS offsets a padded scroll view's content in RTL, so the padding sits on its content.
+    expect(landmarks[0]).not.toHaveStyle({ paddingHorizontal: 24 });
   });
 });
