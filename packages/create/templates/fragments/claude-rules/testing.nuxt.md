@@ -33,10 +33,10 @@ Use these rules when touching tests, mocks, or test setup.
   takes no Pinia, which also keeps its test working in a project that declined the store answer.
 - Mount, do not shallow-mount. `shallowMount` stubs the children, which is where the behaviour
   usually is.
-- **Vitest runs outside Nuxt's build, so nothing auto-imported exists.** Import what a component
-  uses: `useRoute` comes from `vue-router` rather than from Nuxt, and a suite that relies on an
-  auto-import passes under `nuxt dev` and fails here. Nuxt's own components have no module to
-  import from, so `NuxtLink` and `NuxtPage` are stubbed in `global.stubs` instead.
+- **Vitest runs inside Nuxt**, through `@nuxt/test-utils` and the `nuxt` environment, so auto-imports
+  resolve as they do under `nuxt dev`. A suite replaces an auto-import with `mockNuxtImport`, not
+  `vi.mock('nuxt/app')`. A setup file imports inside its hooks, since the environment loads the app's
+  module graph afresh. `NuxtLink` and `NuxtPage` are still stubbed in `global.stubs`.
 - A page file renders a view and nothing else, so its suite asserts that the view is what mounted.
   What the page does is tested where the view is tested.
 

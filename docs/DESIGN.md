@@ -603,8 +603,9 @@ whose record carries `i18n` parts is asked.
   no locale segment.
 - **vue-i18n reads the shared locales as they are.** `@` is quoted at load, and `<code>` is split by `CodeText`
   rather than met with `v-html`.
-- **Nuxt takes vue-i18n directly, not `@nuxtjs/i18n`**, which stores a detected language and whose auto-imported
-  `useI18n` cannot resolve in vitest.
+- **Nuxt takes vue-i18n directly, not `@nuxtjs/i18n`**, which stores a detected language: under `no_prefix` with
+  its cookie on, an `Accept-Language: ar` first visit (10.6.0) answered `set-cookie: language=ar` and served
+  `<html lang="en">`. With the cookie off it reads no stored choice either.
 - **SvelteKit takes Paraglide JS, not svelte-i18n**, which pinned an esbuild with an advisory; Paraglide audits
   clean and runs no build scripts. Its inlang plugin loads from `node_modules`, not the CDN, so a compile needs no
   network. Inlang reads it by path, not Node resolution, so a monorepo declares it at the root, the one

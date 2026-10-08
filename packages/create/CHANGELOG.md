@@ -52,6 +52,8 @@ when a version's change lives in a sibling it is described there instead:
 - Nuxt is a target.
 - Nuxt renders the contact page with a form library, Vue's `ContactView` at `/contact`, and under MSW starts
   the browser worker from `plugins/msw.client.ts` in development, so the form posts to `/api/contact`.
+- Nuxt runs its suites inside Nuxt, through `@nuxt/test-utils` and its `nuxt` environment, so auto-imports
+  resolve in a test as they do in the app; suites replace them with `mockNuxtImport`.
 - Astro hosting React renders the contact page with a form library, React's `ContactPage` as an island at
   `/contact`, and under MSW starts the browser worker from the page in development, so the form posts to
   `/api/contact`. Under languages the page hands the island its words from the locale files, and the form
@@ -374,6 +376,8 @@ when a version's change lives in a sibling it is described there instead:
   target does, where Send stayed open.
 - React Native's header starts its title on the screen's 24, the inset its language label already ends on, so
   both header ends line up with the page below.
+- A StyleX project's vitest run exits on time: its config sets `teardownTimeout: 2000`, since
+  `@stylexjs/unplugin` 0.19.1 leaves a timer that only an HTTP server's close clears, and vitest's server has none.
 - Every web starter's header tabs, and its language picker, are at least 44px tall, the minimum tap target, where
   they were 29px on a phone. The end-to-end browser pass measures each tab at 375px wide.
 
