@@ -73,6 +73,17 @@ describe('sharedSlots', () => {
     expect(actualSync).toBe(sync);
   });
 
+  it.each([
+    'pnpm',
+    'npm',
+    'yarn',
+    'bun',
+  ] as const)('installs with the bare install command under %s', (packageManager) => {
+    const { INSTALL: install } = sharedSlots('demo-app', answersFor({ packageManager }));
+
+    expect(install).toBe(`${packageManager} install`);
+  });
+
   it('carries the check chain built from the answers', () => {
     const { CHECK_CHAIN: checkChain } = sharedSlots('demo-app', answersFor({}));
     expect(checkChain).toContain('lint');

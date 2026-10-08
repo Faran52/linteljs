@@ -32,7 +32,7 @@ is canonical for every other script.
 ## Hooks
 
 Git hooks run `scripts/checkBannedPatterns.ts`, `eslint --fix`, `stylelint --fix` and a typecheck of the staged
-files, and commitlint checks each message. They install with `{{RUN}} install`.
+files, and commitlint checks each message. They install with `{{INSTALL}}`.
 
 Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, warn when eslint runs without
 `--fix`, run `scripts/checkBannedPatterns.ts` over each file an agent writes, deny an edit to a file whose first

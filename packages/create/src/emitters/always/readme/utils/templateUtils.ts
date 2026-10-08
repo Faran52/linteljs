@@ -58,6 +58,7 @@ export const sharedSlots = (projectName: string, answers: Answers): Record<strin
     PROJECT_NAME: projectName,
     TARGET_LABEL: ANSWERS.target.values[answers.target].label,
     RUN: run,
+    INSTALL: `${answers.packageManager} install`,
     EXEC: EXEC_PREFIX[answers.packageManager],
     SYNC: SYNC_COMMAND[answers.packageManager],
     CHECK_CHAIN: buildScripts(answers).check,
