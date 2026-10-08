@@ -419,7 +419,7 @@ export const ROOT_DEV_DEPENDENCIES = [
 ];
 
 // What a package added to a monorepo shares with the workspace; every other answer is the library default.
-export const LIBRARY_ANSWERS = [
+export const PACKAGE_ANSWERS = [
   'packageManager',
   'packageManagerVersion',
   'nodeVersion',

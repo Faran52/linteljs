@@ -10,7 +10,7 @@ import { emitted } from './artifactUtils';
 import {
   inLayout,
   inPackage,
-  libraryAnswersOf,
+  packageAnswersOf,
   rootCheckOf,
   rootNameOf,
 } from './layoutUtils';
@@ -123,8 +123,8 @@ describe('inLayout', () => {
   });
 });
 
-describe('libraryAnswersOf', () => {
-  it('keeps the workspace\'s manager, Node and type safety, and defaults the rest for a library', () => {
+describe('packageAnswersOf', () => {
+  it('keeps the workspace\'s manager, Node and type safety, and defaults the rest for a package', () => {
     const workspace: HostedAnswers = {
       ...HOSTED_DEFAULTS,
       target: 'react',
@@ -138,9 +138,9 @@ describe('libraryAnswersOf', () => {
       agents: ['codex'],
     };
 
-    const library = libraryAnswersOf(workspace);
+    const project = packageAnswersOf(workspace);
 
-    expect(library).toEqual({
+    expect(project).toEqual({
       ...HOSTED_DEFAULTS,
       target: 'typescript',
       layout: 'monorepo',

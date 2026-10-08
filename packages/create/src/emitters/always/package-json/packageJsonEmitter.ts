@@ -98,7 +98,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...(target.packageMain === undefined ? {} : { main: target.packageMain }),
     ...(target.packageImports === undefined ? {} : { imports: target.packageImports }),
     // A project's own subpaths survive.
-    ...(target.libraryProject === true
+    ...(target.packageProject === true
       ? {
           ...LIBRARY_FIELDS,
           ...pick(existing, [

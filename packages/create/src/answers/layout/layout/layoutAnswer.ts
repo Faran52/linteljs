@@ -13,7 +13,7 @@ export const layoutAnswer = {
     },
     monorepo: {
       label: 'Monorepo',
-      hint: 'Workspaces: the app in apps/, shared code in packages/',
+      hint: 'Workspaces: the apps in apps/, packages in packages/',
     },
   },
   default: 'single',

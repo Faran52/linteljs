@@ -104,7 +104,7 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
 
     target: 'esnext',
-    lib: target.libraryProject === true
+    lib: target.packageProject === true
       ? ['esnext']
       : [
           'dom',

@@ -130,8 +130,8 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
     {
       name: 'repo-structure.md',
       // The standard fragment is app-shaped: pages, components, an api layer.
-      sources: target.libraryProject === true
-        ? ['fragments/claude-rules/repo-structure.library.md']
+      sources: target.packageProject === true
+        ? ['fragments/claude-rules/repo-structure.package.md']
         : [
             `fragments/claude-rules/repo-structure.${target.id}.md`,
             'fragments/claude-rules/repo-structure.standard.md',

@@ -7,7 +7,7 @@ import { emitted } from '../../utils/artifactUtils';
 import { TSDOWN_CONFIG } from './constants';
 
 export const tsdownConfigEmitter: Emitter = (answers): Artifact[] => {
-  if (targetFor(answers).libraryProject !== true) {
+  if (targetFor(answers).packageProject !== true) {
     return [];
   }
 

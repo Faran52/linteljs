@@ -12,8 +12,13 @@ import {
 // Which floor this project runs. `@linteljs/create` writes this line from the `typeSafety` answer.
 const TYPE_SAFETY: TypeSafety = 'strict';
 
-// What a directory argument is searched for. `@linteljs/create` writes this line from the target.
-const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];
+// What a directory argument is searched for: every target's, so one copy serves every project.
+const SCANNED_EXTENSIONS: string[] = [
+  '.ts',
+  '.tsx',
+  '.vue',
+  '.svelte',
+];
 
 const PROJECT_BANNED: BannedPattern[] = [];
 

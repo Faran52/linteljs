@@ -81,7 +81,7 @@ describe('referenceArtifacts', () => {
     const artifact = find({ target: 'typescript' }, reference('repo-structure.md'));
 
     const sources = sourcesOf(artifact);
-    expect(sources).toEqual(['fragments/claude-rules/repo-structure.library.md']);
+    expect(sources).toEqual(['fragments/claude-rules/repo-structure.package.md']);
   });
 
   it('removes Claude path frontmatter from every emitted reference', async () => {

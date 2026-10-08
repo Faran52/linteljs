@@ -65,10 +65,12 @@ describe('the shipped checker', () => {
     await mkdir(join(cwd, 'src'));
     await writeFile(join(cwd, 'src/deep.tsx'), 'export const deep = input as never;\n', 'utf8');
     await writeFile(join(cwd, 'src/App.vue'), '<script setup lang="ts">\nconst a = b as never;\n</script>\n', 'utf8');
+    await writeFile(join(cwd, 'src/page.astro'), '---\nconst a = b as never;\n---\n', 'utf8');
 
     const report = run('src');
 
     expect(report).toContain(join('src', 'deep.tsx'));
-    expect(report).not.toContain('App.vue');
+    expect(report).toContain(join('src', 'App.vue'));
+    expect(report).not.toContain('page.astro');
   });
 });

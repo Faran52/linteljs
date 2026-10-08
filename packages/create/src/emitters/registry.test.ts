@@ -882,7 +882,7 @@ describe('the monorepo layout', () => {
 });
 
 describe('packageArtifacts', () => {
-  it('writes a TypeScript library\'s own files under packages/<name>, and no root file', () => {
+  it('writes a TypeScript package\'s own files under packages/<name>, and no root file', () => {
     const answers = hostedAnswersFor({
       target: 'react',
       layout: 'monorepo',

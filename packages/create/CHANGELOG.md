@@ -68,7 +68,7 @@ when a version's change lives in a sibling it is described there instead:
   runs `solid-js` through Vite, so the island's suites load one client build of Solid.
 - Astro hosting Svelte renders the same contact page, Svelte's `ContactPage` as an island, with the same mocked
   worker start and translated words.
-- `typescript` is a target: a library with no framework, built by `tsdown` to `dist/` with its declarations, and
+- `typescript` is a target: a package with no framework, built by `tsdown` to `dist/` with its declarations, and
   packable from the start, with a `version`, `exports`, `types` and `files`. It asks no styling, form library,
   data fetching or API mocking question, and leaves out `frontend-design`.
 - A scoped project name is accepted: `create @acme/app` writes `app/`, records `@acme/app` in `package.json`, and
@@ -199,7 +199,7 @@ when a version's change lives in a sibling it is described there instead:
   tests itself. The README says where the app's scripts run, and the agent rules' globs
   match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
   directory under `apps/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
-- `sync --add <name>` writes a TypeScript library to a monorepo's `packages/<name>/`, with its own
+- `sync --add <name>` writes a TypeScript package to a monorepo's `packages/<name>/`, with its own
   `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and starter
   `src/`, on the recorded manager, Node and type safety, then installs, so the lockfile takes the package and a
   frozen CI install passes (`--no-install` leaves it to you). No other root file changes. It refuses a single repo,

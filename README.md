@@ -16,7 +16,7 @@
 linteljs ships as three packages: a scaffolder, a shared ESLint flat config, and the custom rules behind it. The
 scaffolder writes a starter app with its tests, ESLint flat config, TypeScript settings, git hooks, and
 coding-agent rules and hooks, for React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through
-Expo, Manifest V3 web extensions, and plain TypeScript libraries. Its `check` runs lint, the banned-pattern check,
+Expo, Manifest V3 web extensions, and plain TypeScript packages. Its `check` runs lint, the banned-pattern check,
 CSS lint, the typecheck, coverage at 100% when the project has tests, and the build, and passes on the first run.
 
 ## Quick start

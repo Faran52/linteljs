@@ -1,7 +1,5 @@
 import { type Answers, type Artifact } from '@config/types';
 
-import { targetFor } from '@targets';
-
 import { copied } from '../../utils/artifactUtils';
 
 import { mergeChecker } from './utils/mergeUtils';
@@ -13,40 +11,6 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
   }
 
   return source.replace(anchor, replacement);
-};
-
-// `.astro` is left out: the checker reads script and SFC files only, so listing it would scan nothing.
-const scannedExtensions = (answers: Answers): string[] => {
-  const { sfcExtension } = targetFor(answers);
-
-  const extensions = [
-    '.ts',
-    '.tsx',
-    ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`]),
-  ];
-
-  return extensions;
-};
-
-const withExtensions = (source: string, answers: Answers): string => {
-  const quoted = scannedExtensions(answers)
-    .map((extension) => {
-      return `'${extension}'`;
-    });
-  // Three or more break, as `@linteljs/array-newline` has them.
-  const list = quoted.length <= 2
-    ? quoted.join(', ')
-    : `\n${quoted
-      .map((extension) => {
-        return `  ${extension},\n`;
-      })
-      .join('')}`;
-
-  return replaceAnchored(
-    source,
-    "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];",
-    `const SCANNED_EXTENSIONS: string[] = [${list}];`,
-  );
 };
 
 const withTypeSafety = (source: string, answers: Answers): string => {
@@ -67,9 +31,8 @@ export const checkerArtifact = (answers: Answers): Artifact => {
       sources: ['project/scripts/checkBannedPatterns.ts'],
       transform: (source, current) => {
         const typedSource = withTypeSafety(source, answers);
-        const scannedSource = withExtensions(typedSource, answers);
 
-        return mergeChecker(scannedSource, current);
+        return mergeChecker(typedSource, current);
       },
     },
   };

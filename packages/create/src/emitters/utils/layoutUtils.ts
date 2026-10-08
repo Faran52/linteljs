@@ -9,7 +9,7 @@ import { appDirectoryOf } from '@utils/answerUtils';
 import { DEFAULT_ANSWERS } from '@answers';
 
 import {
-  LIBRARY_ANSWERS,
+  PACKAGE_ANSWERS,
   ROOT_DIRECTORIES,
   ROOT_FILES,
 } from '../constants';
@@ -81,16 +81,16 @@ export const inLayout = (answers: Answers, name: string, artifacts: Artifact[]):
   return rebased;
 };
 
-// `sync --add`: a TypeScript library on the workspace's manager, Node and type safety.
-export const libraryAnswersOf = (answers: HostedAnswers): HostedAnswers => {
-  const library: HostedAnswers = {
+// `sync --add`: a TypeScript package on the workspace's manager, Node and type safety.
+export const packageAnswersOf = (answers: HostedAnswers): HostedAnswers => {
+  const project: HostedAnswers = {
     ...DEFAULT_ANSWERS,
-    ...pick(answers, LIBRARY_ANSWERS),
+    ...pick(answers, PACKAGE_ANSWERS),
     target: 'typescript',
     layout: 'monorepo',
   };
 
-  return library;
+  return project;
 };
 
 // Only what lands in the app's directory is the package's: the root tooling is the workspace's already.

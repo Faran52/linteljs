@@ -8,17 +8,21 @@ import {
   it,
 } from 'vitest';
 
+import { keysOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
+import { targetFor } from '@targets';
 
 import { bannedPatternsEmitter, checkerArtifact } from './bannedPatternsEmitter';
 
 import type {
   Answers,
-  TargetId,
   TypeSafety,
 } from '@config/types';
 
 const SHIPPED = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');
+const TARGET_IDS = keysOf(ANSWERS.target.values);
 
 const transformOf = (answers: Answers): ((source: string, current: string | null) => string) => {
   const { content } = checkerArtifact(answers);
@@ -75,26 +79,13 @@ describe('checkerArtifact', () => {
     }).toThrow("no longer contains the anchor: const TYPE_SAFETY: TypeSafety = 'strict';");
   });
 
-  it.each<[TargetId, string]>([
-    ['react', "['.ts', '.tsx']"],
-    ['astro', "['.ts', '.tsx']"],
-    ['vue', "[\n  '.ts',\n  '.tsx',\n  '.vue',\n]"],
-    ['svelte', "[\n  '.ts',\n  '.tsx',\n  '.svelte',\n]"],
-  ])('writes the extensions a directory is scanned for on %s', (target, extensions) => {
-    const transform = transformOf(answersFor({ target }));
+  it.each(TARGET_IDS)('scans the files a %s project is written in', (target) => {
+    const { sfcExtension } = targetFor(answersFor({ target }));
     const shipped = readFileSync(SHIPPED, 'utf8');
-    const actual = transform(shipped, null);
+    const start = shipped.indexOf('const SCANNED_EXTENSIONS');
+    const scanned = shipped.slice(start, shipped.indexOf('];', start));
 
-    expect(actual)
-      .toContain(`const SCANNED_EXTENSIONS: string[] = ${extensions};`);
-  });
-
-  it('throws when the extension anchor has drifted out of the shipped checker', () => {
-    expect(() => {
-      const transform = transformOf(answersFor({}));
-
-      return transform("const TYPE_SAFETY: TypeSafety = 'strict';\n", null);
-    }).toThrow('no longer contains the anchor');
+    expect(scanned).toContain(`'.${sfcExtension ?? 'tsx'}'`);
   });
 
   it('leaves the strict floor untouched for a target with nothing to exempt', () => {

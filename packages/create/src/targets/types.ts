@@ -221,7 +221,7 @@ export interface TargetRecord {
   reactRouterProject?: true;
   angularProject?: true;
   // A published package: no styling is asked, and its tests run without a DOM.
-  libraryProject?: true;
+  packageProject?: true;
   // No page renders a contact form, so no form, data or mocking is asked.
   noContactPage?: true;
   build: string;

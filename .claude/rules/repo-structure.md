@@ -9,7 +9,7 @@ paths:
 
 # Repository Structure
 
-`packages/create/templates/fragments/claude-rules/repo-structure.library.md` is the standard: read it there, not
+`packages/create/templates/fragments/claude-rules/repo-structure.package.md` is the standard: read it there, not
 in a copy. The per-target files describe applications and do not apply. Below is where this workspace differs,
 and where each fact is caught. Each package has its own rule on top: `create-structure.md`,
 `eslint-config-structure.md`, and `packages/eslint-plugin/CLAUDE.md`.

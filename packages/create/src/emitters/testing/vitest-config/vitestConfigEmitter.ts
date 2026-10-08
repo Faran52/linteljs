@@ -63,7 +63,7 @@ const testBlock = (
   stylex: boolean,
 ): string => {
   const { testPool: pool } = target;
-  const dom = target.libraryProject !== true;
+  const dom = target.packageProject !== true;
   const environment = target.testEnvironment ?? (dom ? 'happy-dom' : 'node');
   const poolLine = pool === undefined ? '' : `${indent}  pool: '${pool}',\n`;
   const execArgvLine = dom ? `${indent}  execArgv: ['--no-experimental-webstorage'],\n` : '';

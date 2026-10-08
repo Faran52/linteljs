@@ -265,7 +265,7 @@ holds that even where the flag is unset.
 ## Targets
 
 Eleven: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, a Manifest V3
-browser extension, and a TypeScript library with no framework.
+browser extension, and a TypeScript package with no framework.
 
 Astro and the extension host a UI framework rather than being one. Both take the same `hostedFramework` answer,
 composed from `targets/utils/frameworkUtils.ts` rather than read off the framework's record, because those records
@@ -802,7 +802,7 @@ the layout; one move in the registry rebases their paths.
 - **The root lints like a single repo**, over its own `scripts/`.
 - **The app copies msw's worker itself**, from its own install script ([The api edge](#the-api-edge)).
 - **Single only for `--existing`**, which never moves files; `--layout monorepo` is refused there.
-- **`sync --add` writes a `typescript` library in 2.0.** A second app is 2.1.
+- **`sync --add` writes a `typescript` package in 2.0.** A second app is 2.1.
 
 ## What a project owns
 
@@ -1095,7 +1095,7 @@ target installs them all. A manager resolving differently but still installing i
 The built project is served by its own `preview` script and loaded in the system Chrome through `playwright-core`,
 following every same-origin link. A console error, a page error, a non-200 or a page without an `h1` fails.
 `channel: 'chrome'`, since the CDN playwright downloads from can be blocked where npm is not. No pass for the
-extension (pages are loaded from `dist/`, not served), React Native (its web build is not what ships) or a library.
+extension (pages are loaded from `dist/`, not served), React Native (its web build is not what ships) or a package.
 Server-rendered targets with `languages` check the next route's raw HTML already carries `lang` and `dir`.
 
 ### One registry on a fixed port

@@ -86,7 +86,7 @@ public directory is served, a `robots.txt`. It ships the chosen languages and re
 server-rendered targets read it from a `language` cookie and render it from the first byte. It passes its own
 `check` before you change a line.
 
-The `typescript` target is a library with no framework: `src/index.ts` exports a tested `greeting`, `tsdown` builds
+The `typescript` target is a package with no framework: `src/index.ts` exports a tested `greeting`, `tsdown` builds
 it to `dist/` with its declarations, and `package.json` carries the `version`, `exports`, `types` and `files` that
 `pack` needs. It asks no styling, form library, data fetching or API mocking question.
 
@@ -114,7 +114,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
 | AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor`, `gemini-cli`, `antigravity` | `claude-code` |
-| AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three; a library leaves out `frontend-design` |
+| AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three; a package leaves out `frontend-design` |
 
 A list takes comma-separated values or the flag repeated.
 
@@ -132,7 +132,7 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
-  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript library, and install it
+  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript package, and install it
   --version, -v
   --help, -h
 ```
@@ -174,7 +174,7 @@ scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs
 `plugins/linteljs/`, `linteljs.config.json`, your README and the starter source are yours after `create`. A
 project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to move them.
 
-In a monorepo, `sync --add <name>` writes a TypeScript library to `packages/<name>/` and does nothing else: its
+In a monorepo, `sync --add <name>` writes a TypeScript package to `packages/<name>/` and does nothing else: its
 `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and a starter
 `src/`, on the manager, Node and type safety `linteljs.config.json` records, then runs `<pm> install` so the
 lockfile takes it (`--no-install` skips that). No other root file changes, since the workspace globs already take

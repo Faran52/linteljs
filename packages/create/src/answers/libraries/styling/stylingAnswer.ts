@@ -7,7 +7,7 @@ export const stylingAnswer = {
   prompt: 'Styling',
   note: 'not on typescript',
   slot: (target) => {
-    return target.libraryProject !== true;
+    return target.packageProject !== true;
   },
   kind: 'optionalChoice',
   none: {

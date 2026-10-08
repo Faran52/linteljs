@@ -57,7 +57,7 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
 const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
-  if (targetFor(answers).libraryProject === true) {
+  if (targetFor(answers).packageProject === true) {
     return [];
   }
 

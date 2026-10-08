@@ -143,7 +143,7 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
 
   const dependencies: string[] = [
     // `qs` builds the querystring in `http.ts`, which every app ships.
-    ...(target.libraryProject === true ? [] : ['qs']),
+    ...(target.packageProject === true ? [] : ['qs']),
     ...answers.libraries
       .flatMap((library) => {
         return runtime[library];
@@ -320,7 +320,7 @@ const runnerDevDependencies = (answers: Answers, target: TargetRecord): string[]
   } = TEST_RUNNERS[runner];
 
   const names = [
-    ...target.libraryProject === true ? [] : domDevDependencies,
+    ...target.packageProject === true ? [] : domDevDependencies,
     ...devDependencies,
     ...answers.packageManager === 'yarn' ? yarnPeers : [],
     ...target.testDevDependencies ?? [],
@@ -358,7 +358,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.mocking === 'msw' ? ['msw'] : []),
     ...(localesOf(answers).length === 0 ? [] : target.i18n?.compiler?.devDependencies ?? []),
     // `qs` ships no types of its own.
-    ...(target.libraryProject === true ? [] : ['@types/qs']),
+    ...(target.packageProject === true ? [] : ['@types/qs']),
   ], target.versions);
 };
 

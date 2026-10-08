@@ -52,7 +52,7 @@ import { emitted } from './utils/artifactUtils';
 import {
   inLayout,
   inPackage,
-  libraryAnswersOf,
+  packageAnswersOf,
 } from './utils/layoutUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
@@ -147,13 +147,13 @@ export const seedArtifacts = (
   return artifacts;
 };
 
-// `sync --add`: a library's own files, seeds and all, as a new project gets them.
+// `sync --add`: a package's own files, seeds and all, as a new project gets them.
 export const packageArtifacts = (answers: HostedAnswers, name: string): Artifact[] => {
-  const library = libraryAnswersOf(answers);
+  const packageAnswers = packageAnswersOf(answers);
   const artifacts = [
-    ...seedArtifacts(library, name),
-    ...buildArtifacts(library, EMPTY_PROJECT, name),
+    ...seedArtifacts(packageAnswers, name),
+    ...buildArtifacts(packageAnswers, EMPTY_PROJECT, name),
   ];
 
-  return inPackage(library, name, artifacts);
+  return inPackage(packageAnswers, name, artifacts);
 };

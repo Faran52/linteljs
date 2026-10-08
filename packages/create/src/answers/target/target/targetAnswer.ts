@@ -17,7 +17,7 @@ export const targetAnswer = {
     'astro': { label: 'Astro' },
     'webextension': { label: 'Web Extension (MV3)' },
     'react-native': { label: 'React Native (Expo)' },
-    'typescript': { label: 'TypeScript library, no framework' },
+    'typescript': { label: 'TypeScript package, no framework' },
   },
   default: 'react',
 } as const satisfies ChoiceRecord<TargetId>;

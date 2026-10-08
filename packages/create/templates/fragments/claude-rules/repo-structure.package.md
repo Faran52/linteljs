@@ -7,13 +7,13 @@ paths:
 
 # Repository Structure
 
-Use this rule when adding, moving, renaming, or importing a source file in a library.
+Use this rule when adding, moving, renaming, or importing a source file in a package.
 
 Filename case and folder case are enforced by `check-file` in `eslint.config.ts`. They are not
 restated here, because a prose copy of a lint rule is the part that rots. This file carries placement
 and direction, which no rule can see.
 
-An application organises by screen: `pages/`, `components/`, `routes/`. A library has no screen. It
+An application organises by screen: `pages/`, `components/`, `routes/`. A package has no screen. It
 organises by the direction its data moves, because that direction is the only thing a consumer can
 break. Reaching for `components/ui` in a package of emitters is how a layout stops meaning anything.
 
@@ -28,7 +28,7 @@ src/
       <subject><Ring>.test.ts
 ```
 
-A ring is a layer of the dependency direction below. Most libraries need two or three. Name them for
+A ring is a layer of the dependency direction below. Most packages need two or three. Name them for
 what they hold, never for a mechanism: `model` and `render` rather than `core` and `helpers`.
 
 ## Placement
@@ -56,9 +56,9 @@ what they hold, never for a mechanism: `model` and `render` rather than `core` a
 
 Imports run one way, from the outer ring inward. The innermost ring reaches nothing.
 
-- The inner ring holds what the library *is*: its data, its records, its types. No filesystem, no
+- The inner ring holds what the package *is*: its data, its records, its types. No filesystem, no
   process, no network, no terminal.
-- The middle ring turns that into whatever the library produces. It may read the inner ring. It stays
+- The middle ring turns that into whatever the package produces. It may read the inner ring. It stays
   pure, so it can be tested without a fixture directory.
 - The outer ring is everything touching the world: disk, argv, environment, a terminal, a socket. It
   may reach anything.
@@ -69,7 +69,7 @@ that is only a comment is a direction that is already broken somewhere you have 
 
 ## Tests
 
-Colocated beside their source, as `testing.standard.md` requires. A library has no `test/` directory.
+Colocated beside their source, as `testing.standard.md` requires. A package has no `test/` directory.
 
 Two kinds of file sit outside `src/` and each is a stated exception rather than a leftover:
 

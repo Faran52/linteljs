@@ -31,6 +31,6 @@ export const pluginsAnswer = {
   targetDefault: (target) => {
     const withoutDesign: Plugin[] = ['ponytail', 'context7'];
 
-    return target.libraryProject === true ? withoutDesign : undefined;
+    return target.packageProject === true ? withoutDesign : undefined;
   },
 } as const satisfies MultiRecord<Plugin>;

@@ -8,7 +8,7 @@ import type { TargetRecord } from '../types';
 export const typescriptTarget: TargetBuilder = () => {
   const record: TargetRecord = {
     id: 'typescript',
-    libraryProject: true,
+    packageProject: true,
     noContactPage: true,
     html: false,
     ignores: [],

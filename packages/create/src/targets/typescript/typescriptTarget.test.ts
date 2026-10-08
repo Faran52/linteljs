@@ -17,7 +17,7 @@ describe('the typescript record', () => {
       target: 'typescript',
     });
 
-    expect(record.libraryProject).toBe(true);
+    expect(record.packageProject).toBe(true);
     expect(record.framework).toBeUndefined();
     expect(record.html).toBe(false);
     expect(record.build).toBe('tsdown');
