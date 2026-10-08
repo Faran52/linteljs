@@ -27,6 +27,13 @@ describe('renderPopup', () => {
     expect(element).not.toBeNull();
   });
 
+  it('labels the title as a LintelJS starter, as every web header does', () => {
+    const label = open().querySelector('h1')?.previousElementSibling;
+
+    expect(label?.className).toBe('starter-label');
+    expect(label?.textContent).toBe('LintelJS Starter');
+  });
+
   it('points at the gate, as every home page does', () => {
     const root = open();
 

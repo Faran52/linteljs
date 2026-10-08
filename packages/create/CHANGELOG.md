@@ -272,6 +272,9 @@ when a version's change lives in a sibling it is described there instead:
   copies into `dist/`. Chrome showed a letter in its place.
 - **A web extension's pages no longer log a missing favicon.** The popup and the devtools panel link the 32
   pixel icon, so a page opened in a tab or from the `vite` dev server stops asking for a `/favicon.ico` that 404s.
+- **A web extension's popup and devtools panel show the "LintelJS Starter" label** over their title, as every
+  web starter's header does, translated through the same `starterLabel` key when languages are on. The panel
+  now loads the extension's stylesheet and lays out as the popup does.
 - **A SvelteKit app with languages in an npm, yarn or bun monorepo rendered nothing.** Those managers hoist the
   inlang plugin to the root `node_modules`, where `project.inlang/settings.json` did not look, so Paraglide
   compiled no messages and every page failed. A monorepo now installs the plugin at the root and reads it there.

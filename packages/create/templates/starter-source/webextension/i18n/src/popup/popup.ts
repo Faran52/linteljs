@@ -27,6 +27,7 @@ const nodeOf = (part: string, index: number): Node => {
 // Built node by node: a kept reference cannot be null, and an extension's CSP has no reason to trust markup.
 export const renderPopup = (root: HTMLElement): void => {
   const main = document.createElement('main');
+  const label = document.createElement('p');
   const title = document.createElement('h1');
   const lede = document.createElement('p');
   const hint = document.createElement('p');
@@ -35,6 +36,7 @@ export const renderPopup = (root: HTMLElement): void => {
   const paint = (language: Language): void => {
     document.documentElement.lang = language;
     document.documentElement.dir = directionOf(language);
+    label.textContent = t('starterLabel', language);
     lede.textContent = t('popupLede', language);
 
     const gate = t('gateHint', language, { command: CHECK });
@@ -47,6 +49,7 @@ export const renderPopup = (root: HTMLElement): void => {
     picker.setAttribute('aria-label', t('language', language));
   };
 
+  label.className = 'starter-label';
   title.className = 'title';
   title.textContent = NAME;
   lede.className = 'lede';
@@ -71,7 +74,7 @@ export const renderPopup = (root: HTMLElement): void => {
 
   main.className = 'hero';
   main.innerHTML = markSvg;
-  main.append(title, lede, hint, picker);
+  main.append(label, title, lede, hint, picker);
   root.append(main);
   paint(detectLanguage());
 };

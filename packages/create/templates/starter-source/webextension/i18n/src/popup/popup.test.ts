@@ -52,6 +52,18 @@ describe('renderPopup', () => {
     expect(landmark).toBe('hero');
   });
 
+  it('labels the title as a LintelJS starter in the chosen language', () => {
+    const root = open();
+    const picker = pickerOf(root);
+
+    picker.value = last;
+    picker.dispatchEvent(new Event('change'));
+
+    const label = root.querySelector('h1')?.previousElementSibling;
+    expect(label?.className).toBe('starter-label');
+    expect(label?.textContent).toBe(resources[last].common.starterLabel);
+  });
+
   it('points at the gate, as every home page does', () => {
     const root = open();
 

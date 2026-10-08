@@ -9,17 +9,6 @@
   border-bottom: 1px solid var(--border);
 }
 
-.starter-label {
-  flex: none;
-  margin: 0;
-  font-size: var(--text-eyebrow);
-  font-weight: 620;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-
 /* The name is whatever was typed: one too long for the row sends the nav below it and wraps, never truncates. */
 .brand {
   flex: auto;

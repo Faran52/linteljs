@@ -61,6 +61,17 @@ app-status-page {
   text-align: center;
 }
 
+.starter-label {
+  flex: none;
+  margin: 0;
+  font-size: var(--text-eyebrow);
+  font-weight: 620;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
 /* A name is whatever was typed, so it wraps rather than overflowing. */
 .title {
   max-width: 100%;
@@ -70,6 +81,15 @@ app-status-page {
   letter-spacing: -0.025em;
   text-wrap: balance;
   overflow-wrap: anywhere;
+}
+
+/* An extension page has no header, so the label sits over the title and takes the mark's gap. */
+.hero > .mark + .starter-label {
+  margin-top: 1.625rem;
+}
+
+.hero > .starter-label + .title {
+  margin-top: 0.375rem;
 }
 
 .lede {
