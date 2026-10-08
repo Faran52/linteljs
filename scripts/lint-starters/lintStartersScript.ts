@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 
-import { Semaphore } from 'es-toolkit';
+import { once, Semaphore } from 'es-toolkit';
 
 import { STARTER_CASES } from '@e2e/starter-cover/constants';
 import { starterCases } from '@e2e/starter-cover/starterCover';
@@ -27,6 +27,8 @@ import { run } from '../utils/processUtils.ts';
 import {
   CACHE_ROOT,
   CONFIG_PACKAGE,
+  DURATIONS,
+  MS_PER_SECOND,
   PLUGIN_PACKAGE,
   PROJECTS,
   SCRATCH,
@@ -39,8 +41,12 @@ import {
   fixedCopies,
   generate,
   monorepoCaseOf,
+  moveGenerated,
   packed,
   pruneTarballs,
+  readDurations,
+  registryError,
+  secondsOf,
   slugOf,
   type Spawned,
   spawnIn,
@@ -54,6 +60,9 @@ import type { E2eCase } from '@e2e/matrix/matrix';
 type Outcome = 'linted' | 'unchanged' | 'failed';
 
 type Step = [string, () => Promise<Spawned>];
+
+// A step's name and output.
+type Failure = [string, string];
 
 const flags = {
   all: { type: 'boolean' },
@@ -92,8 +101,10 @@ const readStamp = (path: string): string => {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
 };
 
-const fail = (label: string, step: string, output: string): Outcome => {
-  logError(`${label}: ${step} ${output}`);
+const fail = (label: string, failures: Failure[]): Outcome => {
+  for (const [step, output] of failures) {
+    logError(`${label}: ${step} ${output}`);
+  }
 
   return 'failed';
 };
@@ -105,19 +116,47 @@ const prepareArgs = [
   'prepare',
 ];
 
-// The name and output of the first step to fail; the rest do not run.
-const firstFailure = async (steps: Step[]): Promise<[string, string] | undefined> => {
-  for (const [name, run] of steps) {
-    const result = await run();
+const failureOf = async ([name, run]: Step): Promise<Failure[]> => {
+  const result = await run();
+  const failures: Failure[] = result.ok ? [] : [[name, result.output]];
 
-    if (!result.ok) {
-      const failure: [string, string] = [name, result.output];
+  return failures;
+};
 
-      return failure;
+// The first step to fail; the rest do not run.
+const firstFailure = async (steps: Step[]): Promise<Failure[]> => {
+  for (const step of steps) {
+    const failures = await failureOf(step);
+
+    if (failures.length > 0) {
+      return failures;
     }
   }
 
-  return undefined;
+  return [];
+};
+
+const installArgs = ['install', '--no-frozen-lockfile'];
+
+const registryCheck = once(registryError);
+
+const installStep = (dir: string): Step => {
+  const step: Step = ['install', async () => {
+    const unreachable = await registryCheck(dir);
+
+    if (unreachable !== undefined) {
+      const refused: Spawned = {
+        ok: false,
+        output: unreachable,
+      };
+
+      return refused;
+    }
+
+    return spawnIn(dir, installArgs);
+  }];
+
+  return step;
 };
 
 const stepOf = (name: string, dir: string, args: string[]): Step => {
@@ -173,16 +212,12 @@ const rootLintSteps = (item: E2eCase, dir: string): Step[] => {
   return item.answers.layout === 'monorepo' ? steps : [];
 };
 
-const caseSteps = (item: E2eCase, dir: string): Step[] => {
-  const installArgs = ['install', '--no-frozen-lockfile'];
+// Each reads the installed tree and writes only its own ignored output, so they run at once.
+const checkSteps = (item: E2eCase, dir: string): Step[] => {
   const app = appDirOf(item, dir);
   const steps = [
-    stepOf('install', dir, installArgs),
-    stepOf('prepare', app, prepareArgs),
     lintStep(item, app),
-    stepOf(TYPECHECK_SCRIPT, app, ['run', TYPECHECK_SCRIPT]),
     ...coverageSteps(item, app),
-    ...stylexSteps(item, app),
     ...rootLintSteps(item, dir),
   ];
 
@@ -193,10 +228,40 @@ const isUnchanged = (stampPath: string, stamp: string): boolean => {
   return !every && !fixing && readStamp(stampPath) === stamp;
 };
 
+// A typecheck regenerates the framework types the checks read (`next typegen`, `astro sync`), so it runs before
+// them, and a build rewrites `.next/types`, so it runs after. A fix run keeps every step in turn, lint first.
+const failuresIn = async (item: E2eCase, dir: string): Promise<Failure[]> => {
+  const app = appDirOf(item, dir);
+  const setup = [installStep(dir), stepOf('prepare', app, prepareArgs)];
+  const typecheck = stepOf(TYPECHECK_SCRIPT, app, ['run', TYPECHECK_SCRIPT]);
+  const checks = checkSteps(item, dir);
+  const builds = stylexSteps(item, app);
+
+  if (fixing) {
+    return firstFailure([
+      ...setup,
+      ...checks,
+      typecheck,
+      ...builds,
+    ]);
+  }
+
+  const setupFailures = await firstFailure([...setup, typecheck]);
+
+  if (setupFailures.length > 0) {
+    return setupFailures;
+  }
+
+  const results = await Promise.all(checks.map(failureOf));
+  const checkFailures = results.flat();
+
+  return checkFailures.length > 0 ? checkFailures : firstFailure(builds);
+};
+
 /**
  * Generated apart first, so an unchanged project, and what `prepare` wrote in it, is left as it is. A changed one
- * installs every time, so a changed tarball path reinstalls, and runs `prepare` by hand, since a no-op install skips
- * it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
+ * moves in, installs every time, so a changed tarball path reinstalls, and runs `prepare` by hand, since a no-op
+ * install skips it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
  */
 const lintCase = async (item: E2eCase): Promise<Outcome> => {
   const slug = slugOf(item.label);
@@ -208,25 +273,24 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 
   const stamp = `${TYPECHECK_SCRIPT} ${TEST_SCRIPT} ${stampOf(scratch)}`;
 
-  rmSync(scratch, {
-    recursive: true,
-    force: true,
-  });
-
   if (isUnchanged(stampPath, stamp)) {
+    rmSync(scratch, {
+      recursive: true,
+      force: true,
+    });
+
     return 'unchanged';
   }
 
-  await generate(item, dir, tarballs);
+  await moveGenerated(scratch, dir);
 
   // A kept lockfile keeps what a changed project no longer needs, such as an esbuild `allowBuilds` refuses.
   rmSync(join(dir, 'pnpm-lock.yaml'), { force: true });
 
-  const steps = caseSteps(item, dir);
-  const failure = await firstFailure(steps);
+  const failures = await failuresIn(item, dir);
 
-  if (failure) {
-    return fail(item.label, ...failure);
+  if (failures.length > 0) {
+    return fail(item.label, failures);
   }
 
   writeFileSync(stampPath, stamp, 'utf8');
@@ -240,18 +304,37 @@ const labelled = starterCases(STARTER_CASES);
 const [first] = labelled;
 const monorepos = first === undefined ? [] : [monorepoCaseOf(first)];
 const cases = [...labelled, ...monorepos];
-const runs = cases
+const durations = readDurations(DURATIONS);
+const slowestFirst = cases
+  .toSorted((left, right) => {
+    return secondsOf(durations, right.label) - secondsOf(durations, left.label);
+  });
+
+const timedCase = async (item: E2eCase): Promise<Outcome> => {
+  const started = performance.now();
+  const outcome = await lintCase(item);
+
+  if (outcome === 'linted') {
+    durations[item.label] = Math.round((performance.now() - started) / MS_PER_SECOND);
+  }
+
+  return outcome;
+};
+
+const runs = slowestFirst
   .map(async (item) => {
     await semaphore.acquire();
 
     try {
-      return await lintCase(item);
+      return await timedCase(item);
     }
     finally {
       semaphore.release();
     }
   });
 const outcomes = await Promise.all(runs);
+
+writeFileSync(DURATIONS, JSON.stringify(durations), 'utf8');
 
 const countOf = (outcome: Outcome): number => {
   return outcomes

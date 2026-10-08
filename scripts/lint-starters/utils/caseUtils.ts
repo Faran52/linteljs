@@ -3,11 +3,13 @@ import { createHash } from 'node:crypto';
 import {
   copyFileSync,
   type Dirent,
+  existsSync,
   type GlobOptionsWithFileTypes,
   globSync,
   mkdirSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -40,6 +42,7 @@ import {
   OVERRIDES_KEY,
   PACKING,
   PROJECT_NAME,
+  REGISTRY_TIMEOUT_MS,
   TARBALLS,
   UNSTAMPED,
 } from '../constants.ts';
@@ -191,6 +194,39 @@ export const generate = async (item: E2eCase, dir: string, tarballs: Tarballs): 
   await writeFile(workspace, withOverride, 'utf8');
 };
 
+// Into a cleared tree, so a monorepo's apps keep the node_modules the clear left in them.
+const merge = (from: string, to: string): void => {
+  const options = { withFileTypes: true } as const;
+
+  for (const entry of readdirSync(from, options)) {
+    const source = join(from, entry.name);
+    const target = join(to, entry.name);
+
+    if (entry.isDirectory() && existsSync(target)) {
+      merge(source, target);
+    }
+    else {
+      renameSync(source, target);
+    }
+  }
+};
+
+// The generated and stamped scratch tree becomes the project; outside a repository it needs its own git.
+export const moveGenerated = async (scratch: string, dir: string): Promise<void> => {
+  clear(dir);
+  merge(scratch, dir);
+
+  rmSync(scratch, {
+    recursive: true,
+    force: true,
+  });
+
+  await execFileAsync('git', [
+    'init',
+    '--quiet',
+  ], { cwd: dir });
+};
+
 export const stampOf = (dir: string): string => {
   const options: GlobOptionsWithFileTypes = {
     cwd: dir,
@@ -260,6 +296,50 @@ export const spawnIn = async (dir: string, args: string[]): Promise<Spawned> => 
     };
 
     return spawned;
+  }
+};
+
+const isDurations = (value: unknown): value is Record<string, number> => {
+  return typeof value === 'object'
+    && value !== null
+    && Object.values(value)
+      .every((seconds) => {
+        return typeof seconds === 'number';
+      });
+};
+
+export const readDurations = (path: string): Record<string, number> => {
+  const parsed: unknown = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+
+  return isDurations(parsed) ? parsed : {};
+};
+
+// A case never timed counts as the slowest, so it starts first.
+export const secondsOf = (durations: Record<string, number>, label: string): number => {
+  return durations[label] ?? Number.MAX_SAFE_INTEGER;
+};
+
+// An unreachable registry otherwise leaves every install silently retrying for half an hour.
+export const registryError = async (dir: string): Promise<string | undefined> => {
+  const { stdout } = await execFileAsync('pnpm', [
+    'config',
+    'get',
+    'registry',
+  ], { cwd: dir });
+  const registry = stdout.trim();
+
+  try {
+    await fetch(registry, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(REGISTRY_TIMEOUT_MS),
+    });
+
+    return undefined;
+  }
+  catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+
+    return `cannot reach the registry ${registry} (${reason}), so no changed starter can install`;
   }
 };
 

@@ -974,6 +974,15 @@ A case whose generated tree hashes as it did at its last clean lint is skipped; 
 CI runs `--all`. A missing cache runs cold rather than skip. `lint:starters:fix` writes a fix back only to a template
 copied whole and only when every case writing it fixed it the same way.
 
+A changed case installs, runs `prepare` and its typecheck in turn (a typecheck regenerates the framework types the
+others read), then lint, `test:coverage` and a monorepo's root lint at once, then a StyleX build alone, since Next's
+build rewrites `.next/types`. Cases start slowest first, by the seconds each last took. With every case changed
+(95, 10 cores) that took the run from 722s to about 600s; lint is most of it (1,877 of 3,500 case-seconds, and
+CPU-bound, so 3 cases at once took 806s and 7 took 576s against 5's 600s). Before the first install the registry
+gets one 10s probe, so an unreachable one fails every changed case at once instead of a silent half-hour of retries.
+`pnpm_config_package_import_method=hardlink` in the environment changed nothing measurable (599s), so no default
+sets it.
+
 `children?: React.ReactNode` with no React import is legal TypeScript; this standard's style is
 `@linteljs/react-no-global-namespace`, in the React layer. The gate carries no copy of a rule.
 

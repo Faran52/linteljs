@@ -46,3 +46,10 @@ export const NOT_SLUG = /[^a-z0-9]+/gu;
 export const MAX_BUFFER = 256 * 1024 * 1024;
 
 export const HASH_PREFIX_LENGTH = 16;
+
+export const REGISTRY_TIMEOUT_MS = 10_000;
+
+// Each case's last measured seconds, so the slowest start first.
+export const DURATIONS = join(CACHE_ROOT, 'durations.json');
+
+export const MS_PER_SECOND = 1000;
