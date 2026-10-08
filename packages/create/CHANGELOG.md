@@ -244,7 +244,7 @@ when a version's change lives in a sibling it is described there instead:
 - Node `>=22.18.0`, down from `>=26.8.1`, for both the CLI and the project it writes: the first 22.x release that
   strips types by default, so the project's TypeScript scripts and hooks run with plain `node`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
-  React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and declares
+  React Native follows Expo SDK 57's own pins (expo 57.0.27, expo-router 57.0.25, react-native 0.86.3) and declares
   `@react-native/metro-config`. A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only; the
   `crx({ manifest })` call is unchanged. Angular's `pnpm-workspace.yaml` loses its `peerDependencyRules` block,
   since `@angular/build` 22.2 admits vitest 5, and no target discards a peer warning any more. Patch and minor
