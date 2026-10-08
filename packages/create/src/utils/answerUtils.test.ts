@@ -127,4 +127,9 @@ describe('appDirectoryOf', () => {
     const monorepo = appDirectoryOf(answersFor({ layout: 'monorepo' }), '@acme/shop');
     expect(monorepo).toBe('apps/shop');
   });
+
+  it('kebab-cases a monorepo app directory', () => {
+    const directory = appDirectoryOf(answersFor({ layout: 'monorepo' }), 'my_app');
+    expect(directory).toBe('apps/my-app');
+  });
 });

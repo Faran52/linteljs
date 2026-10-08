@@ -10,6 +10,7 @@ import { keysOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   CONFIG_SCHEMA_URL,
+  configOf,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
@@ -109,7 +110,7 @@ const accepts = (answers: Answers): boolean => {
     parseLinteljsConfig(JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...answers,
+      ...configOf({ ...answers }, 'app'),
     }));
 
     return true;

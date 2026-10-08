@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v3.schema.json",
+  "title": "LintelJS configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "packageManager",
+    "typeSafety",
+    "agents",
+    "plugins",
+    "projects"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v3.schema.json"
+    },
+    "schemaVersion": {
+      "const": 3
+    },
+    "layout": {
+      "enum": [
+        "single",
+        "monorepo"
+      ]
+    },
+    "packageManager": {
+      "description": "The package manager that ran create, recorded so sync names the same one in the install it prints.",
+      "enum": [
+        "pnpm",
+        "npm",
+        "yarn",
+        "bun"
+      ]
+    },
+    "packageManagerVersion": {
+      "type": "string",
+      "description": "The exact version of the package manager that ran create, written into the packageManager field of the generated package.json.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+"
+    },
+    "nodeVersion": {
+      "type": "string",
+      "description": "The Node that ran create, whose major pins the version the CI workflow sets up.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+"
+    },
+    "typeSafety": {
+      "enum": [
+        "strict",
+        "relaxed"
+      ]
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "claude-code",
+          "codex",
+          "copilot",
+          "cursor",
+          "gemini-cli",
+          "antigravity"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "ponytail",
+          "context7",
+          "frontend-design"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "projects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "testing",
+          "libraries"
+        ],
+        "properties": {
+          "name": {
+            "description": "The project's directory under apps/ or packages/; required in a monorepo.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "target": {
+            "enum": [
+              "react",
+              "next",
+              "vue",
+              "nuxt",
+              "svelte",
+              "solid",
+              "angular",
+              "astro",
+              "webextension",
+              "react-native",
+              "typescript"
+            ]
+          },
+          "browser": {
+            "enum": [
+              "chrome",
+              "firefox"
+            ]
+          },
+          "surfaces": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "popup",
+                "background",
+                "devtools-panel"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "hostedFramework": {
+            "enum": [
+              "react",
+              "vue",
+              "svelte",
+              "solid"
+            ]
+          },
+          "testing": {
+            "enum": [
+              "vitest",
+              "jest",
+              "none"
+            ]
+          },
+          "libraries": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "zod",
+                "es-toolkit",
+                "ts-pattern",
+                "t3-env"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "styling": {
+            "enum": [
+              "tailwind",
+              "stylex"
+            ]
+          },
+          "form": {
+            "enum": [
+              "tanstack-form",
+              "react-hook-form"
+            ]
+          },
+          "router": {
+            "enum": [
+              "react-router",
+              "react-router-framework",
+              "tanstack-router"
+            ]
+          },
+          "store": {
+            "enum": [
+              "zustand",
+              "redux-toolkit",
+              "tanstack-store",
+              "pinia",
+              "ngrx-signals",
+              "nanostores"
+            ]
+          },
+          "data": {
+            "enum": [
+              "tanstack-query",
+              "rtk-query"
+            ]
+          },
+          "mocking": {
+            "enum": [
+              "msw"
+            ]
+          },
+          "languages": {
+            "type": "array",
+            "description": "Translates the starter and adds a language switcher; English ships with any choice.",
+            "items": {
+              "enum": [
+                "en",
+                "ar",
+                "ja",
+                "ko",
+                "zh-CN",
+                "zh-TW"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "resolveConditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "aliases": {
+            "type": "object",
+            "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
+            "propertyNames": {
+              "pattern": "^[@$]"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "browsers": {
+            "type": "array",
+            "description": "The browsers this extension is packaged for, where that is more than the one its code targets. Absent means just `browser`. A second manifest is emitted per extra browser, because Chrome rejects browser_specific_settings and AMO requires it.",
+            "items": {
+              "enum": [
+                "chrome",
+                "firefox"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "ignores": {
+            "type": "array",
+            "description": "Paths this project lints nothing in, beyond the standard list. Not for build outputs: base() already ignores whatever .gitignore does. This is for what that file cannot name, such as a generated file the project commits.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "single"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "projects": {
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "layout"
+        ],
+        "properties": {
+          "layout": {
+            "const": "monorepo"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "projects": {
+            "items": {
+              "required": [
+                "name"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

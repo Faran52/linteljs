@@ -1,6 +1,10 @@
 import { omit } from 'es-toolkit';
 
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type ProjectShape,
+} from '@config/types';
 
 import { keysOf } from '@utils/objectUtils';
 
@@ -10,6 +14,7 @@ import {
   ANSWERS,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
+  configOf,
   CURRENT_SCHEMA_VERSION,
 } from '@answers';
 import { targetFor } from '@targets';
@@ -28,20 +33,20 @@ const unaskedKeys = (answers: Answers): AnswerKey[] => {
     });
 };
 
-export const emitLinteljsConfig = (answers: Answers): string => {
+export const emitLinteljsConfig = (answers: Answers, name: string): string => {
   const asked = omit(answers, unaskedKeys(answers));
 
   return `${JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...asked,
+    ...configOf(asked, name),
   }, null, 2)}\n`;
 };
 
 // Written by `sync` only to migrate a 1.x project, so a reformatted config survives `sync`.
 // Seeded first, so a run that dies before `package.json` leaves the answers recorded.
-export const linteljsConfigEmitter = (answers: Answers): Artifact[] => {
-  const config = emitLinteljsConfig(answers);
+export const linteljsConfigEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
+  const config = emitLinteljsConfig(answers, name);
   const artifacts = [emitted('package', CONFIG_PATH, config)];
 
   return artifacts;

@@ -1,4 +1,8 @@
-import { isEqual } from 'es-toolkit';
+import {
+  isEqual,
+  omit,
+  pick,
+} from 'es-toolkit';
 
 import { isJsonObject, keysOf } from '@utils/objectUtils';
 
@@ -8,8 +12,11 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   EXPECTED,
+  PROJECT_NAME_PATTERN,
   SCHEMA_URLS,
   type SchemaVersion,
+  V3_TOP_KEYS,
+  WORKSPACE_KEYS,
 } from '../constants';
 import {
   ANSWERS,
@@ -22,27 +29,42 @@ import {
   isJsonArray,
   type JsonValue,
   readAnswer,
+  refuseDuplicates,
   unaskedValueOf,
 } from './readUtils';
 import { refusedValue } from './recordUtils';
 
-import type { Answers, Library } from '@config/types';
+import type {
+  Answers,
+  Library,
+} from '@config/types';
 import type { AnswerRecord } from '../types';
 
 type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;
 
+type RawConfig = Record<string, JsonValue>;
+
+interface NamedAnswers extends Answers {
+  name?: string;
+}
+
+interface FlatProject {
+  flat: RawConfig;
+  name?: string;
+}
+
 const expectedKeys = Object.keys(EXPECTED);
 
-const isConfigObject = (value: unknown): value is ConfigObject => {
+const isConfigObject = (value: unknown): value is RawConfig => {
   return isJsonObject(value);
 };
 
 const schemaVersionOf = (value: JsonValue | undefined): SchemaVersion => {
   if (typeof value !== 'number') {
-    throw new Error('schemaVersion must be 1 or 2');
+    throw new Error('schemaVersion must be 1, 2 or 3');
   }
 
-  if (value !== 1 && value !== CURRENT_SCHEMA_VERSION) {
+  if (value !== 1 && value !== 2 && value !== CURRENT_SCHEMA_VERSION) {
     throw new Error(`linteljs.config.json schema version ${String(value)} is unsupported; update @linteljs/create`);
   }
 
@@ -115,7 +137,7 @@ const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject =
 };
 
 // The library answers, apart so neither half outgrows its complexity budget.
-const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Partial<LinteljsConfig> => {
+const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Partial<Answers> => {
   const stylingValue = readAnswer(ANSWERS.styling, parsed.styling);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
@@ -123,7 +145,7 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
   const dataValue = readAnswer(ANSWERS.data, parsed.data);
   const mockingValue = readAnswer(ANSWERS.mocking, parsed.mocking);
   const languagesValue = readAnswer(ANSWERS.languages, parsed.languages);
-  const libraryAnswers: Partial<LinteljsConfig> = {
+  const libraryAnswers: Partial<Answers> = {
     ...(stylingValue === undefined ? {} : { styling: stylingValue }),
     ...(formValue === undefined ? {} : { form: formValue }),
     ...(routerValue === undefined ? {} : { router: routerValue }),
@@ -137,7 +159,7 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
 };
 
 // `exactOptionalPropertyTypes` refuses a key written `undefined`, so each optional answer is a conditional spread.
-const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): LinteljsConfig => {
+const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Answers => {
   const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
   const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
   const managerVersionValue = readAnswer(ANSWERS.packageManagerVersion, parsed.packageManagerVersion);
@@ -147,9 +169,7 @@ const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Lintel
   const browsersValue = readAnswer(ANSWERS.browsers, parsed.browsers);
   const ignoresValue = readAnswer(ANSWERS.ignores, parsed.ignores);
 
-  const config: LinteljsConfig = {
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
+  const config: Answers = {
     target: readAnswer(ANSWERS.target, parsed.target),
     // Defaults, so a config without the extension axes still parses.
     browser: parsed.browser === undefined ? ANSWERS.browser.default : readAnswer(ANSWERS.browser, parsed.browser),
@@ -174,7 +194,7 @@ const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Lintel
   return config;
 };
 
-const configFrom = (raw: ConfigObject): LinteljsConfig => {
+const projectFrom = (raw: ConfigObject): Answers => {
   const schemaVersion = schemaVersionOf(raw.schemaVersion);
   const parsed = lifted(raw, schemaVersion);
 
@@ -196,14 +216,144 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
   const read = answersFrom(parsed, schemaVersion);
   const record = targetFor(read);
   // 1.x had no `jest`, so its React Native record wrote `vitest`.
-  const config: LinteljsConfig = schemaVersion === 1 && read.testing === 'vitest' && record.testRunner === 'jest'
+  const answers: Answers = schemaVersion === 1 && read.testing === 'vitest' && record.testRunner === 'jest'
     ? {
         ...read,
         testing: 'jest',
       }
     : read;
 
-  refuseMisfit(config, record);
+  refuseMisfit(answers, record);
+
+  return answers;
+};
+
+// Each project read flat, its workspace answers copied in, so one reader serves v1, v2 and v3.
+const flatProjectOf = (top: RawConfig, item: JsonValue): FlatProject => {
+  if (!isConfigObject(item)) {
+    throw new Error('each of projects must be an object');
+  }
+
+  const { name, ...fields } = item;
+  const shared = Object.keys(fields)
+    .find((key) => {
+      return WORKSPACE_KEYS
+        .some((workspaceKey) => {
+          return workspaceKey === key;
+        });
+    });
+
+  if (shared !== undefined) {
+    throw new Error(`${shared} is a workspace answer: set it above projects`);
+  }
+
+  if (name !== undefined && typeof name !== 'string') {
+    throw new Error('a project name must be a string');
+  }
+
+  const project: FlatProject = {
+    flat: {
+      ...top,
+      ...fields,
+    },
+    ...(name === undefined ? {} : { name }),
+  };
+
+  return project;
+};
+
+const flatProjectsOf = (raw: RawConfig): [FlatProject, ...FlatProject[]] => {
+  if (raw['schemaVersion'] !== CURRENT_SCHEMA_VERSION) {
+    const legacy: [FlatProject] = [{ flat: raw }];
+
+    return legacy;
+  }
+
+  const { projects, ...top } = raw;
+  const unexpected = Object.keys(top)
+    .find((key) => {
+      return !V3_TOP_KEYS.includes(key);
+    });
+
+  if (unexpected !== undefined) {
+    throw new Error(`linteljs.config.json has unexpected property: ${unexpected}`);
+  }
+
+  if (!isJsonArray(projects)) {
+    throw new Error('projects must be an array');
+  }
+
+  const [first, ...others] = projects;
+
+  if (first === undefined) {
+    throw new Error('projects must name at least one project');
+  }
+
+  const flats: [FlatProject, ...FlatProject[]] = [
+    flatProjectOf(top, first),
+    ...others
+      .map((item) => {
+        return flatProjectOf(top, item);
+      }),
+  ];
+
+  return flats;
+};
+
+const refuseProjectNames = (layout: Answers['layout'], names: (string | undefined)[]): void => {
+  if (layout === 'single' && names.length > 1) {
+    throw new Error('a single layout holds one project');
+  }
+
+  if (layout === 'monorepo' && names
+    .some((name) => {
+      return name === undefined || !new RegExp(PROJECT_NAME_PATTERN, 'v').test(name);
+    })) {
+    throw new Error(`each project in a monorepo needs a name matching ${PROJECT_NAME_PATTERN}`);
+  }
+
+  refuseDuplicates(names
+    .filter((name) => {
+      return name !== undefined;
+    }), 'project names');
+};
+
+const readProject = ({ flat, name }: FlatProject): NamedAnswers => {
+  const project: NamedAnswers = {
+    ...(name === undefined ? {} : { name }),
+    ...projectFrom(flat),
+  };
+
+  return project;
+};
+
+const configFrom = (raw: RawConfig): LinteljsConfig => {
+  const [first, ...others] = flatProjectsOf(raw);
+  const head = readProject(first);
+  const tail = others.map(readProject);
+  const read = [head, ...tail];
+  const workspace = pick(projectFrom(first.flat), WORKSPACE_KEYS);
+
+  // A v1 or v2 config is one unnamed project, so only v3 has names to check.
+  if (raw['schemaVersion'] === CURRENT_SCHEMA_VERSION) {
+    refuseProjectNames(workspace.layout, read
+      .map(({ name }) => {
+        return name;
+      }));
+  }
+
+  const config: LinteljsConfig = {
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    ...workspace,
+    projects: [
+      omit(head, WORKSPACE_KEYS),
+      ...tail
+        .map((project) => {
+          return omit(project, WORKSPACE_KEYS);
+        }),
+    ],
+  };
 
   return config;
 };

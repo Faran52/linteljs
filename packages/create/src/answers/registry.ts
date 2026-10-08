@@ -24,13 +24,18 @@ import { targetAnswer } from './target/target/targetAnswer';
 import { testingAnswer } from './testing/testing/testingAnswer';
 import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 
-import type { Answers } from '@config/types';
+import type {
+  Answers,
+  ProjectConfig,
+  Workspace,
+} from '@config/types';
 
 export type AnswerKey = keyof typeof ANSWERS;
 
-export interface LinteljsConfig extends Answers {
+export interface LinteljsConfig extends Workspace {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
+  projects: [ProjectConfig, ...ProjectConfig[]];
 }
 
 // Insertion order is the ask order and the order a config's keys are written in.

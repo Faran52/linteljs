@@ -1,4 +1,4 @@
-import { unscopedName } from './nameUtils';
+import { projectNameOf } from './nameUtils';
 
 import type {
   Answers,
@@ -62,5 +62,5 @@ export const hasTests = (answers: Answers): boolean => {
 };
 
 export const appDirectoryOf = (answers: Answers, name: string): string => {
-  return answers.layout === 'monorepo' ? `apps/${unscopedName(name)}` : '.';
+  return answers.layout === 'monorepo' ? `apps/${projectNameOf(name)}` : '.';
 };

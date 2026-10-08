@@ -5,25 +5,46 @@ import { ANSWERS } from '../registry';
 
 import { schemaFor } from './schemaUtils';
 
-interface GeneratedSchema {
+interface RequiredKeys {
   required: string[];
 }
 
-describe('schemaFor', () => {
-  it('matches both checked-in copies of the v2 schema', async () => {
-    const packageRoot = join(import.meta.dirname, '../../..');
-    const workspaceRoot = join(packageRoot, '../..');
-    const canonicalPath = join(workspaceRoot, 'schemas/linteljs.config.v2.schema.json');
-    const packagedPath = join(packageRoot, 'templates/schemas/linteljs.config.v2.schema.json');
-    const [canonical, packaged] = await Promise.all([
-      readFile(canonicalPath, 'utf8'),
-      readFile(packagedPath, 'utf8'),
-    ]);
+interface ProjectsSchema {
+  items: RequiredKeys;
+}
 
+interface SchemaProperties {
+  projects: ProjectsSchema;
+}
+
+interface GeneratedSchema extends RequiredKeys {
+  properties: SchemaProperties;
+}
+
+const packageRoot = join(import.meta.dirname, '../../..');
+const workspaceRoot = join(packageRoot, '../..');
+
+const copiesOf = async (file: string): Promise<string[]> => {
+  const canonical = readFile(join(workspaceRoot, 'schemas', file), 'utf8');
+  const packaged = readFile(join(packageRoot, 'templates/schemas', file), 'utf8');
+
+  return Promise.all([canonical, packaged]);
+};
+
+describe('schemaFor', () => {
+  it('matches both checked-in copies of the v3 schema', async () => {
+    const [canonical, packaged] = await copiesOf('linteljs.config.v3.schema.json');
     const generated = schemaFor(ANSWERS);
 
     expect(canonical).toBe(generated);
     expect(packaged).toBe(generated);
+  });
+
+  // Their `$schema` URLs still resolve for v1 and v2 projects.
+  it.each(['lintel.config.v1.schema.json', 'linteljs.config.v2.schema.json'])('ships %s unchanged', async (file) => {
+    const [canonical, packaged] = await copiesOf(file);
+
+    expect(packaged).toBe(canonical);
   });
 
   it('excuses only browser and layout from the required list a choice or multi answer otherwise joins', () => {
@@ -35,14 +56,19 @@ describe('schemaFor', () => {
     const expected = [
       '$schema',
       'schemaVersion',
-      'target',
-      'testing',
       'packageManager',
-      'libraries',
       'typeSafety',
       'agents',
       'plugins',
+      'projects',
     ];
     expect(schema.required).toEqual(expected);
+    const projectRequired = schema.properties.projects.items.required;
+    const expectedProject = [
+      'target',
+      'testing',
+      'libraries',
+    ];
+    expect(projectRequired).toEqual(expectedProject);
   });
 });

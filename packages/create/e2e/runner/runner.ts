@@ -7,7 +7,11 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
-import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
+import {
+  CONFIG_PATH,
+  parseLinteljsConfig,
+  projectAnswersOf,
+} from '@answers';
 import { parsePackageJson } from '@emitters';
 import { targetFor } from '@targets';
 
@@ -189,7 +193,8 @@ const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<vo
 
   // The manager came from the injected user agent, so the recorded config proves it was read.
   const configText = readFileSync(join(project, CONFIG_PATH), 'utf8');
-  const recorded = parseLinteljsConfig(configText);
+  const config = parseLinteljsConfig(configText);
+  const recorded = projectAnswersOf(config, config.projects[0]);
   const managerVersion = await versionOf(answers.packageManager);
 
   expect(recorded).toMatchObject({

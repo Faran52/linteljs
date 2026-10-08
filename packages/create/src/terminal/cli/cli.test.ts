@@ -34,11 +34,10 @@ import {
 
 import {
   CONFIG_PATH,
-  CONFIG_SCHEMA_URL,
-  CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
   parseLinteljsConfig,
+  projectAnswersOf,
 } from '@answers';
 import { exists } from '@disk';
 import { parsePackageJson } from '@emitters';
@@ -169,9 +168,11 @@ const plantScaffolder = async (): Promise<void> => {
   ]);
 };
 
-const configAt = async (directory = project): Promise<ReturnType<typeof parseLinteljsConfig>> => {
+const configAt = async (directory = project): Promise<Answers> => {
   const configText = await readFile(join(directory, CONFIG_PATH), 'utf8');
-  return parseLinteljsConfig(configText);
+  const config = parseLinteljsConfig(configText);
+
+  return projectAnswersOf(config, config.projects[0]);
 };
 
 const nameAt = async (directory: string): Promise<string | undefined> => {
@@ -180,7 +181,7 @@ const nameAt = async (directory: string): Promise<string | undefined> => {
 };
 
 const writeConfig = async (answers: Answers): Promise<void> => {
-  await writeFile(join(project, CONFIG_PATH), emitLinteljsConfig(answers), 'utf8');
+  await writeFile(join(project, CONFIG_PATH), emitLinteljsConfig(answers, 'demo-app'), 'utf8');
 };
 
 describe('main: what it prints and what it returns', () => {
@@ -339,8 +340,6 @@ describe('main: create', () => {
 
     const config = await configAt();
     const expected = {
-      $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
       packageManagerVersion: '12.5.1',
       nodeVersion: versions.node,
@@ -520,7 +519,7 @@ describe('main: patching a project that already exists', () => {
     const legacyConfig = emitLinteljsConfig({
       ...DEFAULT_ANSWERS,
       target: 'svelte',
-    });
+    }, 'demo-app');
 
     await writeFile(legacyPath, legacyConfig, 'utf8');
 

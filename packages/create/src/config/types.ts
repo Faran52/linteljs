@@ -108,6 +108,23 @@ export interface Answers {
   ignores?: string[];
 }
 
+// Asked or recorded once for the whole repository; every other answer is a project's own.
+export type WorkspaceKey
+  = 'layout'
+    | 'packageManager'
+    | 'packageManagerVersion'
+    | 'nodeVersion'
+    | 'typeSafety'
+    | 'agents'
+    | 'plugins';
+
+export type Workspace = Pick<Answers, WorkspaceKey>;
+
+// `name` is required in a monorepo's v3 config; a v1 or v2 config lifts to one unnamed project.
+export interface ProjectConfig extends Omit<Answers, WorkspaceKey> {
+  name?: string;
+}
+
 // `create` records the host's Node and `sync` fills it, so it is always there by write time.
 export type HostedAnswers = Answers & Required<Pick<Answers, 'nodeVersion'>>;
 

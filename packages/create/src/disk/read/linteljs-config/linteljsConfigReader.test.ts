@@ -13,6 +13,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { omit, pick } from 'es-toolkit';
 import {
   afterEach,
   beforeEach,
@@ -28,6 +29,7 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
+  WORKSPACE_KEYS,
 } from '@answers';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
@@ -71,13 +73,14 @@ afterEach(async () => {
 
 describe('linteljsConfigReader', () => {
   it('reads a valid config file', async () => {
-    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app'), 'utf8');
 
     const linteljsConfig = await linteljsConfigReader(cwd);
     const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
+      ...pick(DEFAULT_ANSWERS, WORKSPACE_KEYS),
+      projects: [omit(DEFAULT_ANSWERS, WORKSPACE_KEYS)],
     };
     expect(linteljsConfig).toEqual(expected);
   });
@@ -90,7 +93,7 @@ describe('linteljsConfigReader', () => {
   });
 
   it('leaves the config file byte-for-byte unchanged', async () => {
-    const text = emitLinteljsConfig(DEFAULT_ANSWERS);
+    const text = emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app');
 
     await writeFile(join(cwd, CONFIG_PATH), text, 'utf8');
     await linteljsConfigReader(cwd);
@@ -105,7 +108,7 @@ describe('linteljsConfigReader', () => {
   ])('rejects a %s symbolic-link config without touching its target', async (_case, answers) => {
     const target = join(external, 'actual-config.json');
     const path = join(cwd, CONFIG_PATH);
-    const original = answers === null ? null : emitLinteljsConfig(answers);
+    const original = answers === null ? null : emitLinteljsConfig(answers, 'demo-app');
 
     if (original !== null) {
       await writeFile(target, original, 'utf8');
@@ -135,27 +138,28 @@ describe('linteljsConfigReader', () => {
   });
 
   it('reads the name older versions wrote when the current one is absent', async () => {
-    await writeFile(join(cwd, LEGACY_CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+    await writeFile(join(cwd, LEGACY_CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app'), 'utf8');
 
     const linteljsConfig = await linteljsConfigReader(cwd);
     const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
+      ...pick(DEFAULT_ANSWERS, WORKSPACE_KEYS),
+      projects: [omit(DEFAULT_ANSWERS, WORKSPACE_KEYS)],
     };
     expect(linteljsConfig).toEqual(expected);
   });
 
   it('prefers the current name when both are on disk', async () => {
     await writeFile(join(cwd, LEGACY_CONFIG_PATH), '{ not json', 'utf8');
-    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app'), 'utf8');
 
     const linteljsConfig = await linteljsConfigReader(cwd);
-    expect(linteljsConfig).toHaveProperty('target', DEFAULT_ANSWERS.target);
+    expect(linteljsConfig).toHaveProperty('projects.0.target', DEFAULT_ANSWERS.target);
   });
 
   it('closes the file it reads', async () => {
-    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app'), 'utf8');
 
     const descriptors = await readdir('/dev/fd');
     const before = descriptors.length;

@@ -3,7 +3,6 @@ import {
   input,
   select,
 } from '@inquirer/prompts';
-import { omit } from 'es-toolkit';
 
 import { keysOf } from '@utils/objectUtils';
 
@@ -13,6 +12,7 @@ import {
   ANSWERS,
   type ChoiceRecord,
   CONFIG_SCHEMA_URL,
+  configOf,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   type JsonValue,
@@ -20,6 +20,7 @@ import {
   type OptionalChoiceRecord,
   type OptionalMultiRecord,
   parseLinteljsConfig,
+  projectAnswersOf,
   unaskedValueOf,
   type ValueRecord,
 } from '@answers';
@@ -396,13 +397,15 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
   const config = parseLinteljsConfig(JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...DEFAULT_ANSWERS,
-    ...answered,
+    ...configOf({
+      ...DEFAULT_ANSWERS,
+      ...answered,
+    }, name),
   }));
 
   const asked: Asked = {
     name,
-    answers: omit(config, ['$schema', 'schemaVersion']),
+    answers: projectAnswersOf(config, config.projects[0]),
   };
 
   return asked;

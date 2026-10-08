@@ -23,6 +23,10 @@ when a version's change lives in a sibling it is described there instead:
   `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not.
   A v1 file is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into
   `form`, `styling` and `data`, and `store: true` becomes the target's first store.
+- **Schema version 3 records the workspace answers once and each project under `projects`.** `layout`, the
+  package manager and its version, the Node version, `typeSafety`, `agents` and `plugins` sit at the top; every
+  other answer belongs to a project. A single layout holds one project; each project in a monorepo is named for
+  its directory, in kebab-case, so `my_app` lands in `apps/my-app`. A v1 or v2 file still reads, as one unnamed project, and stays as it is on disk.
 - **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
   `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
   config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers

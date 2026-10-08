@@ -7,6 +7,7 @@ import {
   DEFAULT_ANSWERS,
 } from './registry';
 import { parseLinteljsConfig } from './utils/configUtils';
+import { configOf } from './utils/projectUtils';
 
 import type { Answers } from '@config/types';
 
@@ -27,7 +28,7 @@ describe('DEFAULT_ANSWERS', () => {
     const config = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
+      ...configOf({ ...DEFAULT_ANSWERS }, 'app'),
     };
 
     const actual = parseLinteljsConfig(JSON.stringify(config));

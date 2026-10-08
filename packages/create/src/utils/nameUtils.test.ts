@@ -1,4 +1,4 @@
-import { unscopedName } from './nameUtils';
+import { projectNameOf, unscopedName } from './nameUtils';
 
 describe('unscopedName', () => {
   it('drops the scope of a scoped name', () => {
@@ -14,5 +14,12 @@ describe('unscopedName', () => {
   it('drops only a leading scope', () => {
     const name = unscopedName('docs@2/guide');
     expect(name).toBe('docs@2/guide');
+  });
+});
+
+describe('projectNameOf', () => {
+  it('kebab-cases the unscoped name', () => {
+    const name = projectNameOf('@acme/my_app.v2');
+    expect(name).toBe('my-app-v-2');
   });
 });

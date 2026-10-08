@@ -192,7 +192,7 @@ describe('runPipeline against a directory that already exists', () => {
     const written = await generate(answers);
 
     const file = await readFile(join(cwd, CONFIG_PATH), 'utf8');
-    expect(file).toBe(emitLinteljsConfig(answers));
+    expect(file).toBe(emitLinteljsConfig(answers, 'demo-app'));
     const index = written.indexOf(CONFIG_PATH);
     expect(index).toBeLessThan(written.indexOf('package.json'));
   });

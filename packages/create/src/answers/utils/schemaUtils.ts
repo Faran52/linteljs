@@ -1,6 +1,11 @@
 import { keysOf } from '@utils/objectUtils';
 
-import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from '../constants';
+import {
+  CONFIG_SCHEMA_URL,
+  CURRENT_SCHEMA_VERSION,
+  PROJECT_NAME_PATTERN,
+  WORKSPACE_KEYS,
+} from '../constants';
 
 import type { AnswerKey } from '../registry';
 import type {
@@ -133,27 +138,38 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
   }
 };
 
-// Generated from the records; `schemaUtils.test.ts` pins both checked-in copies against it.
-export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
-  const keys = keysOf(answers);
+const isWorkspaceKey = (key: AnswerKey): boolean => {
+  return WORKSPACE_KEYS
+    .some((workspaceKey) => {
+      return workspaceKey === key;
+    });
+};
 
-  const required = [
-    '$schema',
-    'schemaVersion',
-    ...keys
-      .filter((key) => {
-        return isRequired(key, answers[key]);
-      }),
-  ];
+const requiredOf = (answers: Record<AnswerKey, AnswerRecord>, keys: AnswerKey[]): AnswerKey[] => {
+  return keys
+    .filter((key) => {
+      return isRequired(key, answers[key]);
+    });
+};
 
-  const properties: Record<string, SchemaProperty> = {
-    $schema: { const: CONFIG_SCHEMA_URL },
-    schemaVersion: { const: CURRENT_SCHEMA_VERSION },
-  };
+const propertiesOf = (answers: Record<AnswerKey, AnswerRecord>, keys: AnswerKey[]): Record<string, SchemaProperty> => {
+  const properties: Record<string, SchemaProperty> = {};
 
   for (const key of keys) {
     properties[key] = propertyFor(answers[key]);
   }
+
+  return properties;
+};
+
+// Generated from the records; `schemaUtils.test.ts` pins both checked-in copies against it.
+export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
+  const keys = keysOf(answers);
+  const workspaceKeys = keys.filter(isWorkspaceKey);
+  const projectKeys = keys
+    .filter((key) => {
+      return !isWorkspaceKey(key);
+    });
 
   const schema = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -161,8 +177,48 @@ export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
     title: 'LintelJS configuration',
     type: 'object',
     additionalProperties: false,
-    required,
-    properties,
+    required: [
+      '$schema',
+      'schemaVersion',
+      ...requiredOf(answers, workspaceKeys),
+      'projects',
+    ],
+    properties: {
+      $schema: { const: CONFIG_SCHEMA_URL },
+      schemaVersion: { const: CURRENT_SCHEMA_VERSION },
+      ...propertiesOf(answers, workspaceKeys),
+      projects: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: requiredOf(answers, projectKeys),
+          properties: {
+            name: {
+              description: 'The project\'s directory under apps/ or packages/; required in a monorepo.',
+              type: 'string',
+              pattern: PROJECT_NAME_PATTERN,
+            },
+            ...propertiesOf(answers, projectKeys),
+          },
+        },
+      },
+    },
+    // An absent layout is single, so the first rule applies to it too.
+    allOf: [
+      {
+        if: { properties: { layout: { const: 'single' } } },
+        then: { properties: { projects: { maxItems: 1 } } },
+      },
+      {
+        if: {
+          required: ['layout'],
+          properties: { layout: { const: 'monorepo' } },
+        },
+        then: { properties: { projects: { items: { required: ['name'] } } } },
+      },
+    ],
   };
 
   return `${JSON.stringify(schema, null, 2)}\n`;

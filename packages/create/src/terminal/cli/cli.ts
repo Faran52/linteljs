@@ -13,10 +13,13 @@ import {
   ANSWERS,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
+  configOf,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
+  type LinteljsConfig,
   parseLinteljsConfig,
+  projectAnswersOf,
 } from '@answers';
 import {
   entryExists,
@@ -97,17 +100,20 @@ interface DependencyStep {
 
 const EXIT_CANCELLED = 130;
 
-const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
+const flaggedAnswers = (name: string, flags: AnswerFlags = {}): Answers => {
   const configText = JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...DEFAULT_ANSWERS,
-    // `none` fits every target; an unflagged answer takes the target's runner below.
-    testing: 'none',
-    ...flags,
+    ...configOf({
+      ...DEFAULT_ANSWERS,
+      // `none` fits every target; an unflagged answer takes the target's runner below.
+      testing: 'none',
+      ...flags,
+    }, name),
   });
 
-  const parsed = parseLinteljsConfig(configText);
+  const config = parseLinteljsConfig(configText);
+  const parsed = projectAnswersOf(config, config.projects[0]);
   const record = targetFor(parsed);
   const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault(record) : undefined;
 
@@ -144,10 +150,11 @@ const askedFrom = async (
     return resolved;
   };
 
-  const fromConfig = (answers: Answers): HostedAsk => {
+  const fromConfig = (config: LinteljsConfig): HostedAsk => {
+    const project = projectAnswersOf(config, config.projects[0]);
     const recorded: HostedAsk = {
       name: options.name,
-      answers: filled(answers, host),
+      answers: filled(project, host),
     };
 
     return recorded;
@@ -170,7 +177,7 @@ const askedFrom = async (
   }
 
   if (options.yes) {
-    const flagged = flaggedAnswers(options.answers);
+    const flagged = flaggedAnswers(options.name, options.answers);
 
     return named(flagged);
   }

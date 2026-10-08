@@ -3,6 +3,7 @@ export {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   LEGACY_CONFIG_PATH,
+  WORKSPACE_KEYS,
 } from './constants';
 export {
   type AnswerKey,
@@ -22,6 +23,7 @@ export type {
   ValueRecord,
 } from './types';
 export { parseLinteljsConfig } from './utils/configUtils';
+export { configOf, projectAnswersOf } from './utils/projectUtils';
 export {
   type JsonValue,
   unaskedValueOf,
