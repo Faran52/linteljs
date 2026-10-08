@@ -267,6 +267,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **A web extension has an icon.** Its manifests, Chrome's and Firefox's, name the Mark as PNG `icons` at 16,
+  32, 48 and 128 pixels, and as the popup's `action.default_icon`, from `public/icons/`, which the build
+  copies into `dist/`. Chrome showed a letter in its place.
 - **A SvelteKit app with languages in an npm, yarn or bun monorepo rendered nothing.** Those managers hoist the
   inlang plugin to the root `node_modules`, where `project.inlang/settings.json` did not look, so Paraglide
   compiled no messages and every page failed. A monorepo now installs the plugin at the root and reads it there.

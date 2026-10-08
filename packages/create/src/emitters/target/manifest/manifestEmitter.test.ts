@@ -49,6 +49,13 @@ const parseManifest = (text: string): Manifest => {
   return parsed;
 };
 
+const ICONS = {
+  16: 'icons/icon-16.png',
+  32: 'icons/icon-32.png',
+  48: 'icons/icon-48.png',
+  128: 'icons/icon-128.png',
+};
+
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
   const answers: Answers = {
     ...DEFAULT_ANSWERS,
@@ -84,7 +91,11 @@ describe('emitManifest', () => {
       name: 'demo-app',
       version: '0.1.0',
       description: 'demo-app, a browser extension.',
-      action: { default_popup: 'index.html' },
+      icons: ICONS,
+      action: {
+        default_popup: 'index.html',
+        default_icon: ICONS,
+      },
       background: {
         service_worker: 'src/background/background.ts',
         type: 'module',
@@ -98,7 +109,10 @@ describe('emitManifest', () => {
   it('defaults to a popup and a background entry', () => {
     const manifest = manifestFor();
 
-    const popup = { default_popup: 'index.html' };
+    const popup = {
+      default_popup: 'index.html',
+      default_icon: ICONS,
+    };
     expect(manifest.action).toEqual(popup);
 
     const serviceWorker = {
@@ -155,6 +169,17 @@ describe('emitManifest', () => {
     expect(manifest.action).toBeDefined();
     expect(manifest.background).toBeDefined();
     expect(manifest.devtools_page).toBe('devtools.html');
+  });
+
+  it.each<Browser>(['chrome', 'firefox'])('gives a %s extension its icons with or without a popup', (browser) => {
+    expect(manifestFor({ browser }).icons).toEqual(ICONS);
+    expect(manifestFor({ browser }).action?.default_icon).toEqual(ICONS);
+
+    const panelOnly = manifestFor({
+      browser,
+      surfaces: ['devtools-panel'],
+    });
+    expect(panelOnly.icons).toEqual(ICONS);
   });
 
   it('emits formatted json ending in a newline', () => {
@@ -247,5 +272,27 @@ describe('manifestEmitter', () => {
       });
 
     expect(targets).toEqual(expect.arrayContaining([entry, 'src/background/onInstalled.ts']));
+  });
+
+  it.each<Browser>(['chrome', 'firefox'])('names %s icons the starter source writes to public/', (browser) => {
+    const answers = answersFor({
+      browser,
+      surfaces: ['devtools-panel'],
+    });
+    const icons = Object.values(manifestsFor({
+      browser,
+      surfaces: ['devtools-panel'],
+    })['manifest.json']?.icons ?? {})
+      .map((icon) => {
+        return `public/${icon}`;
+      });
+
+    const targets = starterSourceEmitter(answers)
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(icons).toHaveLength(4);
+    expect(targets).toEqual(expect.arrayContaining(icons));
   });
 });

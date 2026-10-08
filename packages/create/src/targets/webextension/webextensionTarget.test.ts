@@ -128,6 +128,25 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toBeUndefined();
   });
 
+  it.each<[Surface]>([
+    ['popup'],
+    ['background'],
+    ['devtools-panel'],
+  ])('ships the extension icons with a lone %s', (surface) => {
+    const targets = recordFor({ surfaces: [surface] }).starterFiles
+      .map((file) => {
+        return file.target;
+      });
+
+    const icons = [
+      'public/icons/icon-16.png',
+      'public/icons/icon-32.png',
+      'public/icons/icon-48.png',
+      'public/icons/icon-128.png',
+    ];
+    expect(targets).toEqual(expect.arrayContaining(icons));
+  });
+
   it('ships both devtools pages and gives the panel a build input', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
     const targets = record.starterFiles

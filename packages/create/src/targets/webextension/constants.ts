@@ -33,6 +33,14 @@ export const POPUP: readonly string[] = [
   'src/lib/mark/mark.ts',
 ];
 
+// The manifest names them, so every extension ships them.
+export const ICONS: readonly string[] = [
+  'public/icons/icon-16.png',
+  'public/icons/icon-32.png',
+  'public/icons/icon-48.png',
+  'public/icons/icon-128.png',
+];
+
 export const SHARED: readonly string[] = [
   'src/styles/tokens.css',
   'src/styles/base.css',

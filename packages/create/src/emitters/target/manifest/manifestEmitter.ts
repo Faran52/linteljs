@@ -35,6 +35,7 @@ interface GeckoSettings {
 
 interface BrowserAction {
   default_popup: string;
+  default_icon: Record<string, string>;
 }
 
 export interface Manifest {
@@ -44,11 +45,20 @@ export interface Manifest {
   description: string;
   permissions: string[];
   host_permissions: string[];
+  icons: Record<string, string>;
   browser_specific_settings?: GeckoSettings;
   action?: BrowserAction;
   background?: EventPage | ServiceWorker;
   devtools_page?: string;
 }
+
+// PNG: Chrome refuses an SVG here. Vite copies them from `public/`.
+const ICONS: Record<string, string> = {
+  16: 'icons/icon-16.png',
+  32: 'icons/icon-32.png',
+  48: 'icons/icon-48.png',
+  128: 'icons/icon-128.png',
+};
 
 const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
   const background: ServiceWorker | EventPage = browser === 'firefox'
@@ -87,7 +97,16 @@ export const emitManifest = (
           },
         }
       : {}),
-    ...(hasSurface(answers, 'popup') ? { action: { default_popup: 'index.html' } } : {}),
+    icons: ICONS,
+    // The toolbar button names its own rather than lean on a browser's fallback.
+    ...(hasSurface(answers, 'popup')
+      ? {
+          action: {
+            default_popup: 'index.html',
+            default_icon: ICONS,
+          },
+        }
+      : {}),
     ...(hasSurface(answers, 'background') ? { background: backgroundFor(browser) } : {}),
     // The panel is not named here, so the Vite config gives it an input of its own.
     ...(hasSurface(answers, 'devtools-panel') ? { devtools_page: 'devtools.html' } : {}),

@@ -9,6 +9,7 @@ import { tailwindThemeFile } from '../utils/styleUtils';
 
 import {
   BROWSERS,
+  ICONS,
   POPUP,
   SHARED,
   WEBEXTENSION_I18N,
@@ -34,6 +35,7 @@ const withPopupLanguages = <T extends StarterFile | StarterTest>(answers: Answer
 
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
+    ...filesAt(ICONS),
     ...filesAt(SHARED, {
       shared: true,
     }),
