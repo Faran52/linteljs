@@ -79,13 +79,15 @@ describe('useExtendedQuery', () => {
 
     const client = freshClient();
 
-    renderHook(() => {
+    const { result } = renderHook(() => {
       return useExtendedQuery<Version>('/version', { query: { page: 2 } });
     }, { wrapper: wrapperFor(client) });
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith('/api/version?page=2', expect.anything());
+      expect(result.current.status).toBe('success');
     });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/version?page=2', expect.anything());
   });
 
   it('asks for nothing while it is disabled', () => {
@@ -132,6 +134,11 @@ describe('useExtendedQuery', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    // Settled before the test ends, so no state update lands after it.
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false);
     });
   });
 });
