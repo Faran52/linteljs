@@ -1842,6 +1842,14 @@ Vitest splits by file, and one file, `composeConfig.test.ts` at 57 s, sets the f
 cores, the slowest shard took 75 s at two and at three (the two slowest files share a shard), 67 s at four; past
 four, no shard drops below that one file, and every shard pays its own install and build.
 
+### The coverage badge is CI's own number
+
+The READMEs' coverage badge reads a shields endpoint JSON, not a coverage service and not a fixed 100%. On a push
+to `main`, the `coverage` job turns the merged `coverage-summary.json` into that JSON, its message the lowest of
+the four totals, and force-pushes it as the one commit of the `badges` branch, which the badge reads through
+raw.githubusercontent.com. The step runs after a threshold failure too, so a drop shows. It needs
+`contents: write`, which only that job gets; pull requests never publish.
+
 ## One version per shared dependency
 
 A dependency more than one package in this workspace declares reads `catalog:`, and its version lives once in the

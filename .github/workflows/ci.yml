@@ -67,6 +67,9 @@ jobs:
     name: coverage, merged
     runs-on: ubuntu-latest
     needs: test
+    # docs/DESIGN.md: The coverage badge is CI's own number
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -75,7 +78,32 @@ jobs:
           pattern: blob-*
           path: .vitest/blob
           merge-multiple: true
-      - run: pnpm test:merge
+      - run: pnpm test:merge --coverage.reporter=text --coverage.reporter=json-summary
+
+      # Runs on a threshold failure too, so the badge shows the drop.
+      - name: publish the coverage badge
+        if: >-
+          !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+          && hashFiles('coverage/coverage-summary.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          out="$(mktemp -d)"
+          node - "$out/coverage.json" <<'EOF'
+          const { readFileSync, writeFileSync } = require('node:fs');
+          const { total } = JSON.parse(readFileSync('coverage/coverage-summary.json', 'utf8'));
+          const pct = Math.min(...['lines', 'statements', 'functions', 'branches'].map((key) => total[key].pct));
+          const color = pct === 100 ? 'brightgreen' : pct >= 90 ? 'yellow' : 'red';
+          const badge = { schemaVersion: 1, label: 'coverage', message: `${pct}%`, color };
+          writeFileSync(process.argv[2], JSON.stringify(badge));
+          EOF
+          cd "$out"
+          git init -q -b badges
+          git add coverage.json
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -qm 'ci: update the coverage badge'
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:badges
 
   smoke:
     name: packed artifacts load
