@@ -34,6 +34,8 @@
   "contactEmailInvalid": "请输入有效的邮箱地址。",
   "contactMessageShort": "请输入至少十个字符的留言。",
   "popupLede": "一个由 Vite 构建、已应用标准的扩展。",
+  "panel": "面板",
+  "panelReady": "已就绪。",
   "gateHint": "运行 <code>{command}</code> 以执行完整的检查关卡。",
   "homeLedeReact": "React、Vite，以及已经应用的标准。",
   "homeAdd": "加一",

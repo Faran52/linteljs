@@ -34,6 +34,8 @@
   "contactEmailInvalid": "Enter a valid email address.",
   "contactMessageShort": "Write a message of at least ten characters.",
   "popupLede": "An extension, built by Vite and the standard already applied.",
+  "panel": "Panel",
+  "panelReady": "Ready.",
   "gateHint": "Run <code>{command}</code> for the full gate.",
   "homeLedeReact": "React, Vite and the standard already applied.",
   "homeAdd": "Add one",

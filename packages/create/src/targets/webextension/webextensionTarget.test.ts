@@ -168,6 +168,40 @@ describe('the surfaces axis', () => {
     expect(record.starterTests).toContainEqual(panelSuite);
   });
 
+  it('translates the panel once a language is chosen beside a popup', () => {
+    const translatedAnswers = extensionAnswers({
+      surfaces: ['popup', 'devtools-panel'],
+      languages: ['en', 'ar'],
+    });
+    const english = extensionAnswers({ surfaces: ['popup', 'devtools-panel'] });
+    const panelOnly = extensionAnswers({
+      surfaces: ['devtools-panel'],
+      languages: ['en', 'ar'],
+    });
+
+    const panelVariants = (answers: Answers): (string | undefined)[] => {
+      const { starterFiles, starterTests } = webextensionTarget(answers);
+      const starters = [...starterFiles, ...starterTests];
+      const variants = starters
+        .filter(({ target, when }) => {
+          return target.startsWith('src/panel/panel.') && (when?.(answers) ?? true);
+        })
+        .map(({ variant }) => {
+          return variant;
+        });
+
+      return variants;
+    };
+
+    const translatedVariants = panelVariants(translatedAnswers);
+    const englishVariants = panelVariants(english);
+    const panelOnlyVariants = panelVariants(panelOnly);
+
+    expect(translatedVariants).toEqual(['i18n', 'i18n']);
+    expect(englishVariants).toEqual([undefined, undefined]);
+    expect(panelOnlyVariants).toEqual([undefined, undefined]);
+  });
+
   it.each<[Browser]>([
     ['chrome'],
     ['firefox'],

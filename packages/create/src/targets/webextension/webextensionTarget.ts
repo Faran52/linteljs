@@ -2,6 +2,7 @@ import { hasSurface } from '@utils/answerUtils';
 
 import { FOLDER, VITE_GITIGNORE } from '../constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
+import { translated } from '../utils/i18nUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { filesAt } from '../utils/starterUtils';
 import { tailwindThemeFile } from '../utils/styleUtils';
@@ -24,6 +25,13 @@ import type {
 } from '../types';
 
 // The Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy both.
+// Languages are offered only with a popup, so without one the panel stays English.
+const withPopupLanguages = <T extends StarterFile | StarterTest>(answers: Answers, file: T): T[] => {
+  const files = hasSurface(answers, 'popup') ? translated(file) : [file];
+
+  return files;
+};
+
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
     ...filesAt(SHARED, {
@@ -75,9 +83,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
       {
         target: 'src/panel/main.ts',
       },
-      {
-        target: 'src/panel/panel.ts',
-      },
+      ...withPopupLanguages(answers, { target: 'src/panel/panel.ts' }),
     );
   }
 
@@ -116,10 +122,10 @@ const surfaceTests = (answers: Answers): StarterTest[] => {
         }]
       : [],
     ...hasSurface(answers, 'devtools-panel')
-      ? [{
+      ? withPopupLanguages(answers, {
           target: 'src/panel/panel.test.ts',
           covers: 'src/panel/panel.ts',
-        }]
+        })
       : [],
   ];
 

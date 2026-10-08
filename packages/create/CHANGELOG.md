@@ -270,6 +270,8 @@ when a version's change lives in a sibling it is described there instead:
 - **Under MSW, every install copies the worker.** The app's install script runs `msw init`, so
   `mockServiceWorker.js` reaches `public/` (`static/` on SvelteKit) on every manager and layout. msw's own
   postinstall wrote nothing in a monorepo installed from a warm pnpm store, which replays its cached build.
+- A web extension's devtools panel speaks the chosen language. With a popup and languages, its heading and
+  "Ready." line read the shared locales like the popup does, instead of staying English.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
   that `@astrojs/react` 7 refuses, which failed yarn and npm.
