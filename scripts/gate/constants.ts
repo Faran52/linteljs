@@ -19,3 +19,24 @@ export const HEAD_LINES = 8;
 export const TAIL_LINES = 6;
 
 export const MS_PER_SECOND = 1000;
+
+// Set to rerun every step, even one whose inputs match its last pass.
+export const NO_CACHE_ENV = 'LINTELJS_GATE_NO_CACHE';
+
+export const SKIPPED_SECONDS = '0.0';
+
+// It keeps its own per-case cache, and its installs read the registry, which no key here covers.
+export const UNCACHED = new Set(['lint:starters']);
+
+// Neither ESLint nor tsc reads Markdown; the suites do.
+export const UNREAD = new Map([
+  ['lint', ['.md']],
+  ['typecheck', ['.md']],
+]);
+
+// Gitignored, yet read: the mod types `pnpm typecheck` and `pnpm lint` take, and what pnpm installed.
+export const IGNORED_INPUTS = [
+  '.claude/skills/linteljs/.claude-plugin/types',
+  'packages/create/templates/project/plugins/linteljs/.claude-plugin/types',
+  'node_modules/.pnpm/lock.yaml',
+];

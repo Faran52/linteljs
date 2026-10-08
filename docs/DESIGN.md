@@ -1027,6 +1027,18 @@ Tried and left out:
 - **Vitest `pool: 'threads'`.** Slower, and a worker cannot `process.chdir` or read a stubbed `HOME`.
 - **Incremental `tsc`.** Already on.
 
+### Gate cache
+
+Outside `CI`, a step is skipped whole when its key matches the one stored after its last pass. The key hashes every
+file `git ls-files -co --exclude-standard` lists (so the whole program, every config and `pnpm-lock.yaml`), the
+gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_modules/.pnpm/lock.yaml`), the
+node and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env. Only `lint` and `typecheck` leave out
+`*.md`, which neither reads. Never per file, unlike ESLint `--cache`: a type changed in one file reruns the step
+that fails in another (`packages/create/scripts/gate/utils/stepCacheUtils.test.ts`). Only a pass is stored, and
+only when no input moved while the step ran. `lint:starters` keeps its own per-case cache. `CI` neither reads nor
+writes it; `LINTELJS_GATE_NO_CACHE=1` reruns every step. The commit gate still holds: a skipped step passed on
+inputs identical to this tree's.
+
 ### Coverage runs in shards in CI
 
 `ci.yml` runs `check` with `LINTELJS_GATE_SKIP=test:coverage` and the suite as four `test:shard` jobs, thresholds

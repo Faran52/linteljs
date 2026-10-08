@@ -1,4 +1,5 @@
 // The gate's steps after `build`, at once outside CI, each into its own log; a failed one prints a short excerpt.
+// Outside CI a step whose inputs all match its last pass is skipped whole (`docs/DESIGN.md`, Gate cache).
 import { spawn } from 'node:child_process';
 import {
   closeSync,
@@ -11,15 +12,25 @@ import process, { env } from 'node:process';
 
 import { signalOf } from '@e2e/starter-cover/utils/failureUtils';
 
+import {
+  isCached,
+  recordPass,
+  stepKeyOf,
+} from '../../packages/create/scripts/gate/utils/stepCacheUtils.ts';
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
 import {
   BUILT_ENV,
   HEAD_LINES,
+  IGNORED_INPUTS,
   LOG_DIR,
   MS_PER_SECOND,
+  NO_CACHE_ENV,
+  SKIPPED_SECONDS,
   STEPS,
   TAIL_LINES,
+  UNCACHED,
+  UNREAD,
 } from './constants.ts';
 
 interface Result {
@@ -28,6 +39,7 @@ interface Result {
   signal: string | undefined;
   seconds: string;
   path: string;
+  cached: boolean;
 }
 
 // pnpm's own binary, by absolute path, rather than a lookup on PATH.
@@ -50,8 +62,39 @@ const steps = STEPS
     return !skipped.includes(step);
   });
 
+// CI never reads or writes the cache: each run there starts clean.
+const keyOf = (step: string): string | undefined => {
+  if (ci !== undefined || UNCACHED.has(step)) {
+    return undefined;
+  }
+
+  const root = process.cwd();
+  const key = stepKeyOf(root, step, {
+    excluded: UNREAD.get(step) ?? [],
+    ignored: IGNORED_INPUTS,
+    env,
+  });
+
+  return key;
+};
+
 const runStep = async (step: string): Promise<Result> => {
   const path = resolve(LOG_DIR, `${step.replaceAll(':', '-')}.log`);
+  const key = keyOf(step);
+
+  if (key !== undefined && env[NO_CACHE_ENV] === undefined && isCached(LOG_DIR, step, key)) {
+    const skippedStep: Result = {
+      step,
+      code: 0,
+      signal: undefined,
+      seconds: SKIPPED_SECONDS,
+      path,
+      cached: true,
+    };
+
+    return skippedStep;
+  }
+
   const out = openSync(path, 'w');
   const started = performance.now();
   const child = spawn(manager, ['run', step], {
@@ -71,6 +114,11 @@ const runStep = async (step: string): Promise<Result> => {
       .on('close', (code, signal) => {
         closeSync(out);
 
+        // Only a pass caches, and only when no input moved while the step ran.
+        if (code === 0 && key !== undefined && keyOf(step) === key) {
+          recordPass(LOG_DIR, step, key);
+        }
+
         const elapsed = (performance.now() - started) / MS_PER_SECOND;
         const seconds = elapsed.toFixed(1);
 
@@ -83,6 +131,7 @@ const runStep = async (step: string): Promise<Result> => {
           }),
           seconds,
           path,
+          cached: false,
         });
       });
   });
@@ -133,8 +182,11 @@ for (const result of results) {
     ? `FAILED (exit ${String(result.code)})`
     : `KILLED by ${result.signal}, not a failure of the step: rerun it`;
   const status = result.code === 0 ? 'ok' : failure;
+  const line = result.cached
+    ? `${result.step}: ok, inputs unchanged since it last passed`
+    : `${result.step}: ${status} in ${result.seconds}s`;
 
-  log(`${result.step}: ${status} in ${result.seconds}s`);
+  log(line);
 }
 
 for (const result of failed) {

@@ -15,6 +15,7 @@ export default defineConfig({
         'packages/create/templates/project/**/utils/*.ts',
         'packages/create/e2e/matrix/matrix.ts',
         'packages/create/scripts/collect-builds/utils/{case,passes,probes,report}Utils.ts',
+        'packages/create/scripts/gate/utils/stepCacheUtils.ts',
         'packages/create/scripts/smoke/utils/{assets,help}Utils.ts',
         'packages/eslint-plugin/scripts/audit/real-code/utils/{attribution,diff,finding,fix}Utils.ts',
         'packages/eslint-plugin/scripts/audit/real-code/utils/{fixPass,optionSweep,reportShape,timing}Utils.ts',
