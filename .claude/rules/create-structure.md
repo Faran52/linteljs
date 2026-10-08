@@ -82,6 +82,8 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - `target/starter-source/utils/jestDialectUtils.ts` (`inJestDialect`) rewrites a shared suite written for Vitest
   into Jest's dialect when the runner is `jest`: the `vitest` import dropped, `vi.` to `jest.`, and the global
   stubs to `jest.spyOn` and `jest.restoreAllMocks`.
+- `target/starter-source/utils/nuxtDialectUtils.ts` (`inNuxtDialect`) rewrites a shared Vue source, not a suite,
+  for Nuxt: the imports of `computed`, `ref`, `useRoute` and a registered component `.vue` dropped.
 
 ## `config/` and `utils/`
 

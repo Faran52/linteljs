@@ -54,6 +54,8 @@ when a version's change lives in a sibling it is described there instead:
   the browser worker from `plugins/msw.client.ts` in development, so the form posts to `/api/contact`.
 - Nuxt runs its suites inside Nuxt, through `@nuxt/test-utils` and its `nuxt` environment, so auto-imports
   resolve in a test as they do in the app; suites replace them with `mockNuxtImport`.
+- Nuxt's components use Nuxt auto-imports: no import of `computed`, `ref`, `useRoute` or a component `.vue`
+  file, and `nuxt.config.ts` registers `src/components/` by file name alone (`<AppButton>`), `.vue` files only.
 - Astro hosting React renders the contact page with a form library, React's `ContactPage` as an island at
   `/contact`, and under MSW starts the browser worker from the page in development, so the form posts to
   `/api/contact`. Under languages the page hands the island its words from the locale files, and the form

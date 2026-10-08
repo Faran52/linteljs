@@ -55,6 +55,10 @@ header, and `<NuxtPage />` is where the route goes.
 `alias` carries the path aliases, because `tsconfig.json` extends `.nuxt/tsconfig.app.json` and a
 `paths` of its own would replace the set Nuxt generates from them.
 
+Components rely on Nuxt's auto-imports: `computed`, `ref`, `useRoute` and every component under
+`components/` are used unimported, and `components` in `nuxt.config.ts` registers each by its file name
+alone (`<AppButton>`), `.vue` files only. A type and the view a page names are still imported.
+
 `.nuxt/` and `.output/` are generated. Never edit either, and never commit a fix into one.
 
 Where Pinia was selected, its stores live in `lib/store/`, not the conventional `src/stores/`. One

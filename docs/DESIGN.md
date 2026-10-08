@@ -310,6 +310,18 @@ target, taking what it shares from Vue's tree.
 
 Neither moves the source root: `srcDir` and `appDirectory` are both set, so every glob reads `src/`.
 
+### Nuxt components lean on auto-imports
+
+A Nuxt component writes `<AppButton>`, `computed`, `ref` and `useRoute` unimported, as a Nuxt project expects.
+The shared Vue sources Nuxt inherits keep their imports for Vue; `inNuxtDialect` drops exactly what Nuxt provides
+at emit time, and the Nuxt-own templates are written that way. `nuxt.config.ts` registers `~/components` with
+`pathPrefix: false`, so a component is named for its file (`AppButton`, not `UiAppButton`), and `extensions:
+['.vue']`, so a StyleX `*Styles.ts` beside one is not registered as a component. Kept imported: `useI18n`
+(vue-i18n is not a Nuxt module here), the views a page names, and every type. Suites keep their imports, and the
+header's suite navigates Nuxt's own router, since Nuxt's `useRoute` reads the app's route, not one a test installs.
+No layer rule fires on an auto-imported name: the typed program reads `.nuxt`'s declarations, and no layer enables
+`no-undef` or `vue/no-undef-components`.
+
 ## The templates
 
 ### How a template is laid out
