@@ -69,6 +69,8 @@ const PERMISSIONS = new Map<HookScript, 'deny'>([
 
 const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
+const COMPILE_CACHE = join(tmpdir(), 'linteljs-hook-compile-cache');
+
 export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'Bash'): CommandHookPayload => {
   const payload: CommandHookPayload = {
     cwd: tmpdir(),
@@ -261,6 +263,8 @@ export const spawnHook = (
 
   delete env['CLAUDE_PROJECT_DIR'];
   delete env['CLAUDE_PLUGIN_DATA'];
+  // Each spawn strips and compiles the hook and its checker afresh; the cache keeps that to the first.
+  env['NODE_COMPILE_CACHE'] = COMPILE_CACHE;
 
   if (projectDir !== undefined) {
     env['CLAUDE_PROJECT_DIR'] = projectDir;
@@ -275,8 +279,8 @@ export const spawnHook = (
     input: typeof input === 'string' ? input : JSON.stringify(input),
     encoding: 'utf8',
     env,
-    // A synchronous spawn ignores the test timeout.
-    timeout: 10_000,
+    // A synchronous spawn ignores the test timeout, so it carries create's own.
+    timeout: 30_000,
   });
 
   expect(result.error).toBeUndefined();
