@@ -915,7 +915,8 @@ JSON or throws `ApiError`, so a caller has two cases: no `response.ok` to forget
 typed `object`, because `unknown`, `unknown[]` and `Record<string, unknown>` are refused by the type floor, and a
 second type parameter does not work since TypeScript takes type arguments all or nothing. Query strings go through
 `qs` rather than `URLSearchParams`, which stringifies `['a', 'b']` to `a,b`; `repeat` format, because `qs.parse`
-reads it back without being told.
+reads it back without being told. `qs` ships CommonJS only, so Angular's `angular.json` lists it in
+`allowedCommonJsDependencies`, where its build would otherwise warn on every run.
 
 **MSW (`mocking: 'msw'`) makes an api layer demonstrable.** Without it a project that posts anywhere fails offline,
 in CI, and on every target with no server. With it the api layer makes a real request and the boundary moves

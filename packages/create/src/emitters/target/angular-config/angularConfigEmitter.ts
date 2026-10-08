@@ -37,6 +37,8 @@ export const emitAngularConfig = (name: string, packageManager: string): string 
                 input: 'public',
               }],
               styles: ['src/styles.css'],
+              // `qs` ships CommonJS only, and every app's api layer imports it.
+              allowedCommonJsDependencies: ['qs'],
             },
             configurations: {
               production: {

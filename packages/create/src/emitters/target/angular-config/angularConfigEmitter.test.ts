@@ -43,6 +43,7 @@ describe('emitAngularConfig', () => {
                   input: 'public',
                 }],
                 styles: ['src/styles.css'],
+                allowedCommonJsDependencies: ['qs'],
               },
               configurations: {
                 production: {
