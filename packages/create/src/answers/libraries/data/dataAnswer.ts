@@ -6,9 +6,9 @@ export const dataAnswer = {
   key: 'data',
   flag: 'data',
   prompt: 'Data fetching',
-  note: 'not on typescript',
+  note: 'not on typescript or webextension',
   slot: (target) => {
-    return target.libraryProject !== true;
+    return target.noContactPage !== true;
   },
   kind: 'optionalChoice',
   none: {

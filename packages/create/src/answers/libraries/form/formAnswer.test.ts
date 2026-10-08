@@ -21,6 +21,16 @@ describe('formAnswer', () => {
     expect(onLibrary).toBe(false);
   });
 
+  it('takes no slot on the web extension, which renders no contact page', () => {
+    const extension = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+    });
+
+    const onExtension = formAnswer.slot(extension);
+    expect(onExtension).toBe(false);
+  });
+
   it('is keyed form', () => {
     expect(formAnswer.key).toBe('form');
   });

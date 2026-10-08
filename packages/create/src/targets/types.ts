@@ -213,8 +213,10 @@ export interface TargetRecord {
   publicDirectory?: string;
   reactRouterProject?: true;
   angularProject?: true;
-  // A published package: no styling, form, data or mocking is asked, and its tests run without a DOM.
+  // A published package: no styling is asked, and its tests run without a DOM.
   libraryProject?: true;
+  // No page renders a contact form, so no form, data or mocking is asked.
+  noContactPage?: true;
   build: string;
   // SvelteKit's `svelte-kit sync` generates the kit's types.
   prepare?: string;

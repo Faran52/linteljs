@@ -160,11 +160,6 @@ describe('targetCases', () => {
     });
     expect(astroHas).toBe(true);
 
-    const webextensionHostsVueQuery = has('webextension', (answers) => {
-      return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
-    });
-    expect(webextensionHostsVueQuery).toBe(true);
-
     const webextensionOnChrome = has('webextension', (answers) => {
       return answers.browser === 'chrome';
     });

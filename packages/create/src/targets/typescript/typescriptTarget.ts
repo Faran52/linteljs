@@ -9,6 +9,7 @@ export const typescriptTarget: TargetBuilder = () => {
   const record: TargetRecord = {
     id: 'typescript',
     libraryProject: true,
+    noContactPage: true,
     html: false,
     ignores: [],
     gitignore: ['dist'],

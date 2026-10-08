@@ -86,14 +86,18 @@ describe('answerUsage', () => {
     expect(notesRouter).toBe(true);
   });
 
+  it('notes that --styling is not offered on the typescript target', () => {
+    const line = lineFor('styling');
+    expect(line).toMatch(/ \(not on typescript\)$/u);
+  });
+
   it.each([
-    'styling',
     'form',
     'data',
     'mocking',
-  ])('notes that --%s is not offered on the typescript target', (flag) => {
+  ])('notes that --%s is not offered where no contact page renders', (flag) => {
     const line = lineFor(flag);
-    expect(line).toMatch(/ \(not on typescript\)$/u);
+    expect(line).toMatch(/ \(not on typescript or webextension\)$/u);
   });
 
   it('does not scope --form to react, since only one of its values is', () => {

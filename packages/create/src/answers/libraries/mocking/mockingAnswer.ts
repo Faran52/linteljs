@@ -5,9 +5,9 @@ export const mockingAnswer = {
   key: 'mocking',
   flag: 'mocking',
   prompt: 'API mocking',
-  note: 'not on typescript',
+  note: 'not on typescript or webextension',
   slot: (target) => {
-    return target.libraryProject !== true;
+    return target.noContactPage !== true;
   },
   kind: 'optionalChoice',
   none: {

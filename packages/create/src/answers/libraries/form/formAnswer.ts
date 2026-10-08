@@ -7,9 +7,9 @@ export const formAnswer = {
   key: 'form',
   flag: 'form',
   prompt: 'Form library',
-  note: 'not on typescript',
+  note: 'not on typescript or webextension',
   slot: (target) => {
-    return target.libraryProject !== true;
+    return target.noContactPage !== true;
   },
   kind: 'optionalChoice',
   none: {

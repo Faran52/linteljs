@@ -21,6 +21,16 @@ describe('dataAnswer', () => {
     expect(onLibrary).toBe(false);
   });
 
+  it('takes no slot on the web extension, which renders no contact page', () => {
+    const extension = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+    });
+
+    const onExtension = dataAnswer.slot(extension);
+    expect(onExtension).toBe(false);
+  });
+
   it('is keyed data', () => {
     expect(dataAnswer.key).toBe('data');
   });

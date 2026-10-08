@@ -22,6 +22,16 @@ describe('mockingAnswer', () => {
     expect(onLibrary).toBe(false);
   });
 
+  it('takes no slot on the web extension, which renders no contact page', () => {
+    const extension = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+    });
+
+    const onExtension = mockingAnswer.slot(extension);
+    expect(onExtension).toBe(false);
+  });
+
   it('reads msw as the one mocking layer', () => {
     const answer = readAnswer(mockingAnswer, 'msw');
     expect(answer).toBe('msw');

@@ -44,6 +44,7 @@ the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typ
 The starter is linteljs's own, not a framework scaffolder's. Every app target but the web extension gets a header with
 tabs, Home, About and Version pages, and a status page for each 403, 404 and crash the target can produce. React,
 Next, React Native, Vue, Svelte and Solid add a Contact page with a form library, and Angular always has one. The
+web extension renders none, so it asks no form library, data fetching or API mocking question. The
 starter follows the system colour scheme at WCAG AA contrast in both, carries a description meta and, where a
 public directory is served, a `robots.txt`. It ships the chosen languages and remembers the choice; the
 server-rendered targets read it from a `language` cookie and render it from the first byte. It passes its own
@@ -69,11 +70,11 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Testing | `--testing` | `vitest`, `none` (react-native runs the suites on Jest, through `jest-expo`) | `vitest` |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |
-| Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only; not on typescript) | none |
+| Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only; not on typescript or webextension) | none |
 | Router | `--router` | `react-router`, `react-router-framework`, `tanstack-router` (react) | none |
 | State store | `--store` | the stores the target offers | none |
-| Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`; not on typescript) | none |
-| API mocking | `--mocking` | `msw` (not on typescript) | none |
+| Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`; not on typescript or webextension) | none |
+| API mocking | `--mocking` | `msw` (not on typescript or webextension) | none |
 | Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
 | AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor`, `gemini-cli`, `antigravity` | `claude-code` |

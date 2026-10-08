@@ -43,6 +43,9 @@ when a version's change lives in a sibling it is described there instead:
     and the run exits 1. Declining exits 0.
   - Every other file, `.github/workflows/ci.yml`, `.claude/settings.json`, the agent files, `scripts/` and the
     manager files included, is the project's after `create`; `create --existing` reapplies them.
+- **The web extension asks no form, data or mocking question.** It renders no contact page, so those answers
+  wrote dependencies nothing used. A `linteljs.config.json` for `webextension` that carries `form`, `data` or
+  `mocking` is now refused; remove the key. The hosted framework still brings its plugin, `tsconfig` and lint layer.
 
 ### Added
 

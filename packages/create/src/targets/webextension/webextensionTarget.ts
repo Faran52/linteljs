@@ -136,6 +136,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     htmlEntry: popup ? 'src/main.ts' : undefined,
     hostsBrowser: true,
     hostsFramework: true,
+    noContactPage: true,
     html: popup || devtools,
     ignores: [],
     gitignore: VITE_GITIGNORE,

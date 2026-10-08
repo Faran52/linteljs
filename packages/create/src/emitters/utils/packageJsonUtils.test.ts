@@ -388,15 +388,15 @@ describe('buildDependencies', () => {
     expect(dependencies).toHaveProperty(binding);
   });
 
-  it('installs no TanStack binding for the one target that has none', () => {
+  it('installs no TanStack binding where no framework is hosted', () => {
     const dependencies = buildDependencies(answersFor({
-      target: 'webextension',
+      target: 'astro',
       libraries: [],
       data: 'tanstack-query',
     }));
     const dependencyNames = Object.keys(dependencies);
 
-    const expected = ['qs'];
+    const expected = ['astro', 'qs'];
     expect(dependencyNames).toEqual(expected);
   });
 
