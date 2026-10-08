@@ -19,10 +19,13 @@ import {
   HTML_LANG,
   HTML_TAG,
   LANGUAGE_PICKER,
+  MIN_TAP_TARGET,
   MISSING_ROUTE,
+  NAV_TABS,
   NOT_FOUND_STATUS,
   OK_STATUS,
   OTHER_LANGUAGE,
+  PHONE_VIEWPORT,
   POLL_INTERVAL,
   PORT_FLAGGED,
   ROUTE_SUFFIX,
@@ -236,6 +239,31 @@ const motionProblems = async (page: Page, origin: string): Promise<string[]> => 
   return problems;
 };
 
+// On a phone every header tab is tall enough to tap.
+const tapTargetProblems = async (page: Page, origin: string): Promise<string[]> => {
+  await page.setViewportSize(PHONE_VIEWPORT);
+  await page.goto(origin, { waitUntil: 'networkidle' });
+
+  const tabs = await page
+    .locator(NAV_TABS)
+    .all();
+  const problems = tabs.length === 0 ? ['/: no nav tabs to measure'] : [];
+
+  for (const tab of tabs) {
+    const box = await tab.boundingBox();
+    const height = box?.height ?? 0;
+
+    if (height < MIN_TAP_TARGET) {
+      const label = await tab.textContent();
+      const width = String(PHONE_VIEWPORT.width);
+
+      problems.push(`/: nav tab ${String(label)} is ${String(height)}px tall at ${width}px wide`);
+    }
+  }
+
+  return problems;
+};
+
 // Every route the starter links from its first page, each loaded fresh so the server answers it too.
 const crawl = async (origin: string, servesLanguage: boolean, hasCatchAll: boolean): Promise<string[]> => {
   const browser = await chromium.launch(BROWSER_OPTIONS);
@@ -292,6 +320,10 @@ const crawl = async (origin: string, servesLanguage: boolean, hasCatchAll: boole
     const motionSeen = await motionProblems(page, origin);
 
     problems.push(...motionSeen);
+
+    const tapSeen = await tapTargetProblems(page, origin);
+
+    problems.push(...tapSeen);
 
     const [, route = '/'] = routes;
 

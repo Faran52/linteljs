@@ -51,7 +51,11 @@ const sheet = stylex.create({
     gap: '0.125rem',
   },
 
+  // 2.75rem is the 44px minimum tap target.
   tab: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    minHeight: '2.75rem',
     paddingBlock: '0.3125rem',
     paddingInline: '0.625rem',
     fontSize: tokens.textUi,

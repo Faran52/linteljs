@@ -353,6 +353,8 @@ when a version's change lives in a sibling it is described there instead:
   target does, where Send stayed open.
 - React Native's header starts its title on the screen's 24, the inset its language label already ends on, so
   both header ends line up with the page below.
+- Every web starter's header tabs, and its language picker, are at least 44px tall, the minimum tap target, where
+  they were 29px on a phone. The end-to-end browser pass measures each tab at 375px wide.
 
 ## 1.5.3
 

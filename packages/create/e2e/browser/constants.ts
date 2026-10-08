@@ -24,6 +24,16 @@ export const ROUTE_SUFFIX = /[?#]/;
 // The header tabs of a starter without a router.
 export const VIEW_CONTROLS = 'nav[aria-label="Main"] button';
 
+export const NAV_TABS = 'nav[aria-label="Main"] :is(a, button)';
+
+export const PHONE_VIEWPORT = {
+  width: 375,
+  height: 812,
+};
+
+// The smallest tap target WCAG 2.5.5 and Apple's guidelines ask for, in CSS pixels.
+export const MIN_TAP_TARGET = 44;
+
 // The targets whose server renders every request, so a stored language reaches the first byte.
 export const SERVER_RENDERED: ReadonlySet<string> = new Set([
   'next',

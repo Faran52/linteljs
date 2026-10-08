@@ -37,7 +37,11 @@
   gap: 0.125rem;
 }
 
+/* 2.75rem is the 44px minimum tap target. */
 .tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   padding: 0.3125rem 0.625rem;
   font-size: var(--text-ui);
   color: var(--muted-foreground);
