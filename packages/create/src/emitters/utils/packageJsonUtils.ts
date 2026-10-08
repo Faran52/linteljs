@@ -48,6 +48,10 @@ export interface DevEngine {
   onFail?: string;
 }
 
+interface MswField {
+  workerDirectory: string[];
+}
+
 export interface PackageJson {
   name?: string;
   version?: string;
@@ -70,6 +74,7 @@ export interface PackageJson {
   resolutions?: Record<string, string>;
   trustedDependencies?: string[];
   allowScripts?: Record<string, boolean | string>;
+  msw?: MswField;
 }
 
 interface Pin {

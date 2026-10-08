@@ -1386,6 +1386,9 @@ know the layout; one move in the registry rebases their paths.
   `--config`, which is lint-staged's single-config mode.
 - **The root lints like a single repo.** The root is a `typescript` project over its own `scripts/`: it lints and
   typechecks them, ignores `apps/**` and `packages/**`, and ignores `plugins/linteljs/**` as a single repo does.
+- **msw's worker path sits at the root too.** msw's install script runs once, where the install ran, and reads
+  `msw.workerDirectory` from that manifest, so the root carries the app's, joined to `apps/<name>/`; the app keeps
+  its own for an install run inside it.
 - **Single only for `--existing`.** Converting a repo into a monorepo moves its files, which `--existing` never
   does; the layout question is not asked there and `--layout monorepo` is refused.
 - **`sync --add` writes a `typescript` library in 2.0.** A second app (a backend, a second front end) asks a
