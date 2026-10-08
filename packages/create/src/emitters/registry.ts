@@ -60,16 +60,12 @@ import { managedRecord, removableIn } from './utils/managedUtils';
 export const BUILD_EMITTERS: Record<string, Emitter> = {
   'always/eslint-config': eslintConfigEmitter,
   'always/stylelint-config': stylelintConfigEmitter,
-  'always/linteljs-plugin': linteljsPluginEmitter,
   'agents/claude-settings': claudeSettingsEmitter,
   'agents/codex-marketplace': codexMarketplaceEmitter,
-  'agents/copilot-instructions': copilotInstructionsEmitter,
   'agents/copilot-hooks': copilotHooksEmitter,
-  'agents/cursor-rules': cursorRulesEmitter,
   'agents/cursor-hooks': cursorHooksEmitter,
   'agents/agents-md': agentsMdEmitter,
   'agents/gemini-settings': geminiSettingsEmitter,
-  'agents/antigravity-rules': antigravityRulesEmitter,
   'always/banned-patterns': bannedPatternsEmitter,
   'always/husky': huskyEmitter,
   'always/commit-gate': commitGateEmitter,
@@ -105,6 +101,10 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
 export const ROOT_EMITTERS: Record<string, RootEmitter> = {
   'manager/pnpm-workspace': pnpmWorkspaceEmitter,
   'layout/workspace-root': workspaceRootEmitter,
+  'always/linteljs-plugin': linteljsPluginEmitter,
+  'agents/copilot-instructions': copilotInstructionsEmitter,
+  'agents/cursor-rules': cursorRulesEmitter,
+  'agents/antigravity-rules': antigravityRulesEmitter,
 };
 
 // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
@@ -159,7 +159,7 @@ export const buildArtifacts = (workspace: Workspace, shapes: readonly ProjectSha
   const rootArtifacts = rootEmittedBy(ROOT_EMITTERS, workspace);
 
   // Computed here: an emitter would have to leave itself out of its own input.
-  const removable = removableIn(artifacts);
+  const removable = removableIn([...artifacts, ...rootArtifacts]);
   const record = managedRecord(removable);
   const managed = emitted('standard', MANAGED_PATH, record);
   const withManaged = [

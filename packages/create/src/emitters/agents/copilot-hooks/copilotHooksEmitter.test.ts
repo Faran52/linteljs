@@ -1,4 +1,5 @@
 import { answersFor } from '@mocks/agentRules';
+import { soloOf } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -72,7 +73,8 @@ describe('copilotHooksEmitter', () => {
   it('runs only hook scripts the plugin tree ships', async () => {
     const [artifact] = copilotHooksEmitter(answersFor(['copilot']));
     const text = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
-    const pluginTargets = linteljsPluginEmitter(DEFAULT_ANSWERS)
+    const workspace = soloOf(DEFAULT_ANSWERS);
+    const pluginTargets = linteljsPluginEmitter(workspace)
       .map(({ target }) => {
         return target;
       });

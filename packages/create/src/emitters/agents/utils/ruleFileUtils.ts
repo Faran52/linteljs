@@ -1,13 +1,10 @@
 import { basename } from 'node:path';
 
-import {
-  type Answers,
-  type Artifact,
-  type Layout,
-} from '@config/types';
+import { type Artifact, type Workspace } from '@config/types';
 
-import { forAnswers, ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
 import { withoutClaudePaths } from '../../utils/frontmatterUtils';
+
+import { forAnswers, ruleGroups } from './ruleGroupUtils';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 
@@ -32,8 +29,21 @@ const expanded = (glob: string): string[] => {
   return globs;
 };
 
-// Empty where the rule carries no `paths:` list. A monorepo's packages sit below the root the tools read from.
-export const globsOf = (source: string, layout: Layout): string => {
+// The tools read from the git root: `.` is a lone project there, `**` a lone one below it.
+const rooted = (glob: string, directory: string): string => {
+  if (directory === '.') {
+    return glob;
+  }
+
+  if (directory === '**') {
+    return glob.startsWith('**/') ? glob : `**/${glob}`;
+  }
+
+  return `${directory}/${glob}`;
+};
+
+// Empty where the rule carries no `paths:` list.
+export const globsOf = (source: string, directories: readonly string[]): string => {
   const listed = PATHS.exec(source)?.[1];
 
   return listed === undefined
@@ -45,8 +55,11 @@ export const globsOf = (source: string, layout: Layout): string => {
           return /"(.+)"/u.exec(line)?.[1] ?? [];
         })
         .flatMap(expanded)
-        .map((glob) => {
-          return layout === 'monorepo' && !glob.startsWith('**/') ? `**/${glob}` : glob;
+        .flatMap((glob) => {
+          return directories
+            .map((directory) => {
+              return rooted(glob, directory);
+            });
         })
         .join(',');
 };
@@ -57,20 +70,25 @@ const named = (name: string, suffix: string): string => {
 
 // Cursor reads `.mdc` rules alone, so the repository-wide half is an `alwaysApply: true` rule.
 export const ruleArtifacts = (
-  answers: Answers,
+  workspace: Workspace,
   directory: string,
   suffix: string,
-  frontmatter: (source: string) => string,
+  frontmatter: (source: string, globs: string) => string,
 ): Artifact[] => {
-  return ruleSources(answers)
-    .map(({ name, sources }) => {
+  return ruleGroups(workspace)
+    .map(({
+      name,
+      sources,
+      directories,
+      answers,
+    }) => {
       const artifact: Artifact = {
         stage: 'standard',
         target: `${directory}/${named(name, suffix)}`,
         content: {
           sources,
           transform: (source: string) => {
-            const header = frontmatter(source);
+            const header = frontmatter(source, globsOf(source, directories));
             const body = withoutClaudePaths(forAnswers(answers, source));
 
             return `${header}${body}`;

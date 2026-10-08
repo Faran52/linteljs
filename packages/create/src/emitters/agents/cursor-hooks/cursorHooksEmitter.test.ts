@@ -1,4 +1,5 @@
 import { answersFor } from '@mocks/agentRules';
+import { soloOf } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -148,7 +149,8 @@ describe('mergeCursorHooks', () => {
   });
 
   it('runs only hook scripts the plugin tree ships', () => {
-    const pluginTargets = linteljsPluginEmitter(DEFAULT_ANSWERS)
+    const workspace = soloOf(DEFAULT_ANSWERS);
+    const pluginTargets = linteljsPluginEmitter(workspace)
       .map(({ target }) => {
         return target;
       });

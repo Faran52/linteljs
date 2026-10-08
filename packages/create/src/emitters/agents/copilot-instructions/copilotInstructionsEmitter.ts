@@ -1,15 +1,15 @@
-import { type Answers, type Artifact } from '@config/types';
+import { type Artifact, type Workspace } from '@config/types';
 
 import { adapterArtifact } from '../utils/adapterUtils';
-import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
+import { ruleArtifacts } from '../utils/ruleFileUtils';
 
-export const copilotArtifacts = (answers: Answers): Artifact[] => {
+export const copilotArtifacts = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
   const artifacts: Artifact[] = [
     adapterArtifact('.github/copilot-instructions.md', answers),
     // Copilot reads `**` as any file.
-    ...ruleArtifacts(answers, '.github/instructions', '.instructions.md', (source) => {
-      const globs = globsOf(source, answers.layout);
-
+    ...ruleArtifacts(workspace, '.github/instructions', '.instructions.md', (source, globs) => {
       return `---\napplyTo: "${globs === '' ? '**' : globs}"\n---\n\n`;
     }),
   ];
@@ -17,6 +17,8 @@ export const copilotArtifacts = (answers: Answers): Artifact[] => {
   return artifacts;
 };
 
-export const copilotInstructionsEmitter = (answers: Answers): Artifact[] => {
-  return answers.agents.includes('copilot') ? copilotArtifacts(answers) : [];
+export const copilotInstructionsEmitter = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
+  return answers.agents.includes('copilot') ? copilotArtifacts(workspace) : [];
 };

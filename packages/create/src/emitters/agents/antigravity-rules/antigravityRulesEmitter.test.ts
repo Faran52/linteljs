@@ -1,10 +1,12 @@
 import {
+  agentWorkspaceFor,
   answersFor,
   RULE,
   targets,
   transformOf,
   UNSCOPED,
 } from '@mocks/agentRules';
+import { soloOf } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -15,14 +17,14 @@ import { antigravityRulesEmitter } from './antigravityRulesEmitter';
 
 describe('antigravityRulesEmitter', () => {
   it('writes the Antigravity rules only where Antigravity was chosen', () => {
-    const others = antigravityRulesEmitter(answersFor([
+    const others = antigravityRulesEmitter(agentWorkspaceFor([
       'claude-code',
       'codex',
       'gemini-cli',
     ]));
     expect(others).toEqual([]);
 
-    const artifacts = antigravityRulesEmitter(answersFor(['antigravity']));
+    const artifacts = antigravityRulesEmitter(agentWorkspaceFor(['antigravity']));
     const written = targets(artifacts);
 
     expect(written).toContain('.agents/rules/repo-structure.md');
@@ -30,7 +32,7 @@ describe('antigravityRulesEmitter', () => {
   });
 
   it('rewrites the shared paths list as a glob trigger', () => {
-    const artifacts = antigravityRulesEmitter(answersFor(['antigravity']));
+    const artifacts = antigravityRulesEmitter(agentWorkspaceFor(['antigravity']));
     const transform = transformOf(artifacts, '.agents/rules/repo-structure.md');
     const output = transform(RULE, null);
 
@@ -45,7 +47,7 @@ describe('antigravityRulesEmitter', () => {
       ...answersFor(['antigravity']),
       layout: 'monorepo' as const,
     };
-    const artifacts = antigravityRulesEmitter(answers);
+    const artifacts = antigravityRulesEmitter(soloOf(answers));
     const transform = transformOf(artifacts, '.agents/rules/repo-structure.md');
     const output = transform(RULE, null);
 
@@ -53,7 +55,7 @@ describe('antigravityRulesEmitter', () => {
   });
 
   it('keeps a rule with no paths list on, since Antigravity drops one without a trigger', () => {
-    const artifacts = antigravityRulesEmitter(answersFor(['antigravity']));
+    const artifacts = antigravityRulesEmitter(agentWorkspaceFor(['antigravity']));
     const transform = transformOf(artifacts, '.agents/rules/type-standards.md');
     const output = transform(UNSCOPED, null);
 

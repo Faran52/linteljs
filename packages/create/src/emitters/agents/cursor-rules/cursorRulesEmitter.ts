@@ -1,8 +1,8 @@
-import { type Answers, type Artifact } from '@config/types';
+import { type Artifact, type Workspace } from '@config/types';
 
 import { emitted } from '../../utils/artifactUtils';
 import { emitAgentAdapter } from '../utils/adapterUtils';
-import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
+import { ruleArtifacts } from '../utils/ruleFileUtils';
 
 // From the rule's first heading, so no second wording exists to drift.
 const titleOf = (source: string): string => {
@@ -14,7 +14,9 @@ const titleOf = (source: string): string => {
     ?.slice('# '.length) ?? 'LintelJS project standard';
 };
 
-export const cursorArtifacts = (answers: Answers): Artifact[] => {
+export const cursorArtifacts = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
   const artifacts: Artifact[] = [
     {
       ...emitted(
@@ -25,8 +27,7 @@ export const cursorArtifacts = (answers: Answers): Artifact[] => {
       preserve: true,
     },
     // Cursor spells any-file as `alwaysApply`, so globs and `alwaysApply` move together.
-    ...ruleArtifacts(answers, '.cursor/rules', '.mdc', (source) => {
-      const globs = globsOf(source, answers.layout);
+    ...ruleArtifacts(workspace, '.cursor/rules', '.mdc', (source, globs) => {
       const scope = globs === '' ? 'alwaysApply: true' : `globs: ${globs}\nalwaysApply: false`;
 
       return `---\ndescription: ${titleOf(source)}\n${scope}\n---\n\n`;
@@ -36,6 +37,8 @@ export const cursorArtifacts = (answers: Answers): Artifact[] => {
   return artifacts;
 };
 
-export const cursorRulesEmitter = (answers: Answers): Artifact[] => {
-  return answers.agents.includes('cursor') ? cursorArtifacts(answers) : [];
+export const cursorRulesEmitter = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
+  return answers.agents.includes('cursor') ? cursorArtifacts(workspace) : [];
 };

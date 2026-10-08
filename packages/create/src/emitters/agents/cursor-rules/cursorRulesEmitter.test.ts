@@ -1,10 +1,12 @@
 import {
+  agentWorkspaceFor,
   answersFor,
   RULE,
   targets,
   transformOf,
   UNSCOPED,
 } from '@mocks/agentRules';
+import { soloOf } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -15,16 +17,16 @@ import { cursorArtifacts, cursorRulesEmitter } from './cursorRulesEmitter';
 
 describe('cursorRulesEmitter', () => {
   it('writes the Cursor rules only where Cursor was chosen', () => {
-    const cursorRules = cursorRulesEmitter(answersFor([
+    const cursorRules = cursorRulesEmitter(agentWorkspaceFor([
       'claude-code',
       'codex',
       'copilot',
     ]));
     expect(cursorRules).toEqual([]);
 
-    const emitted = cursorRulesEmitter(answersFor(['cursor']));
+    const emitted = cursorRulesEmitter(agentWorkspaceFor(['cursor']));
     const actual = targets(emitted);
-    const built = cursorArtifacts(answersFor(['cursor']));
+    const built = cursorArtifacts(agentWorkspaceFor(['cursor']));
     const expected = targets(built);
 
     expect(actual).toEqual(expected);
@@ -33,7 +35,7 @@ describe('cursorRulesEmitter', () => {
 
 describe('cursorArtifacts', () => {
   it('writes every rule under .cursor/rules with the mdc suffix', () => {
-    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const artifacts = cursorArtifacts(agentWorkspaceFor(['cursor']));
     const written = targets(artifacts);
 
     expect(written).toContain('.cursor/rules/linteljs.mdc');
@@ -42,7 +44,7 @@ describe('cursorArtifacts', () => {
   });
 
   it('carries the adapter as an always-applied rule', () => {
-    const [always] = cursorArtifacts(answersFor(['cursor']));
+    const [always] = cursorArtifacts(agentWorkspaceFor(['cursor']));
 
     expect(always?.stage).toBe('standard');
     expect(always?.content).toHaveProperty('text', expect.stringContaining('alwaysApply: true'));
@@ -50,7 +52,7 @@ describe('cursorArtifacts', () => {
   });
 
   it('rewrites the shared paths list as globs and takes the description from the heading', () => {
-    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const artifacts = cursorArtifacts(agentWorkspaceFor(['cursor']));
     const transform = transformOf(artifacts, '.cursor/rules/repo-structure.mdc');
     const output = transform(RULE, null);
 
@@ -66,7 +68,7 @@ describe('cursorArtifacts', () => {
       ...answersFor(['cursor']),
       layout: 'monorepo' as const,
     };
-    const artifacts = cursorArtifacts(answers);
+    const artifacts = cursorArtifacts(soloOf(answers));
     const transform = transformOf(artifacts, '.cursor/rules/repo-structure.mdc');
     const output = transform(RULE, null);
 
@@ -74,7 +76,7 @@ describe('cursorArtifacts', () => {
   });
 
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {
-    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const artifacts = cursorArtifacts(agentWorkspaceFor(['cursor']));
     const transform = transformOf(artifacts, '.cursor/rules/type-standards.mdc');
 
     const transformed = transform(UNSCOPED, null);

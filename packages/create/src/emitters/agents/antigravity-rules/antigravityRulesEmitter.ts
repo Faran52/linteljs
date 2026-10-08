@@ -1,15 +1,16 @@
-import { type Answers, type Artifact } from '@config/types';
+import { type Artifact, type Workspace } from '@config/types';
 
-import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
+import { ruleArtifacts } from '../utils/ruleFileUtils';
 
 // Antigravity drops a rule without a `trigger`, so the repository-wide half is `always_on`.
-export const antigravityRulesEmitter = (answers: Answers): Artifact[] => {
+export const antigravityRulesEmitter = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
   if (!answers.agents.includes('antigravity')) {
     return [];
   }
 
-  return ruleArtifacts(answers, '.agents/rules', '.md', (source) => {
-    const globs = globsOf(source, answers.layout);
+  return ruleArtifacts(workspace, '.agents/rules', '.md', (source, globs) => {
     const trigger = globs === '' ? 'trigger: always_on' : `trigger: glob\nglobs: ${globs}`;
 
     return `---\n${trigger}\n---\n\n`;

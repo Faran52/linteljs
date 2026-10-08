@@ -1,4 +1,8 @@
-import { answersFor } from '@mocks/answersFor';
+import {
+  answersFor,
+  soloOf,
+  workspaceFor,
+} from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -24,7 +28,6 @@ import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
 import {
-  forAnswers,
   linteljsPluginEmitter,
   referenceArtifacts,
 } from './linteljsPluginEmitter';
@@ -49,7 +52,7 @@ const TARGET_IDS = keysOf(ANSWERS.target.values);
 const AGENTS = keysOf(ANSWERS.agents.values);
 
 const find = (overrides: AnswerOverrides, target: string): Artifact | undefined => {
-  const artifacts = referenceArtifacts(answersFor(overrides));
+  const artifacts = referenceArtifacts(workspaceFor(overrides));
 
   return artifacts
     .find((artifact) => {
@@ -85,11 +88,11 @@ describe('referenceArtifacts', () => {
   });
 
   it('removes Claude path frontmatter from every emitted reference', async () => {
-    const artifacts = referenceArtifacts({
+    const artifacts = referenceArtifacts(soloOf({
       ...DEFAULT_ANSWERS,
       target: 'react',
       libraries: ['zod'],
-    });
+    }));
     const reads = artifacts
       .map(async ({ content }) => {
         const text = await shippedAssetsReader(content);
@@ -104,7 +107,7 @@ describe('referenceArtifacts', () => {
   });
 
   const targetsOf = (overrides: AnswerOverrides): string[] => {
-    const artifacts = referenceArtifacts(answersFor(overrides));
+    const artifacts = referenceArtifacts(workspaceFor(overrides));
 
     return artifacts
       .map(({ target }) => {
@@ -180,47 +183,6 @@ describe('referenceArtifacts', () => {
     expect(routed).not.toContain('<!-- when');
   });
 
-  it.each<[string, Partial<Answers>]>([
-    ['store', { store: 'zustand' }],
-    ['no-store', {}],
-    ['languages', { languages: ['ja'] }],
-    ['popup', {}],
-    ['background', {}],
-    ['devtools-panel', { surfaces: ['devtools-panel'] }],
-    ['tailwind', { styling: 'tailwind' }],
-    ['msw', { mocking: 'msw' }],
-    ['tanstack-query', { data: 'tanstack-query' }],
-    ['rtk-query', { data: 'rtk-query' }],
-    ['tanstack-router', { router: 'tanstack-router' }],
-    ['react-router', { router: 'react-router' }],
-    ['react-router-framework', { router: 'react-router-framework' }],
-  ])('reads the %s condition off the answers', (condition, answers) => {
-    const source = `kept\ngated <!-- when ${condition} -->`;
-
-    const actual = forAnswers(answersFor(answers), source);
-    expect(actual).toBe('kept\ngated');
-    const opposite = answers.store === undefined ? answersFor({ store: 'zustand' }) : answersFor();
-
-    const ungated = forAnswers({
-      ...opposite,
-      surfaces: [],
-    }, source);
-    expect(ungated).toBe('kept');
-  });
-
-  it('treats a marker mid-line as text', () => {
-    const line = 'a <!-- when msw --> and more';
-
-    const actual = forAnswers(answersFor(), line);
-    expect(actual).toBe(line);
-  });
-
-  it('refuses a condition no answer decides', () => {
-    expect(() => {
-      return forAnswers(DEFAULT_ANSWERS, 'line <!-- when sass -->');
-    }).toThrow('Unknown rule condition: sass');
-  });
-
   it.each(TARGET_IDS)('leaves no condition marker in the %s structure rule', async (target) => {
     const text = await textOf({ target }, 'repo-structure.md');
     expect(text).not.toContain('<!--');
@@ -228,7 +190,9 @@ describe('referenceArtifacts', () => {
 });
 
 const targetsOf = (answers: Answers): string[] => {
-  return linteljsPluginEmitter(answers)
+  const workspace = soloOf(answers);
+
+  return linteljsPluginEmitter(workspace)
     .map(({ target }) => {
       return target;
     });
@@ -242,7 +206,8 @@ describe('linteljsPluginEmitter', () => {
   });
 
   it('ships the hooks and the parser and host adapter they share', () => {
-    const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS)
+    const workspace = soloOf(DEFAULT_ANSWERS);
+    const hooks = linteljsPluginEmitter(workspace)
       .filter(({ target }) => {
         return target.startsWith('plugins/linteljs/hooks/');
       })
@@ -306,7 +271,7 @@ const parseSkill = (text: string): SkillDocument => {
 };
 
 const skillDocument = async (): Promise<SkillDocument> => {
-  const [skill] = linteljsPluginEmitter(DEFAULT_ANSWERS);
+  const [skill] = linteljsPluginEmitter(soloOf(DEFAULT_ANSWERS));
 
   const skillText = skill === undefined ? '' : await shippedAssetsReader(skill.content);
   return parseSkill(skillText);

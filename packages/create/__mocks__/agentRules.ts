@@ -2,9 +2,12 @@ import {
   type Agent,
   type Answers,
   type Artifact,
+  type Workspace,
 } from '@config/types';
 
 import { DEFAULT_ANSWERS } from '@answers';
+
+import { soloOf } from './answersFor';
 
 export const RULE
   = '---\npaths:\n  - "src/**/*.{ts,tsx}"\n  - "tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n';
@@ -19,6 +22,12 @@ export const answersFor = (agents: Agent[]): Answers => {
   };
 
   return answers;
+};
+
+export const agentWorkspaceFor = (agents: Agent[]): Workspace => {
+  const answers = answersFor(agents);
+
+  return soloOf(answers);
 };
 
 export const targets = (artifacts: Artifact[]): string[] => {

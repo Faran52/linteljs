@@ -1,10 +1,12 @@
 import {
+  agentWorkspaceFor,
   answersFor,
   RULE,
   targets,
   transformOf,
   UNSCOPED,
 } from '@mocks/agentRules';
+import { soloOf } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -15,16 +17,16 @@ import { copilotArtifacts, copilotInstructionsEmitter } from './copilotInstructi
 
 describe('copilotInstructionsEmitter', () => {
   it('writes the Copilot files only where Copilot was chosen', () => {
-    const copilotInstructions = copilotInstructionsEmitter(answersFor([
+    const copilotInstructions = copilotInstructionsEmitter(agentWorkspaceFor([
       'claude-code',
       'codex',
       'cursor',
     ]));
     expect(copilotInstructions).toEqual([]);
 
-    const emitted = copilotInstructionsEmitter(answersFor(['copilot']));
+    const emitted = copilotInstructionsEmitter(agentWorkspaceFor(['copilot']));
     const actual = targets(emitted);
-    const built = copilotArtifacts(answersFor(['copilot']));
+    const built = copilotArtifacts(agentWorkspaceFor(['copilot']));
     const expected = targets(built);
 
     expect(actual).toEqual(expected);
@@ -33,7 +35,7 @@ describe('copilotInstructionsEmitter', () => {
 
 describe('copilotArtifacts', () => {
   it('writes the repository-wide file and one path-scoped rule per source', () => {
-    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const artifacts = copilotArtifacts(agentWorkspaceFor(['copilot']));
     const written = targets(artifacts);
 
     expect(written).toContain('.github/copilot-instructions.md');
@@ -42,7 +44,7 @@ describe('copilotArtifacts', () => {
   });
 
   it('rewrites the shared paths list as applyTo and drops the original frontmatter', () => {
-    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const artifacts = copilotArtifacts(agentWorkspaceFor(['copilot']));
     const transform = transformOf(artifacts, '.github/instructions/repo-structure.instructions.md');
 
     const transformed = transform(RULE, null);
@@ -56,7 +58,7 @@ describe('copilotArtifacts', () => {
       ...answersFor(['copilot']),
       layout: 'monorepo' as const,
     };
-    const artifacts = copilotArtifacts(answers);
+    const artifacts = copilotArtifacts(soloOf(answers));
     const transform = transformOf(artifacts, '.github/instructions/repo-structure.instructions.md');
 
     const transformed = transform(RULE, null);
@@ -65,14 +67,14 @@ describe('copilotArtifacts', () => {
   });
 
   it('installs the repository-wide file once and never rewrites it', () => {
-    const [instructions] = copilotArtifacts(answersFor(['copilot']));
+    const [instructions] = copilotArtifacts(agentWorkspaceFor(['copilot']));
 
     expect(instructions?.stage).toBe('standard');
     expect(instructions?.preserve).toBe(true);
   });
 
   it('applies everywhere when the rule lists no paths', () => {
-    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const artifacts = copilotArtifacts(agentWorkspaceFor(['copilot']));
     const transform = transformOf(artifacts, '.github/instructions/type-standards.instructions.md');
 
     const transformed = transform(UNSCOPED, null);
