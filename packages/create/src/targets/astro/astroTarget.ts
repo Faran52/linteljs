@@ -103,7 +103,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       call: 'getViteConfig',
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    ...(framework === undefined ? {} : FRAMEWORK_RECORD[framework]),
+    ...(hosted === undefined ? {} : FRAMEWORK_RECORD[hosted.framework]),
     // `astro sync` first, since the types `astro check` reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',

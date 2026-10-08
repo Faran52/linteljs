@@ -119,8 +119,6 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const clientBoundaries = new Set(target.clientBoundaries);
   const isJest = testRunnerOf(answers) === 'jest';
   const workerStart = answers.mocking === 'msw' ? target.workerStart : undefined;
-  const workerEntries = new Set(workerStart?.entries);
-  const workerSteps = workerStart === undefined ? [] : [withWorkerStart(workerStart)];
 
   const artifactOf = (file: Starter): Artifact => {
     // Bytes, not text: no rewrite applies, and a UTF-8 round trip would corrupt it.
@@ -142,7 +140,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       ...renames.size === 0 ? [] : [rewritten],
       ...'stylexAttrs' in file ? [spreadAsAttrs] : [],
       ...clientBoundaries.has(file.target) ? [openAsClient] : [],
-      ...workerEntries.has(file.target) ? workerSteps : [],
+      ...workerStart?.entries.includes(file.target) ? [withWorkerStart(workerStart)] : [],
       ...isJest && 'covers' in file ? [inJestDialect] : [],
       ...transform === undefined
         ? []
