@@ -26,11 +26,17 @@ describe('the version screen', () => {
     }
   });
 
-  it('renders every answer this project was generated from', async () => {
+  it('renders every answer this project was generated from, labelled in the language chosen', async () => {
     await renderScreen(<VersionScreen />);
 
+    await act(async () => {
+      await i18next.changeLanguage(last);
+    });
+
+    const { common } = resources[last];
+
     for (const { label } of ANSWERS) {
-      const elements = screen.getAllByText(label);
+      const elements = screen.getAllByText(common[label]);
       expect(elements).not.toHaveLength(0);
     }
   });

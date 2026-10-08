@@ -280,6 +280,8 @@ when a version's change lives in a sibling it is described there instead:
   right edge.
 - The Version page's Testing row names the runner the project runs: `jest` on React Native, where it read
   `vitest`, the recorded yes.
+- The Version page's answer labels speak the chosen language. With languages, each row is recorded by its
+  locale key, and every locale carries the seventeen labels, where they stayed English.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
   that `@astrojs/react` 7 refuses, which failed yarn and npm.

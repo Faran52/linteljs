@@ -28,7 +28,7 @@
     <dl class="rows">
       {#each ANSWERS as entry (entry.label)}
         <div class="row">
-          <dt>{entry.label}</dt>
+          <dt>{m[entry.label]()}</dt>
           <dd>{entry.value}</dd>
         </div>
       {/each}

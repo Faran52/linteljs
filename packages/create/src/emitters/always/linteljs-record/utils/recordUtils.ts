@@ -1,5 +1,8 @@
+import { upperFirst } from 'es-toolkit';
+
 import { RUN_PREFIX } from '@config/constants';
 
+import { localesOf } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
 import { type AnswerKey, type AnswerRecord } from '@answers';
@@ -116,9 +119,15 @@ const shown = (answers: Answers, key: AnswerKey): Answers[AnswerKey] => {
   return key === 'testing' ? testRunnerOf(answers) ?? answers.testing : answers[key];
 };
 
+// An i18n project's page translates the label, so it gets the locale key the shared locales hold for it.
+const answerLabelKey = (key: AnswerKey): string => {
+  return `answer${upperFirst(key)}`;
+};
+
 // An answer the target never asks still holds its default, so it is left out with the prompts that skip it.
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
   const target = targetFor(answers);
+  const translated = localesOf(answers).length > 0;
 
   return keysOf(records)
     .flatMap((key: AnswerKey) => {
@@ -126,9 +135,12 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
       const printed = printable(shown(answers, key));
       const unasked = record.slot?.(target) === false;
 
-      const entryRows: [string, string][] = record.prompt === undefined || printed === undefined || unasked
-        ? []
-        : [[`label: '${record.prompt}'`, `value: '${printed}'`]];
+      if (record.prompt === undefined || printed === undefined || unasked) {
+        return [];
+      }
+
+      const label = translated ? answerLabelKey(key) : record.prompt;
+      const entryRows: [string, string][] = [[`label: '${label}'`, `value: '${printed}'`]];
 
       return entryRows;
     });

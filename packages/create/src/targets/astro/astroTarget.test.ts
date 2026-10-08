@@ -280,6 +280,7 @@ const BILINGUAL_PATHS = [
   'src/config/statuses.ts',
   'src/config/standard.ts',
   ...TRANSLATED,
+  'src/views/version/VersionView.test.ts',
 ];
 
 const I18N_ONLY_PATHS = [

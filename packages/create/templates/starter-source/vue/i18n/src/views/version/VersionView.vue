@@ -44,7 +44,7 @@ const { t } = useI18n();
           :key="entry.label"
           class="row"
         >
-          <dt>{{ entry.label }}</dt>
+          <dt>{{ t(entry.label) }}</dt>
           <dd>{{ entry.value }}</dd>
         </div>
       </dl>

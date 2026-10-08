@@ -75,6 +75,7 @@ const BILINGUAL_PATHS = [
   'src/config/standard.ts',
   'src/pages/about/AboutPage.tsx',
   'src/pages/version/VersionPage.tsx',
+  'src/pages/version/VersionPage.test.tsx',
   'src/components/features/app-header/AppHeader.tsx',
   'src/components/features/status-page/StatusPage.tsx',
 ];

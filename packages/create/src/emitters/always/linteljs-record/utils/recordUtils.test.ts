@@ -1,6 +1,12 @@
-import { hostedAnswersFor } from '@mocks/answersFor';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { ANSWERS } from '@answers';
+import { hostedAnswersFor } from '@mocks/answersFor';
+import { upperFirst } from 'es-toolkit';
+
+import { isJsonObject, parsedAs } from '@utils/objectUtils';
+
+import { type AnswerRecord, ANSWERS } from '@answers';
 
 import {
   answerRows,
@@ -9,6 +15,11 @@ import {
   nameDeclaration,
   stackRows,
 } from './recordUtils';
+
+const ENGLISH_LOCALE = join(
+  import.meta.dirname,
+  '../../../../../templates/starter-source/shared/i18n/src/i18n/locales/en/common.json',
+);
 
 const VERSIONS = {
   '@linteljs/eslint-config': '^2.0.0',
@@ -182,6 +193,42 @@ describe('answerRows', () => {
       ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
     ];
     expect(actual).toEqual(expected);
+  });
+
+  it('labels each answer by its locale key in a project with languages', () => {
+    const rows = answerRows(hostedAnswersFor({ store: 'zustand', languages: ['ar'] }), ANSWERS);
+    const labels = rows
+      .map(([label]) => {
+        return label;
+      });
+
+    const expected = [
+      "label: 'answerTarget'",
+      "label: 'answerLayout'",
+      "label: 'answerTesting'",
+      "label: 'answerLibraries'",
+      "label: 'answerStore'",
+      "label: 'answerLanguages'",
+      "label: 'answerTypeSafety'",
+      "label: 'answerAgents'",
+      "label: 'answerPlugins'",
+    ];
+    expect(labels).toEqual(expected);
+  });
+
+  it('finds every asked answer\'s key in the English locale, worded as its prompt', () => {
+    const english = parsedAs(readFileSync(ENGLISH_LOCALE, 'utf8'), isJsonObject);
+    const records: AnswerRecord[] = Object.values(ANSWERS);
+    const worded = Object.fromEntries(records
+      .flatMap((record) => {
+        const entry: [string, string][] = record.prompt === undefined
+          ? []
+          : [[`answer${upperFirst(record.key)}`, record.prompt]];
+
+        return entry;
+      }));
+
+    expect(english).toMatchObject(worded);
   });
 
   it.each([

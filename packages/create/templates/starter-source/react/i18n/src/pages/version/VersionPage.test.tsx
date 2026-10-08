@@ -32,12 +32,18 @@ describe('VersionPage', () => {
     }
   });
 
-  it('renders every answer this project was generated from', () => {
+  it('renders every answer this project was generated from, labelled in the language chosen', async () => {
     render(<VersionPage />);
 
+    await act(async () => {
+      await i18n.changeLanguage(last);
+    });
+
+    const { common } = resources[last];
+
     for (const { label } of ANSWERS) {
-      const element = screen.getByText(label);
-      expect(element).toBeTruthy();
+      const elements = screen.getAllByText(common[label]);
+      expect(elements).not.toHaveLength(0);
     }
   });
 

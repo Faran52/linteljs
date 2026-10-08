@@ -42,7 +42,7 @@ const VersionPage = (): ReactNode => {
             .map(({ label, value }) => {
               return (
                 <div key={label} className="row">
-                  <dt>{label}</dt>
+                  <dt>{t(label)}</dt>
                   <dd>{value}</dd>
                 </div>
               );

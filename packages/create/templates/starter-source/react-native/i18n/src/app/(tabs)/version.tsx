@@ -42,7 +42,7 @@ const VersionScreen = (): ReactNode => {
         .map((entry) => {
           return (
             <View key={entry.label} style={layout.row}>
-              <Text style={text.key}>{entry.label}</Text>
+              <Text style={text.key}>{t(entry.label)}</Text>
               <Text style={text.value}>{entry.value}</Text>
             </View>
           );

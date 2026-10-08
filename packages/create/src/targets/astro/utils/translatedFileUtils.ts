@@ -33,6 +33,10 @@ export const astroI18nTests = (): StarterTest[] => {
       when: hasI18n,
       variant: 'i18n',
     },
+    ...translated<StarterTest>({
+      target: 'src/views/version/VersionView.test.ts',
+      covers: 'src/views/version/VersionView.astro',
+    }),
   ];
 
   return tests;

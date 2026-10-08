@@ -41,7 +41,6 @@ export const TRANSLATED: readonly string[] = [
 export const VIEW_SUITES: readonly string[] = [
   'src/views/home/HomeView',
   'src/views/about/AboutView',
-  'src/views/version/VersionView',
   'src/views/status/StatusView',
 ];
 

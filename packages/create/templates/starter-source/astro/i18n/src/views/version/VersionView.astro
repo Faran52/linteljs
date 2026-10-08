@@ -41,7 +41,7 @@ const RECORDED = {
           .map((entry) => {
             return (
               <div class="row">
-                <dt>{entry.label}</dt>
+                <dt data-i18n={entry.label}>{t(entry.label)}</dt>
                 <dd>{entry.value}</dd>
               </div>
             );
