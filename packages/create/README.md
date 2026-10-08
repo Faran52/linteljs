@@ -1,19 +1,55 @@
 # @linteljs/create
 
-[![npm](https://img.shields.io/npm/v/@linteljs/create.svg)](https://www.npmjs.com/package/@linteljs/create)
-[![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Faran52/linteljs/ci.yml?branch=main&logo=github&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FFaran52%2Flinteljs%2Fbadges%2Fcoverage.json&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml?query=branch%3Amain)
+[![npm](https://img.shields.io/npm/v/@linteljs/create.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/create)
+[![Node](https://img.shields.io/node/v/@linteljs/create?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/create)
 
 Create a TypeScript project that starts with a passing gate: a starter app with its tests, ESLint flat config,
 Stylelint, TypeScript settings, git hooks, and coding-agent rules and hooks.
 
-| Runner | Create alias | Direct run |
-| --- | --- | --- |
-| pnpm | `pnpm create @linteljs my-app` | `pnpm dlx @linteljs/create my-app` |
-| npm | `npm create @linteljs my-app` | `npx @linteljs/create my-app` |
-| Yarn | `yarn create @linteljs my-app` | `yarn dlx @linteljs/create my-app` |
-| Bun | `bun create @linteljs my-app` | `bunx @linteljs/create my-app` |
+<details open>
+<summary>npm</summary>
 
-Then `cd my-app` and run `check` (`pnpm check`, `npm run check`, and so on).
+```sh
+npm create @linteljs my-app
+npx @linteljs/create my-app
+```
+
+</details>
+
+<details>
+<summary>pnpm</summary>
+
+```sh
+pnpm create @linteljs my-app
+pnpm dlx @linteljs/create my-app
+```
+
+</details>
+
+<details>
+<summary>yarn</summary>
+
+```sh
+yarn create @linteljs my-app
+yarn dlx @linteljs/create my-app
+```
+
+</details>
+
+<details>
+<summary>bun</summary>
+
+```sh
+bun create @linteljs my-app
+bunx @linteljs/create my-app
+```
+
+</details>
+
+Either line works: the first is the manager's `create` alias, the second runs the package directly. Then
+`cd my-app` and run `check` (`npm run check`, `pnpm check`, and so on).
 
 ## Requirements
 
@@ -113,7 +149,7 @@ pnpm dlx @linteljs/create sync --yes
 ```
 
 Run `sync` through the project's own manager, `pnpm dlx`, `npx`, `yarn dlx` or `bunx`: npm refuses `npx` in a
-project whose `devEngines` names another manager, as a generated one does. Its README names the one to use.
+project whose `devEngines` names another manager, as a generated one does. The generated README names the one to use.
 
 `--existing` applies the standard in place, reading `linteljs.config.json` if it exists and asking otherwise; it
 never guesses a framework.

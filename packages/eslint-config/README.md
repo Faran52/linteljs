@@ -1,14 +1,48 @@
 # @linteljs/eslint-config
 
-[![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg)](https://www.npmjs.com/package/@linteljs/eslint-config)
-[![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Faran52/linteljs/ci.yml?branch=main&logo=github&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FFaran52%2Flinteljs%2Fbadges%2Fcoverage.json&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml?query=branch%3Amain)
+[![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config)
+[![Node](https://img.shields.io/node/v/@linteljs/eslint-config?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config)
 
 Composable ESLint flat-config layers for TypeScript projects. Use `composeConfig` when you want the shared
 layer order without hand-writing the stack.
 
-```bash
+<details open>
+<summary>npm</summary>
+
+```sh
 npm install --save-dev @linteljs/eslint-config eslint typescript jiti
 ```
+
+</details>
+
+<details>
+<summary>pnpm</summary>
+
+```sh
+pnpm add -D @linteljs/eslint-config eslint typescript jiti
+```
+
+</details>
+
+<details>
+<summary>yarn</summary>
+
+```sh
+yarn add -D @linteljs/eslint-config eslint typescript jiti
+```
+
+</details>
+
+<details>
+<summary>bun</summary>
+
+```sh
+bun add -d @linteljs/eslint-config eslint typescript jiti
+```
+
+</details>
 
 It needs Node 22 or later, ESLint 9 or later, and TypeScript 5.0 up to 6.0, the range the bundled
 typescript-eslint supports. ESLint loads a TypeScript config through jiti.

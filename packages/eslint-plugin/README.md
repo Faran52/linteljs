@@ -1,16 +1,48 @@
 # @linteljs/eslint-plugin
 
-[![npm](https://img.shields.io/npm/v/@linteljs/eslint-plugin.svg)](https://www.npmjs.com/package/@linteljs/eslint-plugin)
-[![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Faran52/linteljs/ci.yml?branch=main&logo=github&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FFaran52%2Flinteljs%2Fbadges%2Fcoverage.json&style=for-the-badge)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml?query=branch%3Amain)
+[![npm](https://img.shields.io/npm/v/@linteljs/eslint-plugin.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-plugin)
+[![Node](https://img.shields.io/node/v/@linteljs/eslint-plugin?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-plugin)
 
 ESLint rules for TypeScript and React code: layout, comments, imports, functions, promises, declaration
 order and React Native accessibility.
 
-```bash
+<details open>
+<summary>npm</summary>
+
+```sh
 npm install --save-dev @linteljs/eslint-plugin
 ```
 
-`pnpm add -D`, `yarn add -D`, and `bun add -d` work too.
+</details>
+
+<details>
+<summary>pnpm</summary>
+
+```sh
+pnpm add -D @linteljs/eslint-plugin
+```
+
+</details>
+
+<details>
+<summary>yarn</summary>
+
+```sh
+yarn add -D @linteljs/eslint-plugin
+```
+
+</details>
+
+<details>
+<summary>bun</summary>
+
+```sh
+bun add -d @linteljs/eslint-plugin
+```
+
+</details>
 
 ## Use it
 

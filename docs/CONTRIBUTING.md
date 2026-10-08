@@ -7,7 +7,7 @@ This is a pnpm workspace of three published packages, so a change here reaches s
 Node 26.10.0 or newer, and pnpm 12.6 or newer. Both are declared in `engines`, so an older one fails at
 install rather than halfway through a run.
 
-```
+```sh
 pnpm install
 pnpm mod-types
 pnpm check
@@ -25,11 +25,11 @@ runs, the mods' typecheck and lint are skipped.
 and it has to be green before a change is finished. Coverage is gated at 100% on statements, branches,
 functions and lines; a line that cannot be reached is deleted rather than ignored.
 
-The end-to-end suite is separate, because it generates 185 real projects over the network, installs
+The end-to-end suite is separate, because it generates real projects over the network, installs
 each and runs its gate. `E2E_PM` narrows it to one package manager's cases, and `-t '<label>$'` to one
 case:
 
-```
+```sh
 E2E_PM=pnpm pnpm --filter @linteljs/create test:e2e
 ```
 
@@ -39,8 +39,8 @@ cannot, such as a package that installs but is never imported.
 `pnpm lint:starters`, a leg of `pnpm check`, lints the starter source. It writes the cases that between them
 carry every starter text into real projects under `~/.cache/linteljs/typed/`, installs them against this
 checkout's packed config and plugin, and runs each project's own `eslint . --max-warnings 0`, type-aware rules
-included, and its `typecheck`, since a type error is no lint finding. It lints only the cases whose generated tree changed since their last clean lint; `--all` lints every
-one, as CI does. The first run installs everything and takes several minutes; a run with nothing changed takes
+included, and its `typecheck`, since a type error is no lint finding. It lints only the cases whose generated tree
+changed since their last clean lint; `--all` lints every one, as CI does. The first run installs everything and takes several minutes; a run with nothing changed takes
 under one. It needs the network. `pnpm lint:starters:fix` writes autofixes back to the templates.
 
 ## The three packages
