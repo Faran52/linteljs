@@ -52,6 +52,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
 
   const inputs = rollupInputs(viteInputs);
   const fs = record.serveMocks === true && answers.mocking === 'msw' ? ", fs: { allow: ['__mocks__'] }" : '';
+  const hmr = record.hmrPort === true ? ', hmr: { port: 3000 }' : '';
   const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
 
   return `${imports}
@@ -60,7 +61,7 @@ ${declarations}export default defineConfig({
   plugins: [
 ${plugins}  ],
 ${inputs}  resolve: { tsconfigPaths: true },
-  server: { port: 3000${fs} },
+  server: { port: 3000${hmr}${fs} },
 });
 `;
 };

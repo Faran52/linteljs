@@ -201,6 +201,8 @@ export interface TargetRecord {
   viteInputs?: Record<string, string>;
   // SvelteKit narrows Vite's serving allow list to its own directories, which leaves out `__mocks__/msw/`.
   serveMocks?: true;
+  // A `chrome-extension://` page has no port for Vite's client to take, so it dials `ws://localhost/` and fails.
+  hmrPort?: true;
   // Required: the generated project gates at 100% on what those files are.
   starterTests: StarterTest[];
   typecheck: string;

@@ -235,6 +235,14 @@ describe('emitViteConfig', () => {
     expect(extension).toContain('    crx({ manifest }),');
   });
 
+  it('hands the extension pages the dev server port for HMR, and no other target', () => {
+    const extension = configFor({ target: 'webextension' });
+    const react = configFor({});
+
+    expect(extension).toContain('  server: { port: 3000, hmr: { port: 3000 } },\n');
+    expect(react).toContain('  server: { port: 3000 },\n');
+  });
+
   it.each<[HostedFramework, string, string]>([
     [
       'vue',
