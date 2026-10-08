@@ -1,6 +1,6 @@
 import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 
 import { PAGES } from '@config/routes';
 
@@ -119,5 +119,20 @@ describe('AppHeader', () => {
 
     expect(applied).toBe(last);
     expect(stored).toBe(last);
+  });
+
+  it('marks the page it is on with the class the stylesheet colours', async () => {
+    const { root, settle } = await open();
+
+    await TestBed
+      .inject(Router)
+      .navigateByUrl('/');
+
+    await settle();
+
+    const current = root.querySelector('nav a[aria-current="page"]');
+    const marked = current?.classList.contains('tab-current');
+
+    expect(marked).toBe(true);
   });
 });

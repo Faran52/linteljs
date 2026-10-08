@@ -284,6 +284,8 @@ when a version's change lives in a sibling it is described there instead:
   on any other target is refused.
 - The Version page's answer labels speak the chosen language. With languages, each row is recorded by its
   locale key, and every locale carries the seventeen labels, where they stayed English.
+- Angular's header colours the tab of the page it is on. `routerLinkActive` set `is-current`, a class the
+  stylesheet never defined; it now sets `tab-current`, as every other target does.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
   that `@astrojs/react` 7 refuses, which failed yarn and npm.
