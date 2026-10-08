@@ -119,6 +119,7 @@ tsconfig checks, and ignores them where the types are missing, as in CI. `.fallo
 
 - `docs/DESIGN.md` holds decisions the code cannot show, the non-goals, and "Workspace lint exemptions"; every
   block in the root `eslint.config.ts` names its section there. `docs/CONTRIBUTING.md` is for people.
+  `docs/assets/` holds what a README shows by raw URL on `main` (`logo.svg`, the Mark); no tarball ships it.
 - Root config: `eslint.config.ts` (the workspace's own lint, built from the layers' source), `vitest.config.ts`
   (one project per package, the coverage thresholds), `tsconfig.json` and `tsconfig.root.json`,
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Faran52/linteljs/main/packages/create/templates/starter-source/shared/public/favicon.svg" alt="linteljs" width="96">
+  <img src="https://raw.githubusercontent.com/Faran52/linteljs/main/docs/assets/logo.svg" alt="linteljs" width="96">
 </p>
 
 <h1 align="center">linteljs</h1>
