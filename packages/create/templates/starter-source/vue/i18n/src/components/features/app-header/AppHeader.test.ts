@@ -66,12 +66,10 @@ describe('AppHeader', () => {
     expect(marked).toHaveLength(1);
     const actual = marked[0]?.text();
     expect(actual).toBe('About');
-    const classes = marked[0]?.classes();
-    const tab = styles
-      .tab(true)
-      .class
-      .split(' ');
-    expect(classes).toEqual(expect.arrayContaining(tab));
+    // RouterLink adds its own active classes ahead of the ones bound.
+    const classes = marked[0]?.attributes('class');
+    const tab = styles.tab(true).class;
+    expect(classes).toContain(tab);
   });
 
   it('offers every language, and speaks the one chosen', async () => {

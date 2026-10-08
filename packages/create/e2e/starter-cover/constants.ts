@@ -19,6 +19,8 @@ export const STARTER_CASES: readonly string[] = [
   'svelte pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
   'webextension pnpm vitest chrome host-none msw languages zod+es-toolkit+ts-pattern+t3-env',
   'vue pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
+  // StyleX types a sheet's class as optional, which the untranslated suite reads.
+  'vue pnpm vitest stylex zod+es-toolkit+ts-pattern+t3-env',
   'solid pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
   'nuxt pnpm vitest tanstack-form zod+es-toolkit+ts-pattern+t3-env',
   'nuxt pnpm vitest tanstack-form msw es-toolkit+ts-pattern+t3-env',

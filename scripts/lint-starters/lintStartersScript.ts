@@ -1,5 +1,5 @@
-// Every starter text, written into a real project, installed, linted with type information and run to full
-// coverage; StyleX's also built.
+// Every starter text, written into a real project, installed, linted with type information, typechecked and run
+// to full coverage; StyleX's also built.
 import {
   existsSync,
   mkdirSync,
@@ -32,6 +32,7 @@ import {
   SCRATCH,
   STAMPS,
   TEST_SCRIPT,
+  TYPECHECK_SCRIPT,
 } from './constants.ts';
 import {
   appDirOf,
@@ -179,6 +180,7 @@ const caseSteps = (item: E2eCase, dir: string): Step[] => {
     stepOf('install', dir, installArgs),
     stepOf('prepare', app, prepareArgs),
     lintStep(item, app),
+    stepOf(TYPECHECK_SCRIPT, app, ['run', TYPECHECK_SCRIPT]),
     ...coverageSteps(item, app),
     ...stylexSteps(item, app),
     ...rootLintSteps(item, dir),
@@ -204,7 +206,7 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 
   await generate(item, scratch, tarballs);
 
-  const stamp = `${TEST_SCRIPT} ${stampOf(scratch)}`;
+  const stamp = `${TYPECHECK_SCRIPT} ${TEST_SCRIPT} ${stampOf(scratch)}`;
 
   rmSync(scratch, {
     recursive: true,

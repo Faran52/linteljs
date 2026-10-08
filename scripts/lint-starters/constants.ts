@@ -11,8 +11,10 @@ export const PROJECTS = join(CACHE_ROOT, 'projects');
 
 export const STAMPS = join(CACHE_ROOT, 'stamps');
 
-// Part of each stamp, so a case stamped under another test script runs again.
+// Both are part of each stamp, so a case stamped under other scripts runs again.
 export const TEST_SCRIPT = 'test:coverage';
+
+export const TYPECHECK_SCRIPT = 'typecheck';
 
 export const SCRATCH = join(CACHE_ROOT, 'scratch');
 
