@@ -63,7 +63,7 @@ const suitesOf = (covered: readonly string[], shared: TargetId): StarterTest[] =
       const test: StarterTest = {
         target: covers
           .replace(/\.(?:ts|vue|svelte)$/u, '.test.ts')
-          .replace(/\.tsx$/u, '.test.tsx'),
+          .replace(/\.tsx/u, '.test.tsx'),
         covers,
         shared,
       };
@@ -468,8 +468,8 @@ export const islandFiles = (): StarterFile[] => {
         ...componentStyles(components),
         // Astro's own modules already bring the StyleX tokens.
         ...componentStyleModules(host === 'react' ? 'react' : 'solid', components)
-          .filter(({ variant, target }) => {
-            return variant !== 'stylex' || !target.startsWith('src/styles/');
+          .filter(({ target }) => {
+            return !target.startsWith('src/styles/');
           }),
       ]);
 
@@ -528,7 +528,7 @@ export const islandSheets = (): ConditionalStyle[] => {
       return Object.values(ISLAND_COMPONENTS[host])
         .map((path): ConditionalStyle => {
           const sheet: ConditionalStyle = {
-            path: `${path.replace(/^src\//u, '../')}.css`,
+            path: `${path.replace(/src\//u, '../')}.css`,
             when: hosts(host),
           };
 

@@ -134,6 +134,7 @@ describe('coverageExclude', () => {
   it.each([
     ['next', 'src/instrumentation-client.ts'],
     ['svelte', 'src/hooks.client.ts'],
+    ['nuxt', 'src/plugins/msw.client.ts'],
   ] as const)('leaves the %s worker entry %s out under msw only', (target, entry) => {
     const withMsw = coverageExclude(answersFor({
       target,
@@ -143,6 +144,12 @@ describe('coverageExclude', () => {
 
     expect(withMsw).toContain(entry);
     expect(without).not.toContain(entry);
+  });
+
+  it('adds nothing under msw for a target with no worker entry', () => {
+    const actual = coverageExclude(answersFor({ mocking: 'msw' }));
+    const expected = coverageExclude(answersFor({}));
+    expect(actual).toEqual(expected);
   });
 
   it('keeps out a React Router route table, not a TanStack Router one', () => {

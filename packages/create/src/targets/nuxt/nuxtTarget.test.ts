@@ -53,6 +53,26 @@ describe('nuxtTarget', () => {
     };
     expect(record.i18n).toEqual(expected);
   });
+
+  it('runs Vue\'s own suite beside each contact source it shares', () => {
+    const record = recordFor();
+    const shared = record.starterTests
+      .filter((test) => {
+        return test.shared === 'vue';
+      })
+      .map(({ target }) => {
+        return target;
+      });
+    const expected = [
+      'src/views/contact/ContactView.test.ts',
+      'src/views/contact/use-contact-form/useContactForm.test.ts',
+      'src/components/ui/text-input/TextInput.test.ts',
+      'src/lib/apis/contact/contactApi.test.ts',
+      'src/lib/providers/data/dataProvider.test.ts',
+    ];
+
+    expect(shared).toEqual(expect.arrayContaining(expected));
+  });
 });
 
 const BILINGUAL_PATHS = [

@@ -129,6 +129,19 @@ describe('the contact island', () => {
     expect(attrs).toEqual(expected);
   });
 
+  it('spreads the react island stylex sheets through props', () => {
+    const answers = answersFor({
+      hostedFramework: 'react',
+      styling: 'stylex',
+    });
+    const attrs = islandFiles()
+      .filter(({ when, stylexAttrs }) => {
+        return stylexAttrs === true && when?.(answers) !== false;
+      });
+
+    expect(attrs).toEqual([]);
+  });
+
   it('styles each island under its own host only', () => {
     const answers = answersFor({ hostedFramework: 'vue' });
     const sheets = islandSheets()

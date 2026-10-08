@@ -67,9 +67,7 @@ const testBlock = (
   const execArgvLine = dom ? `${indent}  execArgv: ['--no-experimental-webstorage'],\n` : '';
   const inlineLine = target.testInline === undefined
     ? ''
-    : `${indent}  server: { deps: { inline: [${target.testInline
-      .map(String)
-      .join(', ')}] } },\n`;
+    : `${indent}  server: { deps: { inline: [${String(target.testInline)}] } },\n`;
 
   return `${indent}test: {
 ${indent}  globals: true,

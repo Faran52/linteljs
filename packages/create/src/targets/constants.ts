@@ -147,7 +147,7 @@ export const TRANSLATED_CONFIGS = ['src/config/statuses.ts', 'src/config/standar
 // A locale key's `Msw` twin sits on the line after it, holding what the key says once MSW answers the form.
 export const MSW_TWIN = /^ {2}"\w+Msw": .*\n/gmv;
 
-export const TWINNED_KEY = /^ {2}"(?<key>\w+)": .*\n {2}"\k<key>Msw": /gmv;
+export const TWINNED_KEY = / {2}"(?<key>\w+)": .*\n {2}"\k<key>Msw": /gv;
 
 // The forms whose contact page reads a `useContactForm` hook of their own.
 export const CONTACT_HOOK_FORMS = ['tanstack-form', 'react-hook-form'] as const;

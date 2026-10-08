@@ -184,6 +184,15 @@ describe('localeFiles', () => {
     expect(written).toBe(expected);
   });
 
+  it('drops only a top-level msw twin', () => {
+    const [english] = localeFiles(hasForm);
+    const source = '{\n  "form": {\n    "sentMsw": "Sent."\n  }\n}\n';
+
+    const written = english?.transform?.(source, answersFor({ form: 'tanstack-form' }));
+
+    expect(written).toBe(source);
+  });
+
   it('puts each msw twin in its key\'s place under msw', () => {
     const [english] = localeFiles(hasForm);
     const source = '{\n  "contactSent": "Thanks.",\n  "contactSentMsw": "Sent.",\n  "home": "Home"\n}\n';

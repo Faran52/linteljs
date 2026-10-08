@@ -82,6 +82,31 @@ describe('inLayout', () => {
 
     expect(withRequires).toHaveLength(1);
   });
+
+  it('keeps every workspace root file at the root in a monorepo', () => {
+    const rootFiles = [
+      'AGENTS.md',
+      'CLAUDE.md',
+      'README.md',
+      'bunfig.toml',
+      'commitlint.config.js',
+      'linteljs.config.json',
+      'pnpm-workspace.yaml',
+      '.yarnrc.yml',
+    ];
+    const written = rootFiles
+      .map((target) => {
+        return emitted('standard', target, '');
+      });
+    const artifacts = inLayout(answersFor({ layout: 'monorepo' }), '@acme/shop', written);
+
+    const targets = artifacts
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual(rootFiles);
+  });
 });
 
 describe('libraryAnswersOf', () => {

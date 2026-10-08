@@ -44,7 +44,7 @@ export interface StarterFile {
   when?: (answers: Answers) => boolean;
   variant?: string;
   // `true` is `starter-source/shared/`; a target id is that target's tree.
-  shared?: true | TargetId;
+  shared?: true | TargetId | undefined;
   // Angular names files in kebab and the other nine in camel, so a shared asset lands under two names.
   source?: string;
   // React's StyleX sheet, spread with `attrs` for the `class` every other framework reads.
@@ -182,7 +182,7 @@ export interface TargetRecord {
   testConditions?: string[];
   // Astro inlines the crawled Solid packages but vite-plugin-solid externalizes `solid-js`, so Node loaded
   // `solid-js/store`'s dev build beside a core without `DEV`.
-  testInline?: RegExp[];
+  testInline?: RegExp;
   // Angular's plugin runs `vmThreads`, whose VM context lacks `BroadcastChannel`, so msw fails on import.
   testPool?: string;
   // Next has no Vite config, so it compiles StyleX through Babel and PostCSS.

@@ -296,8 +296,8 @@ export default defineConfig({
   });
 
   it.each<[TargetId, string]>([
-    ['svelte', "resolve: { conditions: ['browser'] },"],
-    ['solid', "resolve: { conditions: ['development', 'browser'] },"],
+    ['svelte', "  defineConfig({\n    resolve: { conditions: ['browser'] },\n    test: {"],
+    ['solid', "  defineConfig({\n    resolve: { conditions: ['development', 'browser'] },\n    test: {"],
   ])('gives %s the resolve conditions its runtime needs', (target, expected) => {
     const config = configFor({ target });
     expect(config).toContain(expected);
@@ -328,7 +328,9 @@ export default defineConfig({
       hostedFramework: 'solid',
     });
 
-    expect(config).toContain(`import { defineConfig } from 'vitest/config';
+    expect(config).toContain(`import { getViteConfig } from 'astro/config';
+import solid from 'vite-plugin-solid';
+import { defineConfig } from 'vitest/config';
 
 const factoryConfig = getViteConfig({`);
 

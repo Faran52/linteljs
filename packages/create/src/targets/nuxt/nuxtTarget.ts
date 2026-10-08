@@ -256,7 +256,7 @@ export const nuxtTarget: TargetBuilder = () => {
       ...CONTACT_FROM_VUE
         .map((covers): StarterTest => {
           const test: StarterTest = {
-            target: covers.replace(/\.\w+$/v, '.test.ts'),
+            target: covers.replace(/\.\w+/v, '.test.ts'),
             covers,
             shared: 'vue',
           };

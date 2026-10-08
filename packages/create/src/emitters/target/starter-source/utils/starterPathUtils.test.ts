@@ -58,4 +58,9 @@ describe('importSpecifier', () => {
     const actual = importSpecifier('src/lib/apis', 'src/lib/apis/contact/contactApi', aliases);
     expect(actual).toBe('./contact/contactApi');
   });
+
+  it('takes no alias whose key is not a wildcard', () => {
+    const actual = importSpecifier('src/views', 'src/lib/utils/status-utils', { '@lib': './src/lib/*' });
+    expect(actual).toBe('../lib/utils/status-utils');
+  });
 });

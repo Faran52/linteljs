@@ -109,6 +109,6 @@ export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'overr
         call: 'solid({ hot: false, ssr: true })',
       },
     },
-    testInline: [/solid-js/],
+    testInline: /solid-js/,
   },
 };

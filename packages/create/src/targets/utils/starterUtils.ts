@@ -87,7 +87,7 @@ export const contactApiFiles = (options: ContactApiOptions = {}): StarterFile[] 
         return hasForm(answers) && answers.data === 'tanstack-query';
       },
       variant: 'tanstack-query',
-      ...query === undefined ? {} : { shared: query },
+      shared: query,
     },
   ];
 
