@@ -1,5 +1,3 @@
-import { posix } from 'node:path';
-
 import { pick } from 'es-toolkit';
 
 import {
@@ -7,8 +5,6 @@ import {
   type Artifact,
   type ProjectShape,
 } from '@config/types';
-
-import { appDirectoryOf } from '@utils/answerUtils';
 
 import { DEFAULT_ANSWERS } from '@answers';
 
@@ -46,16 +42,6 @@ const rootManifest = (answers: Answers, name: string): string => {
   const pm = answers.packageManager;
   const app = patchPackageJson({}, answers);
   const devDependencies = buildDevDependencies(rootAnswersOf(answers));
-  const appDirectory = appDirectoryOf(answers, name);
-
-  // msw's install script reads the manifest where the install ran, which is the root.
-  const workerDirectory = app.msw?.workerDirectory
-    .map((directory) => {
-      const joined = posix.join(appDirectory, directory);
-
-      return joined;
-    });
-  const msw = workerDirectory === undefined ? {} : { msw: { workerDirectory } };
 
   const manifest = {
     name: rootNameOf(name),
@@ -64,7 +50,6 @@ const rootManifest = (answers: Answers, name: string): string => {
     // pnpm reads its globs from `pnpm-workspace.yaml`.
     ...(pm === 'pnpm' ? {} : { workspaces: WORKSPACE_GLOBS }),
     ...pick(app, ROOT_FIELDS),
-    ...msw,
     scripts: {
       'lint': 'eslint . --concurrency auto',
       'lint:fix': 'eslint . --fix --concurrency auto',

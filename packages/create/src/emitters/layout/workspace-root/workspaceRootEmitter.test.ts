@@ -93,19 +93,6 @@ describe('workspaceRootEmitter', () => {
     expect(yarn.scripts?.['postinstall']).toBe('husky');
   });
 
-  it('points msw at the app, since its install script reads the root manifest', async () => {
-    const react = await manifestOf({ mocking: 'msw' });
-    const svelte = await manifestOf({
-      mocking: 'msw',
-      target: 'svelte',
-    });
-    const none = await manifestOf({});
-
-    expect(react.msw).toEqual({ workerDirectory: ['apps/shop/public'] });
-    expect(svelte.msw).toEqual({ workerDirectory: ['apps/shop/static'] });
-    expect(none.msw).toBeUndefined();
-  });
-
   it('installs only the root tooling', async () => {
     const { devDependencies = {} } = await manifestOf({});
 

@@ -68,6 +68,8 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
   const install = [
     ...compile,
     ...target.prepare === undefined ? [] : [target.prepare],
+    // Not msw's own install script: a warm pnpm store replays its cached build, so the worker is never copied.
+    ...answers.mocking === 'msw' && target.publicDirectory !== undefined ? ['msw init'] : [],
     ...answers.layout === 'monorepo' ? [] : ['husky'],
   ];
 

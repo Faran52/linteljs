@@ -9,6 +9,7 @@ import { expect } from 'vitest';
 
 import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
 import { parsePackageJson } from '@emitters';
+import { targetFor } from '@targets';
 
 import { browserProblems } from '../browser/browser';
 import { removedAfter } from '../utils/cleanupUtils';
@@ -166,6 +167,15 @@ const expectInstalled = async ({ answers, variant }: E2eCase, create: RunResult,
   expect(installed).toBe('install: ok');
   expect(create.output).not.toContain('next: ');
   expect(noise).toEqual([]);
+
+  const { publicDirectory } = targetFor(answers);
+
+  if (answers.mocking === 'msw' && publicDirectory !== undefined) {
+    const app = answers.layout === 'monorepo' ? join(project, 'apps', answers.target) : project;
+    const hasWorker = existsSync(join(app, publicDirectory, 'mockServiceWorker.js'));
+
+    expect(hasWorker).toBe(true);
+  }
 };
 
 const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<void> => {

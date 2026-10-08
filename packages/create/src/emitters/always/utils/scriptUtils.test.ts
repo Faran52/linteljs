@@ -259,6 +259,20 @@ describe('buildScripts', () => {
     expect(scripts['postinstall']).toBe('svelte-kit sync && husky');
     expect(scripts).not.toHaveProperty('prepare');
   });
+
+  it('copies the msw worker on install where a browser fetches it', () => {
+    const svelte = buildScripts(answersFor({
+      target: 'svelte',
+      mocking: 'msw',
+    }));
+    const native = buildScripts(answersFor({
+      target: 'react-native',
+      mocking: 'msw',
+    }));
+
+    expect(svelte['prepare']).toBe('svelte-kit sync && msw init && husky');
+    expect(native['prepare']).toBe('husky');
+  });
 });
 
 describe('the monorepo layout', () => {
@@ -274,5 +288,12 @@ describe('the monorepo layout', () => {
     }));
 
     expect(svelte['postinstall']).toBe('svelte-kit sync');
+
+    const mocked = buildScripts(answersFor({
+      layout: 'monorepo',
+      mocking: 'msw',
+    }));
+
+    expect(mocked['prepare']).toBe('msw init');
   });
 });

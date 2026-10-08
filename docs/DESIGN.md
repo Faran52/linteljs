@@ -537,6 +537,10 @@ reaching the network. The worker starts in development only and is not awaited (
 sends the form), except in Nuxt's plugin, which Nuxt awaits anyway. SvelteKit's `server.fs.allow` gains
 `__mocks__`, or the worker's import is a 403. The extension starts none: it fetches nothing under `/api`.
 
+The project's own install script copies the worker (`msw init`, reading `msw.workerDirectory`), not msw's
+postinstall: that one swallows its errors, reads the manifest where the install ran, and a warm pnpm store
+replays its cached build without running it, leaving no `mockServiceWorker.js`.
+
 React Native starts `msw/native` from `src/main.ts` under `__DEV__`, so Metro strips it from a release. Hermes
 lacks `MessageEvent` and `BroadcastChannel`, which msw needs to exist at load, so a polyfill aliases them. No URL
 polyfill: Expo resolves `/api/contact` against the dev server.
@@ -769,7 +773,7 @@ the layout; one move in the registry rebases their paths.
 - **ESLint per package.** Each package lints, typechecks and tests itself; one root config would have to know every
   package's layers. The root keeps one lint-staged config, so lint-staged runs each package's from its directory.
 - **The root lints like a single repo**, over its own `scripts/`.
-- **msw's worker path sits at the root too**, since msw's install script reads the manifest where the install ran.
+- **The app copies msw's worker itself**, from its own install script ([The api edge](#the-api-edge)).
 - **Single only for `--existing`**, which never moves files; `--layout monorepo` is refused there.
 - **`sync --add` writes a `typescript` library in 2.0.** A second app is 2.1.
 

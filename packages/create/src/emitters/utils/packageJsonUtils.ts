@@ -363,7 +363,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
 };
 
 export const allowedBuildNames = (answers: Answers): string[] => {
-  // MSW's install script copies `mockServiceWorker.js`; without this the install stops and asks.
+  // Unlisted, msw's install script stops the install; the worker itself is copied by the project's `msw init`.
   const mocking = answers.mocking === 'msw' ? ['msw'] : [];
 
   return uniq([
