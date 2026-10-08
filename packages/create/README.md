@@ -103,7 +103,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
 | Repository layout | `--layout` | `single`, `monorepo` (the target under `apps/<name>`, with `packages/*`; not with `--existing`) | `single` |
-| Testing | `--testing` | `vitest`, `none` (react-native runs the suites on Jest, through `jest-expo`) | `vitest` |
+| Testing | `--testing` | `vitest`, `jest` (react-native only, through `jest-expo`; `vitest` reads as `jest` there), `none` | `vitest`, `jest` on react-native |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |
 | Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only; not on typescript or webextension) | none |

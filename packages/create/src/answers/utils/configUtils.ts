@@ -193,9 +193,17 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     throw new Error(`$schema must be ${expectedSchema}`);
   }
 
-  const config = answersFrom(parsed, schemaVersion);
+  const read = answersFrom(parsed, schemaVersion);
+  const record = targetFor(read);
+  // The default is the same for every target, and a record from before 2.0 wrote `vitest` on React Native.
+  const config: LinteljsConfig = read.testing === 'vitest' && record.testRunner === 'jest'
+    ? {
+        ...read,
+        testing: 'jest',
+      }
+    : read;
 
-  refuseMisfit(config, targetFor(config));
+  refuseMisfit(config, record);
 
   return config;
 };

@@ -14,8 +14,8 @@ describe('readAnswer', () => {
     expect(answer).toBe('none');
 
     expect(() => {
-      return readAnswer(ANSWERS.testing, 'jest');
-    }).toThrow('testing must be one of: vitest, none');
+      return readAnswer(ANSWERS.testing, 'mocha');
+    }).toThrow('testing must be one of: vitest, jest, none');
   });
 
   it('reads an optional choice', () => {
@@ -131,7 +131,7 @@ describe('readAnswer, on the wrong shape', () => {
   it('refuses a value wrapped in an array where one value belongs', () => {
     expect(() => {
       return readAnswer(ANSWERS.testing, ['vitest']);
-    }).toThrow('testing must be one of: vitest, none');
+    }).toThrow('testing must be one of: vitest, jest, none');
 
     expect(() => {
       return readAnswer(ANSWERS.agents, [['codex']]);

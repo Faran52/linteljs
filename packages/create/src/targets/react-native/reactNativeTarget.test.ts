@@ -139,7 +139,7 @@ const GATES: GateRow[] = [
     store: ['redux-toolkit'],
     data: ['rtk-query'],
   }]],
-  ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
+  ['__mocks__/renderScreen.tsx', [{ testing: ['jest'] }]],
   ['metro.config.js@tailwind', TAILWIND],
   ['nativewind-env.d.ts@tailwind', TAILWIND],
   ['postcss.config.mjs@tailwind', TAILWIND],

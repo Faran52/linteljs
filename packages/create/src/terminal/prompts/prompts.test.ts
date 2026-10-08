@@ -852,6 +852,21 @@ describe('the form library and router questions', () => {
     expect(hostedReact.recorded.labels['Form library']).toEqual(reactForms);
   });
 
+  it('offers jest, not vitest, on react-native and records it', async () => {
+    const defaults = Array.from({ length: 20 }, () => {
+      return undefined;
+    });
+    const { recorded, result } = await askWith([
+      'demo-app',
+      'react-native',
+      ...defaults,
+    ]);
+
+    const expected = ['Jest', 'None'];
+    expect(recorded.labels['Testing']).toEqual(expected);
+    expect(result.answers.testing).toBe('jest');
+  });
+
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
     const { recorded } = await askWith([
       'demo-app',

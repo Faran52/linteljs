@@ -20,10 +20,10 @@ export type HostedFramework = 'react' | 'vue' | 'svelte' | 'solid';
 
 export type Layout = 'single' | 'monorepo';
 
-export type Testing = 'vitest' | 'none';
-
-// The runner a target's suites run on: `testing` asks whether, the target decides which.
+// The target decides the runner; `testing` records it, or `none`.
 export type TestRunner = 'vitest' | 'jest';
+
+export type Testing = TestRunner | 'none';
 
 export interface TestRunnerParts {
   devDependencies: string[];

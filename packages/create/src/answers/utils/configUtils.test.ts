@@ -343,8 +343,8 @@ describe('parseLinteljsConfig', () => {
     ],
     [
       'an unknown testing choice',
-      config({ testing: 'jest' }),
-      /testing must be one of: vitest, none/,
+      config({ testing: 'mocha' }),
+      /testing must be one of: vitest, jest, none/,
     ],
     [
       'a form library nested in a list',
@@ -522,6 +522,26 @@ describe('the router and the form libraries', () => {
       });
       return parseLinteljsConfig(configText);
     }).toThrow(/stylex is not an answer for angular/);
+  });
+
+  it.each([
+    ['vitest', 'jest'],
+    ['jest', 'jest'],
+    ['none', 'none'],
+  ])('reads testing %s on react-native as %s', (testing, expected) => {
+    const configText = config({
+      target: 'react-native',
+      testing,
+    });
+    const parsed = parseLinteljsConfig(configText);
+    expect(parsed.testing).toBe(expected);
+  });
+
+  it('refuses jest on a target that runs vitest', () => {
+    expect(() => {
+      const configText = config({ testing: 'jest' });
+      return parseLinteljsConfig(configText);
+    }).toThrow(/jest is not an answer for react/);
   });
 
   it('refuses a form library listed among the libraries', () => {

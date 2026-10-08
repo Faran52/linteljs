@@ -4,7 +4,11 @@ import { LANGUAGES } from '@config/constants';
 
 import { keysOf } from '@utils/objectUtils';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
+import {
+  ANSWERS,
+  DEFAULT_ANSWERS,
+  onlyFor,
+} from '@answers';
 import {
   type StarterFile,
   type StarterTest,
@@ -326,18 +330,22 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
     ...DEFAULT_ANSWERS,
     target,
   };
+  const record = builder(base);
   const {
     hostsBrowser,
     hostsFramework,
     i18n,
     routers = [],
     stores = [],
-  } = builder(base);
+  } = record;
   const forms = keysOf(ANSWERS.form.values);
   const dataLayers = keysOf(ANSWERS.data.values);
   const stylings = keysOf(ANSWERS.styling.values);
   const mockings = keysOf(ANSWERS.mocking.values);
-  const testings = keysOf(ANSWERS.testing.values);
+  const testings = keysOf(ANSWERS.testing.values)
+    .filter((testing) => {
+      return onlyFor(ANSWERS.testing, testing)?.(record, base) ?? true;
+    });
   const hostedFrameworks = keysOf(ANSWERS.hostedFramework.values);
   const browsers = keysOf(ANSWERS.browser.values);
   const surfaceAnswers = keysOf(ANSWERS.surfaces.values)

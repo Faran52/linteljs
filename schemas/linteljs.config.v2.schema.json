@@ -71,6 +71,7 @@
     "testing": {
       "enum": [
         "vitest",
+        "jest",
         "none"
       ]
     },

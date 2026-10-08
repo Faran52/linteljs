@@ -168,12 +168,11 @@ describe('probes', () => {
     ]);
   });
 
-  it('turns every library, agent and plugin on, with vitest and tanstack-form', () => {
+  it('turns every library, agent and plugin on, with its target runner and tanstack-form', () => {
     const everything = {
       libraries: keysOf(ANSWERS.libraries.values),
       agents: keysOf(ANSWERS.agents.values),
       plugins: keysOf(ANSWERS.plugins.values),
-      testing: 'vitest',
       form: 'tanstack-form',
     };
 
@@ -190,9 +189,18 @@ describe('probes', () => {
         return picked;
       });
 
-    const expected = Array.from({ length: 19 }, () => {
-      return everything;
-    });
+    const expected = probes()
+      .map(({ answers }) => {
+        const runner = answers.target === 'react-native' ? 'jest' : 'vitest';
+
+        const picked = {
+          ...everything,
+          testing: runner,
+        };
+
+        return picked;
+      });
+    expect(chosen).toHaveLength(19);
     expect(chosen).toEqual(expected);
   });
 });

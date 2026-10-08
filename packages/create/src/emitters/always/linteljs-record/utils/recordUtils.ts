@@ -9,7 +9,6 @@ import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
 
 import { FRAMEWORK_PACKAGES, MAX_LINE } from '../../../constants';
-import { testRunnerOf } from '../../../utils/runnerUtils';
 import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -114,11 +113,6 @@ const printable = (value: Answers[AnswerKey]): string | undefined => {
   return undefined;
 };
 
-// `testing` records only yes or no; the page names the runner the target picked.
-const shown = (answers: Answers, key: AnswerKey): Answers[AnswerKey] => {
-  return key === 'testing' ? testRunnerOf(answers) ?? answers.testing : answers[key];
-};
-
 // An i18n project's page translates the label, so it gets the locale key the shared locales hold for it.
 const answerLabelKey = (key: AnswerKey): string => {
   return `answer${upperFirst(key)}`;
@@ -132,7 +126,7 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
   return keysOf(records)
     .flatMap((key: AnswerKey) => {
       const record = records[key];
-      const printed = printable(shown(answers, key));
+      const printed = printable(answers[key]);
       const unasked = record.slot?.(target) === false;
 
       if (record.prompt === undefined || printed === undefined || unasked) {

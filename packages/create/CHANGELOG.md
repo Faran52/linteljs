@@ -278,8 +278,10 @@ when a version's change lives in a sibling it is described there instead:
 - React Native's Contact, About and Version screens sit centred in Arabic on iOS. Their padding moved from
   the scroll view to its content, which iOS offset by the padding in a right-to-left layout, clipping the
   right edge.
-- The Version page's Testing row names the runner the project runs: `jest` on React Native, where it read
-  `vitest`, the recorded yes.
+- `testing` records the runner a project runs: `jest` on React Native, where `linteljs.config.json` and the
+  Version page read `vitest`. The answer and the config schema take `jest`; React Native offers Jest or None,
+  every other target Vitest or None. On React Native a recorded or flagged `vitest` reads as `jest`, and `jest`
+  on any other target is refused.
 - The Version page's answer labels speak the chosen language. With languages, each row is recorded by its
   locale key, and every locale carries the seventeen labels, where they stayed English.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:

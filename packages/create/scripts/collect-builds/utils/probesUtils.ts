@@ -33,7 +33,7 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
     libraries: keysOf(ANSWERS.libraries.values),
     agents: keysOf(ANSWERS.agents.values),
     plugins: keysOf(ANSWERS.plugins.values),
-    testing: 'vitest',
+    testing: record.testRunner ?? 'vitest',
     ...firstStore(record),
     form: 'tanstack-form',
     ...hosted,

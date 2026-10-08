@@ -318,8 +318,12 @@ export const everyCase = (target: TargetId): E2eCase[] => {
     return chosen;
   });
 
-  return across(libraries, () => {
-    const testings = [...TESTING_CHOICES];
+  return across(libraries, (variant) => {
+    const record = recordOf(variant);
+    const testings = TESTING_CHOICES
+      .filter((testing) => {
+        return onlyFor(ANSWERS.testing, testing)?.(record, DEFAULT_ANSWERS) ?? true;
+      });
 
     return testings;
   }, (variant, testing) => {
