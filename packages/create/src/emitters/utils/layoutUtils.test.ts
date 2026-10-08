@@ -85,6 +85,18 @@ describe('inLayout', () => {
     expect(withRequires).toHaveLength(1);
   });
 
+  it('keeps the Gemini CLI settings at the root in a monorepo, beside the plugins/ its hooks run', () => {
+    const written = [emitted('standard', '.gemini/settings.json', '')];
+    const artifacts = inLayout(answersFor({ layout: 'monorepo' }), '@acme/shop', written);
+
+    const targets = artifacts
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual(['.gemini/settings.json']);
+  });
+
   it('keeps every workspace root file at the root in a monorepo', () => {
     const rootFiles = [
       'AGENTS.md',

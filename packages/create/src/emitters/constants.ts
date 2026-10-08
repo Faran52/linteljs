@@ -363,6 +363,7 @@ export const ROOT_DIRECTORIES = [
   '.agents/',
   '.claude/',
   '.cursor/',
+  '.gemini/',
   '.github/',
   '.husky/',
   'plugins/',
