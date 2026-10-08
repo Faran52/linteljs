@@ -117,6 +117,11 @@ app-status-page {
   color: var(--primary);
 }
 
+/* The extension popup's language select sits under the hint. */
+.hint + select {
+  margin-top: 1rem;
+}
+
 .sent {
   padding: 1rem;
   margin: 0;
