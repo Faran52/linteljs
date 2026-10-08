@@ -7,12 +7,7 @@ newer.
 
 | what | command |
 | --- | --- |
-| lint | `{{RUN}} lint:fix`, then `{{RUN}} lint` |
-| lint styles | `{{RUN}} lint:css` |
-| typecheck | `{{RUN}} typecheck` |
-{{TEST_ROWS}}| build | `{{RUN}} build` |
-| full gate | `{{RUN}} check` |
-
+{{COMMAND_ROWS}}
 {{WORKSPACE}}`check` chains `{{CHECK_CHAIN}}`. It passes on a new project, and coverage thresholds are 100%. `package.json`
 is canonical for every other script.
 

@@ -8,6 +8,7 @@ import { appDirectoryOf, hasTests } from '@utils/answerUtils';
 
 import { ANSWERS } from '@answers';
 
+import { rootCheckOf } from '../../../utils/layoutUtils';
 import { buildScripts } from '../../utils/scriptUtils';
 
 import type { Answers, PackageManager } from '@config/types';
@@ -18,12 +19,6 @@ const SLOT_PATTERN = /\{\{[A-Z_]+\}\}/g;
 
 const SLOT_DELIMITER_LENGTH = '{{'.length;
 
-const testRows = (answers: Answers, run: string): string => {
-  return hasTests(answers)
-    ? `| test | \`${run} test\` |\n| coverage | \`${run} test:coverage\` |\n`
-    : '';
-};
-
 const filtered = (manager: PackageManager, name: string, script: string): string => {
   const commands: Record<PackageManager, string> = {
     pnpm: `pnpm --filter ${name} ${script}`,
@@ -33,6 +28,36 @@ const filtered = (manager: PackageManager, name: string, script: string): string
   };
 
   return commands[manager];
+};
+
+// From a monorepo's root every row but the gate runs the app's own script.
+const commandRows = (projectName: string, answers: Answers): string => {
+  const pm = answers.packageManager;
+  const run = RUN_PREFIX[pm];
+
+  const app = (script: string): string => {
+    const command = answers.layout === 'single' ? `${run} ${script}` : filtered(pm, projectName, script);
+
+    return `\`${command}\``;
+  };
+
+  const testRows: [string, string][] = hasTests(answers)
+    ? [['test', app('test')], ['coverage', app('test:coverage')]]
+    : [];
+  const rows: [string, string][] = [
+    ['lint', `${app('lint:fix')}, then ${app('lint')}`],
+    ['lint styles', app('lint:css')],
+    ['typecheck', app('typecheck')],
+    ...testRows,
+    ['build', app('build')],
+    ['full gate', `\`${run} check\``],
+  ];
+
+  return rows
+    .map(([what, command]) => {
+      return `| ${what} | ${command} |\n`;
+    })
+    .join('');
 };
 
 // A monorepo's root holds only `lint`, `typecheck` and a `check` over every package; the rest live in the app.
@@ -46,7 +71,7 @@ const workspaceNote = (projectName: string, answers: Answers): string => {
 
   const app = appDirectoryOf(answers, projectName);
 
-  return `The app lives in \`${app}/\`, and every package carries these scripts. At the `
+  return `The app lives in \`${app}/\`, and the commands above run its scripts from the root. At the `
     + 'root, `lint` and `typecheck` cover the root\'s own `scripts/`, and `check` runs them, then every package\'s '
     + `\`check\`. Run any other script in its package's directory, or from the root: \`${command}\`.\n\n`;
 };
@@ -61,8 +86,10 @@ export const sharedSlots = (projectName: string, answers: Answers): Record<strin
     INSTALL: `${answers.packageManager} install`,
     EXEC: EXEC_PREFIX[answers.packageManager],
     SYNC: SYNC_COMMAND[answers.packageManager],
-    CHECK_CHAIN: buildScripts(answers).check,
-    TEST_ROWS: testRows(answers, run),
+    CHECK_CHAIN: answers.layout === 'single'
+      ? buildScripts(answers).check
+      : rootCheckOf(answers.packageManager, projectName),
+    COMMAND_ROWS: commandRows(projectName, answers),
     WORKSPACE: workspaceNote(projectName, answers),
   };
 

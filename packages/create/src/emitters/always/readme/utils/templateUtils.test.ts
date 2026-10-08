@@ -90,13 +90,53 @@ describe('sharedSlots', () => {
   });
 
   it('adds the test and coverage rows only when there is a test runner', () => {
-    const { TEST_ROWS: vitestRows } = sharedSlots('demo-app', answersFor({ testing: 'vitest' }));
-    const { TEST_ROWS: untestedRows } = sharedSlots('demo-app', answersFor({ testing: 'none' }));
+    const { COMMAND_ROWS: vitestRows } = sharedSlots('demo-app', answersFor({ testing: 'vitest' }));
+    const { COMMAND_ROWS: untestedRows } = sharedSlots('demo-app', answersFor({ testing: 'none' }));
 
     expect(vitestRows)
-      .toContain('| test | `pnpm test` |');
+      .toContain('| test | `pnpm test` |\n| coverage | `pnpm test:coverage` |\n');
 
-    expect(untestedRows).toBe('');
+    expect(untestedRows).not.toContain('test');
+  });
+
+  it('runs every row in a single repo with the run prefix', () => {
+    const { COMMAND_ROWS: rows } = sharedSlots('demo-app', answersFor({ packageManager: 'npm', testing: 'none' }));
+
+    const expected = [
+      '| lint | `npm run lint:fix`, then `npm run lint` |',
+      '| lint styles | `npm run lint:css` |',
+      '| typecheck | `npm run typecheck` |',
+      '| build | `npm run build` |',
+      '| full gate | `npm run check` |',
+      '',
+    ].join('\n');
+
+    expect(rows).toBe(expected);
+  });
+
+  it('runs every row but the gate through the app from a monorepo root', () => {
+    const answers = answersFor({
+      packageManager: 'pnpm',
+      testing: 'vitest',
+      layout: 'monorepo',
+    });
+
+    const { COMMAND_ROWS: rows, CHECK_CHAIN: chain } = sharedSlots('shop', answers);
+
+    const expected = [
+      '| lint | `pnpm --filter shop lint:fix`, then `pnpm --filter shop lint` |',
+      '| lint styles | `pnpm --filter shop lint:css` |',
+      '| typecheck | `pnpm --filter shop typecheck` |',
+      '| test | `pnpm --filter shop test` |',
+      '| coverage | `pnpm --filter shop test:coverage` |',
+      '| build | `pnpm --filter shop build` |',
+      '| full gate | `pnpm check` |',
+      '',
+    ].join('\n');
+
+    expect(rows).toBe(expected);
+
+    expect(chain).toBe('pnpm lint && pnpm typecheck && pnpm -r --if-present run check');
   });
 
   it('says nothing of workspaces in a single repo', () => {
@@ -135,7 +175,7 @@ describe('sharedSlots', () => {
 
     const { WORKSPACE: note } = sharedSlots('@acme/shop', answers);
 
-    expect(note).toMatch(/^The app lives in `apps\/shop\/`, and every package carries these scripts\. /u);
+    expect(note).toMatch(/^The app lives in `apps\/shop\/`, and the commands above run its scripts from the root\. /u);
     expect(note).toContain('`check` runs them, then every package\'s `check`.');
     expect(note).toContain(`from the root: ${run}.\n\n`);
   });

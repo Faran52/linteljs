@@ -2,11 +2,9 @@ import { posix } from 'node:path';
 
 import { pick } from 'es-toolkit';
 
-import { RUN_PREFIX } from '@config/constants';
 import {
   type Answers,
   type Artifact,
-  type PackageManager,
   type ProjectShape,
 } from '@config/types';
 
@@ -25,6 +23,7 @@ import {
   WORKSPACE_GLOBS,
 } from '../../constants';
 import { copied, emitted } from '../../utils/artifactUtils';
+import { rootCheckOf, rootNameOf } from '../../utils/layoutUtils';
 import { buildDevDependencies, serializedPackageJson } from '../../utils/packageJsonUtils';
 
 // The root lints and typechecks only its own tooling, as a plain TypeScript project.
@@ -43,24 +42,9 @@ const rootAnswersOf = (answers: Answers): Answers => {
   return rootAnswers;
 };
 
-// Measured on each manager: every one leaves the root out and skips a workspace without the script.
-const workspacesCheck = (manager: PackageManager, rootName: string): string => {
-  const commands: Record<PackageManager, string> = {
-    pnpm: 'pnpm -r --if-present run check',
-    npm: 'npm run check --workspaces --if-present',
-    yarn: `yarn workspaces foreach -A --exclude ${rootName} run check`,
-    bun: 'bun run --workspaces --if-present check',
-  };
-
-  return commands[manager];
-};
-
 const rootManifest = (answers: Answers, name: string): string => {
   const pm = answers.packageManager;
-  const run = RUN_PREFIX[pm];
-  const rootName = `${name}-workspace`;
   const app = patchPackageJson({}, answers);
-  const check = workspacesCheck(pm, rootName);
   const devDependencies = buildDevDependencies(rootAnswersOf(answers));
   const appDirectory = appDirectoryOf(answers, name);
 
@@ -74,7 +58,7 @@ const rootManifest = (answers: Answers, name: string): string => {
   const msw = workerDirectory === undefined ? {} : { msw: { workerDirectory } };
 
   const manifest = {
-    name: rootName,
+    name: rootNameOf(name),
     private: true,
     type: 'module',
     // pnpm reads its globs from `pnpm-workspace.yaml`.
@@ -85,7 +69,7 @@ const rootManifest = (answers: Answers, name: string): string => {
       'lint': 'eslint . --concurrency auto',
       'lint:fix': 'eslint . --fix --concurrency auto',
       'typecheck': 'tsc --noEmit',
-      'check': `${run} lint && ${run} typecheck && ${check}`,
+      'check': rootCheckOf(pm, name),
       [pm === 'yarn' ? 'postinstall' : 'prepare']: 'husky',
     },
     devDependencies: pick(devDependencies, ROOT_DEV_DEPENDENCIES),

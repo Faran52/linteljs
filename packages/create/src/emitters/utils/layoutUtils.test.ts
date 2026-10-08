@@ -11,6 +11,8 @@ import {
   inLayout,
   inPackage,
   libraryAnswersOf,
+  rootCheckOf,
+  rootNameOf,
 } from './layoutUtils';
 
 import type { Artifact, HostedAnswers } from '@config/types';
@@ -181,5 +183,26 @@ describe('inPackage', () => {
     const artifacts = inPackage(answers, 'lib', [emitted('standard', 'apps/library/package.json', '')]);
 
     expect(artifacts).toEqual([]);
+  });
+});
+
+describe('rootNameOf', () => {
+  it('names the root apart from the app', () => {
+    const rootName = rootNameOf('@acme/shop');
+
+    expect(rootName).toBe('@acme/shop-workspace');
+  });
+});
+
+describe('rootCheckOf', () => {
+  it.each([
+    ['pnpm', 'pnpm lint && pnpm typecheck && pnpm -r --if-present run check'],
+    ['npm', 'npm run lint && npm run typecheck && npm run check --workspaces --if-present'],
+    ['yarn', 'yarn lint && yarn typecheck && yarn workspaces foreach -A --exclude @acme/shop-workspace run check'],
+    ['bun', 'bun run lint && bun run typecheck && bun run --workspaces --if-present check'],
+  ] as const)('runs the root gates then every workspace check on %s', (packageManager, check) => {
+    const rootCheck = rootCheckOf(packageManager, '@acme/shop');
+
+    expect(rootCheck).toBe(check);
   });
 });

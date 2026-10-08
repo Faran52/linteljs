@@ -2,6 +2,8 @@ import { posix } from 'node:path';
 
 import { pick } from 'es-toolkit';
 
+import { RUN_PREFIX } from '@config/constants';
+
 import { appDirectoryOf } from '@utils/answerUtils';
 
 import { DEFAULT_ANSWERS } from '@answers';
@@ -16,7 +18,32 @@ import type {
   Answers,
   Artifact,
   HostedAnswers,
+  PackageManager,
 } from '@config/types';
+
+export const rootNameOf = (name: string): string => {
+  return `${name}-workspace`;
+};
+
+// Measured on each manager: every one leaves the root out and skips a workspace without the script.
+const workspacesCheck = (manager: PackageManager, rootName: string): string => {
+  const commands: Record<PackageManager, string> = {
+    pnpm: 'pnpm -r --if-present run check',
+    npm: 'npm run check --workspaces --if-present',
+    yarn: `yarn workspaces foreach -A --exclude ${rootName} run check`,
+    bun: 'bun run --workspaces --if-present check',
+  };
+
+  return commands[manager];
+};
+
+// A monorepo root's `check`: its own lint and typecheck, then every package's.
+export const rootCheckOf = (manager: PackageManager, name: string): string => {
+  const run = RUN_PREFIX[manager];
+  const workspaces = workspacesCheck(manager, rootNameOf(name));
+
+  return `${run} lint && ${run} typecheck && ${workspaces}`;
+};
 
 const atRoot = (path: string): boolean => {
   return ROOT_FILES.includes(path) || ROOT_DIRECTORIES
