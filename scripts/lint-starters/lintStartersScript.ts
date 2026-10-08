@@ -93,7 +93,7 @@ const readStamp = (path: string): string => {
 };
 
 const fail = (label: string, step: string, output: string): Outcome => {
-  logError(`${label}: ${step} failed\n${output}`);
+  logError(`${label}: ${step} ${output}`);
 
   return 'failed';
 };

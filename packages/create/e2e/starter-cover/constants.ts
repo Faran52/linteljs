@@ -110,3 +110,9 @@ export const NEW_PROJECT: ProjectShape = {
   setupTests: [],
   styleEntries: [],
 };
+
+// Lines of each stream a failed step prints: enough for an ESLint report, not a whole install log.
+export const OUTPUT_TAIL_LINES = 40;
+
+// A shell or pnpm killed by a signal exits with this plus its number.
+export const SIGNAL_EXIT_BASE = 128;

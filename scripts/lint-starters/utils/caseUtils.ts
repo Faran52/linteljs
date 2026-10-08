@@ -25,6 +25,7 @@ import { appDirectoryOf } from '@utils/answerUtils';
 import { TEMPLATES_ROOT } from '@disk';
 import { writtenOf } from '@e2e/starter-cover/starterCover';
 import { templateOf } from '@e2e/starter-cover/utils/copiedUtils';
+import { failureOf } from '@e2e/starter-cover/utils/failureUtils';
 import { starterSourceEmitter } from '@emitters';
 import { pipelineRun } from '@pipeline';
 
@@ -57,6 +58,8 @@ export interface Spawned {
 }
 
 interface SpawnError extends Error {
+  code?: number | string | null;
+  signal?: string | null;
   stdout: string;
   stderr: string;
 }
@@ -248,7 +251,12 @@ export const spawnIn = async (dir: string, args: string[]): Promise<Spawned> => 
 
     const spawned: Spawned = {
       ok: false,
-      output: `${error.stdout}${error.stderr}`,
+      output: failureOf({
+        code: error.code ?? null,
+        signal: error.signal ?? null,
+        stdout: error.stdout,
+        stderr: error.stderr,
+      }),
     };
 
     return spawned;

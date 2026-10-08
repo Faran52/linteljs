@@ -9,6 +9,8 @@ import {
 import { resolve } from 'node:path';
 import process, { env } from 'node:process';
 
+import { signalOf } from '@e2e/starter-cover/utils/failureUtils';
+
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
 import {
@@ -23,6 +25,7 @@ import {
 interface Result {
   step: string;
   code: number;
+  signal: string | undefined;
   seconds: string;
   path: string;
 }
@@ -65,7 +68,7 @@ const runStep = async (step: string): Promise<Result> => {
 
   return new Promise((done) => {
     child
-      .on('close', (code) => {
+      .on('close', (code, signal) => {
         closeSync(out);
 
         const elapsed = (performance.now() - started) / MS_PER_SECOND;
@@ -74,6 +77,10 @@ const runStep = async (step: string): Promise<Result> => {
         done({
           step,
           code: code ?? 1,
+          signal: signalOf({
+            code,
+            signal,
+          }),
           seconds,
           path,
         });
@@ -122,7 +129,10 @@ const failed = results
   });
 
 for (const result of results) {
-  const status = result.code === 0 ? 'ok' : `FAILED (exit ${String(result.code)})`;
+  const failure = result.signal === undefined
+    ? `FAILED (exit ${String(result.code)})`
+    : `KILLED by ${result.signal}, not a failure of the step: rerun it`;
+  const status = result.code === 0 ? 'ok' : failure;
 
   log(`${result.step}: ${status} in ${result.seconds}s`);
 }
