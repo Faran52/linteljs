@@ -64,7 +64,109 @@ const FRAMEWORK_PACKAGES: [Framework, string][] = [
 
 const SORT_RULE = 'simple-import-sort/imports';
 
+// The SFC cases run first, one extension after another: each switch of `extraFileExtensions` reloads
+// every open project, and the .ts cases further down open this package's.
+const SFC_ORDER: [string, () => Layer, string, string][] = [
+  [
+    'vue',
+    vue,
+    'Home.vue',
+    'vue/',
+  ],
+  [
+    'svelte',
+    svelte,
+    'Page.svelte',
+    'svelte/',
+  ],
+];
+
+const fatalsIn = (messages: Linter.LintMessage[]): string[] => {
+  return messages
+    .filter((message) => {
+      return message.fatal === true;
+    })
+    .map((message) => {
+      return message.message;
+    });
+};
+
+const reportsFrom = (messages: Linter.LintMessage[], prefix: string): (string | null)[] => {
+  return messages
+    .map((message) => {
+      return message.ruleId;
+    })
+    .filter((ruleId) => {
+      return ruleId?.startsWith(prefix) ?? false;
+    });
+};
+
+describe('layer order', () => {
+  it.each(SFC_ORDER)(
+    '%s after typescript parses a component; before it, the component does not parse at all',
+    async (_name, layer, fixture, prefix) => {
+      const file = join(SFC_FIXTURES, fixture);
+
+      const config = [
+        ...base(),
+        ...typescript(),
+        ...layer(),
+      ];
+      const correct = await messagesForFile(config, file);
+      const misordered = [
+        ...base(),
+        ...layer(),
+        ...typescript(),
+      ];
+      const wrong = await messagesForFile(misordered, file);
+
+      const fatals = fatalsIn(correct);
+      expect(fatals).toEqual([]);
+      expect(reportsFrom(correct, prefix).length).toBeGreaterThan(0);
+
+      const wrongFatals = fatalsIn(wrong);
+      expect(wrongFatals).toHaveLength(1);
+      expect(fatalsIn(wrong)[0]).toMatch(/^Parsing error: /);
+      const reports = reportsFrom(wrong, prefix);
+      expect(reports).toEqual([]);
+    },
+  );
+});
+
 describe('composeConfig', () => {
+  it.each([
+    [
+      'svelte',
+      'Page.svelte',
+      'svelte/',
+    ],
+    [
+      'vue',
+      'Home.vue',
+      'vue/',
+    ],
+  ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
+    const config = await composeConfig({
+      framework: framework === 'vue' ? 'vue' : 'svelte',
+      typescript: true,
+    });
+    const messages = await messagesForFile(config, join(SFC_FIXTURES, fixture));
+
+    const fatal = messages
+      .filter((message) => {
+        return message.fatal === true;
+      });
+
+    expect(fatal).toEqual([]);
+
+    const reported = messages
+      .some((message) => {
+        return message.ruleId?.startsWith(prefix) ?? false;
+      });
+
+    expect(reported).toBe(true);
+  });
+
   it('returns base alone when asked for nothing, rather than a default nobody wrote', async () => {
     const baseOnly = await composeConfig();
 
@@ -107,39 +209,6 @@ describe('composeConfig', () => {
 
     expect(own).not.toContain(SORT_RULE);
     expect(none).toContain(SORT_RULE);
-  });
-
-  it.each([
-    [
-      'vue',
-      'Home.vue',
-      'vue/',
-    ],
-    [
-      'svelte',
-      'Page.svelte',
-      'svelte/',
-    ],
-  ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
-    const config = await composeConfig({
-      framework: framework === 'vue' ? 'vue' : 'svelte',
-      typescript: true,
-    });
-    const messages = await messagesForFile(config, join(SFC_FIXTURES, fixture));
-
-    const fatal = messages
-      .filter((message) => {
-        return message.fatal === true;
-      });
-
-    expect(fatal).toEqual([]);
-
-    const reported = messages
-      .some((message) => {
-        return message.ruleId?.startsWith(prefix) ?? false;
-      });
-
-    expect(reported).toBe(true);
   });
 
   it('puts react underneath next rather than beside it', async () => {
@@ -594,71 +663,4 @@ describe('composition', () => {
       composes(config);
     }).not.toThrow();
   });
-});
-
-const SFC_ORDER: [string, () => Layer, string, string][] = [
-  [
-    'vue',
-    vue,
-    'Home.vue',
-    'vue/',
-  ],
-  [
-    'svelte',
-    svelte,
-    'Page.svelte',
-    'svelte/',
-  ],
-];
-
-const fatalsIn = (messages: Linter.LintMessage[]): string[] => {
-  return messages
-    .filter((message) => {
-      return message.fatal === true;
-    })
-    .map((message) => {
-      return message.message;
-    });
-};
-
-const reportsFrom = (messages: Linter.LintMessage[], prefix: string): (string | null)[] => {
-  return messages
-    .map((message) => {
-      return message.ruleId;
-    })
-    .filter((ruleId) => {
-      return ruleId?.startsWith(prefix) ?? false;
-    });
-};
-
-describe('layer order', () => {
-  it.each(SFC_ORDER)(
-    '%s after typescript parses a component; before it, the component does not parse at all',
-    async (_name, layer, fixture, prefix) => {
-      const file = join(SFC_FIXTURES, fixture);
-
-      const config = [
-        ...base(),
-        ...typescript(),
-        ...layer(),
-      ];
-      const correct = await messagesForFile(config, file);
-      const misordered = [
-        ...base(),
-        ...layer(),
-        ...typescript(),
-      ];
-      const wrong = await messagesForFile(misordered, file);
-
-      const fatals = fatalsIn(correct);
-      expect(fatals).toEqual([]);
-      expect(reportsFrom(correct, prefix).length).toBeGreaterThan(0);
-
-      const wrongFatals = fatalsIn(wrong);
-      expect(wrongFatals).toHaveLength(1);
-      expect(fatalsIn(wrong)[0]).toMatch(/^Parsing error: /);
-      const reports = reportsFrom(wrong, prefix);
-      expect(reports).toEqual([]);
-    },
-  );
 });

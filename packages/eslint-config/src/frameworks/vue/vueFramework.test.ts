@@ -25,6 +25,24 @@ import typescript from '../../layers/typescript/typescriptLayer';
 import vue, { vueGroup } from './vueFramework';
 
 describe('vue', () => {
+  // Ahead of every .vue case: switching `extraFileExtensions` reloads each open project.
+  it('lets a .ts file pass an imported component along', async () => {
+    const file = join(SFC_FIXTURES, 'registerHome.ts');
+    const plainConfig = [...base(), ...typescript()];
+    const plain = await ruleIdsForFile(plainConfig, file);
+    const composedConfig = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
+    const composed = await ruleIdsForFile(composedConfig, file);
+
+    expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
+    expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');
+    expect(composed).not.toContain('@typescript-eslint/no-unsafe-argument');
+    expect(composed).not.toContain('@typescript-eslint/no-unsafe-assignment');
+  });
+
   it('parses a single-file component and reports on its template', async () => {
     const ruleIds = await ruleIdsForFile(vue(), join(SFC_FIXTURES, 'Home.vue'));
 
@@ -98,23 +116,6 @@ describe('vue', () => {
     const ruleIds = await ruleIdsFor(layer, 'export const value = 1;\n', 'src/lib/value.js');
 
     expect(ruleIds).not.toContain(null);
-  });
-
-  it('lets a .ts file pass an imported component along', async () => {
-    const file = join(SFC_FIXTURES, 'registerHome.ts');
-    const plainConfig = [...base(), ...typescript()];
-    const plain = await ruleIdsForFile(plainConfig, file);
-    const composedConfig = [
-      ...base(),
-      ...typescript(),
-      ...vue(),
-    ];
-    const composed = await ruleIdsForFile(composedConfig, file);
-
-    expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
-    expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');
-    expect(composed).not.toContain('@typescript-eslint/no-unsafe-argument');
-    expect(composed).not.toContain('@typescript-eslint/no-unsafe-assignment');
   });
 
   it.each([
