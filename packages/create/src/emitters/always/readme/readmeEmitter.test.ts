@@ -1,15 +1,28 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { EMPTY_PROJECT } from '@config/constants';
-
 import { DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
+import { workspaceOf } from '../../utils/layoutUtils';
+
 import { emitReadme, readmeEmitter } from './readmeEmitter';
+
+import type { Answers, Workspace } from '@config/types';
+
+const workspaceFor = (answers: Answers, name: string): Workspace => {
+  return workspaceOf(name, [{
+    name,
+    answers: {
+      ...HOSTED_DEFAULTS,
+      ...answers,
+    },
+  }]);
+};
 
 describe('emitReadme', () => {
   it('fills the project name and target label into the template', () => {
@@ -43,7 +56,7 @@ describe('emitReadme', () => {
 
 describe('readmeEmitter', () => {
   it("replaces the scaffolder's README with one that matches the project", async () => {
-    const [artifact] = readmeEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const [artifact] = readmeEmitter(workspaceFor(DEFAULT_ANSWERS, 'demo-app'));
     const scaffolded = '# use npm, yarn or bun\n';
     const readme = artifact === undefined ? '' : await shippedAssetsReader(artifact.content, scaffolded);
 
@@ -61,8 +74,8 @@ describe('readmeEmitter', () => {
       target: 'react-native' as const,
       packageManager: 'npm' as const,
     };
-    const [native] = readmeEmitter(answers, EMPTY_PROJECT, 'demo-app');
-    const [web] = readmeEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const [native] = readmeEmitter(workspaceFor(answers, 'demo-app'));
+    const [web] = readmeEmitter(workspaceFor(DEFAULT_ANSWERS, 'demo-app'));
     const nativeReadme = native === undefined ? '' : await shippedAssetsReader(native.content, null);
     const webReadme = web === undefined ? '' : await shippedAssetsReader(web.content, null);
 
@@ -77,10 +90,38 @@ describe('readmeEmitter', () => {
       ...DEFAULT_ANSWERS,
       target: 'typescript' as const,
     };
-    const [artifact] = readmeEmitter(answers, EMPTY_PROJECT, 'demo-lib');
+    const [artifact] = readmeEmitter(workspaceFor(answers, 'demo-lib'));
     const readme = artifact === undefined ? '' : await shippedAssetsReader(artifact.content, null);
 
     expect(readme).toContain('`package.json`\nis canonical for every other script.');
     expect(readme).not.toContain('server');
+  });
+
+  it('lists every project of a workspace in its own section, under the workspace name', async () => {
+    const monorepo: Answers = {
+      ...DEFAULT_ANSWERS,
+      layout: 'monorepo',
+    };
+    const workspace = workspaceOf('acme', [{
+      name: 'web',
+      answers: {
+        ...HOSTED_DEFAULTS,
+        ...monorepo,
+      },
+    }, {
+      name: 'shared',
+      answers: {
+        ...HOSTED_DEFAULTS,
+        ...monorepo,
+        target: 'typescript',
+      },
+    }]);
+    const [artifact] = readmeEmitter(workspace);
+    const readme = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+
+    expect(readme).toContain('# acme\n\nA workspace of 2 projects, scaffolded');
+    expect(readme).toContain('### web\n\nReact (Vite), in `apps/web/`.');
+    expect(readme).toContain('### shared\n\nTypeScript package, no framework, in `packages/shared/`.');
+    expect(readme).toContain('| build | `pnpm --filter shared build` |');
   });
 });

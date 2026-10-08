@@ -774,7 +774,7 @@ describe('main: sync', () => {
     expect(hasJestConfig).toBe(false);
   });
 
-  it('syncs a monorepo\'s app in apps/, under any root directory name', async () => {
+  it('syncs a monorepo\'s package in packages/, under any root directory name', async () => {
     await runMain([
       'demo',
       '--target',
@@ -793,7 +793,7 @@ describe('main: sync', () => {
 
     expect(current.printed).toBe('Everything is already up to date.\n');
 
-    const app = join(root, 'apps', 'demo');
+    const app = join(root, 'packages', 'demo');
     await writeFile(join(app, 'eslint.config.ts'), 'export default [];\n', 'utf8');
 
     const { code, printed } = await runMain(['sync', '--yes'], scripted([]));

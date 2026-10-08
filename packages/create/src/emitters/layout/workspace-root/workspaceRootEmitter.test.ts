@@ -5,10 +5,9 @@ import {
   it,
 } from 'vitest';
 
-import { EMPTY_PROJECT } from '@config/constants';
-
 import { shippedAssetsReader } from '@disk';
 
+import { workspaceOf } from '../../utils/layoutUtils';
 import { type PackageJson, parsePackageJson } from '../../utils/packageJsonUtils';
 
 import { workspaceRootEmitter } from './workspaceRootEmitter';
@@ -21,7 +20,11 @@ const textAt = async (overrides: Partial<HostedAnswers>, target: string): Promis
     ...overrides,
   });
 
-  const artifact = workspaceRootEmitter(answers, EMPTY_PROJECT, '@acme/shop')
+  const workspace = workspaceOf('@acme/shop', [{
+    name: '@acme/shop',
+    answers,
+  }]);
+  const artifact = workspaceRootEmitter(workspace)
     .find((candidate) => {
       return candidate.target === target;
     });
@@ -38,14 +41,21 @@ const manifestOf = async (overrides: Partial<HostedAnswers>): Promise<PackageJso
 
 describe('workspaceRootEmitter', () => {
   it('writes nothing for a single repo', () => {
-    const artifacts = workspaceRootEmitter(hostedAnswersFor({}), EMPTY_PROJECT, 'shop');
+    const artifacts = workspaceRootEmitter(workspaceOf('shop', [{
+      name: 'shop',
+      answers: hostedAnswersFor({}),
+    }]));
     expect(artifacts).toEqual([]);
   });
 
   it('writes the root tooling of a monorepo', () => {
     const answers = hostedAnswersFor({ layout: 'monorepo' });
 
-    const targets = workspaceRootEmitter(answers, EMPTY_PROJECT, 'shop')
+    const workspace = workspaceOf('shop', [{
+      name: 'shop',
+      answers,
+    }]);
+    const targets = workspaceRootEmitter(workspace)
       .map((artifact) => {
         return `${artifact.stage} ${artifact.target}`;
       });
@@ -125,6 +135,28 @@ describe('workspaceRootEmitter', () => {
       '@commitlint/config-conventional',
       '@inlang/plugin-message-format',
     ]);
+  });
+
+  it('takes into the root what any project of the workspace needs there', async () => {
+    const workspace = workspaceOf('acme', [{
+      name: 'web',
+      answers: hostedAnswersFor({ layout: 'monorepo' }),
+    }, {
+      name: 'site',
+      answers: hostedAnswersFor({
+        target: 'svelte',
+        languages: ['ja'],
+      }),
+    }]);
+    const artifact = workspaceRootEmitter(workspace)
+      .find((candidate) => {
+        return candidate.target === 'package.json';
+      });
+    const text = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+    const { name, devDependencies = {} } = parsePackageJson(text);
+
+    expect(name).toBe('acme-workspace');
+    expect(devDependencies).toHaveProperty(['@inlang/plugin-message-format']);
   });
 
   it('lints and typechecks the root, leaving every workspace to itself', async () => {

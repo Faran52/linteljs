@@ -20,7 +20,7 @@ describe('overridesBlock', () => {
 
 describe('allowBuildsBlock', () => {
   it('allows the four builds every target approves, sorted', () => {
-    const actual = allowBuildsBlock(answersFor({ target: 'svelte' }));
+    const actual = allowBuildsBlock([answersFor({ target: 'svelte' })]);
 
     expect(actual).toBe(
       'allowBuilds:\n'
@@ -32,7 +32,7 @@ describe('allowBuildsBlock', () => {
   });
 
   it('allows only the shared builds for the react target', () => {
-    const actual = allowBuildsBlock(answersFor({ target: 'react' }));
+    const actual = allowBuildsBlock([answersFor({ target: 'react' })]);
 
     expect(actual).toBe(
       'allowBuilds:\n'
@@ -44,30 +44,48 @@ describe('allowBuildsBlock', () => {
   });
 
   it("takes a hosted framework's build allowance into the host", () => {
-    const onAstro = allowBuildsBlock(answersFor({
+    const onAstro = allowBuildsBlock([answersFor({
       target: 'astro',
       hostedFramework: 'vue',
-    }));
+    })]);
 
     expect(onAstro).toContain("'vue-demi': true");
 
-    const onExtension = allowBuildsBlock(answersFor({
+    const onExtension = allowBuildsBlock([answersFor({
       target: 'webextension',
       hostedFramework: 'vue',
-    }));
+    })]);
 
     expect(onExtension).toContain("'vue-demi': true");
   });
 
+  it('allows every build any project of a workspace needs, once each and in locale order', () => {
+    const union = allowBuildsBlock([answersFor({
+      target: 'astro',
+      hostedFramework: 'vue',
+    }), answersFor({ mocking: 'msw' })]);
+    const names = [...union.matchAll(/'([^']+)'/gu)]
+      .map(([, name = '']) => {
+        return name;
+      });
+    const sorted = names
+      .toSorted((left, right) => {
+        return left.localeCompare(right, 'en');
+      });
+
+    expect(names).toEqual(expect.arrayContaining(['vue-demi', 'msw']));
+    expect(names).toEqual([...new Set(sorted)]);
+  });
+
   it('names no framework build where the host hosts none', () => {
-    const astroBlock = allowBuildsBlock(answersFor({ target: 'astro' }));
+    const astroBlock = allowBuildsBlock([answersFor({ target: 'astro' })]);
     expect(astroBlock).not.toContain('vue-demi');
-    const extensionBlock = allowBuildsBlock(answersFor({ target: 'webextension' }));
+    const extensionBlock = allowBuildsBlock([answersFor({ target: 'webextension' })]);
     expect(extensionBlock).not.toContain('vue-demi');
   });
 
   it('merges in the builds a target needs beyond the shared four, sorted with them', () => {
-    const output = allowBuildsBlock(answersFor({ target: 'angular' }));
+    const output = allowBuildsBlock([answersFor({ target: 'angular' })]);
 
     expect(output).toBe(
       'allowBuilds:\n'

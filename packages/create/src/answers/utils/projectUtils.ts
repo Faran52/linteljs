@@ -10,15 +10,34 @@ import type { JsonValue } from './readUtils';
 
 type FlatConfig = Partial<Record<string, JsonValue>>;
 
-// One project's flat answers in the v3 shape; a monorepo's project is named for its `apps/` directory.
-export const configOf = (flat: FlatConfig, name: string): FlatConfig => {
+type ConfigEntry = readonly [FlatConfig, string];
+
+const projectConfigOf = ([flat, name]: ConfigEntry): FlatConfig => {
   const project = omit(flat, WORKSPACE_KEYS);
+
+  if (flat['layout'] !== 'monorepo') {
+    return project;
+  }
+
+  const named = { name: projectNameOf(name), ...project };
+
+  return named;
+};
+
+// Flat answers per project in the v3 shape, the first project's workspace answers on top; a monorepo's project is
+// named for its directory.
+export const workspaceConfigOf = (entries: readonly ConfigEntry[]): FlatConfig => {
+  const [[workspace] = [{}, '']] = entries;
   const body: FlatConfig = {
-    ...pick(flat, WORKSPACE_KEYS),
-    projects: [flat['layout'] === 'monorepo' ? { name: projectNameOf(name), ...project } : project],
+    ...pick(workspace, WORKSPACE_KEYS),
+    projects: entries.map(projectConfigOf),
   };
 
   return body;
+};
+
+export const configOf = (flat: FlatConfig, name: string): FlatConfig => {
+  return workspaceConfigOf([[flat, name]]);
 };
 
 export const projectAnswersOf = (config: LinteljsConfig, project: ProjectConfig): Answers => {

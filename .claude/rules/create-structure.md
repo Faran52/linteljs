@@ -59,7 +59,7 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - `<group>/<subject>/<subjectEmitter>.ts`: the subject directory is named for the file it writes, the group for
   the answer that decides whether it writes anything (`agents/`, `manager/`, `target/`, `testing/`,
   `libraries/`, `typesafety/`, and `always/` for none). `layout/workspace-root/` writes a monorepo's root manifest and tooling; `ROOT_EMITTERS` holds it, past
-  the move `inLayout` makes.
+  the move `inProject` makes.
 - Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a branchless `flatMap`
   over `registry.ts`. `meta.test.ts` reads its source to hold that, and holds the registry's `<group>/<subject>`
   keys against the directory listing both ways.
@@ -71,7 +71,7 @@ pipeline/   the stage machine, sync, and the passes over written source.
   through `artifactWriter`; `pipeline/passes/` is the one exception, editing source already written.
 - `emitters/utils/`: `artifactUtils.ts` (the content shapes), `managedUtils.ts` (the managed record),
   `shapeUtils.ts` (a project's own spelling of a file), `importUtils.ts` (import order), `stylingUtils.ts`,
-  `aliasUtils.ts`, `layoutUtils.ts` (`inLayout`, a monorepo's move of every non-root artifact under `apps/<name>/`), `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
+  `aliasUtils.ts`, `layoutUtils.ts` (`inProject`, a monorepo's move of every non-root artifact under its project directory, `apps/<name>/` or `packages/<name>/` for a package), `frontmatterUtils.ts` (a rule's `paths:` frontmatter), `quoteUtils.ts` (a string as a source
   literal), `packageJsonUtils.ts` (dependencies, read by `package-json/`, `yarnrc/` and `pnpm-workspace/`),
   `runnerUtils.ts` (`testRunnerOf`, the runner a project's suites run on, from the record's `testRunner`, read by
   every subject that writes a runner's config, scripts, types or lint layer, and by `sync`'s runner-switch guard).

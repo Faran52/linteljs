@@ -1,9 +1,9 @@
-import { pick } from 'es-toolkit';
+import { pick, toMerged } from 'es-toolkit';
 
 import {
   type Answers,
   type Artifact,
-  type ProjectShape,
+  type Workspace,
 } from '@config/types';
 
 import { DEFAULT_ANSWERS } from '@answers';
@@ -20,7 +20,11 @@ import {
 } from '../../constants';
 import { copied, emitted } from '../../utils/artifactUtils';
 import { rootCheckOf, rootNameOf } from '../../utils/layoutUtils';
-import { buildDevDependencies, serializedPackageJson } from '../../utils/packageJsonUtils';
+import {
+  buildDevDependencies,
+  type PackageJson,
+  serializedPackageJson,
+} from '../../utils/packageJsonUtils';
 
 // The root lints and typechecks only its own tooling, as a plain TypeScript project.
 const rootAnswersOf = (answers: Answers): Answers => {
@@ -38,28 +42,45 @@ const rootAnswersOf = (answers: Answers): Answers => {
   return rootAnswers;
 };
 
-const rootManifest = (answers: Answers, name: string): string => {
-  const pm = answers.packageManager;
-  const app = patchPackageJson({}, answers);
-  const appDevDependencies = buildDevDependencies(answers);
-  const rootDevDependencies = buildDevDependencies(rootAnswersOf(answers));
-  const devDependencies = {
-    ...appDevDependencies,
-    ...rootDevDependencies,
-  };
+// The root declares what any project's manifest would carry there, since a manager reads it nowhere else.
+const rootManifest = (workspace: Workspace): string => {
+  const [{ answers: first }] = workspace.projects;
+  const pm = first.packageManager;
+  const projects = workspace.projects
+    .map(({ answers }) => {
+      return answers;
+    });
+  const rootFields = projects
+    .reduce<PackageJson>((fields, answers) => {
+      const manifest = patchPackageJson({}, answers);
+      const own = pick(manifest, ROOT_FIELDS);
+
+      return toMerged(fields, own);
+    }, {});
+  const root = rootAnswersOf(first);
+  const devDependencies = [...projects, root]
+    .reduce<Record<string, string>>((all, answers) => {
+      const own = buildDevDependencies(answers);
+      const merged = {
+        ...all,
+        ...own,
+      };
+
+      return merged;
+    }, {});
 
   const manifest = {
-    name: rootNameOf(name),
+    name: rootNameOf(workspace.name),
     private: true,
     type: 'module',
     // pnpm reads its globs from `pnpm-workspace.yaml`.
     ...(pm === 'pnpm' ? {} : { workspaces: WORKSPACE_GLOBS }),
-    ...pick(app, ROOT_FIELDS),
+    ...rootFields,
     scripts: {
       'lint': 'eslint . --concurrency auto',
       'lint:fix': 'eslint . --fix --concurrency auto',
       'typecheck': 'tsc --noEmit',
-      'check': rootCheckOf(pm, name),
+      'check': rootCheckOf(pm, workspace.name),
       [pm === 'yarn' ? 'postinstall' : 'prepare']: 'husky',
     },
     devDependencies: pick(devDependencies, ROOT_DEV_DEPENDENCIES),
@@ -79,7 +100,9 @@ const withoutStylelint = (source: string): string => {
     .join('\n');
 };
 
-export const workspaceRootEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
+export const workspaceRootEmitter = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
   if (answers.layout === 'single') {
     return [];
   }
@@ -88,7 +111,7 @@ export const workspaceRootEmitter = (answers: Answers, _project: ProjectShape, n
   const tsconfig = buildTsconfig(rootAnswers);
   const rootTsconfig = { ...tsconfig, exclude: [...tsconfig.exclude, ...WORKSPACE_DIRECTORIES] };
 
-  const manifest = rootManifest(answers, name);
+  const manifest = rootManifest(workspace);
   const lintStaged = copied('lint-staged.config.js');
 
   const artifacts: Artifact[] = [

@@ -1,4 +1,4 @@
-import { answersFor } from '@mocks/answersFor';
+import { hostedAnswersFor } from '@mocks/answersFor';
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
@@ -8,11 +8,12 @@ import {
 
 import { emitted } from './artifactUtils';
 import {
-  inLayout,
-  inPackage,
+  atRoot,
+  inProject,
   packageAnswersOf,
   rootCheckOf,
   rootNameOf,
+  workspaceOf,
 } from './layoutUtils';
 
 import type { Artifact, HostedAnswers } from '@config/types';
@@ -35,15 +36,15 @@ const artifactsFor = (): Artifact[] => {
   return artifacts;
 };
 
-describe('inLayout', () => {
+describe('inProject', () => {
   it('leaves a single repo as it is', () => {
     const written = artifactsFor();
-    const artifacts = inLayout(answersFor({}), '@acme/shop', written);
+    const artifacts = inProject('.', written);
     expect(artifacts).toBe(written);
   });
 
-  it('moves every artifact but the root tooling under apps/<name> in a monorepo', () => {
-    const artifacts = inLayout(answersFor({ layout: 'monorepo' }), '@acme/shop', artifactsFor());
+  it('moves every artifact but the root tooling under its directory', () => {
+    const artifacts = inProject('apps/shop', artifactsFor());
 
     const targets = artifacts
       .map((artifact) => {
@@ -87,7 +88,7 @@ describe('inLayout', () => {
 
   it('keeps the Gemini CLI settings at the root in a monorepo, beside the plugins/ its hooks run', () => {
     const written = [emitted('standard', '.gemini/settings.json', '')];
-    const artifacts = inLayout(answersFor({ layout: 'monorepo' }), '@acme/shop', written);
+    const artifacts = inProject('apps/shop', written);
 
     const targets = artifacts
       .map((artifact) => {
@@ -112,7 +113,7 @@ describe('inLayout', () => {
       .map((target) => {
         return emitted('standard', target, '');
       });
-    const artifacts = inLayout(answersFor({ layout: 'monorepo' }), '@acme/shop', written);
+    const artifacts = inProject('apps/shop', written);
 
     const targets = artifacts
       .map((artifact) => {
@@ -152,49 +153,49 @@ describe('packageAnswersOf', () => {
   });
 });
 
-describe('inPackage', () => {
-  it('keeps only the app directory\'s artifacts, moved under packages/<name>', () => {
-    const answers = answersFor({ layout: 'monorepo' });
-    const laidOut = inLayout(answers, 'lib', artifactsFor());
-    const artifacts = inPackage(answers, 'lib', laidOut);
+describe('atRoot', () => {
+  it('holds a root file and a root directory\'s contents at the root, and nothing else', () => {
+    const rooted = [
+      'README.md',
+      '.claude/rules/testing.md',
+      'src/main.ts',
+    ]
+      .map(atRoot);
 
-    const targets = artifacts
-      .map((artifact) => {
-        return artifact.target;
-      });
-
-    expect(targets).toEqual([
-      'packages/lib/package.json',
-      'packages/lib/src/main.ts',
-      'packages/lib/docs/README.md',
-      'packages/lib/src/main.test.ts',
+    expect(rooted).toEqual([
+      true,
+      true,
+      false,
     ]);
-
-    const requires = artifacts
-      .map((artifact) => {
-        return artifact.requires;
-      });
-
-    expect(requires).toEqual([
-      undefined,
-      undefined,
-      undefined,
-      ['packages/lib/src/main.ts', 'scripts/checkBannedPatterns.ts'],
-    ]);
-
-    const withRequires = artifacts
-      .filter((artifact) => {
-        return 'requires' in artifact;
-      });
-
-    expect(withRequires).toHaveLength(1);
   });
+});
 
-  it('keeps nothing whose path only shares the app directory\'s prefix', () => {
-    const answers = answersFor({ layout: 'monorepo' });
-    const artifacts = inPackage(answers, 'lib', [emitted('standard', 'apps/library/package.json', '')]);
+describe('workspaceOf', () => {
+  it('gives every project the first project\'s workspace answers and keeps its own', () => {
+    const first = hostedAnswersFor({
+      layout: 'monorepo',
+      packageManager: 'pnpm',
+      target: 'react',
+    });
+    const second = hostedAnswersFor({
+      layout: 'single',
+      packageManager: 'npm',
+      target: 'vue',
+    });
 
-    expect(artifacts).toEqual([]);
+    const workspace = workspaceOf('acme', [
+      { name: 'web', answers: first },
+      { name: 'admin', answers: second },
+    ]);
+
+    const [kept, aligned] = workspace.projects;
+
+    expect(workspace.name).toBe('acme');
+    expect(kept.answers).toBe(first);
+    expect(aligned?.name).toBe('admin');
+    expect(aligned?.answers.target).toBe('vue');
+    expect(aligned?.answers.layout).toBe('monorepo');
+    expect(aligned?.answers.packageManager).toBe('pnpm');
   });
 });
 

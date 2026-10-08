@@ -34,13 +34,15 @@ import {
   type DependencyDrift,
   dependencyDrift,
   emitEslintConfig,
-  packageArtifacts,
+  packageAnswersOf,
   parsePackageJson,
+  projectArtifacts,
   serializedPackageJson,
   TEST_RUNNERS,
   testRunnerOf,
   type Upgrade,
   upgradedPackageJson,
+  workspaceOf,
 } from '@emitters';
 
 import {
@@ -227,7 +229,11 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
 
 const pluginArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
   const project = await projectShapeReader(appRootOf(cwd, answers));
-  const built = buildArtifacts(answers, project, basename(cwd));
+  const name = basename(cwd);
+  const built = buildArtifacts(workspaceOf(name, [{
+    name,
+    answers,
+  }]), [project]);
 
   return built
     .filter(({ target }) => {
@@ -306,7 +312,10 @@ export const writeDependencies = async (cwd: string, changes: Upgrade[]): Promis
 
 // The workspace globs already hold `packages/*`, so no root file changes. The directory is new: all of it writes.
 export const addPackage = async (cwd: string, answers: HostedAnswers, name: string): Promise<string[]> => {
-  const artifacts = packageArtifacts(answers, name);
+  const artifacts = projectArtifacts({
+    name,
+    answers: packageAnswersOf(answers),
+  });
 
   for (const artifact of artifacts) {
     await artifactWriter(cwd, artifact, true);

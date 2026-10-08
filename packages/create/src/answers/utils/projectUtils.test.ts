@@ -7,7 +7,11 @@ import {
 } from '../constants';
 import { DEFAULT_ANSWERS, type LinteljsConfig } from '../registry';
 
-import { configOf, projectAnswersOf } from './projectUtils';
+import {
+  configOf,
+  projectAnswersOf,
+  workspaceConfigOf,
+} from './projectUtils';
 
 describe('configOf', () => {
   it('lifts the workspace answers above one unnamed project in a single layout', () => {
@@ -36,6 +40,25 @@ describe('configOf', () => {
     }, '@acme/my_app');
 
     expect(actual).toHaveProperty('projects.0.name', 'my-app');
+  });
+});
+
+describe('workspaceConfigOf', () => {
+  it('lists every project in order under the first one\'s workspace answers', () => {
+    const monorepo = {
+      ...DEFAULT_ANSWERS,
+      layout: 'monorepo',
+    };
+    const actual = workspaceConfigOf([[monorepo, 'web'], [{
+      ...monorepo,
+      target: 'typescript',
+    }, 'shared']]);
+
+    expect(actual).toHaveProperty('layout', 'monorepo');
+    expect(actual).toHaveProperty('projects.0.name', 'web');
+    expect(actual).toHaveProperty('projects.1.name', 'shared');
+    expect(actual).toHaveProperty('projects.1.target', 'typescript');
+    expect(actual).not.toHaveProperty('projects.1.layout');
   });
 });
 

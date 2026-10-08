@@ -26,7 +26,6 @@ import {
 } from 'vitest';
 
 import {
-  EMPTY_PROJECT,
   LANGUAGES,
   MANAGED_PATH,
 } from '@config/constants';
@@ -41,6 +40,7 @@ import {
   type Surface,
   type TargetId,
   type Testing,
+  type Workspace,
 } from '@config/types';
 
 import { keysOf } from '@utils/objectUtils';
@@ -58,10 +58,17 @@ import { targetFor } from '@targets';
 
 import {
   buildArtifacts,
-  packageArtifacts,
+  projectArtifacts,
+  ROOT_EMITTERS,
+  ROOT_SEED_EMITTERS,
   seedArtifacts,
 } from './registry';
 import { buildAliases } from './utils/aliasUtils';
+import {
+  atRoot,
+  packageAnswersOf,
+  workspaceOf,
+} from './utils/layoutUtils';
 
 interface AnswerOverrides {
   agents?: Agent[];
@@ -79,9 +86,25 @@ interface ScannedArtifact {
 
 const TARGET_IDS = keysOf(ANSWERS.target.values);
 
+const workspaceFor = (answers: HostedAnswers, name: string): Workspace => {
+  return workspaceOf(name, [{ name, answers }]);
+};
+
+const builtFor = (answers: HostedAnswers, name: string): Artifact[] => {
+  const workspace = workspaceFor(answers, name);
+
+  return buildArtifacts(workspace);
+};
+
+const seededFor = (answers: HostedAnswers, name: string): Artifact[] => {
+  const workspace = workspaceFor(answers, name);
+
+  return seedArtifacts(workspace);
+};
+
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
   const answers = hostedAnswersFor(overrides);
-  const artifact = buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')
+  const artifact = builtFor(answers, 'demo-app')
     .find((candidate) => {
       return candidate.target === target;
     });
@@ -91,10 +114,11 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
 
 describe('buildArtifacts', () => {
   it.each(TARGET_IDS)('resolves every artifact for %s', async (target) => {
-    const artifacts = buildArtifacts(hostedAnswersFor({
+    const answers = hostedAnswersFor({
       target,
       libraries: ['zod'],
-    }), EMPTY_PROJECT, 'demo-app');
+    });
+    const artifacts = builtFor(answers, 'demo-app');
 
     const copies = artifacts
       .flatMap((artifact) => {
@@ -144,14 +168,14 @@ describe('buildArtifacts', () => {
 
     const sources = cases
       .flatMap((answers) => {
-        return seedArtifacts(answers, 'demo-app')
+        return seededFor(answers, 'demo-app')
           .flatMap((artifact) => {
             return 'sources' in artifact.content ? artifact.content.sources : [];
           });
       });
 
     for (const answers of cases) {
-      const targets = seedArtifacts(answers, 'demo-app')
+      const targets = seededFor(answers, 'demo-app')
         .map((artifact) => {
           return artifact.target;
         });
@@ -177,7 +201,7 @@ describe('buildArtifacts', () => {
       agents: keysOf(ANSWERS.agents.values),
       libraries: ['zod'],
     });
-    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const artifacts = [...seededFor(answers, 'demo-app'), ...builtFor(answers, 'demo-app')];
     const paths = artifacts
       .map((artifact) => {
         return artifact.target;
@@ -194,7 +218,7 @@ describe('buildArtifacts', () => {
 
 it('keeps next dev from rewriting the agent files a next project owns', async () => {
   const answers = hostedAnswersFor({ target: 'next' });
-  const config = seedArtifacts(answers, 'demo-app')
+  const config = seededFor(answers, 'demo-app')
     .find((artifact) => {
       return artifact.target === 'next.config.ts';
     });
@@ -206,7 +230,7 @@ it('keeps next dev from rewriting the agent files a next project owns', async ()
 describe('the page a target serves', () => {
   it.each(TARGET_IDS)('mounts %s on the element its index.html carries', async (target) => {
     const answers = hostedAnswersFor({ target });
-    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const artifacts = [...seededFor(answers, 'demo-app'), ...builtFor(answers, 'demo-app')];
     const page = artifacts
       .find((artifact) => {
         return artifact.target === 'index.html';
@@ -284,8 +308,8 @@ describe('the project the answers write', () => {
       })
       .map((chosen) => {
         const answers = hostedAnswersFor(chosen);
-        const seeded = seedArtifacts(answers, 'demo-app');
-        const artifacts = [...seeded, ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+        const seeded = seededFor(answers, 'demo-app');
+        const artifacts = [...seeded, ...builtFor(answers, 'demo-app')];
         const artifactPaths = artifacts
           .map(({ target: path }) => {
             return path;
@@ -628,7 +652,7 @@ describe('the files a webextension surface owns', () => {
       styling: 'tailwind' as const,
       surfaces,
     };
-    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const artifacts = [...seededFor(answers, 'demo-app'), ...builtFor(answers, 'demo-app')];
     const writtenPaths = artifacts
       .map(({ target: path }) => {
         return path;
@@ -653,7 +677,7 @@ describe('the files a webextension surface owns', () => {
       ...hostedAnswersFor({ target: 'webextension' }),
       surfaces: ['popup', 'devtools-panel'] satisfies Surface[],
     };
-    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const artifacts = [...seededFor(answers, 'demo-app'), ...builtFor(answers, 'demo-app')];
     const content = artifacts
       .find(({ target: path }) => {
         return path === page;
@@ -680,7 +704,7 @@ describe('the emitted checker against the emitted starter code', () => {
       data: 'tanstack-query',
     });
     const seededAnswers = hostedAnswersFor({ target });
-    const emitted = buildArtifacts(builtAnswers, EMPTY_PROJECT, 'demo-app')
+    const emitted = builtFor(builtAnswers, 'demo-app')
       .filter((artifact) => {
         return !('text' in artifact.content) && artifact.target !== CHECKER;
       })
@@ -696,7 +720,7 @@ describe('the emitted checker against the emitted starter code', () => {
 
         return file;
       });
-    const copied = seedArtifacts(seededAnswers, 'demo-app')
+    const copied = seededFor(seededAnswers, 'demo-app')
       .flatMap((artifact) => {
         return 'sources' in artifact.content
           ? artifact.content.sources
@@ -856,7 +880,7 @@ describe('the monorepo layout', () => {
   it('writes the app under apps/<name> and the tooling at the root', () => {
     const answers = hostedAnswersFor({ layout: 'monorepo' });
 
-    const targets = [...seedArtifacts(answers, '@acme/shop'), ...buildArtifacts(answers, EMPTY_PROJECT, '@acme/shop')]
+    const targets = [...seededFor(answers, '@acme/shop'), ...builtFor(answers, '@acme/shop')]
       .map((artifact) => {
         return artifact.target;
       });
@@ -881,14 +905,14 @@ describe('the monorepo layout', () => {
   });
 });
 
-describe('packageArtifacts', () => {
+describe('projectArtifacts', () => {
   it('writes a TypeScript package\'s own files under packages/<name>, and no root file', () => {
-    const answers = hostedAnswersFor({
+    const answers = packageAnswersOf(hostedAnswersFor({
       target: 'react',
       layout: 'monorepo',
-    });
+    }));
 
-    const targets = packageArtifacts(answers, 'lib')
+    const targets = projectArtifacts({ name: 'lib', answers })
       .map((artifact) => {
         return artifact.target;
       });
@@ -908,5 +932,113 @@ describe('packageArtifacts', () => {
       });
 
     expect(outside).toEqual([]);
+  });
+});
+
+describe('a workspace of several projects', () => {
+  const projectsFor = (): Workspace => {
+    const web = hostedAnswersFor({ target: 'react', layout: 'monorepo' });
+    const admin = hostedAnswersFor({ target: 'vue', layout: 'monorepo' });
+    const lib = hostedAnswersFor({ target: 'typescript', layout: 'monorepo' });
+
+    return workspaceOf('acme', [
+      { name: 'web', answers: web },
+      { name: 'admin', answers: admin },
+      { name: 'lib', answers: lib },
+    ]);
+  };
+
+  it('writes each path once, every app under apps/<n> and a package under packages/<n>', () => {
+    const workspace = projectsFor();
+    const targets = [...seedArtifacts(workspace), ...buildArtifacts(workspace)]
+      .map((artifact) => {
+        return artifact.target;
+      });
+    const unique = new Set(targets);
+
+    expect(targets).toHaveLength(unique.size);
+
+    expect(targets).toEqual(expect.arrayContaining([
+      'apps/web/package.json',
+      'apps/admin/package.json',
+      'packages/lib/package.json',
+      'package.json',
+      'pnpm-workspace.yaml',
+      'README.md',
+      'linteljs.config.json',
+      MANAGED_PATH,
+    ]));
+  });
+
+  it('writes the root manifest and README from the root emitters', () => {
+    const workspace = projectsFor();
+    const rootTargets = [
+      ...Object.values(ROOT_EMITTERS),
+      ...Object.values(ROOT_SEED_EMITTERS),
+    ]
+      .flatMap((emit) => {
+        return emit(workspace);
+      })
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(rootTargets).toEqual(expect.arrayContaining(['package.json', 'README.md']));
+  });
+});
+
+// The rule copies are per target by design; every other root file is the workspace's alone.
+const RULE_COPIES = [
+  '.cursor/rules/',
+  '.github/instructions/',
+  '.agents/rules/',
+  'plugins/linteljs/skills/linteljs/references/',
+];
+
+describe('the root files a project writes', () => {
+  const rootTextsFor = async (target: TargetId): Promise<Map<string, string>> => {
+    const answers = hostedAnswersFor({
+      target,
+      layout: 'monorepo',
+      agents: keysOf(ANSWERS.agents.values),
+    });
+    const workspace = workspaceFor(answers, 'demo-app');
+    const fromRootEmitters = [
+      ...Object.values(ROOT_EMITTERS),
+      ...Object.values(ROOT_SEED_EMITTERS),
+    ]
+      .flatMap((emit) => {
+        return emit(workspace);
+      })
+      .map((artifact) => {
+        return artifact.target;
+      });
+    const rooted = [...seedArtifacts(workspace), ...buildArtifacts(workspace)]
+      .filter(({ target: path }) => {
+        const copied = RULE_COPIES
+          .some((copy) => {
+            return path.startsWith(copy);
+          });
+
+        return atRoot(path) && !copied && path !== MANAGED_PATH && !fromRootEmitters.includes(path);
+      });
+    const entries = await Promise.all(rooted
+      .map(async (artifact) => {
+        const text = await shippedAssetsReader(artifact.content);
+        const entry: [string, string] = [artifact.target, text];
+
+        return entry;
+      }));
+
+    return new Map(entries);
+  };
+
+  it.each(TARGET_IDS)('is the same for %s as for react, rule copies aside', async (target) => {
+    const expected = await rootTextsFor('react');
+    const actual = await rootTextsFor(target);
+    const expectedTexts = Object.fromEntries(expected);
+    const actualTexts = Object.fromEntries(actual);
+
+    expect(actualTexts).toEqual(expectedTexts);
   });
 });

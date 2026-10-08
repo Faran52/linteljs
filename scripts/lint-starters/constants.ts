@@ -31,7 +31,7 @@ export const KEPT = new Set([
   'pnpm-lock.yaml',
 ]);
 
-export const APPS = 'apps';
+export const PROJECT_PARENTS: ReadonlySet<string> = new Set(['apps', 'packages']);
 
 // Install and git write these, not the generator.
 export const UNSTAMPED = new Set([...KEPT, '.git']);

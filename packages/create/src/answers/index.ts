@@ -23,7 +23,11 @@ export type {
   ValueRecord,
 } from './types';
 export { parseLinteljsConfig } from './utils/configUtils';
-export { configOf, projectAnswersOf } from './utils/projectUtils';
+export {
+  configOf,
+  projectAnswersOf,
+  workspaceConfigOf,
+} from './utils/projectUtils';
 export {
   type JsonValue,
   unaskedValueOf,

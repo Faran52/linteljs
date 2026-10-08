@@ -27,12 +27,12 @@ import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 import type {
   Answers,
   ProjectConfig,
-  Workspace,
+  WorkspaceAnswers,
 } from '@config/types';
 
 export type AnswerKey = keyof typeof ANSWERS;
 
-export interface LinteljsConfig extends Workspace {
+export interface LinteljsConfig extends WorkspaceAnswers {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
   projects: [ProjectConfig, ...ProjectConfig[]];

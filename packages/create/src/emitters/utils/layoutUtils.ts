@@ -4,9 +4,7 @@ import { pick } from 'es-toolkit';
 
 import { RUN_PREFIX } from '@config/constants';
 
-import { appDirectoryOf } from '@utils/answerUtils';
-
-import { DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS, WORKSPACE_KEYS } from '@answers';
 
 import {
   PACKAGE_ANSWERS,
@@ -15,10 +13,11 @@ import {
 } from '../constants';
 
 import type {
-  Answers,
   Artifact,
   HostedAnswers,
   PackageManager,
+  Workspace,
+  WorkspaceProject,
 } from '@config/types';
 
 export const rootNameOf = (name: string): string => {
@@ -45,16 +44,14 @@ export const rootCheckOf = (manager: PackageManager, name: string): string => {
   return `${run} lint && ${run} typecheck && ${workspaces}`;
 };
 
-const atRoot = (path: string): boolean => {
+export const atRoot = (path: string): boolean => {
   return ROOT_FILES.includes(path) || ROOT_DIRECTORIES
     .some((directory) => {
       return path.startsWith(directory);
     });
 };
 
-export const inLayout = (answers: Answers, name: string, artifacts: Artifact[]): Artifact[] => {
-  const directory = appDirectoryOf(answers, name);
-
+export const inProject = (directory: string, artifacts: Artifact[]): Artifact[] => {
   if (directory === '.') {
     return artifacts;
   }
@@ -81,6 +78,26 @@ export const inLayout = (answers: Answers, name: string, artifacts: Artifact[]):
   return rebased;
 };
 
+// The one place the workspace answers are set, so no project can disagree with the root.
+export const workspaceOf = (name: string, projects: [WorkspaceProject, ...WorkspaceProject[]]): Workspace => {
+  const [first, ...rest] = projects;
+  const shared = pick(first.answers, WORKSPACE_KEYS);
+  const others = rest
+    .map((project) => {
+      const answers = { ...project.answers, ...shared };
+      const aligned = { ...project, answers };
+
+      return aligned;
+    });
+
+  const workspace: Workspace = {
+    name,
+    projects: [first, ...others],
+  };
+
+  return workspace;
+};
+
 // `sync --add`: a TypeScript package on the workspace's manager, Node and type safety.
 export const packageAnswersOf = (answers: HostedAnswers): HostedAnswers => {
   const project: HostedAnswers = {
@@ -91,34 +108,4 @@ export const packageAnswersOf = (answers: HostedAnswers): HostedAnswers => {
   };
 
   return project;
-};
-
-// Only what lands in the app's directory is the package's: the root tooling is the workspace's already.
-export const inPackage = (answers: Answers, name: string, artifacts: Artifact[]): Artifact[] => {
-  const from = `${appDirectoryOf(answers, name)}/`;
-  const to = `packages/${name}/`;
-
-  const move = (path: string): string => {
-    return path.startsWith(from) ? `${to}${path.slice(from.length)}` : path;
-  };
-
-  const moved = artifacts
-    .filter(({ target }) => {
-      return target.startsWith(from);
-    })
-    .map((artifact) => {
-      const target = move(artifact.target);
-      const movedArtifact = { ...artifact, target };
-
-      if (artifact.requires === undefined) {
-        return movedArtifact;
-      }
-
-      const requires = artifact.requires.map(move);
-      const movedWithRequires = { ...movedArtifact, requires };
-
-      return movedWithRequires;
-    });
-
-  return moved;
 };

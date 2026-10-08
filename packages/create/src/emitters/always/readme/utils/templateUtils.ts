@@ -4,14 +4,18 @@ import {
   SYNC_COMMAND,
 } from '@config/constants';
 
-import { appDirectoryOf, hasTests } from '@utils/answerUtils';
+import { hasTests, projectDirectoryOf } from '@utils/answerUtils';
 
 import { ANSWERS } from '@answers';
 
 import { rootCheckOf } from '../../../utils/layoutUtils';
 import { buildScripts } from '../../utils/scriptUtils';
 
-import type { Answers, PackageManager } from '@config/types';
+import type {
+  Answers,
+  PackageManager,
+  Workspace,
+} from '@config/types';
 
 // An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
 
@@ -30,8 +34,8 @@ const filtered = (manager: PackageManager, name: string, script: string): string
   return commands[manager];
 };
 
-// From a monorepo's root every row but the gate runs the app's own script.
-const commandRows = (projectName: string, answers: Answers): string => {
+// From a monorepo's root every row runs the app's own script.
+const projectRows = (projectName: string, answers: Answers): string => {
   const pm = answers.packageManager;
   const run = RUN_PREFIX[pm];
 
@@ -50,7 +54,6 @@ const commandRows = (projectName: string, answers: Answers): string => {
     ['typecheck', app('typecheck')],
     ...testRows,
     ['build', app('build')],
-    ['full gate', `\`${run} check\``],
   ];
 
   return rows
@@ -58,6 +61,14 @@ const commandRows = (projectName: string, answers: Answers): string => {
       return `| ${what} | ${command} |\n`;
     })
     .join('');
+};
+
+const gateRow = (manager: PackageManager): string => {
+  return `| full gate | \`${RUN_PREFIX[manager]} check\` |\n`;
+};
+
+const commandRows = (projectName: string, answers: Answers): string => {
+  return `${projectRows(projectName, answers)}${gateRow(answers.packageManager)}`;
 };
 
 // A monorepo's root holds only `lint`, `typecheck` and a `check` over every package; the rest live in the app.
@@ -69,7 +80,7 @@ const workspaceNote = (projectName: string, answers: Answers): string => {
   const script = buildScripts(answers)['dev'] === undefined ? 'build' : 'dev';
   const command = filtered(answers.packageManager, projectName, script);
 
-  const app = appDirectoryOf(answers, projectName);
+  const app = projectDirectoryOf(answers, projectName);
 
   return `The app lives in \`${app}/\`, and the commands above run its scripts from the root. At the `
     + 'root, `lint` and `typecheck` cover the root\'s own `scripts/`, and `check` runs them, then every package\'s '
@@ -113,4 +124,28 @@ export const fillSlots = (
   }
 
   return filled;
+};
+
+// Several projects: one section each, then what the root itself runs.
+export const workspaceSlots = (workspace: Workspace): Record<string, string> => {
+  const [{ answers }] = workspace.projects;
+  const sections = workspace.projects
+    .map(({ name, answers: project }) => {
+      const { label } = ANSWERS.target.values[project.target];
+      const directory = projectDirectoryOf(project, name);
+
+      return `### ${name}\n\n${label}, in \`${directory}/\`.\n\n| what | command |\n| --- | --- |\n`
+        + `${projectRows(name, project)}\n`;
+    })
+    .join('');
+
+  const slots: Record<string, string> = {
+    ...sharedSlots(workspace.name, answers),
+    TARGET_LABEL: `A workspace of ${String(workspace.projects.length)} projects`,
+    COMMAND_ROWS: gateRow(answers.packageManager),
+    WORKSPACE: `${sections}At the root, \`lint\` and \`typecheck\` cover the root's own \`scripts/\`, and \`check\` `
+      + 'runs them, then every package\'s `check`.\n\n',
+  };
+
+  return slots;
 };

@@ -3,11 +3,12 @@ export { styleGlob } from './always/utils/scriptUtils';
 export { TEST_RUNNERS } from './constants';
 export {
   buildArtifacts,
-  packageArtifacts,
+  projectArtifacts,
   seedArtifacts,
 } from './registry';
 export { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
 export { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
+export { packageAnswersOf, workspaceOf } from './utils/layoutUtils';
 export {
   buildDevDependencies,
   type DependencyDrift,

@@ -61,6 +61,9 @@ export const hasTests = (answers: Answers): boolean => {
   return answers.testing !== 'none';
 };
 
-export const appDirectoryOf = (answers: Answers, name: string): string => {
-  return answers.layout === 'monorepo' ? `apps/${projectNameOf(name)}` : '.';
+// A TypeScript project is a package; every other target is an app.
+export const projectDirectoryOf = (answers: Answers, name: string): string => {
+  const kind = answers.target === 'typescript' ? 'packages' : 'apps';
+
+  return answers.layout === 'monorepo' ? `${kind}/${projectNameOf(name)}` : '.';
 };

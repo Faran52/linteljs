@@ -8,4 +8,4 @@ export const ESLINT_CONFIG_SPELLINGS = [
   'eslint.config.cts',
 ];
 
-export const APP_MANIFESTS = 'apps/*/package.json';
+export const APP_MANIFESTS = '{apps,packages}/*/package.json';

@@ -292,7 +292,7 @@ const askAnswer = async (
     case 'multi': {
       const offered = offeredValuesOf(record.values, target, answered);
 
-      const preselected = record.targetDefault?.(target) ?? record.default;
+      const preselected = record.targetDefault?.([target]) ?? record.default;
 
       return await askMulti(prompter, message, offered, preselected, false, describeFrom(record.values));
     }

@@ -1,11 +1,17 @@
-import { answersFor } from '@mocks/answersFor';
+import { answersFor, hostedAnswersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { fillSlots, sharedSlots } from './templateUtils';
+import { workspaceOf } from '../../../utils/layoutUtils';
+
+import {
+  fillSlots,
+  sharedSlots,
+  workspaceSlots,
+} from './templateUtils';
 
 describe('fillSlots', () => {
   it('replaces every slot with its value', () => {
@@ -149,24 +155,28 @@ describe('sharedSlots', () => {
     [
       'pnpm',
       'react',
+      'apps',
       '`pnpm --filter @acme/shop dev`',
     ],
     [
       'npm',
       'react',
+      'apps',
       '`npm run dev -w @acme/shop`',
     ],
     [
       'yarn',
       'react',
+      'apps',
       '`yarn workspace @acme/shop dev`',
     ],
     [
       'bun',
       'typescript',
+      'packages',
       '`bun run --filter @acme/shop build`',
     ],
-  ] as const)('names the app and a filtered run from the root of a %s %s monorepo', (packageManager, target, run) => {
+  ] as const)('names the app and a filtered run from a %s %s monorepo root', (packageManager, target, parent, run) => {
     const answers = answersFor({
       packageManager,
       target,
@@ -175,8 +185,30 @@ describe('sharedSlots', () => {
 
     const { WORKSPACE: note } = sharedSlots('@acme/shop', answers);
 
-    expect(note).toMatch(/^The app lives in `apps\/shop\/`, and the commands above run its scripts from the root\. /u);
+    const opening = `The app lives in \`${parent}/shop/\`, and the commands above run its scripts from the root. `;
+    const opens = note?.startsWith(opening);
+
+    expect(opens).toBe(true);
     expect(note).toContain('`check` runs them, then every package\'s `check`.');
     expect(note).toContain(`from the root: ${run}.\n\n`);
+  });
+});
+
+describe('workspaceSlots', () => {
+  it('counts the projects and gives each its own section, label and directory', () => {
+    const workspace = workspaceOf('acme', [
+      { name: 'web', answers: hostedAnswersFor({ target: 'react', layout: 'monorepo' }) },
+      { name: 'lib', answers: hostedAnswersFor({ target: 'typescript', layout: 'monorepo' }) },
+    ]);
+
+    const slots = workspaceSlots(workspace);
+
+    expect(slots['PROJECT_NAME']).toBe('acme');
+    expect(slots['TARGET_LABEL']).toBe('A workspace of 2 projects');
+    expect(slots['COMMAND_ROWS']).toBe('| full gate | `pnpm check` |\n');
+    expect(slots['WORKSPACE']).toContain('### web\n\nReact (Vite), in `apps/web/`.');
+    expect(slots['WORKSPACE']).toContain('### lib\n\n');
+    expect(slots['WORKSPACE']).toContain('in `packages/lib/`.');
+    expect(slots['WORKSPACE']).toContain('every package\'s `check`');
   });
 });

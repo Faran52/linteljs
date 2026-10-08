@@ -1,11 +1,10 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import { omit, pick } from 'es-toolkit';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
-
-import { EMPTY_PROJECT } from '@config/constants';
 
 import {
   CONFIG_PATH,
@@ -15,7 +14,11 @@ import {
   WORKSPACE_KEYS,
 } from '@answers';
 
+import { workspaceOf } from '../../utils/layoutUtils';
+
 import { emitLinteljsConfig, linteljsConfigEmitter } from './linteljsConfigEmitter';
+
+import type { HostedAnswers } from '@config/types';
 
 describe('emitLinteljsConfig', () => {
   it('writes the workspace answers above the one project the target asks', () => {
@@ -57,12 +60,38 @@ describe('emitLinteljsConfig', () => {
 
 describe('linteljsConfigEmitter', () => {
   it('writes the emitted text to the recorded config path at the package stage', () => {
-    const linteljsConfig = linteljsConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const linteljsConfig = linteljsConfigEmitter(workspaceOf('demo-app', [{
+      name: 'demo-app',
+      answers: HOSTED_DEFAULTS,
+    }]));
     const expected = [{
       stage: 'package',
       target: CONFIG_PATH,
-      content: { text: emitLinteljsConfig(DEFAULT_ANSWERS, 'demo-app') },
+      content: { text: emitLinteljsConfig(HOSTED_DEFAULTS, 'demo-app') },
     }];
     expect(linteljsConfig).toEqual(expected);
+  });
+
+  it('records every project of a workspace', () => {
+    const monorepo: HostedAnswers = {
+      ...HOSTED_DEFAULTS,
+      layout: 'monorepo',
+    };
+    const [artifact] = linteljsConfigEmitter(workspaceOf('acme', [{
+      name: 'web',
+      answers: monorepo,
+    }, {
+      name: 'admin',
+      answers: {
+        ...monorepo,
+        target: 'vue',
+      },
+    }]));
+    const text = artifact !== undefined && 'text' in artifact.content ? artifact.content.text : '';
+    const parsed: unknown = JSON.parse(text);
+
+    expect(parsed).toHaveProperty('projects.0.name', 'web');
+    expect(parsed).toHaveProperty('projects.1.name', 'admin');
+    expect(parsed).toHaveProperty('projects.1.target', 'vue');
   });
 });

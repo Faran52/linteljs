@@ -2,9 +2,13 @@ import { EMPTY_PROJECT, MANAGED_PATH } from '@config/constants';
 import {
   type Artifact,
   type Emitter,
-  type HostedAnswers,
   type ProjectShape,
+  type RootEmitter,
+  type Workspace,
+  type WorkspaceProject,
 } from '@config/types';
+
+import { projectDirectoryOf } from '@utils/answerUtils';
 
 import { agentsMdEmitter } from './agents/agents-md/agentsMdEmitter';
 import { antigravityRulesEmitter } from './agents/antigravity-rules/antigravityRulesEmitter';
@@ -49,11 +53,7 @@ import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 import { emitted } from './utils/artifactUtils';
-import {
-  inLayout,
-  inPackage,
-  packageAnswersOf,
-} from './utils/layoutUtils';
+import { atRoot, inProject } from './utils/layoutUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
 // Insertion order is write order within a stage, so `linteljs-config` precedes `package-json`.
@@ -79,7 +79,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'libraries/style-entry': styleEntryEmitter,
   'always/package-json': packageJsonEmitter,
   'always/gitignore': gitignoreEmitter,
-  'manager/pnpm-workspace': pnpmWorkspaceEmitter,
   'target/vite-config': viteConfigEmitter,
   'target/astro-config': astroConfigEmitter,
   'target/react-router-config': reactRouterConfigEmitter,
@@ -92,8 +91,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
 };
 
 export const SEED_EMITTERS: Record<string, Emitter> = {
-  'always/linteljs-config': linteljsConfigEmitter,
-  'always/readme': readmeEmitter,
   'always/linteljs-record': linteljsRecordEmitter,
   'target/angular-config': angularConfigEmitter,
   'target/expo-config': expoConfigEmitter,
@@ -104,21 +101,62 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'target/starter-source': starterSourceEmitter,
 };
 
-// Written at the git root, so the layout's move skips them.
-export const ROOT_EMITTERS: Record<string, Emitter> = {
+// Written once at the git root from every project, so no project emits them twice.
+export const ROOT_EMITTERS: Record<string, RootEmitter> = {
+  'manager/pnpm-workspace': pnpmWorkspaceEmitter,
   'layout/workspace-root': workspaceRootEmitter,
 };
 
-// A merge belongs here, not in a stage, or it reaches new projects and no old one.
-export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
-  const artifacts = inLayout(answers, name, Object.values(BUILD_EMITTERS)
+// Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
+export const ROOT_SEED_EMITTERS: Record<string, RootEmitter> = {
+  'always/linteljs-config': linteljsConfigEmitter,
+  'always/readme': readmeEmitter,
+};
+
+const emittedBy = (
+  emitters: Record<string, Emitter>,
+  { name, answers }: WorkspaceProject,
+  shape: ProjectShape,
+): Artifact[] => {
+  return Object.values(emitters)
     .flatMap((emit) => {
-      return emit(answers, project, name);
-    }));
-  const rootArtifacts = Object.values(ROOT_EMITTERS)
-    .flatMap((emit) => {
-      return emit(answers, project, name);
+      return emit(answers, shape, name);
     });
+};
+
+const rootEmittedBy = (emitters: Record<string, RootEmitter>, workspace: Workspace): Artifact[] => {
+  return Object.values(emitters)
+    .flatMap((emit) => {
+      return emit(workspace);
+    });
+};
+
+// The first project's root files stand for every project's: a test holds them equal across targets.
+const projectsEmittedBy = (
+  emitters: Record<string, Emitter>,
+  workspace: Workspace,
+  shapes: readonly ProjectShape[],
+): Artifact[] => {
+  return workspace.projects
+    .flatMap((project, index) => {
+      const artifacts = emittedBy(emitters, project, shapes[index] ?? EMPTY_PROJECT);
+      const own = index === 0
+        ? artifacts
+        : artifacts
+            .filter(({ target }) => {
+              return !atRoot(target);
+            });
+
+      const directory = projectDirectoryOf(project.answers, project.name);
+
+      return inProject(directory, own);
+    });
+};
+
+// A merge belongs here, not in a stage, or it reaches new projects and no old one.
+export const buildArtifacts = (workspace: Workspace, shapes: readonly ProjectShape[] = []): Artifact[] => {
+  const artifacts = projectsEmittedBy(BUILD_EMITTERS, workspace, shapes);
+  const rootArtifacts = rootEmittedBy(ROOT_EMITTERS, workspace);
 
   // Computed here: an emitter would have to leave itself out of its own input.
   const removable = removableIn(artifacts);
@@ -134,26 +172,26 @@ export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, na
 };
 
 // Kept out of `buildArtifacts`, which `sync` re-applies: none of this is linteljs's once the project has it.
-export const seedArtifacts = (
-  answers: HostedAnswers,
-  name: string,
-  project: ProjectShape = EMPTY_PROJECT,
-): Artifact[] => {
-  const artifacts = inLayout(answers, name, Object.values(SEED_EMITTERS)
-    .flatMap((emit) => {
-      return emit(answers, project, name);
-    }));
+export const seedArtifacts = (workspace: Workspace): Artifact[] => {
+  const artifacts = [
+    ...rootEmittedBy(ROOT_SEED_EMITTERS, workspace),
+    ...projectsEmittedBy(SEED_EMITTERS, workspace, []),
+  ];
 
   return artifacts;
 };
 
-// `sync --add`: a package's own files, seeds and all, as a new project gets them.
-export const packageArtifacts = (answers: HostedAnswers, name: string): Artifact[] => {
-  const packageAnswers = packageAnswersOf(answers);
+// `sync --add`: a new project's own files, seeds and all; the root's are the workspace's already.
+export const projectArtifacts = (project: WorkspaceProject): Artifact[] => {
   const artifacts = [
-    ...seedArtifacts(packageAnswers, name),
-    ...buildArtifacts(packageAnswers, EMPTY_PROJECT, name),
-  ];
+    ...emittedBy(SEED_EMITTERS, project, EMPTY_PROJECT),
+    ...emittedBy(BUILD_EMITTERS, project, EMPTY_PROJECT),
+  ]
+    .filter(({ target }) => {
+      return !atRoot(target);
+    });
 
-  return inPackage(packageAnswers, name, artifacts);
+  const directory = projectDirectoryOf(project.answers, project.name);
+
+  return inProject(directory, artifacts);
 };

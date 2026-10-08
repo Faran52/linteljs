@@ -118,7 +118,7 @@ export type WorkspaceKey
     | 'agents'
     | 'plugins';
 
-export type Workspace = Pick<Answers, WorkspaceKey>;
+export type WorkspaceAnswers = Pick<Answers, WorkspaceKey>;
 
 // `name` is required in a monorepo's v3 config; a v1 or v2 config lifts to one unnamed project.
 export interface ProjectConfig extends Omit<Answers, WorkspaceKey> {
@@ -178,6 +178,20 @@ export interface ProjectShape {
 
 // Every emitter answers a list, so `buildArtifacts` holds no branch.
 export type Emitter = (answers: HostedAnswers, project: ProjectShape, name: string) => Artifact[];
+
+// `name` is the project's package name; a single layout's one project carries the repository's.
+export interface WorkspaceProject {
+  name: string;
+  answers: HostedAnswers;
+}
+
+// Every project holds the same workspace answers, so the first one's stand for the root.
+export interface Workspace {
+  name: string;
+  projects: [WorkspaceProject, ...WorkspaceProject[]];
+}
+
+export type RootEmitter = (workspace: Workspace) => Artifact[];
 
 export type AliasMap = Record<string, string>;
 

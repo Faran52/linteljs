@@ -28,9 +28,13 @@ export const pluginsAnswer = {
     'context7',
     'frontend-design',
   ],
-  targetDefault: (target) => {
+  targetDefault: (targets) => {
     const withoutDesign: Plugin[] = ['ponytail', 'context7'];
+    const allPackages = targets
+      .every((target) => {
+        return target.packageProject === true;
+      });
 
-    return target.packageProject === true ? withoutDesign : undefined;
+    return allPackages ? withoutDesign : undefined;
   },
 } as const satisfies MultiRecord<Plugin>;

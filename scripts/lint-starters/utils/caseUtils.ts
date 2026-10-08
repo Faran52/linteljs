@@ -22,7 +22,7 @@ import {
 import { versions } from 'node:process';
 import { promisify } from 'node:util';
 
-import { appDirectoryOf } from '@utils/answerUtils';
+import { projectDirectoryOf } from '@utils/answerUtils';
 
 import { TEMPLATES_ROOT } from '@disk';
 import { writtenOf } from '@e2e/starter-cover/starterCover';
@@ -33,7 +33,6 @@ import { pipelineRun } from '@pipeline';
 
 import { packTarball, run } from '../../utils/processUtils.ts';
 import {
-  APPS,
   CONFIG_SPEC,
   HASH_PREFIX_LENGTH,
   KEPT,
@@ -42,6 +41,7 @@ import {
   OVERRIDES_KEY,
   PACKING,
   PROJECT_NAME,
+  PROJECT_PARENTS,
   REGISTRY_TIMEOUT_MS,
   TARBALLS,
   UNSTAMPED,
@@ -119,12 +119,12 @@ export const monorepoCaseOf = (item: E2eCase): E2eCase => {
 };
 
 export const appDirOf = (item: E2eCase, dir: string): string => {
-  const directory = appDirectoryOf(item.answers, PROJECT_NAME);
+  const directory = projectDirectoryOf(item.answers, PROJECT_NAME);
 
   return join(dir, directory);
 };
 
-// A monorepo's apps keep their own node_modules too.
+// A monorepo's projects keep their own node_modules too.
 const clear = (dir: string): void => {
   mkdirSync(dir, { recursive: true });
 
@@ -140,7 +140,7 @@ const clear = (dir: string): void => {
       force: true,
     };
 
-    if (entry === APPS) {
+    if (PROJECT_PARENTS.has(entry)) {
       for (const app of readdirSync(path)) {
         clear(join(path, app));
       }

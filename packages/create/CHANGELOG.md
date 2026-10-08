@@ -26,7 +26,7 @@ when a version's change lives in a sibling it is described there instead:
 - **Schema version 3 records the workspace answers once and each project under `projects`.** `layout`, the
   package manager and its version, the Node version, `typeSafety`, `agents` and `plugins` sit at the top; every
   other answer belongs to a project. A single layout holds one project; each project in a monorepo is named for
-  its directory, in kebab-case, so `my_app` lands in `apps/my-app`. A v1 or v2 file still reads, as one unnamed project, and stays as it is on disk.
+  its directory, in kebab-case, so `my_app` lands in `apps/my-app`, or `packages/my-app` for a `typescript` package. A v1 or v2 file still reads, as one unnamed project, and stays as it is on disk.
 - **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
   `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
   config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers
@@ -197,12 +197,12 @@ when a version's change lives in a sibling it is described there instead:
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
 - A repository layout answer, `--layout single|monorepo`, asked of every target. A monorepo writes the target
-  under `apps/<name>/` and keeps the git, agent and CI tooling at the root: a root `package.json` named
+  under `apps/<name>/` (the `typescript` target, a package, under `packages/<name>/`) and keeps the git, agent and CI tooling at the root: a root `package.json` named
   `<name>-workspace` declares `apps/*` and `packages/*` as workspaces (`pnpm-workspace.yaml` for pnpm), lints and
   typechecks its own `scripts/`, and its `check` runs every package's `check`. Each package lints, typechecks and
   tests itself. The README says where the app's scripts run, and the agent rules' globs
   match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
-  directory under `apps/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
+  directory under `apps/` or `packages/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
 - `sync --add <name>` writes a TypeScript package to a monorepo's `packages/<name>/`, with its own
   `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and starter
   `src/`, on the recorded manager, Node and type safety, then installs, so the lockfile takes the package and a

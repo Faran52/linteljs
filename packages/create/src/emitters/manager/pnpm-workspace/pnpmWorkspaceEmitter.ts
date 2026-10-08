@@ -1,4 +1,8 @@
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type Workspace,
+} from '@config/types';
 
 import { WORKSPACE_GLOBS } from '../../constants';
 import { merged } from '../../utils/artifactUtils';
@@ -33,14 +37,19 @@ const withoutSuperseded = (existing: string): string => {
 };
 
 // Line-based: a YAML round-trip would reformat every line the user wrote.
-export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
+export const mergePnpmWorkspace = (existing: string | null, projects: readonly Answers[]): string => {
   const remainder = withoutSuperseded(existing ?? '')
     .replace(/^\n+/, '');
 
-  const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
+  const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(projects)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
   const withAge = hasAgePolicy ? withBuilds : `${withBuilds.trimEnd()}\n\n${RELEASE_AGE_BLOCK}`;
-  const overrides = flatOverrides(answers, 'pnpm');
+  const overrides = Object.fromEntries(projects
+    .flatMap((answers) => {
+      const own = flatOverrides(answers, 'pnpm');
+
+      return Object.entries(own);
+    }));
   const keepsOverrides = Object.keys(overrides).length === 0 || /^overrides:/m.test(withAge);
   const withOverrides = keepsOverrides ? withAge : `${withAge.trimEnd()}\n\n${overridesBlock(overrides)}`;
 
@@ -49,7 +58,10 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
       return `  - '${glob}'\n`;
     })
     .join('')}\n`;
-  const listsPackages = answers.layout === 'single' || /^packages:/m.test(withOverrides);
+  const listsPackages = projects
+    .every((answers) => {
+      return answers.layout === 'single';
+    }) || /^packages:/m.test(withOverrides);
   const withPackages = listsPackages ? withOverrides : `${packagesBlock}${withOverrides}`;
 
   // `trimEnd`: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
@@ -57,10 +69,14 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
 };
 
 // Discarding it breaks an install that already wrote into it.
-export const pnpmWorkspaceEmitter = (answers: Answers): Artifact[] => {
-  const artifacts: Artifact[] = answers.packageManager === 'pnpm'
+export const pnpmWorkspaceEmitter = (workspace: Workspace): Artifact[] => {
+  const projects = workspace.projects
+    .map(({ answers }) => {
+      return answers;
+    });
+  const artifacts: Artifact[] = workspace.projects[0].answers.packageManager === 'pnpm'
     ? [merged('package', 'pnpm-workspace.yaml', (current) => {
-        return mergePnpmWorkspace(current, answers);
+        return mergePnpmWorkspace(current, projects);
       })]
     : [];
 

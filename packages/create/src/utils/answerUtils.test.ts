@@ -1,12 +1,12 @@
 import { answersFor } from '@mocks/answersFor';
 
 import {
-  appDirectoryOf,
   browsersOf,
   hasLibrary,
   hasSurface,
   hasTests,
   localesOf,
+  projectDirectoryOf,
   rendersWithReact,
   surfacesOf,
 } from './answerUtils';
@@ -120,16 +120,24 @@ describe('localesOf', () => {
   });
 });
 
-describe('appDirectoryOf', () => {
+describe('projectDirectoryOf', () => {
   it('answers the root for a single repo and apps/<name> for a monorepo', () => {
-    const single = appDirectoryOf(answersFor({}), '@acme/shop');
+    const single = projectDirectoryOf(answersFor({}), '@acme/shop');
     expect(single).toBe('.');
-    const monorepo = appDirectoryOf(answersFor({ layout: 'monorepo' }), '@acme/shop');
+    const monorepo = projectDirectoryOf(answersFor({ layout: 'monorepo' }), '@acme/shop');
     expect(monorepo).toBe('apps/shop');
   });
 
   it('kebab-cases a monorepo app directory', () => {
-    const directory = appDirectoryOf(answersFor({ layout: 'monorepo' }), 'my_app');
+    const directory = projectDirectoryOf(answersFor({ layout: 'monorepo' }), 'my_app');
     expect(directory).toBe('apps/my-app');
+  });
+
+  it('puts a TypeScript project under packages/<name>', () => {
+    const directory = projectDirectoryOf(answersFor({
+      layout: 'monorepo',
+      target: 'typescript',
+    }), '@acme/shared');
+    expect(directory).toBe('packages/shared');
   });
 });

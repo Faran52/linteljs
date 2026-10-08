@@ -581,6 +581,15 @@ describe('appRootOf', () => {
     expect(root).toBe(join(cwd, 'apps', 'admin'));
   });
 
+  it('answers a package under packages/ when the workspace holds no app', async () => {
+    await mkdir(join(cwd, 'packages', 'lib'), { recursive: true });
+    await writeFile(join(cwd, 'packages', 'lib', 'package.json'), '{}\n', 'utf8');
+
+    const root = appRootOf(cwd, MONOREPO);
+
+    expect(root).toBe(join(cwd, 'packages', 'lib'));
+  });
+
   it('answers the root of a monorepo with no app', () => {
     const root = appRootOf(cwd, MONOREPO);
 

@@ -115,7 +115,7 @@ const flaggedAnswers = (name: string, flags: AnswerFlags = {}): Answers => {
   const config = parseLinteljsConfig(configText);
   const parsed = projectAnswersOf(config, config.projects[0]);
   const record = targetFor(parsed);
-  const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault(record) : undefined;
+  const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault([record]) : undefined;
 
   const answers: Answers = {
     ...parsed,

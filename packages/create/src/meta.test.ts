@@ -29,6 +29,7 @@ import { type AnswerRecord, ANSWERS } from '@answers';
 import {
   BUILD_EMITTERS,
   ROOT_EMITTERS,
+  ROOT_SEED_EMITTERS,
   SEED_EMITTERS,
 } from '@emitters/registry';
 import { TARGETS } from '@targets';
@@ -107,6 +108,7 @@ const SHAPES: RingShape[] = [
         ...Object.keys(BUILD_EMITTERS),
         ...Object.keys(SEED_EMITTERS),
         ...Object.keys(ROOT_EMITTERS),
+        ...Object.keys(ROOT_SEED_EMITTERS),
       ];
       return emitterKeys;
     },
