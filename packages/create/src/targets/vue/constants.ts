@@ -24,10 +24,6 @@ export const VUE_SUITES: readonly StarterTest[] = [
     covers: 'src/views/about/AboutView.vue',
   },
   {
-    target: 'src/views/version/VersionView.test.ts',
-    covers: 'src/views/version/VersionView.vue',
-  },
-  {
     target: 'src/components/ui/app-mark/AppMark.test.ts',
     covers: 'src/components/ui/app-mark/AppMark.vue',
   },

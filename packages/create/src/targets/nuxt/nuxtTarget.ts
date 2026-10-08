@@ -234,6 +234,11 @@ export const nuxtTarget: TargetBuilder = () => {
           return shared;
         }),
       ...translated<StarterTest>({
+        target: 'src/views/version/VersionView.test.ts',
+        covers: 'src/views/version/VersionView.vue',
+        shared: 'vue',
+      }),
+      ...translated<StarterTest>({
         target: 'src/components/features/app-header/AppHeader.test.ts',
         covers: 'src/components/features/app-header/AppHeader.vue',
       }),

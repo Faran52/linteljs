@@ -83,6 +83,7 @@ const BILINGUAL_PATHS = [
   'src/views/home/HomeView.test.ts',
   'src/views/about/AboutView.vue',
   'src/views/version/VersionView.vue',
+  'src/views/version/VersionView.test.ts',
   'src/components/features/app-header/AppHeader.vue',
   'src/components/features/app-header/AppHeader.test.ts',
   'src/components/features/status-page/StatusPage.vue',

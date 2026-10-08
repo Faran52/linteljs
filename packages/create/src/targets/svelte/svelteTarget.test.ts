@@ -86,6 +86,7 @@ const BILINGUAL_PATHS = [
   'src/app.d.ts',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',
+  'src/routes/version/page.test.ts',
   'src/components/features/app-header/AppHeader.test.ts',
   'src/routes/error.test.ts',
   'src/components/features/app-header/AppHeader.svelte',

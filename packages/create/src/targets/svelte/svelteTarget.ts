@@ -251,10 +251,10 @@ export const svelteTarget: TargetBuilder = () => {
         target: 'src/routes/about/page.test.ts',
         covers: 'src/routes/about/+page.svelte',
       },
-      {
+      ...translated<StarterTest>({
         target: 'src/routes/version/page.test.ts',
         covers: 'src/routes/version/+page.svelte',
-      },
+      }),
       {
         target: 'src/components/ui/button/Button.test.ts',
         covers: 'src/components/ui/button/Button.svelte',

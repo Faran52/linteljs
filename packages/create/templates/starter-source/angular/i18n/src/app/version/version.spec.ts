@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
+import { ANSWERS } from '@config/linteljs';
+
 import { languages, resources } from '@i18n/config';
 import { applyLanguage } from '@i18n/i18n';
 
@@ -39,5 +41,21 @@ describe('Version', () => {
     expect(sectionTitles).toEqual([common.versionStack, common.versionAnswers]);
     expect(noteCode).toEqual(['linteljs.config.json', 'sync']);
     expect(root.textContent).not.toMatch(/[{}<>]/u);
+  });
+
+  it('renders every answer this project was generated from, labelled in the language applied', async () => {
+    applyLanguage(last);
+
+    const harness = TestBed.createComponent(Version);
+
+    await harness.whenStable();
+
+    const root = harness.nativeElement as HTMLElement;
+    const { common } = resources[last];
+    const terms = textsOf(root, 'dt');
+
+    for (const { label } of ANSWERS) {
+      expect(terms).toContain(common[label]);
+    }
   });
 });
