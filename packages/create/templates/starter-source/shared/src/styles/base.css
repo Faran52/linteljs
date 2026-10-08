@@ -137,9 +137,25 @@ app-status-page {
   color: var(--primary);
 }
 
-/* The extension popup's language select sits under the hint. */
+/* The extension popup's language select sits under the hint, drawn as every web header's `.tab` select. */
 .hint + select {
+  min-height: 2.75rem;
+  padding: 0.3125rem 0.625rem;
   margin-top: 1rem;
+  font-size: var(--text-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
+}
+
+.hint + select:hover {
+  color: var(--foreground);
+  background: var(--muted);
 }
 
 .sent {

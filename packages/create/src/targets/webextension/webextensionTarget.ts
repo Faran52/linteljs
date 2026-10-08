@@ -75,10 +75,10 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
       {
         target: 'devtools.html',
       },
-      {
+      ...withPopupLanguages(answers, {
         target: 'src/devtools/devtools.ts',
         variant,
-      },
+      }),
       {
         target: 'panel.html',
       },

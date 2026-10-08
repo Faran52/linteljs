@@ -4,6 +4,13 @@ import {
   t,
 } from '@i18n/i18n';
 
+// Also the DevTools tab's title.
+export const panelTitle = (): string => {
+  const language = detectLanguage();
+
+  return t('panel', language);
+};
+
 // A main landmark and one heading, as the popup has, in the language the popup stored.
 export const renderPanel = (root: HTMLElement): void => {
   const language = detectLanguage();
@@ -19,7 +26,7 @@ export const renderPanel = (root: HTMLElement): void => {
   main.className = 'hero';
   title.className = 'title';
   status.className = 'lede';
-  title.textContent = t('panel', language);
+  title.textContent = panelTitle();
   status.textContent = t('panelReady', language);
   main.append(label, title, status);
   root.append(main);

@@ -267,6 +267,13 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **A web extension's popup language select matches the web headers' under every styling.** It took the
+  borderless `.tab` look only where Tailwind's preflight reset the browser's border, and kept that border under
+  StyleX. It now carries the tab's 44px target, padding, radius and hover in `base.css`. Angular's header select
+  takes `tab-button` too, which it lacked beside the other headers.
+- **A web extension's DevTools tab is titled in the stored language.** With languages on it reads the `panel`
+  copy the panel page shows, where it was always the English "Panel"; it updates on the next DevTools open.
+
 - **A web extension has an icon.** Its manifests, Chrome's and Firefox's, name the Mark as PNG `icons` at 16,
   32, 48 and 128 pixels, and as the popup's `action.default_icon`, from `public/icons/`, which the build
   copies into `dist/`. Chrome showed a letter in its place.

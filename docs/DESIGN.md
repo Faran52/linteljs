@@ -625,6 +625,9 @@ whose record carries `i18n` parts is asked.
 - **The extension popup takes no library, not `chrome.i18n`**, which follows the browser's language and cannot
   switch at runtime. Only an extension with a popup is asked; the popup is translated, since it is the whole
   interface.
+- **The DevTools tab title is read once.** `devtools.panels.create` takes it at creation and neither Chrome nor
+  Firefox offers a setter, so a language chosen in the popup titles the tab from the next DevTools open; the
+  panel's own page follows on its next load.
 
 ### Recorded answers
 

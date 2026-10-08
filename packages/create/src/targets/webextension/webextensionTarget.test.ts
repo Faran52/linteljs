@@ -243,6 +243,30 @@ describe('the surfaces axis', () => {
     expect(starterFiles).toContainEqual(expected);
   });
 
+  it.each<[Browser]>([
+    ['chrome'],
+    ['firefox'],
+  ])('titles the %s devtools tab in the chosen language beside a popup only', (browser) => {
+    const registrationVariant = (surfaces: Surface[]): string | undefined => {
+      const answers = extensionAnswers({
+        browser,
+        surfaces,
+        languages: ['en', 'ar'],
+      });
+      const registration = webextensionTarget(answers).starterFiles
+        .find(({ target, when }) => {
+          return target === 'src/devtools/devtools.ts' && (when?.(answers) ?? true);
+        });
+
+      return registration?.variant;
+    };
+
+    const translated = registrationVariant(['popup', 'devtools-panel']);
+    const panelOnly = registrationVariant(['devtools-panel']);
+    expect(translated).toBe(`${browser}-i18n`);
+    expect(panelOnly).toBe(browser);
+  });
+
   it('writes the popup and nothing else for a popup alone', () => {
     const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles
       .map((file) => {

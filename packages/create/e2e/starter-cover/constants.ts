@@ -30,6 +30,7 @@ export const STARTER_CASES: readonly string[] = [
   'astro pnpm vitest host-none tanstack-form zod+es-toolkit+ts-pattern+t3-env',
   'next pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
   'webextension pnpm vitest firefox host-none zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest firefox host-none languages zod+es-toolkit+ts-pattern+t3-env',
   'react pnpm vitest react-router-framework redux-toolkit msw zod+es-toolkit+ts-pattern+t3-env',
   'react pnpm vitest react-router-framework zod+es-toolkit+ts-pattern+t3-env',
   'react pnpm vitest react-router-framework msw languages zod+es-toolkit+ts-pattern+t3-env',
