@@ -66,13 +66,17 @@ const pairsOf = (answers: Answers): string[] => {
     });
 };
 
+// Into one set as it goes: the full enumeration holds millions of pairs, mostly repeats.
 const coveredBy = (cases: Answered[]): Set<string> => {
-  const coveredPairs = cases
-    .flatMap((item) => {
-      return pairsOf(item.answers);
-    });
+  const covered = new Set<string>();
 
-  return new Set(coveredPairs);
+  for (const item of cases) {
+    for (const pair of pairsOf(item.answers)) {
+      covered.add(pair);
+    }
+  }
+
+  return covered;
 };
 
 // Each enumeration once per target, since the cover takes seconds; the stability test calls targetCases afresh.

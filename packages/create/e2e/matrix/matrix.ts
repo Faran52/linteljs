@@ -1,6 +1,6 @@
 import { env } from 'node:process';
 
-import { orderBy } from 'es-toolkit';
+import { memoize, orderBy } from 'es-toolkit';
 
 import {
   type Answers,
@@ -139,9 +139,14 @@ const across = <T>(
     });
 };
 
+// The host flags are constant per target, so its record is built once rather than per case.
+const hostRecordOf = memoize((target: TargetId): TargetRecord => {
+  return recordFor(target, {});
+});
+
 // Every varying axis, so two cases never share a label or directory.
 const labelFor = (answers: Answers): string => {
-  const record = targetFor(answers);
+  const record = hostRecordOf(answers.target);
   const label = [
     answers.target,
     answers.packageManager,
