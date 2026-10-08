@@ -647,6 +647,27 @@ describe('the files a webextension surface owns', () => {
     expect(writtenPaths).toEqual(expectedPaths);
     expect(html).toBe(surfaces.includes('popup') || surfaces.includes('devtools-panel'));
   });
+
+  it.each(['index.html', 'panel.html'])('links %s to an icon the extension ships', async (page) => {
+    const answers = {
+      ...hostedAnswersFor({ target: 'webextension' }),
+      surfaces: ['popup', 'devtools-panel'] satisfies Surface[],
+    };
+    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const content = artifacts
+      .find(({ target: path }) => {
+        return path === page;
+      })
+      ?.content ?? { text: '' };
+    const text = 'text' in content ? content.text : await shippedAssetsReader(content);
+    const href = /rel="icon"\s+type="image\/png"\s+href="\/([^"]+)"/u.exec(text)?.[1];
+    const paths = artifacts
+      .map(({ target: path }) => {
+        return path;
+      });
+
+    expect(paths).toContain(`public/${href ?? ''}`);
+  });
 });
 
 describe('the emitted checker against the emitted starter code', () => {

@@ -2,13 +2,18 @@ import { hostedAnswersFor } from '@mocks/answersFor';
 
 import { EMPTY_PROJECT } from '@config/constants';
 
+import {
+  EXTENSION_ICON,
+  FAVICON,
+  type Icon,
+} from './constants';
 import { emitHtmlEntry, htmlEntryEmitter } from './htmlEntryEmitter';
 
 import type { Answers } from '@config/types';
 
 describe('emitHtmlEntry', () => {
   it('writes the document a bundler serves, titled for the project and loading its entry', () => {
-    const html = emitHtmlEntry('my-app', 'src/main.tsx', false);
+    const html = emitHtmlEntry('my-app', 'src/main.tsx');
 
     const expected = [
       '<!doctype html>',
@@ -29,8 +34,8 @@ describe('emitHtmlEntry', () => {
     expect(html).toBe(expected);
   });
 
-  it('links the favicon only when asked to', () => {
-    const html = emitHtmlEntry('my-app', 'src/main.tsx', true);
+  it('links the icon only when given one', () => {
+    const html = emitHtmlEntry('my-app', 'src/main.tsx', FAVICON);
     const link = [
       '        <link',
       '            rel="icon"',
@@ -46,12 +51,12 @@ describe('emitHtmlEntry', () => {
 });
 
 describe('htmlEntryEmitter', () => {
-  it.each<[string, Partial<Answers>, string | undefined, boolean]>([
+  it.each<[string, Partial<Answers>, string | undefined, Icon | undefined]>([
     [
       'react',
       { target: 'react' },
       'src/main.tsx',
-      true,
+      FAVICON,
     ],
     [
       'react in framework mode',
@@ -60,63 +65,63 @@ describe('htmlEntryEmitter', () => {
         router: 'react-router-framework',
       },
       undefined,
-      false,
+      undefined,
     ],
     [
       'next',
       { target: 'next' },
       undefined,
-      false,
+      undefined,
     ],
     [
       'vue',
       { target: 'vue' },
       'src/main.ts',
-      true,
+      FAVICON,
     ],
     [
       'nuxt',
       { target: 'nuxt' },
       undefined,
-      false,
+      undefined,
     ],
     [
       'svelte',
       { target: 'svelte' },
       undefined,
-      false,
+      undefined,
     ],
     [
       'solid',
       { target: 'solid' },
       'src/main.tsx',
-      true,
+      FAVICON,
     ],
     [
       'angular',
       { target: 'angular' },
       undefined,
-      false,
+      undefined,
     ],
     [
       'astro',
       { target: 'astro' },
       undefined,
-      false,
+      undefined,
     ],
     [
       'webextension',
       { target: 'webextension' },
       'src/main.ts',
-      false,
+      EXTENSION_ICON,
     ],
     [
       'react-native',
       { target: 'react-native' },
       undefined,
-      false,
+      undefined,
     ],
-  ])('writes the document %s serves, loading its own entry', (_label, overrides, entry, favicon) => {
+  ])('writes the document %s serves, loading its own entry', (_label, overrides, entry, icon) => {
     const artifacts = htmlEntryEmitter(hostedAnswersFor(overrides), EMPTY_PROJECT, 'my-app');
 
     const expected = entry === undefined
@@ -124,7 +129,7 @@ describe('htmlEntryEmitter', () => {
       : [{
           stage: 'standard',
           target: 'index.html',
-          content: { text: emitHtmlEntry('my-app', entry, favicon) },
+          content: { text: emitHtmlEntry('my-app', entry, icon) },
         }];
     expect(artifacts).toEqual(expected);
   });
