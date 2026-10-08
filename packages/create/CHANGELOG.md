@@ -280,8 +280,8 @@ when a version's change lives in a sibling it is described there instead:
   right edge.
 - `testing` records the runner a project runs: `jest` on React Native, where `linteljs.config.json` and the
   Version page read `vitest`. The answer and the config schema take `jest`; React Native offers Jest or None,
-  every other target Vitest or None. On React Native a recorded or flagged `vitest` reads as `jest`, and `jest`
-  on any other target is refused.
+  every other target Vitest or None. `vitest` on React Native is refused, as `jest` is on any other target;
+  a 1.x React Native config's `vitest` reads as `jest`, and React Native with no `--testing` records `jest`.
 - The Version page's answer labels speak the chosen language. With languages, each row is recorded by its
   locale key, and every locale carries the seventeen labels, where they stayed English.
 - Angular's header colours the tab of the page it is on. `routerLinkActive` set `is-current`, a class the

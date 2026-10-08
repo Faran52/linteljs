@@ -666,8 +666,9 @@ its own switch, off; framework mode runs none; React Native keeps `babel-preset-
 React Native's suites run on Jest through `jest-expo`'s default preset, the runner Expo ships and tests against,
 rather than a 0.1.x single-maintainer Vitest plugin. The trade is stability, and the 100% gate still holds.
 The record's `testRunner` picks the runner and `testing` records it, `jest` here, or `none`, so the config names
-what runs. The parser reads `vitest` on React Native as `jest`: the default is the same for every target, and a
-record from before 2.0 wrote it. `Platform.OS` is a runtime read, so
+what runs. `vitest` on React Native is refused like `jest` elsewhere, since nothing offers it there; only a
+schema 1 record, written before `jest` existed, reads its `vitest` as `jest`. An unanswered `testing` (a flag
+left out, the prompt's first pick) takes the target's runner. `Platform.OS` is a runtime read, so
 `jest.replaceProperty` covers a web branch.
 
 The accepted costs:

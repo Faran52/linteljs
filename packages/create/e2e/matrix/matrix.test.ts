@@ -268,6 +268,7 @@ describe('targetCases', () => {
           const candidate: Answers = {
             ...DEFAULT_ANSWERS,
             target,
+            testing: 'none',
             form,
           };
 

@@ -102,18 +102,20 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
     ...DEFAULT_ANSWERS,
+    // `none` fits every target; an unflagged answer takes the target's runner below.
+    testing: 'none',
     ...flags,
   });
 
   const parsed = parseLinteljsConfig(configText);
-  const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault(targetFor(parsed)) : undefined;
+  const record = targetFor(parsed);
+  const plugins = flags.plugins === undefined ? ANSWERS.plugins.targetDefault(record) : undefined;
 
-  const answers: Answers = plugins === undefined
-    ? parsed
-    : {
-        ...parsed,
-        plugins,
-      };
+  const answers: Answers = {
+    ...parsed,
+    ...(flags.testing === undefined ? { testing: record.testRunner ?? DEFAULT_ANSWERS.testing } : {}),
+    ...(plugins === undefined ? {} : { plugins }),
+  };
 
   return answers;
 };

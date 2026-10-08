@@ -195,8 +195,8 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
 
   const read = answersFrom(parsed, schemaVersion);
   const record = targetFor(read);
-  // The default is the same for every target, and a record from before 2.0 wrote `vitest` on React Native.
-  const config: LinteljsConfig = read.testing === 'vitest' && record.testRunner === 'jest'
+  // 1.x had no `jest`, so its React Native record wrote `vitest`.
+  const config: LinteljsConfig = schemaVersion === 1 && read.testing === 'vitest' && record.testRunner === 'jest'
     ? {
         ...read,
         testing: 'jest',

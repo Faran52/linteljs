@@ -754,6 +754,7 @@ describe('main: sync', () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
       target: 'react-native',
+      testing: 'jest',
     });
 
     const before = await readFile(join(project, 'tsconfig.json'), 'utf8');
@@ -1045,6 +1046,52 @@ describe('main: answers given as flags', () => {
 
     const config = await configAt();
     expect(config.plugins).toStrictEqual(plugins);
+  });
+
+  it.each([
+    [
+      'react-native',
+      [],
+      'jest',
+    ],
+    [
+      'react-native',
+      ['--testing', 'none'],
+      'none',
+    ],
+    [
+      'svelte',
+      [],
+      'vitest',
+    ],
+  ])('records testing on %s from %j as %s', async (target, flags, testing) => {
+    await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+      '--target',
+      target,
+      ...flags,
+    ]);
+
+    const config = await configAt();
+    expect(config.testing).toBe(testing);
+  });
+
+  it('refuses vitest on react-native', async () => {
+    const { code, errors } = await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+      '--target',
+      'react-native',
+      '--testing',
+      'vitest',
+    ]);
+
+    expect(code).toBe(1);
+    const joined = errors.join('\n');
+    expect(joined).toContain('vitest is not an answer for react-native');
   });
 });
 

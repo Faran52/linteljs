@@ -525,7 +525,6 @@ describe('the router and the form libraries', () => {
   });
 
   it.each([
-    ['vitest', 'jest'],
     ['jest', 'jest'],
     ['none', 'none'],
   ])('reads testing %s on react-native as %s', (testing, expected) => {
@@ -535,6 +534,16 @@ describe('the router and the form libraries', () => {
     });
     const parsed = parseLinteljsConfig(configText);
     expect(parsed.testing).toBe(expected);
+  });
+
+  it('refuses vitest on react-native', () => {
+    expect(() => {
+      const configText = config({
+        target: 'react-native',
+        testing: 'vitest',
+      });
+      return parseLinteljsConfig(configText);
+    }).toThrow(/vitest is not an answer for react-native/);
   });
 
   it('refuses jest on a target that runs vitest', () => {
@@ -568,6 +577,15 @@ describe('a version-one config', () => {
       schemaVersion: 1,
     });
   };
+
+  it('lifts the vitest a 1.x react-native record wrote to jest', () => {
+    const configText = versionOne({
+      target: 'react-native',
+      testing: 'vitest',
+    });
+    const { testing } = parseLinteljsConfig(configText);
+    expect(testing).toBe('jest');
+  });
 
   it.each([
     ['react', 'zustand'],
@@ -726,6 +744,7 @@ describe('answers a target never asks for', () => {
   it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
     const { form } = parseLinteljsConfig(config({
       target,
+      testing: 'none',
       form: 'react-hook-form',
     }));
 

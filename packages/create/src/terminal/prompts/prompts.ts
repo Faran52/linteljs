@@ -271,8 +271,11 @@ const askAnswer = async (
   switch (record.kind) {
     case 'choice': {
       const offered = offeredValuesOf(record.values, target, answered);
+      // React Native refuses the `vitest` default, so it starts on the first value it offers.
+      const [first = record.default] = offered;
+      const initial = offered.includes(record.default) ? record.default : first;
 
-      return await askChoice(prompter, message, offered, record.default, describeFrom(record.values));
+      return await askChoice(prompter, message, offered, initial, describeFrom(record.values));
     }
 
     case 'optionalChoice': {
