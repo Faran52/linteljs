@@ -502,6 +502,13 @@ NativeWind 4 is refused for pinning Tailwind 3 against the latest-only non-goal.
 **StyleX dev CSS under a server-rendered document.** The Vite plugin links its dev CSS only through
 `transformIndexHtml`, so Nuxt, SvelteKit, Astro and React Router framework mode link it themselves in dev.
 
+**A StyleX project's vitest config sets `teardownTimeout: 2000`.** `@stylexjs/unplugin` 0.19.1 starts a 150ms
+interval in `configureServer` and clears it only on `server.httpServer` close, and vitest's Vite server has no
+`httpServer`, so every run sat 10s past its last test before vitest gave up and exited (measured on a Nuxt and a
+Next case; the tailwind cases exit at once). Fixed upstream in facebook/stylex#1846 for
+[facebook/stylex#1836](https://github.com/facebook/stylex/issues/1836), not released past 0.19.1. Drop the line
+once the bump carries the fix.
+
 **The markup does not change with the answer.** Every page uses semantic classes and `starter.css` ships in every
 case; `@theme inline` and `defineVars` both point at `tokens.css`. The accepted cost: **the starter shows neither
 idiom**. Per-system markup would be about 160 files, each page kept three times.

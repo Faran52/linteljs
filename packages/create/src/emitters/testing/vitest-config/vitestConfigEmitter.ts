@@ -60,6 +60,7 @@ const testBlock = (
   setup: string,
   indent: string,
   target: TargetRecord,
+  stylex: boolean,
 ): string => {
   const { testPool: pool } = target;
   const dom = target.libraryProject !== true;
@@ -69,11 +70,12 @@ const testBlock = (
   const inlineLine = target.testInline === undefined
     ? ''
     : `${indent}  server: { deps: { inline: [${String(target.testInline)}] } },\n`;
+  const teardownLine = stylex ? `${indent}  teardownTimeout: 2000,\n` : '';
 
   return `${indent}test: {
 ${indent}  globals: true,
 ${indent}  environment: '${environment}',
-${poolLine}${inlineLine}${indent}  setupFiles: ['./${setup}'],
+${poolLine}${inlineLine}${teardownLine}${indent}  setupFiles: ['./${setup}'],
 ${execArgvLine}${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
@@ -144,14 +146,17 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   const target = targetFor(answers);
   const include = coverageInclude(answers);
   const exclude = coverageExclude(answers);
+  // @stylexjs/unplugin 0.19.1 leaves an interval behind that holds every vitest run 10s past its end.
+  // https://github.com/facebook/stylex/issues/1836
+  const stylex = answers.styling === 'stylex';
 
   if (target.vitePlugin !== undefined) {
-    const nestedBlock = testBlock(include, exclude, setup, '    ', target);
+    const nestedBlock = testBlock(include, exclude, setup, '    ', target, stylex);
 
     return mergedConfig(nestedBlock, target.testConditions);
   }
 
-  const block = testBlock(include, exclude, setup, '  ', target);
+  const block = testBlock(include, exclude, setup, '  ', target, stylex);
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
   if (target.vitestFactory !== undefined) {
@@ -172,9 +177,9 @@ export default ${factoryCall};
       : swappedConfig(imports, factoryCall, swap);
   }
 
-  const stylex = stylingPlugin(answers.styling === 'stylex' ? 'stylex' : undefined);
+  const plugin = stylingPlugin(stylex ? 'stylex' : undefined);
 
-  return standaloneConfig(block, target.vitestPlugin, stylex);
+  return standaloneConfig(block, target.vitestPlugin, plugin);
 };
 
 // Birth only: the excludes are layout guesses a project replaces with its own.

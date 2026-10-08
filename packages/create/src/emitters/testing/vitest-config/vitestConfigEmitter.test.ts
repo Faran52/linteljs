@@ -402,6 +402,20 @@ describe('the styling system', () => {
     const config = configFor({ styling: 'stylex' });
     expect(config).toContain("'**/*.stylex.{ts,tsx}'");
   });
+
+  it.each<TargetId>([
+    'react',
+    'nuxt',
+    'next',
+  ])('caps the wait on the StyleX plugin\'s timer on %s', (target) => {
+    const config = configFor({ target, styling: 'stylex' });
+    expect(config).toContain('teardownTimeout: 2000,');
+  });
+
+  it('waits the default teardown without StyleX', () => {
+    const config = configFor({ target: 'nuxt', styling: 'tailwind' });
+    expect(config).not.toContain('teardownTimeout');
+  });
 });
 
 describe('the router', () => {
