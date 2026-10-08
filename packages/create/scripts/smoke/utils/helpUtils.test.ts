@@ -42,4 +42,12 @@ describe('assertHelp', () => {
       assertHelp(help);
     }).toThrow('--help does not mention the sync command');
   });
+
+  it('fails when the package is named without the sync command', () => {
+    const help = HELP.replace('@linteljs/create sync', '@linteljs/create');
+
+    expect(() => {
+      assertHelp(help);
+    }).toThrow('--help does not mention the sync command');
+  });
 });
