@@ -56,6 +56,23 @@ describe('stackRows', () => {
       .toEqual(expected);
   });
 
+  it.each([
+    ['solid', '1.9.0'],
+    ['angular', '22.2.1'],
+    ['vue', '3.5.0'],
+  ] as const)('reads the %s row from the package the framework ships as', (target, version) => {
+    const versions = {
+      'solid': '0.0.1',
+      'solid-js': '1.9.0',
+      'angular': '0.0.1',
+      '@angular/core': '22.2.1',
+      'vue': '3.5.0',
+    };
+    const actual = stackRows(hostedAnswersFor({ target }), versions);
+    const expected = [`name: '${target}'`, `version: '${version}'`];
+    expect(actual).toContainEqual(expected);
+  });
+
   it('leaves out a row whose version is unknown', () => {
     const actual = stackRows(hostedAnswersFor(), {});
     const expected = [["name: 'node'", "version: '26.9.0'"]];

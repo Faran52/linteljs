@@ -272,6 +272,8 @@ when a version's change lives in a sibling it is described there instead:
   postinstall wrote nothing in a monorepo installed from a warm pnpm store, which replays its cached build.
 - A web extension's devtools panel speaks the chosen language. With a popup and languages, its heading and
   "Ready." line read the shared locales like the popup does, instead of staying English.
+- The Version page's stack names the framework on Solid and Angular too. Its version is read from `solid-js`
+  and `@angular/core`, where the row was dropped for want of a package named for the framework.
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   a scoped override holds the copy `@astrojs/react` brings at 6.1.1, where 6.1.2 peers an `oxc-transform-react`
   that `@astrojs/react` 7 refuses, which failed yarn and npm.

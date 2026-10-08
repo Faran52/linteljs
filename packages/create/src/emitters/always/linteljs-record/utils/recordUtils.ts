@@ -5,7 +5,7 @@ import { keysOf } from '@utils/objectUtils';
 import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
 
-import { MAX_LINE } from '../../../constants';
+import { FRAMEWORK_PACKAGES, MAX_LINE } from '../../../constants';
 import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -80,7 +80,7 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
   const target = targetFor(answers);
   const framework: [string, string | undefined][] = target.framework === undefined
     ? []
-    : [[target.framework, plain(versions[target.framework])]];
+    : [[target.framework, plain(versions[FRAMEWORK_PACKAGES[target.framework] ?? target.framework])]];
   const rows: [string, string | undefined][] = [
     ['linteljs', plain(versions['@linteljs/eslint-config'])],
     ...framework,

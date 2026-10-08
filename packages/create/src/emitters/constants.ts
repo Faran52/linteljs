@@ -212,6 +212,12 @@ export const VERSIONS: Record<string, string> = {
   'zustand': '^5.0.15',
 };
 
+// Where a framework's package is not named for it, for the Version page's stack row.
+export const FRAMEWORK_PACKAGES: Partial<Record<Framework, string>> = {
+  solid: 'solid-js',
+  angular: '@angular/core',
+};
+
 export const SHARED_DEV_DEPENDENCIES = [
   '@commitlint/cli',
   '@commitlint/config-conventional',
