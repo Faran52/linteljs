@@ -23,6 +23,7 @@ import {
 
 import {
   type Agent,
+  type HostedAnswers,
   type Layout,
   type Library,
   type PackageManager,
@@ -35,7 +36,12 @@ import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
-import { planSync, syncPlugin } from '../sync/syncRun';
+import {
+  planSync,
+  syncAgentFiles,
+  type SyncResult,
+  syncWorkspaceOf,
+} from '../sync/syncRun';
 
 import { pipelineRun } from './pipelineRun';
 
@@ -47,6 +53,10 @@ interface AnswerOverrides {
   plugins?: Plugin[];
   layout?: Layout;
 }
+
+const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<SyncResult> => {
+  return await syncAgentFiles(cwd, syncWorkspaceOf(cwd, [{ answers }]));
+};
 
 let cwd = '';
 
@@ -602,6 +612,7 @@ describe('what create and sync each discover about a project', () => {
     const nothingSynced = {
       written: [],
       removed: [],
+      stale: [],
     };
     expect(synced).toEqual(nothingSynced);
     const nothingPlanned = {

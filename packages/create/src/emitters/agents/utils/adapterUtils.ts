@@ -33,6 +33,10 @@ export const emitAgentAdapter = (answers: Answers): string => {
 
 const BLOCK = /<!-- linteljs:projects -->\n[\s\S]*?<!-- \/linteljs:projects -->\n/u;
 
+export const hasProjectsBlock = (text: string): boolean => {
+  return BLOCK.test(text);
+};
+
 const kindOf = (answers: Answers): string => {
   return labelOf(answers) === 'package' ? 'package' : 'app';
 };

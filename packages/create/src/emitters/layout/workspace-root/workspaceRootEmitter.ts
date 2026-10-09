@@ -27,7 +27,7 @@ import {
 } from '../../utils/packageJsonUtils';
 
 // The root lints and typechecks only its own tooling, as a plain TypeScript project.
-const rootAnswersOf = (answers: Answers): Answers => {
+export const rootAnswersOf = (answers: Answers): Answers => {
   const rootAnswers: Answers = {
     ...DEFAULT_ANSWERS,
     packageManager: answers.packageManager,

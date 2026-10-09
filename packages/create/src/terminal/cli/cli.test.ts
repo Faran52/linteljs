@@ -666,6 +666,29 @@ describe('main: sync', () => {
     expect(printed).toBe('wrote eslint.config.ts\n');
   });
 
+  it('reports a rule copy no project needs as stale and keeps it', async () => {
+    await generated();
+    const rules = join(project, '.agents/rules');
+    const stale = join(rules, 'svelte-reactivity.md');
+    await mkdir(rules, { recursive: true });
+    await writeFile(stale, 'x\n', 'utf8');
+    await writeFile(join(rules, 'mine.md'), 'x\n', 'utf8');
+
+    const { code, printed } = await runMain(['sync']);
+    const kept = await exists(stale);
+    const expected = [
+      'stale .agents/rules/svelte-reactivity.md: no project needs it now, so remove it unless it is yours',
+      'Everything is already up to date.',
+      '',
+    ].join('\n');
+
+    expect(code).toBe(0);
+
+    expect(printed).toBe(expected);
+
+    expect(kept).toBe(true);
+  });
+
   it.each<[string, string[], string]>([
     [
       'keeps',
@@ -799,11 +822,72 @@ describe('main: sync', () => {
     const { code, printed } = await runMain(['sync', '--yes'], scripted([]));
 
     expect(code).toBe(0);
-    expect(printed).toContain('moved eslint.config.ts to eslint.config.ts.bak');
+    expect(printed).toContain('moved packages/demo/eslint.config.ts to packages/demo/eslint.config.ts.bak');
     const backup = await readFile(join(app, 'eslint.config.ts.bak'), 'utf8');
     expect(backup).toBe('export default [];\n');
     const hasRootBackup = await exists(join(root, 'eslint.config.ts.bak'));
     expect(hasRootBackup).toBe(false);
+  });
+
+  it('asks for each project in config order, naming its directory, then for the root once', async () => {
+    await runMain([
+      'acme',
+      '--project',
+      'web',
+      '--target',
+      'react',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+      '--no-install',
+      '--yes',
+    ]);
+
+    const root = join(project, 'acme');
+    chdir(root);
+
+    const directories = [
+      'apps/web',
+      'packages/shared',
+      '.',
+    ];
+
+    for (const directory of directories) {
+      const path = join(root, directory, 'package.json');
+      const text = await readFile(path, 'utf8');
+      const manifest = parsePackageJson(text);
+      const devDependencies = { ...manifest.devDependencies };
+      delete devDependencies['eslint'];
+
+      await writeFile(path, JSON.stringify({
+        ...manifest,
+        devDependencies,
+      }), 'utf8');
+    }
+
+    await writeFile(join(root, 'apps/web/eslint.config.ts'), 'export default [];\n', 'utf8');
+
+    const asked = scripted([
+      'yes',
+      'yes',
+      'yes',
+      'yes',
+    ]);
+    const { code, printed } = await runMain(['sync'], asked);
+
+    expect(code).toBe(0);
+    const questions = [
+      'apps/web: Add or update them in package.json?',
+      'apps/web: Move it to apps/web/eslint.config.ts.bak and write apps/web/eslint.config.ts?',
+      'packages/shared: Add or update them in package.json?',
+      'Add or update them in package.json?',
+    ];
+    expect(asked.calls).toEqual(questions);
+    expect(printed).toContain('wrote apps/web/package.json.');
+    expect(printed).toContain('wrote packages/shared/package.json.');
+    const again = await runMain(['sync'], scripted([]));
+    expect(again.printed).toBe('Everything is already up to date.\n');
   });
 
   const monorepo = async (): Promise<string> => {

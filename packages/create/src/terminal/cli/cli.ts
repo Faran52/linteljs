@@ -5,8 +5,7 @@ import {
 } from 'node:path';
 import { stdin } from 'node:process';
 
-import { ESLINT_CONFIG_PATH } from '@config/constants';
-
+import { projectDirectoryOf } from '@utils/answerUtils';
 import { unscopedName } from '@utils/nameUtils';
 
 import {
@@ -27,17 +26,17 @@ import {
   linteljsConfigReader,
   readIfPresent,
 } from '@disk';
-import { parsePackageJson, type Upgrade } from '@emitters';
+import {
+  parsePackageJson,
+} from '@emitters';
 import {
   addPackage,
-  appRootOf,
-  type LintConfigPlan,
   pipelineRun,
+  planRootDependencies,
   planSync,
-  runnerSwitch,
-  syncPlugin,
-  writeDependencies,
-  writeLintConfig,
+  syncAgentFiles,
+  type SyncProject,
+  syncWorkspaceOf,
 } from '@pipeline';
 import { runSpawn } from '@spawns';
 import { targetFor } from '@targets';
@@ -54,7 +53,6 @@ import {
   ask,
   type Asked,
   type AskedProject,
-  confirm,
   inquirerPrompter,
   type Prompter,
   RunCancelled,
@@ -64,7 +62,6 @@ import { isValidProjectName } from '../utils/nameUtils';
 import {
   ADD_NEEDS_MONOREPO,
   EXISTING_MONOREPO,
-  SYNC_NEEDS_YES,
 } from './constants';
 import {
   type AnswerFlags,
@@ -78,8 +75,15 @@ import {
   nextSteps,
   say,
   stageReport,
-  upgradeTable,
 } from './utils/reportUtils';
+import {
+  type Asker,
+  dependencySteps,
+  isSettled,
+  lintConfigStep,
+  switchRefusal,
+  type SyncedProject,
+} from './utils/syncStepUtils';
 
 import type {
   Answers,
@@ -93,19 +97,7 @@ interface HostedAsk {
   name: string;
   answers: HostedAnswers;
   projects?: Workspace['projects'];
-}
-
-interface Asker {
-  isYes: boolean;
-  prompter: Prompter;
-  hasTerminal: boolean;
-}
-
-interface DependencyStep {
-  changes: Upgrade[];
-  heading: string;
-  question: string;
-  done: string;
+  synced?: [SyncProject, ...SyncProject[]];
 }
 
 const EXIT_CANCELLED = 130;
@@ -237,7 +229,23 @@ const askedFrom = async (
   if (options.command === 'sync') {
     const config = await linteljsConfigReader(options.cwd);
 
-    return fromConfig(config);
+    const syncOne = (project: LinteljsConfig['projects'][number]): SyncProject => {
+      const answers = projectAnswersOf(config, project);
+      const synced: SyncProject = {
+        ...(project.name === undefined ? {} : { name: project.name }),
+        answers: filled(answers, host),
+      };
+
+      return synced;
+    };
+
+    const [first, ...rest] = config.projects;
+    const synced: HostedAsk = {
+      ...fromConfig(config),
+      synced: [syncOne(first), ...rest.map(syncOne)],
+    };
+
+    return synced;
   }
 
   // A 1.x project records its answers under the old name.
@@ -274,74 +282,6 @@ const askedFrom = async (
   });
 
   return askedProjects(asked, host);
-};
-
-// `--yes` accepts; with no terminal it is null: the step writes nothing and the run fails, so a script notices.
-const stepOf = async (asker: Asker, heading: string, question: string): Promise<boolean | null> => {
-  say(heading);
-
-  if (asker.isYes) {
-    return true;
-  }
-
-  if (!asker.hasTerminal) {
-    console.error(SYNC_NEEDS_YES);
-
-    return null;
-  }
-
-  return await confirm(asker.prompter, question);
-};
-
-// Each step resolves to whether it was blocked.
-const dependencyStep = async (cwd: string, asker: Asker, step: DependencyStep): Promise<boolean> => {
-  const {
-    changes,
-    heading,
-    question,
-    done,
-  } = step;
-
-  if (changes.length === 0) {
-    return false;
-  }
-
-  const isApproved = await stepOf(asker, `${heading}\n${upgradeTable(changes)}`, question);
-
-  if (isApproved === true) {
-    await writeDependencies(cwd, changes);
-    say(done);
-  }
-
-  return isApproved === null;
-};
-
-// A missing config is written; one the project has is moved aside only when asked.
-const lintConfigStep = async (
-  cwd: string,
-  asker: Asker,
-  answers: HostedAnswers,
-  plan: LintConfigPlan,
-): Promise<boolean> => {
-  if (plan.status !== 'changed') {
-    if (plan.status === 'missing') {
-      await writeLintConfig(cwd, answers, plan);
-      say(`wrote ${ESLINT_CONFIG_PATH}`);
-    }
-
-    return false;
-  }
-
-  const { path, backup } = plan;
-  const question = `Move it to ${backup} and write ${ESLINT_CONFIG_PATH}?`;
-  const isApproved = await stepOf(asker, `${path} differs from the config linteljs writes.`, question);
-
-  if (isApproved === true) {
-    await writeLintConfig(cwd, answers, plan);
-    say(`moved ${path} to ${backup}, wrote ${ESLINT_CONFIG_PATH}`);
-  }
-
-  return isApproved === null;
 };
 
 // An app of the same name would give the workspace two packages under one name.
@@ -382,31 +322,40 @@ const runAdd = async (options: CliOptions, answers: HostedAnswers, name: string)
   return 0;
 };
 
+// Each project in config order, then the root's dependencies once.
 const runSync = async (
   options: CliOptions,
-  answers: HostedAnswers,
+  projects: [SyncProject, ...SyncProject[]],
   prompter: Prompter,
   hasTerminal: boolean,
 ): Promise<number> => {
   const { cwd } = options;
-  const app = appRootOf(cwd, answers);
-  const switched = await runnerSwitch(app, answers);
+  const workspace = syncWorkspaceOf(cwd, projects);
+  const synced = await Promise.all(workspace.projects
+    .map(async ({ name, answers }) => {
+      const directory = projectDirectoryOf(answers, name);
+      const plan = await planSync(join(cwd, directory), answers);
+      const project: SyncedProject = {
+        directory,
+        answers,
+        plan,
+      };
 
-  if (switched !== null) {
-    const { from, to } = switched;
+      return project;
+    }));
+  const refusal = await switchRefusal(cwd, synced);
 
-    const message = [
-      `Nothing was written: this project runs its suites on ${from}, and linteljs now runs them on ${to}.`,
-      'sync changes no runner, since the suites, setup and test scripts are the project\'s.',
-      `Port them to ${to}, swap the dependencies, and run sync again.`,
-    ].join(' ');
-
-    console.error(message);
+  if (refusal !== undefined) {
+    console.error(refusal);
 
     return 1;
   }
 
-  const { written, removed } = await syncPlugin(cwd, answers);
+  const {
+    written,
+    removed,
+    stale,
+  } = await syncAgentFiles(cwd, workspace);
 
   for (const target of written) {
     say(`wrote ${target}`);
@@ -416,23 +365,21 @@ const runSync = async (
     say(`removed ${target}`);
   }
 
-  const plan = await planSync(app, answers);
-  const {
-    upgrades,
-    peers,
-    eslintConfig,
-  } = plan;
-  const changeLists = [
-    written,
-    removed,
-    upgrades,
-    peers,
-  ];
-  const isEmpty = changeLists
-    .every((entries) => {
-      return entries.length === 0;
+  for (const target of stale) {
+    say(`stale ${target}: no project needs it now, so remove it unless it is yours`);
+  }
+
+  const [{ answers: first }] = workspace.projects;
+  const root = first.layout === 'monorepo'
+    ? await planRootDependencies(cwd, first)
+    : {
+        upgrades: [],
+        peers: [],
+      };
+  const isCurrent = written.length === 0 && removed.length === 0 && isSettled(root) && synced
+    .every(({ plan }) => {
+      return isSettled(plan) && plan.eslintConfig.status === 'unchanged';
     });
-  const isCurrent = isEmpty && eslintConfig.status === 'unchanged';
 
   if (isCurrent) {
     say('Everything is already up to date.');
@@ -444,26 +391,18 @@ const runSync = async (
     prompter,
     hasTerminal,
   };
-  const upgradeStep: DependencyStep = {
-    changes: upgrades,
-    heading: '@linteljs/* versions behind:',
-    question: 'Update them in package.json?',
-    done: 'wrote package.json',
-  };
-  const peerStep: DependencyStep = {
-    changes: peers,
-    heading: 'Lint dependencies missing or behind:',
-    question: 'Add or update them in package.json?',
-    done: `wrote package.json. Install them:\n  ${answers.packageManager} install`,
-  };
-  const isUpgradeBlocked = await dependencyStep(app, asker, upgradeStep);
-  const isPeerBlocked = await dependencyStep(app, asker, peerStep);
-  const isLintBlocked = await lintConfigStep(app, asker, answers, eslintConfig);
-  const blocked = [
-    isUpgradeBlocked,
-    isPeerBlocked,
-    isLintBlocked,
-  ];
+  const blocked: boolean[] = [];
+
+  for (const project of synced) {
+    const dependencyBlocks = await dependencySteps(cwd, asker, project.directory, project.plan, first.packageManager);
+    const isConfigBlocked = await lintConfigStep(cwd, asker, project);
+
+    blocked.push(...dependencyBlocks, isConfigBlocked);
+  }
+
+  const rootBlocks = await dependencySteps(cwd, asker, '.', root, first.packageManager);
+
+  blocked.push(...rootBlocks);
 
   return blocked.includes(true) ? 1 : 0;
 };
@@ -496,14 +435,15 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
       name,
       answers,
       projects,
+      synced,
     } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
     if (options.add !== undefined) {
       return await runAdd(options, answers, options.add);
     }
 
-    if (options.command === 'sync') {
-      return await runSync(options, answers, prompter ?? inquirerPrompter, hasTerminal);
+    if (synced !== undefined) {
+      return await runSync(options, synced, prompter ?? inquirerPrompter, hasTerminal);
     }
 
     if (options.existing && answers.layout === 'monorepo') {

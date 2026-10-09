@@ -2,11 +2,14 @@ export type { PipelineOptions } from './runs/pipeline/pipelineRun';
 export { pipelineRun } from './runs/pipeline/pipelineRun';
 export {
   addPackage,
-  appRootOf,
   type LintConfigPlan,
+  planRootDependencies,
   planSync,
   runnerSwitch,
-  syncPlugin,
+  syncAgentFiles,
+  type SyncPlan,
+  type SyncProject,
+  syncWorkspaceOf,
   writeDependencies,
   writeLintConfig,
 } from './runs/sync/syncRun';

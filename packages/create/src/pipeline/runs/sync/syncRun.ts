@@ -13,6 +13,7 @@ import {
   PLUGIN_ROOT,
 } from '@config/constants';
 
+import { projectDirectoryOf } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
 import {
@@ -27,6 +28,7 @@ import {
   rmdirIfEmpty,
   safeProjectPath,
   shippedAssetsReader,
+  TEMPLATES_ROOT,
 } from '@disk';
 import {
   type Artifact,
@@ -34,9 +36,11 @@ import {
   type DependencyDrift,
   dependencyDrift,
   emitEslintConfig,
+  hasProjectsBlock,
   packageAnswersOf,
   parsePackageJson,
   projectArtifacts,
+  rootAnswersOf,
   serializedPackageJson,
   TEST_RUNNERS,
   testRunnerOf,
@@ -46,11 +50,21 @@ import {
 } from '@emitters';
 
 import {
+  AGENT_FILES,
   APP_MANIFESTS,
   ESLINT_CONFIG_SPELLINGS,
+  ROOT_ADAPTERS,
+  RULE_DIRECTORIES,
+  RULE_FRAGMENTS,
 } from './constants';
 
-import type { HostedAnswers, TestRunner } from '@config/types';
+import type {
+  Answers,
+  HostedAnswers,
+  TestRunner,
+  Workspace,
+  WorkspaceProject,
+} from '@config/types';
 
 interface LintConfigSettled {
   status: 'missing' | 'unchanged';
@@ -76,7 +90,20 @@ export interface RunnerSwitch {
 export interface SyncResult {
   written: string[];
   removed: string[];
+  stale: string[];
 }
+
+// A v1 or v2 config records no name.
+export interface SyncProject {
+  name?: string;
+  answers: HostedAnswers;
+}
+
+const stemOf = (file: string): string => {
+  const dot = file.indexOf('.');
+
+  return file.slice(0, dot);
+};
 
 // A recorded path is the project's to edit: one that leaves the folder, or names a directory, is never deleted.
 const isPluginPath = (target: string): boolean => {
@@ -135,7 +162,7 @@ export const runnerSwitch = async (cwd: string, answers: HostedAnswers): Promise
   return found;
 };
 
-const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
+const driftOf = async (cwd: string, answers: Answers): Promise<DependencyDrift> => {
   const manifest = await readIfPresent(packageJsonPath(cwd));
 
   if (manifest === null) {
@@ -189,6 +216,11 @@ const lintConfigPlan = async (cwd: string, answers: HostedAnswers): Promise<Lint
   return missing;
 };
 
+// The root's own lint tooling, read once for the whole workspace.
+export const planRootDependencies = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
+  return await driftOf(cwd, rootAnswersOf(answers));
+};
+
 export const planSync = async (cwd: string, answers: HostedAnswers): Promise<SyncPlan> => {
   const drift = await driftOf(cwd, answers);
   const eslintConfig = await lintConfigPlan(cwd, answers);
@@ -227,28 +259,82 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
   }
 };
 
-const pluginArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
-  const project = await projectShapeReader(appRootOf(cwd, answers));
-  const name = basename(cwd);
-  const built = buildArtifacts(workspaceOf(name, [{
-    name,
-    answers,
-  }]), [project]);
+const directoryOf = ({ name, answers }: WorkspaceProject): string => {
+  return projectDirectoryOf(answers, name);
+};
 
-  return built
-    .filter(({ target }) => {
-      return target.startsWith(PLUGIN_ROOT);
+// A preserved file is the project's once it exists, so sync leaves it to the project.
+const isSyncOwned = ({ target, preserve }: Artifact): boolean => {
+  const isRuleCopy = RULE_DIRECTORIES
+    .some((directory) => {
+      return target.startsWith(`${directory}/`);
+    });
+  const fileName = posix.basename(target);
+  const isOwned = target.startsWith(PLUGIN_ROOT) || isRuleCopy || AGENT_FILES.includes(fileName);
+
+  return preserve !== true && isOwned;
+};
+
+const syncedArtifacts = async (cwd: string, workspace: Workspace): Promise<Artifact[]> => {
+  const shapes = await Promise.all(workspace.projects
+    .map(async (project) => {
+      const root = join(cwd, directoryOf(project));
+
+      return await projectShapeReader(root);
+    }));
+
+  return buildArtifacts(workspace, shapes)
+    .filter(isSyncOwned);
+};
+
+// A root adapter without the markers is the user's whole.
+const isLeftAlone = (target: string, current: string | null): boolean => {
+  return ROOT_ADAPTERS.includes(target) && current !== null && !hasProjectsBlock(current);
+};
+
+// Named for a shipped rule, in a rule directory, and written for no project now.
+const staleCopies = (cwd: string, expected: Set<string>): string[] => {
+  const fragments = join(TEMPLATES_ROOT, RULE_FRAGMENTS);
+  const stems = new Set(globPaths(fragments, '*.md')
+    .map(stemOf));
+  const directories = RULE_DIRECTORIES.join(',');
+
+  return globPaths(cwd, `{${directories}}/*`)
+    .filter((target) => {
+      const stem = stemOf(posix.basename(target));
+
+      return !expected.has(target) && stems.has(stem);
     });
 };
 
-// The folder is linteljs's whole, so it is written without asking.
-export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<SyncResult> => {
+// One workspace in config order; a v1 or v2 project is named for the directory it is found in.
+export const syncWorkspaceOf = (cwd: string, projects: [SyncProject, ...SyncProject[]]): Workspace => {
+  const nameOne = ({ name, answers }: SyncProject): WorkspaceProject => {
+    const appRoot = appRootOf(cwd, answers);
+    const named: WorkspaceProject = {
+      name: name ?? basename(appRoot),
+      answers,
+    };
+
+    return named;
+  };
+
+  const [first, ...rest] = projects;
+
+  const root = basename(cwd);
+  const named = rest.map(nameOne);
+
+  return workspaceOf(root, [nameOne(first), ...named]);
+};
+
+// Agent files are linteljs's whole, so they are written without asking; only `plugins/linteljs/` loses a file.
+export const syncAgentFiles = async (cwd: string, workspace: Workspace): Promise<SyncResult> => {
   const written: string[] = [];
   const removed: string[] = [];
 
   // Read first: the loop below rewrites the record.
   const recorded = await managedPathsReader(cwd);
-  const artifacts = await pluginArtifacts(cwd, answers);
+  const artifacts = await syncedArtifacts(cwd, workspace);
   const expected = new Set(artifacts
     .map(({ target }) => {
       return target;
@@ -257,6 +343,11 @@ export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<S
   for (const artifact of artifacts) {
     const path = await safeProjectPath(cwd, artifact.target);
     const current = await readIfPresent(path);
+
+    if (isLeftAlone(artifact.target, current)) {
+      continue;
+    }
+
     const shipped = await shippedAssetsReader(artifact.content, current);
 
     if (current === shipped) {
@@ -293,6 +384,7 @@ export const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<S
   const result: SyncResult = {
     written,
     removed,
+    stale: staleCopies(cwd, expected),
   };
 
   return result;

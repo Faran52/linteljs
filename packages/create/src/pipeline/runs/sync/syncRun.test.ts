@@ -32,16 +32,23 @@ import {
 import {
   addPackage,
   appRootOf,
+  planRootDependencies,
   planSync,
   runnerSwitch,
-  syncPlugin,
+  syncAgentFiles,
+  type SyncResult,
+  syncWorkspaceOf,
   writeDependencies,
   writeLintConfig,
 } from './syncRun';
 
-import type { HostedAnswers } from '@config/types';
+import type { HostedAnswers, Workspace } from '@config/types';
 
 const PROBE_LIMIT = 100;
+
+const syncPlugin = async (cwd: string, answers: HostedAnswers): Promise<SyncResult> => {
+  return await syncAgentFiles(cwd, syncWorkspaceOf(cwd, [{ answers }]));
+};
 
 const probes = vi.hoisted(() => {
   const counter = { count: 0 };
@@ -268,6 +275,7 @@ describe('syncPlugin', () => {
     const expected = {
       written: [],
       removed: [],
+      stale: [],
     };
     expect(second).toEqual(expected);
   });
@@ -399,6 +407,112 @@ describe('syncPlugin', () => {
     await expect(syncing).rejects.toThrow('a parent directory is a symbolic link');
     const kept = await readFile(join(external, 'plugin.json'), 'utf8');
     expect(kept).toBe('{"external":true}\n');
+  });
+});
+
+describe('syncAgentFiles', () => {
+  const WEB: HostedAnswers = {
+    ...HOSTED_DEFAULTS,
+    layout: 'monorepo',
+    agents: ['claude-code', 'cursor'],
+  };
+  const SHARED: HostedAnswers = {
+    ...WEB,
+    target: 'typescript',
+  };
+  const STALE = '.cursor/rules/repo-structure.svelte.mdc';
+
+  const monorepo = (): Workspace => {
+    return syncWorkspaceOf(cwd, [{
+      name: 'web',
+      answers: WEB,
+    }, {
+      name: 'shared',
+      answers: SHARED,
+    }]);
+  };
+
+  it('restores a project\'s facts and a deleted rule copy, and reports a stale copy it keeps', async () => {
+    const workspace = monorepo();
+    await syncAgentFiles(cwd, workspace);
+    await plant('apps/web/CLAUDE.md', 'edited\n');
+    await rm(join(cwd, '.cursor/rules/type-standards.mdc'));
+    await plant(STALE, 'old\n');
+    await plant('.cursor/rules/mine.mdc', 'mine\n');
+
+    const result = await syncAgentFiles(cwd, workspace);
+
+    const expected = {
+      written: ['.cursor/rules/type-standards.mdc', 'apps/web/CLAUDE.md'],
+      removed: [],
+      stale: [STALE],
+    };
+    const written = new Set(result.written);
+    expect(written).toEqual(new Set(expected.written));
+    expect(result.removed).toEqual(expected.removed);
+    expect(result.stale).toEqual(expected.stale);
+    const isKept = await exists(join(cwd, STALE));
+    expect(isKept).toBe(true);
+    const facts = await readFile(join(cwd, 'apps/web/CLAUDE.md'), 'utf8');
+    expect(facts).toContain('# web');
+  });
+
+  it('rewrites only the projects block of a root adapter, and leaves one without the markers alone', async () => {
+    await plant('CLAUDE.md', 'mine\n<!-- linteljs:projects -->\nold\n<!-- /linteljs:projects -->\nmine too\n');
+    await plant('.cursor/rules/linteljs.mdc', 'no block\n');
+
+    const { written } = await syncAgentFiles(cwd, monorepo());
+
+    const adapter = await readFile(join(cwd, 'CLAUDE.md'), 'utf8');
+    expect(adapter).toMatch(/^mine\n<!-- linteljs:projects -->\n## Projects\n[\s\S]*`apps\/web`[\s\S]*\nmine too\n$/u);
+    const cursor = await readFile(join(cwd, '.cursor/rules/linteljs.mdc'), 'utf8');
+    expect(cursor).toBe('no block\n');
+    expect(written).toContain('CLAUDE.md');
+    expect(written).not.toContain('.cursor/rules/linteljs.mdc');
+  });
+});
+
+describe('syncWorkspaceOf', () => {
+  it('names an unnamed monorepo project for the directory it is found in, and keeps a recorded name', async () => {
+    const answers: HostedAnswers = {
+      ...HOSTED_DEFAULTS,
+      layout: 'monorepo',
+    };
+    await plant('apps/site/package.json', '{}\n');
+
+    const [found] = syncWorkspaceOf(cwd, [{ answers }]).projects;
+    const [named] = syncWorkspaceOf(cwd, [{
+      name: 'web',
+      answers,
+    }]).projects;
+
+    expect(found.name).toBe('site');
+    expect(named.name).toBe('web');
+  });
+});
+
+describe('planRootDependencies', () => {
+  it('reads the root manifest against the root\'s own lint tooling, not a project\'s', async () => {
+    await plant('package.json', '{}\n');
+
+    const { upgrades, peers } = await planRootDependencies(cwd, HOSTED_DEFAULTS);
+
+    const upgradeNames = upgrades
+      .map(({ name }) => {
+        return name;
+      });
+    const peerNames = peers
+      .map(({ name }) => {
+        return name;
+      });
+
+    expect(upgradeNames).toEqual(['@linteljs/eslint-config']);
+
+    expect(peerNames).toEqual([
+      'eslint',
+      'jiti',
+      'typescript',
+    ]);
   });
 });
 

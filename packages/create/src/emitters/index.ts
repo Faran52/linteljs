@@ -1,6 +1,8 @@
+export { hasProjectsBlock } from './agents/utils/adapterUtils';
 export { emitEslintConfig } from './always/eslint-config/eslintConfigEmitter';
 export { styleGlob } from './always/utils/scriptUtils';
 export { TEST_RUNNERS } from './constants';
+export { rootAnswersOf } from './layout/workspace-root/workspaceRootEmitter';
 export {
   buildArtifacts,
   projectArtifacts,
