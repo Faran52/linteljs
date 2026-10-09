@@ -1,0 +1,10 @@
+{
+  "contact": "Contact",
+  "contactLede": "Two fields, validated on blur. Nothing is sent anywhere.",
+  "contactSent": "Thanks. Nothing was sent, this is a starter.",
+  "contactSend": "Send",
+  "contactEmail": "Email",
+  "contactMessage": "Message",
+  "contactEmailInvalid": "Enter a valid email address.",
+  "contactMessageShort": "Write a message of at least ten characters."
+}

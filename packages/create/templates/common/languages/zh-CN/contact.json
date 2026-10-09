@@ -1,0 +1,10 @@
+{
+  "contact": "联系我们",
+  "contactLede": "两个字段，在失去焦点时校验。不会发送到任何地方。",
+  "contactSent": "谢谢。这是一个起步项目，没有发送任何内容。",
+  "contactSend": "发送",
+  "contactEmail": "邮箱",
+  "contactMessage": "留言",
+  "contactEmailInvalid": "请输入有效的邮箱地址。",
+  "contactMessageShort": "请输入至少十个字符的留言。"
+}

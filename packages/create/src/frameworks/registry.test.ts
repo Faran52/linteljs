@@ -95,6 +95,60 @@ const COPIES: Copies[] = [
     path: 'public/api/items.json',
     drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
   },
+  {
+    path: 'src/components/ui/index.ts',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/components/ui/text-input/TextInput.tsx',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/components/ui/text-input/TextInput.test.tsx',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/pages/contact/ContactPage.tsx',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/pages/contact/ContactPage.test.tsx',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/pages/contact/use-contact-form/useContactForm.test.ts',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/lib/services/contact-form/contactFormService.ts',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/lib/services/contact-form/contactFormService.test.ts',
+    drawers: ['any/form-tanstack-form', 'any/form-react-hook-form'],
+  },
+  {
+    path: 'src/components/ui/text-input/TextInput.styles.ts',
+    drawers: [
+      'css/form-tanstack-form',
+      'css/form-react-hook-form',
+      'tailwind/form-tanstack-form',
+      'tailwind/form-react-hook-form',
+    ],
+  },
+  {
+    path: 'src/components/ui/text-input/TextInput.css',
+    drawers: [
+      'css/form-tanstack-form',
+      'css/form-react-hook-form',
+      'tailwind/form-tanstack-form',
+      'tailwind/form-react-hook-form',
+    ],
+  },
+  {
+    path: 'src/components/ui/text-input/TextInput.styles.ts',
+    drawers: ['stylex/form-tanstack-form', 'stylex/form-react-hook-form'],
+  },
 ];
 
 it('names only frameworks with a templates module', () => {

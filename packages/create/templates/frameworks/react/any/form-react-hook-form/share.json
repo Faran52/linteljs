@@ -1,0 +1,12 @@
+{
+  "package": {
+    "dependencies": {
+      "react-hook-form": "^7.89.0",
+      "zod": "^4.6.5"
+    }
+  },
+  "routes": [
+    { "path": "/contact", "name": "contact", "from": "@pages/contact/ContactPage" }
+  ],
+  "locales": ["contact"]
+}

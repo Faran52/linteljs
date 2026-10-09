@@ -1,0 +1,10 @@
+{
+  "contact": "お問い合わせ",
+  "contactLede": "2 つの入力欄は、フォーカスを外したときに検証されます。どこにも送信されません。",
+  "contactSent": "ありがとうございます。これはスターターなので、何も送信されていません。",
+  "contactSend": "送信",
+  "contactEmail": "メールアドレス",
+  "contactMessage": "メッセージ",
+  "contactEmailInvalid": "有効なメールアドレスを入力してください。",
+  "contactMessageShort": "メッセージを10文字以上入力してください。"
+}
