@@ -1,17 +1,8 @@
-import { intersection } from 'es-toolkit';
-
 import { Refused } from '../../errors/refused/refusedError';
 import { type Catalog } from '../../read/catalog/catalogReader';
 import { type Answered, type Question } from '../../read/manifest/manifestReader';
+import { choiceDefaultOf, multiDefaultOf } from '../../utils/defaultUtils';
 import { offersCheck, unmetOf } from '../offers/offersCheck';
-
-// The default where offered; else a choice takes the first offer and a multi what is left of its default.
-const defaultOf = (question: Question, offers: string[], first: string): string | string[] => {
-  const defaults = [question.default].flat();
-  const kept = intersection(defaults, offers);
-
-  return question.kind === 'multi' ? kept : kept[0] ?? first;
-};
 
 const checkedValue = (question: Question, offers: string[], answered: Answered, value: string): void => {
   const unmet = unmetOf(question, value, answered);
@@ -41,7 +32,10 @@ export const answersCheck = (questions: readonly Question[], catalog: Catalog, g
         return answered;
       }
 
-      const picked = value ?? defaultOf(question, offers, first);
+      const fallback = question.kind === 'multi'
+        ? multiDefaultOf(question, offers)
+        : choiceDefaultOf(question, offers, first);
+      const picked = value ?? fallback;
 
       if (Array.isArray(picked) !== (question.kind === 'multi')) {
         throw new Refused(`--${question.flag} takes ${question.kind === 'multi' ? 'a list' : 'one value'}`);

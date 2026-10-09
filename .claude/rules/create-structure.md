@@ -30,9 +30,13 @@ The 2.0 rewrite grows beside them, in `REWRITE_RINGS` with no zones yet:
 choices/    the question manifest, the drawer catalog, what each question offers, the checked answers, the
             drawers they pick, and the recorded config. Reads @answers and @disk.
 io/         writing a project's files through artifactWriter.
+prompt/     asking the questions; throws Cancelled.
+assemble/   reads each picked drawer, merges files and shares (a path or a share key twice is an authoring error),
+            writes package.json, eslint.config.ts, locales, routes and the CSS entry from the merged share, and
+            places each unit (monorepo: apps/<n>, packages/<n>) once. Reads @choices, @disk, @emitters and @io.
 ```
 
-Neither has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`.
+None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`.
 
 - **Membership is the world a module reaches**, readable off its imports: `node:fs` means `disk/`,
   `node:child_process` means `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may

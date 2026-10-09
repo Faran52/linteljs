@@ -9,7 +9,7 @@ import { catalogReader } from './catalogReader';
 
 it('reads each directory\'s drawers and the common languages and agents', async () => {
   const questions = await manifestReader();
-  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'demo');
+  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'react');
   const names = catalog.drawers
     .map((drawer) => {
       return `${drawer.dir}/${drawer.name}=${drawer.value}`;

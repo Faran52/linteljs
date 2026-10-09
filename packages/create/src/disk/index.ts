@@ -12,6 +12,7 @@ export {
   directoriesIn,
   entryExists,
   exists,
+  filesUnder,
   globPaths,
   globSnapshot,
   isExecutableFile,

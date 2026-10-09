@@ -13,7 +13,7 @@ import { answersCheck } from './answersCheck';
 
 const checkedFor = async (given: Answered): Promise<Answered> => {
   const questions = await manifestReader();
-  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'demo');
+  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'react');
 
   return answersCheck(questions, catalog, given);
 };
@@ -42,7 +42,7 @@ it('fills each asked question with its offered default and skips the unasked', a
 
 it('takes the first offer for a choice whose default is not offered', async () => {
   const questions = await manifestReader();
-  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'demo');
+  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'react');
   const layouts = questions
     .filter((question) => {
       return question.key === 'layout';

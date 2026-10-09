@@ -42,7 +42,7 @@ const indentOf = (level: number): string => {
   return '  '.repeat(level);
 };
 
-const arrayLiteral = (key: string, values: string[], level = 1): string => {
+export const arrayLiteral = (key: string, values: string[], level = 1): string => {
   const inline = `[${values
     .map(quote)
     .join(', ')}]`;
@@ -66,7 +66,7 @@ const arrayRow = (key: OptionRow[0], values: string[]): OptionRow => {
   return row;
 };
 
-const objectLiteral = (entries: [string, string][], level: number): string => {
+export const objectLiteral = (entries: [string, string][], level: number): string => {
   const inner = entries
     .map(([key, value]) => {
       return `${indentOf(level + 1)}${quote(key)}: ${quote(value)},`;
@@ -160,8 +160,9 @@ const optionRows = (answers: Answers): OptionRow[] => {
   return rows;
 };
 
-export const emitEslintConfig = (answers: Answers): string => {
-  const options = optionRows(answers)
+// Each row is an option name and its value as source text.
+export const configSource = (rows: readonly (readonly [string, string])[]): string => {
+  const options = rows
     .map(([key, value]) => {
       return `${indentOf(1)}${key}: ${value},`;
     })
@@ -178,6 +179,12 @@ export const emitEslintConfig = (answers: Answers): string => {
   ].join('\n');
 
   return source;
+};
+
+export const emitEslintConfig = (answers: Answers): string => {
+  const rows = optionRows(answers);
+
+  return configSource(rows);
 };
 
 export const eslintConfigEmitter = (answers: Answers): Artifact[] => {

@@ -1,0 +1,11 @@
+{
+  "package": {
+    "scripts": { "dev": "vite" },
+    "dependencies": { "react": "^19.0.0" }
+  },
+  "eslint": { "react": true },
+  "routes": [{ "path": "/", "name": "home", "from": "./pages/home" }],
+  "routesFile": "src/routes.ts",
+  "locales": ["app", "nav"],
+  "localesDir": "src/locales"
+}

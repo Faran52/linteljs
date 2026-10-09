@@ -1,0 +1,4 @@
+{
+  "css": ["tailwindcss"],
+  "cssFile": "src/index.css"
+}

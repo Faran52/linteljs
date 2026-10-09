@@ -22,6 +22,7 @@ import {
   directoriesIn,
   entryExists,
   exists,
+  filesUnder,
   globPaths,
   globSnapshot,
   hasCode,
@@ -228,5 +229,21 @@ describe('directoriesIn', () => {
 
     const actual = await directoriesIn(cwd);
     expect(actual).toEqual(['a', 'b']);
+  });
+});
+
+describe('filesUnder', () => {
+  it('answers nothing for a missing directory', async () => {
+    const actual = await filesUnder(join(cwd, 'missing'));
+    expect(actual).toEqual([]);
+  });
+
+  it('answers every file below, dotfiles included, relative and sorted', async () => {
+    await mkdir(join(cwd, 'b', '.c'), { recursive: true });
+    await writeFile(join(cwd, 'b', '.c', 'd.txt'), 'd', 'utf8');
+    await writeFile(join(cwd, '.a'), 'a', 'utf8');
+
+    const actual = await filesUnder(cwd);
+    expect(actual).toEqual(['.a', join('b', '.c', 'd.txt')]);
   });
 });

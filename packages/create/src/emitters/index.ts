@@ -1,5 +1,10 @@
 export { hasProjectsBlock } from './agents/utils/adapterUtils';
-export { emitEslintConfig } from './always/eslint-config/eslintConfigEmitter';
+export {
+  arrayLiteral,
+  configSource,
+  emitEslintConfig,
+  objectLiteral,
+} from './always/eslint-config/eslintConfigEmitter';
 export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 export { styleGlob } from './always/utils/scriptUtils';
 export { TEST_RUNNERS } from './constants';

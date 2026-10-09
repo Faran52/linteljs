@@ -11,7 +11,7 @@ import {
   readFile,
   rmdir,
 } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 interface CodedError extends Error {
   code: string;
@@ -143,6 +143,33 @@ export const directoriesIn = async (path: string): Promise<string[]> => {
     })
     .map((entry) => {
       return entry.name;
+    })
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
+};
+
+// `globSync` skips dotfiles, which drawers hold; a missing directory holds none.
+export const filesUnder = async (path: string): Promise<string[]> => {
+  const present = await exists(path);
+
+  if (!present) {
+    return [];
+  }
+
+  const entries = await readdir(path, {
+    withFileTypes: true,
+    recursive: true,
+  });
+
+  return entries
+    .filter((entry) => {
+      return entry.isFile();
+    })
+    .map((entry) => {
+      const absolute = join(entry.parentPath, entry.name);
+
+      return relative(path, absolute);
     })
     .toSorted((left, right) => {
       return left.localeCompare(right);

@@ -57,7 +57,12 @@ const srcDir = join(import.meta.dirname);
 const SHARED = new Set(['utils']);
 
 // No outer ring imports these yet, so they hold no barrel; `cli.ts` and `assemble/` will.
-const BARRELLESS = new Set<Ring>(['choices', 'io']);
+const BARRELLESS = new Set<Ring>([
+  'assemble',
+  'choices',
+  'io',
+  'prompt',
+]);
 
 const kebab = (key: string): string => {
   return key
@@ -80,6 +85,16 @@ const SHAPES: RingShape[] = [
     registry: () => {
       return Object.keys(ANSWERS)
         .map(kebab);
+    },
+  },
+  {
+    name: 'assemble',
+    suffixes: {
+      assemble: 'Assemble',
+      errors: 'Error',
+      merge: 'Merge',
+      read: 'Reader',
+      write: 'Writer',
     },
   },
   {
@@ -136,6 +151,10 @@ const SHAPES: RingShape[] = [
       runs: 'Run',
       passes: 'Pass',
     },
+  },
+  {
+    name: 'prompt',
+    suffixes: { errors: 'Error' },
   },
   {
     name: 'spawns',

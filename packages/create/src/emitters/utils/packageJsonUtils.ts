@@ -430,7 +430,7 @@ export const dependencyDrift = (existing: PackageJson, answers: Answers): Depend
   return drift;
 };
 
-export const serializedPackageJson = (packageJson: PackageJson): string => {
+export const serializedPackageJson = (packageJson: object): string => {
   return `${JSON.stringify(packageJson, null, 2)}\n`;
 };
 

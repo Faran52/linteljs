@@ -32,7 +32,7 @@ const questionOf = async (key: AnswerKey): Promise<Question> => {
 
 const offersOf = async (key: AnswerKey, answered: Answered = {}): Promise<string[]> => {
   const questions = await manifestReader();
-  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'demo');
+  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'react');
 
   const question = await questionOf(key);
 

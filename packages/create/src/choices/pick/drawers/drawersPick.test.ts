@@ -8,7 +8,7 @@ import { drawersPick } from './drawersPick';
 
 it('picks base and each answered value\'s drawer, any first', async () => {
   const questions = await manifestReader();
-  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'demo');
+  const catalog = await catalogReader(questions, DRAWERS_ROOT, 'react');
   const plain = drawersPick(catalog, {
     testing: 'vitest',
     form: 'none',
