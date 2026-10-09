@@ -1,0 +1,494 @@
+[
+  {
+    "key": "target",
+    "flag": "target",
+    "prompt": "Framework",
+    "kind": "choice",
+    "scope": "project",
+    "default": "react",
+    "values": {
+      "react": {
+        "label": "React (Vite)"
+      },
+      "next": {
+        "label": "Next.js"
+      },
+      "vue": {
+        "label": "Vue"
+      },
+      "nuxt": {
+        "label": "Nuxt"
+      },
+      "svelte": {
+        "label": "Svelte"
+      },
+      "solid": {
+        "label": "Solid"
+      },
+      "angular": {
+        "label": "Angular"
+      },
+      "astro": {
+        "label": "Astro"
+      },
+      "webextension": {
+        "label": "Web Extension (MV3)"
+      },
+      "react-native": {
+        "label": "React Native (Expo)"
+      },
+      "typescript": {
+        "label": "TypeScript package, no framework"
+      }
+    }
+  },
+  {
+    "key": "browser",
+    "flag": "browser",
+    "prompt": "Browser",
+    "kind": "choice",
+    "scope": "project",
+    "default": "chrome",
+    "values": {
+      "chrome": {
+        "label": "Chrome",
+        "hint": "MV3 service worker"
+      },
+      "firefox": {
+        "label": "Firefox",
+        "hint": "MV3 event page, loaded from about:debugging"
+      }
+    }
+  },
+  {
+    "key": "surfaces",
+    "flag": "surfaces",
+    "prompt": "Surfaces",
+    "kind": "multi",
+    "scope": "project",
+    "default": [],
+    "values": {
+      "popup": {
+        "label": "Popup",
+        "hint": "The toolbar button's page"
+      },
+      "background": {
+        "label": "Background",
+        "hint": "The service worker or event page"
+      },
+      "devtools-panel": {
+        "label": "DevTools panel",
+        "hint": "A tab inside the browser's developer tools"
+      }
+    }
+  },
+  {
+    "key": "hostedFramework",
+    "flag": "hosted",
+    "prompt": "UI framework",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "Plain TypeScript and the DOM"
+    },
+    "values": {
+      "react": {
+        "label": "React",
+        "hint": "With the React Compiler"
+      },
+      "vue": {
+        "label": "Vue",
+        "hint": "Single-file components"
+      },
+      "svelte": {
+        "label": "Svelte",
+        "hint": "Svelte 5 runes"
+      },
+      "solid": {
+        "label": "Solid",
+        "hint": "Fine-grained signals"
+      }
+    }
+  },
+  {
+    "key": "layout",
+    "flag": "layout",
+    "prompt": "Repository layout",
+    "kind": "choice",
+    "scope": "workspace",
+    "default": "single",
+    "values": {
+      "single": {
+        "label": "Single repo",
+        "hint": "One package at the root"
+      },
+      "monorepo": {
+        "label": "Monorepo",
+        "hint": "Workspaces: the apps in apps/, packages in packages/"
+      }
+    }
+  },
+  {
+    "key": "testing",
+    "flag": "testing",
+    "prompt": "Testing",
+    "kind": "choice",
+    "scope": "project",
+    "default": "vitest",
+    "values": {
+      "vitest": {
+        "label": "Vitest",
+        "hint": "Test runner with built-in coverage"
+      },
+      "jest": {
+        "label": "Jest",
+        "hint": "Through jest-expo, the runner Expo tests against"
+      },
+      "none": {
+        "label": "None",
+        "hint": "No test suite"
+      }
+    }
+  },
+  {
+    "key": "e2e",
+    "flag": "e2e",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "No end-to-end suite"
+    },
+    "values": {
+      "playwright": {
+        "label": "Playwright",
+        "hint": "Browser tests against the built app"
+      },
+      "maestro": {
+        "label": "Maestro",
+        "hint": "Flows on a simulator or an emulator"
+      }
+    }
+  },
+  {
+    "key": "stories",
+    "flag": "stories",
+    "prompt": "Component stories",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "No component workshop"
+    },
+    "values": {
+      "storybook": {
+        "label": "Storybook",
+        "hint": "Components rendered and tested in isolation"
+      }
+    }
+  },
+  {
+    "key": "libraries",
+    "flag": "libraries",
+    "prompt": "Libraries",
+    "kind": "multi",
+    "scope": "project",
+    "default": [
+      "es-toolkit"
+    ],
+    "values": {
+      "zod": {
+        "label": "Zod",
+        "hint": "Schema validation and parsing"
+      },
+      "es-toolkit": {
+        "label": "es-toolkit",
+        "hint": "Typed utility functions, the modern lodash"
+      },
+      "ts-pattern": {
+        "label": "ts-pattern",
+        "hint": "Exhaustive pattern matching"
+      },
+      "t3-env": {
+        "label": "t3-env",
+        "hint": "Zod-validated environment variables"
+      }
+    }
+  },
+  {
+    "key": "styling",
+    "flag": "styling",
+    "prompt": "Styling",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "Plain CSS, with the tokens and the starter stylesheet"
+    },
+    "values": {
+      "tailwind": {
+        "label": "Tailwind CSS",
+        "hint": "Utility-first styling; NativeWind on React Native"
+      },
+      "stylex": {
+        "label": "StyleX",
+        "hint": "Compile-time atomic CSS with typed tokens"
+      }
+    }
+  },
+  {
+    "key": "form",
+    "flag": "form",
+    "prompt": "Form library",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "Plain controlled inputs"
+    },
+    "values": {
+      "tanstack-form": {
+        "label": "TanStack Form",
+        "hint": "Typed forms with Zod-ready validation"
+      },
+      "react-hook-form": {
+        "label": "React Hook Form",
+        "hint": "Uncontrolled React forms, React targets only"
+      }
+    }
+  },
+  {
+    "key": "router",
+    "flag": "router",
+    "prompt": "Router",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "A single page, or a router added later"
+    },
+    "values": {
+      "react-router": {
+        "label": "React Router",
+        "hint": "Declarative routes in src/App.tsx"
+      },
+      "react-router-framework": {
+        "label": "React Router, framework mode",
+        "hint": "Server rendered, route modules and generated types"
+      },
+      "tanstack-router": {
+        "label": "TanStack Router",
+        "hint": "Type-safe routes built in src/App.tsx"
+      }
+    }
+  },
+  {
+    "key": "store",
+    "flag": "store",
+    "prompt": "State store",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "The framework's own state, and nothing installed"
+    },
+    "values": {
+      "zustand": {
+        "label": "Zustand",
+        "hint": "A hook and a store, with no provider"
+      },
+      "redux-toolkit": {
+        "label": "Redux Toolkit",
+        "hint": "Slices, and RTK Query for data fetching"
+      },
+      "tanstack-store": {
+        "label": "TanStack Store",
+        "hint": "Framework-agnostic signals, bound to yours"
+      },
+      "pinia": {
+        "label": "Pinia",
+        "hint": "Vue's own store"
+      },
+      "ngrx-signals": {
+        "label": "NgRx SignalStore",
+        "hint": "Signal-based state, no reducers"
+      },
+      "nanostores": {
+        "label": "Nano Stores",
+        "hint": "Atoms shared across islands"
+      }
+    }
+  },
+  {
+    "key": "data",
+    "flag": "data",
+    "prompt": "Data fetching",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "Call the api layer directly"
+    },
+    "values": {
+      "tanstack-query": {
+        "label": "TanStack Query",
+        "hint": "Async caching, bound to your framework"
+      },
+      "rtk-query": {
+        "label": "RTK Query",
+        "hint": "Redux Toolkit only, since it ships inside it",
+        "requires": {
+          "store": "redux-toolkit"
+        }
+      }
+    }
+  },
+  {
+    "key": "mocking",
+    "flag": "mocking",
+    "prompt": "API mocking",
+    "kind": "choice",
+    "scope": "project",
+    "default": "none",
+    "none": {
+      "label": "None",
+      "hint": "The api layer answers locally, with no request to intercept"
+    },
+    "values": {
+      "msw": {
+        "label": "MSW",
+        "hint": "Handlers that answer real requests, in the browser and in tests",
+        "requires": {
+          "data": "*"
+        }
+      }
+    }
+  },
+  {
+    "key": "languages",
+    "flag": "languages",
+    "prompt": "Languages",
+    "kind": "multi",
+    "scope": "project",
+    "default": [],
+    "values": {
+      "en": {
+        "label": "English"
+      },
+      "ar": {
+        "label": "Arabic",
+        "hint": "Right to left"
+      },
+      "ja": {
+        "label": "Japanese"
+      },
+      "ko": {
+        "label": "Korean"
+      },
+      "zh-CN": {
+        "label": "Chinese, Simplified"
+      },
+      "zh-TW": {
+        "label": "Chinese, Traditional"
+      }
+    }
+  },
+  {
+    "key": "typeSafety",
+    "flag": "type-safety",
+    "prompt": "Type safety",
+    "kind": "choice",
+    "scope": "workspace",
+    "default": "strict",
+    "values": {
+      "strict": {
+        "label": "Strict",
+        "hint": "Bans casts, any and suppression directives"
+      },
+      "relaxed": {
+        "label": "Relaxed",
+        "hint": "Only what the compiler itself catches"
+      }
+    }
+  },
+  {
+    "key": "agents",
+    "flag": "agents",
+    "prompt": "AI agents",
+    "kind": "multi",
+    "scope": "workspace",
+    "default": [
+      "claude-code"
+    ],
+    "values": {
+      "claude-code": {
+        "label": "Claude Code",
+        "hint": "Anthropic's coding agent"
+      },
+      "codex": {
+        "label": "Codex",
+        "hint": "OpenAI's coding agent"
+      },
+      "copilot": {
+        "label": "GitHub Copilot",
+        "hint": "Reads .github/copilot-instructions.md and .github/instructions/"
+      },
+      "cursor": {
+        "label": "Cursor",
+        "hint": "Reads .cursor/rules/"
+      },
+      "gemini-cli": {
+        "label": "Gemini CLI",
+        "hint": "Reads AGENTS.md through .gemini/settings.json"
+      },
+      "antigravity": {
+        "label": "Antigravity",
+        "hint": "Reads AGENTS.md and .agents/rules/"
+      }
+    }
+  },
+  {
+    "key": "plugins",
+    "flag": "plugins",
+    "prompt": "AI plugins",
+    "kind": "multi",
+    "scope": "workspace",
+    "default": [
+      "ponytail",
+      "context7",
+      "frontend-design"
+    ],
+    "values": {
+      "ponytail": {
+        "label": "Ponytail",
+        "hint": "Keeps changes small and questions bloat",
+        "requires": {
+          "agents": "*"
+        }
+      },
+      "context7": {
+        "label": "Context7",
+        "hint": "Pulls current library docs into context",
+        "requires": {
+          "agents": "*"
+        }
+      },
+      "frontend-design": {
+        "label": "Frontend Design",
+        "hint": "Guidance on visual and UX choices",
+        "requires": {
+          "agents": "*"
+        }
+      }
+    }
+  }
+]
