@@ -266,7 +266,9 @@
             "if": {
               "properties": {
                 "target": {
-                  "const": "typescript"
+                  "enum": [
+                    "typescript"
+                  ]
                 }
               }
             },
@@ -282,7 +284,9 @@
             "if": {
               "properties": {
                 "target": {
-                  "const": "react-native"
+                  "enum": [
+                    "react-native"
+                  ]
                 }
               }
             },
@@ -294,8 +298,27 @@
                   }
                 }
               }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "react",
+                    "next",
+                    "vue",
+                    "nuxt",
+                    "svelte",
+                    "solid",
+                    "angular",
+                    "astro",
+                    "webextension"
+                  ]
+                }
+              }
             },
-            "else": {
+            "then": {
               "properties": {
                 "e2e": {
                   "not": {
@@ -311,8 +334,8 @@
                 "target": {
                   "enum": [
                     "solid",
-                    "react-native",
                     "webextension",
+                    "react-native",
                     "typescript"
                   ]
                 }

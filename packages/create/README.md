@@ -104,6 +104,8 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
 | Repository layout | `--layout` | `single`, `monorepo` (1 to 20 projects under `apps/` and `packages/`; not with `--existing`) | `single` |
 | Testing | `--testing` | `vitest`, `jest` (react-native only, through `jest-expo`; `vitest` reads as `jest` there), `none` | `vitest`, `jest` on react-native |
+| E2E testing | `--e2e` | `playwright`, `maestro` (react-native only; not on typescript); recorded, the suite arrives in a later release | none |
+| Component stories | `--stories` | `storybook` (not on solid, react-native, webextension, typescript or a plain or Solid astro); recorded, the stories arrive in a later release | none |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |
 | Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only; not on typescript or webextension) | none |

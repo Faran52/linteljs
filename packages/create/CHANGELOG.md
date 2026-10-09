@@ -56,6 +56,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- `--e2e` (`playwright`, or `maestro` on react-native) and `--stories` (`storybook`) are asked per project and
+  recorded in `linteljs.config.json`; the files they emit arrive in a later release.
 - Nuxt is a target.
 - Nuxt renders the contact page with a form library, Vue's `ContactView` at `/contact`, and under MSW starts
   the browser worker from `plugins/msw.client.ts` in development, so the form posts to `/api/contact`.

@@ -1,14 +1,27 @@
 import { keysOf } from '@utils/objectUtils';
 
+import { type TargetRecord, TARGETS } from '@targets';
+
 import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   PROJECT_NAME_PATTERN,
-  PROJECT_REFUSALS,
+  TARGET_BOUND_KEYS,
   WORKSPACE_KEYS,
 } from '../constants';
+import {
+  type AnswerKey,
+  ANSWERS,
+  DEFAULT_ANSWERS,
+} from '../registry';
 
-import type { AnswerKey } from '../registry';
+import { refusedValue } from './recordUtils';
+
+import type {
+  Answers,
+  HostedFramework,
+  TargetId,
+} from '@config/types';
 import type {
   AnswerRecord,
   ChoiceRecord,
@@ -36,6 +49,64 @@ interface SchemaProperty {
   propertyNames?: SchemaPropertyNames;
   additionalProperties?: SchemaProperty;
 }
+
+interface Variant {
+  hosted?: HostedFramework;
+  answered: Answers;
+  record: TargetRecord;
+}
+
+interface ConstCondition {
+  const: string;
+}
+
+interface EnumCondition {
+  enum: readonly string[];
+}
+
+interface NotEnum {
+  not: EnumCondition;
+}
+
+interface NotConst {
+  not: ConstCondition;
+}
+
+interface RefusalProperties {
+  target: ConstCondition | EnumCondition;
+  hostedFramework?: NotEnum;
+}
+
+interface RefusalIf {
+  required?: string[];
+  properties: RefusalProperties;
+}
+
+interface RequiredList {
+  required: string[];
+}
+
+interface NotRequired {
+  not: RequiredList;
+}
+
+interface ValueRefused {
+  properties: Record<string, NotConst>;
+}
+
+type RefusalThen = NotRequired | ValueRefused;
+
+interface Refusal {
+  if: RefusalIf;
+  then: RefusalThen;
+}
+
+type Refuses = (variant: Variant) => boolean;
+
+// Each target-bound answer is a choice among values, so its refusals are a slot and a value per target.
+type TargetBoundKey = (typeof TARGET_BOUND_KEYS)[number];
+
+type SchemaAnswers = Record<AnswerKey, AnswerRecord> & Record<TargetBoundKey, OptionalChoiceRecord>;
 
 // `browser` and `layout` stay out of `required`: `configFrom` defaults them for configs that predate them.
 const REQUIRED_KINDS = new Set(['choice', 'multi']);
@@ -163,8 +234,104 @@ const propertiesOf = (answers: Record<AnswerKey, AnswerRecord>, keys: AnswerKey[
   return properties;
 };
 
+const variantsOf = (target: TargetId): Variant[] => {
+  const answered: Answers = { ...DEFAULT_ANSWERS, target };
+  const record = TARGETS[target](answered);
+  const hosts = record.hostsFramework === true ? keysOf(ANSWERS.hostedFramework.values) : [];
+  const hostedVariants = hosts
+    .map((hosted): Variant => {
+      const hostedAnswers: Answers = { ...answered, hostedFramework: hosted };
+
+      const variant: Variant = {
+        hosted,
+        answered: hostedAnswers,
+        record: TARGETS[target](hostedAnswers),
+      };
+
+      return variant;
+    });
+  const plain: Variant = { answered, record };
+  const variants = [plain, ...hostedVariants];
+
+  return variants;
+};
+
+// Refused on some hosted frameworks only; `required` spares an absent one when the plain target is allowed.
+const hostedRefusal = (target: TargetId, variants: Variant[], refuses: Refuses, then: RefusalThen): Refusal => {
+  const allowedHosts = variants
+    .flatMap((variant) => {
+      const hosts = variant.hosted === undefined || refuses(variant) ? [] : [variant.hosted];
+
+      return hosts;
+    });
+  const plainAllowed = !variants
+    .some((variant) => {
+      return variant.hosted === undefined && refuses(variant);
+    });
+
+  const refusal: Refusal = {
+    if: {
+      ...(plainAllowed ? { required: ['hostedFramework'] } : {}),
+      properties: {
+        target: { const: target },
+        hostedFramework: { not: { enum: allowedHosts } },
+      },
+    },
+    then,
+  };
+
+  return refusal;
+};
+
+const refusalsOf = (refuses: Refuses, then: RefusalThen): Refusal[] => {
+  const whole: TargetId[] = [];
+  const partial: Refusal[] = [];
+
+  for (const target of keysOf(TARGETS)) {
+    const variants = variantsOf(target);
+    const refused = variants.filter(refuses).length;
+
+    if (refused === variants.length) {
+      whole.push(target);
+    }
+    else if (refused > 0) {
+      partial.push(hostedRefusal(target, variants, refuses, then));
+    }
+  }
+
+  const wholeRefusal: Refusal[] = whole.length === 0 ? [] : [{ if: { properties: { target: { enum: whole } } }, then }];
+
+  const refusals = [...wholeRefusal, ...partial];
+
+  return refusals;
+};
+
+// The parser's slot and value refusals, run over every target so the schema cannot drift from them.
+const projectRefusals = (answers: SchemaAnswers): Refusal[] => {
+  return TARGET_BOUND_KEYS
+    .flatMap((key) => {
+      const record = answers[key];
+
+      const unslotted = (variant: Variant): boolean => {
+        return record.slot?.(variant.record) === false;
+      };
+
+      const values = Object.keys(record.values);
+      const valueRefusals = values
+        .flatMap((value) => {
+          return refusalsOf((variant) => {
+            return !unslotted(variant) && refusedValue(record, value, variant.record, variant.answered) !== undefined;
+          }, { properties: { [key]: { not: { const: value } } } });
+        });
+
+      const keyRefusals = [...refusalsOf(unslotted, { not: { required: [key] } }), ...valueRefusals];
+
+      return keyRefusals;
+    });
+};
+
 // Generated from the records; `schemaUtils.test.ts` pins both checked-in copies against it.
-export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
+export const schemaFor = (answers: SchemaAnswers): string => {
   const keys = keysOf(answers);
   const workspaceKeys = keys.filter(isWorkspaceKey);
   const projectKeys = keys
@@ -203,7 +370,7 @@ export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
             },
             ...propertiesOf(answers, projectKeys),
           },
-          allOf: PROJECT_REFUSALS,
+          allOf: projectRefusals(answers),
         },
       },
     },

@@ -5,12 +5,35 @@ import { ANSWERS } from '../registry';
 
 import { schemaFor } from './schemaUtils';
 
+import type { TargetRecord } from '@targets';
+import type { OptionalChoiceRecord } from '../types';
+
 interface RequiredKeys {
   required: string[];
 }
 
+interface TargetConst {
+  const: string;
+}
+
+interface TargetProperty {
+  target: TargetConst;
+}
+
+interface TargetIf {
+  properties: TargetProperty;
+}
+
+interface TargetCondition {
+  if: TargetIf;
+}
+
+interface ProjectItems extends RequiredKeys {
+  allOf: TargetCondition[];
+}
+
 interface ProjectsSchema {
-  items: RequiredKeys;
+  items: ProjectItems;
 }
 
 interface SchemaProperties {
@@ -70,5 +93,47 @@ describe('schemaFor', () => {
       'libraries',
     ];
     expect(projectRequired).toEqual(expectedProject);
+  });
+
+  it('derives the project refusals from the records it is given', () => {
+    const answers = {
+      ...ANSWERS,
+      e2e: {
+        key: 'e2e',
+        kind: 'optionalChoice',
+        none: { label: 'None' },
+        values: { playwright: { label: 'Playwright' } },
+      } satisfies OptionalChoiceRecord,
+      stories: {
+        ...ANSWERS.stories,
+        slot: (target: TargetRecord) => {
+          return target.astro !== true || target.framework !== 'solid';
+        },
+      },
+    };
+    const schema = JSON.parse(schemaFor(answers)) as GeneratedSchema;
+
+    const refusals = schema.properties.projects.items.allOf;
+    const expected = [
+      {
+        if: {
+          required: ['hostedFramework'],
+          properties: {
+            target: { const: 'astro' },
+            hostedFramework: {
+              not: {
+                enum: [
+                  'react',
+                  'vue',
+                  'svelte',
+                ],
+              },
+            },
+          },
+        },
+        then: { not: { required: ['stories'] } },
+      },
+    ];
+    expect(refusals).toEqual(expected);
   });
 });
