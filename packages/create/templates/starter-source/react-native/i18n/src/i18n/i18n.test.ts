@@ -1,7 +1,7 @@
 import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { reloadAppAsync } from 'expo';
+import { isRunningInExpoGo, reloadAppAsync } from 'expo';
 import { getLocales, type Locale } from 'expo-localization';
 import i18next from 'i18next';
 
@@ -125,6 +125,17 @@ describe('i18n', () => {
     expect(allowRTL).toHaveBeenCalledWith(false);
     expect(forceRTL).toHaveBeenCalledWith(false);
     expect(reloadAppAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the layout to Expo Go, which resets a forced direction on every open', async () => {
+    const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
+
+    jest.mocked(isRunningInExpoGo).mockReturnValueOnce(true);
+    jest.replaceProperty(I18nManager, 'isRTL', true);
+    await applyDirection('en');
+
+    expect(forceRTL).not.toHaveBeenCalled();
+    expect(reloadAppAsync).not.toHaveBeenCalled();
   });
 
   it('leaves the layout alone when the direction already matches', async () => {

@@ -291,8 +291,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
-- **React Native with languages mirrors its layout for a right-to-left language.** A switch or a cold launch
-  whose language runs the other way forces the new direction and reloads the app, in Expo Go too.
+- **React Native with languages mirrors its layout for a right-to-left language in a build.** A switch or a
+  cold launch whose language runs the other way forces the new direction and reloads the app. Expo Go resets a
+  forced direction on every open, so there the layout follows the device on iOS and stays left to right on
+  Android, and the app no longer reloads for nothing.
 
 - **A React Native TanStack Form starter no longer holds `expo export` open.** The contact route renders on the
   client only, so the static render never builds the form, whose devtools client retried a bus no server has.

@@ -44,6 +44,9 @@ jest.mock('expo', () => {
     reloadAppAsync: jest.fn(() => {
       return Promise.resolve();
     }),
+    isRunningInExpoGo: jest.fn(() => {
+      return false;
+    }),
   };
 
   return expo;

@@ -2,7 +2,7 @@ import { initReactI18next } from 'react-i18next';
 import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { reloadAppAsync } from 'expo';
+import { isRunningInExpoGo, reloadAppAsync } from 'expo';
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 
@@ -30,7 +30,8 @@ export const applyDirection = async (language: string): Promise<void> => {
 
   const rtl = direction === 'rtl';
 
-  if (I18nManager.isRTL === rtl) {
+  // Expo Go resets a forced direction each time it opens a project, so only a build can follow the choice.
+  if (I18nManager.isRTL === rtl || isRunningInExpoGo()) {
     return;
   }
 
