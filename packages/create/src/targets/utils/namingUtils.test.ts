@@ -14,7 +14,8 @@ describe('scriptKeys', () => {
   it('reaches every script under src/ where no route directory is named', () => {
     const actual = scriptKeys();
     const expected = {
-      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/**/*.styles.ts': '!([a-z]*[A-Z]*)',
       '**/utils/*.ts': '*Utils',
     };
     expect(actual).toStrictEqual(expected);
@@ -23,8 +24,9 @@ describe('scriptKeys', () => {
   it('takes a second key for the file sitting directly in src/ where one is', () => {
     const actual = scriptKeys('app');
     const expected = {
-      'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
-      'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/!(app)/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/**/*.styles.ts': '!([a-z]*[A-Z]*)',
       '**/utils/*.ts': '*Utils',
     };
     expect(actual).toStrictEqual(expected);
@@ -36,7 +38,8 @@ describe('componentNaming', () => {
     const actual = componentNaming();
     const expected = {
       'src/**/*.tsx': '!([a-z]*[A-Z]*)',
-      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/**/*.styles.ts': '!([a-z]*[A-Z]*)',
       '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     };
@@ -45,7 +48,7 @@ describe('componentNaming', () => {
 
   it('routes the script keys around the route directory it is given', () => {
     const actual = componentNaming('app');
-    const expected = ['src/!(app)/**/!(*.d|*.test|*.spec).ts'];
+    const expected = ['src/!(app)/**/!(*.d|*.test|*.spec|*.styles).ts'];
     expect(actual).toHaveProperty(expected, 'CAMEL_CASE');
   });
 });
@@ -55,7 +58,8 @@ describe('sfcNaming', () => {
     const actual = sfcNaming('vue');
     const expected = {
       'src/**/*.vue': '!([a-z]*[A-Z]*)',
-      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/**/*.styles.ts': '!([a-z]*[A-Z]*)',
       '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     };

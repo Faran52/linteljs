@@ -2,7 +2,7 @@ import { NavLink } from 'react-router';
 
 import { ROUTES } from '@router/router';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 import type { FC } from 'react';
 

@@ -15,7 +15,7 @@ Create it then, not before.
   `routes/` in SvelteKit. A route file sits where its URL and the router's reserved names put it, whatever the
   rules here say. Where its suite and what it alone reads go is in the sections above.
 - **A component's styles sit beside it**: its stylesheet (`Button.css`), or its class map
-  `<subject>Styles.ts` (`button/buttonStyles.ts`), the one file a change of styling swaps, so the component reads
+  `<Component>.styles.ts` (`button/Button.styles.ts`), the one file a change of styling swaps, so the component reads
   the same either way. Its component's suite covers it. `.stylex.ts` is StyleX's name for `defineVars` and
   `defineConsts` files (`styles/tokens.stylex.ts`), never a component's sheet.
 - **A file in a `utils/` folder ends in `Utils`** (`fetchExtendedUtils.ts`, or `fetch-extended-utils.ts` where

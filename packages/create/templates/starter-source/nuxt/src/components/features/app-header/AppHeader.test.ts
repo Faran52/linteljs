@@ -3,8 +3,8 @@ import { useRouter } from 'nuxt/app';
 
 import { PAGES } from '@config/routes';
 
+import { styles } from './AppHeader.styles';
 import AppHeader from './AppHeader.vue';
-import { styles } from './appHeaderStyles';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   // The header reads Nuxt's own route, so the booted app navigates.

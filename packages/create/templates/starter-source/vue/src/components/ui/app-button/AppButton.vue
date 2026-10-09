@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { styles } from './appButtonStyles';
+import { styles } from './AppButton.styles';
 
 interface Props {
   type?: 'button' | 'submit';

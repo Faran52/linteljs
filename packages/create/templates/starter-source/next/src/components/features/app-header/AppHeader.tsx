@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 import { PAGES } from '@config/routes';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 import type { ReactNode } from 'react';
 

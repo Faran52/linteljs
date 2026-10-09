@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { useStarterStyles } from '@styles/starterStyles';
+import { useStarterStyles } from '@styles/starter.styles';
 
 import { CONTACT_COPY } from '@services/contact-form/constants';
 import { CONTACT_TEXT, type Translate } from '@services/contact-form/contactFormService';

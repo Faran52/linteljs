@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 
 import { ROUTES } from '@router/router';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 import type { AnchorHTMLAttributes, FC } from 'react';
 

@@ -66,7 +66,7 @@ export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Arti
   const stylex = answers.styling === 'stylex';
   const imports = [
     ...(tailwind ? target.tailwind?.imports ?? [TAILWIND_IMPORT] : []),
-    // A component's stylesheet is a `styles.ts` under StyleX; the tokens and page styles stay, as StyleX asks.
+    // A component's stylesheet is a `<Component>.styles.ts` under StyleX; tokens and page styles stay, as StyleX asks.
     ...(target.starterStyles ?? [])
       .filter((style) => {
         return typeof style === 'string' || style.when(answers);

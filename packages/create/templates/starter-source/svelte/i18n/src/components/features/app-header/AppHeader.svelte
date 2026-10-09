@@ -8,7 +8,7 @@
 
   import LanguageSelect from '../language-select/LanguageSelect.svelte';
 
-  import { styles } from './appHeaderStyles';
+  import { styles } from './AppHeader.styles';
 
   interface Props {
     name: string;

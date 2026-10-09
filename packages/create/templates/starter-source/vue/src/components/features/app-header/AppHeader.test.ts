@@ -3,8 +3,8 @@ import { mount } from '@vue/test-utils';
 
 import { ROUTES } from '@router/constants';
 
+import { styles } from './AppHeader.styles';
 import AppHeader from './AppHeader.vue';
-import { styles } from './appHeaderStyles';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   const router = createRouter({

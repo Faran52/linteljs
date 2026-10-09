@@ -294,10 +294,7 @@ export const componentStyleGates = (ui: readonly string[]): GateRow[] => {
       }),
     ...components
       .flatMap(([path, ships]): GateRow[] => {
-        const stemStart = path.lastIndexOf('/') + 1;
-        const upper = path.charAt(stemStart);
-        const initial = upper.toLowerCase();
-        const styles = `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
+        const styles = `${path}.styles.ts`;
         const rows: GateRow[] = [
           [styles, under(ships, [undefined, 'tailwind'])],
           [`${styles}@stylex`, under(ships, ['stylex'])],

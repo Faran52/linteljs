@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { styles } from './markStyles';
+  import { styles } from './Mark.styles';
 </script>
 
 <svg

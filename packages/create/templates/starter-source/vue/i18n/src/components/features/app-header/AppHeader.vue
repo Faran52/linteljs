@@ -7,7 +7,7 @@ import { ROUTES } from '@router/constants';
 
 import LanguageSelect from '../language-select/LanguageSelect.vue';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 interface Props {
   name: string;

@@ -19,7 +19,7 @@
 - **No redundancy.** If two tests fail for the same edit, keep one.
 - **One test file per source file under `src/`**, colocated, mirroring any split of the source. A
   data-only `constants.ts` or `config/` table, a pure re-export barrel, an ambient `.d.ts` and a
-  component's `<subject>Styles.ts` (covered by the component's suite) have none, and nothing under
+  component's `<Component>.styles.ts` (covered by the component's suite) have none, and nothing under
   `__mocks__/` has a suite: the suites that run through it are its check.
 - **A test that cannot fail is not a test.** Break the code, watch it go red, then revert. Never
   leave the mutation in the tree.

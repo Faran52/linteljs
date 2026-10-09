@@ -88,13 +88,8 @@ export const componentStyles = (paths: Partial<ComponentPaths> = COMPONENT_PATHS
     });
 };
 
-// `ui/app-mark/AppMark` to `ui/app-mark/appMarkStyles.ts`.
 const stylesOf = (path: string): string => {
-  const stemStart = path.lastIndexOf('/') + 1;
-  const upper = path.charAt(stemStart);
-  const initial = upper.toLowerCase();
-
-  return `${path.slice(0, stemStart)}${initial}${path.slice(stemStart + 1)}Styles.ts`;
+  return `${path}.styles.ts`;
 };
 
 // Ships with its component, since a module nothing imports fails the coverage gate.

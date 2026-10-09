@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router';
 
 import { ROUTES } from '@router/constants';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 interface Props {
   name: string;

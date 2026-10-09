@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PAGES } from '@config/routes';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 interface Props {
   name: string;

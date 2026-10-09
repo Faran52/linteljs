@@ -36,7 +36,8 @@ describe('hostedNaming', () => {
     const actual = hostedNaming('react');
     const expected = {
       'src/**/*.tsx': COMPONENT,
-      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
+      'src/**/*.styles.ts': '!([a-z]*[A-Z]*)',
       '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': DECLARATION,
     };

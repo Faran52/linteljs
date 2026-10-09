@@ -89,18 +89,18 @@ describe('componentStyleModules', () => {
   it('writes the class-name module without stylex and the compiled one and its tokens with it', () => {
     const actual = pickedBy(componentStyleModules());
     const expected = [
-      'src/components/features/app-header/appHeaderStyles.ts base',
-      'src/components/ui/mark/markStyles.ts base',
-      'src/components/ui/button/buttonStyles.ts base',
+      'src/components/features/app-header/AppHeader.styles.ts base',
+      'src/components/ui/mark/Mark.styles.ts base',
+      'src/components/ui/button/Button.styles.ts base',
     ];
     expect(actual).toEqual(expected);
 
     const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
     const stylexModules = [
-      'src/components/features/app-header/appHeaderStyles.ts stylex',
-      'src/components/ui/mark/markStyles.ts stylex',
-      'src/components/ui/button/buttonStyles.ts stylex',
+      'src/components/features/app-header/AppHeader.styles.ts stylex',
+      'src/components/ui/mark/Mark.styles.ts stylex',
+      'src/components/ui/button/Button.styles.ts stylex',
       'src/styles/tokens.stylex.ts stylex',
     ];
     expect(picked).toEqual(stylexModules);
@@ -108,8 +108,8 @@ describe('componentStyleModules', () => {
 
   it('takes another target\'s bytes into its own directories', () => {
     const expected = {
-      target: 'src/components/ui/app-mark/appMarkStyles.ts',
-      source: 'src/components/ui/mark/markStyles.ts',
+      target: 'src/components/ui/app-mark/AppMark.styles.ts',
+      source: 'src/components/ui/mark/Mark.styles.ts',
       shared: 'solid',
     };
     expect(componentStyleModules('solid', RENAMED)[2]).toMatchObject(expected);
@@ -120,7 +120,7 @@ describe('componentStyleModules', () => {
   it('reads React\'s StyleX sheet into Solid\'s tree, spread with attrs', () => {
     const [plain, sheet] = componentStyleModules('solid', RENAMED);
     const expected = {
-      target: 'src/components/features/app-header/appHeaderStyles.ts',
+      target: 'src/components/features/app-header/AppHeader.styles.ts',
       variant: 'stylex',
       shared: 'react',
       stylexAttrs: true,
@@ -136,8 +136,8 @@ describe('componentStyleModules', () => {
         return file.target;
       });
     const expected = [
-      'src/components/ui/app-mark/appMarkStyles.ts',
-      'src/components/ui/app-mark/appMarkStyles.ts',
+      'src/components/ui/app-mark/AppMark.styles.ts',
+      'src/components/ui/app-mark/AppMark.styles.ts',
       'src/styles/tokens.stylex.ts',
     ];
 

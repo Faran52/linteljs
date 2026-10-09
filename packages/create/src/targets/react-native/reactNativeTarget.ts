@@ -298,8 +298,8 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
         covers: 'src/config-plugins/with-gradle-daemon-jvm/withGradleDaemonJvm.ts',
       },
       {
-        target: 'src/styles/starterStyles.test.ts',
-        covers: 'src/styles/starterStyles.ts',
+        target: 'src/styles/starter.styles.test.ts',
+        covers: 'src/styles/starter.styles.ts',
       },
       {
         target: 'src/components/ui/text-input/TextInput.test.tsx',

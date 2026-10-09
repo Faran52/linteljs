@@ -1,4 +1,4 @@
-import { styles } from './textInputStyles';
+import { styles } from './TextInput.styles';
 
 import type { FC } from 'react';
 

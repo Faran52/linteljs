@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 
 import { ANSWERS, STACK } from '@config/linteljs';
-import { useStarterStyles } from '@styles/starterStyles';
+import { useStarterStyles } from '@styles/starter.styles';
 
 import type { ReactNode } from 'react';
 

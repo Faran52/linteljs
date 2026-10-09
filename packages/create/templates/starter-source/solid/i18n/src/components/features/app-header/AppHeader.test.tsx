@@ -10,7 +10,7 @@ import { applyLanguage } from '@i18n/i18n';
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 const last = languages.at(-1)?.id ?? 'en';
 

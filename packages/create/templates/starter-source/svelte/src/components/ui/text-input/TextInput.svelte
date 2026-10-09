@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { styles } from './textInputStyles';
+  import { styles } from './TextInput.styles';
 
   import type { TextInputProps } from './types';
 

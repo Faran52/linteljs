@@ -171,7 +171,7 @@ describe('the contact island', () => {
         return target;
       });
 
-    const expected = ['src/components/ui/button/buttonStyles.ts', 'src/components/ui/text-input/textInputStyles.ts'];
+    const expected = ['src/components/ui/button/Button.styles.ts', 'src/components/ui/text-input/TextInput.styles.ts'];
 
     expect(attrs).toEqual(expected);
   });

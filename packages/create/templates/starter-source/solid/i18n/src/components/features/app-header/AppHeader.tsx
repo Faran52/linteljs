@@ -6,7 +6,7 @@ import { ROUTES } from '@router/router';
 
 import { LanguageSelect } from '../language-select/LanguageSelect';
 
-import { styles } from './appHeaderStyles';
+import { styles } from './AppHeader.styles';
 
 export interface AppHeaderProps {
   readonly name: string;

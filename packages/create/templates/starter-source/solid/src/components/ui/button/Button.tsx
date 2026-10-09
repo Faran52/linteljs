@@ -1,4 +1,4 @@
-import { styles } from './buttonStyles';
+import { styles } from './Button.styles';
 
 import type { JSX } from 'solid-js';
 
