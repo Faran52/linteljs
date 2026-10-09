@@ -215,6 +215,16 @@ export const VERSIONS: Record<string, string> = {
   'zustand': '^5.0.15',
 };
 
+// The scripts `check` chains, in order; `test:coverage` only where the project has tests.
+export const GATE_SCRIPTS = [
+  'lint',
+  'lint:types',
+  'lint:css',
+  'typecheck',
+  'test:coverage',
+  'build',
+];
+
 // Where a framework's package is not named for it, for the Version page's stack row.
 export const FRAMEWORK_PACKAGES: Partial<Record<Framework, string>> = {
   solid: 'solid-js',

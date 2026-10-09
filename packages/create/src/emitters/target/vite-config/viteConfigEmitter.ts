@@ -26,22 +26,19 @@ export interface ViteParts {
 
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 export const viteConfigSource = (parts: ViteParts): string => {
-  const {
-    plugin: vitePlugin,
-    styling: picked,
-  } = parts;
-  const styling = stylingPlugin(picked);
+  const { plugin } = parts;
+  const styling = stylingPlugin(parts.styling);
   const imports = sortedImports([
     "import { defineConfig } from 'vite';",
-    ...vitePlugin.imports,
+    ...plugin.imports,
     ...styling.imports,
   ], parts.framework);
 
   // StyleX first, as its documentation asks: after the framework plugin it breaks Fast Refresh.
   const stylingCalls = styling.call === undefined ? [] : [styling.call];
-  const calls = picked === 'stylex'
-    ? [...stylingCalls, ...vitePlugin.calls]
-    : [...vitePlugin.calls, ...stylingCalls];
+  const calls = parts.styling === 'stylex'
+    ? [...stylingCalls, ...plugin.calls]
+    : [...plugin.calls, ...stylingCalls];
 
   // One per line: React's compiler call plus tailwind is 128 characters, over the emitted `max-len`.
   const plugins = calls

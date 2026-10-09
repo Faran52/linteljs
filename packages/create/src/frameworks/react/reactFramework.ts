@@ -1,14 +1,27 @@
-import { LANGUAGES } from '@config/constants';
+import { LANGUAGES, RUN_PREFIX } from '@config/constants';
 
 import { unscopedName } from '@utils/nameUtils';
 import { keysOf } from '@utils/objectUtils';
 
-import { ANSWERS } from '@answers';
+import { type AnswerRecord, ANSWERS } from '@answers';
 import { type Answered } from '@choices/read/manifest/manifestReader';
 import { answeredValues } from '@choices/utils/drawerUtils';
+import {
+  type AnswerEntry,
+  answerRowsOf,
+  gateRowsOf,
+  linteljsRecordSource,
+  RECORD_MODULE,
+  stackRowsOf,
+} from '@emitters/always/linteljs-record/linteljsRecordEmitter';
 import { stylelintSource } from '@emitters/always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigSource } from '@emitters/always/tsconfig/tsconfigEmitter';
-import { HTML_DEV_DEPENDENCIES, TEST_RUNNERS } from '@emitters/constants';
+import {
+  GATE_SCRIPTS,
+  HTML_DEV_DEPENDENCIES,
+  TEST_RUNNERS,
+  VERSIONS,
+} from '@emitters/constants';
 import { emitI18nConfig } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
 import { FAVICON } from '@emitters/target/html-entry/constants';
 import { emitHtmlEntry } from '@emitters/target/html-entry/htmlEntryEmitter';
@@ -47,6 +60,7 @@ import {
   VITE_TSCONFIG,
 } from './constants';
 
+import type { Host } from '@config/types';
 import type {
   Framed,
   FrameworkModule,
@@ -91,9 +105,39 @@ const testFiles = (answers: Answered, frameworkMode: boolean): (Generated | Join
   return files;
 };
 
+// The Version page's record. Only the gate scripts this module owns are known here; the merged ones come with 2d4.
+const recordOf = (name: string, answers: Answered, host: Host, scripts: Record<string, string>): Generated => {
+  const entries = keysOf(ANSWERS)
+    .map((key) => {
+      const record: AnswerRecord = ANSWERS[key];
+      const prompt = typeof record.prompt === 'string' ? record.prompt : undefined;
+      const entry: AnswerEntry = [
+        key,
+        prompt,
+        answers[key],
+      ];
+
+      return entry;
+    });
+  const text = linteljsRecordSource({
+    name: unscopedName(name),
+    packageManager: host.packageManager,
+    gate: gateRowsOf(RUN_PREFIX[host.packageManager], scripts, GATE_SCRIPTS),
+    stack: stackRowsOf('react', host, VERSIONS),
+    answers: answerRowsOf(entries, answeredValues(answers, 'languages').length > 0),
+  });
+  const record: Generated = {
+    path: RECORD_MODULE,
+    text,
+  };
+
+  return record;
+};
+
 // React's own share and files over its drawers; React Router's framework mode brings its own scripts and document.
-export const reactFramework: FrameworkModule = (name, answers) => {
+export const reactFramework: FrameworkModule = (name, answers, host) => {
   const frameworkMode = answers.router === 'react-router-framework';
+  const scripts = frameworkMode ? { typecheck: FRAMEWORK_MODE_TYPECHECK } : VITE_SCRIPTS;
   const picked = answeredValues(answers, 'languages');
   const languages = picked
     .flatMap((value) => {
@@ -153,6 +197,7 @@ export const reactFramework: FrameworkModule = (name, answers) => {
       text: stylelintSource(answers.styling === 'tailwind'),
     },
     ...testFiles(answers, frameworkMode),
+    recordOf(name, answers, host, scripts),
   ];
   const eslint = {
     framework: 'react',
@@ -177,7 +222,7 @@ export const reactFramework: FrameworkModule = (name, answers) => {
       files,
       share: {
         package: {
-          scripts: { typecheck: FRAMEWORK_MODE_TYPECHECK },
+          scripts,
           devDependencies: versioned(kept),
         },
         eslint,
@@ -199,7 +244,7 @@ export const reactFramework: FrameworkModule = (name, answers) => {
     ],
     share: {
       package: {
-        scripts: VITE_SCRIPTS,
+        scripts,
         devDependencies: versioned([...devDependencies, ...HTML_DEV_DEPENDENCIES]),
       },
       eslint: {

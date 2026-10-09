@@ -133,6 +133,12 @@ export interface ProjectConfig extends Omit<Answers, WorkspaceKey> {
   name?: string;
 }
 
+export interface Host {
+  packageManager: PackageManager;
+  packageManagerVersion: string;
+  nodeVersion: string;
+}
+
 // `create` records the host's Node and `sync` fills it, so it is always there by write time.
 export type HostedAnswers = Answers & Required<Pick<Answers, 'nodeVersion'>>;
 

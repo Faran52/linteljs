@@ -4,7 +4,7 @@ import { hasTests, localesOf } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
-import { TEST_RUNNERS } from '../../constants';
+import { GATE_SCRIPTS, TEST_RUNNERS } from '../../constants';
 import { testRunnerOf } from '../../utils/runnerUtils';
 
 import type { Answers } from '@config/types';
@@ -23,16 +23,12 @@ export const styleGlob = (answers: Answers): string => {
 
 // The scripts `check` chains, in order.
 export const gateScripts = (answers: Answers): string[] => {
-  const gates: string[] = [
-    'lint',
-    'lint:types',
-    'lint:css',
-    'typecheck',
-    ...(hasTests(answers) ? ['test:coverage'] : []),
-    'build',
-  ];
+  const tested = hasTests(answers);
 
-  return gates;
+  return GATE_SCRIPTS
+    .filter((name) => {
+      return tested || name !== 'test:coverage';
+    });
 };
 
 export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {

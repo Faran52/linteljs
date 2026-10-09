@@ -37,7 +37,11 @@ describe('workspaceAssemble', () => {
       root: DRAWERS_ROOT,
       cwd,
       name: 'demo',
-      packageManager: 'pnpm@11.0.0',
+      host: {
+        packageManager: 'pnpm',
+        packageManagerVersion: '11.0.0',
+        nodeVersion: '26.0.0',
+      },
       questions,
       projects,
     };
@@ -111,6 +115,7 @@ describe('workspaceAssemble', () => {
       'index.html',
       'linteljs.config.json',
       'package.json',
+      join('src', 'config', 'linteljs.ts'),
       join('src', 'i18n', 'config.ts'),
       join('src', 'index.css'),
       join('src', 'locales', 'en', 'common.json'),
@@ -156,6 +161,7 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'eslint.config.ts'),
       join('apps', 'web', 'index.html'),
       join('apps', 'web', 'package.json'),
+      join('apps', 'web', 'src', 'config', 'linteljs.ts'),
       join('apps', 'web', 'src', 'i18n', 'config.ts'),
       join('apps', 'web', 'src', 'main.txt'),
       join('apps', 'web', 'src', 'routes.ts'),

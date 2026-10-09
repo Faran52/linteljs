@@ -1,5 +1,6 @@
 import type { Share } from '@assemble/utils/shareUtils';
 import type { Answered } from '@choices/read/manifest/manifestReader';
+import type { Host } from '@config/types';
 
 export interface Generated {
   path: string;
@@ -18,4 +19,4 @@ export interface Framed {
   share: Share;
 }
 
-export type FrameworkModule = (name: string, answers: Answered) => Framed;
+export type FrameworkModule = (name: string, answers: Answered, host: Host) => Framed;

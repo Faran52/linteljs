@@ -118,7 +118,7 @@ const created = async (run: Run): Promise<void> => {
     root: run.root,
     cwd: directory,
     name: run.name,
-    packageManager: `${host.packageManager}@${host.packageManagerVersion}`,
+    host,
     questions: run.questions,
     projects: [{
       name: run.name,

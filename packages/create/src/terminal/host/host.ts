@@ -17,15 +17,9 @@ import {
 
 import type {
   Answers,
+  Host,
   HostedAnswers,
-  PackageManager,
 } from '@config/types';
-
-export interface Host {
-  packageManager: PackageManager;
-  packageManagerVersion: string;
-  nodeVersion: string;
-}
 
 // The user agent, else the lockfile, else npm, which is what a bare `node .../create` is.
 const detectedManager = async (cwd: string): Promise<DetectedManager> => {

@@ -24,7 +24,7 @@ import { localesWriter } from '../../write/locales/localesWriter';
 import { packageJsonWriter } from '../../write/package-json/packageJsonWriter';
 import { routesWriter } from '../../write/routes/routesWriter';
 
-import type { Artifact } from '@config/types';
+import type { Artifact, Host } from '@config/types';
 import type { Framed, Generated } from '@frameworks/types';
 
 type Written = Omit<Artifact, 'stage'>;
@@ -38,7 +38,7 @@ export interface Workspace {
   root: string;
   cwd: string;
   name: string;
-  packageManager: string;
+  host: Host;
   questions: readonly Question[];
   projects: readonly [AssembledProject, ...AssembledProject[]];
 }
@@ -66,7 +66,7 @@ const frameworkDrawersOf = async (workspace: Workspace, answers: Answered): Prom
   return drawers.flat();
 };
 
-const framedOf = (name: string, answers: Answered): Framed[] => {
+const framedOf = (name: string, answers: Answered, host: Host): Framed[] => {
   return answeredValues(answers, 'target')
     .flatMap((target) => {
       const module = FRAMEWORK_MODULES[target];
@@ -75,7 +75,7 @@ const framedOf = (name: string, answers: Answered): Framed[] => {
         return [];
       }
 
-      const framed = [module(name, answers)];
+      const framed = [module(name, answers, host)];
 
       return framed;
     });
@@ -93,7 +93,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
   const rootShare: Share = {
     package: {
       name: workspace.name,
-      packageManager: workspace.packageManager,
+      packageManager: `${workspace.host.packageManager}@${workspace.host.packageManagerVersion}`,
     },
   };
 
@@ -103,7 +103,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
       directory: '.',
       drawers: [...frameworkDrawers, ...agentDrawersOf(first.answers)],
       share: rootShare,
-      framed: framedOf(first.name, first.answers),
+      framed: framedOf(first.name, first.answers, workspace.host),
       answers: first.answers,
     };
 
@@ -120,7 +120,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
         directory: `${group}/${name}`,
         drawers,
         share: { package: { name } },
-        framed: framedOf(name, answers),
+        framed: framedOf(name, answers, workspace.host),
         answers,
       };
 

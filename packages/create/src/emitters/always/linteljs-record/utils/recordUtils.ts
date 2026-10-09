@@ -15,7 +15,18 @@ import { targetFor } from '@targets';
 import { FRAMEWORK_PACKAGES, MAX_LINE } from '../../../constants';
 import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
-import type { Answers, HostedAnswers } from '@config/types';
+import type {
+  Answers,
+  Framework,
+  HostedAnswers,
+} from '@config/types';
+
+type StackFacts = Pick<Answers, 'packageManager' | 'packageManagerVersion' | 'nodeVersion'>;
+
+// A checked answer from the rewrite is a plain string or list, wider than the old pipeline's unions.
+type AnswerValue = Answers[AnswerKey] | string | string[];
+
+export type AnswerEntry = [key: AnswerKey, prompt: string | undefined, value: AnswerValue];
 
 // A long command breaks at its spaces into joined literals, inside the base layer's 120 columns.
 const RUNS_WIDTH = 100;
@@ -62,18 +73,25 @@ export const nameDeclaration = (name: string): string => {
 
 // Read off the scripts `package.json` gets, so the page cannot name a command the project does not run.
 export const gateRows = (answers: Answers): [string, string][] => {
-  const run = RUN_PREFIX[answers.packageManager];
-  const gates = gateScripts(answers);
-  const scripts = buildScripts(answers);
+  const rows = gateRowsOf(RUN_PREFIX[answers.packageManager], buildScripts(answers), gateScripts(answers));
 
-  return Object.entries(scripts)
-    .filter(([name]) => {
-      return gates.includes(name);
-    })
-    .map(([name, runs]) => {
-      const row: [string, string] = [`command: '${run} ${name}'`, `runs: ${literal(runs)}`];
+  return rows;
+};
 
-      return row;
+// In `check`'s order, skipping a gate the scripts lack.
+export const gateRowsOf = (
+  run: string,
+  scripts: Record<string, string>,
+  gates: readonly string[],
+): [string, string][] => {
+  return gates
+    .flatMap((name) => {
+      const runs = scripts[name];
+      const rows: [string, string][] = runs === undefined
+        ? []
+        : [[`command: '${run} ${name}'`, `runs: ${literal(runs)}`]];
+
+      return rows;
     });
 };
 
@@ -84,16 +102,23 @@ const plain = (range: string | undefined): string | undefined => {
 
 // A row whose version is unknown is left out rather than printed empty.
 export const stackRows = (answers: HostedAnswers, versions: Record<string, string>): [string, string][] => {
-  const target = targetFor(answers);
-  const framework: [string, string | undefined][] = target.framework === undefined
+  return stackRowsOf(targetFor(answers).framework, answers, versions);
+};
+
+export const stackRowsOf = (
+  framework: Framework | undefined,
+  facts: StackFacts,
+  versions: Record<string, string>,
+): [string, string][] => {
+  const frameworkRows: [string, string | undefined][] = framework === undefined
     ? []
-    : [[target.framework, plain(versions[FRAMEWORK_PACKAGES[target.framework] ?? target.framework])]];
+    : [[framework, plain(versions[FRAMEWORK_PACKAGES[framework] ?? framework])]];
   const rows: [string, string | undefined][] = [
     ['linteljs', plain(versions['@linteljs/eslint-config'])],
-    ...framework,
+    ...frameworkRows,
     ['typescript', plain(versions['typescript'])],
-    ['node', answers.nodeVersion],
-    [answers.packageManager, answers.packageManagerVersion],
+    ['node', facts.nodeVersion],
+    [facts.packageManager, facts.packageManagerVersion],
   ];
 
   return rows
@@ -105,7 +130,7 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
 };
 
 // Narrowed here, so a record that gains a `prompt` prints nothing rather than `[object Object]`.
-const printable = (value: Answers[AnswerKey]): string | undefined => {
+const printable = (value: AnswerValue): string | undefined => {
   if (typeof value === 'string') {
     return value;
   }
@@ -125,16 +150,33 @@ const answerLabelKey = (key: AnswerKey): string => {
 // An answer the target never asks still holds its default, so it is left out with the prompts that skip it.
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
   const target = targetFor(answers);
-  const translated = localesOf(answers).length > 0;
-
-  return keysOf(records)
-    .flatMap((key: AnswerKey) => {
+  const entries = keysOf(records)
+    .map((key) => {
       const record = records[key];
-      const printed = printable(answers[key]);
-      const unasked = record.slot?.(target) === false;
-      const prompt = promptOf(record, target);
+      const prompt = record.slot?.(target) === false ? undefined : promptOf(record, target);
+      const entry: AnswerEntry = [
+        key,
+        prompt,
+        answers[key],
+      ];
 
-      if (prompt === undefined || printed === undefined || unasked) {
+      return entry;
+    });
+
+  return answerRowsOf(entries, localesOf(answers).length > 0);
+};
+
+// An entry with no prompt is one its target does not ask.
+export const answerRowsOf = (entries: readonly AnswerEntry[], translated: boolean): [string, string][] => {
+  return entries
+    .flatMap(([
+      key,
+      prompt,
+      value,
+    ]) => {
+      const printed = printable(value);
+
+      if (prompt === undefined || printed === undefined) {
         return [];
       }
 

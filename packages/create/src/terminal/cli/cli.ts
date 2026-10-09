@@ -45,7 +45,6 @@ import { targetFor } from '@targets';
 import packageJson from '../../../package.json' with { type: 'json' };
 import {
   filled,
-  type Host,
   hosted,
   hostOf,
 } from '../host/host';
@@ -90,6 +89,7 @@ import {
 
 import type {
   Answers,
+  Host,
   HostedAnswers,
   Workspace,
   WorkspaceProject,

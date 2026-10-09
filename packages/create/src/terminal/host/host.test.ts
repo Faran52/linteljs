@@ -25,10 +25,11 @@ import { DEFAULT_ANSWERS } from '@answers';
 
 import {
   filled,
-  type Host,
   hosted,
   hostOf,
 } from './host';
+
+import type { Host } from '@config/types';
 
 const HOST: Host = {
   packageManager: 'pnpm',

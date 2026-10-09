@@ -1,5 +1,9 @@
 import { RUN_PREFIX, SYNC_COMMAND } from '@config/constants';
-import { type Emitter, type HostedAnswers } from '@config/types';
+import {
+  type Emitter,
+  type HostedAnswers,
+  type PackageManager,
+} from '@config/types';
 
 import { unscopedName } from '@utils/nameUtils';
 
@@ -16,37 +20,52 @@ import {
   stackRows,
 } from './utils/recordUtils';
 
+export interface RecordParts {
+  name: string;
+  packageManager: PackageManager;
+  gate: [string, string][];
+  stack: [string, string][];
+  answers: [string, string][];
+}
+
 // A browser cannot read its machine's Node or package manager, so this CLI records them.
 export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string => {
-  const rows = (entries: [string, string][]): string => {
-    return entries
-      .map(([left, right]) => {
-        return `  {\n    ${left},\n    ${right},\n  },`;
-      })
-      .join('\n');
-  };
+  return linteljsRecordSource({
+    name,
+    packageManager: answers.packageManager,
+    gate: gateRows(answers),
+    stack: stackRows(answers, VERSIONS),
+    answers: answerRows(answers, ANSWERS),
+  });
+};
 
-  const gate = rows(gateRows(answers));
-  const stack = rows(stackRows(answers, VERSIONS));
-  const recorded = rows(answerRows(answers, ANSWERS));
+const rowsOf = (entries: [string, string][]): string => {
+  return entries
+    .map(([left, right]) => {
+      return `  {\n    ${left},\n    ${right},\n  },`;
+    })
+    .join('\n');
+};
+
+export const linteljsRecordSource = (parts: RecordParts): string => {
   const source = [
     '// Written once by @linteljs/create. Yours from here; only the starter pages read it.',
-    nameDeclaration(name),
+    nameDeclaration(parts.name),
     '',
-    `export const CHECK = '${RUN_PREFIX[answers.packageManager]} check';`,
+    `export const CHECK = '${RUN_PREFIX[parts.packageManager]} check';`,
     '',
-    `export const SYNC = '${SYNC_COMMAND[answers.packageManager]}';`,
+    `export const SYNC = '${SYNC_COMMAND[parts.packageManager]}';`,
     '',
     'export const GATE = [',
-    gate,
+    rowsOf(parts.gate),
     '] as const;',
     '',
     'export const STACK = [',
-    stack,
+    rowsOf(parts.stack),
     '] as const;',
     '',
     'export const ANSWERS = [',
-    recorded,
+    rowsOf(parts.answers),
     '] as const;',
     '',
   ].join('\n');
@@ -54,7 +73,14 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
   return source;
 };
 
-const RECORD_MODULE = 'src/config/linteljs.ts';
+export const RECORD_MODULE = 'src/config/linteljs.ts';
+
+export {
+  type AnswerEntry,
+  answerRowsOf,
+  gateRowsOf,
+  stackRowsOf,
+} from './utils/recordUtils';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
   if (targetFor(answers).packageProject === true) {

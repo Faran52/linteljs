@@ -5,6 +5,7 @@ import {
   it,
 } from 'vitest';
 
+import { emitLinteljsRecord, RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
 import { emitStylelintConfig } from '@emitters/always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigSource } from '@emitters/always/tsconfig/tsconfigEmitter';
 import { emitI18nConfig } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
@@ -17,12 +18,51 @@ import { emitVitestConfig } from '@emitters/testing/vitest-config/vitestConfigEm
 import { SETUP_TESTS } from './constants';
 import { reactFramework } from './reactFramework';
 
-import type { Answers, ProjectShape } from '@config/types';
+import type { Answered } from '@choices/read/manifest/manifestReader';
+import type {
+  Answers,
+  Host,
+  ProjectShape,
+} from '@config/types';
+import type { Framed } from '../types';
 
 type Picked = Pick<Answers, 'testing'> & Partial<Pick<Answers, 'styling'
   | 'router'
   | 'data'
   | 'mocking'>>;
+
+const HOST: Host = {
+  packageManager: 'pnpm',
+  packageManagerVersion: '11.0.0',
+  nodeVersion: '26.0.0',
+};
+
+// The answers a default React run records, as `answersFor` holds them.
+const RECORDED: Answered = {
+  target: 'react',
+  layout: 'single',
+  testing: 'vitest',
+  libraries: ['es-toolkit'],
+  typeSafety: 'strict',
+  agents: ['claude-code'],
+  plugins: [
+    'ponytail',
+    'context7',
+    'frontend-design',
+  ],
+};
+
+// The gate's scripts merge with the common files (2d4); until then only the rest is compared.
+const GATE_BLOCK = /export const GATE = \[[\s\S]*?\] as const;\n/;
+
+const recordsOf = (files: Framed['files']): string[] => {
+  return files
+    .flatMap((file) => {
+      const texts = file.path === RECORD_MODULE && 'text' in file ? [file.text] : [];
+
+      return texts;
+    });
+};
 
 const FRESH: ProjectShape = {
   setupTests: [],
@@ -62,6 +102,19 @@ const PARITY: Picked[] = [
   },
 ];
 
+const RECORD_PARITY: (Picked & Partial<Pick<Answers, 'languages'>>)[] = [
+  ...PARITY,
+  {
+    testing: 'vitest',
+    languages: ['en', 'ar'],
+  },
+  {
+    testing: 'none',
+    router: 'tanstack-router',
+    languages: ['ar'],
+  },
+];
+
 const NAMING = {
   'src/**/*.tsx': '!([a-z]*[A-Z]*)',
   'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
@@ -92,7 +145,7 @@ const FOLDER_NAMING = { 'src/**/': String.raw`@(+([a-z0-9])*(-+([a-z0-9]))|__tes
 
 describe('reactFramework', () => {
   it('writes the Vite document under the unscoped name, with its scripts and html linting', () => {
-    const framed = reactFramework('@acme/demo', { target: 'react' });
+    const framed = reactFramework('@acme/demo', { target: 'react' }, HOST);
     const page = emitHtmlEntry('demo', 'src/main.tsx', FAVICON);
     const i18nConfig = emitI18nConfig([]);
     const tsconfig = tsconfigSource({
@@ -114,6 +167,7 @@ describe('reactFramework', () => {
       'tsconfig.json',
       'vite.config.ts',
       'stylelint.config.js',
+      RECORD_MODULE,
     ]);
 
     expect(framed.files).toContainEqual({
@@ -175,7 +229,7 @@ describe('reactFramework', () => {
       target: 'react',
       router: 'react-router-framework',
       languages: ['en'],
-    });
+    }, HOST);
     const i18nConfig = emitI18nConfig(['en']);
     const tsconfig = tsconfigSource({
       delta: {
@@ -199,6 +253,7 @@ describe('reactFramework', () => {
       'tsconfig.json',
       'vite.config.ts',
       'stylelint.config.js',
+      RECORD_MODULE,
     ]);
 
     expect(framed.files).toContainEqual({
@@ -241,7 +296,7 @@ describe('reactFramework', () => {
     const framed = reactFramework('demo', {
       target: 'react',
       languages: ['ar', 'en'],
-    });
+    }, HOST);
     const expected = {
       path: 'src/i18n/config.ts',
       text: emitI18nConfig(['ar', 'en']),
@@ -254,7 +309,7 @@ describe('reactFramework', () => {
     const framed = reactFramework('demo', {
       target: 'react',
       ...picked,
-    });
+    }, HOST);
     const old = answersFor({
       target: 'react',
       languages: ['en'],
@@ -304,7 +359,7 @@ describe('reactFramework', () => {
     const framed = reactFramework('demo', {
       target: 'react',
       testing,
-    });
+    }, HOST);
     const tsconfig = tsconfigSource({
       delta: { jsx: 'react-jsx' },
       browser: true,
@@ -328,7 +383,7 @@ describe('reactFramework', () => {
     const framed = reactFramework('demo', {
       target: 'react',
       [key]: value,
-    });
+    }, HOST);
     const { eslint } = framed.share;
 
     expect(eslint).toHaveProperty(['aliases', '@apis/*'], './src/lib/apis/*');
@@ -339,9 +394,51 @@ describe('reactFramework', () => {
       target: 'react',
       data: 'none',
       store: 'zustand',
-    });
+    }, HOST);
     const { eslint } = framed.share;
 
     expect(eslint).not.toHaveProperty(['aliases', '@apis/*']);
+  });
+
+  it.each(RECORD_PARITY)('writes the old record, less the gate rows 2d4 merges, for %o', (picked) => {
+    const framed = reactFramework('@acme/demo', {
+      ...RECORDED,
+      ...picked,
+    }, HOST);
+    const old = emitLinteljsRecord({
+      ...answersFor(picked),
+      ...HOST,
+    }, 'demo');
+    const records = recordsOf(framed.files)
+      .map((text) => {
+        return text.replace(GATE_BLOCK, '');
+      });
+    const expected = [old.replace(GATE_BLOCK, '')];
+
+    expect(records).toEqual(expected);
+  });
+
+  it.each([
+    ['react-router', ['typecheck', 'build']],
+    ['react-router-framework', ['typecheck']],
+  ])('records the gate scripts the module owns for router %s', (router, gates) => {
+    const framed = reactFramework('demo', {
+      target: 'react',
+      router,
+    }, { ...HOST, packageManager: 'npm' });
+    const commands = recordsOf(framed.files)
+      .flatMap((text) => {
+        const matches = text.matchAll(/command: '[^']*'/g);
+
+        return Array.from(matches, ([command]) => {
+          return command;
+        });
+      });
+    const expected = gates
+      .map((gate) => {
+        return `command: 'npm run ${gate}'`;
+      });
+
+    expect(commands).toEqual(expected);
   });
 });
