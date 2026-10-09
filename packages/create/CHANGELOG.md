@@ -292,7 +292,8 @@ when a version's change lives in a sibling it is described there instead:
 ### Fixed
 
 - **React Native with languages mirrors its layout for a right-to-left language in a build.** A switch or a
-  cold launch whose language runs the other way forces the new direction and reloads the app. Expo Go resets a
+  cold launch whose language runs the other way forces the new direction and reloads the app, and an iOS build
+  keeps the chosen direction across launches. Expo Go resets a
   forced direction on every open, so there the layout follows the device on iOS and stays left to right on
   Android, and the app no longer reloads for nothing.
 

@@ -31,12 +31,14 @@ export const emitExpoConfig = (name: string, locales: Language[]): string => {
     ios,
     android: locales,
   };
-  const localization = locales.length === 0 ? [] : [['expo-localization', { supportedLocales }]];
-  // SDK 57's native RTL switch, read by Expo Go and by the plugin in a build; both lay out by the device's language.
+  // Expo Go lays out by the device's language only under `extra.supportsRTL`.
   const rtl = locales
     .some((language) => {
       return LANGUAGE_NAMES[language].dir === 'rtl';
     });
+  // The plugin reads `extra` too, and its native default resets the chosen direction at each launch; null skips it.
+  const options = rtl ? { supportedLocales, supportsRTL: null } : { supportedLocales };
+  const localization = locales.length === 0 ? [] : [['expo-localization', options]];
   const config = {
     expo: {
       name,

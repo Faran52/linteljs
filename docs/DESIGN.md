@@ -651,6 +651,8 @@ whose record carries `i18n` parts is asked.
   direction at launch, so in a dev build or a release a switch or a cold launch whose language runs the other way
   calls `allowRTL` and `forceRTL`, then `reloadAppAsync` from `expo`; a stored key allows one reload per direction.
   Android's own check never reads the device's language, so a cold launch in Arabic needs that forced reload too.
+  The expo-localization plugin takes `supportsRTL: null`: it reads `extra` as well, and the iOS default it would
+  write resets the direction to the device's language at every launch, undoing the choice.
   Expo Go resets a forced direction each time it opens a project (Expo's localization guide), so there the app
   forces nothing: iOS lays out by the device's language under `extra.supportsRTL`, and Android stays left to
   right. A non-goal: mirroring every style by hand to fake a direction Expo Go will not set.

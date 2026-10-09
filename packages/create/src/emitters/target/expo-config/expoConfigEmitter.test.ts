@@ -119,6 +119,14 @@ describe('emitExpoConfig', () => {
     expect(arabic).toMatchObject(expected);
     expect(japanese).not.toHaveProperty('expo.extra');
   });
+
+  it('keeps the plugin from writing a native default that would undo the chosen direction', () => {
+    const arabic: unknown = JSON.parse(emitExpoConfig('demo', ['en', 'ar']));
+    const japanese: unknown = JSON.parse(emitExpoConfig('demo', ['en', 'ja']));
+
+    expect(arabic).toHaveProperty('expo.plugins.4.1.supportsRTL', null);
+    expect(japanese).not.toHaveProperty('expo.plugins.4.1.supportsRTL');
+  });
 });
 
 describe('expoConfigEmitter', () => {
