@@ -1062,7 +1062,9 @@ passed `test` at 95% branches), and the StyleX cases run `build`, since StyleX r
 compiles.
 
 A case whose generated tree hashes as it did at its last clean lint is skipped; `check` runs that changed mode and
-CI runs `--all`. A missing cache runs cold rather than skip. `lint:starters:fix` writes a fix back only to a template
+CI runs `--all`. A missing cache runs cold rather than skip. Every checkout and worktree shares the one cache, so a
+second run waits on `typed.lock` beside it: a cache each would cost a cold run (about 600s) per worktree, and two
+runs at once only split the cores lint is bound by. `lint:starters:fix` writes a fix back only to a template
 copied whole and only when every case writing it fixed it the same way.
 
 A changed case installs, runs `prepare` and its typecheck in turn (a typecheck regenerates the framework types the

@@ -55,6 +55,7 @@ import {
   type Tarballs,
   writeAgreed,
 } from './utils/caseUtils.ts';
+import { acquireLock } from './utils/lockUtils.ts';
 
 import type { E2eCase } from '@e2e/matrix/matrix';
 
@@ -74,6 +75,8 @@ const every = values.all === true;
 const fixing = values.fix === true;
 
 const caseCount = STARTER_CASES.length + STARTER_MIXES.length;
+
+await acquireLock();
 
 if (!existsSync(CACHE_ROOT)) {
   logWarn(`No cache at ${CACHE_ROOT}: installing ${String(caseCount)} projects from scratch, `

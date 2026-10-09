@@ -3,6 +3,11 @@ import { join } from 'node:path';
 
 export const CACHE_ROOT = join(homedir(), '.cache', 'linteljs', 'typed');
 
+// Beside the cache, so a missing cache still reads as a cold run.
+export const LOCK = `${CACHE_ROOT}.lock`;
+
+export const LOCK_POLL_MS = 5000;
+
 export const TARBALLS = join(CACHE_ROOT, 'tarballs');
 
 export const PACKING = join(CACHE_ROOT, 'packing');
