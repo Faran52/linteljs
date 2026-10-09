@@ -84,6 +84,7 @@ describe('workspaceAssemble', () => {
         dev: 'vite',
         build: 'vite build',
         preview: 'vite preview',
+        typecheck: 'tsc --noEmit',
       },
       dependencies: { react: '^19.0.0' },
       devDependencies: {
@@ -109,6 +110,7 @@ describe('workspaceAssemble', () => {
       'index.html',
       'linteljs.config.json',
       'package.json',
+      join('src', 'i18n', 'config.ts'),
       join('src', 'index.css'),
       join('src', 'locales', 'en', 'common.json'),
       join('src', 'main.test.txt'),
@@ -149,6 +151,7 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'eslint.config.ts'),
       join('apps', 'web', 'index.html'),
       join('apps', 'web', 'package.json'),
+      join('apps', 'web', 'src', 'i18n', 'config.ts'),
       join('apps', 'web', 'src', 'main.txt'),
       join('apps', 'web', 'src', 'routes.ts'),
       'CLAUDE.txt',
