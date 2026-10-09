@@ -5,7 +5,7 @@ paths:
 
 # `@linteljs/create` structure
 
-`packages/create/src/rings.ts` is the one list of the nine rings and their direction. The root
+`packages/create/src/rings.ts` is the one list of the rings and their direction. The root
 `eslint.config.ts` builds its zones from it (`@linteljs/workspace/create-rings`, `-rings-tests`, `-worlds`,
 `-config-data`) and `src/meta.test.ts` holds the tree to it, so a misplaced module fails `pnpm lint` or
 `pnpm test`.
@@ -23,6 +23,16 @@ disk/       reading and writing files.
 spawns/     running a binary and waiting. Reads disk/ for isExecutableFile, never the reverse.
 pipeline/   the stage machine, sync, and the passes over written source.
 ```
+
+The 2.0 rewrite grows beside them, in `REWRITE_RINGS` with no zones yet:
+
+```
+choices/    the question manifest, the drawer catalog, what each question offers, the checked answers, the
+            drawers they pick, and the recorded config. Reads @answers and @disk.
+io/         writing a project's files through artifactWriter.
+```
+
+Neither has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`.
 
 - **Membership is the world a module reaches**, readable off its imports: `node:fs` means `disk/`,
   `node:child_process` means `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may

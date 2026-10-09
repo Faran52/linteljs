@@ -10,7 +10,7 @@ import type { JsonValue } from './readUtils';
 
 type FlatConfig = Partial<Record<string, JsonValue>>;
 
-type ConfigEntry = readonly [FlatConfig, string];
+export type ConfigEntry = readonly [FlatConfig, string];
 
 const projectConfigOf = ([flat, name]: ConfigEntry): FlatConfig => {
   const project = omit(flat, WORKSPACE_KEYS);

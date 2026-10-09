@@ -56,6 +56,9 @@ const srcDir = join(import.meta.dirname);
 
 const SHARED = new Set(['utils']);
 
+// No outer ring imports these yet, so they hold no barrel; `cli.ts` and `assemble/` will.
+const BARRELLESS = new Set<Ring>(['choices', 'io']);
+
 const kebab = (key: string): string => {
   return key
     .replace(/([a-z])([A-Z])/gu, '$1-$2')
@@ -77,6 +80,16 @@ const SHAPES: RingShape[] = [
     registry: () => {
       return Object.keys(ANSWERS)
         .map(kebab);
+    },
+  },
+  {
+    name: 'choices',
+    suffixes: {
+      check: 'Check',
+      errors: 'Error',
+      pick: 'Pick',
+      read: 'Reader',
+      record: 'Record',
     },
   },
   {
@@ -112,6 +125,10 @@ const SHAPES: RingShape[] = [
       ];
       return emitterKeys;
     },
+  },
+  {
+    name: 'io',
+    suffixes: { write: 'Writer' },
   },
   {
     name: 'pipeline',
@@ -210,17 +227,24 @@ describe.each(fileRings)('$name', (ring) => {
 });
 
 describe.each(RINGED)('$name', (ring) => {
-  const ringDir = join(srcDir, ring.name);
-
   it('holds a subject somewhere, so the assertions below are not vacuous', () => {
     expect(subjectsIn(ring).length).toBeGreaterThan(0);
   });
+});
+
+const barrelRings = RINGED
+  .filter((ring) => {
+    return !BARRELLESS.has(ring.name);
+  });
+
+describe.each(barrelRings)('$name barrel', (ring) => {
+  const ringDir = join(srcDir, ring.name);
 
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
-    const exported = [...barrel.matchAll(/export (?:type )?\{([^}]*)\} from/gu)]
-      .flatMap(([, names]) => {
-        return (names ?? '').split(',');
+    const exported = [...barrel.matchAll(/(?<=export (?:type )?\{)[^}]*(?=\} from)/gu)]
+      .flatMap(([names]) => {
+        return names.split(',');
       })
       .map((name) => {
         return name
@@ -245,12 +269,21 @@ describe.each(RINGED)('$name', (ring) => {
 });
 
 const registeredRings = RINGED
-  .filter((ring) => {
-    return ring.registry !== undefined;
+  .flatMap((ring) => {
+    if (ring.registry === undefined) {
+      return [];
+    }
+
+    const rows = [{
+      ...ring,
+      registered: ring.registry(),
+    }];
+
+    return rows;
   });
 
 describe.each(registeredRings)('$name registry', (ring) => {
-  const registered = ring.registry?.() ?? [];
+  const { registered } = ring;
   const keys = subjectsIn(ring)
     .map((subject) => {
       return keyOf(subject, registered);

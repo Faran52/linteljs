@@ -19,6 +19,7 @@ import {
 
 import {
   allPresent,
+  directoriesIn,
   entryExists,
   exists,
   globPaths,
@@ -211,5 +212,21 @@ describe('globSnapshot', () => {
     const actual = await globSnapshot(cwd, 'src/**/*.css');
     const expected = [`${join('src', 'nested', 'a.css')}\0a {}`];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('directoriesIn', () => {
+  it('answers nothing for a missing directory', async () => {
+    const actual = await directoriesIn(join(cwd, 'missing'));
+    expect(actual).toEqual([]);
+  });
+
+  it('answers the directories alone, sorted', async () => {
+    await mkdir(join(cwd, 'b'));
+    await mkdir(join(cwd, 'a'));
+    await writeFile(join(cwd, 'c.txt'), 'c', 'utf8');
+
+    const actual = await directoriesIn(cwd);
+    expect(actual).toEqual(['a', 'b']);
   });
 });

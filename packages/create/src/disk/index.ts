@@ -9,6 +9,7 @@ export {
   TEMPLATES_ROOT,
 } from './read/shipped-assets/shippedAssetsReader';
 export {
+  directoriesIn,
   entryExists,
   exists,
   globPaths,

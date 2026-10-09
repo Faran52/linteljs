@@ -25,10 +25,14 @@ export const OUTER_RINGS = [
   'terminal',
 ] as const;
 
+// The 2.0 rewrite, beside the old pipeline until it replaces it.
+export const REWRITE_RINGS = ['choices', 'io'] as const;
+
 export const RINGS = [
   ...INNER_RINGS,
   ...MIDDLE_RINGS,
   ...OUTER_RINGS,
+  ...REWRITE_RINGS,
 ] as const;
 
 export const WORLDS: Record<'disk' | 'spawns' | 'terminal', World> = {

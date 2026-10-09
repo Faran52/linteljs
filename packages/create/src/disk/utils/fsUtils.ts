@@ -7,6 +7,7 @@ import {
 import {
   access,
   lstat,
+  readdir,
   readFile,
   rmdir,
 } from 'node:fs/promises';
@@ -124,4 +125,26 @@ export const globSnapshot = async (cwd: string, pattern: string): Promise<string
     });
 
   return await Promise.all(reads);
+};
+
+// A missing directory holds nothing, so a framework without a styling's drawers reads as none.
+export const directoriesIn = async (path: string): Promise<string[]> => {
+  const present = await exists(path);
+
+  if (!present) {
+    return [];
+  }
+
+  const entries = await readdir(path, { withFileTypes: true });
+
+  return entries
+    .filter((entry) => {
+      return entry.isDirectory();
+    })
+    .map((entry) => {
+      return entry.name;
+    })
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
 };
