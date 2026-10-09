@@ -390,6 +390,32 @@ describe('composeConfig', () => {
     expect(plainRuleIds).not.toContain('jest/no-focused-tests');
   });
 
+  it('composes the playwright layer for e2e playwright and none for maestro', async () => {
+    const code = "test.only('opens', async () => {\n  await Promise.resolve();\n});\n";
+    const path = 'src/flows/checkout/checkout.e2e.ts';
+
+    const playwrightConfig = await composeConfig({ e2e: 'playwright' });
+    const playwrightRuleIds = await ruleIdsFor(playwrightConfig, code, path);
+    expect(playwrightRuleIds).toContain('playwright/no-focused-test');
+
+    const maestroConfig = await composeConfig({ e2e: 'maestro' });
+    const plainConfig = await composeConfig();
+    expect(maestroConfig).toStrictEqual(plainConfig);
+  });
+
+  it('composes the storybook layer on request and not otherwise', async () => {
+    const code = 'export const Primary = {};\n';
+    const path = 'src/components/button/Button.stories.ts';
+
+    const storybookConfig = await composeConfig({ stories: 'storybook' });
+    const storybookRuleIds = await ruleIdsFor(storybookConfig, code, path);
+    expect(storybookRuleIds).toContain('storybook/default-exports');
+
+    const plainConfig = await composeConfig();
+    const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
+    expect(plainRuleIds).not.toContain('storybook/default-exports');
+  });
+
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 

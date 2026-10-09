@@ -222,6 +222,12 @@ suites included. A suite names parsed JSON `const parsed: unknown = JSON.parse(t
 stylistic preset with `jsx: false` and turns the sonarjs framework rules off; each framework layer turns its own
 back on. The layer suites hold `base`, `typescript()`, `vitest()` and `html()` to no framework rule.
 
+### End-to-end and story globs
+
+`playwright()` reads `**/*.e2e.*` and everything under an `e2e/` directory, not `*.spec.*`, so a unit suite never
+gets its rules. `storybook()` keeps the plugin's own `*.stories.{ts,tsx,js,jsx,mjs,cjs}`: `*.stories.*` would hand
+an `.mdx` story to the script parser. `e2e: 'maestro'` adds no layer, since Maestro flows are YAML.
+
 ### Destructuring in declarations only
 
 `prefer-destructuring` covers declarations only: on an assignment the fix needs `({ width } = box);`. Arrays are

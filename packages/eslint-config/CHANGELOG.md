@@ -92,6 +92,12 @@ when a version's change lives in a sibling it is described there instead:
   - `jest()` at `./jest` (`testing: 'jest'`), over the optional peer `eslint-plugin-jest` `>=29`: its
     `flat/recommended` rules on test files, the counterpart of `vitest` for a project on Jest, such as React
     Native on `jest-expo`.
+  - `playwright()` at `./playwright` (`e2e: 'playwright'`), over the optional peer `eslint-plugin-playwright`
+    `>=2`: its `flat/recommended` rules on `*.e2e.*` files and `e2e/`. `e2e: 'maestro'` adds no layer.
+  - `storybook()` at `./storybook` (`stories: 'storybook'`), over the optional peer `eslint-plugin-storybook`
+    `>=10`: its `flat/recommended` rules on story files and `.storybook/main.*`.
+  - `composeConfig` names the option and the peer when `e2e` or `stories` asks for a plugin that is not
+    installed.
 - `nuxtGroup`, `reactNativeGroup`, `tailwind` and the `TypescriptOptions` type join the barrel.
 - `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, and
   takes `aliasExempt` and `enforceRelativeImports` for it, as does `composeConfig`.

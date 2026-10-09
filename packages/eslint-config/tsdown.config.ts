@@ -9,6 +9,8 @@ export default defineConfig({
     typescript: 'src/layers/typescript/typescriptLayer.ts',
     vitest: 'src/layers/vitest/vitestLayer.ts',
     jest: 'src/layers/jest/jestLayer.ts',
+    playwright: 'src/layers/playwright/playwrightLayer.ts',
+    storybook: 'src/layers/storybook/storybookLayer.ts',
     html: 'src/layers/html/htmlLayer.ts',
     astro: 'src/frameworks/astro/astroFramework.ts',
     react: 'src/frameworks/react/reactFramework.ts',

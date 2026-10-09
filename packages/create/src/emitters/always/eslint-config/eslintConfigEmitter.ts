@@ -94,6 +94,14 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['testing', quote(runner)]);
   }
 
+  if (answers.e2e !== undefined) {
+    rows.push(['e2e', quote(answers.e2e)]);
+  }
+
+  if (answers.stories !== undefined) {
+    rows.push(['stories', quote(answers.stories)]);
+  }
+
   if (target.html) {
     rows.push(['html', 'true']);
   }

@@ -356,6 +356,8 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),
     ...(answers.mocking === 'msw' ? ['msw'] : []),
+    ...(answers.e2e === 'playwright' ? ['eslint-plugin-playwright'] : []),
+    ...(answers.stories === 'storybook' ? ['eslint-plugin-storybook'] : []),
     ...(localesOf(answers).length === 0 ? [] : target.i18n?.compiler?.devDependencies ?? []),
     // `qs` ships no types of its own.
     ...(target.packageProject === true ? [] : ['@types/qs']),

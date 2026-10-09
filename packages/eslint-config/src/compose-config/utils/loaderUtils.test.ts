@@ -17,7 +17,13 @@ import { tailwind } from '../../libraries/tailwind/tailwindLibrary';
 import { tanstackQuery } from '../../libraries/tanstack-query/tanstackQueryLibrary';
 import { tanstackRouter } from '../../libraries/tanstack-router/tanstackRouterLibrary';
 
-import { FRAMEWORKS, LIBRARIES } from './loaderUtils';
+import {
+  E2E,
+  FRAMEWORKS,
+  LIBRARIES,
+  STORIES,
+  withPeer,
+} from './loaderUtils';
 
 import type { Framework, Layer } from '../../types';
 
@@ -107,5 +113,40 @@ describe('LIBRARIES', () => {
 
     const withoutEntryPoint = await LIBRARIES.tailwind({});
     expect(withoutEntryPoint).toEqual(tailwind());
+  });
+});
+
+describe('withPeer', () => {
+  it('names the option and the peer when the peer is missing', async () => {
+    const missing = withPeer("e2e: 'playwright'", 'eslint-plugin-playwright', () => {
+      const notFound = new Error("Cannot find package 'eslint-plugin-playwright' imported from /project");
+
+      return Promise.reject(notFound);
+    });
+
+    await expect(missing).rejects.toThrow(
+      "@linteljs/eslint-config: e2e: 'playwright' needs eslint-plugin-playwright; install it as a dev dependency",
+    );
+  });
+
+  it('passes any other failure through untouched', async () => {
+    const failing = withPeer("e2e: 'playwright'", 'eslint-plugin-playwright', () => {
+      const broken = new Error('broken preset');
+
+      return Promise.reject(broken);
+    });
+
+    await expect(failing).rejects.toThrow(/^broken preset$/);
+  });
+});
+
+describe('E2E and STORIES', () => {
+  it('loads playwright and storybook, and nothing for maestro', async () => {
+    const playwrightLayer = await E2E.playwright();
+    expect(playwrightLayer.length).toBeGreaterThan(0);
+    const maestroLayer = await E2E.maestro();
+    expect(maestroLayer).toStrictEqual([]);
+    const storybookLayer = await STORIES.storybook();
+    expect(storybookLayer.length).toBeGreaterThan(0);
   });
 });

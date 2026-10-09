@@ -52,11 +52,17 @@ export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | '
 
 export type Testing = 'vitest' | 'jest';
 
+export type E2e = 'playwright' | 'maestro';
+
+export type Stories = 'storybook';
+
 // `frameworkGroup` is dropped: the composer reads it off the framework layer.
 export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'>, TypescriptOptions {
   framework?: Framework;
   typescript?: boolean;
   testing?: Testing;
+  e2e?: E2e;
+  stories?: Stories;
   html?: boolean;
   libraries?: LibraryLayer[];
   tailwindEntryPoint?: string;

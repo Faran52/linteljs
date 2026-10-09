@@ -182,6 +182,18 @@ describe('emitEslintConfig', () => {
     expect(output).toContain("testing: 'jest',");
   });
 
+  it('names the e2e runner and the story workshop only when they were answered', () => {
+    const answered = emitEslintConfig(answersFor({
+      e2e: 'playwright',
+      stories: 'storybook',
+    }));
+    expect(answered).toContain("e2e: 'playwright',");
+    expect(answered).toContain("stories: 'storybook',");
+    const unanswered = emitEslintConfig(answersFor({}));
+    expect(unanswered).not.toContain('e2e:');
+    expect(unanswered).not.toContain('stories:');
+  });
+
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
     for (const target of TARGET_IDS) {
       const output = emitEslintConfig(answersFor({ target }));

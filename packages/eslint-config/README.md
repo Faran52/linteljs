@@ -72,6 +72,8 @@ Each layer switch is off unless you enable it.
 | `framework` | Adds a framework layer: `'react'`, `'next'`, `'react-native'`, `'vue'`, `'nuxt'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React, `nuxt` includes Vue, and `react-native` is React without the web accessibility preset. |
 | `typescript` | Enables the TypeScript layer. |
 | `testing` | Enables rules for `*.test.*` and `*.spec.*` files from the runner's plugin: `'vitest'` or `'jest'` (React Native on `jest-expo`). |
+| `e2e` | `'playwright'` enables Playwright rules for `*.e2e.*` files and anything under `e2e/`. `'maestro'` adds nothing, since Maestro flows are YAML. |
+| `stories` | `'storybook'` enables Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
@@ -87,8 +89,8 @@ import sorting stays aligned with the framework that loaded it.
 
 ## Layer order
 
-The composer applies the layers in this order: base, TypeScript, framework, library, testing, HTML, then
-Astro.
+The composer applies the layers in this order: base, TypeScript, framework, library, testing, end-to-end,
+stories, HTML, then Astro.
 Framework layers override shared layers. Vue and Svelte must come after TypeScript so their top-level parsers
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
 `.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
@@ -124,6 +126,8 @@ loads every layer, so it needs every optional peer installed.
 | `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `jest()` | `/jest` | Jest recommended rules and globals for test files. | `eslint-plugin-jest` |
+| `playwright()` | `/playwright` | Playwright recommended rules for `*.e2e.*` files and `e2e/`. | `eslint-plugin-playwright` |
+| `storybook()` | `/storybook` | Storybook recommended rules for story files and `.storybook/main.*`. | `eslint-plugin-storybook` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro` |
 | `react()` | `/react` | `@eslint-react` with its stricter rules, React Hooks, JSX accessibility, the four `@eslint-react` DOM rules (`<button>` type, `<iframe>` sandbox, unsafe `target="_blank"`, `javascript:` URLs), sonarjs's React rules, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |

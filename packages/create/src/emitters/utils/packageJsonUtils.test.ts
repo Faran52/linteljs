@@ -148,6 +148,20 @@ describe('the mocking answer', () => {
     expect(unmocked).not.toHaveProperty('msw');
   });
 
+  it('installs the e2e and stories lint plugins only when they were answered', () => {
+    const answered = buildDevDependencies(answersFor({
+      e2e: 'playwright',
+      stories: 'storybook',
+    }));
+    expect(answered).toHaveProperty('eslint-plugin-playwright');
+    expect(answered).toHaveProperty('eslint-plugin-storybook');
+    const maestro = buildDevDependencies(answersFor({ e2e: 'maestro' }));
+    expect(maestro).not.toHaveProperty('eslint-plugin-playwright');
+    const unanswered = buildDevDependencies(answersFor({}));
+    expect(unanswered).not.toHaveProperty('eslint-plugin-playwright');
+    expect(unanswered).not.toHaveProperty('eslint-plugin-storybook');
+  });
+
   it('allows the install script that copies the worker', () => {
     const actual = allowedBuildNames(answersFor({ mocking: 'msw' }));
     expect(actual).toContain('msw');

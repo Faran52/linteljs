@@ -2,8 +2,10 @@ import { base } from '../layers/base/baseLayer';
 import { typescript } from '../layers/typescript/typescriptLayer';
 
 import {
+  E2E,
   FRAMEWORKS,
   LIBRARIES,
+  STORIES,
   TESTING,
 } from './utils/loaderUtils';
 
@@ -27,6 +29,8 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     framework,
     typescript: withTypescript,
     testing,
+    e2e,
+    stories,
     html: withHtml,
     libraries = [],
     tailwindEntryPoint,
@@ -41,6 +45,8 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
 
   const libraryLayers = await Promise.all(loading);
   const testingRules = testing === undefined ? [] : await TESTING[testing]();
+  const e2eRules = e2e === undefined ? [] : await E2E[e2e]();
+  const storiesRules = stories === undefined ? [] : await STORIES[stories]();
   const htmlRules = withHtml === true ? await loadHtml() : [];
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
   const astroRules = baseOptions.astro === true ? await loadAstro() : [];
@@ -58,6 +64,8 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),
     ...testingRules,
+    ...e2eRules,
+    ...storiesRules,
     ...htmlRules,
     ...astroRules,
   ];

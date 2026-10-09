@@ -112,12 +112,20 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
   return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
 };
 
+// The record, and the lint wiring `eslintConfigEmitter` and `packageJsonUtils` suites pin.
+const SET_BY_THE_ANSWERS = new Set([
+  'linteljs.config.json',
+  'src/config/linteljs.ts',
+  'eslint.config.ts',
+  'package.json',
+]);
+
 describe('the e2e and stories answers', () => {
   const textsOf = async (overrides: AnswerOverrides): Promise<[string, string][]> => {
     const answers = hostedAnswersFor(overrides);
     const artifacts = [...builtFor(answers, 'demo-app'), ...seededFor(answers, 'demo-app')]
       .filter(({ target }) => {
-        return target !== 'linteljs.config.json' && target !== 'src/config/linteljs.ts';
+        return !SET_BY_THE_ANSWERS.has(target);
       });
 
     const texts = artifacts
@@ -140,7 +148,7 @@ describe('the e2e and stories answers', () => {
       target: 'react-native',
       testing: 'jest',
     }, { e2e: 'maestro' }],
-  ] as const)('emit nothing past the config and the record yet: %o', async (base, chosen) => {
+  ] as const)('emit nothing past the record and the lint wiring yet: %o', async (base, chosen) => {
     const without = await textsOf(base);
     const withChosen = await textsOf({
       ...base,

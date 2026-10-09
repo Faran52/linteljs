@@ -235,6 +235,8 @@ export interface ComposeConfigOptions {
   framework?: Framework;
   typescript?: boolean;
   testing?: TestRunner;
+  e2e?: E2e;
+  stories?: Stories;
   html?: boolean;
   astro?: boolean;
   libraries?: LibraryLayer[];

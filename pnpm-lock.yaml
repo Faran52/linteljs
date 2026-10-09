@@ -185,9 +185,15 @@ catalogs:
     eslint:
       specifier: ^10.12.0
       version: 10.12.0
+    eslint-plugin-playwright:
+      specifier: ^2.12.1
+      version: 2.12.1
     eslint-plugin-sonarjs:
       specifier: ^4.2.2
       version: 4.2.2
+    eslint-plugin-storybook:
+      specifier: ^10.6.1
+      version: 10.6.1
     jiti:
       specifier: ^2.7.0
       version: 2.7.0
@@ -390,12 +396,18 @@ importers:
       eslint-plugin-jsx-a11y-x:
         specifier: ^0.2.0
         version: 0.2.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-plugin-playwright:
+        specifier: 'catalog:'
+        version: 2.12.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-react-hooks:
         specifier: ^7.1.1
         version: 7.1.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-solid:
         specifier: ^0.18.0
         version: 0.18.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+      eslint-plugin-storybook:
+        specifier: 'catalog:'
+        version: 10.6.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-svelte:
         specifier: ^3.23.0
         version: 3.23.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(svelte@5.57.1(@typescript-eslint/types@8.70.0))
@@ -3149,6 +3161,12 @@ packages:
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
 
+  eslint-plugin-playwright@2.12.1:
+    resolution: {integrity: sha512-JhavNuYBIq7SE/Zg9Esf9RGHkXoDbzrEKS383cowzMyvZ4JMbmdNCN6CoW+RU1Cjzwcoea1tou0je58uXmT/9A==}
+    engines: {node: '>=16.9.0'}
+    peerDependencies:
+      eslint: '>=8.40.0'
+
   eslint-plugin-react-dom@5.23.5:
     resolution: {integrity: sha512-JWMTlHF9956J7KXPCMbpliNJt+WNEj7gJYird4kksPxlfT/9Q642lWHzuHNzGGvwV+1AIaFtKLeRrgAU6mvMGA==}
     engines: {node: '>=22.0.0'}
@@ -3231,6 +3249,11 @@ packages:
     resolution: {integrity: sha512-usNF9GfP89ibwhfxpZaCMW40sC7UEOusDgDCk7lyqAhh4AYdbBaAgLVL5Y/QS0jSed8eJ2ACGH6zzE8ezd/yZQ==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
+
+  eslint-plugin-storybook@10.6.1:
+    resolution: {integrity: sha512-XBmXuQcI0wzxMYc0rWKIiydvUxgS+GzLesO1YK1adnj97LhMqqsnlalbM+nXfQo1JoH2F2CI12sAH9/dAC99Dw==}
+    peerDependencies:
+      eslint: '>=8'
 
   eslint-plugin-svelte@3.23.0:
     resolution: {integrity: sha512-n9jRklDqy0+W834568a4ZIZTK7DHXxvvHHxxGP8nNq7N//pOZMubttskHOquyGgfTR4Z05q2NdGNlsTpIEA48w==}
@@ -7980,6 +8003,11 @@ snapshots:
       language-tags: 1.0.9
       minimatch: 10.2.6
 
+  eslint-plugin-playwright@2.12.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2)):
+    dependencies:
+      eslint: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
+      globals: 17.12.0
+
   eslint-plugin-react-dom@5.23.5(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
     dependencies:
       '@eslint-react/ast': 5.23.5(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -8126,6 +8154,15 @@ snapshots:
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
       yaml: 2.9.1
+
+  eslint-plugin-storybook@10.6.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
+    dependencies:
+      '@typescript-eslint/types': 8.71.0
+      '@typescript-eslint/utils': 8.71.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+      eslint: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
 
   eslint-plugin-svelte@3.23.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(svelte@5.57.1(@typescript-eslint/types@8.70.0)):
     dependencies:

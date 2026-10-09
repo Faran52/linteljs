@@ -1,7 +1,9 @@
 import type {
+  E2e,
   Framework,
   Layer,
   LibraryLayer,
+  Stories,
   Testing,
 } from '../../types';
 
@@ -140,5 +142,45 @@ export const TESTING: Record<Testing, () => Promise<Layer>> = {
     const { jest } = await import('../../layers/jest/jestLayer');
 
     return jest();
+  },
+};
+
+// Names the option and the peer it needs, where Node would only name the package it could not find.
+export const withPeer = async (option: string, peer: string, load: () => Promise<Layer>): Promise<Layer> => {
+  try {
+    return await load();
+  }
+  catch (error) {
+    if (String(error).includes(peer)) {
+      const message = `@linteljs/eslint-config: ${option} needs ${peer}; install it as a dev dependency`;
+
+      throw new Error(message, { cause: error });
+    }
+
+    throw error;
+  }
+};
+
+// Maestro flows are YAML, which ESLint does not read.
+export const E2E: Record<E2e, () => Promise<Layer>> = {
+  playwright: async () => {
+    return withPeer("e2e: 'playwright'", 'eslint-plugin-playwright', async () => {
+      const { playwright } = await import('../../layers/playwright/playwrightLayer');
+
+      return playwright();
+    });
+  },
+  maestro: () => {
+    return Promise.resolve([]);
+  },
+};
+
+export const STORIES: Record<Stories, () => Promise<Layer>> = {
+  storybook: async () => {
+    return withPeer("stories: 'storybook'", 'eslint-plugin-storybook', async () => {
+      const { storybook } = await import('../../layers/storybook/storybookLayer');
+
+      return storybook();
+    });
   },
 };
