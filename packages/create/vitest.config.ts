@@ -21,5 +21,15 @@ export default defineConfig({
       'templates/project/plugins/**/*.test.ts',
     ],
     exclude: ['**/*.e2e.test.ts'],
+    // What the e2e `globalSetup` provides, so the harness's own suites can spawn without a registry.
+    provide: {
+      registry: {
+        url: 'http://127.0.0.1:1',
+        version: '0.0.0',
+        cliBin: 'cli.mjs',
+        cacheDir: 'cache',
+        runDir: 'run',
+      },
+    },
   },
 });
