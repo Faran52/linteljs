@@ -5,7 +5,11 @@ import { RUN_PREFIX } from '@config/constants';
 import { localesOf } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
-import { type AnswerKey, type AnswerRecord } from '@answers';
+import {
+  type AnswerKey,
+  type AnswerRecord,
+  promptOf,
+} from '@answers';
 import { targetFor } from '@targets';
 
 import { FRAMEWORK_PACKAGES, MAX_LINE } from '../../../constants';
@@ -128,12 +132,13 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
       const record = records[key];
       const printed = printable(answers[key]);
       const unasked = record.slot?.(target) === false;
+      const prompt = promptOf(record, target);
 
-      if (record.prompt === undefined || printed === undefined || unasked) {
+      if (prompt === undefined || printed === undefined || unasked) {
         return [];
       }
 
-      const label = translated ? answerLabelKey(key) : record.prompt;
+      const label = translated ? answerLabelKey(key) : prompt;
       const entryRows: [string, string][] = [[`label: '${label}'`, `value: '${printed}'`]];
 
       return entryRows;

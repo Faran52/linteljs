@@ -73,6 +73,8 @@ describe('ask', () => {
       'single',
       'svelte',
       'none',
+      undefined,
+      undefined,
       ['zod'],
       'tailwind',
       undefined,
@@ -223,6 +225,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
 
     expect(recorded.calls).not.toContain('Browser');
@@ -235,6 +239,8 @@ describe('ask', () => {
       'demo-app',
       undefined,
       'angular',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -298,6 +304,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
 
     const expected = {
@@ -334,6 +342,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       picked,
       undefined,
       ['claude-code'],
@@ -346,6 +356,8 @@ describe('ask', () => {
   it('selects both agents and no plugins', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -372,6 +384,8 @@ describe('ask', () => {
   it('selects one agent and a plugin subset, normalized to declaration order', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -412,6 +426,8 @@ describe('ask', () => {
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -481,6 +497,8 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       [],
       undefined,
     ]);
@@ -497,6 +515,8 @@ describe('ask', () => {
   it('offers AI plugins label only when agents are selected', async () => {
     const { recorded } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -540,6 +560,8 @@ describe('ask', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
+          undefined,
         ],
         { fixed: { layout: 'single' } },
       );
@@ -554,6 +576,8 @@ describe('ask', () => {
     it('skips the name question and uses it as given', async () => {
       const { result, recorded } = await askWith(
         [
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -589,6 +613,8 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       'redux-toolkit',
       undefined,
       undefined,
@@ -599,7 +625,7 @@ describe('the store question', () => {
     ]);
 
     expect(result.projects[0].answers.store).toBe('redux-toolkit');
-    expect(recorded.calls[8]).toBe('State store');
+    expect(recorded.calls[10]).toBe('State store');
 
     const expected = [
       'None',
@@ -615,6 +641,10 @@ describe('the store question', () => {
       'demo-app',
       undefined,
       'angular',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -645,6 +675,8 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       'none',
       undefined,
       undefined,
@@ -660,6 +692,8 @@ describe('the store question', () => {
   it('defaults to no store', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -746,6 +780,8 @@ describe('the project name question', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
     const seen: (string | undefined)[] = [];
     const prompter: Prompter = {
@@ -779,6 +815,8 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       ['zod'],
       'tailwind',
       'react-hook-form',
@@ -801,6 +839,8 @@ describe('the form library and router questions', () => {
   it('leaves form unset when none is chosen', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -838,12 +878,16 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
     const hostedReact = await askWith([
       'demo-app',
       undefined,
       'astro',
       'react',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -900,6 +944,8 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
     ]);
 
     const expected = [
@@ -919,6 +965,8 @@ describe('the form library and router questions', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       'tanstack-router',
       undefined,
       undefined,
@@ -932,6 +980,8 @@ describe('the form library and router questions', () => {
       'demo-app',
       undefined,
       'next',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,

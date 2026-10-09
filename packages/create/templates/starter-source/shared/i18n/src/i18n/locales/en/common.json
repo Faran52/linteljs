@@ -32,6 +32,8 @@
   "answerStore": "State store",
   "answerLayout": "Repository layout",
   "answerMocking": "API mocking",
+  "answerE2e": "E2E testing",
+  "answerStories": "Component stories",
   "answerForm": "Form library",
   "answerLibraries": "Libraries",
   "answerLanguages": "Languages",

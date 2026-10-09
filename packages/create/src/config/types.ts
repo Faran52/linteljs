@@ -61,6 +61,10 @@ export type Data = 'tanstack-query' | 'rtk-query';
 
 export type Mocking = 'msw';
 
+export type E2e = 'playwright' | 'maestro';
+
+export type Stories = 'storybook';
+
 export type Language = 'en' | 'ar' | 'ja' | 'ko' | 'zh-CN' | 'zh-TW';
 
 export type TypeSafety = 'strict' | 'relaxed';
@@ -78,6 +82,10 @@ export interface Answers {
   // Absent means the host's own plain-TypeScript shape.
   hostedFramework?: HostedFramework;
   testing: Testing;
+  // Absent is no end-to-end suite.
+  e2e?: E2e;
+  // Absent is no component workshop.
+  stories?: Stories;
   packageManager: PackageManager;
   // Absent in a config that does not record them.
   packageManagerVersion?: string;

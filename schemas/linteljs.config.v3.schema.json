@@ -140,6 +140,17 @@
               "none"
             ]
           },
+          "e2e": {
+            "enum": [
+              "playwright",
+              "maestro"
+            ]
+          },
+          "stories": {
+            "enum": [
+              "storybook"
+            ]
+          },
           "libraries": {
             "type": "array",
             "items": {
@@ -249,7 +260,98 @@
             "minItems": 1,
             "uniqueItems": true
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "const": "typescript"
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "e2e"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "const": "react-native"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "e2e": {
+                  "not": {
+                    "const": "playwright"
+                  }
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "e2e": {
+                  "not": {
+                    "const": "maestro"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "solid",
+                    "react-native",
+                    "webextension",
+                    "typescript"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "stories"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "const": "astro"
+                },
+                "hostedFramework": {
+                  "not": {
+                    "enum": [
+                      "react",
+                      "vue",
+                      "svelte"
+                    ]
+                  }
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "stories"
+                ]
+              }
+            }
+          }
+        ]
       }
     }
   },

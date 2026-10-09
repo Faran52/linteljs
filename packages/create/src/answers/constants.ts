@@ -31,6 +31,8 @@ export const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', null>
   surfaces: null,
   hostedFramework: null,
   testing: null,
+  e2e: null,
+  stories: null,
   packageManager: null,
   packageManagerVersion: null,
   nodeVersion: null,
@@ -71,3 +73,48 @@ export const V3_TOP_KEYS: readonly string[] = [
 
 // A monorepo project's name and its directory under apps/ or packages/: kebab-case only.
 export const PROJECT_NAME_PATTERN = '^[a-z0-9]+(-[a-z0-9]+)*$';
+
+// The schema's half of the target refusals `configUtils` makes, so an editor flags them before a run does.
+export const PROJECT_REFUSALS = [
+  {
+    if: { properties: { target: { const: 'typescript' } } },
+    then: { not: { required: ['e2e'] } },
+  },
+  {
+    if: { properties: { target: { const: 'react-native' } } },
+    then: { properties: { e2e: { not: { const: 'playwright' } } } },
+    else: { properties: { e2e: { not: { const: 'maestro' } } } },
+  },
+  {
+    if: {
+      properties: {
+        target: {
+          enum: [
+            'solid',
+            'react-native',
+            'webextension',
+            'typescript',
+          ],
+        },
+      },
+    },
+    then: { not: { required: ['stories'] } },
+  },
+  {
+    if: {
+      properties: {
+        target: { const: 'astro' },
+        hostedFramework: {
+          not: {
+            enum: [
+              'react',
+              'vue',
+              'svelte',
+            ],
+          },
+        },
+      },
+    },
+    then: { not: { required: ['stories'] } },
+  },
+];

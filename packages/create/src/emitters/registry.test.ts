@@ -112,6 +112,45 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
   return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
 };
 
+describe('the e2e and stories answers', () => {
+  const textsOf = async (overrides: AnswerOverrides): Promise<[string, string][]> => {
+    const answers = hostedAnswersFor(overrides);
+    const artifacts = [...builtFor(answers, 'demo-app'), ...seededFor(answers, 'demo-app')]
+      .filter(({ target }) => {
+        return target !== 'linteljs.config.json' && target !== 'src/config/linteljs.ts';
+      });
+
+    const texts = artifacts
+      .map(async ({ target, content }): Promise<[string, string]> => {
+        const text = await shippedAssetsReader(content);
+        const entry: [string, string] = [target, text];
+
+        return entry;
+      });
+
+    return Promise.all(texts);
+  };
+
+  it.each([
+    [{ target: 'react' }, {
+      e2e: 'playwright',
+      stories: 'storybook',
+    }],
+    [{
+      target: 'react-native',
+      testing: 'jest',
+    }, { e2e: 'maestro' }],
+  ] as const)('emit nothing past the config and the record yet: %o', async (base, chosen) => {
+    const without = await textsOf(base);
+    const withChosen = await textsOf({
+      ...base,
+      ...chosen,
+    });
+
+    expect(withChosen).toEqual(without);
+  });
+});
+
 describe('buildArtifacts', () => {
   it.each(TARGET_IDS)('resolves every artifact for %s', async (target) => {
     const answers = hostedAnswersFor({

@@ -33,4 +33,4 @@ export {
   type JsonValue,
   unaskedValueOf,
 } from './utils/readUtils';
-export { onlyFor } from './utils/recordUtils';
+export { onlyFor, promptOf } from './utils/recordUtils';

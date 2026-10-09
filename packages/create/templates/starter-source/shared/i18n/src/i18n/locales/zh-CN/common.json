@@ -32,6 +32,8 @@
   "answerStore": "状态存储",
   "answerLayout": "仓库结构",
   "answerMocking": "API 模拟",
+  "answerE2e": "端到端测试",
+  "answerStories": "组件故事",
   "answerForm": "表单库",
   "answerLibraries": "库",
   "answerLanguages": "语言",

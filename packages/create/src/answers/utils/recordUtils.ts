@@ -17,6 +17,10 @@ export const onlyFor = (
   return values[chosen]?.only;
 };
 
+export const promptOf = (record: AnswerRecord, target: TargetRecord): string | undefined => {
+  return typeof record.prompt === 'function' ? record.prompt(target) : record.prompt;
+};
+
 export const refusedValue = (
   record: AnswerRecord,
   chosen: Answers[keyof Answers],

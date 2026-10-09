@@ -149,6 +149,11 @@ export const MSW_TWIN = /^ {2}"\w+Msw": .*\n/gmv;
 
 export const TWINNED_KEY = / {2}"(?<key>\w+)": .*\n {2}"\k<key>Msw": /gv;
 
+// The record labels of answers whose files arrive later, kept out until the answer is chosen.
+export const E2E_LABEL = /^ {2}"answerE2e": .*\n/mv;
+
+export const STORIES_LABEL = /^ {2}"answerStories": .*\n/mv;
+
 // The forms whose contact page reads a `useContactForm` hook of their own.
 export const CONTACT_HOOK_FORMS = ['tanstack-form', 'react-hook-form'] as const;
 

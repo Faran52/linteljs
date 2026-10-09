@@ -21,6 +21,8 @@ import { routerAnswer } from './target/router/routerAnswer';
 import { storeAnswer } from './target/store/storeAnswer';
 import { surfacesAnswer } from './target/surfaces/surfacesAnswer';
 import { targetAnswer } from './target/target/targetAnswer';
+import { e2eAnswer } from './testing/e2e/e2eAnswer';
+import { storiesAnswer } from './testing/stories/storiesAnswer';
 import { testingAnswer } from './testing/testing/testingAnswer';
 import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 
@@ -46,6 +48,8 @@ export const ANSWERS = {
   hostedFramework: hostedFrameworkAnswer,
   layout: layoutAnswer,
   testing: testingAnswer,
+  e2e: e2eAnswer,
+  stories: storiesAnswer,
   packageManager: packageManagerAnswer,
   packageManagerVersion: packageManagerVersionAnswer,
   nodeVersion: nodeVersionAnswer,

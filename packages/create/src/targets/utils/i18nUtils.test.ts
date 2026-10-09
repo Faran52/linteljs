@@ -206,6 +206,19 @@ describe('localeFiles', () => {
     expect(written).toBe(expected);
   });
 
+  it.each([
+    [{}, '{\n  "home": "Home"\n}\n'],
+    [{ e2e: 'playwright' }, '{\n  "answerE2e": "E2E testing",\n  "home": "Home"\n}\n'],
+    [{ stories: 'storybook' }, '{\n  "answerStories": "Component stories",\n  "home": "Home"\n}\n'],
+  ] as const)('keeps the e2e and stories labels only once chosen: %o', (chosen, expected) => {
+    const [english] = localeFiles(hasForm);
+    const source = '{\n  "answerE2e": "E2E testing",\n  "answerStories": "Component stories",\n  "home": "Home"\n}\n';
+
+    const written = english?.transform?.(source, answersFor(chosen));
+
+    expect(written).toBe(expected);
+  });
+
   it('drops every contact key, and only those, where the project has no contact page', () => {
     const [english] = localeFiles();
     const source = '{\n  "contact": "Contact",\n  "home": "Home",\n  "contactSend": "Send"\n}\n';

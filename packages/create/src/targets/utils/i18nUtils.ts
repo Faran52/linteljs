@@ -6,7 +6,9 @@ import { localesOf } from '@utils/answerUtils';
 import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 import {
+  E2E_LABEL,
   MSW_TWIN,
+  STORIES_LABEL,
   TRANSLATED_CONFIGS,
   TWINNED_KEY,
 } from '../constants';
@@ -133,11 +135,14 @@ export const localeFiles = (hasContact?: (answers: Answers) => boolean): Starter
         variant: 'i18n',
         shared: true,
         transform: (source, answers) => {
+          const withE2e = answers.e2e === undefined ? source.replace(E2E_LABEL, '') : source;
+          const labelled = answers.stories === undefined ? withE2e.replace(STORIES_LABEL, '') : withE2e;
+
           if (hasContact?.(answers) !== true) {
-            return withoutContact(source);
+            return withoutContact(labelled);
           }
 
-          return hasMsw(answers) ? source.replaceAll(TWINNED_KEY, '  "$<key>": ') : source.replaceAll(MSW_TWIN, '');
+          return hasMsw(answers) ? labelled.replaceAll(TWINNED_KEY, '  "$<key>": ') : labelled.replaceAll(MSW_TWIN, '');
         },
       };
 

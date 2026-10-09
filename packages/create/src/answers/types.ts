@@ -11,8 +11,9 @@ export interface ValueRecord {
 interface Base {
   key: string;
   flag?: string;
-  // Absent means never asked.
-  prompt?: string;
+  // Absent means never asked; a function when the wording names the target's own tool.
+  prompt?: string
+    | ((target: TargetRecord) => string);
   // In `--help` after the choices: 'react only', 'webextension only'.
   note?: string;
   description?: string;

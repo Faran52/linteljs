@@ -4,8 +4,13 @@ import { dataAnswer } from '../libraries/data/dataAnswer';
 import { formAnswer } from '../libraries/form/formAnswer';
 import { nodeVersionAnswer } from '../recorded/node-version/nodeVersionAnswer';
 import { DEFAULT_ANSWERS } from '../registry';
+import { e2eAnswer } from '../testing/e2e/e2eAnswer';
 
-import { onlyFor, refusedValue } from './recordUtils';
+import {
+  onlyFor,
+  promptOf,
+  refusedValue,
+} from './recordUtils';
 
 const vueRecord = (): TargetRecord => {
   return targetFor({
@@ -13,6 +18,22 @@ const vueRecord = (): TargetRecord => {
     target: 'vue',
   });
 };
+
+describe('promptOf', () => {
+  it('words a target-worded prompt for the target, and passes a fixed one through', () => {
+    const native = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'react-native',
+    });
+
+    const worded = promptOf(e2eAnswer, native);
+    expect(worded).toBe('E2E testing (Maestro)');
+    const fixed = promptOf(formAnswer, native);
+    expect(fixed).toBe('Form library');
+    const unasked = promptOf(nodeVersionAnswer, native);
+    expect(unasked).toBeUndefined();
+  });
+});
 
 describe('refusedValue', () => {
   it('names the value its target refuses, and nothing where it fits', () => {

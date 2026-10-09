@@ -4,6 +4,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   PROJECT_NAME_PATTERN,
+  PROJECT_REFUSALS,
   WORKSPACE_KEYS,
 } from '../constants';
 
@@ -202,6 +203,7 @@ export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
             },
             ...propertiesOf(answers, projectKeys),
           },
+          allOf: PROJECT_REFUSALS,
         },
       },
     },

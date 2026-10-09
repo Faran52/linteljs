@@ -32,6 +32,8 @@
   "answerStore": "状態ストア",
   "answerLayout": "リポジトリ構成",
   "answerMocking": "API モック",
+  "answerE2e": "E2E テスト",
+  "answerStories": "コンポーネントストーリー",
   "answerForm": "フォームライブラリ",
   "answerLibraries": "ライブラリ",
   "answerLanguages": "言語",

@@ -145,6 +145,8 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
   const dataValue = readAnswer(ANSWERS.data, parsed.data);
   const mockingValue = readAnswer(ANSWERS.mocking, parsed.mocking);
   const languagesValue = readAnswer(ANSWERS.languages, parsed.languages);
+  const e2eValue = readAnswer(ANSWERS.e2e, parsed.e2e);
+  const storiesValue = readAnswer(ANSWERS.stories, parsed.stories);
   const libraryAnswers: Partial<Answers> = {
     ...(stylingValue === undefined ? {} : { styling: stylingValue }),
     ...(formValue === undefined ? {} : { form: formValue }),
@@ -153,6 +155,8 @@ const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion):
     ...(dataValue === undefined ? {} : { data: dataValue }),
     ...(mockingValue === undefined ? {} : { mocking: mockingValue }),
     ...(languagesValue === undefined ? {} : { languages: languagesValue }),
+    ...(e2eValue === undefined ? {} : { e2e: e2eValue }),
+    ...(storiesValue === undefined ? {} : { stories: storiesValue }),
   };
 
   return libraryAnswers;

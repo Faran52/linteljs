@@ -21,6 +21,7 @@ import {
   type OptionalMultiRecord,
   parseLinteljsConfig,
   projectAnswersOf,
+  promptOf,
   unaskedValueOf,
   type ValueRecord,
   WORKSPACE_KEYS,
@@ -346,13 +347,13 @@ const askIfNeeded = async (
 ): Promise<JsonValue | undefined> => {
   const record: AnswerRecord = ANSWERS[key];
 
-  if (record.prompt === undefined) {
-    return undefined;
-  }
-
-  const message = record.prompt;
   const soFar = soFarAnswered(answered);
   const target = targetFor(soFar);
+  const message = promptOf(record, target);
+
+  if (message === undefined) {
+    return undefined;
+  }
 
   if (record.slot !== undefined && !record.slot(target)) {
     return unaskedValueOf(record);

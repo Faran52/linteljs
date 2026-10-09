@@ -329,6 +329,8 @@ describe('main: create', () => {
     const asked = scripted([
       'svelte',
       undefined,
+      undefined,
+      undefined,
       ['zod'],
       undefined,
       undefined,
@@ -364,6 +366,8 @@ describe('main: create', () => {
 
     const asked = scripted([
       'asked-app',
+      undefined,
+      undefined,
       undefined,
       undefined,
       undefined,

@@ -32,6 +32,8 @@
   "answerStore": "狀態儲存",
   "answerLayout": "儲存庫結構",
   "answerMocking": "API 模擬",
+  "answerE2e": "端對端測試",
+  "answerStories": "元件故事",
   "answerForm": "表單函式庫",
   "answerLibraries": "函式庫",
   "answerLanguages": "語言",

@@ -32,6 +32,8 @@
   "answerStore": "مخزن الحالة",
   "answerLayout": "بنية المستودع",
   "answerMocking": "محاكاة الواجهات البرمجية",
+  "answerE2e": "الاختبار الشامل",
+  "answerStories": "قصص المكونات",
   "answerForm": "مكتبة النماذج",
   "answerLibraries": "المكتبات",
   "answerLanguages": "اللغات",

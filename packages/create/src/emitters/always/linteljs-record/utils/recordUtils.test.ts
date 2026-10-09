@@ -221,14 +221,45 @@ describe('answerRows', () => {
     const records: AnswerRecord[] = Object.values(ANSWERS);
     const worded = Object.fromEntries(records
       .flatMap((record) => {
-        const entry: [string, string][] = record.prompt === undefined
-          ? []
-          : [[`answer${upperFirst(record.key)}`, record.prompt]];
+        // A prompt worded per target is checked below, against its tool-free stem.
+        const entry: [string, string][] = typeof record.prompt === 'string'
+          ? [[`answer${upperFirst(record.key)}`, record.prompt]]
+          : [];
 
         return entry;
       }));
 
     expect(english).toMatchObject(worded);
+  });
+
+  it('words the e2e label in English as the stem both tools\' prompts share', () => {
+    const english = parsedAs(readFileSync(ENGLISH_LOCALE, 'utf8'), isJsonObject);
+
+    expect(english).toMatchObject({ answerE2e: 'E2E testing' });
+  });
+
+  it.each([
+    [
+      'react-native',
+      'maestro',
+      'E2E testing (Maestro)',
+    ],
+    [
+      'react',
+      'playwright',
+      'E2E testing (Playwright)',
+    ],
+  ] as const)('labels %s\'s e2e row with its own tool', (target, e2e, label) => {
+    const rows = answerRows(hostedAnswersFor({
+      target,
+      e2e,
+    }), ANSWERS);
+    const e2eRow = rows
+      .find(([, value]) => {
+        return value === `value: '${e2e}'`;
+      });
+
+    expect(e2eRow).toEqual([`label: '${label}'`, `value: '${e2e}'`]);
   });
 
   it.each([

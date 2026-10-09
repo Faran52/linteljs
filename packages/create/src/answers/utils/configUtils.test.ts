@@ -22,6 +22,8 @@ interface ConfigOverrides {
   $schema?: string;
   target?: string | undefined;
   testing?: string;
+  e2e?: string;
+  stories?: string;
   packageManager?: string;
   browser?: string;
   hostedFramework?: string;
@@ -521,6 +523,59 @@ describe('the router and the form libraries', () => {
       });
       return answersOf(configText);
     }).toThrow(/stylex is not an answer for angular/);
+  });
+
+  it.each([
+    [{
+      target: 'react',
+      e2e: 'maestro',
+    }, 'maestro is not an answer for react'],
+    [{
+      target: 'react-native',
+      testing: 'jest',
+      e2e: 'playwright',
+    }, 'playwright is not an answer for react-native'],
+    [{
+      target: 'typescript',
+      e2e: 'playwright',
+    }, 'e2e is not an answer for typescript'],
+    [{
+      target: 'solid',
+      stories: 'storybook',
+    }, 'stories is not an answer for solid'],
+    [{
+      target: 'webextension',
+      hostedFramework: 'react',
+      stories: 'storybook',
+    }, 'stories is not an answer for webextension'],
+    [{
+      target: 'astro',
+      stories: 'storybook',
+    }, 'stories is not an answer for astro'],
+  ] as const)('refuses %o', (overrides, message) => {
+    const configText = config(overrides);
+
+    expect(() => {
+      return answersOf(configText);
+    }).toThrow(message);
+  });
+
+  it.each([
+    {
+      target: 'react-native',
+      testing: 'jest',
+      e2e: 'maestro',
+    },
+    {
+      target: 'astro',
+      hostedFramework: 'svelte',
+      e2e: 'playwright',
+      stories: 'storybook',
+    },
+  ] as const)('reads e2e and stories where the target takes them: %o', (overrides) => {
+    const answers = answersOf(config(overrides));
+
+    expect(answers).toMatchObject(overrides);
   });
 
   it.each([
