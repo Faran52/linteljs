@@ -10,6 +10,11 @@ export const VITE_SCRIPTS: Record<string, string> = {
 // `typegen` first: a route module's `Route.*` types resolve to what it writes.
 export const FRAMEWORK_MODE_TYPECHECK = 'react-router typegen && tsc --noEmit';
 
+export const FRAMEWORK_MODE_INSTALL = 'react-router typegen';
+
+// Not msw's own install script: a warm pnpm store replays its cached build, so the worker is never copied.
+export const MSW_INSTALL = 'msw init';
+
 export const IGNORES = ['dist/**', 'coverage/**'];
 
 // React Router's CLI owns the build and the document, and only `react()` runs the compiler.

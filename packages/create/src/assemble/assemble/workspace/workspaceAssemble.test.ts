@@ -8,7 +8,9 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { answersFor } from '@mocks/answersFor';
 import { DRAWERS_ROOT } from '@mocks/drawersRoot';
+import { pick } from 'es-toolkit';
 import {
   afterEach,
   beforeEach,
@@ -19,6 +21,9 @@ import {
 
 import { manifestReader } from '@choices/read/manifest/manifestReader';
 import { filesUnder } from '@disk';
+import { parsePackageJson } from '@emitters';
+import { gitignoreEmitter } from '@emitters/always/gitignore/gitignoreEmitter';
+import { buildScripts } from '@emitters/always/utils/scriptUtils';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
 
@@ -27,6 +32,32 @@ import {
   type Workspace,
   workspaceAssemble,
 } from './workspaceAssemble';
+
+import type { Answers } from '@config/types';
+
+const INSTALL_SCRIPTS = ['prepare', 'postinstall'];
+
+const INSTALL_PARITY: (Pick<Answers, 'packageManager'> & Partial<Pick<Answers, 'router' | 'mocking'>>)[] = [
+  {
+    packageManager: 'pnpm',
+    router: 'react-router',
+  },
+  {
+    packageManager: 'pnpm',
+    router: 'react-router-framework',
+    mocking: 'msw',
+  },
+  {
+    packageManager: 'yarn',
+    router: 'react-router-framework',
+    mocking: 'msw',
+  },
+  {
+    packageManager: 'yarn',
+    router: 'tanstack-router',
+    mocking: 'msw',
+  },
+];
 
 describe('workspaceAssemble', () => {
   let cwd = '';
@@ -89,6 +120,7 @@ describe('workspaceAssemble', () => {
         build: 'vite build',
         preview: 'vite preview',
         typecheck: 'tsc --noEmit',
+        prepare: 'husky',
       },
       dependencies: { react: '^19.0.0' },
       devDependencies: {
@@ -110,6 +142,7 @@ describe('workspaceAssemble', () => {
 
     expect(written).toEqual([
       join('__mocks__', 'setupTests.tsx'),
+      '.gitignore',
       'CLAUDE.txt',
       'eslint.config.ts',
       'index.html',
@@ -156,8 +189,13 @@ describe('workspaceAssemble', () => {
     await workspaceAssemble(workspace);
 
     const written = await filesUnder(cwd);
+    const manifest = await readFile(join(cwd, 'apps', 'web', 'package.json'), 'utf8');
+    const parsed = parsePackageJson(manifest);
+
+    expect(parsed.scripts).not.toHaveProperty('prepare');
 
     expect(written).toEqual([
+      join('apps', 'web', '.gitignore'),
       join('apps', 'web', 'eslint.config.ts'),
       join('apps', 'web', 'index.html'),
       join('apps', 'web', 'package.json'),
@@ -174,6 +212,46 @@ describe('workspaceAssemble', () => {
       join('packages', 'shared', 'package.json'),
       'workspace.txt',
     ]);
+  });
+
+  it.each(INSTALL_PARITY)('writes the old install script and .gitignore for %o', async (picked) => {
+    const { packageManager, ...chosen } = picked;
+    const project: AssembledProject = {
+      name: 'demo',
+      answers: {
+        target: 'react',
+        layout: 'single',
+        ...chosen,
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      host: {
+        ...workspace.host,
+        packageManager,
+      },
+    });
+
+    const answers = answersFor(picked);
+    const manifest = await readFile(join(cwd, 'package.json'), 'utf8');
+    const ignored = await readFile(join(cwd, '.gitignore'), 'utf8');
+    const parsed = parsePackageJson(manifest);
+    const oldInstall = pick(buildScripts(answers), INSTALL_SCRIPTS);
+    const oldIgnored = gitignoreEmitter(answers)
+      .flatMap(({ content }) => {
+        if (!('merge' in content)) {
+          return [];
+        }
+
+        const text = [content.merge(null)];
+
+        return text;
+      });
+
+    expect(parsed).toMatchObject({ scripts: oldInstall });
+    expect([ignored]).toEqual(oldIgnored);
   });
 
   it('refuses a drawer file at a generated path', async () => {

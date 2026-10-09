@@ -1,4 +1,8 @@
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type PackageManager,
+} from '@config/types';
 
 import { targetFor } from '@targets';
 
@@ -47,12 +51,18 @@ export const mergeGitignore = (existing: string | null, entries: string[]): stri
   return `${terminated}\n${block}`;
 };
 
-export const gitignoreEmitter = (answers: Answers): Artifact[] => {
+export const gitignoreEntries = (packageManager: PackageManager, own: readonly string[]): string[] => {
   const entries = [
     ...BASE_IGNORED,
-    ...answers.packageManager === 'yarn' ? YARN_IGNORED : [],
-    ...targetFor(answers).gitignore,
+    ...packageManager === 'yarn' ? YARN_IGNORED : [],
+    ...own,
   ];
+
+  return entries;
+};
+
+export const gitignoreEmitter = (answers: Answers): Artifact[] => {
+  const entries = gitignoreEntries(answers.packageManager, targetFor(answers).gitignore);
   const artifacts = [
     merged('package', '.gitignore', (existing) => {
       return mergeGitignore(existing, entries);

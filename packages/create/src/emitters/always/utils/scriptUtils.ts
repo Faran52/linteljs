@@ -7,12 +7,24 @@ import { targetFor } from '@targets';
 import { GATE_SCRIPTS, TEST_RUNNERS } from '../../constants';
 import { testRunnerOf } from '../../utils/runnerUtils';
 
-import type { Answers } from '@config/types';
+import type { Answers, PackageManager } from '@config/types';
 
 // Named in the return type so callers need no unreachable `?? ''`.
 interface CheckScript {
   check: string;
 }
+
+// Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
+export const installScriptOf = (packageManager: PackageManager, steps: readonly string[]): Record<string, string> => {
+  if (steps.length === 0) {
+    return {};
+  }
+
+  const name = packageManager === 'yarn' ? 'postinstall' : 'prepare';
+  const script = { [name]: steps.join(' && ') };
+
+  return script;
+};
 
 // SFC extensions included because `src/**/*.css` matches none of a Vue project's styles.
 export const styleGlob = (answers: Answers): string => {
@@ -59,7 +71,6 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
 
   scripts['build'] = target.build;
 
-  const installScript = answers.packageManager === 'yarn' ? 'postinstall' : 'prepare';
   // A monorepo runs husky from the root manifest.
   const install = [
     ...compile,
@@ -76,8 +87,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
         return `${run} ${gate}`;
       })
       .join(' && '),
-    // Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
-    ...install.length === 0 ? {} : { [installScript]: install.join(' && ') },
+    ...installScriptOf(answers.packageManager, install),
   };
 
   return packageScripts;

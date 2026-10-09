@@ -221,6 +221,7 @@ describe('reactFramework', () => {
         'dist-ssr',
         '*.local',
       ],
+      install: [],
     });
   });
 
@@ -289,6 +290,7 @@ describe('reactFramework', () => {
         folderNaming: FOLDER_NAMING,
       },
       gitignore: ['/.react-router/', '/build/'],
+      install: ['react-router typegen'],
     });
   });
 

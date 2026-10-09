@@ -6,6 +6,11 @@ import { type Answered, type Question } from '@choices/read/manifest/manifestRea
 import { configRecord } from '@choices/record/config/configRecord';
 import { answeredValues } from '@choices/utils/drawerUtils';
 import { filesUnder, TEMPLATES_ROOT } from '@disk';
+import {
+  gitignoreEntries,
+  installScriptOf,
+  mergeGitignore,
+} from '@emitters';
 import { FRAMEWORK_MODULES } from '@frameworks/registry';
 import { projectWriter } from '@io/write/project/projectWriter';
 
@@ -13,6 +18,7 @@ import { WriteFailed } from '../../errors/write-failed/writeFailedError';
 import { drawersMerge } from '../../merge/drawers/drawersMerge';
 import { drawerReader, type Drawn } from '../../read/drawer/drawerReader';
 import {
+  mergedShare,
   type Share,
   shareOf,
   stringOf,
@@ -141,12 +147,29 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
 };
 
 // Each generated file is written only when some drawer shares its key.
-const generatedOf = async (root: string, share: Share, answers: Answered): Promise<Generated[]> => {
-  const manifest = packageJsonWriter(shareOf(share, 'package'));
+const generatedOf = async (workspace: Workspace, share: Share, answers: Answered): Promise<Generated[]> => {
+  const { packageManager } = workspace.host;
+  // A monorepo runs husky from the root manifest.
+  const install = [
+    ...stringsOf(share, 'install'),
+    ...answers.layout === 'monorepo' ? [] : ['husky'],
+  ];
+  const scripts = installScriptOf(packageManager, install);
+  const manifestShare = mergedShare(shareOf(share, 'package'), { scripts });
+  const manifest = packageJsonWriter(manifestShare);
   const generated: Generated[] = [{
     path: 'package.json',
     text: manifest,
   }];
+
+  if (Object.hasOwn(share, 'gitignore')) {
+    const entries = gitignoreEntries(packageManager, stringsOf(share, 'gitignore'));
+
+    generated.push({
+      path: '.gitignore',
+      text: mergeGitignore(null, entries),
+    });
+  }
 
   if (Object.hasOwn(share, 'eslint')) {
     const config = eslintConfigWriter(shareOf(share, 'eslint'));
@@ -174,7 +197,8 @@ const generatedOf = async (root: string, share: Share, answers: Answered): Promi
   }
 
   if (Object.hasOwn(share, 'locales')) {
-    const locales = await localesWriter(root, answeredValues(answers, 'languages'), stringsOf(share, 'locales'));
+    const languages = answeredValues(answers, 'languages');
+    const locales = await localesWriter(workspace.root, languages, stringsOf(share, 'locales'));
     const directory = stringOf(share, 'localesDir');
 
     generated.push(...locales
@@ -191,11 +215,11 @@ const generatedOf = async (root: string, share: Share, answers: Answered): Promi
   return generated;
 };
 
-const unitArtifactsOf = async (root: string, unit: Unit): Promise<Written[]> => {
+const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Written[]> => {
   const withTests = unit.answers.testing !== 'none';
   const reads = unit.drawers
     .map(async (drawer) => {
-      return await drawerReader(root, drawer, withTests);
+      return await drawerReader(workspace.root, drawer, withTests);
     });
   const own: Drawn = {
     name: unit.directory,
@@ -219,7 +243,7 @@ const unitArtifactsOf = async (root: string, unit: Unit): Promise<Written[]> => 
     ...framed,
     ...drawn,
   ]);
-  const shared = await generatedOf(root, share, unit.answers);
+  const shared = await generatedOf(workspace, share, unit.answers);
   const generated = [
     ...shared,
     ...unit.framed
@@ -263,7 +287,7 @@ export const workspaceAssemble = async (workspace: Workspace): Promise<void> => 
   const units = await unitsOf(workspace);
   const perUnit = units
     .map(async (unit) => {
-      return await unitArtifactsOf(workspace.root, unit);
+      return await unitArtifactsOf(workspace, unit);
     });
   const unitArtifacts = await Promise.all(perUnit);
   const config: Written = {

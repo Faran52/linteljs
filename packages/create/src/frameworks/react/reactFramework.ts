@@ -50,10 +50,12 @@ import {
   BARRELS,
   FRAMEWORK_MODE_COVERAGE_EXCLUDE,
   FRAMEWORK_MODE_GITIGNORE,
+  FRAMEWORK_MODE_INSTALL,
   FRAMEWORK_MODE_LEAVES,
   FRAMEWORK_MODE_TSCONFIG,
   FRAMEWORK_MODE_TYPECHECK,
   IGNORES,
+  MSW_INSTALL,
   ROUTES_COVERAGE_EXCLUDE,
   SETUP_TESTS,
   VITE_SCRIPTS,
@@ -207,6 +209,11 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
   };
+  // The module shares these, not the drawers: drawer shares merge in catalog order, which would put msw first.
+  const install = [
+    ...frameworkMode ? [FRAMEWORK_MODE_INSTALL] : [],
+    ...answers.mocking === 'msw' ? [MSW_INSTALL] : [],
+  ];
   const devDependencies = [
     ...PARTS.react.devDependencies,
     'vite',
@@ -227,6 +234,7 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
         },
         eslint,
         gitignore: FRAMEWORK_MODE_GITIGNORE,
+        install,
       },
     };
 
@@ -252,6 +260,7 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
         html: true,
       },
       gitignore: VITE_GITIGNORE,
+      install,
     },
   };
 
