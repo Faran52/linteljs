@@ -47,6 +47,30 @@ it('records the workspace answers once and each project under projects, defaults
   });
 });
 
+it('leaves an optional choice answered none unrecorded, and keeps a choice whose value is none', () => {
+  const text = configRecord([{
+    name: 'app',
+    answers: {
+      target: 'react',
+      form: 'none',
+      testing: 'none',
+    },
+  }]);
+  const parsed: unknown = JSON.parse(text);
+
+  expect(parsed).not.toHaveProperty([
+    'projects',
+    0,
+    'form',
+  ]);
+
+  expect(parsed).toHaveProperty([
+    'projects',
+    0,
+    'testing',
+  ], 'none');
+});
+
 it('throws on a record the config reader refuses', () => {
   const recording = (): string => {
     return configRecord([{

@@ -51,22 +51,6 @@ const DEFAULTS: Prompter = {
   },
 };
 
-// The recorded config refuses a `none` answer on these, so the fixture's react module is answered past them.
-const ANSWERED = [
-  '--target',
-  'react',
-  '--styling',
-  'tailwind',
-  '--form',
-  'react-hook-form',
-  '--store',
-  'redux-toolkit',
-  '--data',
-  'tanstack-query',
-  '--mocking',
-  'msw',
-];
-
 describe('main', () => {
   let cwd = '';
   let seams: Seams = {};
@@ -154,7 +138,8 @@ describe('main', () => {
   it('writes a framework module unasked under --yes', async () => {
     const argv = [
       'demo',
-      ...ANSWERED,
+      '--target',
+      'react',
       '--languages',
       'en,',
       '-y',
@@ -170,7 +155,11 @@ describe('main', () => {
   });
 
   it('asks the open questions without --yes', async () => {
-    const argv = ['@scope/demo', ...ANSWERED];
+    const argv = [
+      '@scope/demo',
+      '--target',
+      'react',
+    ];
 
     const code = await main(argv, DEFAULTS, seams);
     const written = await filesUnder(join(cwd, 'demo'));
