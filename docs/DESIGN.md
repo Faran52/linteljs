@@ -819,8 +819,8 @@ writes the bytes it always did.
 
 - **Workspace keys and project keys.** `layout`, the manager and its version, the Node version, `typeSafety`,
   `agents` and `plugins` are asked once and sit at the top of `linteljs.config.json`; every other answer belongs
-  to a project under `projects`. `plugins` is offered when any project offers it. A v1 or v2 config reads as one
-  unnamed project.
+  to a project under `projects`. `plugins` is offered when any project offers it. A v1 config reads as one unnamed
+  project.
 - **Names.** The workspace name follows the npm-name rule and names the root `<name>-workspace`. A project name is
   kebab-case, unique, and not the root's, since it is both the directory and the package name.
 - **A Package asks nothing beyond its name and kind**: it takes the `typescript` defaults.

@@ -128,7 +128,7 @@ export type WorkspaceKey
 
 export type WorkspaceAnswers = Pick<Answers, WorkspaceKey>;
 
-// `name` is required in a monorepo's v3 config; a v1 or v2 config lifts to one unnamed project.
+// `name` is required in a monorepo's v2 config; a v1 config lifts to one unnamed project.
 export interface ProjectConfig extends Omit<Answers, WorkspaceKey> {
   name?: string;
 }

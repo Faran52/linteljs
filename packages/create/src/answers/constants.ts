@@ -1,25 +1,21 @@
 import type { Answers, WorkspaceKey } from '@config/types';
 import type { AnswerKey } from './registry';
 
-export type SchemaVersion = 1 | 2 | typeof CURRENT_SCHEMA_VERSION;
+export type SchemaVersion = 1 | typeof CURRENT_SCHEMA_VERSION;
 
 export const CONFIG_PATH = 'linteljs.config.json';
 // The pre-v2 config name; `sync` removes it.
 export const LEGACY_CONFIG_PATH = 'lintel.config.json';
 export const CONFIG_SCHEMA_URL
-  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v3.schema.json';
-// Still published: a v2 project's `$schema` names it.
-export const CONFIG_SCHEMA_URL_V2
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json';
 // Still published: a pre-v2 project's `$schema` names it.
 export const CONFIG_SCHEMA_URL_V1
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v1.schema.json';
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 // Keyed by the union, so the lookup is total and needs no unreachable fallback.
 export const SCHEMA_URLS: Record<SchemaVersion, string> = {
   1: CONFIG_SCHEMA_URL_V1,
-  2: CONFIG_SCHEMA_URL_V2,
   [CURRENT_SCHEMA_VERSION]: CONFIG_SCHEMA_URL,
 };
 
@@ -55,7 +51,7 @@ export const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', null>
   ignores: null,
 };
 
-// In ask order, which is the order a v3 config writes them above `projects`.
+// In ask order, which is the order a config writes them above `projects`.
 export const WORKSPACE_KEYS: readonly WorkspaceKey[] = [
   'layout',
   'packageManager',
@@ -66,7 +62,7 @@ export const WORKSPACE_KEYS: readonly WorkspaceKey[] = [
   'plugins',
 ];
 
-export const V3_TOP_KEYS: readonly string[] = [
+export const TOP_KEYS: readonly string[] = [
   '$schema',
   'schemaVersion',
   ...WORKSPACE_KEYS,

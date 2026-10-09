@@ -95,7 +95,7 @@ export interface SyncResult {
   stale: string[];
 }
 
-// A v1 or v2 config records no name.
+// A v1 config records no name.
 export interface SyncProject {
   name?: string;
   answers: HostedAnswers;
@@ -309,7 +309,7 @@ const staleCopies = (cwd: string, expected: Set<string>): string[] => {
     });
 };
 
-// One workspace in config order; a v1 or v2 project is named for the directory it is found in.
+// One workspace in config order; a v1 project is named for the directory it is found in.
 export const syncWorkspaceOf = (cwd: string, projects: [SyncProject, ...SyncProject[]]): Workspace => {
   const nameOne = ({ name, answers }: SyncProject): WorkspaceProject => {
     const appRoot = appRootOf(cwd, answers);

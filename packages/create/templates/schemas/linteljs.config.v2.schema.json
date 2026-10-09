@@ -7,13 +7,11 @@
   "required": [
     "$schema",
     "schemaVersion",
-    "target",
-    "testing",
     "packageManager",
-    "libraries",
     "typeSafety",
     "agents",
-    "plugins"
+    "plugins",
+    "projects"
   ],
   "properties": {
     "$schema": {
@@ -22,57 +20,10 @@
     "schemaVersion": {
       "const": 2
     },
-    "target": {
-      "enum": [
-        "react",
-        "next",
-        "vue",
-        "nuxt",
-        "svelte",
-        "solid",
-        "angular",
-        "astro",
-        "webextension",
-        "react-native",
-        "typescript"
-      ]
-    },
-    "browser": {
-      "enum": [
-        "chrome",
-        "firefox"
-      ]
-    },
-    "surfaces": {
-      "type": "array",
-      "items": {
-        "enum": [
-          "popup",
-          "background",
-          "devtools-panel"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "hostedFramework": {
-      "enum": [
-        "react",
-        "vue",
-        "svelte",
-        "solid"
-      ]
-    },
     "layout": {
       "enum": [
         "single",
         "monorepo"
-      ]
-    },
-    "testing": {
-      "enum": [
-        "vitest",
-        "jest",
-        "none"
       ]
     },
     "packageManager": {
@@ -93,73 +44,6 @@
       "type": "string",
       "description": "The Node that ran create, whose major pins the version the CI workflow sets up.",
       "pattern": "^\\d+\\.\\d+\\.\\d+"
-    },
-    "libraries": {
-      "type": "array",
-      "items": {
-        "enum": [
-          "zod",
-          "es-toolkit",
-          "ts-pattern",
-          "t3-env"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "styling": {
-      "enum": [
-        "tailwind",
-        "stylex"
-      ]
-    },
-    "form": {
-      "enum": [
-        "tanstack-form",
-        "react-hook-form"
-      ]
-    },
-    "router": {
-      "enum": [
-        "react-router",
-        "react-router-framework",
-        "tanstack-router"
-      ]
-    },
-    "store": {
-      "enum": [
-        "zustand",
-        "redux-toolkit",
-        "tanstack-store",
-        "pinia",
-        "ngrx-signals",
-        "nanostores"
-      ]
-    },
-    "data": {
-      "enum": [
-        "tanstack-query",
-        "rtk-query"
-      ]
-    },
-    "mocking": {
-      "enum": [
-        "msw"
-      ]
-    },
-    "languages": {
-      "type": "array",
-      "description": "Translates the starter and adds a language switcher; English ships with any choice.",
-      "items": {
-        "enum": [
-          "en",
-          "ar",
-          "ja",
-          "ko",
-          "zh-CN",
-          "zh-TW"
-        ]
-      },
-      "uniqueItems": true
     },
     "typeSafety": {
       "enum": [
@@ -192,47 +76,347 @@
       },
       "uniqueItems": true
     },
-    "resolveConditions": {
+    "projects": {
       "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
       "minItems": 1,
-      "uniqueItems": true
-    },
-    "aliases": {
-      "type": "object",
-      "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
-      "propertyNames": {
-        "pattern": "^[@$]"
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "testing",
+          "libraries"
+        ],
+        "properties": {
+          "name": {
+            "description": "The project's directory under apps/ or packages/; required in a monorepo.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "target": {
+            "enum": [
+              "react",
+              "next",
+              "vue",
+              "nuxt",
+              "svelte",
+              "solid",
+              "angular",
+              "astro",
+              "webextension",
+              "react-native",
+              "typescript"
+            ]
+          },
+          "browser": {
+            "enum": [
+              "chrome",
+              "firefox"
+            ]
+          },
+          "surfaces": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "popup",
+                "background",
+                "devtools-panel"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "hostedFramework": {
+            "enum": [
+              "react",
+              "vue",
+              "svelte",
+              "solid"
+            ]
+          },
+          "testing": {
+            "enum": [
+              "vitest",
+              "jest",
+              "none"
+            ]
+          },
+          "e2e": {
+            "enum": [
+              "playwright",
+              "maestro"
+            ]
+          },
+          "stories": {
+            "enum": [
+              "storybook"
+            ]
+          },
+          "libraries": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "zod",
+                "es-toolkit",
+                "ts-pattern",
+                "t3-env"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "styling": {
+            "enum": [
+              "tailwind",
+              "stylex"
+            ]
+          },
+          "form": {
+            "enum": [
+              "tanstack-form",
+              "react-hook-form"
+            ]
+          },
+          "router": {
+            "enum": [
+              "react-router",
+              "react-router-framework",
+              "tanstack-router"
+            ]
+          },
+          "store": {
+            "enum": [
+              "zustand",
+              "redux-toolkit",
+              "tanstack-store",
+              "pinia",
+              "ngrx-signals",
+              "nanostores"
+            ]
+          },
+          "data": {
+            "enum": [
+              "tanstack-query",
+              "rtk-query"
+            ]
+          },
+          "mocking": {
+            "enum": [
+              "msw"
+            ]
+          },
+          "languages": {
+            "type": "array",
+            "description": "Translates the starter and adds a language switcher; English ships with any choice.",
+            "items": {
+              "enum": [
+                "en",
+                "ar",
+                "ja",
+                "ko",
+                "zh-CN",
+                "zh-TW"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "resolveConditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "aliases": {
+            "type": "object",
+            "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
+            "propertyNames": {
+              "pattern": "^[@$]"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "browsers": {
+            "type": "array",
+            "description": "The browsers this extension is packaged for, where that is more than the one its code targets. Absent means just `browser`. A second manifest is emitted per extra browser, because Chrome rejects browser_specific_settings and AMO requires it.",
+            "items": {
+              "enum": [
+                "chrome",
+                "firefox"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "ignores": {
+            "type": "array",
+            "description": "Paths this project lints nothing in, beyond the standard list. Not for build outputs: base() already ignores whatever .gitignore does. This is for what that file cannot name, such as a generated file the project commits.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "typescript"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "e2e"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "react-native"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "e2e": {
+                  "not": {
+                    "const": "playwright"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "react",
+                    "next",
+                    "vue",
+                    "nuxt",
+                    "svelte",
+                    "solid",
+                    "angular",
+                    "astro",
+                    "webextension"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "e2e": {
+                  "not": {
+                    "const": "maestro"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "solid",
+                    "webextension",
+                    "react-native",
+                    "typescript"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "stories"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "const": "astro"
+                },
+                "hostedFramework": {
+                  "not": {
+                    "enum": [
+                      "react",
+                      "vue",
+                      "svelte"
+                    ]
+                  }
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "stories"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "single"
+          }
+        }
       },
-      "additionalProperties": {
-        "type": "string",
-        "minLength": 1
+      "then": {
+        "properties": {
+          "projects": {
+            "maxItems": 1
+          }
+        }
       }
     },
-    "browsers": {
-      "type": "array",
-      "description": "The browsers this extension is packaged for, where that is more than the one its code targets. Absent means just `browser`. A second manifest is emitted per extra browser, because Chrome rejects browser_specific_settings and AMO requires it.",
-      "items": {
-        "enum": [
-          "chrome",
-          "firefox"
-        ]
+    {
+      "if": {
+        "required": [
+          "layout"
+        ],
+        "properties": {
+          "layout": {
+            "const": "monorepo"
+          }
+        }
       },
-      "minItems": 1,
-      "uniqueItems": true
-    },
-    "ignores": {
-      "type": "array",
-      "description": "Paths this project lints nothing in, beyond the standard list. Not for build outputs: base() already ignores whatever .gitignore does. This is for what that file cannot name, such as a generated file the project commits.",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "minItems": 1,
-      "uniqueItems": true
+      "then": {
+        "properties": {
+          "projects": {
+            "items": {
+              "required": [
+                "name"
+              ]
+            }
+          }
+        }
+      }
     }
-  }
+  ]
 }

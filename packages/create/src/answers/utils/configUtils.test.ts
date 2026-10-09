@@ -7,7 +7,6 @@ import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsCon
 import {
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
-  CONFIG_SCHEMA_URL_V2,
   CURRENT_SCHEMA_VERSION,
   WORKSPACE_KEYS,
 } from '../constants';
@@ -41,7 +40,7 @@ interface ConfigOverrides {
   typescript?: boolean;
 }
 
-const v3 = (fields: object): object => {
+const v2 = (fields: object): object => {
   const body: object = {
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -62,7 +61,7 @@ const emit = (answers: Answers): string => {
 };
 
 const config = (overrides: ConfigOverrides = {}): string => {
-  const body = v3({
+  const body = v2({
     ...DEFAULT_ANSWERS,
     ...overrides,
   });
@@ -82,7 +81,7 @@ describe('parseLinteljsConfig', () => {
   });
 
   it('defaults the extension axes when a config predates them', () => {
-    const withoutAxes = JSON.stringify(v3({
+    const withoutAxes = JSON.stringify(v2({
       target: 'webextension',
       testing: 'vitest',
       packageManager: 'pnpm',
@@ -127,7 +126,7 @@ describe('parseLinteljsConfig', () => {
     ['hostedFramework', 'angular'],
     ['layout', 'polyrepo'],
   ])('rejects an unknown %s', (field, value) => {
-    const config = v3({
+    const config = v2({
       ...DEFAULT_ANSWERS,
       [field]: value,
     });
@@ -171,7 +170,7 @@ describe('parseLinteljsConfig', () => {
     ['import', 'must be a non-empty array'],
   ])('rejects resolveConditions of %j', (resolveConditions, message) => {
     expect(() => {
-      const configText = JSON.stringify(v3({
+      const configText = JSON.stringify(v2({
         ...DEFAULT_ANSWERS,
         resolveConditions,
       }));
@@ -201,7 +200,7 @@ describe('parseLinteljsConfig', () => {
     ['@engine', 'aliases must be an object'],
   ])('rejects aliases of %j', (aliases, message) => {
     expect(() => {
-      const configText = JSON.stringify(v3({
+      const configText = JSON.stringify(v2({
         ...DEFAULT_ANSWERS,
         aliases,
       }));
@@ -228,7 +227,7 @@ describe('parseLinteljsConfig', () => {
     [['safari'], 'must be one of'],
   ])('rejects browsers of %j', (browsers, message) => {
     expect(() => {
-      const configText = JSON.stringify(v3({
+      const configText = JSON.stringify(v2({
         ...DEFAULT_ANSWERS,
         browsers,
       }));
@@ -255,7 +254,7 @@ describe('parseLinteljsConfig', () => {
     ['a', 'must be a non-empty array'],
   ])('rejects ignores of %j', (ignores, message) => {
     expect(() => {
-      const configText = JSON.stringify(v3({
+      const configText = JSON.stringify(v2({
         ...DEFAULT_ANSWERS,
         ignores,
       }));
@@ -282,28 +281,28 @@ describe('parseLinteljsConfig', () => {
         schemaVersion: '1',
       });
       return answersOf(configText);
-    }).toThrow(/schemaVersion must be 1, 2 or 3/);
+    }).toThrow(/schemaVersion must be 1 or 2/);
   });
 
   it('rejects a future schema version before the fields it carries', () => {
     expect(() => {
       const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 4,
+        schemaVersion: 3,
       });
       return answersOf(configText);
-    }).toThrow(/schema version 4.*update @linteljs\/create/);
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
   it('rejects a future schema version before inspecting new object-valued fields', () => {
     expect(() => {
       const configText = JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 4,
+        schemaVersion: 3,
         future: { nested: true },
       });
       return answersOf(configText);
-    }).toThrow(/schema version 4.*update @linteljs\/create/);
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
   it.each([
@@ -842,7 +841,7 @@ describe('answers a target never asks for', () => {
 
 describe('the mocking answer', () => {
   it('round-trips through a config rather than being dropped', () => {
-    const body = v3({
+    const body = v2({
       target: 'react',
       testing: 'vitest',
       packageManager: 'pnpm',
@@ -860,7 +859,7 @@ describe('the mocking answer', () => {
 
 describe('the languages answer', () => {
   const configWith = (target: string, extra: Record<string, string[]> = {}): string => {
-    const body = v3({
+    const body = v2({
       target,
       ...extra,
       testing: 'vitest',
@@ -909,21 +908,16 @@ describe('a version-three config', () => {
 
   const project = omit(DEFAULT_ANSWERS, WORKSPACE_KEYS);
 
-  it('reads a v2 config as one unnamed project under the workspace answers', () => {
+  it('refuses a v2 config written flat, without projects', () => {
     const configText = JSON.stringify({
-      $schema: CONFIG_SCHEMA_URL_V2,
+      $schema: CONFIG_SCHEMA_URL,
       schemaVersion: 2,
       ...DEFAULT_ANSWERS,
     });
-    const actual = parseLinteljsConfig(configText);
-    const expected = {
-      $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...pick(DEFAULT_ANSWERS, WORKSPACE_KEYS),
-      projects: [project],
-    };
 
-    expect(actual).toStrictEqual(expected);
+    expect(() => {
+      return parseLinteljsConfig(configText);
+    }).toThrow(/unexpected property: target/);
   });
 
   it('keeps each named project of a monorepo, in order', () => {

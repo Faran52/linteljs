@@ -55,17 +55,17 @@ const copiesOf = async (file: string): Promise<string[]> => {
 };
 
 describe('schemaFor', () => {
-  it('matches both checked-in copies of the v3 schema', async () => {
-    const [canonical, packaged] = await copiesOf('linteljs.config.v3.schema.json');
+  it('matches both checked-in copies of the v2 schema', async () => {
+    const [canonical, packaged] = await copiesOf('linteljs.config.v2.schema.json');
     const generated = schemaFor(ANSWERS);
 
     expect(canonical).toBe(generated);
     expect(packaged).toBe(generated);
   });
 
-  // Their `$schema` URLs still resolve for v1 and v2 projects.
-  it.each(['lintel.config.v1.schema.json', 'linteljs.config.v2.schema.json'])('ships %s unchanged', async (file) => {
-    const [canonical, packaged] = await copiesOf(file);
+  // Its `$schema` URL still resolves for v1 projects.
+  it('ships the v1 schema unchanged', async () => {
+    const [canonical, packaged] = await copiesOf('lintel.config.v1.schema.json');
 
     expect(packaged).toBe(canonical);
   });

@@ -15,7 +15,7 @@ import {
   PROJECT_NAME_PATTERN,
   SCHEMA_URLS,
   type SchemaVersion,
-  V3_TOP_KEYS,
+  TOP_KEYS,
   WORKSPACE_KEYS,
 } from '../constants';
 import {
@@ -61,10 +61,10 @@ const isConfigObject = (value: unknown): value is RawConfig => {
 
 const schemaVersionOf = (value: JsonValue | undefined): SchemaVersion => {
   if (typeof value !== 'number') {
-    throw new Error('schemaVersion must be 1, 2 or 3');
+    throw new Error('schemaVersion must be 1 or 2');
   }
 
-  if (value !== 1 && value !== 2 && value !== CURRENT_SCHEMA_VERSION) {
+  if (value !== 1 && value !== CURRENT_SCHEMA_VERSION) {
     throw new Error(`linteljs.config.json schema version ${String(value)} is unsupported; update @linteljs/create`);
   }
 
@@ -232,7 +232,7 @@ const projectFrom = (raw: ConfigObject): Answers => {
   return answers;
 };
 
-// Each project read flat, its workspace answers copied in, so one reader serves v1, v2 and v3.
+// Each project read flat, its workspace answers copied in, so one reader serves v1 and v2.
 const flatProjectOf = (top: RawConfig, item: JsonValue): FlatProject => {
   if (!isConfigObject(item)) {
     throw new Error('each of projects must be an object');
@@ -276,7 +276,7 @@ const flatProjectsOf = (raw: RawConfig): [FlatProject, ...FlatProject[]] => {
   const { projects, ...top } = raw;
   const unexpected = Object.keys(top)
     .find((key) => {
-      return !V3_TOP_KEYS.includes(key);
+      return !TOP_KEYS.includes(key);
     });
 
   if (unexpected !== undefined) {
@@ -338,7 +338,7 @@ const configFrom = (raw: RawConfig): LinteljsConfig => {
   const read = [head, ...tail];
   const workspace = pick(projectFrom(first.flat), WORKSPACE_KEYS);
 
-  // A v1 or v2 config is one unnamed project, so only v3 has names to check.
+  // A v1 config is one unnamed project, so only v2 has names to check.
   if (raw['schemaVersion'] === CURRENT_SCHEMA_VERSION) {
     refuseProjectNames(workspace.layout, read
       .map(({ name }) => {

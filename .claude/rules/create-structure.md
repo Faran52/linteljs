@@ -112,6 +112,6 @@ pipeline/   the stage machine, sync, and the passes over written source.
   `DEFAULT_ANSWERS`). `meta.test.ts` holds one file per key, exporting a const named for itself, whose `key`
   names the same file.
 - `answers/utils/`: `readUtils.ts` (parsed JSON to typed, per kind), `migrationUtils.ts` (v1 to v2),
-  `recordUtils.ts` (`onlyFor`, `refusedValue`), `configUtils.ts` (`parseLinteljsConfig`, v1 and v2 read as one
-  unnamed project), `projectUtils.ts` (`configOf`, flat answers to the v3 shape, and `projectAnswersOf`, one
+  `recordUtils.ts` (`onlyFor`, `refusedValue`), `configUtils.ts` (`parseLinteljsConfig`, v1 read as one
+  unnamed project), `projectUtils.ts` (`configOf`, flat answers to the v2 shape, and `projectAnswersOf`, one
   project's flat answers), `schemaUtils.ts` (the published JSON schema, generated from the records).

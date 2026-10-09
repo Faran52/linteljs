@@ -24,7 +24,7 @@ const projectConfigOf = ([flat, name]: ConfigEntry): FlatConfig => {
   return named;
 };
 
-// Flat answers per project in the v3 shape, the first project's workspace answers on top; a monorepo's project is
+// Flat answers per project in the v2 shape, the first project's workspace answers on top; a monorepo's project is
 // named for its directory.
 export const workspaceConfigOf = (entries: readonly ConfigEntry[]): FlatConfig => {
   const [[workspace] = [{}, '']] = entries;
