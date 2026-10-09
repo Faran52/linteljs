@@ -95,7 +95,6 @@ export const reactI18nTests = (): StarterTest[] => {
       covers: `${CONTACT_PAGE}.tsx`,
       when: hasForm,
     }),
-    // `App`'s own suite covers a routed header; standing it alone would need a router context.
     ...translated<StarterTest>({
       target: 'src/components/features/app-header/AppHeader.test.tsx',
       covers: HEADER,

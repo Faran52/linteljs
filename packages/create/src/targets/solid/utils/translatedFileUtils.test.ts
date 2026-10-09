@@ -102,25 +102,27 @@ describe('solidI18nTests', () => {
       });
 
     const expected = [
+      'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/components/ui/code-text/CodeText.test.tsx@i18n',
-      'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/i18n/i18n.test.ts@i18n',
     ];
     expect(written).toEqual(expected);
 
     const coveredFiles = [
+      'src/components/features/app-header/AppHeader.tsx',
+      'src/components/features/app-header/AppHeader.tsx',
       'src/components/features/language-select/LanguageSelect.tsx',
       'src/components/ui/code-text/CodeText.tsx',
-      'src/components/features/app-header/AppHeader.tsx',
       'src/i18n/i18n.ts',
     ];
     expect(covers).toEqual(coveredFiles);
   });
 
-  it('adds no suite otherwise', () => {
+  it('covers the English header otherwise', () => {
     const written = writtenUnder(solidI18nTests(), answersFor({ target: 'solid' }));
 
-    expect(written).toEqual([]);
+    const expected = ['src/components/features/app-header/AppHeader.test.tsx'];
+    expect(written).toEqual(expected);
   });
 });

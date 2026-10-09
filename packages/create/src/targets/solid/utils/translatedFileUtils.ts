@@ -1,8 +1,8 @@
 import { hasForm, hasI18n } from '../../utils/gateUtils';
-import { i18nFiles } from '../../utils/i18nUtils';
+import { i18nFiles, translated } from '../../utils/i18nUtils';
 import {
+  HEADER,
   I18N_ONLY,
-  I18N_ONLY_SUITES,
   TRANSLATED,
 } from '../constants';
 
@@ -30,10 +30,13 @@ export const solidI18nFiles = (): StarterFile[] => {
   });
 };
 
-// `App`'s suite covers the English header; the translated one adds the switcher, so it takes its own.
 export const solidI18nTests = (): StarterTest[] => {
   const tests: StarterTest[] = [
-    ...I18N_ONLY_SUITES
+    ...translated<StarterTest>({
+      target: `${HEADER}.test.tsx`,
+      covers: `${HEADER}.tsx`,
+    }),
+    ...I18N_ONLY
       .map((component): StarterTest => {
         const test: StarterTest = {
           target: `${component}.test.tsx`,

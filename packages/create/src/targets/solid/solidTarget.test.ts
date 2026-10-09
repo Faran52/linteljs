@@ -77,11 +77,11 @@ const BILINGUAL_PATHS = [
   'src/pages/version/VersionPage.tsx',
   'src/pages/version/VersionPage.test.tsx',
   'src/components/features/app-header/AppHeader.tsx',
+  'src/components/features/app-header/AppHeader.test.tsx',
   'src/components/features/status-page/StatusPage.tsx',
 ];
 
 const I18N_ONLY_PATHS = [
-  'src/components/features/app-header/AppHeader.test.tsx',
   'src/components/features/language-select/LanguageSelect.tsx',
   'src/components/features/language-select/LanguageSelect.test.tsx',
   'src/components/ui/code-text/CodeText.tsx',

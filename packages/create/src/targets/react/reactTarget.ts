@@ -139,12 +139,22 @@ const reactStarterTests = (): StarterTest[] => {
     LOCALES_TEST,
     languageUtilsTest(),
     COOKIE_UTILS_TEST,
-    // Framework mode has no `App` to cover the header inside, so it stands alone in a memory router.
+    // A routed header stands alone in a router of the suite's own.
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',
       covers: 'src/components/features/app-header/AppHeader.tsx',
-      when: isFrameworkMode,
-      variant: 'react-router-framework',
+      when: (answers) => {
+        return answers.router === 'react-router' || isFrameworkMode(answers);
+      },
+      variant: 'react-router',
+    },
+    {
+      target: 'src/components/features/app-header/AppHeader.test.tsx',
+      covers: 'src/components/features/app-header/AppHeader.tsx',
+      when: (answers) => {
+        return answers.router === 'tanstack-router';
+      },
+      variant: 'tanstack-router',
     },
     {
       target: 'src/lib/providers/store/StoreProvider.test.tsx',

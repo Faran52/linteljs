@@ -1,30 +1,13 @@
-import {
-  createElement,
-  type FC,
-  type ReactNode,
-} from 'react';
-
 import { act, renderHook } from '@testing-library/react';
 
-import { DataProvider } from '@lib/providers/data/DataProvider';
-import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { WithProviders } from '@mocks/WithProviders';
 
 import { useSubmitContact } from './contactApi';
 
 import type { ContactValues } from '@services/contact-form/contactFormService';
 
-interface WrapperProps {
-  readonly children: ReactNode;
-}
-
-const Providers: FC<WrapperProps> = ({ children }) => {
-  const data = createElement(DataProvider, null, children);
-
-  return createElement(StoreProvider, null, data);
-};
-
 const outcomeOf = async (values: ContactValues): Promise<string> => {
-  const { result } = renderHook(useSubmitContact, { wrapper: Providers });
+  const { result } = renderHook(useSubmitContact, { wrapper: WithProviders });
 
   return await act(async () => {
     try {
