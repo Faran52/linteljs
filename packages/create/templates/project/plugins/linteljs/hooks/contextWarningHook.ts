@@ -1,4 +1,4 @@
-// Tells the user once when the main session's context passes the ceiling.
+// Tells the user once when the main session's context passes the ceiling, and holds a subagent under it.
 import { tmpdir } from 'node:os';
 
 import { contextWarningOf } from './utils/contextUtils.ts';

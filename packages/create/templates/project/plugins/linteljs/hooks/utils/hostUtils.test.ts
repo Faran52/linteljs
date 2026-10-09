@@ -231,8 +231,23 @@ describe('readSession', () => {
     expect(mainSession).toEqual(expected);
   });
 
+  it('reads a subagent\'s id and type beside the session', () => {
+    const subagent = readSession({
+      ...main,
+      agent_id: 'a1',
+      agent_type: 'Explore',
+    });
+    const expected = {
+      session: 'e1d9603e-6671_4aba',
+      transcript: '/p/e1d9603e.jsonl',
+      agent: { id: 'a1', type: 'Explore' },
+    };
+    expect(subagent).toEqual(expected);
+  });
+
   it.each([
-    ['a subagent\'s call', { ...main, agent_id: 'a1' }],
+    ['a subagent that is not a plain token', { ...main, agent_id: '../x' }],
+    ['a subagent id that is no string', { ...main, agent_id: 7 }],
     ['a Cursor payload', { ...main, cursor_version: '2.4.0' }],
     ['a Copilot payload', { ...main, toolName: 'bash' }],
     ['a Gemini CLI payload', { ...main, hook_event_name: 'AfterTool' }],

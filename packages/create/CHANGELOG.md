@@ -166,6 +166,9 @@ when a version's change lives in a sibling it is described there instead:
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on `create --existing`.
+- The context hook holds a Claude Code subagent under the 150K ceiling: past 130K each tool call tells it to
+  finish the step, commit work that passes the check and report; past 150K every call is blocked, and the user
+  is told once.
 - Two more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
   would commit, untracked files included; the run counts on its own, with its output redirected to a file outside
   the work tree or after a leading `cd <dir> &&`, never piped or otherwise chained, and its result lives in the git

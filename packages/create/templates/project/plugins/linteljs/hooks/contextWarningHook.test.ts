@@ -1,5 +1,6 @@
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
@@ -89,12 +90,23 @@ describe('contextWarningHook.ts', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('does nothing for a subagent\'s tool call', () => {
+  it('blocks a subagent past the ceiling, reading its own transcript', () => {
+    const subagents = join(directory, 'main', 'subagents');
+    mkdirSync(subagents, { recursive: true });
+    const subagent = transcript;
+    transcript = join(subagents, 'agent-a1.jsonl');
     writeContext(188_000);
+    transcript = subagent;
 
     const output = run({ agent_id: 'a1', agent_type: 'Explore' });
 
-    expect(output).toBe('');
+    const expected = `${JSON.stringify({
+      decision: 'block',
+      reason: 'Context is 188K, past the 150K ceiling. Stop now: commit only work that passes the check, '
+        + 'and return your report. Start no new work.',
+      systemMessage: 'Subagent Explore passed 150K (188K); told to stop.',
+    })}\n`;
+    expect(output).toBe(expected);
     const exists = existsSync(join(directory, 'linteljs-context-s12a'));
     expect(exists).toBe(false);
   });

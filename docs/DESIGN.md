@@ -932,8 +932,10 @@ construct is denied outside a commit message. It is a guardrail, not a sandbox.
 
 A plugin's `settings.json` cannot set `statusLine`, so both badges go in the generated `.claude/settings.json`; a
 project's own wins on `create --existing`. `contextWarningHook.ts` warns once past 150K under Claude Code (other
-hosts send no transcript); dropping back under clears the marker. A subagent row reads its own transcript, since a
-task's `tokenCount` is a different measure. The number is always printed, so colour is never the only cue.
+hosts send no transcript); dropping back under clears the marker. A subagent's tool call reads the subagent's own
+transcript: past 130K each call nudges it to wrap up, past 150K each call is blocked, and the user hears of it once.
+A subagent row reads its own transcript too, since a task's `tokenCount` is a different measure. The number is
+always printed, so colour is never the only cue.
 
 ### The commit gate and the generated-file guard
 

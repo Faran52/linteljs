@@ -18,6 +18,7 @@ import {
 } from '../constants.ts';
 
 import {
+  type Agent,
   fieldAt,
   type Json,
   jsonObjectOf,
@@ -185,9 +186,28 @@ export const subagentRowsOf = (payload: object): SubagentRow[] => {
 
 const CEILING = `${String(CONTEXT_CEILING_TOKENS / TOKENS_PER_K)}K`;
 
-const warningOf = (tokens: number): object => {
+const sizeOf = (tokens: number): string => {
   const thousands = Math.floor(tokens / TOKENS_PER_K);
-  const size = `${String(thousands)}K`;
+  return `${String(thousands)}K`;
+};
+
+const markerOf = (input: SessionInput, directory: string): string => {
+  const name = input.agent === undefined ? input.session : `${input.session}-${input.agent.id}`;
+  return join(directory, `linteljs-context-${name}`);
+};
+
+// True the first time only; the marker holds until the context drops back under.
+const isFirstPass = (marker: string, directory: string): boolean => {
+  if (existsSync(marker)) {
+    return false;
+  }
+
+  mkdirSync(directory, { recursive: true });
+  closeSync(openSync(marker, 'w'));
+  return true;
+};
+
+const mainWarningOf = (size: string): object => {
   const warning = {
     systemMessage: `Context passed ${CEILING} (${size}). Consider /compact or a fresh session.`,
     hookSpecificOutput: {
@@ -199,22 +219,53 @@ const warningOf = (tokens: number): object => {
   return warning;
 };
 
-// Once past the ceiling, and again only after the context drops back under, which clears the marker.
+const subagentNearOf = (size: string): object => {
+  const warning = {
+    hookSpecificOutput: {
+      hookEventName: 'PostToolUse',
+      additionalContext: `Context is ${size} of a ${CEILING} ceiling. Finish the current step, commit work that `
+        + 'passes the check, and return your report.',
+    },
+  };
+
+  return warning;
+};
+
+// Every call past the ceiling is blocked; the user hears of it once.
+const subagentOverOf = (size: string, agent: Agent, isFirst: boolean): object => {
+  const block = {
+    decision: 'block',
+    reason: `Context is ${size}, past the ${CEILING} ceiling. Stop now: commit only work that passes the check, `
+      + 'and return your report. Start no new work.',
+  };
+
+  const told = {
+    ...block,
+    systemMessage: `Subagent ${agent.type ?? agent.id} passed ${CEILING} (${size}); told to stop.`,
+  };
+
+  return isFirst ? told : block;
+};
+
+// The main session is told once past the ceiling; a subagent is nudged from the warning line and blocked past the
+// ceiling. Dropping back under clears the marker.
 export const contextWarningOf = (input: SessionInput, directory: string): object | undefined => {
-  const tokens = contextOf(input.transcript);
-  const marker = join(directory, `linteljs-context-${input.session}`);
+  const { agent } = input;
+  const transcript = agent === undefined ? input.transcript : subagentTranscriptOf(input.transcript, agent.id);
+  const tokens = contextOf(transcript);
+  const marker = markerOf(input, directory);
+  const size = sizeOf(tokens);
 
   if (tokens < CONTEXT_CEILING_TOKENS) {
     rmSync(marker, { force: true });
-    return undefined;
+    return agent === undefined || tokens < CONTEXT_WARN_TOKENS ? undefined : subagentNearOf(size);
   }
 
-  if (existsSync(marker)) {
-    return undefined;
+  const isFirst = isFirstPass(marker, directory);
+
+  if (agent !== undefined) {
+    return subagentOverOf(size, agent, isFirst);
   }
 
-  mkdirSync(directory, { recursive: true });
-  closeSync(openSync(marker, 'w'));
-
-  return warningOf(tokens);
+  return isFirst ? mainWarningOf(size) : undefined;
 };

@@ -25,11 +25,17 @@ export interface EditInput {
 export interface SessionInput {
   session: string;
   transcript: string;
+  agent?: Agent;
 }
 
-type Field = 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path' | 'file_text' | 'filePath'
-  | 'hook_event_name' | 'new_str' | 'new_string' | 'old_str' | 'old_string' | 'patch' | 'path' | 'session_id'
-  | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
+export interface Agent {
+  id: string;
+  type: string | undefined;
+}
+
+type Field = 'agent_id' | 'agent_type' | 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path'
+  | 'file_text' | 'filePath' | 'hook_event_name' | 'new_str' | 'new_string' | 'old_str' | 'old_string' | 'patch'
+  | 'path' | 'session_id' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
 
 export type Json = number | object | string;
 
@@ -191,12 +197,13 @@ export const readEdit = (payload: object): EditInput | undefined => {
   return editInput;
 };
 
-// Claude Code adds `agent_id` to a subagent's tool call, so only the main session's own calls are read.
+// Claude Code adds `agent_id` to a subagent's tool call; it names a state file too, so it is held to the same token.
 export const readSession = (payload: object): SessionInput | undefined => {
   const session = stringAt(payload, 'session_id');
   const transcript = stringAt(payload, 'transcript_path');
+  const agentId = stringAt(payload, 'agent_id');
 
-  if (hostOf(payload) !== 'claude' || 'agent_id' in payload || transcript === undefined) {
+  if (hostOf(payload) !== 'claude' || transcript === undefined) {
     return undefined;
   }
 
@@ -204,10 +211,17 @@ export const readSession = (payload: object): SessionInput | undefined => {
     return undefined;
   }
 
-  const sessionInput: SessionInput = {
-    session,
-    transcript,
-  };
+  if ('agent_id' in payload && (agentId === undefined || !SESSION_ID.test(agentId))) {
+    return undefined;
+  }
+
+  const sessionInput: SessionInput = agentId === undefined
+    ? { session, transcript }
+    : {
+        session,
+        transcript,
+        agent: { id: agentId, type: stringAt(payload, 'agent_type') },
+      };
 
   return sessionInput;
 };
