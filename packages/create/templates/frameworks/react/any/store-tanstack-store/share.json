@@ -1,0 +1,7 @@
+{
+  "package": {
+    "dependencies": {
+      "@tanstack/react-store": "^0.11.2"
+    }
+  }
+}

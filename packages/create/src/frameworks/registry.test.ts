@@ -47,6 +47,30 @@ const COPIES: Copies[] = [
     path: 'src/root.tsx',
     drawers: ['css/router-react-router-framework', 'tailwind/router-react-router-framework'],
   },
+  {
+    path: 'src/pages/home/HomePage.tsx',
+    drawers: [
+      'any/store-zustand',
+      'any/store-tanstack-store',
+      'any/store-redux-toolkit',
+    ],
+  },
+  {
+    path: 'src/lib/providers/store/StoreProvider.tsx',
+    drawers: [
+      'any/store-none',
+      'any/store-zustand',
+      'any/store-tanstack-store',
+    ],
+  },
+  {
+    path: 'src/lib/store/counter/counterStore.test.ts',
+    drawers: [
+      'any/store-zustand',
+      'any/store-tanstack-store',
+      'any/store-redux-toolkit',
+    ],
+  },
 ];
 
 it('names only frameworks with a templates module', () => {

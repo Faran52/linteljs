@@ -4,7 +4,7 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { CHECK } from '@config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
@@ -20,7 +20,7 @@ const renderPage = (): void => {
   render(
     <StoreProvider>
       <DataProvider>
-        <HomePage name="my-app" />
+        <HomePage />
       </DataProvider>
     </StoreProvider>,
   );
@@ -36,7 +36,7 @@ describe('HomePage', () => {
   it('carries the project name as its heading', () => {
     renderPage();
 
-    const element = screen.getByRole('heading', { name: 'my-app' });
+    const element = screen.getByRole('heading', { name: NAME });
     expect(element).toBeTruthy();
   });
 
