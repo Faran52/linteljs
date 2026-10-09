@@ -802,7 +802,7 @@ the layout; one move in the registry rebases their paths.
 - **The root lints like a single repo**, over its own `scripts/`.
 - **The app copies msw's worker itself**, from its own install script ([The api edge](#the-api-edge)).
 - **Single only for `--existing`**, which never moves files; `--layout monorepo` is refused there.
-- **`sync --add` writes a `typescript` package in 2.0.** A second app is 2.1.
+- **`sync --add` writes a package by default**, and an app with `--kind app`.
 
 ## What a project owns
 
@@ -815,11 +815,11 @@ Every file this CLI owns reaches disk as an `Artifact` through `artifactWriter`;
   `plugins/linteljs/` entries, the ESLint config and the `@linteljs/*` dependencies, each behind its own y/N.
 - `seedArtifacts` is what `create` plants and `sync` never touches: the config, README, manifest and starter
   source.
-- `sync --add <name>` is a birth: both lists for a `typescript` target, kept to what lands under
-  `packages/<name>/`, then an install with pnpm's `frozen-lockfile` and Yarn's immutable installs off, since both
+- `sync --add <name>` is a birth: both lists for the new project, kept to what lands under its directory, then
+  the project appended to the config, the agent files rewritten, and an install with pnpm's `frozen-lockfile` and Yarn's immutable installs off, since both
   turn on under `CI` and refuse the lockfile change that is the point.
 
-`sync` reads `linteljs.config.json` and never writes it, so a reformatted config keeps its bytes. A 1.x project
+`sync` reads `linteljs.config.json` and, but for `--add`, never writes it, so a reformatted config keeps its bytes. A 1.x project
 moves `lintel.config.json` with `create --existing`, which removes the old file only after the new one is on disk.
 `seed: true` is birth only, `requires` skips a starter test whose file was moved, and an existing `preserve` file is
 the project's on every `create --existing`.

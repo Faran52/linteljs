@@ -1,7 +1,7 @@
 export type { PipelineOptions } from './runs/pipeline/pipelineRun';
 export { pipelineRun } from './runs/pipeline/pipelineRun';
 export {
-  addPackage,
+  addProject,
   type LintConfigPlan,
   planRootDependencies,
   planSync,

@@ -46,8 +46,9 @@ export interface CliOptions {
   strayFlags: string[];
   skip: Stage[];
   existing: boolean;
-  // `sync --add <name>`: the package to write.
+  // `sync --add <name> [--kind app|package]`: the project to write.
   add?: string;
+  kind?: string;
   // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
@@ -247,6 +248,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
         }),
     strayFlags: hasProjects ? strays : [],
     ...(values.add === undefined ? {} : { add: values.add }),
+    ...(values.kind === undefined || hasProjects ? {} : { kind: values.kind }),
     existing: values.existing,
     // On `sync` an answer flag answers nothing, so it must not stand in for the confirmation.
     yes: values.yes || (answered && command === 'create'),
@@ -266,21 +268,6 @@ const projectNameError = (options: CliOptions): string | undefined => {
   }
 
   return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
-};
-
-// The name becomes a path under packages/, so nothing that could leave it gets that far.
-const addError = (options: CliOptions): string | undefined => {
-  if (options.add === undefined) {
-    return undefined;
-  }
-
-  if (options.command !== 'sync') {
-    return ADD_NEEDS_SYNC;
-  }
-
-  const isPackageName = isValidProjectName(options.add) && !options.add.startsWith('@');
-
-  return isPackageName ? undefined : `Package name must be ${PACKAGE_NAME_RULE}.`;
 };
 
 const projectError = (project: ProjectFlags, workspaceName: string, taken: readonly string[]): string | undefined => {
@@ -303,6 +290,31 @@ const projectError = (project: ProjectFlags, workspaceName: string, taken: reado
   }
 
   return undefined;
+};
+
+// The name becomes a path under apps/ or packages/, so nothing that could leave it gets that far.
+const addError = (options: CliOptions): string | undefined => {
+  if (options.add === undefined) {
+    return undefined;
+  }
+
+  if (options.command !== 'sync') {
+    return ADD_NEEDS_SYNC;
+  }
+
+  const isPackageName = isValidProjectName(options.add) && !options.add.startsWith('@');
+
+  if (!isPackageName) {
+    return `Package name must be ${PACKAGE_NAME_RULE}.`;
+  }
+
+  const added: ProjectFlags = {
+    name: options.add,
+    kind: options.kind ?? 'package',
+    answers: options.answers ?? {},
+  };
+
+  return projectError(added, '', []);
 };
 
 const projectsError = (options: CliOptions): string | undefined => {

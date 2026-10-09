@@ -68,7 +68,7 @@ pipeline/   the stage machine, sync, and the passes over written source.
 - `buildArtifacts` is what `create` writes. `sync` writes only its agent files, for every project in config
   order: `plugins/linteljs/`, the rule copies in each agent's rule directory, each project's `CLAUDE.md`,
   `AGENTS.md` and `copilot-instructions.md`, and a root adapter only when it carries the projects markers. It deletes only from `plugins/linteljs/`,
-  and reports a rule copy no project needs as stale. `seedArtifacts` is what only `create` plants (the recorded config, the README, the manifest, the starter
+  and reports a rule copy no project needs as stale; `sync --add` alone also writes the config, appending its project. `seedArtifacts` is what only `create` plants (the recorded config, the README, the manifest, the starter
   source). `buildArtifacts` appends the record `plugins/linteljs/managed.json` carries. Every file reaches disk
   through `artifactWriter`; `pipeline/passes/` is the one exception, editing source already written.
 - `emitters/utils/`: `artifactUtils.ts` (the content shapes), `managedUtils.ts` (the managed record),

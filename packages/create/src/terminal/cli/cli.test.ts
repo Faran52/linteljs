@@ -8,7 +8,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import {
   chdir,
   cwd as processCwd,
@@ -48,7 +48,11 @@ import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
-import { EXISTING_MONOREPO } from './constants';
+import {
+  ADD_APP_NEEDS_ANSWERS,
+  ADD_NEEDS_MONOREPO,
+  EXISTING_MONOREPO,
+} from './constants';
 import { parseCliArgs } from './utils/argvUtils';
 
 import type { Answers } from '@config/types';
@@ -907,37 +911,17 @@ describe('main: sync', () => {
     return root;
   };
 
-  // Every file outside packages/, with its text.
-  const outsidePackages = async (root: string): Promise<string[]> => {
-    const entries = await readdir(root, {
-      recursive: true,
-      withFileTypes: true,
-    });
-    const paths = entries
-      .filter((entry) => {
-        return entry.isFile();
-      })
-      .map((entry) => {
-        const path = join(entry.parentPath, entry.name);
+  const projectNames = async (root: string): Promise<(string | undefined)[]> => {
+    const configText = await readFile(join(root, CONFIG_PATH), 'utf8');
 
-        return relative(root, path);
-      })
-      .filter((path) => {
-        return !path.startsWith('packages/');
+    return parseLinteljsConfig(configText).projects
+      .map(({ name }) => {
+        return name;
       });
-    const texts = paths
-      .map(async (path) => {
-        const text = await readFile(join(root, path), 'utf8');
-
-        return `${path}\n${text}`;
-      });
-
-    return await Promise.all(texts);
   };
 
-  it('adds a library under packages/ in a monorepo, and changes no other file', async () => {
+  it('adds a package under packages/ in a monorepo, records it, and leaves a sync with nothing to do', async () => {
     const root = await monorepo();
-    const before = await outsidePackages(root);
 
     const { code, printed } = await runMain([
       'sync',
@@ -949,15 +933,100 @@ describe('main: sync', () => {
     expect(code).toBe(0);
     expect(printed).toContain('wrote packages/lib/package.json\n');
     expect(printed).toContain('wrote packages/lib/src/index.ts\n');
+    expect(printed).toContain(`wrote ${CONFIG_PATH}\n`);
     expect(printed).toContain('Install it:\n  pnpm install\n');
     const manifestText = await readFile(join(root, 'packages/lib/package.json'), 'utf8');
     const manifest = parsePackageJson(manifestText);
     expect(manifest.name).toBe('lib');
-    const after = await outsidePackages(root);
-    expect(after).toEqual(before);
+    const names = await projectNames(root);
+    expect(names).toEqual(['demo', 'lib']);
+    const again = await runMain(['sync'], scripted([]));
+    expect(again.printed).toBe('Everything is already up to date.\n');
   });
 
-  it('installs after adding a library, so the lockfile takes it', async () => {
+  it('adds an app from its answer flags under apps/', async () => {
+    const root = await monorepo();
+
+    const { code, printed } = await runMain([
+      'sync',
+      '--add',
+      'admin',
+      '--kind',
+      'app',
+      '--target',
+      'vue',
+      '--no-install',
+    ]);
+
+    expect(code).toBe(0);
+    expect(printed).toContain('wrote apps/admin/package.json\n');
+    const names = await projectNames(root);
+    expect(names).toEqual(['demo', 'admin']);
+    const config = await configAt(root);
+    expect(config.target).toBe('react');
+  });
+
+  it('asks the App questions for an app added in a terminal', async () => {
+    const root = await monorepo();
+    const asked = scripted([
+      'vue',
+      ...Array.from({ length: 20 }, () => {
+        return undefined;
+      }),
+    ]);
+
+    const { code } = await runMain([
+      'sync',
+      '--add',
+      'admin',
+      '--kind',
+      'app',
+      '--no-install',
+    ], asked);
+
+    expect(code).toBe(0);
+    const appText = await readFile(join(root, 'apps/admin/package.json'), 'utf8');
+    expect(appText).toContain('"vue"');
+  });
+
+  it('refuses an app with nothing to answer it and no terminal, and writes nothing', async () => {
+    const root = await monorepo();
+
+    const { code, errors } = await runMain([
+      'sync',
+      '--add',
+      'admin',
+      '--kind',
+      'app',
+    ]);
+
+    expect(code).toBe(1);
+    expect(errors).toEqual([`Error: ${ADD_APP_NEEDS_ANSWERS}`]);
+    const hasApp = await exists(join(root, 'apps/admin'));
+    expect(hasApp).toBe(false);
+  });
+
+  it('refuses a name the config already records, and writes nothing', async () => {
+    const root = await monorepo();
+
+    await rm(join(root, 'apps/demo'), {
+      recursive: true,
+      force: true,
+    });
+
+    const { code, errors } = await runMain([
+      'sync',
+      '--add',
+      'demo',
+    ], scripted([]));
+
+    expect(code).toBe(1);
+    expect(errors).toEqual(['demo is a project already: sync --add writes a new one.']);
+    const hasPackage = await exists(join(root, 'packages/demo'));
+    expect(hasPackage).toBe(false);
+  });
+
+  it('installs after adding a package, so the lockfile takes it', async () => {
     await monorepo();
     const root = processCwd();
 
@@ -994,7 +1063,7 @@ describe('main: sync', () => {
     ], scripted([]));
 
     expect(code).toBe(1);
-    expect(errors).toEqual([`${taken} exists: sync --add writes a new package.`]);
+    expect(errors).toEqual([`${taken} exists: sync --add writes a new project.`]);
     expect(printed).toBe('');
     const entries = await readdir(join(root, taken));
     expect(entries).toEqual([]);
@@ -1014,7 +1083,7 @@ describe('main: sync', () => {
     ], scripted([]));
 
     expect(code).toBe(1);
-    expect(errors).toEqual(['sync --add writes a package into a monorepo, and this project is a single repo.']);
+    expect(errors).toEqual([ADD_NEEDS_MONOREPO]);
     expect(printed).toBe('');
     const hasPackages = await exists(join(project, 'packages'));
     expect(hasPackages).toBe(false);

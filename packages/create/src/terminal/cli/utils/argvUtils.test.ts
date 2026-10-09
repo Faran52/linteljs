@@ -42,6 +42,28 @@ describe('parseCliArgs', () => {
     expect(plain).not.toHaveProperty('add');
   });
 
+  it('carries a --kind outside any --project, for --add', () => {
+    const added = parseCliArgs([
+      'sync',
+      '--add',
+      'admin',
+      '--kind',
+      'app',
+    ]);
+    const grouped = parseCliArgs([
+      'demo',
+      '--layout',
+      'monorepo',
+      '--project',
+      'web',
+      '--kind',
+      'app',
+    ]);
+
+    expect(added.kind).toBe('app');
+    expect(grouped).not.toHaveProperty('kind');
+  });
+
   it('no longer knows --force', () => {
     const parsing = (): ReturnType<typeof parseCliArgs> => {
       return parseCliArgs(['sync', '--force']);
@@ -209,6 +231,41 @@ describe('argumentError', () => {
         '../lib',
       ],
       'Package name must be',
+    ],
+    [
+      'an added project of an unknown kind',
+      [
+        'sync',
+        '--add',
+        'admin',
+        '--kind',
+        'service',
+      ],
+      '--kind takes app or package, not service.',
+    ],
+    [
+      'answer flags on an added package',
+      [
+        'sync',
+        '--add',
+        'lib',
+        '--target',
+        'vue',
+      ],
+      'lib is a package, a TypeScript package on its defaults',
+    ],
+    [
+      'an added app on the TypeScript target',
+      [
+        'sync',
+        '--add',
+        'admin',
+        '--kind',
+        'app',
+        '--target',
+        'typescript',
+      ],
+      'admin is an app, which needs a framework',
     ],
     [
       'a package added with an invalid project name',

@@ -448,6 +448,26 @@ const askProjectName = async (
   return unwrap(prompter, answer);
 };
 
+// The App questions, also asked by `sync --add --kind app`.
+export const askApp = async (
+  prompter: Prompter,
+  workspace: Partial<Record<AnswerKey, JsonValue>>,
+): Promise<Partial<Record<AnswerKey, JsonValue>>> => {
+  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...workspace };
+  const appTarget: ChoiceRecord = {
+    ...ANSWERS.target,
+    values: omit(ANSWERS.target.values, ['typescript']),
+  };
+  const soFar = soFarAnswered(answered);
+
+  const target = await askAnswer(prompter, appTarget, ANSWERS.target.prompt, targetFor(soFar), soFar);
+
+  writeIfPresent(answered, 'target', target);
+  await askKeys(prompter, answered, PROJECT_KEYS);
+
+  return omit(answered, WORKSPACE_KEYS);
+};
+
 // An app picks a framework; a package is the TypeScript target on its defaults.
 const askProject = async (
   prompter: Prompter,
@@ -464,19 +484,7 @@ const askProject = async (
     return typescript;
   }
 
-  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...workspace };
-  const appTarget: ChoiceRecord = {
-    ...ANSWERS.target,
-    values: omit(ANSWERS.target.values, ['typescript']),
-  };
-  const soFar = soFarAnswered(answered);
-
-  const target = await askAnswer(prompter, appTarget, ANSWERS.target.prompt, targetFor(soFar), soFar);
-
-  writeIfPresent(answered, 'target', target);
-  await askKeys(prompter, answered, PROJECT_KEYS);
-
-  return omit(answered, WORKSPACE_KEYS);
+  return await askApp(prompter, workspace);
 };
 
 const parsedAsked = (name: string, entries: readonly AnsweredEntry[]): Asked => {

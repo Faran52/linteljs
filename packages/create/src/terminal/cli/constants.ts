@@ -12,11 +12,12 @@ export const USAGE_HEAD = `@linteljs/create [name] [options]
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
-  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript package, and install it
+  --add <name>      sync, in a monorepo: write a new project, record it in linteljs.config.json and
+                    install it; with --kind app it takes the answer flags or asks the App questions
   --project <name>  open a monorepo project (repeatable); the answer flags after it, but --layout,
                     --type-safety, --agents and --plugins, apply to it alone
-  --kind <kind>     after --project: app (the default) or package, a TypeScript package that takes
-                    no answer flags
+  --kind <kind>     app or package, a TypeScript package that takes no answer flags; app is the
+                    default after --project, package with --add
   --version, -v
   --help, -h
 
@@ -50,7 +51,10 @@ export const PACKAGE_NAME_RULE
   = "an unscoped npm package name: lowercase letters, digits, '.', '-' and '_' only, starting with a letter or "
     + 'digit, at most 214 characters, and not a reserved npm name';
 
-export const ADD_NEEDS_MONOREPO = 'sync --add writes a package into a monorepo, and this project is a single repo.';
+export const ADD_NEEDS_MONOREPO = 'sync --add writes a project into a monorepo, and this project is a single repo.';
+
+export const ADD_APP_NEEDS_ANSWERS
+  = 'sync --add --kind app asks the App questions: run it in a terminal, or pass answer flags or --yes.';
 
 export const CLI_OPTIONS = {
   'add': { type: 'string' },

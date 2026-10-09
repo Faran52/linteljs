@@ -203,11 +203,12 @@ when a version's change lives in a sibling it is described there instead:
   tests itself. The README says where the app's scripts run, and the agent rules' globs
   match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
   directory under `apps/` or `packages/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
-- `sync --add <name>` writes a TypeScript package to a monorepo's `packages/<name>/`, with its own
-  `package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and starter
-  `src/`, on the recorded manager, Node and type safety, then installs, so the lockfile takes the package and a
-  frozen CI install passes (`--no-install` leaves it to you). No other root file changes. It refuses a single repo,
-  a scoped or invalid name, and a name `apps/` or `packages/` already holds.
+- `sync --add <name>` writes a new project to a monorepo: a TypeScript package to `packages/<name>/` by default,
+  or with `--kind app` an app to `apps/<name>/` from the answer flags, `--yes` (React) or the App questions in a
+  terminal. It writes the project's own files on the recorded workspace answers, appends it to the config's
+  `projects`, rewrites every project's agent files, then installs, so the lockfile takes it and a frozen CI
+  install passes (`--no-install` leaves it to you). It refuses a single repo, a scoped or invalid name, a name the
+  config records, and a name `apps/` or `packages/` already holds.
 - An install `create` or `sync --add` runs under `CI` no longer fails on pnpm's frozen lockfile when it changes
   one, as Yarn's already did not.
 

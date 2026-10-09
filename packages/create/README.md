@@ -132,7 +132,8 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
-  --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript package, and install it
+  --add <name>      sync, in a monorepo: write a new project, record it in linteljs.config.json and
+                    install it; with --kind app it takes the answer flags or asks the App questions
   --version, -v
   --help, -h
 ```
@@ -174,12 +175,13 @@ scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs
 `plugins/linteljs/`, `linteljs.config.json`, your README and the starter source are yours after `create`. A
 project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to move them.
 
-In a monorepo, `sync --add <name>` writes a TypeScript package to `packages/<name>/` and does nothing else: its
-`package.json`, `eslint.config.ts`, `tsconfig.json`, `lint-staged.config.js`, `tsdown.config.ts` and a starter
-`src/`, on the manager, Node and type safety `linteljs.config.json` records, then runs `<pm> install` so the
-lockfile takes it (`--no-install` skips that). No other root file changes, since the workspace globs already take
-`packages/*`. `<name>` is an unscoped package name, and the
-run refuses a single repo and a name `apps/` or `packages/` already holds.
+In a monorepo, `sync --add <name>` writes a new project: a TypeScript package to `packages/<name>/` by default, or
+with `--kind app` an app to `apps/<name>/`, which takes the answer flags, or `--yes` for React, or asks the App
+questions in a terminal. It writes the project's own files, seeds and all, on the workspace answers
+`linteljs.config.json` records, appends the project to that file's `projects` (the one sync path that writes it),
+rewrites the agent files for every project, then runs `<pm> install` so the lockfile takes it (`--no-install` skips
+that). `<name>` is an unscoped package name, and the run refuses a single repo, a name the config already records
+and one `apps/` or `packages/` already holds.
 
 ## Agents
 

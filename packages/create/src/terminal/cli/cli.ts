@@ -27,10 +27,11 @@ import {
   readIfPresent,
 } from '@disk';
 import {
+  packageAnswersOf,
   parsePackageJson,
 } from '@emitters';
 import {
-  addPackage,
+  addProject,
   pipelineRun,
   planRootDependencies,
   planSync,
@@ -51,6 +52,7 @@ import {
 import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
+  askApp,
   type Asked,
   type AskedProject,
   inquirerPrompter,
@@ -60,6 +62,7 @@ import {
 import { isValidProjectName } from '../utils/nameUtils';
 
 import {
+  ADD_APP_NEEDS_ANSWERS,
   ADD_NEEDS_MONOREPO,
   EXISTING_MONOREPO,
 } from './constants';
@@ -284,26 +287,69 @@ const askedFrom = async (
   return askedProjects(asked, host);
 };
 
-// An app of the same name would give the workspace two packages under one name.
-const runAdd = async (options: CliOptions, answers: HostedAnswers, name: string): Promise<number> => {
-  const { cwd, skip } = options;
-  const binary = answers.packageManager;
+// An app runs the questionnaire's App questions unless flags or `--yes` answer them.
+const appAnswersOf = async (
+  options: CliOptions,
+  name: string,
+  asker: Asker,
+  host: Host,
+): Promise<HostedAnswers> => {
+  const isFlagged = asker.isYes || options.answers !== undefined;
 
-  if (answers.layout !== 'monorepo') {
+  if (!isFlagged && !asker.hasTerminal) {
+    throw new Error(ADD_APP_NEEDS_ANSWERS);
+  }
+
+  const flags = isFlagged ? options.answers : await askApp(asker.prompter, { layout: 'monorepo' });
+  const answers = flaggedAnswers(name, {
+    ...flags,
+    layout: 'monorepo',
+  });
+
+  return hosted(answers, host);
+};
+
+// A project of the same name would give the workspace two packages under one name.
+const runAdd = async (
+  options: CliOptions,
+  name: string,
+  projects: [SyncProject, ...SyncProject[]],
+  asker: Asker,
+  host: Host,
+): Promise<number> => {
+  const { cwd, skip } = options;
+  const [{ answers: first }] = projects;
+  const binary = first.packageManager;
+
+  if (first.layout !== 'monorepo') {
     console.error(ADD_NEEDS_MONOREPO);
 
     return 1;
   }
 
+  const names = syncWorkspaceOf(cwd, projects).projects
+    .map((project) => {
+      return project.name;
+    });
   const [taken] = globPaths(cwd, `{apps,packages}/${name}`);
 
-  if (taken !== undefined) {
-    console.error(`${taken} exists: sync --add writes a new package.`);
+  if (names.includes(name)) {
+    console.error(`${name} is a project already: sync --add writes a new one.`);
 
     return 1;
   }
 
-  const written = await addPackage(cwd, answers, name);
+  if (taken !== undefined) {
+    console.error(`${taken} exists: sync --add writes a new project.`);
+
+    return 1;
+  }
+
+  const answers = options.kind === 'app' ? await appAnswersOf(options, name, asker, host) : packageAnswersOf(first);
+  const written = await addProject(cwd, projects, {
+    name,
+    answers,
+  });
 
   for (const target of written) {
     say(`wrote ${target}`);
@@ -315,7 +361,7 @@ const runAdd = async (options: CliOptions, answers: HostedAnswers, name: string)
     return 0;
   }
 
-  // The lockfile takes the package now, so the frozen install CI runs passes.
+  // The lockfile takes the project now, so the frozen install CI runs passes.
   say(`installing with ${binary}`);
   await runSpawn(binary, ['install'], cwd);
 
@@ -438,8 +484,14 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
       synced,
     } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
-    if (options.add !== undefined) {
-      return await runAdd(options, answers, options.add);
+    if (synced !== undefined && options.add !== undefined) {
+      const asker: Asker = {
+        isYes: options.yes,
+        prompter: prompter ?? inquirerPrompter,
+        hasTerminal,
+      };
+
+      return await runAdd(options, options.add, synced, asker, host);
     }
 
     if (synced !== undefined) {

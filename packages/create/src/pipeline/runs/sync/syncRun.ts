@@ -5,7 +5,7 @@ import {
   posix,
 } from 'node:path';
 
-import { uniq } from 'es-toolkit';
+import { pick, uniq } from 'es-toolkit';
 
 import {
   ESLINT_CONFIG_PATH,
@@ -16,6 +16,7 @@ import {
 import { projectDirectoryOf } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
+import { CONFIG_PATH, WORKSPACE_KEYS } from '@answers';
 import {
   artifactWriter,
   entryExists,
@@ -37,8 +38,9 @@ import {
   dependencyDrift,
   emitEslintConfig,
   hasProjectsBlock,
-  packageAnswersOf,
+  linteljsConfigEmitter,
   parsePackageJson,
+  pnpmWorkspaceEmitter,
   projectArtifacts,
   rootAnswersOf,
   serializedPackageJson,
@@ -402,21 +404,44 @@ export const writeDependencies = async (cwd: string, changes: Upgrade[]): Promis
   await artifactWriter(cwd, artifact);
 };
 
-// The workspace globs already hold `packages/*`, so no root file changes. The directory is new: all of it writes.
-export const addPackage = async (cwd: string, answers: HostedAnswers, name: string): Promise<string[]> => {
-  const artifacts = projectArtifacts({
-    name,
-    answers: packageAnswersOf(answers),
-  });
+// The one sync path that writes the config: the project is new, so all of its directory writes.
+export const addProject = async (
+  cwd: string,
+  projects: [SyncProject, ...SyncProject[]],
+  added: WorkspaceProject,
+): Promise<string[]> => {
+  const [{ answers: first }] = projects;
+  const project: WorkspaceProject = {
+    name: added.name,
+    answers: {
+      ...added.answers,
+      ...pick(first, WORKSPACE_KEYS),
+    },
+  };
+  const workspace = syncWorkspaceOf(cwd, [...projects, project]);
+  const artifacts = projectArtifacts(project);
 
-  for (const artifact of artifacts) {
+  const births = [
+    ...artifacts,
+    ...linteljsConfigEmitter(workspace),
+    ...pnpmWorkspaceEmitter(workspace),
+  ];
+
+  for (const artifact of births) {
     await artifactWriter(cwd, artifact, true);
   }
 
-  return artifacts
-    .map(({ target }) => {
-      return target;
-    });
+  const { written } = await syncAgentFiles(cwd, workspace);
+  const reported = [
+    ...artifacts
+      .map(({ target }) => {
+        return target;
+      }),
+    CONFIG_PATH,
+    ...written,
+  ];
+
+  return reported;
 };
 
 export const writeLintConfig = async (cwd: string, answers: HostedAnswers, plan: LintConfigPlan): Promise<void> => {

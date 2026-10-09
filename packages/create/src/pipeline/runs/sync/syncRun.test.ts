@@ -8,7 +8,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
@@ -22,15 +22,17 @@ import {
 
 import { MANAGED_PATH, PLUGIN_ROOT } from '@config/constants';
 
+import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
 import { exists } from '@disk';
 import {
   buildDevDependencies,
   emitEslintConfig,
+  packageAnswersOf,
   parsePackageJson,
 } from '@emitters';
 
 import {
-  addPackage,
+  addProject,
   appRootOf,
   planRootDependencies,
   planSync,
@@ -42,7 +44,11 @@ import {
   writeLintConfig,
 } from './syncRun';
 
-import type { HostedAnswers, Workspace } from '@config/types';
+import type {
+  HostedAnswers,
+  Workspace,
+  WorkspaceProject,
+} from '@config/types';
 
 const PROBE_LIMIT = 100;
 
@@ -719,43 +725,65 @@ describe('appRootOf', () => {
   });
 });
 
-describe('addPackage', () => {
+describe('addProject', () => {
   const MONOREPO: HostedAnswers = {
     ...HOSTED_DEFAULTS,
     layout: 'monorepo',
   };
 
-  it('writes the package, seeds and all, under packages/<name> and nothing outside it', async () => {
-    const written = await addPackage(cwd, MONOREPO, 'lib');
+  const added = (first: HostedAnswers = MONOREPO): WorkspaceProject => {
+    const project: WorkspaceProject = {
+      name: 'lib',
+      answers: packageAnswersOf(first),
+    };
+
+    return project;
+  };
+
+  it('writes the package, seeds and all, under packages/<name> and records it after the others', async () => {
+    const written = await addProject(cwd, [{
+      name: 'web',
+      answers: MONOREPO,
+    }], added());
 
     expect(written).toContain('packages/lib/src/index.ts');
     expect(written).toContain('packages/lib/tsdown.config.ts');
+    expect(written).toContain(CONFIG_PATH);
     const manifestText = await read('packages/lib/package.json');
     const manifest = parsePackageJson(manifestText);
     expect(manifest.name).toBe('lib');
-    const entries = await readdir(cwd, {
-      recursive: true,
-      withFileTypes: true,
-    });
-    const files = entries
-      .filter((entry) => {
-        return entry.isFile();
-      })
-      .map((entry) => {
-        const path = join(entry.parentPath, entry.name);
-
-        return relative(cwd, path);
+    const configText = await read(CONFIG_PATH);
+    const config = parseLinteljsConfig(configText);
+    const names = config.projects
+      .map(({ name }) => {
+        return name;
       });
-    const onDisk = new Set(files);
-    const reported = new Set(written);
-    expect(onDisk).toEqual(reported);
-    const topLevel = await readdir(cwd);
-    expect(topLevel).toEqual(['packages']);
+    expect(names).toEqual(['web', 'lib']);
+    const hasWorkspaceFile = await exists(join(cwd, 'pnpm-workspace.yaml'));
+    expect(hasWorkspaceFile).toBe(true);
   });
 
   it('keeps a starter suite whose source is written', async () => {
-    const written = await addPackage(cwd, MONOREPO, 'lib');
+    const written = await addProject(cwd, [{ answers: MONOREPO }], added());
 
     expect(written).toContain('packages/lib/src/model/greeting/greetingModel.test.ts');
+  });
+
+  it('writes the new project on the workspace\'s type safety, not its own', async () => {
+    const first: HostedAnswers = {
+      ...MONOREPO,
+      typeSafety: 'relaxed',
+    };
+    const app: WorkspaceProject = {
+      name: 'admin',
+      answers: {
+        ...MONOREPO,
+        target: 'vue',
+      },
+    };
+
+    const written = await addProject(cwd, [{ answers: first }], app);
+
+    expect(written).toContain('apps/admin/src/typings/customTypes.d.ts');
   });
 });
