@@ -518,6 +518,48 @@ describe('the fix stage', () => {
     const eslintCwd = await readFile(join(app, 'eslint-cwd'), 'utf8');
     expect(eslintCwd).toBe(`${app}\n`);
   });
+
+  it('writes and fixes each project of a monorepo in its own directory', async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'eslint'), "#!/bin/sh\npwd > eslint-cwd\necho '[]'\n", 'utf8');
+    await chmod(join(bin, 'eslint'), 0o755);
+
+    await pipelineRun({
+      name: 'acme',
+      cwd,
+      answers: hostedAnswersFor({ layout: 'monorepo' }),
+      projects: [
+        {
+          name: 'web',
+          answers: hostedAnswersFor({ layout: 'monorepo' }),
+        },
+        {
+          name: 'shared',
+          answers: hostedAnswersFor({
+            layout: 'monorepo',
+            target: 'typescript',
+          }),
+        },
+      ],
+      skip: ['install'],
+    });
+
+    const directories = [join(cwd, 'apps', 'web'), join(cwd, 'packages', 'shared')];
+    const roots = await Promise.all(directories
+      .map(async (directory) => {
+        return await realpath(directory);
+      }));
+    const fixedIn = await Promise.all(roots
+      .map(async (root) => {
+        return await readFile(join(root, 'eslint-cwd'), 'utf8');
+      }));
+    const expected = roots
+      .map((root) => {
+        return `${root}\n`;
+      });
+    expect(fixedIn).toEqual(expected);
+  });
 });
 
 describe('what create and sync each discover about a project', () => {

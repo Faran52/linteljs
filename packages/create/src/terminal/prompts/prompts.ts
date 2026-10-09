@@ -3,6 +3,7 @@ import {
   input,
   select,
 } from '@inquirer/prompts';
+import { omit, pick } from 'es-toolkit';
 
 import { keysOf } from '@utils/objectUtils';
 
@@ -12,7 +13,6 @@ import {
   ANSWERS,
   type ChoiceRecord,
   CONFIG_SCHEMA_URL,
-  configOf,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   type JsonValue,
@@ -23,15 +23,23 @@ import {
   projectAnswersOf,
   unaskedValueOf,
   type ValueRecord,
+  WORKSPACE_KEYS,
+  workspaceConfigOf,
 } from '@answers';
 import { targetFor, type TargetRecord } from '@targets';
 
-import { PROJECT_NAME_RULE } from '../constants';
-import { isValidProjectName } from '../utils/nameUtils';
+import { PROJECT_DIR_NAME_RULE, PROJECT_NAME_RULE } from '../constants';
+import { isValidProjectDirName, isValidProjectName } from '../utils/nameUtils';
 
-import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
+import {
+  ANSWER_KEYS,
+  MAX_PROJECTS,
+  PROJECT_KEYS,
+  PROJECT_KINDS,
+  RUN_CANCELLED_MESSAGE,
+} from './constants';
 
-import type { Answers } from '@config/types';
+import type { Answers, ProjectConfig } from '@config/types';
 
 // `list` and `map` carry no `prompt`, so neither reaches `askAnswer`.
 type PromptableRecord
@@ -77,10 +85,19 @@ export interface AskInput {
   fixed?: Partial<Record<AnswerKey, JsonValue>>;
 }
 
-export interface Asked {
+export interface AskedProject {
   name: string;
   answers: Answers;
 }
+
+export interface Asked {
+  name: string;
+  projects: [AskedProject, ...AskedProject[]];
+}
+
+type Answered = Partial<Record<AnswerKey, JsonValue>>;
+
+type AnsweredEntry = readonly [Answered, string];
 
 interface Described {
   label: string;
@@ -268,6 +285,7 @@ const askAnswer = async (
   message: string,
   target: TargetRecord,
   answered: Answers,
+  targets: readonly TargetRecord[] = [target],
 ): Promise<JsonValue | undefined> => {
   switch (record.kind) {
     case 'choice': {
@@ -292,7 +310,7 @@ const askAnswer = async (
     case 'multi': {
       const offered = offeredValuesOf(record.values, target, answered);
 
-      const preselected = record.targetDefault?.([target]) ?? record.default;
+      const preselected = record.targetDefault?.(targets) ?? record.default;
 
       return await askMulti(prompter, message, offered, preselected, false, describeFrom(record.values));
     }
@@ -324,6 +342,7 @@ const askIfNeeded = async (
   prompter: Prompter,
   answered: Partial<Record<AnswerKey, JsonValue>>,
   key: AnswerKey,
+  targets?: readonly TargetRecord[],
 ): Promise<JsonValue | undefined> => {
   const record: AnswerRecord = ANSWERS[key];
 
@@ -345,7 +364,7 @@ const askIfNeeded = async (
   }
 
   // The check above already refused `list` and `map`.
-  return await askAnswer(prompter, record as PromptableRecord, message, target, soFar);
+  return await askAnswer(prompter, record as PromptableRecord, message, target, soFar, targets);
 };
 
 // `exactOptionalPropertyTypes` bans setting an optional property to `undefined`.
@@ -379,34 +398,185 @@ export const confirm = async (prompter: Prompter, message: string): Promise<bool
   return answer === 'yes';
 };
 
-// Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
-export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
-  const name = input.name ?? await askName(prompter);
-  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...input.fixed };
-  const open = ANSWER_KEYS
+const askKeys = async (
+  prompter: Prompter,
+  answered: Partial<Record<AnswerKey, JsonValue>>,
+  keys: readonly AnswerKey[],
+  targets?: readonly TargetRecord[],
+): Promise<void> => {
+  const open = keys
     .filter((key) => {
       return !Object.hasOwn(answered, key);
     });
 
   for (const key of open) {
-    const value = await askIfNeeded(prompter, answered, key);
+    const value = await askIfNeeded(prompter, answered, key, targets);
 
     writeIfPresent(answered, key, value);
   }
+};
 
+const askCount = async (prompter: Prompter): Promise<number> => {
+  const answer = await prompter.text({
+    message: 'How many projects?',
+    validate: (value) => {
+      const count = Number(value);
+      const isCount = /^[1-9]\d*$/v.test(value) && count <= MAX_PROJECTS;
+
+      return isCount ? undefined : `must be a whole number from 1 to ${String(MAX_PROJECTS)}`;
+    },
+  });
+
+  const count = Number(unwrap(prompter, answer));
+
+  return count;
+};
+
+const askProjectName = async (
+  prompter: Prompter,
+  position: number,
+  workspaceName: string,
+  taken: readonly string[],
+): Promise<string> => {
+  const answer = await prompter.text({
+    message: `Project ${String(position)} name`,
+    validate: (value) => {
+      return isValidProjectDirName(value, workspaceName, taken) ? undefined : `must be ${PROJECT_DIR_NAME_RULE}`;
+    },
+  });
+
+  return unwrap(prompter, answer);
+};
+
+// An app picks a framework; a package is the TypeScript target on its defaults.
+const askProject = async (
+  prompter: Prompter,
+  position: number,
+  workspace: Partial<Record<AnswerKey, JsonValue>>,
+): Promise<Partial<Record<AnswerKey, JsonValue>>> => {
+  const kind = await askChoice(prompter, `Project ${String(position)} kind`, keysOf(PROJECT_KINDS), 'app', (choice) => {
+    return PROJECT_KINDS[choice];
+  });
+
+  if (kind === 'package') {
+    const typescript: Partial<Record<AnswerKey, JsonValue>> = { target: 'typescript' };
+
+    return typescript;
+  }
+
+  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...workspace };
+  const appTarget: ChoiceRecord = {
+    ...ANSWERS.target,
+    values: omit(ANSWERS.target.values, ['typescript']),
+  };
+  const soFar = soFarAnswered(answered);
+
+  const target = await askAnswer(prompter, appTarget, ANSWERS.target.prompt, targetFor(soFar), soFar);
+
+  writeIfPresent(answered, 'target', target);
+  await askKeys(prompter, answered, PROJECT_KEYS);
+
+  return omit(answered, WORKSPACE_KEYS);
+};
+
+const parsedAsked = (name: string, entries: readonly AnsweredEntry[]): Asked => {
+  const workspaceConfig = workspaceConfigOf(entries
+    .map(([answered, projectName]) => {
+      const entry = [{
+        ...DEFAULT_ANSWERS,
+        ...answered,
+      }, projectName] as const;
+
+      return entry;
+    }));
   const config = parseLinteljsConfig(JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...configOf({
-      ...DEFAULT_ANSWERS,
-      ...answered,
-    }, name),
+    ...workspaceConfig,
   }));
 
+  // A single layout's one project goes unnamed and takes the repository's.
+  const projectOf = (project: ProjectConfig): AskedProject => {
+    const asked: AskedProject = {
+      name: project.name ?? name,
+      answers: projectAnswersOf(config, project),
+    };
+
+    return asked;
+  };
+
+  const [first, ...rest] = config.projects;
   const asked: Asked = {
     name,
-    answers: projectAnswersOf(config, config.projects[0]),
+    projects: [projectOf(first), ...rest.map(projectOf)],
   };
 
   return asked;
+};
+
+const askMonorepo = async (
+  prompter: Prompter,
+  name: string,
+  workspace: Partial<Record<AnswerKey, JsonValue>>,
+): Promise<Asked> => {
+  const count = await askCount(prompter);
+  const entries: AnsweredEntry[] = [];
+
+  for (let position = 1; position <= count; position++) {
+    const taken = entries
+      .map(([, projectName]) => {
+        return projectName;
+      });
+    const projectName = await askProjectName(prompter, position, name, taken);
+    const project = await askProject(prompter, position, workspace);
+
+    entries.push([project, projectName]);
+  }
+
+  const targets = entries
+    .map(([project]) => {
+      const soFar = soFarAnswered({
+        ...workspace,
+        ...project,
+      });
+
+      return targetFor(soFar);
+    });
+  const [[firstProject] = [{}]] = entries;
+  const answered = {
+    ...firstProject,
+    ...workspace,
+  };
+
+  // Asked once, offering what any project offers.
+  await askKeys(prompter, answered, WORKSPACE_KEYS, targets);
+
+  const shared = pick(answered, WORKSPACE_KEYS);
+  const projects = entries
+    .map(([project, projectName]): AnsweredEntry => {
+      const entry: AnsweredEntry = [{
+        ...project,
+        ...shared,
+      }, projectName];
+
+      return entry;
+    });
+
+  return parsedAsked(name, projects);
+};
+
+// Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
+export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
+  const name = input.name ?? await askName(prompter);
+  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...input.fixed };
+
+  await askKeys(prompter, answered, ['layout']);
+
+  if (answered.layout === 'monorepo') {
+    return await askMonorepo(prompter, name, answered);
+  }
+
+  await askKeys(prompter, answered, ANSWER_KEYS);
+
+  return parsedAsked(name, [[answered, name]]);
 };

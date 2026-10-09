@@ -34,6 +34,15 @@ interface AskOutcome {
   recorded: Recorded;
 }
 
+type ByMessage = Record<string, (string | string[])[]>;
+
+interface Answered {
+  prompter: Prompter;
+  calls: string[];
+  labels: Record<string, string[]>;
+  validators: Record<string, (value: string) => string | undefined>;
+}
+
 vi.mock('@inquirer/prompts', () => {
   const inquirerPrompts = {
     select: vi.fn(),
@@ -61,8 +70,8 @@ describe('ask', () => {
   it('asks the project name first, then returns the chosen answer for every question', async () => {
     const { result } = await askWith([
       'demo-app',
+      'single',
       'svelte',
-      'monorepo',
       'none',
       ['zod'],
       'tailwind',
@@ -78,23 +87,26 @@ describe('ask', () => {
 
     const expected = {
       name: 'demo-app',
-      answers: {
-        target: 'svelte',
-        browser: 'chrome',
-        testing: 'none',
-        packageManager: 'pnpm',
-        libraries: ['zod'],
-        styling: 'tailwind',
-        store: 'tanstack-store',
-        typeSafety: 'relaxed',
-        agents: ['claude-code'],
-        plugins: [
-          'ponytail',
-          'context7',
-          'frontend-design',
-        ],
-        layout: 'monorepo',
-      },
+      projects: [{
+        name: 'demo-app',
+        answers: {
+          target: 'svelte',
+          browser: 'chrome',
+          testing: 'none',
+          packageManager: 'pnpm',
+          libraries: ['zod'],
+          styling: 'tailwind',
+          store: 'tanstack-store',
+          typeSafety: 'relaxed',
+          agents: ['claude-code'],
+          plugins: [
+            'ponytail',
+            'context7',
+            'frontend-design',
+          ],
+          layout: 'single',
+        },
+      }],
     };
     expect(result).toEqual(expected);
   });
@@ -102,11 +114,11 @@ describe('ask', () => {
   it('asks the browser and the UI framework for an extension, and records both', async () => {
     const { result, recorded } = await askWith([
       'demo-app',
+      undefined,
       'webextension',
       'firefox',
       ['popup', 'background'],
       'solid',
-      undefined,
       undefined,
       undefined,
       undefined,
@@ -121,13 +133,14 @@ describe('ask', () => {
 
     expect(recorded.calls).toContain('Browser');
     expect(recorded.calls).toContain('UI framework');
-    expect(result.answers.browser).toBe('firefox');
-    expect(result.answers.hostedFramework).toBe('solid');
+    expect(result.projects[0].answers.browser).toBe('firefox');
+    expect(result.projects[0].answers.hostedFramework).toBe('solid');
   });
 
   it('records no hosted framework when the answer is none', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
       'webextension',
       'chrome',
       ['popup', 'background'],
@@ -142,16 +155,16 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
     ]);
 
-    expect(result.answers.hostedFramework).toBeUndefined();
-    expect(result.answers.browser).toBe('chrome');
+    expect(result.projects[0].answers.hostedFramework).toBeUndefined();
+    expect(result.projects[0].answers.browser).toBe('chrome');
   });
 
   it('asks the surfaces for an extension, and records the ones chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app',
+      undefined,
       'webextension',
       'firefox',
       ['devtools-panel'],
@@ -165,22 +178,21 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
     ]);
 
     expect(recorded.calls).toContain('Surfaces');
     const expected = ['devtools-panel'];
-    expect(result.answers.surfaces).toEqual(expected);
+    expect(result.projects[0].answers.surfaces).toEqual(expected);
   });
 
   it('will not take the surfaces question left untouched, which ticks none', async () => {
     const asked = askWith([
       'demo-app',
+      undefined,
       'webextension',
       'firefox',
       undefined,
       'solid',
-      undefined,
       undefined,
       undefined,
       undefined,
@@ -197,8 +209,8 @@ describe('ask', () => {
   it('asks neither axis on a target that hosts neither', async () => {
     const { recorded } = await askWith([
       'demo-app',
-      'react',
       undefined,
+      'react',
       undefined,
       undefined,
       undefined,
@@ -221,8 +233,8 @@ describe('ask', () => {
   it('asks nothing about the language, and still asks for a store', async () => {
     const { result, recorded } = await askWith([
       'demo-app',
-      'angular',
       undefined,
+      'angular',
       undefined,
       undefined,
       undefined,
@@ -236,8 +248,8 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result.answers.target).toBe('angular');
-    expect(result.answers.store).toBe('ngrx-signals');
+    expect(result.projects[0].answers.target).toBe('angular');
+    expect(result.projects[0].answers.store).toBe('ngrx-signals');
 
     const mentionsTypescript = recorded.calls
       .some((message) => {
@@ -290,7 +302,10 @@ describe('ask', () => {
 
     const expected = {
       name: 'demo-app',
-      answers: DEFAULT_ANSWERS,
+      projects: [{
+        name: 'demo-app',
+        answers: DEFAULT_ANSWERS,
+      }],
     };
     expect(result).toEqual(expected);
   });
@@ -325,7 +340,7 @@ describe('ask', () => {
       [],
     ]);
 
-    expect(result.answers.languages).toEqual(recorded);
+    expect(result.projects[0].answers.languages).toEqual(recorded);
   });
 
   it('selects both agents and no plugins', async () => {
@@ -351,7 +366,7 @@ describe('ask', () => {
       agents: ['claude-code', 'codex'],
       plugins: [],
     };
-    expect(result.answers).toMatchObject(expected);
+    expect(result.projects[0].answers).toMatchObject(expected);
   });
 
   it('selects one agent and a plugin subset, normalized to declaration order', async () => {
@@ -377,7 +392,7 @@ describe('ask', () => {
       agents: ['codex'],
       plugins: ['ponytail', 'frontend-design'],
     };
-    expect(result.answers).toMatchObject(expected);
+    expect(result.projects[0].answers).toMatchObject(expected);
   });
 
   it('preselects no frontend-design plugin for a library', async () => {
@@ -386,11 +401,12 @@ describe('ask', () => {
     });
     const { result } = await askWith([
       'demo-lib',
+      undefined,
       'typescript',
       ...defaults,
     ]);
 
-    expect(result.answers.plugins).toStrictEqual(['ponytail', 'context7']);
+    expect(result.projects[0].answers.plugins).toStrictEqual(['ponytail', 'context7']);
   });
 
   it('offers every option in the product\'s own name and casing', async () => {
@@ -473,7 +489,7 @@ describe('ask', () => {
       agents: [],
       plugins: [],
     };
-    expect(result.answers).toMatchObject(expected);
+    expect(result.projects[0].answers).toMatchObject(expected);
 
     expect(recorded.calls).not.toContain('AI plugins');
   });
@@ -525,11 +541,11 @@ describe('ask', () => {
           undefined,
           undefined,
         ],
-        { fixed: { layout: 'monorepo' } },
+        { fixed: { layout: 'single' } },
       );
 
-      expect(result.answers.layout).toBe('monorepo');
-      expect(result.answers.testing).toBe('none');
+      expect(result.projects[0].answers.layout).toBe('single');
+      expect(result.projects[0].answers.testing).toBe('none');
       expect(recorded.calls).not.toContain('Repository layout');
     });
   });
@@ -582,7 +598,7 @@ describe('the store question', () => {
       undefined,
     ]);
 
-    expect(result.answers.store).toBe('redux-toolkit');
+    expect(result.projects[0].answers.store).toBe('redux-toolkit');
     expect(recorded.calls[8]).toBe('State store');
 
     const expected = [
@@ -597,8 +613,8 @@ describe('the store question', () => {
   it('names the stores the target actually brings, not React\'s', async () => {
     const { recorded } = await askWith([
       'demo-app',
-      'angular',
       undefined,
+      'angular',
       undefined,
       undefined,
       undefined,
@@ -638,7 +654,7 @@ describe('the store question', () => {
       undefined,
     ]);
 
-    expect(result.answers.store).toBeUndefined();
+    expect(result.projects[0].answers.store).toBeUndefined();
   });
 
   it('defaults to no store', async () => {
@@ -660,12 +676,13 @@ describe('the store question', () => {
       undefined,
     ]);
 
-    expect(result.answers.store).toBeUndefined();
+    expect(result.projects[0].answers.store).toBeUndefined();
   });
 
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
       'demo-app',
+      undefined,
       'webextension',
       undefined,
       ['popup'],
@@ -680,16 +697,16 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
     ]);
 
-    expect(result.answers.store).toBeUndefined();
+    expect(result.projects[0].answers.store).toBeUndefined();
     expect(recorded.calls).not.toContain('State store');
   });
 
   it('never asks the languages of an extension without a popup', async () => {
     const { result, recorded } = await askWith([
       'demo-app',
+      undefined,
       'webextension',
       undefined,
       ['devtools-panel'],
@@ -704,10 +721,9 @@ describe('the store question', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
     ]);
 
-    expect(result.answers.languages).toBeUndefined();
+    expect(result.projects[0].answers.languages).toBeUndefined();
     expect(recorded.calls).not.toContain('Languages');
   });
 });
@@ -777,9 +793,9 @@ describe('the form library and router questions', () => {
     ]);
 
     const expected = ['zod'];
-    expect(result.answers.libraries).toEqual(expected);
-    expect(result.answers.styling).toBe('tailwind');
-    expect(result.answers.form).toBe('react-hook-form');
+    expect(result.projects[0].answers.libraries).toEqual(expected);
+    expect(result.projects[0].answers.styling).toBe('tailwind');
+    expect(result.projects[0].answers.form).toBe('react-hook-form');
   });
 
   it('leaves form unset when none is chosen', async () => {
@@ -801,14 +817,14 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    expect(result.answers).not.toHaveProperty('form');
+    expect(result.projects[0].answers).not.toHaveProperty('form');
   });
 
   it('offers react-hook-form only where the target renders with React', async () => {
     const vue = await askWith([
       'demo-app',
-      'vue',
       undefined,
+      'vue',
       undefined,
       undefined,
       undefined,
@@ -825,9 +841,9 @@ describe('the form library and router questions', () => {
     ]);
     const hostedReact = await askWith([
       'demo-app',
+      undefined,
       'astro',
       'react',
-      undefined,
       undefined,
       undefined,
       undefined,
@@ -858,20 +874,21 @@ describe('the form library and router questions', () => {
     });
     const { recorded, result } = await askWith([
       'demo-app',
+      undefined,
       'react-native',
       ...defaults,
     ]);
 
     const expected = ['Jest', 'None'];
     expect(recorded.labels['Testing']).toEqual(expected);
-    expect(result.answers.testing).toBe('jest');
+    expect(result.projects[0].answers.testing).toBe('jest');
   });
 
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
     const { recorded } = await askWith([
       'demo-app',
-      target,
       undefined,
+      target,
       undefined,
       undefined,
       undefined,
@@ -913,8 +930,8 @@ describe('the form library and router questions', () => {
     ]);
     const next = await askWith([
       'demo-app',
-      'next',
       undefined,
+      'next',
       undefined,
       undefined,
       undefined,
@@ -928,9 +945,232 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    expect(react.result.answers.router).toBe('tanstack-router');
+    expect(react.result.projects[0].answers.router).toBe('tanstack-router');
     expect(next.recorded.calls).not.toContain('Router');
-    expect(next.result.answers).not.toHaveProperty('router');
+    expect(next.result.projects[0].answers).not.toHaveProperty('router');
+  });
+});
+
+// Answers by question, in turn per repeat, so a monorepo script need not count the questions between.
+const answeredBy = (answers: ByMessage): Answered => {
+  const calls: string[] = [];
+  const labels: Record<string, string[]> = {};
+  const validators: Answered['validators'] = {};
+
+  const next = (message: string): string | string[] | undefined => {
+    calls.push(message);
+
+    return answers[message]?.shift();
+  };
+
+  const prompter: Prompter = {
+    select: (request) => {
+      labels[request.message] = request.options
+        .map((option) => {
+          return option.label;
+        });
+
+      const answer = String(next(request.message) ?? request.initialValue);
+
+      return Promise.resolve(answer);
+    },
+    multiselect: (request) => {
+      const answer = [next(request.message) ?? request.initialValues].flat();
+
+      return Promise.resolve(answer);
+    },
+    text: (request) => {
+      validators[request.message] = request.validate;
+
+      const answer = String(next(request.message));
+
+      return Promise.resolve(answer);
+    },
+    isCancel: (value): value is symbol => {
+      return typeof value === 'symbol';
+    },
+  };
+  const answered: Answered = {
+    prompter,
+    calls,
+    labels,
+    validators,
+  };
+
+  return answered;
+};
+
+const countOf = (calls: readonly string[], message: string): number => {
+  return calls
+    .filter((call) => {
+      return call === message;
+    })
+    .length;
+};
+
+describe('a monorepo', () => {
+  const threeProjects: ByMessage = {
+    'Project name': ['acme'],
+    'Repository layout': ['monorepo'],
+    'How many projects?': ['3'],
+    'Project 1 name': ['web'],
+    'Project 1 kind': ['app'],
+    'Project 2 name': ['admin'],
+    'Project 2 kind': ['app'],
+    'Project 3 name': ['shared'],
+    'Project 3 kind': ['package'],
+    'Framework': ['react', 'vue'],
+  };
+
+  it('asks each project its name and kind, and an app its framework', async () => {
+    const answered = answeredBy(structuredClone(threeProjects));
+
+    const result = await ask(answered.prompter);
+
+    const shape = result.projects
+      .map((project) => {
+        const row = [
+          project.name,
+          project.answers.target,
+          project.answers.layout,
+        ];
+
+        return row;
+      });
+    const expected = [
+      [
+        'web',
+        'react',
+        'monorepo',
+      ],
+      [
+        'admin',
+        'vue',
+        'monorepo',
+      ],
+      [
+        'shared',
+        'typescript',
+        'monorepo',
+      ],
+    ];
+    expect(result.name).toBe('acme');
+    expect(shape).toEqual(expected);
+    const frameworkCount = countOf(answered.calls, 'Framework');
+    expect(frameworkCount).toBe(2);
+    expect(answered.labels['Framework']).not.toContain('TypeScript package, no framework');
+  });
+
+  it('asks the workspace questions once, after every project', async () => {
+    const answered = answeredBy(structuredClone(threeProjects));
+
+    await ask(answered.prompter);
+
+    const counts = [
+      'Type safety',
+      'AI agents',
+      'AI plugins',
+    ]
+      .map((message) => {
+        return countOf(answered.calls, message);
+      });
+    const lastProject = answered.calls.lastIndexOf('Project 3 kind');
+
+    expect(counts).toEqual([
+      1,
+      1,
+      1,
+    ]);
+
+    const typeSafetyAt = answered.calls.indexOf('Type safety');
+    expect(typeSafetyAt).toBeGreaterThan(lastProject);
+  });
+
+  it('asks a package nothing past its kind', async () => {
+    const answered = answeredBy({
+      'Project name': ['acme'],
+      'Repository layout': ['monorepo'],
+      'How many projects?': ['1'],
+      'Project 1 name': ['shared'],
+      'Project 1 kind': ['package'],
+    });
+
+    const result = await ask(answered.prompter);
+
+    const afterKind = answered.calls.slice(answered.calls.indexOf('Project 1 kind') + 1);
+    const expectedPlugins = ['ponytail', 'context7'];
+    expect(afterKind).not.toContain('Framework');
+    expect(afterKind).not.toContain('Testing');
+    expect(result.projects[0].answers.plugins).toEqual(expectedPlugins);
+  });
+
+  it('preselects the plugins any project offers, not only the first\'s', async () => {
+    const answered = answeredBy({
+      'Project name': ['acme'],
+      'Repository layout': ['monorepo'],
+      'How many projects?': ['2'],
+      'Project 1 name': ['shared'],
+      'Project 1 kind': ['package'],
+      'Project 2 name': ['web'],
+      'Project 2 kind': ['app'],
+    });
+
+    const result = await ask(answered.prompter);
+
+    expect(result.projects[0].answers.plugins).toContain('frontend-design');
+  });
+
+  it('refuses a count that is not a whole number from 1 to the cap', async () => {
+    const answered = answeredBy(structuredClone(threeProjects));
+
+    await ask(answered.prompter);
+
+    const validate = answered.validators['How many projects?'];
+    const refused = [
+      '0',
+      '21',
+      'abc',
+      '1.5',
+    ]
+      .map((value) => {
+        return validate?.(value);
+      });
+    const accepted = ['1', '20']
+      .map((value) => {
+        return validate?.(value);
+      });
+
+    const expected = Array.from({ length: 4 }, () => {
+      return 'must be a whole number from 1 to 20';
+    });
+    expect(refused).toEqual(expected);
+
+    expect(accepted).toEqual([undefined, undefined]);
+  });
+
+  it('refuses a project name that is not kebab-case, is taken, or is the root\'s', async () => {
+    const answered = answeredBy(structuredClone(threeProjects));
+
+    await ask(answered.prompter);
+
+    const validate = answered.validators['Project 2 name'];
+    const refused = [
+      'Admin',
+      'web',
+      'acme-workspace',
+    ]
+      .map((value) => {
+        return validate?.(value) ?? '';
+      });
+    const accepted = validate?.('admin');
+
+    const allRefused = refused
+      .every((message) => {
+        return message.startsWith('must be ');
+      });
+    expect(allRefused).toBe(true);
+
+    expect(accepted).toBeUndefined();
   });
 });
 

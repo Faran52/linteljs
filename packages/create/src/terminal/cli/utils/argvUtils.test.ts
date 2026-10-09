@@ -256,3 +256,182 @@ describe('argumentError', () => {
     expect(actual).toBeUndefined();
   });
 });
+
+describe('--project', () => {
+  const errorOf = (argv: string[]): string | undefined => {
+    const options = parseCliArgs(argv);
+
+    return argumentError(options);
+  };
+
+  it('groups the per-project flags after each --project, and keeps the workspace flags apart', () => {
+    const options = parseCliArgs([
+      'acme',
+      '--type-safety',
+      'relaxed',
+      '--project',
+      'web',
+      '--target',
+      'react',
+      '--libraries',
+      'zod',
+      '--libraries',
+      'dayjs',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+    ]);
+
+    const expectedAnswers = {
+      layout: 'monorepo',
+      typeSafety: 'relaxed',
+    };
+    const expectedProjects = [
+      {
+        name: 'web',
+        answers: {
+          target: 'react',
+          libraries: ['zod', 'dayjs'],
+        },
+      },
+      {
+        name: 'shared',
+        kind: 'package',
+        answers: {},
+      },
+    ];
+    expect(options.answers).toEqual(expectedAnswers);
+    expect(options.projects).toEqual(expectedProjects);
+    expect(options.strayFlags).toEqual([]);
+  });
+
+  it('leaves projects out and the layout alone with no --project', () => {
+    const options = parseCliArgs([
+      'demo-app',
+      '--target',
+      'vue',
+    ]);
+
+    const expected = { target: 'vue' };
+    expect(options.projects).toBeUndefined();
+    expect(options.answers).toEqual(expected);
+  });
+
+  it('refuses a per-project flag before the first --project', () => {
+    const argv = [
+      'acme',
+      '--target',
+      'react',
+      '--kind',
+      'app',
+      '--project',
+      'web',
+    ];
+
+    const options = parseCliArgs(argv);
+
+    const expected = ['--target', '--kind'];
+    expect(options.strayFlags).toEqual(expected);
+    const error = errorOf(argv);
+    expect(error).toBe('--target, --kind before the first --project: a project\'s flags follow its --project.');
+  });
+
+  it('refuses --layout single beside --project', () => {
+    const error = errorOf([
+      'acme',
+      '--layout',
+      'single',
+      '--project',
+      'web',
+    ]);
+
+    expect(error).toBe('--project opens a monorepo project, so it takes no --layout single.');
+  });
+
+  it.each([
+    ['Web', 'Project name Web must be'],
+    ['acme-workspace', 'Project name acme-workspace must be'],
+  ])('refuses the project name %s', (name, message) => {
+    const error = errorOf([
+      'acme',
+      '--project',
+      name,
+    ]);
+    expect(error).toContain(message);
+  });
+
+  it('refuses a project name already taken', () => {
+    const error = errorOf([
+      'acme',
+      '--project',
+      'web',
+      '--project',
+      'web',
+    ]);
+
+    expect(error).toContain('Project name web must be');
+  });
+
+  it('takes app or package as a kind, and refuses another', () => {
+    const app = errorOf([
+      'acme',
+      '--project',
+      'web',
+      '--kind',
+      'app',
+    ]);
+    const lib = errorOf([
+      'acme',
+      '--project',
+      'web',
+      '--kind',
+      'lib',
+    ]);
+
+    expect(app).toBeUndefined();
+    expect(lib).toBe('--kind takes app or package, not lib.');
+  });
+
+  it('refuses an answer flag on a package', () => {
+    const error = errorOf([
+      'acme',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+      '--testing',
+      'none',
+    ]);
+
+    expect(error).toBe('shared is a package, a TypeScript package on its defaults, so it takes no answer flags.');
+  });
+
+  it('refuses the typescript target on an app', () => {
+    const error = errorOf([
+      'acme',
+      '--project',
+      'web',
+      '--target',
+      'typescript',
+    ]);
+
+    expect(error).toBe('web is an app, which needs a framework; a TypeScript package is --kind package.');
+  });
+
+  it('passes a monorepo of valid projects', () => {
+    const error = errorOf([
+      'acme',
+      '--project',
+      'web',
+      '--target',
+      'react',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+    ]);
+
+    expect(error).toBeUndefined();
+  });
+});

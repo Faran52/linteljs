@@ -6,6 +6,8 @@ import {
   type HostedAnswers,
   type RunOutput,
   type Stage,
+  type Workspace,
+  type WorkspaceProject,
 } from '@config/types';
 
 import { projectDirectoryOf } from '@utils/answerUtils';
@@ -31,6 +33,8 @@ export interface PipelineOptions {
   name: string;
   cwd: string;
   answers: HostedAnswers;
+  // A monorepo's projects, `name` then the workspace's; without them `name` and `answers` are the one project.
+  projects?: Workspace['projects'];
   skip: Stage[];
   existing?: boolean;
   seed?: boolean;
@@ -125,8 +129,17 @@ const stageInstall = async (options: PipelineOptions): Promise<void> => {
   await runSpawn(binary, ['install'], options.cwd, options.output);
 };
 
-const appRoot = (options: PipelineOptions): string => {
-  const directory = projectDirectoryOf(options.answers, options.name);
+const projectsOf = (options: PipelineOptions): Workspace['projects'] => {
+  const projects: Workspace['projects'] = options.projects ?? [{
+    name: options.name,
+    answers: options.answers,
+  }];
+
+  return projects;
+};
+
+const rootOf = (options: PipelineOptions, project: WorkspaceProject): string => {
+  const directory = projectDirectoryOf(project.answers, project.name);
 
   return join(options.cwd, directory);
 };
@@ -137,21 +150,23 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   standard: stageStandard,
   install: stageInstall,
   fix: async (options) => {
-    await fixPass(appRoot(options), options.answers, options.onNotice, options.cwd);
+    for (const project of projectsOf(options)) {
+      await fixPass(rootOf(options, project), project.answers, options.onNotice, options.cwd);
+    }
   },
 };
 
 export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
   // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
-  const workspace = workspaceOf(options.name, [{
-    name: options.name,
-    answers: options.answers,
-  }]);
+  const workspace = workspaceOf(options.name, projectsOf(options));
   const seeds = seedArtifacts(workspace);
-  const project = await projectShapeReader(appRoot(options));
+  const shapes = await Promise.all(workspace.projects
+    .map(async (project) => {
+      return await projectShapeReader(rootOf(options, project));
+    }));
   const artifacts = [
     ...seeds,
-    ...buildArtifacts(workspace, [project]),
+    ...buildArtifacts(workspace, shapes),
   ];
 
   for (const [index, stage] of STAGES.entries()) {

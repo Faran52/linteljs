@@ -3,6 +3,7 @@ export {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   LEGACY_CONFIG_PATH,
+  PROJECT_NAME_PATTERN,
   WORKSPACE_KEYS,
 } from './constants';
 export {

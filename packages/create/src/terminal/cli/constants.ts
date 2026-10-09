@@ -13,6 +13,10 @@ export const USAGE_HEAD = `@linteljs/create [name] [options]
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
   --add <name>      sync, in a monorepo: write packages/<name>, a TypeScript package, and install it
+  --project <name>  open a monorepo project (repeatable); the answer flags after it, but --layout,
+                    --type-safety, --agents and --plugins, apply to it alone
+  --kind <kind>     after --project: app (the default) or package, a TypeScript package that takes
+                    no answer flags
   --version, -v
   --help, -h
 
@@ -37,6 +41,8 @@ export const SYNC_NEEDS_YES = 'Skipped: sync asks before this step writes. Run i
 
 export const EXISTING_MONOREPO = '--existing runs in a single repo; create a monorepo in a new directory.';
 
+export const PROJECT_NEEDS_MONOREPO = '--project opens a monorepo project, so it takes no --layout single.';
+
 export const ADD_NEEDS_SYNC = '--add runs with sync: @linteljs/create sync --add <name>.';
 
 // The directory under packages/ and the package name both, so no scope.
@@ -48,6 +54,12 @@ export const ADD_NEEDS_MONOREPO = 'sync --add writes a package into a monorepo, 
 
 export const CLI_OPTIONS = {
   'add': { type: 'string' },
+  'project': {
+    type: 'string',
+    multiple: true,
+    default: [],
+  },
+  'kind': { type: 'string' },
   'existing': {
     type: 'boolean',
     default: false,

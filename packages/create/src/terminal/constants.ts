@@ -6,5 +6,9 @@ export const PROJECT_NAME_RULE
 // npm's own ceiling on a package name.
 export const MAX_PROJECT_NAME_LENGTH = 214;
 
-export const PROJECT_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/;
+export const NPM_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/;
+export const PROJECT_DIR_NAME_RULE
+  = 'kebab-case (lowercase letters and digits, single dashes between), at most 214 characters, unique, '
+    + 'and not the root package name <name>-workspace';
+
 export const RESERVED_PROJECT_NAMES = new Set(['favicon.ico', 'node_modules']);

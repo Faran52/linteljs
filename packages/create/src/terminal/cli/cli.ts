@@ -52,6 +52,8 @@ import {
 import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
+  type Asked,
+  type AskedProject,
   confirm,
   inquirerPrompter,
   type Prompter,
@@ -69,6 +71,7 @@ import {
   argumentError,
   type CliOptions,
   parseCliArgs,
+  type ProjectFlags,
 } from './utils/argvUtils';
 import { usage } from './utils/flagUtils';
 import {
@@ -78,11 +81,18 @@ import {
   upgradeTable,
 } from './utils/reportUtils';
 
-import type { Answers, HostedAnswers } from '@config/types';
+import type {
+  Answers,
+  HostedAnswers,
+  Workspace,
+  WorkspaceProject,
+} from '@config/types';
 
+// `projects` for a monorepo, named for their directories; `answers` stays the first's.
 interface HostedAsk {
   name: string;
   answers: HostedAnswers;
+  projects?: Workspace['projects'];
 }
 
 interface Asker {
@@ -124,6 +134,70 @@ const flaggedAnswers = (name: string, flags: AnswerFlags = {}): Answers => {
   };
 
   return answers;
+};
+
+// Each project on the workspace flags under its own; `plugins` offers what any project offers.
+const flaggedProjects = (options: CliOptions, projects: [ProjectFlags, ...ProjectFlags[]], host: Host): HostedAsk => {
+  const flagOne = (project: ProjectFlags): WorkspaceProject => {
+    const answers = flaggedAnswers(project.name, {
+      ...options.answers,
+      ...(project.kind === 'package' ? { target: 'typescript' } : {}),
+      ...project.answers,
+    });
+    const flagged: WorkspaceProject = {
+      name: project.name,
+      answers: hosted(answers, host),
+    };
+
+    return flagged;
+  };
+
+  const [first, ...rest] = projects;
+  const flagged: Workspace['projects'] = [flagOne(first), ...rest.map(flagOne)];
+  const records = flagged
+    .map(({ answers }) => {
+      return targetFor(answers);
+    });
+  const plugins = options.answers?.plugins === undefined
+    ? ANSWERS.plugins.targetDefault(records) ?? DEFAULT_ANSWERS.plugins
+    : flagged[0].answers.plugins;
+  const answers: HostedAnswers = {
+    ...flagged[0].answers,
+    plugins,
+  };
+
+  const asked: HostedAsk = {
+    name: options.name,
+    answers,
+    projects: [{
+      name: first.name,
+      answers,
+    }, ...flagged.slice(1)],
+  };
+
+  return asked;
+};
+
+const askedProjects = (asked: Asked, host: Host): HostedAsk => {
+  const [first, ...rest] = asked.projects;
+
+  const hostOne = (project: AskedProject): WorkspaceProject => {
+    const withHost: WorkspaceProject = {
+      name: project.name,
+      answers: hosted(project.answers, host),
+    };
+
+    return withHost;
+  };
+
+  const projects: Workspace['projects'] = [hostOne(first), ...rest.map(hostOne)];
+  const answered: HostedAsk = {
+    name: asked.name,
+    answers: projects[0].answers,
+    ...(projects[0].answers.layout === 'monorepo' ? { projects } : {}),
+  };
+
+  return answered;
 };
 
 // `--existing` takes the name its package.json records, as a new project takes its argument's.
@@ -176,6 +250,10 @@ const askedFrom = async (
     return fromConfig(config);
   }
 
+  if (options.projects !== undefined) {
+    return flaggedProjects(options, options.projects, host);
+  }
+
   if (options.yes) {
     const flagged = flaggedAnswers(options.name, options.answers);
 
@@ -194,12 +272,8 @@ const askedFrom = async (
     ...prefilled,
     fixed,
   });
-  const answered: HostedAsk = {
-    name: asked.name,
-    answers: hosted(asked.answers, host),
-  };
 
-  return answered;
+  return askedProjects(asked, host);
 };
 
 // `--yes` accepts; with no terminal it is null: the step writes nothing and the run fails, so a script notices.
@@ -418,7 +492,11 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
   }
 
   try {
-    const { name, answers } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
+    const {
+      name,
+      answers,
+      projects,
+    } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
     if (options.add !== undefined) {
       return await runAdd(options, answers, options.add);
@@ -439,6 +517,7 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
       name: projectName,
       cwd: options.existing ? options.cwd : resolve(options.cwd, directory),
       answers,
+      ...(projects === undefined ? {} : { projects }),
       skip: options.skip,
       existing: options.existing,
       seed: options.seed,

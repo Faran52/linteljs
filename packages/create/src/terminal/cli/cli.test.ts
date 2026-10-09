@@ -1092,6 +1092,110 @@ describe('main: answers given as flags', () => {
     const joined = errors.join('\n');
     expect(joined).toContain('vitest is not an answer for react-native');
   });
+
+  const projectsAt = async (root: string): Promise<string[][]> => {
+    const configText = await readFile(join(root, CONFIG_PATH), 'utf8');
+    const config = parseLinteljsConfig(configText);
+
+    return config.projects
+      .map((entry) => {
+        const { target } = projectAnswersOf(config, entry);
+
+        const row = [entry.name ?? '', target];
+
+        return row;
+      });
+  };
+
+  it('writes each --project in its directory, an app under apps/ and a package under packages/', async () => {
+    const { code } = await runMain([
+      'acme',
+      '--project',
+      'web',
+      '--target',
+      'react',
+      '--project',
+      'admin',
+      '--target',
+      'vue',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+      '--no-install',
+      '--yes',
+    ]);
+
+    const root = join(project, 'acme');
+    const directories = [
+      'apps/web',
+      'apps/admin',
+      'packages/shared',
+    ];
+    const names = await Promise.all(directories
+      .map(async (directory) => {
+        return await nameAt(join(root, directory));
+      }));
+    const expectedProjects = [
+      ['web', 'react'],
+      ['admin', 'vue'],
+      ['shared', 'typescript'],
+    ];
+    expect(code).toBe(0);
+
+    expect(names).toEqual([
+      'web',
+      'admin',
+      'shared',
+    ]);
+
+    const projects = await projectsAt(root);
+    expect(projects).toEqual(expectedProjects);
+  });
+
+  it.each([
+    [[], ['ponytail', 'context7']],
+    [['--plugins', 'ponytail'], ['ponytail']],
+  ])('records the plugins of a monorepo of packages, flagged %j', async (flags, expected) => {
+    await runMain([
+      'acme',
+      '--project',
+      'shared',
+      '--kind',
+      'package',
+      ...flags,
+      '--no-install',
+      '--yes',
+    ]);
+
+    const { plugins } = await configAt(join(project, 'acme'));
+    expect(plugins).toEqual(expected);
+  });
+
+  it('writes the projects a monorepo questionnaire named', async () => {
+    const asked = scripted([
+      'monorepo',
+      '2',
+      'shared',
+      'package',
+      'web',
+      'app',
+      'vue',
+      ...Array.from({ length: 16 }, () => {
+        return undefined;
+      }),
+    ]);
+
+    const { code } = await runMain(['acme', '--no-install'], asked);
+
+    const expected = [
+      ['shared', 'typescript'],
+      ['web', 'vue'],
+    ];
+    expect(code).toBe(0);
+    const projects = await projectsAt(join(project, 'acme'));
+    expect(projects).toEqual(expected);
+  });
 });
 
 describe('main: what a run reports', () => {

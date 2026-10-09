@@ -28,6 +28,7 @@ const OPTIONS: CliOptions = {
   skip: [],
   existing: false,
   unknownSkips: [],
+  strayFlags: [],
   unexpectedArguments: [],
   yes: true,
   seed: false,

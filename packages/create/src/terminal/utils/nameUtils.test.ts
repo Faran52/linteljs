@@ -1,6 +1,6 @@
 import { PROJECT_NAME_RULE } from '../constants';
 
-import { isValidProjectName } from './nameUtils';
+import { isValidProjectDirName, isValidProjectName } from './nameUtils';
 
 describe('isValidProjectName', () => {
   it.each([
@@ -37,5 +37,37 @@ describe('isValidProjectName', () => {
     expect(PROJECT_NAME_RULE).toBe('a valid npm package name, scoped as @scope/name or not: lowercase letters, digits, '
       + "'.', '-' and '_' only, each part starting with a letter or digit, at most 214 characters, and not a reserved "
       + 'npm name');
+  });
+});
+
+describe('isValidProjectDirName', () => {
+  it.each([
+    ['a kebab-case name', 'web-admin'],
+    ['digits', 'app2'],
+    ['the longest npm allows', 'a'.repeat(214)],
+  ])('accepts %s', (_case, name) => {
+    const isValid = isValidProjectDirName(name, 'acme', ['shared']);
+    expect(isValid).toBe(true);
+  });
+
+  it.each([
+    ['nothing at all', ''],
+    ['an underscore', 'web_admin'],
+    ['a dot', 'web.admin'],
+    ['a scope', '@acme/web'],
+    ['a double dash', 'web--admin'],
+    ['a trailing dash', 'web-'],
+    ['an uppercase letter', 'Web'],
+    ['one character too many', 'a'.repeat(215)],
+    ['the root package name', 'acme-workspace'],
+    ['a name already taken', 'shared'],
+  ])('rejects %s', (_case, name) => {
+    const isValid = isValidProjectDirName(name, 'acme', ['shared']);
+    expect(isValid).toBe(false);
+  });
+
+  it('names the root after the unscoped, kebab-cased workspace', () => {
+    const isValid = isValidProjectDirName('my-acme-workspace', '@team/myAcme', []);
+    expect(isValid).toBe(false);
   });
 });

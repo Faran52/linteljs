@@ -4,15 +4,20 @@ import { parseArgs } from 'node:util';
 import { STAGES } from '@config/constants';
 import { type Stage } from '@config/types';
 
-import { type AnswerKey, type JsonValue } from '@answers';
+import {
+  type AnswerKey,
+  type JsonValue,
+  WORKSPACE_KEYS,
+} from '@answers';
 
-import { PROJECT_NAME_RULE } from '../../constants';
-import { isValidProjectName } from '../../utils/nameUtils';
+import { PROJECT_DIR_NAME_RULE, PROJECT_NAME_RULE } from '../../constants';
+import { isValidProjectDirName, isValidProjectName } from '../../utils/nameUtils';
 import {
   ADD_NEEDS_SYNC,
   CLI_OPTIONS,
   EXISTING_MONOREPO,
   PACKAGE_NAME_RULE,
+  PROJECT_NEEDS_MONOREPO,
 } from '../constants';
 
 import {
@@ -24,11 +29,21 @@ import {
 // Validated by the config parser, so a wrong value names its choices.
 export type AnswerFlags = Partial<Record<AnswerKey, JsonValue>>;
 
+export interface ProjectFlags {
+  name: string;
+  kind?: string;
+  answers: AnswerFlags;
+}
+
 export interface CliOptions {
   command: 'create' | 'sync';
   name: string;
   cwd: string;
+  // With `projects`, the workspace answers alone.
   answers?: AnswerFlags;
+  projects?: [ProjectFlags, ...ProjectFlags[]];
+  // Per-project flags given before the first `--project`.
+  strayFlags: string[];
   skip: Stage[];
   existing: boolean;
   // `sync --add <name>`: the package to write.
@@ -41,6 +56,19 @@ export interface CliOptions {
   help: boolean;
   version: boolean;
 }
+
+interface ProjectGroup {
+  name: string;
+  kind?: string;
+  values: Record<string, string | string[]>;
+}
+
+interface ProjectGroups {
+  groups: ProjectGroup[];
+  strays: string[];
+}
+
+type ArgToken = NonNullable<ReturnType<typeof parseArgs>['tokens']>[number];
 
 // An empty value is how a flag says none, and `''.split(',')` would answer `['']`.
 const list = (flag: string[]): string[] => {
@@ -71,6 +99,80 @@ const answerFlagsFrom = (flagged: readonly FlaggedAnswer[], values: Record<strin
   return flags;
 };
 
+const isWorkspaceKey = (key: AnswerKey): boolean => {
+  return WORKSPACE_KEYS
+    .some((workspaceKey) => {
+      return workspaceKey === key;
+    });
+};
+
+// `parseArgs` keeps no order, so the tokens are walked: each `--project` opens a group the per-project flags join.
+const projectGroupsOf = (tokens: readonly ArgToken[], perProject: readonly FlaggedAnswer[]): ProjectGroups => {
+  const declared = Object.entries(answerOptions(perProject));
+  const flags = new Set([
+    'project',
+    'kind',
+    ...declared
+      .map(([flag]) => {
+        return flag;
+      }),
+  ]);
+  const multiple = new Set(declared
+    .filter(([, option]) => {
+      return option.multiple === true;
+    })
+    .map(([flag]) => {
+      return flag;
+    }));
+  const groups: ProjectGroup[] = [];
+  const strays: string[] = [];
+
+  for (const token of tokens) {
+    if (token.kind !== 'option' || !flags.has(token.name)) {
+      continue;
+    }
+
+    const value = String(token.value);
+    const group = groups.at(-1);
+
+    if (token.name === 'project') {
+      groups.push({
+        name: value,
+        values: {},
+      });
+    }
+    else if (group === undefined) {
+      strays.push(`--${token.name}`);
+    }
+    else if (token.name === 'kind') {
+      group.kind = value;
+    }
+    else {
+      const previous = group.values[token.name];
+      const listed = Array.isArray(previous) ? previous : [];
+
+      group.values[token.name] = multiple.has(token.name) ? [...listed, value] : value;
+    }
+  }
+
+  const grouped: ProjectGroups = {
+    groups,
+    strays,
+  };
+
+  return grouped;
+};
+
+const projectFlagsOf = (group: ProjectGroup, perProject: readonly FlaggedAnswer[]): ProjectFlags => {
+  const project: ProjectFlags = {
+    name: group.name,
+    ...(group.kind === undefined ? {} : { kind: group.kind }),
+    answers: answerFlagsFrom(perProject, group.values),
+  };
+
+  return project;
+};
+
 const isStage = (value: string): value is Stage => {
   return STAGES
     .some((stage) => {
@@ -84,13 +186,34 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     ...CLI_OPTIONS,
     ...answerOptions(answers),
   };
-  const { values, positionals } = parseArgs({
+  const {
+    values,
+    positionals,
+    tokens,
+  } = parseArgs({
     args: argv,
     allowPositionals: true,
     options: declared,
+    tokens: true,
   });
 
-  const flagged = answerFlagsFrom(answers, values);
+  const perProject = answers
+    .filter(({ key }) => {
+      return !isWorkspaceKey(key);
+    });
+  const { groups, strays } = projectGroupsOf(tokens, perProject);
+  const [firstGroup, ...otherGroups] = groups;
+  const hasProjects = firstGroup !== undefined;
+  const workspaceFlags = answerFlagsFrom(answers
+    .filter(({ key }) => {
+      return isWorkspaceKey(key);
+    }), values);
+  const flagged = hasProjects
+    ? {
+        layout: 'monorepo',
+        ...workspaceFlags,
+      }
+    : answerFlagsFrom(answers, values);
   const answered = Object.keys(flagged).length > 0;
 
   const [first = '', ...unexpectedArguments] = positionals;
@@ -114,6 +237,15 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unknownSkips,
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
+    ...(firstGroup === undefined
+      ? {}
+      : {
+          projects: [projectFlagsOf(firstGroup, perProject), ...otherGroups
+            .map((group) => {
+              return projectFlagsOf(group, perProject);
+            })],
+        }),
+    strayFlags: hasProjects ? strays : [],
     ...(values.add === undefined ? {} : { add: values.add }),
     existing: values.existing,
     // On `sync` an answer flag answers nothing, so it must not stand in for the confirmation.
@@ -151,6 +283,55 @@ const addError = (options: CliOptions): string | undefined => {
   return isPackageName ? undefined : `Package name must be ${PACKAGE_NAME_RULE}.`;
 };
 
+const projectError = (project: ProjectFlags, workspaceName: string, taken: readonly string[]): string | undefined => {
+  const { name, kind } = project;
+
+  if (!isValidProjectDirName(name, workspaceName, taken)) {
+    return `Project name ${name} must be ${PROJECT_DIR_NAME_RULE}.`;
+  }
+
+  if (kind !== undefined && kind !== 'app' && kind !== 'package') {
+    return `--kind takes app or package, not ${kind}.`;
+  }
+
+  if (kind === 'package' && Object.keys(project.answers).length > 0) {
+    return `${name} is a package, a TypeScript package on its defaults, so it takes no answer flags.`;
+  }
+
+  if (kind !== 'package' && project.answers.target === 'typescript') {
+    return `${name} is an app, which needs a framework; a TypeScript package is --kind package.`;
+  }
+
+  return undefined;
+};
+
+const projectsError = (options: CliOptions): string | undefined => {
+  const { projects = [], strayFlags } = options;
+
+  if (strayFlags.length > 0) {
+    return `${strayFlags.join(', ')} before the first --project: a project's flags follow its --project.`;
+  }
+
+  if (projects.length > 0 && options.answers?.layout !== 'monorepo') {
+    return PROJECT_NEEDS_MONOREPO;
+  }
+
+  const names = projects
+    .map(({ name }) => {
+      return name;
+    });
+
+  return projects
+    .map((project, index) => {
+      const taken = names.slice(0, index);
+
+      return projectError(project, options.name, taken);
+    })
+    .find((error) => {
+      return error !== undefined;
+    });
+};
+
 export const argumentError = (options: CliOptions): string | undefined => {
   if (options.unexpectedArguments.length > 0) {
     const plural = options.unexpectedArguments.length === 1 ? '' : 's';
@@ -166,5 +347,5 @@ export const argumentError = (options: CliOptions): string | undefined => {
     return EXISTING_MONOREPO;
   }
 
-  return addError(options) ?? projectNameError(options);
+  return projectsError(options) ?? addError(options) ?? projectNameError(options);
 };
