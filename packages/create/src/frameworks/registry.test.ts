@@ -149,6 +149,30 @@ const COPIES: Copies[] = [
     path: 'src/components/ui/text-input/TextInput.styles.ts',
     drawers: ['stylex/form-tanstack-form', 'stylex/form-react-hook-form'],
   },
+  {
+    path: 'src/components/features/app-header/AppHeader.styles.ts',
+    drawers: ['css/base', 'tailwind/base'],
+  },
+  {
+    path: 'src/components/features/app-header/AppHeader.css',
+    drawers: ['css/base', 'tailwind/base'],
+  },
+  {
+    path: 'src/components/ui/button/Button.styles.ts',
+    drawers: ['css/base', 'tailwind/base'],
+  },
+  {
+    path: 'src/components/ui/button/Button.css',
+    drawers: ['css/base', 'tailwind/base'],
+  },
+  {
+    path: 'src/components/ui/mark/Mark.styles.ts',
+    drawers: ['css/base', 'tailwind/base'],
+  },
+  {
+    path: 'src/components/ui/mark/Mark.css',
+    drawers: ['css/base', 'tailwind/base'],
+  },
 ];
 
 it('names only frameworks with a templates module', () => {
