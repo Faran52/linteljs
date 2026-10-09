@@ -107,7 +107,7 @@ const testFiles = (answers: Answered, frameworkMode: boolean): (Generated | Join
   return files;
 };
 
-// The Version page's record. Only the gate scripts this module owns are known here; the merged ones come with 2d4.
+// The Version page's record.
 const recordOf = (name: string, answers: Answered, host: Host, scripts: Record<string, string>): Generated => {
   const entries = keysOf(ANSWERS)
     .map((key) => {
@@ -199,8 +199,12 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
       text: stylelintSource(answers.styling === 'tailwind'),
     },
     ...testFiles(answers, frameworkMode),
-    recordOf(name, answers, host, scripts),
   ];
+
+  const record = (merged: Record<string, string>): Generated => {
+    return recordOf(name, answers, host, merged);
+  };
+
   const eslint = {
     framework: 'react',
     typescript: true,
@@ -236,6 +240,7 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
         gitignore: FRAMEWORK_MODE_GITIGNORE,
         install,
       },
+      record,
     };
 
     return framed;
@@ -262,6 +267,7 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
       gitignore: VITE_GITIGNORE,
       install,
     },
+    record,
   };
 
   return framed;

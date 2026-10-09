@@ -4,7 +4,11 @@ import { hasTests, localesOf } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
-import { GATE_SCRIPTS, TEST_RUNNERS } from '../../constants';
+import {
+  GATE_SCRIPTS,
+  STYLE_GLOB,
+  TEST_RUNNERS,
+} from '../../constants';
 import { testRunnerOf } from '../../utils/runnerUtils';
 
 import type { Answers, PackageManager } from '@config/types';
@@ -30,7 +34,29 @@ export const installScriptOf = (packageManager: PackageManager, steps: readonly 
 export const styleGlob = (answers: Answers): string => {
   const { sfcExtension } = targetFor(answers);
 
-  return sfcExtension === undefined ? 'src/**/*.css' : `src/**/*.{css,${sfcExtension}}`;
+  return sfcExtension === undefined ? STYLE_GLOB : `src/**/*.{css,${sfcExtension}}`;
+};
+
+export const lintScriptsOf = (monorepo: boolean, glob: string): Record<string, string> => {
+  const scripts = {
+    'lint': 'eslint . --concurrency auto',
+    'lint:fix': 'eslint . --fix --concurrency auto',
+    // lint-staged scans staged files only; the checker walks `src`, so an unstaged new file is scanned too.
+    'lint:types': `node ${monorepo ? '../../' : ''}scripts/checkBannedPatterns.ts src`,
+    // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.
+    'lint:css': `stylelint "${glob}" --allow-empty-input`,
+    'lint:css:fix': `stylelint "${glob}" --fix --allow-empty-input`,
+  };
+
+  return scripts;
+};
+
+export const checkScriptOf = (run: string, gates: readonly string[]): string => {
+  return gates
+    .map((gate) => {
+      return `${run} ${gate}`;
+    })
+    .join(' && ');
 };
 
 // The scripts `check` chains, in order.
@@ -49,15 +75,10 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
   const compiler = localesOf(answers).length === 0 ? undefined : target.i18n?.compiler;
   const compile = compiler === undefined ? [] : [compiler.command];
 
+  const lint = lintScriptsOf(answers.layout === 'monorepo', styleGlob(answers));
   const scripts: Record<string, string> = {
-    'lint': 'eslint . --concurrency auto',
-    'lint:fix': 'eslint . --fix --concurrency auto',
-    // lint-staged scans staged files only; the checker walks `src`, so an unstaged new file is scanned too.
-    'lint:types': `node ${answers.layout === 'monorepo' ? '../../' : ''}scripts/checkBannedPatterns.ts src`,
-    // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.
-    'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,
-    'lint:css:fix': `stylelint "${styleGlob(answers)}" --fix --allow-empty-input`,
-    'typecheck': [...compile, target.typecheck].join(' && '),
+    ...lint,
+    typecheck: [...compile, target.typecheck].join(' && '),
   };
 
   Object.assign(scripts, target.extraScripts);
@@ -80,13 +101,10 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     ...answers.layout === 'monorepo' ? [] : ['husky'],
   ];
 
+  const check = checkScriptOf(run, gateScripts(answers));
   const packageScripts: Record<string, string> & CheckScript = {
     ...scripts,
-    check: gateScripts(answers)
-      .map((gate) => {
-        return `${run} ${gate}`;
-      })
-      .join(' && '),
+    check,
     ...installScriptOf(answers.packageManager, install),
   };
 

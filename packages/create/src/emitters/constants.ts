@@ -216,6 +216,8 @@ export const VERSIONS: Record<string, string> = {
 };
 
 // The scripts `check` chains, in order; `test:coverage` only where the project has tests.
+export const STYLE_GLOB = 'src/**/*.css';
+
 export const GATE_SCRIPTS = [
   'lint',
   'lint:types',

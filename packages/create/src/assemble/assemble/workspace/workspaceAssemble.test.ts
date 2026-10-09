@@ -20,9 +20,10 @@ import {
 } from 'vitest';
 
 import { manifestReader } from '@choices/read/manifest/manifestReader';
-import { filesUnder } from '@disk';
+import { filesUnder, TEMPLATES_ROOT } from '@disk';
 import { parsePackageJson } from '@emitters';
 import { gitignoreEmitter } from '@emitters/always/gitignore/gitignoreEmitter';
+import { emitLinteljsRecord, RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
 import { buildScripts } from '@emitters/always/utils/scriptUtils';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
@@ -58,6 +59,33 @@ const INSTALL_PARITY: (Pick<Answers, 'packageManager'> & Partial<Pick<Answers, '
     mocking: 'msw',
   },
 ];
+
+const SCRIPT_PARITY: (Pick<Answers, 'packageManager' | 'testing'> & Partial<Pick<Answers, 'router' | 'mocking'>>)[] = [
+  {
+    packageManager: 'pnpm',
+    testing: 'vitest',
+    router: 'react-router',
+  },
+  {
+    packageManager: 'pnpm',
+    testing: 'vitest',
+    router: 'react-router-framework',
+    mocking: 'msw',
+  },
+  {
+    packageManager: 'yarn',
+    testing: 'none',
+    router: 'react-router-framework',
+  },
+  {
+    packageManager: 'yarn',
+    testing: 'vitest',
+    router: 'tanstack-router',
+    mocking: 'msw',
+  },
+];
+
+const GATE_BLOCK = /export const GATE = \[[\s\S]*?\] as const;\n/;
 
 describe('workspaceAssemble', () => {
   let cwd = '';
@@ -116,11 +144,17 @@ describe('workspaceAssemble', () => {
       name: 'demo',
       packageManager: 'pnpm@11.0.0',
       scripts: {
-        dev: 'vite',
-        build: 'vite build',
-        preview: 'vite preview',
-        typecheck: 'tsc --noEmit',
-        prepare: 'husky',
+        'lint': 'eslint . --concurrency auto',
+        'lint:fix': 'eslint . --fix --concurrency auto',
+        'lint:types': 'node scripts/checkBannedPatterns.ts src',
+        'lint:css': 'stylelint "src/**/*.css" --allow-empty-input',
+        'lint:css:fix': 'stylelint "src/**/*.css" --fix --allow-empty-input',
+        'dev': 'vite',
+        'build': 'vite build',
+        'preview': 'vite preview',
+        'typecheck': 'tsc --noEmit',
+        'check': 'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm build',
+        'prepare': 'husky',
       },
       dependencies: { react: '^19.0.0' },
       devDependencies: {
@@ -191,8 +225,12 @@ describe('workspaceAssemble', () => {
     const written = await filesUnder(cwd);
     const manifest = await readFile(join(cwd, 'apps', 'web', 'package.json'), 'utf8');
     const parsed = parsePackageJson(manifest);
+    const root = await readFile(join(cwd, 'package.json'), 'utf8');
+    const rootParsed = parsePackageJson(root);
 
     expect(parsed.scripts).not.toHaveProperty('prepare');
+    expect(parsed.scripts).toHaveProperty(['lint:types'], 'node ../../scripts/checkBannedPatterns.ts src');
+    expect(rootParsed).not.toHaveProperty(['scripts', 'check']);
 
     expect(written).toEqual([
       join('apps', 'web', '.gitignore'),
@@ -252,6 +290,64 @@ describe('workspaceAssemble', () => {
 
     expect(parsed).toMatchObject({ scripts: oldInstall });
     expect([ignored]).toEqual(oldIgnored);
+  });
+
+  it.each(SCRIPT_PARITY)('writes the old scripts and gate from the real drawers for %o', async (picked) => {
+    const { packageManager, ...chosen } = picked;
+    const project: AssembledProject = {
+      name: 'demo',
+      answers: {
+        target: 'react',
+        layout: 'single',
+        ...chosen,
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      root: TEMPLATES_ROOT,
+      host: {
+        ...workspace.host,
+        packageManager,
+      },
+    });
+
+    const answers = answersFor(picked);
+    const manifest = await readFile(join(cwd, 'package.json'), 'utf8');
+    const record = await readFile(join(cwd, RECORD_MODULE), 'utf8');
+    const { scripts } = parsePackageJson(manifest);
+    const old = emitLinteljsRecord({
+      ...answers,
+      ...workspace.host,
+      packageManager,
+    }, 'demo');
+    const gate = (GATE_BLOCK.exec(record))?.[0];
+    const oldGate = (GATE_BLOCK.exec(old))?.[0];
+
+    expect(scripts).toEqual(buildScripts(answers));
+    expect(gate).toBe(oldGate);
+  });
+
+  it('ignores the framework-mode output in eslint.config.ts', async () => {
+    const project: AssembledProject = {
+      name: 'demo',
+      answers: {
+        target: 'react',
+        layout: 'single',
+        router: 'react-router-framework',
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      root: TEMPLATES_ROOT,
+    });
+
+    const eslintConfig = await readFile(join(cwd, 'eslint.config.ts'), 'utf8');
+
+    expect(eslintConfig).toContain("'coverage/**',\n    '.react-router/**',\n    'build/**',\n  ],");
   });
 
   it('refuses a drawer file at a generated path', async () => {

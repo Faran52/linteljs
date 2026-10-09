@@ -1,5 +1,7 @@
 import { posix, relative } from 'node:path';
 
+import { RUN_PREFIX } from '@config/constants';
+
 import { drawersPick } from '@choices/pick/drawers/drawersPick';
 import { catalogReader } from '@choices/read/catalog/catalogReader';
 import { type Answered, type Question } from '@choices/read/manifest/manifestReader';
@@ -7,9 +9,13 @@ import { configRecord } from '@choices/record/config/configRecord';
 import { answeredValues } from '@choices/utils/drawerUtils';
 import { filesUnder, TEMPLATES_ROOT } from '@disk';
 import {
+  checkScriptOf,
+  GATE_SCRIPTS,
   gitignoreEntries,
   installScriptOf,
+  lintScriptsOf,
   mergeGitignore,
+  STYLE_GLOB,
 } from '@emitters';
 import { FRAMEWORK_MODULES } from '@frameworks/registry';
 import { projectWriter } from '@io/write/project/projectWriter';
@@ -22,6 +28,7 @@ import {
   type Share,
   shareOf,
   stringOf,
+  stringRecordOf,
   stringsOf,
 } from '../../utils/shareUtils';
 import { cssWriter } from '../../write/css/cssWriter';
@@ -108,7 +115,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     const single: Unit = {
       directory: '.',
       drawers: [...frameworkDrawers, ...agentDrawersOf(first.answers)],
-      share: rootShare,
+      share: mergedShare(rootShare, { package: { scripts: lintScriptsOf(false, STYLE_GLOB) } }),
       framed: framedOf(first.name, first.answers, workspace.host),
       answers: first.answers,
     };
@@ -125,7 +132,12 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
       const unit: Unit = {
         directory: `${group}/${name}`,
         drawers,
-        share: { package: { name } },
+        share: {
+          package: {
+            name,
+            scripts: lintScriptsOf(true, STYLE_GLOB),
+          },
+        },
         framed: framedOf(name, answers, workspace.host),
         answers,
       };
@@ -147,20 +159,39 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
 };
 
 // Each generated file is written only when some drawer shares its key.
-const generatedOf = async (workspace: Workspace, share: Share, answers: Answered): Promise<Generated[]> => {
+const generatedOf = async (workspace: Workspace, share: Share, unit: Unit): Promise<Generated[]> => {
+  const { answers } = unit;
   const { packageManager } = workspace.host;
+  const run = RUN_PREFIX[packageManager];
+  const packageShare = shareOf(share, 'package');
+  const merged = stringRecordOf(packageShare, 'scripts');
+  const gates = GATE_SCRIPTS
+    .filter((gate) => {
+      return Object.hasOwn(merged, gate);
+    });
   // A monorepo runs husky from the root manifest.
   const install = [
     ...stringsOf(share, 'install'),
     ...answers.layout === 'monorepo' ? [] : ['husky'],
   ];
-  const scripts = installScriptOf(packageManager, install);
-  const manifestShare = mergedShare(shareOf(share, 'package'), { scripts });
+  const scripts = {
+    ...merged,
+    ...gates.length === 0 ? {} : { check: checkScriptOf(run, gates) },
+    ...installScriptOf(packageManager, install),
+  };
+  const manifestShare = mergedShare(packageShare, { scripts });
   const manifest = packageJsonWriter(manifestShare);
-  const generated: Generated[] = [{
-    path: 'package.json',
-    text: manifest,
-  }];
+  const records = unit.framed
+    .map(({ record }) => {
+      return record(scripts);
+    });
+  const generated: Generated[] = [
+    {
+      path: 'package.json',
+      text: manifest,
+    },
+    ...records,
+  ];
 
   if (Object.hasOwn(share, 'gitignore')) {
     const entries = gitignoreEntries(packageManager, stringsOf(share, 'gitignore'));
@@ -243,7 +274,7 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
     ...framed,
     ...drawn,
   ]);
-  const shared = await generatedOf(workspace, share, unit.answers);
+  const shared = await generatedOf(workspace, share, unit);
   const generated = [
     ...shared,
     ...unit.framed

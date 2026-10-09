@@ -8,6 +8,7 @@ import {
 import { emitLinteljsRecord, RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
 import { emitStylelintConfig } from '@emitters/always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigSource } from '@emitters/always/tsconfig/tsconfigEmitter';
+import { buildScripts } from '@emitters/always/utils/scriptUtils';
 import { emitI18nConfig } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
 import { FAVICON } from '@emitters/target/html-entry/constants';
 import { emitHtmlEntry } from '@emitters/target/html-entry/htmlEntryEmitter';
@@ -24,7 +25,6 @@ import type {
   Host,
   ProjectShape,
 } from '@config/types';
-import type { Framed } from '../types';
 
 type Picked = Pick<Answers, 'testing'> & Partial<Pick<Answers, 'styling'
   | 'router'
@@ -50,18 +50,6 @@ const RECORDED: Answered = {
     'context7',
     'frontend-design',
   ],
-};
-
-// The gate's scripts merge with the common files (2d4); until then only the rest is compared.
-const GATE_BLOCK = /export const GATE = \[[\s\S]*?\] as const;\n/;
-
-const recordsOf = (files: Framed['files']): string[] => {
-  return files
-    .flatMap((file) => {
-      const texts = file.path === RECORD_MODULE && 'text' in file ? [file.text] : [];
-
-      return texts;
-    });
 };
 
 const FRESH: ProjectShape = {
@@ -167,7 +155,6 @@ describe('reactFramework', () => {
       'tsconfig.json',
       'vite.config.ts',
       'stylelint.config.js',
-      RECORD_MODULE,
     ]);
 
     expect(framed.files).toContainEqual({
@@ -254,7 +241,6 @@ describe('reactFramework', () => {
       'tsconfig.json',
       'vite.config.ts',
       'stylelint.config.js',
-      RECORD_MODULE,
     ]);
 
     expect(framed.files).toContainEqual({
@@ -402,45 +388,21 @@ describe('reactFramework', () => {
     expect(eslint).not.toHaveProperty(['aliases', '@apis/*']);
   });
 
-  it.each(RECORD_PARITY)('writes the old record, less the gate rows 2d4 merges, for %o', (picked) => {
+  it.each(RECORD_PARITY)('writes the old record from the merged scripts for %o', (picked) => {
     const framed = reactFramework('@acme/demo', {
       ...RECORDED,
       ...picked,
     }, HOST);
-    const old = emitLinteljsRecord({
+    const answers = {
       ...answersFor(picked),
       ...HOST,
-    }, 'demo');
-    const records = recordsOf(framed.files)
-      .map((text) => {
-        return text.replace(GATE_BLOCK, '');
-      });
-    const expected = [old.replace(GATE_BLOCK, '')];
+    };
+    const record = framed.record(buildScripts(answers));
+    const expected = {
+      path: RECORD_MODULE,
+      text: emitLinteljsRecord(answers, 'demo'),
+    };
 
-    expect(records).toEqual(expected);
-  });
-
-  it.each([
-    ['react-router', ['typecheck', 'build']],
-    ['react-router-framework', ['typecheck']],
-  ])('records the gate scripts the module owns for router %s', (router, gates) => {
-    const framed = reactFramework('demo', {
-      target: 'react',
-      router,
-    }, { ...HOST, packageManager: 'npm' });
-    const commands = recordsOf(framed.files)
-      .flatMap((text) => {
-        const matches = text.matchAll(/command: '[^']*'/g);
-
-        return Array.from(matches, ([command]) => {
-          return command;
-        });
-      });
-    const expected = gates
-      .map((gate) => {
-        return `command: 'npm run ${gate}'`;
-      });
-
-    expect(commands).toEqual(expected);
+    expect(record).toEqual(expected);
   });
 });

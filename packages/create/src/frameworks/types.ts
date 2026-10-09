@@ -17,6 +17,8 @@ export interface Joined {
 export interface Framed {
   files: (Generated | Joined)[];
   share: Share;
+  // Its gate rows need every drawer's scripts, so it is written after the merge.
+  record: (scripts: Record<string, string>) => Generated;
 }
 
 export type FrameworkModule = (name: string, answers: Answered, host: Host) => Framed;

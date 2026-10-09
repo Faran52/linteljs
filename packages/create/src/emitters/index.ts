@@ -7,8 +7,17 @@ export {
 } from './always/eslint-config/eslintConfigEmitter';
 export { gitignoreEntries, mergeGitignore } from './always/gitignore/gitignoreEmitter';
 export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
-export { installScriptOf, styleGlob } from './always/utils/scriptUtils';
-export { TEST_RUNNERS } from './constants';
+export {
+  checkScriptOf,
+  installScriptOf,
+  lintScriptsOf,
+  styleGlob,
+} from './always/utils/scriptUtils';
+export {
+  GATE_SCRIPTS,
+  STYLE_GLOB,
+  TEST_RUNNERS,
+} from './constants';
 export { rootAnswersOf } from './layout/workspace-root/workspaceRootEmitter';
 export { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 export {
