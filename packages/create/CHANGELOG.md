@@ -208,7 +208,8 @@ when a version's change lives in a sibling it is described there instead:
   terminal. It writes the project's own files on the recorded workspace answers, appends it to the config's
   `projects`, rewrites every project's agent files, then installs, so the lockfile takes it and a frozen CI
   install passes (`--no-install` leaves it to you). It refuses a single repo, a scoped or invalid name, a name the
-  config records, and a name `apps/` or `packages/` already holds.
+  config records, and a name `apps/` or `packages/` already holds. An existing `allowBuilds` block gains the
+  builds the new project needs, sorted, with every entry and value you wrote kept.
 - An install `create` or `sync --add` runs under `CI` no longer fails on pnpm's frozen lockfile when it changes
   one, as Yarn's already did not.
 

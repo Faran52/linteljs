@@ -85,14 +85,14 @@ describe('mergePnpmWorkspace', () => {
   });
 
   it('keeps the document marker a file opens with', () => {
-    const existing = "---\nallowBuilds:\n  'some-native': true\n";
+    const existing = `---\n${allowBuildsBlock([answersFor({})])}`;
 
     const merged = mergePnpmWorkspace(existing, [answersFor({})]);
     expect(merged).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('leaves a release-age policy the project set alone', () => {
-    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
+    const existing = `${allowBuildsBlock([answersFor({})])}minimumReleaseAge: 60\n`;
 
     const merged = mergePnpmWorkspace(existing, [answersFor({})]);
     expect(merged).toBe(existing);
@@ -104,11 +104,29 @@ describe('mergePnpmWorkspace', () => {
     expect(merged).toMatch(/^allowBuilds:/mu);
   });
 
-  it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
-    const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
+  it('adds the builds a project needs to an existing block, keeping the entries and values the user wrote', () => {
+    const existing = "allowBuilds:\n  zz-custom: false\n  'sharp': false\nfoo: 1\n";
 
-    const merged = mergePnpmWorkspace(existing, [answersFor({})]);
-    expect(merged).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+    const builds = [
+      'allowBuilds:',
+      "  '@swc/core': true",
+      "  'fsevents': true",
+      "  'sharp': false",
+      "  'unrs-resolver': true",
+      "  'vue-demi': true",
+      '  zz-custom: false',
+      'foo: 1',
+    ].join('\n');
+
+    const merged = mergePnpmWorkspace(existing, [answersFor({ target: 'vue' })]);
+    expect(merged).toBe(`${builds}\n\n${RELEASE_AGE_BLOCK}`);
+  });
+
+  it('merges a block that ends the file with no final newline', () => {
+    const builds = `${allowBuildsBlock([answersFor({})])}  zz: true\n`;
+
+    const merged = mergePnpmWorkspace('allowBuilds:\n  zz: true', [answersFor({})]);
+    expect(merged).toBe(`${builds}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps content that follows the dropped block, not just what precedes it', () => {
@@ -141,7 +159,7 @@ describe('the NativeWind lightningcss pin', () => {
   });
 
   it('leaves an overrides block the project wrote alone', () => {
-    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n";
+    const existing = `${allowBuildsBlock([nativewind])}minimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n`;
 
     const merged = mergePnpmWorkspace(existing, [nativewind]);
     expect(merged).toBe(existing);
@@ -153,7 +171,7 @@ describe('the NativeWind lightningcss pin', () => {
   });
 
   it('parts the override block from a policy the project set by one blank line', () => {
-    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
+    const existing = `${allowBuildsBlock([nativewind])}minimumReleaseAge: 60\n`;
     const metro = "'@expo/metro-config>lightningcss': '1.30.1'";
     const css = "'react-native-css>lightningcss': '1.30.1'";
 
