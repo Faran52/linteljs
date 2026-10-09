@@ -81,7 +81,7 @@ export const ruleArtifacts = (
           sources,
           transform: (source: string) => {
             const header = frontmatter(source, globsOf(source, directories));
-            const body = withoutClaudePaths(forAnswers(answers, source));
+            const body = withoutClaudePaths(forAnswers({ answers, directories }, source));
 
             return `${header}${body}`;
           },

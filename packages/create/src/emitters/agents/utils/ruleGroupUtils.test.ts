@@ -13,6 +13,7 @@ import { workspaceOf } from '../../utils/layoutUtils';
 
 import {
   forAnswers,
+  type RuleGroup,
   ruleGroups,
   ruleSources,
 } from './ruleGroupUtils';
@@ -29,6 +30,15 @@ const namesOf = (answers: Answers): string[] => {
     .map(({ name }) => {
       return name;
     });
+};
+
+const alone = (answers: Answers): Pick<RuleGroup, 'answers' | 'directories'> => {
+  const group = {
+    answers: [answers],
+    directories: ['.'],
+  };
+
+  return group;
 };
 
 describe('forAnswers', () => {
@@ -49,36 +59,84 @@ describe('forAnswers', () => {
   ])('reads the %s condition off the answers', (condition, answers) => {
     const source = `kept\ngated <!-- when ${condition} -->`;
 
-    const actual = forAnswers([answersFor(answers)], source);
+    const gated = alone(answersFor(answers));
+
+    const actual = forAnswers(gated, source);
     expect(actual).toBe('kept\ngated');
     const opposite = answers.store === undefined ? answersFor({ store: 'zustand' }) : answersFor();
 
-    const ungated = forAnswers([{
+    const without = alone({
       ...opposite,
       surfaces: [],
-    }], source);
+    });
+
+    const ungated = forAnswers(without, source);
     expect(ungated).toBe('kept');
   });
 
-  it('keeps a line any project writes, and the no-store line only when none has a store', () => {
+  it('keeps a line every project writes as it is', () => {
     const source = 'a <!-- when store -->\nb <!-- when no-store -->';
+    const stores = {
+      answers: [answersFor({ store: 'zustand' }), answersFor({ store: 'pinia' })],
+      directories: ['apps/web', 'apps/site'],
+    };
 
-    const mixed = forAnswers([answersFor({ store: 'zustand' }), answersFor()], source);
-    expect(mixed).toBe('a');
-    const storeless = forAnswers([answersFor(), answersFor()], source);
-    expect(storeless).toBe('b');
+    const actual = forAnswers(stores, source);
+    expect(actual).toBe('a');
+  });
+
+  it('names the projects a line holds for when only some of the group write it', () => {
+    const source = [
+      '- a <!-- when store -->',
+      'b <!-- when no-store -->',
+      'c <!-- when no-store -->',
+      '```',
+      '  d <!-- when no-store -->',
+      '  e <!-- when no-store -->',
+      '```',
+      'f <!-- when msw -->',
+    ].join('\n');
+    const mixed = {
+      answers: [
+        answersFor(),
+        answersFor({ store: 'zustand' }),
+        answersFor(),
+      ],
+      directories: [
+        'apps/web',
+        'apps/site',
+        'apps/admin',
+      ],
+    };
+
+    const actual = forAnswers(mixed, source);
+    const expected = [
+      '- `apps/site` only: a',
+      '`apps/web`, `apps/admin` only: b',
+      'c',
+      '```',
+      '  d',
+      '  e  (apps/web, apps/admin only)',
+      '```',
+    ].join('\n');
+
+    expect(actual).toBe(expected);
   });
 
   it('treats a marker mid-line as text', () => {
     const line = 'a <!-- when msw --> and more';
 
-    const actual = forAnswers([answersFor()], line);
+    const plain = alone(answersFor());
+
+    const actual = forAnswers(plain, line);
     expect(actual).toBe(line);
   });
 
   it('refuses a condition no answer decides', () => {
+    const defaults = alone(DEFAULT_ANSWERS);
+
     expect(() => {
-      return forAnswers([DEFAULT_ANSWERS], 'line <!-- when sass -->');
+      return forAnswers(defaults, 'line <!-- when sass -->');
     }).toThrow('Unknown rule condition: sass');
   });
 });

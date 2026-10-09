@@ -40,6 +40,12 @@ type Condition
     | Data
     | Router;
 
+interface Run {
+  name: Condition;
+  fenced: boolean;
+  lines: string[];
+}
+
 // A rule line ending in `<!-- when <condition> -->` names a folder only that answer writes.
 const CONDITIONS: Record<Condition, (answers: Answers) => boolean> = {
   'store': (answers) => {
@@ -89,36 +95,94 @@ const isCondition = (name: string): name is Condition => {
   return Object.hasOwn(CONDITIONS, name);
 };
 
-// A group's copy keeps a line any of its projects writes; `no-store` is the one negative, so it needs all.
-const holds = (name: Condition, answers: readonly Answers[]): boolean => {
-  return name === 'no-store' ? answers.every(CONDITIONS[name]) : answers.some(CONDITIONS[name]);
+const conditionOf = (line: string): Condition | undefined => {
+  const name = WHEN.exec(line)?.[1];
+
+  if (name !== undefined && !isCondition(name)) {
+    throw new Error(`Unknown rule condition: ${name}`);
+  }
+
+  return name;
 };
 
-export const forAnswers = (answers: readonly Answers[], source: string): string => {
-  return source
+// A shared copy keeps a run any of its projects writes, naming them when not all of them do.
+const scoped = ({ fenced, lines }: Run, only: string[]): string[] => {
+  const named = fenced
+    ? only.join(', ')
+    : only
+        .map((directory) => {
+          return `\`${directory}\``;
+        })
+        .join(', ');
+
+  return lines
+    .map((line, position) => {
+      if (fenced) {
+        return position === lines.length - 1 ? `${line}  (${named} only)` : line;
+      }
+
+      if (position > 0) {
+        return line;
+      }
+
+      return line.startsWith('- ') ? `- ${named} only: ${line.slice(2)}` : `${named} only: ${line}`;
+    });
+};
+
+export const forAnswers = (
+  { answers, directories }: Pick<RuleGroup, 'answers' | 'directories'>,
+  source: string,
+): string => {
+  const pieces: (string | Run)[] = [];
+  let fenced = false;
+
+  source
     .split('\n')
-    .flatMap((line) => {
-      const name = WHEN.exec(line)?.[1];
+    .forEach((line) => {
+      const name = conditionOf(line);
+      const last = pieces.at(-1);
 
       if (name === undefined) {
-        const unconditional = [line];
+        fenced = fenced !== line
+          .trimStart()
+          .startsWith('```');
+
+        pieces.push(line);
+      }
+      else if (typeof last === 'object' && last.name === name) {
+        last.lines.push(line
+          .replace(WHEN, '')
+          .trimEnd());
+      }
+      else {
+        pieces.push({
+          name,
+          fenced,
+          lines: [line
+            .replace(WHEN, '')
+            .trimEnd()],
+        });
+      }
+    });
+
+  return pieces
+    .flatMap((piece) => {
+      if (typeof piece === 'string') {
+        const unconditional = [piece];
 
         return unconditional;
       }
 
-      if (!isCondition(name)) {
-        throw new Error(`Unknown rule condition: ${name}`);
-      }
+      const only = answers
+        .flatMap((projectAnswers, position) => {
+          return CONDITIONS[piece.name](projectAnswers) ? directories.slice(position, position + 1) : [];
+        });
 
-      if (!holds(name, answers)) {
+      if (only.length === 0) {
         return [];
       }
 
-      const stripped = [line
-        .replace(WHEN, '')
-        .trimEnd()];
-
-      return stripped;
+      return only.length === directories.length ? piece.lines : scoped(piece, only);
     })
     .join('\n');
 };

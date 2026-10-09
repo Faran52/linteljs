@@ -985,8 +985,9 @@ a canary rule, 3 runs each:
 
 A copy is deduplicated per framework: in a monorepo `repo-structure.md` and `testing.md` become
 `<rule>.<framework|package>.md`, and every other rule is one file globbed, root-relative, over the project
-directories it serves. A copy keeps a line any of its projects writes, but the `no-store` line only when all of
-them do. A monorepo of one keeps these names, so
+directories it serves. A copy keeps a line any of its projects writes, and when only some do, it names their
+directories on the line (`apps/site` only: ...), so a shared copy is true for each project.
+A monorepo of one keeps these names, so
 `sync --add` orphans no copy; a single layout keeps `repo-structure.md`. Claude Code keeps the skill references,
 scoped by each project's nested `CLAUDE.md`, with no nested `.claude/rules/`. Antigravity's root-relative
 `globs:` are unverified.
