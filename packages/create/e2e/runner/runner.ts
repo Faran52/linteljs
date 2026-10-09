@@ -5,6 +5,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
+import { pick } from 'es-toolkit';
 import { expect } from 'vitest';
 
 import { projectDirectoryOf } from '@utils/answerUtils';
@@ -13,6 +14,7 @@ import {
   CONFIG_PATH,
   parseLinteljsConfig,
   projectAnswersOf,
+  WORKSPACE_KEYS,
 } from '@answers';
 import { parsePackageJson } from '@emitters';
 import { targetFor } from '@targets';
@@ -223,25 +225,36 @@ const expectRecorded = async (item: E2eCase, project: string): Promise<void> => 
   // The manager came from the injected user agent, so the recorded config proves it was read.
   const configText = readFileSync(join(project, CONFIG_PATH), 'utf8');
   const config = parseLinteljsConfig(configText);
-  const recorded = projectAnswersOf(config, config.projects[0]);
   const managerVersion = await versionOf(answers.packageManager);
+  const recorded = config.projects
+    .map((projectConfig) => {
+      return projectAnswersOf(config, projectConfig);
+    });
+  // The workspace answers are the first project's; each project's flags carry only its own.
+  const expected = projectsOf(item, '')
+    .map(({ answers: projectAnswers }) => {
+      const asked: Answers = {
+        ...projectAnswers,
+        ...pick(answers, WORKSPACE_KEYS),
+        packageManagerVersion: managerVersion,
+      };
 
-  expect(recorded).toMatchObject({
-    ...answers,
-    packageManagerVersion: managerVersion,
-  });
+      return asked;
+    });
+
+  expect(recorded).toMatchObject(expected);
 
   if (item.projects !== undefined) {
     const names = config.projects
       .map(({ name }) => {
         return name;
       });
-    const expected = item.projects
+    const expectedNames = item.projects
       .map(({ name }) => {
         return name;
       });
 
-    expect(names).toEqual(expected);
+    expect(names).toEqual(expectedNames);
   }
 
   const manifestText = readFileSync(join(project, 'package.json'), 'utf8');
