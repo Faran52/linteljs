@@ -162,6 +162,17 @@ describe('projectOf', () => {
     expect(project?.root).toBe(root);
   });
 
+  it('answers nothing from a git that names fewer than three paths', () => {
+    const planted = scratchDirectory('short');
+    writeFileSync(join(planted, 'git'), `#!/bin/sh\necho ${root}\n`, { mode: 0o755 });
+    vi.stubEnv('PATH', planted);
+
+    const project = projectOf(root);
+    rmSync(planted, { recursive: true });
+
+    expect(project).toBeUndefined();
+  });
+
   it('keeps what git writes to stderr out of the hook\'s output', () => {
     rmSync(join(root, '.git'), {
       force: true,
@@ -554,6 +565,22 @@ describe('commitGateReason', () => {
     runCheck('pnpm check');
     const reason = commitGateReason(shell('git commit -m x'));
     expect(reason).toBeUndefined();
+  });
+
+  it('lets markdown through unchecked, against HEAD or the last pass, and holds it beside code', () => {
+    git('add', 'package.json');
+    git('-c', 'user.name=x', '-c', 'user.email=x@x', 'commit', '--quiet', '-m', 'x');
+    writeFileSync(join(root, 'README.md'), 'x');
+    const sinceHead = commitGateReason(shell('git commit'));
+    writeFileSync(join(root, 'a.ts'), 'x');
+    const beside = commitGateReason(shell('git commit'));
+    runCheck('pnpm check');
+    writeFileSync(join(root, 'notes.md'), 'x');
+    const sincePass = commitGateReason(shell('git commit'));
+
+    expect(sinceHead).toBeUndefined();
+    expect(beside).toContain('not run on these files');
+    expect(sincePass).toBeUndefined();
   });
 
   it('names `npm run check` for an npm project', () => {

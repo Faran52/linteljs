@@ -218,7 +218,8 @@ banned git operations, warn when ESLint runs without `--fix`, check each file an
 patterns, deny an edit to a file whose first line marks it generated, and ask you before a dependency is added or
 removed. The hooks inspect commands, never run them. In Claude Code a commit is held until the project's `check`
 has passed on the work tree it would commit: run on its own, after a leading `cd <dir> &&`, or redirected to a
-file outside the work tree (`check > /tmp/check.log 2>&1`), never piped or chained. A hook warns once when a
+file outside the work tree (`check > /tmp/check.log 2>&1`), never piped or chained; a change only to `.md` files
+needs none. A hook warns once when a
 session's context passes 150K tokens; `.claude/settings.json` adds a `[CTX nK]` badge for the session and for
 each subagent: green, amber past 130K, red past 150K. A status line of your own is kept. A band above the prompt
 shows the gate's state for the work tree (passed, failed, running, stale or not run); it needs Claude Code

@@ -951,7 +951,8 @@ leaves the pass stale. Only the check itself counts, alone or redirected to a fi
 its status and a chain adds to it. A leading `cd <dir> &&` and leading literal `NAME=value` assignments count; a
 wrapper does not. The project judged is the one the command runs in (`cd`, `git -C`), not the session's. The record
 lives at `git rev-parse --git-path linteljs`, so it is never in the tree it describes and each worktree keeps its
-own.
+own. A tree that differs from HEAD, or from the last pass, only in `.md` files goes through unchecked: prose runs no
+code, and gating it costs a full run per wording fix.
 
 `generatedFileGuardHook.ts` denies an edit to a file whose first line carries a generator's marker; the edit
 belongs in the generator. linteljs writes no marker of its own.

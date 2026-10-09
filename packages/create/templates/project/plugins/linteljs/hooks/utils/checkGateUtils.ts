@@ -75,7 +75,13 @@ const ENCODING = 'utf8';
 
 // From an absolute PATH entry, so a `git` planted in the working directory is never the one run.
 const gitCandidates = (): string[] => {
-  const directories = (process.env['PATH'] ?? delimiter)
+  const path = process.env['PATH'];
+
+  if (path === undefined) {
+    return [];
+  }
+
+  const directories = path
     .split(delimiter)
     .filter((directory) => {
       return isAbsolute(directory);
@@ -169,10 +175,16 @@ export const projectOf = (cwd: string): Project | undefined => {
   }
 
   const [
-    root = cwd,
-    directory = cwd,
-    index = cwd,
+    root,
+    directory,
+    index,
   ] = paths.split('\n');
+
+  // A `git` that answers fewer lines (a wrapper, or one older than `--path-format`) has no project to name.
+  if (root === undefined || directory === undefined || index === undefined) {
+    return undefined;
+  }
+
   const packageJson = jsonAt(join(root, 'package.json'));
   const scripts = fieldAt(packageJson, 'scripts');
   const check = textAt(scripts, 'check');
@@ -269,7 +281,7 @@ const movedTo = ({ opaque, tokens }: ParsedCommand): string | undefined => {
 const locate = (cwd: string, command: string, dialect: Dialect): Located => {
   const and = command.indexOf('&&');
   const head = command.slice(0, Math.max(and, 0));
-  const [move] = parseCommand(head, dialect) ?? [];
+  const move = parseCommand(head, dialect)?.[0];
   const target = move === undefined ? undefined : movedTo(move);
   const rest = target === undefined ? command : command.slice(and + 2);
   // An unreadable line commits nothing here: the git guard denies it.
@@ -292,7 +304,12 @@ const claudeCommandOf = (payload: object): Located | undefined => {
 
 // The git options before `commit`, or nothing when the command is no commit.
 const commitOptionsOf = ({ tokens }: ParsedCommand): string[] | undefined => {
-  const index = skipOptions(tokens, 1, GIT_GLOBAL_VALUED) ?? 0;
+  const index = skipOptions(tokens, 1, GIT_GLOBAL_VALUED);
+
+  if (index === undefined) {
+    return undefined;
+  }
+
   const commits = commandName(tokens[0]) === 'git' && tokens[index] === 'commit';
 
   return commits ? tokens.slice(1, index) : undefined;
@@ -423,10 +440,45 @@ const WHY: Record<Exclude<CheckState, 'passed'>, string> = {
   stale: 'files changed since it passed',
 };
 
+const docsOnlySince = (project: Project, tree: string, base: string): boolean => {
+  const changed = attempt(() => {
+    return git(project.root, [
+      'diff-tree',
+      '-r',
+      '--name-only',
+      base,
+      tree,
+    ]);
+  });
+
+  if (changed === undefined) {
+    return false;
+  }
+
+  return changed
+    .split('\n')
+    .every((path) => {
+      return path === '' || path.endsWith('.md');
+    });
+};
+
+// Markdown needs no check: files that differ from HEAD, or from the last pass, only in `.md` commit freely.
+const docsOnly = (project: Project): boolean => {
+  const tree = treeOf(project);
+  const checkRecord = readRecord(project);
+  const passed = checkRecord?.result === 'passed' ? checkRecord.tree : 'HEAD';
+  const bases = ['HEAD', passed];
+
+  return tree !== undefined && bases
+    .some((base) => {
+      return docsOnlySince(project, tree, base);
+    });
+};
+
 const heldReason = (project: Project): string | undefined => {
   const state = stateOf(project);
 
-  if (state === 'passed') {
+  if (state === 'passed' || docsOnly(project)) {
     return undefined;
   }
 
