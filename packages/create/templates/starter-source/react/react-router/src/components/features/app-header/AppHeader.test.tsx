@@ -5,6 +5,7 @@ import { render, screen } from '@testing-library/react';
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
+import { styles } from './AppHeader.styles';
 
 describe('AppHeader', () => {
   it('names the project and links every page on the one route list', () => {
@@ -25,7 +26,7 @@ describe('AppHeader', () => {
     }
   });
 
-  it('marks the page it is on', () => {
+  it('marks the page it is on and styles its tab apart', () => {
     const history = ['/about'];
 
     render(
@@ -34,9 +35,20 @@ describe('AppHeader', () => {
       </MemoryRouter>,
     );
 
-    const attribute = screen.getByRole('link', { name: 'About' }).getAttribute('aria-current');
+    const link = screen.getByRole('link', { name: 'About' });
+    const home = screen.getByRole('link', { name: 'Home' });
+
+    const attribute = link.getAttribute('aria-current');
     expect(attribute).toBe('page');
-    const ariaCurrentAttribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    const ariaCurrentAttribute = home.getAttribute('aria-current');
     expect(ariaCurrentAttribute).toBeNull();
+    // StyleX types className as optional; join reads a missing one as empty.
+    const missing = [styles.tab(true).className]
+      .join(' ')
+      .split(' ')
+      .filter((name) => {
+        return !link.classList.contains(name);
+      });
+    expect(missing).toEqual([]);
   });
 });

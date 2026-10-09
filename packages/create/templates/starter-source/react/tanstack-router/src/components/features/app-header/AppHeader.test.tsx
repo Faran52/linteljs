@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
+import { styles } from './AppHeader.styles';
 
 const renderAt = (path: string): void => {
   const rootRoute = createRootRoute({
@@ -49,14 +50,23 @@ describe('AppHeader', () => {
     }
   });
 
-  it('marks the page it is on', async () => {
+  it('marks the page it is on and styles its tab apart', async () => {
     renderAt('/about');
 
     const link = await screen.findByRole('link', { name: 'About' });
+    const home = screen.getByRole('link', { name: 'Home' });
 
     const attribute = link.getAttribute('aria-current');
     expect(attribute).toBe('page');
-    const ariaCurrentAttribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    const ariaCurrentAttribute = home.getAttribute('aria-current');
     expect(ariaCurrentAttribute).toBeNull();
+    // StyleX types className as optional; join reads a missing one as empty.
+    const missing = [styles.tab(true).className]
+      .join(' ')
+      .split(' ')
+      .filter((name) => {
+        return !link.classList.contains(name);
+      });
+    expect(missing).toEqual([]);
   });
 });

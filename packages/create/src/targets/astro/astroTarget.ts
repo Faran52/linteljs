@@ -24,11 +24,11 @@ import {
 import {
   ALWAYS,
   ASTRO_I18N,
+  ASTRO_SUITES,
   COMPONENTS,
   FRAMEWORK_RECORD,
   INTEGRATIONS,
   SHARED,
-  VIEW_SUITES,
 } from './constants';
 import {
   hasIsland,
@@ -148,11 +148,11 @@ export const astroTarget: TargetBuilder = (answers) => {
         target: 'src/lib/utils/currentPathUtils.test.ts',
         covers: 'src/lib/utils/currentPathUtils.ts',
       },
-      ...VIEW_SUITES
-        .map((view): StarterTest => {
+      ...ASTRO_SUITES
+        .map((component): StarterTest => {
           const suite: StarterTest = {
-            target: `${view}.test.ts`,
-            covers: `${view}.astro`,
+            target: `${component}.test.ts`,
+            covers: `${component}.astro`,
           };
 
           return suite;

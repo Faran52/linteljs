@@ -292,6 +292,7 @@ const I18N_ONLY_PATHS = [
   'src/i18n/utils/cookieUtils.ts',
   'src/i18n/utils/cookieUtils.test.ts',
   'src/components/ui/code-text/CodeText.astro',
+  'src/components/ui/code-text/CodeText.test.ts',
   'src/components/features/language-select/LanguageSelect.astro',
   'src/components/features/language-select/LanguageSelect.test.ts',
   ...LANGUAGES
@@ -514,7 +515,11 @@ const GATES: GateRow[] = [
   ['src/lib/apis/contact/contactApi.test.ts', [
     {
       form: ANSWERED,
-      hostedFramework: ['vue', 'solid'],
+      hostedFramework: [
+        'react',
+        'vue',
+        'solid',
+      ],
     },
     {
       form: ANSWERED,

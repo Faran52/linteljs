@@ -4,7 +4,7 @@ import { ROUTES } from '@router/router';
 
 import { styles } from './AppHeader.styles';
 
-import type { AnchorHTMLAttributes, FC } from 'react';
+import type { FC } from 'react';
 
 export interface AppHeaderProps {
   readonly name: string;
@@ -12,10 +12,8 @@ export interface AppHeaderProps {
 
 // An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
-  const activeProps = {
-    'aria-current': 'page',
-    ...styles.tab(true),
-  } satisfies AnchorHTMLAttributes<HTMLAnchorElement>;
+  // Spread, since an interface does not meet the data-* index signature `activeProps` takes.
+  const activeProps = { ...styles.tab(true) };
 
   return (
     <header {...styles.header}>

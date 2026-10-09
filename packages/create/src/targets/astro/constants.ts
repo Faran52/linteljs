@@ -37,11 +37,13 @@ export const TRANSLATED: readonly string[] = [
   'src/components/features/app-header/AppHeader.astro',
 ];
 
-// One suite covers both spellings of its view.
-export const VIEW_SUITES: readonly string[] = [
+// One suite per component, covering both spellings of a translated one.
+export const ASTRO_SUITES: readonly string[] = [
   'src/views/home/HomeView',
   'src/views/about/AboutView',
   'src/views/status/StatusView',
+  'src/components/features/app-header/AppHeader',
+  'src/components/ui/mark/Mark',
 ];
 
 // A client script over the shared locales: no library, so nothing to install.

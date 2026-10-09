@@ -38,6 +38,12 @@ export const astroI18nTests = (): StarterTest[] => {
       variant: 'i18n',
     },
     {
+      target: 'src/components/ui/code-text/CodeText.test.ts',
+      covers: 'src/components/ui/code-text/CodeText.astro',
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    {
       target: 'src/components/features/language-select/LanguageSelect.test.ts',
       covers: 'src/components/features/language-select/LanguageSelect.astro',
       when: hasI18n,

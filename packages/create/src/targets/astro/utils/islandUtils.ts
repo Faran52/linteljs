@@ -170,6 +170,11 @@ const reactIsland = (): Island => {
         source: `src/pages/contact/${USE_CONTACT_FORM}.test.ts`,
         shared: 'react',
       },
+      {
+        target: 'src/lib/apis/contact/contactApi.test.ts',
+        covers: 'src/lib/apis/contact/contactApi.ts',
+        shared: 'react',
+      },
     ],
   };
 
