@@ -61,7 +61,7 @@ export const emitLinteljsConfig = (answers: Answers, name: string): string => {
   return emitWorkspaceConfig([{ name, answers }]);
 };
 
-// Written by `sync` only to migrate a 1.x project, so a reformatted config survives `sync`.
+// Written by `sync` only on `--add`, so a reformatted config survives `sync`.
 // Seeded first, so a run that dies before `package.json` leaves the answers recorded.
 export const linteljsConfigEmitter = (workspace: Workspace): Artifact[] => {
   const config = emitWorkspaceConfig(workspace.projects);
