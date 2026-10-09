@@ -1,5 +1,7 @@
 import { posix, relative } from 'node:path';
 
+import { partition } from 'es-toolkit';
+
 import { RUN_PREFIX } from '@config/constants';
 
 import { drawersPick } from '@choices/pick/drawers/drawersPick';
@@ -9,13 +11,19 @@ import { configRecord } from '@choices/record/config/configRecord';
 import { answeredValues } from '@choices/utils/drawerUtils';
 import { filesUnder, TEMPLATES_ROOT } from '@disk';
 import {
+  atRoot,
+  bannedPatternsOf,
   checkScriptOf,
+  commitGateOf,
   GATE_SCRIPTS,
   gitignoreEntries,
+  HOOK_DEV_DEPENDENCIES,
+  huskyHooksOf,
   installScriptOf,
   lintScriptsOf,
   mergeGitignore,
   STYLE_GLOB,
+  versioned,
 } from '@emitters';
 import { FRAMEWORK_MODULES } from '@frameworks/registry';
 import { projectWriter } from '@io/write/project/projectWriter';
@@ -61,8 +69,21 @@ interface Unit {
   drawers: string[];
   share: Share;
   framed: Framed[];
+  // The hooks, the configs they run and the scripts behind them.
+  gate: Artifact[];
   answers: Answered;
 }
+
+const gateOf = (workspace: Workspace, monorepo: boolean): Artifact[] => {
+  const [first] = workspace.projects;
+  const gate = [
+    ...huskyHooksOf(workspace.host.packageManager, monorepo),
+    ...commitGateOf(monorepo),
+    ...bannedPatternsOf(first.answers.typeSafety === 'relaxed'),
+  ];
+
+  return gate;
+};
 
 const frameworkDrawersOf = async (workspace: Workspace, answers: Answered): Promise<string[]> => {
   const perTarget = answeredValues(answers, 'target')
@@ -115,8 +136,14 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     const single: Unit = {
       directory: '.',
       drawers: [...frameworkDrawers, ...agentDrawersOf(first.answers)],
-      share: mergedShare(rootShare, { package: { scripts: lintScriptsOf(false, STYLE_GLOB) } }),
+      share: mergedShare(rootShare, {
+        package: {
+          scripts: lintScriptsOf(false, STYLE_GLOB),
+          devDependencies: versioned(HOOK_DEV_DEPENDENCIES),
+        },
+      }),
       framed: framedOf(first.name, first.answers, workspace.host),
+      gate: gateOf(workspace, false),
       answers: first.answers,
     };
 
@@ -125,6 +152,10 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     return units;
   }
 
+  // Hooks and scripts run once at the git root; each project keeps its own lint-staged config.
+  const [rootGate, projectGate] = partition(gateOf(workspace, true), ({ target }) => {
+    return atRoot(target);
+  });
   const projectUnits = workspace.projects
     .map(async ({ name, answers }) => {
       const group = answers.target === 'typescript' ? 'packages' : 'apps';
@@ -139,6 +170,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
           },
         },
         framed: framedOf(name, answers, workspace.host),
+        gate: projectGate,
         answers,
       };
 
@@ -149,6 +181,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     drawers: ['common/monorepo', ...agentDrawersOf(first.answers)],
     share: rootShare,
     framed: [],
+    gate: rootGate,
     answers: first.answers,
   };
   const units = await Promise.all(projectUnits);
@@ -302,7 +335,21 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
       return artifact;
     });
 
-  const artifacts = [...copied, ...emitted];
+  const gate = unit.gate
+    .map((artifact) => {
+      const placed: Written = {
+        ...artifact,
+        target: posix.join(unit.directory, artifact.target),
+      };
+
+      return placed;
+    });
+
+  const artifacts = [
+    ...copied,
+    ...emitted,
+    ...gate,
+  ];
 
   return artifacts;
 };

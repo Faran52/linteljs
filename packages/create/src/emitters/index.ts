@@ -1,4 +1,6 @@
 export { hasProjectsBlock } from './agents/utils/adapterUtils';
+export { bannedPatternsOf } from './always/banned-patterns/bannedPatternsEmitter';
+export { commitGateOf } from './always/commit-gate/commitGateEmitter';
 export {
   arrayLiteral,
   configSource,
@@ -6,6 +8,7 @@ export {
   objectLiteral,
 } from './always/eslint-config/eslintConfigEmitter';
 export { gitignoreEntries, mergeGitignore } from './always/gitignore/gitignoreEmitter';
+export { huskyHooksOf } from './always/husky/huskyEmitter';
 export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 export {
   checkScriptOf,
@@ -15,6 +18,7 @@ export {
 } from './always/utils/scriptUtils';
 export {
   GATE_SCRIPTS,
+  HOOK_DEV_DEPENDENCIES,
   STYLE_GLOB,
   TEST_RUNNERS,
 } from './constants';
@@ -27,7 +31,11 @@ export {
 } from './registry';
 export { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
 export { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
-export { packageAnswersOf, workspaceOf } from './utils/layoutUtils';
+export {
+  atRoot,
+  packageAnswersOf,
+  workspaceOf,
+} from './utils/layoutUtils';
 export {
   buildDevDependencies,
   type DependencyDrift,
@@ -36,6 +44,7 @@ export {
   serializedPackageJson,
   type Upgrade,
   upgradedPackageJson,
+  versioned,
 } from './utils/packageJsonUtils';
 export { testRunnerOf } from './utils/runnerUtils';
 export {

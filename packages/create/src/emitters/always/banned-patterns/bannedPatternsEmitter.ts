@@ -13,24 +13,22 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
   return source.replace(anchor, replacement);
 };
 
-const withTypeSafety = (source: string, answers: Answers): string => {
-  return answers.typeSafety === 'relaxed'
-    ? replaceAnchored(
-        source,
-        "const TYPE_SAFETY: TypeSafety = 'strict';",
-        "const TYPE_SAFETY: TypeSafety = 'relaxed';",
-      )
-    : source;
+const relaxedFloor = (source: string): string => {
+  return replaceAnchored(
+    source,
+    "const TYPE_SAFETY: TypeSafety = 'strict';",
+    "const TYPE_SAFETY: TypeSafety = 'relaxed';",
+  );
 };
 
-export const checkerArtifact = (answers: Answers): Artifact => {
+const checkerOf = (relaxed: boolean): Artifact => {
   const artifact: Artifact = {
     stage: 'standard',
     target: 'scripts/checkBannedPatterns.ts',
     content: {
       sources: ['project/scripts/checkBannedPatterns.ts'],
       transform: (source, current) => {
-        const typedSource = withTypeSafety(source, answers);
+        const typedSource = relaxed ? relaxedFloor(source) : source;
 
         return mergeChecker(typedSource, current);
       },
@@ -40,11 +38,19 @@ export const checkerArtifact = (answers: Answers): Artifact => {
   return artifact;
 };
 
-export const bannedPatternsEmitter = (answers: Answers): Artifact[] => {
+export const checkerArtifact = (answers: Answers): Artifact => {
+  return checkerOf(answers.typeSafety === 'relaxed');
+};
+
+export const bannedPatternsOf = (relaxed: boolean): Artifact[] => {
   const artifacts = [
-    checkerArtifact(answers),
+    checkerOf(relaxed),
     copied('scripts/utils/bannedPatternsUtils.ts'),
   ];
 
   return artifacts;
+};
+
+export const bannedPatternsEmitter = (answers: Answers): Artifact[] => {
+  return bannedPatternsOf(answers.typeSafety === 'relaxed');
 };

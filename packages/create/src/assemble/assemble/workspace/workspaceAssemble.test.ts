@@ -3,6 +3,7 @@ import {
   mkdtemp,
   readFile,
   rm,
+  stat,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -22,9 +23,14 @@ import {
 import { manifestReader } from '@choices/read/manifest/manifestReader';
 import { filesUnder, TEMPLATES_ROOT } from '@disk';
 import { parsePackageJson } from '@emitters';
+import { bannedPatternsEmitter } from '@emitters/always/banned-patterns/bannedPatternsEmitter';
+import { commitGateEmitter } from '@emitters/always/commit-gate/commitGateEmitter';
 import { gitignoreEmitter } from '@emitters/always/gitignore/gitignoreEmitter';
+import { huskyEmitter } from '@emitters/always/husky/huskyEmitter';
 import { emitLinteljsRecord, RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
 import { buildScripts } from '@emitters/always/utils/scriptUtils';
+import { inProject } from '@emitters/utils/layoutUtils';
+import { projectWriter } from '@io/write/project/projectWriter';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
 
@@ -87,8 +93,35 @@ const SCRIPT_PARITY: (Pick<Answers, 'packageManager' | 'testing'> & Partial<Pick
 
 const GATE_BLOCK = /export const GATE = \[[\s\S]*?\] as const;\n/;
 
+const COMMIT_GATE_PARITY: Pick<Answers, 'packageManager' | 'layout' | 'typeSafety'>[] = [
+  {
+    packageManager: 'pnpm',
+    layout: 'single',
+    typeSafety: 'strict',
+  },
+  {
+    packageManager: 'yarn',
+    layout: 'single',
+    typeSafety: 'relaxed',
+  },
+  {
+    packageManager: 'pnpm',
+    layout: 'monorepo',
+    typeSafety: 'relaxed',
+  },
+  {
+    packageManager: 'yarn',
+    layout: 'monorepo',
+    typeSafety: 'strict',
+  },
+];
+
+const EXECUTABLE = 0o111;
+
 describe('workspaceAssemble', () => {
   let cwd = '';
+  // The old emitters' output, for parity.
+  let previous = '';
 
   const workspaceOf = async (projects: Workspace['projects']): Promise<Workspace> => {
     const questions = await manifestReader();
@@ -112,13 +145,19 @@ describe('workspaceAssemble', () => {
     const prefix = join(tmpdir(), 'workspace-assemble-');
 
     cwd = await mkdtemp(prefix);
+    previous = await mkdtemp(prefix);
   });
 
   afterEach(async () => {
-    await rm(cwd, {
-      recursive: true,
-      force: true,
-    });
+    const removed = [cwd, previous]
+      .map(async (directory) => {
+        await rm(directory, {
+          recursive: true,
+          force: true,
+        });
+      });
+
+    await Promise.all(removed);
   });
 
   it('writes a single project from its drawers, agents and shares', async () => {
@@ -158,6 +197,8 @@ describe('workspaceAssemble', () => {
       },
       dependencies: { react: '^19.0.0' },
       devDependencies: {
+        '@commitlint/cli': '^21.2.3',
+        '@commitlint/config-conventional': '^21.2.3',
         '@eslint-react/eslint-plugin': '^5.23.5',
         '@html-eslint/eslint-plugin': '^0.66.1',
         '@html-eslint/parser': '^0.66.1',
@@ -166,6 +207,8 @@ describe('workspaceAssemble', () => {
         '@vitejs/plugin-react': '6.1.1',
         'eslint-plugin-jsx-a11y-x': '^0.2.0',
         'eslint-plugin-react-hooks': '^7.1.1',
+        'husky': '^9.1.7',
+        'lint-staged': '^17.6.0',
         'oxc-transform-react': '^0.145.0',
         'typescript': '~6.0.3',
         'vite': '^8.3.2',
@@ -177,11 +220,20 @@ describe('workspaceAssemble', () => {
     expect(written).toEqual([
       join('__mocks__', 'setupTests.tsx'),
       '.gitignore',
+      join('.husky', 'commit-msg'),
+      join('.husky', 'pre-commit'),
       'CLAUDE.txt',
+      'commitlint.config.js',
       'eslint.config.ts',
       'index.html',
+      'lint-staged.config.js',
       'linteljs.config.json',
       'package.json',
+      join('scripts', 'checkBannedPatterns.ts'),
+      join('scripts', 'typecheckStaged.ts'),
+      join('scripts', 'utils', 'bannedPatternsUtils.ts'),
+      join('scripts', 'utils', 'loggerUtils.ts'),
+      join('scripts', 'utils', 'typecheckStagedUtils.ts'),
       join('src', 'config', 'linteljs.ts'),
       join('src', 'i18n', 'config.ts'),
       join('src', 'index.css'),
@@ -233,9 +285,12 @@ describe('workspaceAssemble', () => {
     expect(rootParsed).not.toHaveProperty(['scripts', 'check']);
 
     expect(written).toEqual([
+      join('.husky', 'commit-msg'),
+      join('.husky', 'pre-commit'),
       join('apps', 'web', '.gitignore'),
       join('apps', 'web', 'eslint.config.ts'),
       join('apps', 'web', 'index.html'),
+      join('apps', 'web', 'lint-staged.config.js'),
       join('apps', 'web', 'package.json'),
       join('apps', 'web', 'src', 'config', 'linteljs.ts'),
       join('apps', 'web', 'src', 'i18n', 'config.ts'),
@@ -245,9 +300,16 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'tsconfig.json'),
       join('apps', 'web', 'vite.config.ts'),
       'CLAUDE.txt',
+      'commitlint.config.js',
       'linteljs.config.json',
       'package.json',
+      join('packages', 'shared', 'lint-staged.config.js'),
       join('packages', 'shared', 'package.json'),
+      join('scripts', 'checkBannedPatterns.ts'),
+      join('scripts', 'typecheckStaged.ts'),
+      join('scripts', 'utils', 'bannedPatternsUtils.ts'),
+      join('scripts', 'utils', 'loggerUtils.ts'),
+      join('scripts', 'utils', 'typecheckStagedUtils.ts'),
       'workspace.txt',
     ]);
   });
@@ -290,6 +352,61 @@ describe('workspaceAssemble', () => {
 
     expect(parsed).toMatchObject({ scripts: oldInstall });
     expect([ignored]).toEqual(oldIgnored);
+  });
+
+  it.each(COMMIT_GATE_PARITY)('writes the old hooks, commit gate and banned-pattern scripts for %o', async (picked) => {
+    const { packageManager, ...chosen } = picked;
+    const project: AssembledProject = {
+      name: 'web',
+      answers: {
+        target: 'react',
+        ...chosen,
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      host: {
+        ...workspace.host,
+        packageManager,
+      },
+    });
+
+    const answers = answersFor(picked);
+    const oldArtifacts = [
+      ...huskyEmitter(answers),
+      ...commitGateEmitter(answers),
+      ...bannedPatternsEmitter(answers),
+    ];
+    const directory = picked.layout === 'monorepo' ? 'apps/web' : '.';
+
+    await projectWriter(previous, inProject(directory, oldArtifacts));
+
+    const oldFiles = await filesUnder(previous);
+
+    const snapshotOf = async (root: string) => {
+      const files = oldFiles
+        .map(async (path) => {
+          const text = await readFile(join(root, path), 'utf8');
+          const { mode } = await stat(join(root, path));
+          const file = {
+            path,
+            text,
+            executable: mode & EXECUTABLE,
+          };
+
+          return file;
+        });
+
+      return await Promise.all(files);
+    };
+
+    const written = await snapshotOf(cwd);
+    const expected = await snapshotOf(previous);
+
+    expect(oldFiles).toHaveLength(9);
+    expect(written).toEqual(expected);
   });
 
   it.each(SCRIPT_PARITY)('writes the old scripts and gate from the real drawers for %o', async (picked) => {
