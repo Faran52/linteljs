@@ -791,18 +791,34 @@ install-script gate, so supporting it meant a row in every manager table. The fl
 
 ## Monorepo layout
 
-`--layout monorepo` writes the same project moved under `apps/<name>/`, root tooling aside. The emitters do not know
-the layout; one move in the registry rebases their paths.
+`--layout monorepo` writes N projects, 1 to 20, each an App (a framework target) or a Package (the `typescript`
+target), root tooling aside. A project's kind and directory derive from its `target`, never recorded, so no state
+can disagree: an App lives in `apps/<name>/`, a Package in `packages/<name>/`. The emitters do not know the
+layout; one move in the registry rebases their paths. A single layout is the same shape, `projects` of one, and
+writes the bytes it always did.
 
-- **Plain workspaces.** The manager's own workspaces and recursive run. Turborepo, Nx and Bazel are deferred to
-  2.1: a task graph and cache a two-package repo does not need, and one more config across four managers.
-- **`apps/*` and `packages/*`**, the convention every manager documents.
+- **Workspace keys and project keys.** `layout`, the manager and its version, the Node version, `typeSafety`,
+  `agents` and `plugins` are asked once and sit at the top of `linteljs.config.json`; every other answer belongs
+  to a project under `projects`. `plugins` is offered when any project offers it. A v1 or v2 config reads as one
+  unnamed project.
+- **Names.** The workspace name follows the npm-name rule and names the root `<name>-workspace`. A project name is
+  kebab-case, unique, and not the root's, since it is both the directory and the package name.
+- **A Package asks nothing beyond its name and kind**: it takes the `typescript` defaults.
+- **`--project <name>` groups the answer flags after it**, repeatable, so N projects are one non-interactive run.
+  A run with `--project` asks nothing, `--yes` or not; `--kind package` refuses every per-project answer flag.
+  Without `--project`, the flags mean what they mean in a single repo.
+- **Plain workspaces.** The manager's own workspaces and recursive run. Turborepo, Nx and Bazel are deferred: a
+  task graph and cache a few packages do not need, and one more config across four managers.
 - **ESLint per package.** Each package lints, typechecks and tests itself; one root config would have to know every
   package's layers. The root keeps one lint-staged config, so lint-staged runs each package's from its directory.
 - **The root lints like a single repo**, over its own `scripts/`.
-- **The app copies msw's worker itself**, from its own install script ([The api edge](#the-api-edge)).
-- **Single only for `--existing`**, which never moves files; `--layout monorepo` is refused there.
-- **`sync --add` writes a package by default**, and an app with `--kind app`.
+- **An app copies msw's worker itself**, from its own install script ([The api edge](#the-api-edge)).
+- **`sync` syncs every project**, each in its own directory, and the agent files for all of them at once.
+- **`sync --add <name>` writes a Package by default**, an App with `--kind app`, and is the one `sync` path that
+  writes the config: the new project must be on record for the next `sync`. It unions the new project's builds
+  into an existing `allowBuilds`.
+- **Single only for `--existing`**, which never moves files and cannot infer N frameworks without guessing;
+  `--layout monorepo` is refused there.
 
 ## What a project owns
 
@@ -811,18 +827,20 @@ Every file this CLI owns reaches disk as an `Artifact` through `artifactWriter`;
 
 ### Two artifact lists, and why `sync` sees only part of one
 
-- `buildArtifacts` is the toolchain linteljs maintains; `create` writes all of it. `sync` writes only its
-  `plugins/linteljs/` entries, the ESLint config and the `@linteljs/*` dependencies, each behind its own y/N.
+- `buildArtifacts` is the toolchain linteljs maintains; `create` writes all of it. `sync` writes its
+  `plugins/linteljs/` entries and the agent files unasked, and the ESLint config and the `@linteljs/*`
+  dependencies each behind its own y/N.
 - `seedArtifacts` is what `create` plants and `sync` never touches: the config, README, manifest and starter
   source.
 - `sync --add <name>` is a birth: both lists for the new project, kept to what lands under its directory, then
-  the project appended to the config, the agent files rewritten, and an install with pnpm's `frozen-lockfile` and Yarn's immutable installs off, since both
-  turn on under `CI` and refuse the lockfile change that is the point.
+  the project appended to the config, its builds unioned into `allowBuilds`, the agent files rewritten, and an
+  install with pnpm's `frozen-lockfile` and Yarn's immutable installs off, since both turn on under `CI` and
+  refuse the lockfile change that is the point.
 
-`sync` reads `linteljs.config.json` and, but for `--add`, never writes it, so a reformatted config keeps its bytes. A 1.x project
-moves `lintel.config.json` with `create --existing`, which removes the old file only after the new one is on disk.
-`seed: true` is birth only, `requires` skips a starter test whose file was moved, and an existing `preserve` file is
-the project's on every `create --existing`.
+`sync` reads `linteljs.config.json` and, but for `--add`, never writes it, so a reformatted config keeps its bytes.
+A 1.x project moves `lintel.config.json` with `create --existing`, which removes the old file only after the new
+one is on disk. `seed: true` is birth only, `requires` skips a starter test whose file was moved, and an existing
+`preserve` file is the project's on every `create --existing`.
 
 ### What `sync` writes, and what it asks first
 
@@ -832,6 +850,10 @@ project has no bin, and `npx` fails `devEngines` with `EBADDEVENGINES` under ano
 The runner-switch refusal runs first. Then:
 
 - **`plugins/linteljs/` is written without asking**: the one tree no project edits.
+- **The agent files are written without asking**: the rule copies in `.cursor/rules/`, `.github/instructions/`
+  and `.agents/rules/`, each project's `CLAUDE.md`, `AGENTS.md` and Copilot instructions, and in a monorepo the
+  marked projects block of each root adapter, whose other text is the user's. A root adapter without the markers
+  is left whole. A rule copy no project needs now is printed as stale and never deleted.
 - **The `@linteljs/*` versions behind** are shown, then a y/N. A non-version range like `workspace:*` never moves.
 - **The lint dependencies missing or behind** get their own y/N. Every other dependency stays the project's.
 - **The ESLint config** is written unasked when none exists; one that differs gets a y/N and is moved to the first
@@ -842,7 +864,8 @@ The runner-switch refusal runs first. Then:
 
 ### Birth-only and merged files
 
-Every file outside `plugins/linteljs/` and the ESLint config is the project's once written, and `sync` writes none.
+Every file outside `plugins/linteljs/`, the agent files and the ESLint config is the project's once written, and
+`sync` writes none.
 
 **The build configs are birth-only** (`preserve`): every real project outgrows them inside its first feature.
 
@@ -946,6 +969,27 @@ Gemini CLI denies before the tool and adds the eslint and banned-pattern finding
 `AfterTool` block replaces the result. No commit gate: no documented exit status. `.gemini/settings.json` is
 merged. Antigravity gets the rules in `.agents/rules/` (`trigger: glob` or `always_on`), and no hooks or MCP until
 it documents a schema.
+
+### Rules: inlined copies, one per framework
+
+Each agent gets its own inlined copy of every rule, not a stub pointing at the plugin's reference. Measured with
+a canary rule, 3 runs each:
+
+- **Claude Code**: an `@path` stub hit 3/3, but its body loads unconditionally and defeats `paths:` (an
+  out-of-glob file hit 2/2 for the stub, 0/2 inline). A plain markdown link hit 1/3. A nested `CLAUDE.md` loads
+  on demand, 3/3.
+- **Copilot**: inconclusive. The only model available ignored even the repo-wide instructions, 0/3 inline and
+  0/3 stub.
+- **Cursor, Codex, Gemini CLI, Antigravity**: docs only, not installed. Cursor's `@file` and Codex's references
+  are hints, Antigravity documents no import; Gemini CLI documents `@file` expansion.
+
+A copy is deduplicated per framework: in a monorepo `repo-structure.md` and `testing.md` become
+`<rule>.<framework|package>.md`, and every other rule is one file globbed, root-relative, over the project
+directories it serves. A copy keeps a line any of its projects writes, but the `no-store` line only when all of
+them do. A monorepo of one keeps these names, so
+`sync --add` orphans no copy; a single layout keeps `repo-structure.md`. Claude Code keeps the skill references,
+scoped by each project's nested `CLAUDE.md`, with no nested `.claude/rules/`. Antigravity's root-relative
+`globs:` are unverified.
 
 ## Comments
 

@@ -102,7 +102,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | Browser | `--browser` | `chrome`, `firefox` (webextension) | `chrome` |
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` (webextension) | `popup,background` |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
-| Repository layout | `--layout` | `single`, `monorepo` (the target under `apps/<name>`, with `packages/*`; not with `--existing`) | `single` |
+| Repository layout | `--layout` | `single`, `monorepo` (1 to 20 projects under `apps/` and `packages/`; not with `--existing`) | `single` |
 | Testing | `--testing` | `vitest`, `jest` (react-native only, through `jest-expo`; `vitest` reads as `jest` there), `none` | `vitest`, `jest` on react-native |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
 | Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native; not on typescript) | none |
@@ -134,12 +134,34 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --yes, -y         accept the defaults, ask nothing; sync: accept every step
   --add <name>      sync, in a monorepo: write a new project, record it in linteljs.config.json and
                     install it; with --kind app it takes the answer flags or asks the App questions
+  --project <name>  open a monorepo project (repeatable); the answer flags after it, but --layout,
+                    --type-safety, --agents and --plugins, apply to it alone
+  --kind <kind>     app or package, a TypeScript package that takes no answer flags; app is the
+                    default after --project, package with --add
   --version, -v
   --help, -h
 ```
 
 Without a terminal, a run needs `--yes` or an answer flag; a name alone writes nothing and exits 1. With no name
 it takes the directory's. Ctrl+C writes nothing.
+
+## Monorepos
+
+A monorepo holds 1 to 20 projects, each an app in `apps/<name>/` or a TypeScript package in `packages/<name>/`.
+The questions run in this order: `Project name` for the workspace (an npm package name, which names the root
+`<name>-workspace`), the layout, `How many projects?`, then for each `Project <n> name` and `Project <n> kind`,
+and for an app the framework and its questions. A package asks nothing more. The type safety, agents and plugins
+questions come once, for the whole workspace. A project name is kebab-case, unique, and not the root's.
+
+```bash
+npx @linteljs/create shop --layout monorepo --project web --target next --styling tailwind \
+  --project mobile --target react-native --project core --kind package
+```
+
+Each `--project <name>` opens a project, and the answer flags after it apply to it alone; `--layout`,
+`--type-safety`, `--agents` and `--plugins` apply to the workspace wherever they sit. A run with `--project`
+takes every answer from its flags and the defaults and asks nothing, with or without `--yes`. `--kind` is `app` by
+default, and `--kind package` refuses every answer flag after its `--project`.
 
 ## Existing projects and updates
 
@@ -159,9 +181,11 @@ never guesses a framework.
 Native project from before 2.0 does: it writes nothing and exits 1, since the suites, setup and test scripts it
 would strand are yours to port. Otherwise it takes four steps:
 
-1. `plugins/linteljs/` is linteljs's whole, so it is rewritten without asking. A path linteljs recorded there and
-   no longer writes, such as a dropped agent's, is deleted, and the directories that leaves empty go with it.
-   Nothing outside `plugins/linteljs/` is ever deleted.
+1. `plugins/linteljs/` and the agent files are linteljs's, so they are rewritten without asking: the rule copies,
+   each project's `CLAUDE.md`, `AGENTS.md` and Copilot instructions, and the marked projects block of a root
+   adapter. A path linteljs recorded in `plugins/linteljs/` and no longer writes, such as a dropped agent's, is
+   deleted, and the directories that leaves empty go with it. Nothing outside it is ever deleted: a rule copy no
+   project needs now is printed as stale, for you to remove.
 2. The `@linteljs/*` versions in `package.json` that are behind are shown as a table, then a y/N. A range that is
    not a version, such as `workspace:*`, is never moved.
 3. The peers `@linteljs/eslint-config` needs that are missing or behind get their own y/N; on yes they are
@@ -171,17 +195,19 @@ would strand are yours to port. Otherwise it takes four steps:
 
 `--yes` accepts every step. Without a terminal and without `--yes`, a step that would ask writes nothing, says so
 on stderr, and the run exits 1. Declining a step exits 0. Nothing else is touched: your other dependencies and
-scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs, the agent files outside
-`plugins/linteljs/`, `linteljs.config.json`, your README and the starter source are yours after `create`. A
-project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to move them.
+scripts, `tsconfig.json`, `.github/workflows/ci.yml`, the build and test configs, the text of a root `CLAUDE.md`
+or `AGENTS.md` outside its projects block, `linteljs.config.json`, your README and the starter source are yours
+after `create`. A project from 1.x, whose answers sit in `lintel.config.json`, runs `create --existing` once to
+move them.
 
-In a monorepo, `sync --add <name>` writes a new project: a TypeScript package to `packages/<name>/` by default, or
-with `--kind app` an app to `apps/<name>/`, which takes the answer flags, or `--yes` for React, or asks the App
-questions in a terminal. It writes the project's own files, seeds and all, on the workspace answers
-`linteljs.config.json` records, appends the project to that file's `projects` (the one sync path that writes it),
-rewrites the agent files for every project, then runs `<pm> install` so the lockfile takes it (`--no-install` skips
-that). `<name>` is an unscoped package name, and the run refuses a single repo, a name the config already records
-and one `apps/` or `packages/` already holds.
+In a monorepo, `sync` syncs every project, and `sync --add <name>` writes a new one: a TypeScript package to
+`packages/<name>/` by default, or with `--kind app` an app to `apps/<name>/`, which takes the answer flags, or
+`--yes` for React, or asks the App questions in a terminal. It writes the project's own files, seeds and all, on
+the workspace answers `linteljs.config.json` records, appends the project to that file's `projects` (the one sync
+path that writes it), adds the builds it needs to an existing `allowBuilds`, rewrites the agent files for every
+project, then runs `<pm> install` so the lockfile takes it (`--no-install` skips that). `<name>` is an unscoped
+package name, and the run refuses a single repo, a name the config already records and one `apps/` or
+`packages/` already holds.
 
 ## Agents
 
@@ -200,13 +226,18 @@ shows the gate's state for the work tree (passed, failed, running, stale or not 
 | Path | Written for | Owned by |
 | --- | --- | --- |
 | `plugins/linteljs/` | every project | linteljs |
-| `CLAUDE.md`, `.claude/settings.json` | Claude Code | you; linteljs merges its entries into the settings |
-| `AGENTS.md` | Codex, Gemini CLI, Antigravity | you |
+| `CLAUDE.md`, `.claude/settings.json` | Claude Code | you, but a monorepo's projects block and each project's `CLAUDE.md`; linteljs merges its entries into the settings |
+| `AGENTS.md` | Codex, Gemini CLI, Antigravity | you, but a monorepo's projects block and each project's `AGENTS.md` |
 | `.agents/plugins/marketplace.json` | Codex | linteljs |
-| `.github/copilot-instructions.md`, `.github/instructions/`, `.github/hooks/linteljs.json` | Copilot | you; linteljs |
-| `.cursor/rules/`, `.cursor/hooks.json` | Cursor | you for `linteljs.mdc`; linteljs merges its hook entries |
+| `.github/copilot-instructions.md`, `.github/instructions/`, `.github/hooks/linteljs.json` | Copilot | you, but a monorepo's projects block; linteljs |
+| `.cursor/rules/`, `.cursor/hooks.json` | Cursor | you for `linteljs.mdc`, but a monorepo's projects block; linteljs merges its hook entries |
 | `.gemini/settings.json` | Gemini CLI | you; linteljs merges its hook entries and adds `AGENTS.md` to `context.fileName` |
 | `.agents/rules/` | Antigravity | linteljs |
+
+Each agent gets its own copy of every rule, so it reads the rule without following a link. In a monorepo
+`repo-structure` and `testing` get one copy per framework, named `<rule>.<framework>` or `<rule>.package`, and
+each project gets its own `CLAUDE.md` or `AGENTS.md` with its facts, for the agents that read one; a single
+repo keeps `repo-structure.md`.
 
 Nothing is installed on your behalf: your agent asks you to trust the directory and approve the plugin and hooks,
 and the project passes its gate if you decline. Codex runs plugin hooks only once trusted through `/hooks`, and

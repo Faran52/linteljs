@@ -19,14 +19,13 @@ when a version's change lives in a sibling it is described there instead:
 - **The package manager is no longer asked.** The manager that runs `create` is the project's, read from
   `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
   below its floor is refused, never upgraded: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is refused too.
-- **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read by
-  `create --existing`, which writes its answers under the new name and then removes the old one; `sync` does not.
-  A v1 file is migrated on read: the form library, `tailwind` and `tanstack-query` move out of `libraries` into
-  `form`, `styling` and `data`, and `store: true` becomes the target's first store.
-- **Schema version 3 records the workspace answers once and each project under `projects`.** `layout`, the
-  package manager and its version, the Node version, `typeSafety`, `agents` and `plugins` sit at the top; every
-  other answer belongs to a project. A single layout holds one project; each project in a monorepo is named for
-  its directory, in kebab-case, so `my_app` lands in `apps/my-app`, or `packages/my-app` for a `typescript` package. A v1 or v2 file still reads, as one unnamed project, and stays as it is on disk.
+- **The recorded answers are `linteljs.config.json`, schema version 3.** The workspace answers sit at the top
+  once: `layout`, the package manager and its version, the Node version, `typeSafety`, `agents` and `plugins`.
+  Every other answer belongs to a project under `projects`, one in a single repo. A `lintel.config.json` is still
+  read by `create --existing`, which writes its answers under the new name and then removes the old one; `sync`
+  does not. A v1 file is migrated on read, as one unnamed project: the form library, `tailwind` and
+  `tanstack-query` move out of `libraries` into `form`, `styling` and `data`, and `store: true` becomes the
+  target's first store.
 - **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
   `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
   config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers
@@ -34,19 +33,23 @@ when a version's change lives in a sibling it is described there instead:
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
-- **`sync` writes only `plugins/linteljs/` without asking, and asks before each other step.** `--force` is gone,
+- **`sync` writes only `plugins/linteljs/` and the agent files without asking, and asks before each other step.**
+  `--force` is gone,
   and `sync` no longer prints a diff per file.
   - A test-runner switch is refused first: it writes nothing and exits 1.
   - `plugins/linteljs/` is rewritten. A path recorded there and no longer written is deleted, and the directories
     left empty with it. Nothing outside `plugins/linteljs/` is deleted.
+  - The agent files are rewritten: the rule copies, each project's `CLAUDE.md`, `AGENTS.md` and Copilot
+    instructions, and a monorepo's projects block in each root adapter, whose other text stays yours. A rule copy
+    no project needs now is printed as stale, never deleted.
   - The `@linteljs/*` versions behind are shown as a table, then a y/N. The `@linteljs/eslint-config` peers
     and `jiti` missing or behind get their own y/N, then the `<pm> install` to run is printed.
   - A missing ESLint config is written. One that differs gets a y/N that moves it to the first free `.bak`,
     `.bak.1` and so on, then writes `eslint.config.ts`.
   - `--yes` accepts every step. Without a terminal and without `--yes`, a step writes nothing, says so on stderr,
     and the run exits 1. Declining exits 0.
-  - Every other file, `.github/workflows/ci.yml`, `.claude/settings.json`, the agent files, `scripts/` and the
-    manager files included, is the project's after `create`; `create --existing` reapplies them.
+  - Every other file, `.github/workflows/ci.yml`, `.claude/settings.json`, `scripts/` and the manager files
+    included, is the project's after `create`; `create --existing` reapplies them.
 - **The web extension asks no form, data or mocking question.** It renders no contact page, so those answers
   wrote dependencies nothing used. A `linteljs.config.json` for `webextension` that carries `form`, `data` or
   `mocking` is now refused; remove the key. The hosted framework still brings its plugin, `tsconfig` and lint layer.
@@ -196,20 +199,29 @@ when a version's change lives in a sibling it is described there instead:
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
-- A repository layout answer, `--layout single|monorepo`, asked of every target. A monorepo writes the target
-  under `apps/<name>/` (the `typescript` target, a package, under `packages/<name>/`) and keeps the git, agent and CI tooling at the root: a root `package.json` named
-  `<name>-workspace` declares `apps/*` and `packages/*` as workspaces (`pnpm-workspace.yaml` for pnpm), lints and
-  typechecks its own `scripts/`, and its `check` runs every package's `check`. Each package lints, typechecks and
-  tests itself. The README says where the app's scripts run, and the agent rules' globs
-  match inside any package. `sync` re-syncs the app's `package.json` and `eslint.config.ts` in the
-  directory under `apps/` or `packages/` that holds a manifest, and `plugins/linteljs/` at the root. `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
-- `sync --add <name>` writes a new project to a monorepo: a TypeScript package to `packages/<name>/` by default,
-  or with `--kind app` an app to `apps/<name>/` from the answer flags, `--yes` (React) or the App questions in a
-  terminal. It writes the project's own files on the recorded workspace answers, appends it to the config's
-  `projects`, rewrites every project's agent files, then installs, so the lockfile takes it and a frozen CI
-  install passes (`--no-install` leaves it to you). It refuses a single repo, a scoped or invalid name, a name the
-  config records, and a name `apps/` or `packages/` already holds. An existing `allowBuilds` block gains the
-  builds the new project needs, sorted, with every entry and value you wrote kept.
+- A repository layout answer, `--layout single|monorepo`, asked of every target. A monorepo holds 1 to 20
+  projects (`How many projects?`), each an app in `apps/<name>/` or a TypeScript package in `packages/<name>/`,
+  and keeps the git, agent and CI tooling at the root: a root `package.json` named `<name>-workspace` declares
+  `apps/*` and `packages/*` as workspaces (`pnpm-workspace.yaml` for pnpm), lints and typechecks its own
+  `scripts/`, and its `check` runs every package's `check`. Each package lints, typechecks and tests itself. The
+  workspace name follows the npm-name rule; a project name is kebab-case, so `my_app` lands in `apps/my-app`. A
+  package asks nothing beyond its name and kind, and the type safety, agents and plugins questions come once.
+  `--existing` stays a single repo: it asks no layout, and refuses `--layout monorepo`.
+- `--project <name>` and `--kind app|package` write a monorepo in one run: the answer flags after a `--project`
+  apply to that project, and the run asks nothing, with or without `--yes`. `--kind package` refuses every
+  per-project answer flag.
+- A monorepo's agent rules: `repo-structure` and `testing` get one copy per framework, `<rule>.<framework>` or
+  `<rule>.package`, the other rules one copy each, globbed over the project directories they serve. Each project
+  gets its own `CLAUDE.md` or `AGENTS.md` with its facts, and each root adapter a projects block that `sync`
+  keeps current. A single repo keeps `repo-structure.md`.
+- `sync` syncs every project of a monorepo, and `sync --add <name>` writes a new one: a TypeScript package to
+  `packages/<name>/` by default, or with `--kind app` an app to `apps/<name>/` from the answer flags, `--yes`
+  (React) or the App questions in a terminal. It writes the project's own files on the recorded workspace
+  answers, appends it to the config's `projects` (the one `sync` path that writes the config), adds the builds it
+  needs to an existing `allowBuilds` with every entry and value you wrote kept, rewrites every project's agent
+  files, then installs, so the lockfile takes it and a frozen CI install passes (`--no-install` leaves it to
+  you). It refuses a single repo, a scoped or invalid name, a name the config records, and a name `apps/` or
+  `packages/` already holds.
 - An install `create` or `sync --add` runs under `CI` no longer fails on pnpm's frozen lockfile when it changes
   one, as Yarn's already did not.
 

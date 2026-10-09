@@ -58,8 +58,9 @@ pipeline/   the stage machine, sync, and the passes over written source.
 
 - `<group>/<subject>/<subjectEmitter>.ts`: the subject directory is named for the file it writes, the group for
   the answer that decides whether it writes anything (`agents/`, `manager/`, `target/`, `testing/`,
-  `libraries/`, `typesafety/`, and `always/` for none). `layout/workspace-root/` writes a monorepo's root manifest and tooling; `ROOT_EMITTERS` holds it, past
-  the move `inProject` makes.
+  `libraries/`, `typesafety/`, and `always/` for none). `layout/workspace-root/` writes a monorepo's root manifest and tooling. `ROOT_EMITTERS` holds what
+  writes once for the workspace, past the move `inProject` makes: `pnpm-workspace`, `workspace-root`,
+  `linteljs-plugin` and the agent rule and adapter subjects.
 - Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a branchless `flatMap`
   over `registry.ts`. `meta.test.ts` reads its source to hold that, and holds the registry's `<group>/<subject>`
   keys against the directory listing both ways.
@@ -78,6 +79,10 @@ pipeline/   the stage machine, sync, and the passes over written source.
   `runnerUtils.ts` (`testRunnerOf`, the runner a project's suites run on, from the record's `testRunner`, read by
   every subject that writes a runner's config, scripts, types or lint layer, and by `sync`'s runner-switch guard).
   What only `package-json/` reads, `SUPERSEDED`, stays in that subject's `constants.ts`.
+- `emitters/agents/utils/`: `ruleGroupUtils.ts` (`ruleGroups`, one copy per rule across the projects, and per
+  framework for `repo-structure` and `testing` in a monorepo), `ruleFileUtils.ts` (a group's copy in each agent's
+  rule directory), `adapterUtils.ts` (the root adapters, their projects block, each project's facts),
+  `hookUtils.ts` (`withOurHooks`).
 - `testing/` writes one runner's config: `vitest-config/` or `jest-config/` (`jest.config.js`, for a record whose
   `testRunner` is `jest`; its `constants.ts` holds the msw and redux-toolkit ES-module fixes), each emitting
   nothing for the other runner. `testing/utils/coverageUtils.ts` holds the coverage include and exclude both read.
