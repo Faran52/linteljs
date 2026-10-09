@@ -1,0 +1,25 @@
+{
+  "package": {
+    "scripts": {
+      "dev": "react-router dev",
+      "build": "react-router build",
+      "start": "react-router-serve ./build/server/index.js",
+      "preview": "react-router-serve ./build/server/index.js",
+      "typecheck": "react-router typegen && tsc --noEmit",
+      "prepare": "react-router typegen"
+    },
+    "dependencies": {
+      "@react-router/node": "^8.4.0",
+      "@react-router/serve": "^8.4.0",
+      "isbot": "^5.2.2",
+      "react-router": "^8.4.0"
+    },
+    "devDependencies": {
+      "@react-router/dev": "^8.4.0"
+    }
+  },
+  "eslint": {
+    "ignores": [".react-router/**", "build/**"]
+  },
+  "routesFile": "src/routes.ts"
+}

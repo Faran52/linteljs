@@ -1,0 +1,8 @@
+{
+  "package": {
+    "dependencies": {
+      "react-router": "^8.4.0"
+    }
+  },
+  "routesFile": "src/router/router.tsx"
+}

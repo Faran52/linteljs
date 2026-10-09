@@ -1,0 +1,8 @@
+{
+  "package": {
+    "dependencies": {
+      "@tanstack/react-router": "^1.170.41"
+    }
+  },
+  "routesFile": "src/router/router.tsx"
+}

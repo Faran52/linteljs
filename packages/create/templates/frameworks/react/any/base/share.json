@@ -1,0 +1,19 @@
+{
+  "package": {
+    "dependencies": {
+      "i18next": "^26.4.2",
+      "react": "^19.3.0",
+      "react-dom": "^19.3.0",
+      "react-i18next": "^17.0.15"
+    }
+  },
+  "routes": [
+    { "path": "/", "name": "home", "from": "@pages/home/HomePage" },
+    { "path": "/about", "name": "about", "from": "@pages/about/AboutPage" },
+    { "path": "/version", "name": "version", "from": "@pages/version/VersionPage" }
+  ],
+  "locales": ["base"],
+  "localesDir": "src/i18n/locales",
+  "css": ["./styles/tokens.css", "./styles/base.css"],
+  "cssFile": "src/index.css"
+}

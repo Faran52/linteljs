@@ -65,7 +65,9 @@ a generated project has, and it runs the shipped checker less this workspace's `
 ## `packages/create/templates/`
 
 Outside `src/`, laid out as the destination: `project/` is the tree a project receives, `starter-source/` the
-per-target starters, `fragments/` the pieces joined into one file (kept as an explicit list, since they have no
+per-target starters, `frameworks/<name>/<dir>/<drawer>/` the rewrite's drawers (files under their real names,
+copies held equal by `src/frameworks/registry.test.ts`), `common/` the manifest and the locale namespaces,
+`fragments/` the pieces joined into one file (kept as an explicit list, since they have no
 destination), `schemas/` the mirror of the root `schemas/` published by raw URL
 (`answers/utils/schemaUtils.test.ts` holds them equal). It cannot live under `src/`: it holds TypeScript for
 frameworks this workspace does not install and files named `*.test.ts`.

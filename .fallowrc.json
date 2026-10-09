@@ -12,6 +12,7 @@
   "ignorePatterns": [
     ".claude/**",
     "packages/create/templates/starter-source/**",
+    "packages/create/templates/frameworks/**",
     "packages/create/templates/fragments/**",
     "packages/*/__mocks__/fixtures/**"
   ],
