@@ -34,7 +34,9 @@ prompt/     asking the questions; throws Cancelled.
 assemble/   reads each picked drawer, merges files and shares (a path or a share key twice is an authoring error),
             writes package.json, eslint.config.ts, locales, routes and the CSS entry from the merged share, and
             places each unit (monorepo: apps/<n>, packages/<n>) once. Reads @choices, @disk, @emitters and @io.
-frameworks/ registry.ts alone: FRAMEWORKS, the templates/frameworks/<name>/ modules the rewrite serves.
+frameworks/ <name>/<name>Framework.ts per framework (a FrameworkModule, types.ts): the files it builds in code and
+            its share over its picked drawers. registry.ts: FRAMEWORKS, the --target values the rewrite serves,
+            and FRAMEWORK_MODULES, which workspaceAssemble runs per target.
 ```
 
 None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`. `src/cli.ts`, beside

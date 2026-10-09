@@ -6,6 +6,7 @@ import { type Answered, type Question } from '@choices/read/manifest/manifestRea
 import { configRecord } from '@choices/record/config/configRecord';
 import { answeredValues } from '@choices/utils/drawerUtils';
 import { filesUnder, TEMPLATES_ROOT } from '@disk';
+import { FRAMEWORK_MODULES } from '@frameworks/registry';
 import { projectWriter } from '@io/write/project/projectWriter';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
@@ -24,6 +25,7 @@ import { packageJsonWriter } from '../../write/package-json/packageJsonWriter';
 import { routesWriter } from '../../write/routes/routesWriter';
 
 import type { Artifact } from '@config/types';
+import type { Framed, Generated } from '@frameworks/types';
 
 type Written = Omit<Artifact, 'stage'>;
 
@@ -45,12 +47,8 @@ interface Unit {
   directory: string;
   drawers: string[];
   share: Share;
+  framed: Framed[];
   answers: Answered;
-}
-
-interface Generated {
-  path: string;
-  text: string;
 }
 
 const frameworkDrawersOf = async (workspace: Workspace, answers: Answered): Promise<string[]> => {
@@ -66,6 +64,21 @@ const frameworkDrawersOf = async (workspace: Workspace, answers: Answered): Prom
   const drawers = await Promise.all(perTarget);
 
   return drawers.flat();
+};
+
+const framedOf = (name: string, answers: Answered): Framed[] => {
+  return answeredValues(answers, 'target')
+    .flatMap((target) => {
+      const module = FRAMEWORK_MODULES[target];
+
+      if (module === undefined) {
+        return [];
+      }
+
+      const framed = [module(name, answers)];
+
+      return framed;
+    });
 };
 
 const agentDrawersOf = (answers: Answered): string[] => {
@@ -90,6 +103,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
       directory: '.',
       drawers: [...frameworkDrawers, ...agentDrawersOf(first.answers)],
       share: rootShare,
+      framed: framedOf(first.name, first.answers),
       answers: first.answers,
     };
 
@@ -106,6 +120,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
         directory: `${group}/${name}`,
         drawers,
         share: { package: { name } },
+        framed: framedOf(name, answers),
         answers,
       };
 
@@ -115,6 +130,7 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     directory: '.',
     drawers: ['common/monorepo', ...agentDrawersOf(first.answers)],
     share: rootShare,
+    framed: [],
     answers: first.answers,
   };
   const units = await Promise.all(projectUnits);
@@ -186,9 +202,31 @@ const unitArtifactsOf = async (root: string, unit: Unit): Promise<Written[]> => 
     files: [],
     share: unit.share,
   };
+  const moduleName = `${unit.directory} framework module`;
+  const framed = unit.framed
+    .map(({ share }) => {
+      const module: Drawn = {
+        name: moduleName,
+        files: [],
+        share,
+      };
+
+      return module;
+    });
   const drawn = await Promise.all(reads);
-  const { files, share } = drawersMerge([own, ...drawn]);
-  const generated = await generatedOf(root, share, unit.answers);
+  const { files, share } = drawersMerge([
+    own,
+    ...framed,
+    ...drawn,
+  ]);
+  const shared = await generatedOf(root, share, unit.answers);
+  const generated = [
+    ...shared,
+    ...unit.framed
+      .flatMap((module) => {
+        return module.files;
+      }),
+  ];
 
   const copied = files
     .map((file) => {

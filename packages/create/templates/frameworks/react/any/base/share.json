@@ -2,9 +2,13 @@
   "package": {
     "dependencies": {
       "i18next": "^26.4.2",
+      "qs": "^6.16.0",
       "react": "^19.3.0",
       "react-dom": "^19.3.0",
       "react-i18next": "^17.0.15"
+    },
+    "devDependencies": {
+      "@types/qs": "^6.15.1"
     }
   },
   "routes": [

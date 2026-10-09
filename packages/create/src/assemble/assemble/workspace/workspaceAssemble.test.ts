@@ -80,15 +80,33 @@ describe('workspaceAssemble', () => {
     const expectedManifest = {
       name: 'demo',
       packageManager: 'pnpm@11.0.0',
-      scripts: { dev: 'vite' },
+      scripts: {
+        dev: 'vite',
+        build: 'vite build',
+        preview: 'vite preview',
+      },
       dependencies: { react: '^19.0.0' },
-      devDependencies: { vitest: '^4.0.0' },
+      devDependencies: {
+        '@eslint-react/eslint-plugin': '^5.23.5',
+        '@html-eslint/eslint-plugin': '^0.66.1',
+        '@html-eslint/parser': '^0.66.1',
+        '@types/react': '^19.3.0',
+        '@types/react-dom': '^19.3.0',
+        '@vitejs/plugin-react': '6.1.1',
+        'eslint-plugin-jsx-a11y-x': '^0.2.0',
+        'eslint-plugin-react-hooks': '^7.1.1',
+        'oxc-transform-react': '^0.145.0',
+        'typescript': '~6.0.3',
+        'vite': '^8.3.2',
+        'vitest': '^4.0.0',
+      },
     };
     const expectedText = `${JSON.stringify(expectedManifest, null, 2)}\n`;
 
     expect(written).toEqual([
       'CLAUDE.txt',
       'eslint.config.ts',
+      'index.html',
       'linteljs.config.json',
       'package.json',
       join('src', 'index.css'),
@@ -129,6 +147,7 @@ describe('workspaceAssemble', () => {
 
     expect(written).toEqual([
       join('apps', 'web', 'eslint.config.ts'),
+      join('apps', 'web', 'index.html'),
       join('apps', 'web', 'package.json'),
       join('apps', 'web', 'src', 'main.txt'),
       join('apps', 'web', 'src', 'routes.ts'),

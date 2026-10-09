@@ -19,7 +19,9 @@
     }
   },
   "eslint": {
-    "ignores": [".react-router/**", "build/**"]
+    "ignores": [".react-router/**", "build/**"],
+    "aliasExempt": ["src/routes.ts"],
+    "enforceRelativeImports": true
   },
   "routesFile": "src/routes.ts"
 }
