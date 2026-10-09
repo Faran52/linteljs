@@ -1,0 +1,6 @@
+{
+  "list": "清單",
+  "listLede": "透過你選擇的資料層從 /api/items.json 讀取。",
+  "listEmpty": "這裡還沒有任何內容。",
+  "listError": "無法載入清單。"
+}

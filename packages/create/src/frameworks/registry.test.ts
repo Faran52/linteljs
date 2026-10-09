@@ -71,6 +71,30 @@ const COPIES: Copies[] = [
       'any/store-redux-toolkit',
     ],
   },
+  {
+    path: 'src/lib/providers/data/DataProvider.tsx',
+    drawers: ['any/data-none', 'any/data-rtk-query'],
+  },
+  {
+    path: 'src/pages/list/ListPage.tsx',
+    drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
+  },
+  {
+    path: 'src/pages/list/ListPage.test.tsx',
+    drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
+  },
+  {
+    path: 'src/components/features/item-list/ItemList.tsx',
+    drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
+  },
+  {
+    path: 'src/components/features/item-list/ItemList.test.tsx',
+    drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
+  },
+  {
+    path: 'public/api/items.json',
+    drawers: ['any/data-tanstack-query', 'any/data-rtk-query'],
+  },
 ];
 
 it('names only frameworks with a templates module', () => {

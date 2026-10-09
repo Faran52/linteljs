@@ -1,0 +1,6 @@
+{
+  "list": "List",
+  "listLede": "Read from /api/items.json through the data layer you chose.",
+  "listEmpty": "Nothing here yet.",
+  "listError": "The list could not be loaded."
+}

@@ -1,0 +1,11 @@
+{
+  "package": {
+    "dependencies": {
+      "@tanstack/react-query": "^5.104.1"
+    }
+  },
+  "routes": [
+    { "path": "/list", "name": "list", "from": "@pages/list/ListPage" }
+  ],
+  "locales": ["list"]
+}

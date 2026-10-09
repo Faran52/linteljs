@@ -1,0 +1,6 @@
+{
+  "list": "一覧",
+  "listLede": "選んだデータ層を通して /api/items.json から読み込みます。",
+  "listEmpty": "まだ何もありません。",
+  "listError": "一覧を読み込めませんでした。"
+}

@@ -1,0 +1,6 @@
+{
+  "list": "목록",
+  "listLede": "선택한 데이터 계층을 통해 /api/items.json에서 읽어 옵니다.",
+  "listEmpty": "아직 아무것도 없습니다.",
+  "listError": "목록을 불러오지 못했습니다."
+}

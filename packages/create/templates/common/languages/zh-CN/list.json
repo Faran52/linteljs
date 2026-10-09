@@ -1,0 +1,6 @@
+{
+  "list": "列表",
+  "listLede": "通过你选择的数据层从 /api/items.json 读取。",
+  "listEmpty": "这里还什么都没有。",
+  "listError": "无法加载列表。"
+}

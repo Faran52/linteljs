@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "path": "/list", "name": "list", "from": "@pages/list/ListPage" }
+  ],
+  "locales": ["list"]
+}
