@@ -10,7 +10,7 @@ Create it then, not before.
   directory (`button/Button.tsx`, `use-extended-query/useExtendedQuery.ts`), its test beside it, and anything
   only it reads. A Solid primitive and a Vue composable count as hooks
   (`create-extended-query/createExtendedQuery.ts`). Never leave loose files at the root of `components/`,
-  `pages/` or a hooks folder.
+  `pages/` or a hooks folder, a re-export `index.ts` barrel aside.
 - **The router's folder is the framework's**: `app/` in Next, Angular and Expo, `pages/` in Nuxt and Astro,
   `routes/` in SvelteKit. A route file sits where its URL and the router's reserved names put it, whatever the
   rules here say. Where its suite and what it alone reads go is in the sections above.
@@ -35,6 +35,7 @@ Create it then, not before.
 - **`index.ts` is a re-export barrel only**, nothing but `export ... from` lines. Code that runs or defines
   anything is an entry named for its subject (`i18n/i18n.ts`, `background/background.ts`, `main.tsx`). A route
   file the router names `index` is the router's.
+- `i18n/` holds its entry `i18n.ts`, the `config.ts` it and the language select read (languages, messages, tag lookup) and `locales/<tag>/`, each named by its BCP 47 tag (`zh-TW`) rather than kebab-case. <!-- when languages -->
 
 ## The folders a new file most often lands in
 
