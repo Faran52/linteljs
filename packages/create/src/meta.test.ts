@@ -56,7 +56,7 @@ const srcDir = join(import.meta.dirname);
 
 const SHARED = new Set(['utils']);
 
-// No outer ring imports these yet, so they hold no barrel; `cli.ts` and `assemble/` will.
+// Only the rewrite and `src/cli.ts` read these, by file, so they hold no barrel.
 const BARRELLESS = new Set<Ring>([
   'assemble',
   'choices',
@@ -140,6 +140,11 @@ const SHAPES: RingShape[] = [
       ];
       return emitterKeys;
     },
+  },
+  {
+    name: 'frameworks',
+    suffixes: {},
+    files: true,
   },
   {
     name: 'io',

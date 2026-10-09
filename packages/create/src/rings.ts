@@ -31,6 +31,7 @@ export const REWRITE_RINGS = [
   'io',
   'prompt',
   'assemble',
+  'frameworks',
 ] as const;
 
 export const RINGS = [

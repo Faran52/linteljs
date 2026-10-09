@@ -53,7 +53,7 @@ export const sourcesUnder = (path: string): string[] => {
 export const takenFromBarrel = (ringDir: string, ringName: string): Set<string> => {
   const taken = new Set<string>();
   const pattern = new RegExp(
-    `(?:import|export) (?:type )?\\{([^}]*)\\} from '(?:(?:\\.{1,2}/)+(?:src/)?${ringName}|@${ringName})';`,
+    `(?<=(?:import|export) (?:type )?\\{)[^}]*(?=\\} from '(?:(?:\\.{1,2}/)+(?:src/)?${ringName}|@${ringName})';)`,
     'gu',
   );
 
@@ -66,10 +66,11 @@ export const takenFromBarrel = (ringDir: string, ringName: string): Set<string> 
 
     const text = readFileSync(source, 'utf8');
 
-    for (const [, names] of text.matchAll(pattern)) {
-      for (const name of (names ?? '').split(',')) {
+    for (const [names] of text.matchAll(pattern)) {
+      for (const name of names.split(',')) {
         const bare = name
           .replace('type ', '')
+          .replace(/ as .*/su, '')
           .trim();
 
         taken.add(bare);

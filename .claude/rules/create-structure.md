@@ -34,9 +34,12 @@ prompt/     asking the questions; throws Cancelled.
 assemble/   reads each picked drawer, merges files and shares (a path or a share key twice is an authoring error),
             writes package.json, eslint.config.ts, locales, routes and the CSS entry from the merged share, and
             places each unit (monorepo: apps/<n>, packages/<n>) once. Reads @choices, @disk, @emitters and @io.
+frameworks/ registry.ts alone: FRAMEWORKS, the templates/frameworks/<name>/ modules the rewrite serves.
 ```
 
-None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`.
+None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`. `src/cli.ts`, beside
+`index.ts` and `rings.ts`, holds `main`: a `--target` in `FRAMEWORKS` (one positional, not `sync`, every flag one
+the manifest declares) runs the rewrite and maps its errors to exit codes; anything else goes to `@terminal`'s `main`.
 
 - **Membership is the world a module reaches**, readable off its imports: `node:fs` means `disk/`,
   `node:child_process` means `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may
