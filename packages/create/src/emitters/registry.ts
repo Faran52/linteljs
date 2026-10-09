@@ -64,7 +64,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'agents/codex-marketplace': codexMarketplaceEmitter,
   'agents/copilot-hooks': copilotHooksEmitter,
   'agents/cursor-hooks': cursorHooksEmitter,
-  'agents/agents-md': agentsMdEmitter,
   'agents/gemini-settings': geminiSettingsEmitter,
   'always/banned-patterns': bannedPatternsEmitter,
   'always/husky': huskyEmitter,
@@ -105,6 +104,7 @@ export const ROOT_EMITTERS: Record<string, RootEmitter> = {
   'agents/copilot-instructions': copilotInstructionsEmitter,
   'agents/cursor-rules': cursorRulesEmitter,
   'agents/antigravity-rules': antigravityRulesEmitter,
+  'agents/agents-md': agentsMdEmitter,
 };
 
 // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.

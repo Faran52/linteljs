@@ -69,10 +69,10 @@ describe('cursorArtifacts', () => {
       layout: 'monorepo' as const,
     };
     const artifacts = cursorArtifacts(soloOf(answers));
-    const transform = transformOf(artifacts, '.cursor/rules/repo-structure.mdc');
+    const transform = transformOf(artifacts, '.cursor/rules/repo-structure.react.mdc');
     const output = transform(RULE, null);
 
-    expect(output).toContain('globs: **/src/**/*.ts,**/src/**/*.tsx,**/tsconfig.json\n');
+    expect(output).toContain('globs: apps/acme/src/**/*.ts,apps/acme/src/**/*.tsx,apps/acme/tsconfig.json\n');
   });
 
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {

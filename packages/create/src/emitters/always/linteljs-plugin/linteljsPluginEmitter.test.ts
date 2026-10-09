@@ -1,3 +1,4 @@
+import { transformOf } from '@mocks/agentRules';
 import {
   answersFor,
   soloOf,
@@ -307,5 +308,17 @@ describe('SKILL.md', () => {
 
     expect(body).toContain('The gate, the git bans and the commit rules are in the project\'s `CLAUDE.md`');
     expect(body).not.toContain('git stash');
+  });
+
+  it('copies the template as is in a single layout, and adds the per-project pointer in a monorepo', () => {
+    const skill = 'plugins/linteljs/skills/linteljs/SKILL.md';
+    const [single] = linteljsPluginEmitter(soloOf(DEFAULT_ANSWERS));
+    const monorepo = linteljsPluginEmitter(soloOf({ ...DEFAULT_ANSWERS, layout: 'monorepo' }));
+    const transformed = transformOf(monorepo, skill)('# body\n', null);
+
+    expect(single?.content).toEqual({ sources: [`project/${skill}`] });
+
+    expect(transformed).toBe('# body\n\nIn this monorepo each reference is named for its framework: the nearest '
+      + '`CLAUDE.md` or `AGENTS.md`\nunder `apps/` or `packages/` names the ones for that project.\n');
   });
 });

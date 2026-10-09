@@ -48,10 +48,10 @@ describe('antigravityRulesEmitter', () => {
       layout: 'monorepo' as const,
     };
     const artifacts = antigravityRulesEmitter(soloOf(answers));
-    const transform = transformOf(artifacts, '.agents/rules/repo-structure.md');
+    const transform = transformOf(artifacts, '.agents/rules/repo-structure.react.md');
     const output = transform(RULE, null);
 
-    expect(output).toContain('globs: **/src/**/*.ts,**/src/**/*.tsx,**/tsconfig.json\n');
+    expect(output).toContain('globs: apps/acme/src/**/*.ts,apps/acme/src/**/*.tsx,apps/acme/tsconfig.json\n');
   });
 
   it('keeps a rule with no paths list on, since Antigravity drops one without a trigger', () => {

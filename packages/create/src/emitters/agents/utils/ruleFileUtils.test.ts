@@ -34,12 +34,6 @@ describe('globsOf', () => {
       .toBe('**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx');
   });
 
-  it('reaches into every package of a monorepo, and leaves a glob that already does', () => {
-    const globs = globsOf('---\npaths:\n  - "src/**/*.ts"\n  - "**/*.tsx"\n---\n', ['**']);
-
-    expect(globs).toBe('**/src/**/*.ts,**/*.tsx');
-  });
-
   it('roots every glob in each project directory of a workspace', () => {
     const globs = globsOf('---\npaths:\n  - "src/**/*.ts"\n  - "**/*.tsx"\n---\n', ['apps/web', 'apps/admin']);
 

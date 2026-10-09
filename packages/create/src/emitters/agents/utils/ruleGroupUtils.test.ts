@@ -116,9 +116,8 @@ describe('ruleSources', () => {
 });
 
 describe('ruleGroups', () => {
-  it('keeps a lone project\'s names, unrooted at the root and anywhere below it in a monorepo', () => {
+  it('keeps a single layout\'s names, unrooted', () => {
     const single = ruleGroups(workspaceOf('acme', [{ name: 'acme', answers: hostedAnswersFor() }]));
-    const lone = ruleGroups(workspaceOf('acme', [{ name: 'acme', answers: monorepo({}) }]));
 
     const names = single
       .map(({ name }) => {
@@ -126,7 +125,18 @@ describe('ruleGroups', () => {
       });
     expect(names).toEqual(namesOf(DEFAULT_ANSWERS));
     expect(single[1]?.directories).toEqual(['.']);
-    expect(lone[1]?.directories).toEqual(['**']);
+  });
+
+  it('names and roots a monorepo of one as it will at two', () => {
+    const lone = ruleGroups(workspaceOf('acme', [{ name: 'web', answers: monorepo({ target: 'vue' }) }]));
+
+    const names = lone
+      .map(({ name }) => {
+        return name;
+      });
+    expect(names).toContain('repo-structure.vue.md');
+    expect(names).toContain('testing.vue.md');
+    expect(lone[1]?.directories).toEqual(['apps/web']);
   });
 
   it('keeps one framework copy per framework and one state rule over every project using it', () => {

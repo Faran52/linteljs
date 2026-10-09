@@ -6,7 +6,6 @@ import {
   type Mocking,
   type Router,
   type Workspace,
-  type WorkspaceProject,
 } from '@config/types';
 
 import {
@@ -175,33 +174,25 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
   return rules;
 };
 
-// `.` leaves a glob as written, `**` finds a lone project wherever it sits.
-const directoryOf = ({ name, answers }: WorkspaceProject, several: boolean): string => {
-  if (several) {
-    return projectDirectoryOf(answers, name);
-  }
-
-  return answers.layout === 'monorepo' ? '**' : '.';
-};
-
-const labelOf = (answers: Answers): string => {
+export const labelOf = (answers: Answers): string => {
   return targetFor(answers).packageProject === true ? 'package' : answers.target;
 };
 
 export const ruleGroups = (workspace: Workspace): RuleGroup[] => {
   const groups = new Map<string, RuleGroup>();
-  const several = workspace.projects.length > 1;
+  // A monorepo of one keeps the names it will have at two, so `sync --add` orphans no copy.
+  const monorepo = workspace.projects[0].answers.layout === 'monorepo';
 
   workspace.projects
-    .forEach((project) => {
-      const directory = directoryOf(project, several);
+    .forEach(({ name: projectName, answers }) => {
+      const directory = projectDirectoryOf(answers, projectName);
 
-      ruleSources(project.answers)
+      ruleSources(answers)
         .forEach(({ name, sources }) => {
-          // Their sources differ by framework, so a workspace of several keeps one copy each.
+          // Their sources differ by framework, so a monorepo keeps one copy each.
           const framework = name === 'repo-structure.md' || name === 'testing.md';
-          const key = several && framework
-            ? `${basename(name, '.md')}.${labelOf(project.answers)}.md`
+          const key = monorepo && framework
+            ? `${basename(name, '.md')}.${labelOf(answers)}.md`
             : name;
           const group = groups.get(key) ?? {
             name: key,
@@ -211,7 +202,7 @@ export const ruleGroups = (workspace: Workspace): RuleGroup[] => {
           };
 
           group.directories.push(directory);
-          group.answers.push(project.answers);
+          group.answers.push(answers);
           groups.set(key, group);
         });
     });

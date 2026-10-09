@@ -29,17 +29,9 @@ const expanded = (glob: string): string[] => {
   return globs;
 };
 
-// The tools read from the git root: `.` is a lone project there, `**` a lone one below it.
+// The tools read from the git root, where `.` is a single layout's one project.
 const rooted = (glob: string, directory: string): string => {
-  if (directory === '.') {
-    return glob;
-  }
-
-  if (directory === '**') {
-    return glob.startsWith('**/') ? glob : `**/${glob}`;
-  }
-
-  return `${directory}/${glob}`;
+  return directory === '.' ? glob : `${directory}/${glob}`;
 };
 
 // Empty where the rule carries no `paths:` list.

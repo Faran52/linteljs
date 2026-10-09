@@ -4,10 +4,8 @@ import { adapterArtifact } from '../utils/adapterUtils';
 import { ruleArtifacts } from '../utils/ruleFileUtils';
 
 export const copilotArtifacts = (workspace: Workspace): Artifact[] => {
-  const [{ answers }] = workspace.projects;
-
   const artifacts: Artifact[] = [
-    adapterArtifact('.github/copilot-instructions.md', answers),
+    adapterArtifact('.github/copilot-instructions.md', workspace),
     // Copilot reads `**` as any file.
     ...ruleArtifacts(workspace, '.github/instructions', '.instructions.md', (source, globs) => {
       return `---\napplyTo: "${globs === '' ? '**' : globs}"\n---\n\n`;

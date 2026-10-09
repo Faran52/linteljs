@@ -59,11 +59,11 @@ describe('copilotArtifacts', () => {
       layout: 'monorepo' as const,
     };
     const artifacts = copilotArtifacts(soloOf(answers));
-    const transform = transformOf(artifacts, '.github/instructions/repo-structure.instructions.md');
+    const transform = transformOf(artifacts, '.github/instructions/repo-structure.react.instructions.md');
 
     const transformed = transform(RULE, null);
 
-    expect(transformed).toContain('applyTo: "**/src/**/*.ts,**/src/**/*.tsx,**/tsconfig.json"');
+    expect(transformed).toContain('applyTo: "apps/acme/src/**/*.ts,apps/acme/src/**/*.tsx,apps/acme/tsconfig.json"');
   });
 
   it('installs the repository-wide file once and never rewrites it', () => {

@@ -5,7 +5,6 @@ import {
 } from '@config/types';
 
 import { copied, merged } from '../../utils/artifactUtils';
-import { adapterArtifact } from '../utils/adapterUtils';
 
 import { mergeClaudeSettings, type StatusLine } from './utils/mergeUtils';
 
@@ -79,7 +78,6 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
   }
 
   const artifacts: Artifact[] = [
-    adapterArtifact('CLAUDE.md', answers),
     merged('standard', '.claude/settings.json', (current) => {
       const settings = emitClaudeSettings(answers.plugins);
 

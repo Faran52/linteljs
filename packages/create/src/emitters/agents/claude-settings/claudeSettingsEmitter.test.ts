@@ -131,7 +131,7 @@ describe('claudeSettingsEmitter', () => {
     expect(artifacts).toEqual([]);
   });
 
-  it('writes the adapter, the settings and the plugin manifests, and preserves only the adapter', () => {
+  it('writes the settings and the plugin manifests', () => {
     const written = claudeSettingsEmitter(CLAUDE)
       .map(({ target, preserve }) => {
         const shape = [target, preserve];
@@ -140,7 +140,6 @@ describe('claudeSettingsEmitter', () => {
       });
 
     const expected = [
-      ['CLAUDE.md', true],
       ['.claude/settings.json', undefined],
       ['plugins/linteljs/.claude-plugin/plugin.json', undefined],
       ['plugins/linteljs/.claude-plugin/marketplace.json', undefined],
@@ -153,7 +152,6 @@ describe('claudeSettingsEmitter', () => {
 
   it('ships the exact minimal local plugin metadata', async () => {
     const [
-      ,
       ,
       plugin,
       marketplace,

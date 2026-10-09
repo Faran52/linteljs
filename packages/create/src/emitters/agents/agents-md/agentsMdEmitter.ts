@@ -1,24 +1,31 @@
 import {
   type Agent,
-  type Answers,
   type Artifact,
+  type Workspace,
 } from '@config/types';
 
-import { adapterArtifact } from '../utils/adapterUtils';
+import { instructionArtifacts } from '../utils/adapterUtils';
 
-const READERS: Agent[] = [
-  'antigravity',
-  'codex',
-  'gemini-cli',
-];
+const READERS: Record<string, Agent[]> = {
+  'CLAUDE.md': ['claude-code'],
+  'AGENTS.md': [
+    'antigravity',
+    'codex',
+    'gemini-cli',
+  ],
+};
 
-export const agentsMdEmitter = (answers: Answers): Artifact[] => {
-  const read = answers.agents
-    .some((agent) => {
-      return READERS.includes(agent);
+export const agentsMdEmitter = (workspace: Workspace): Artifact[] => {
+  const [{ answers }] = workspace.projects;
+
+  return Object.entries(READERS)
+    .filter(([, readers]) => {
+      return readers
+        .some((agent) => {
+          return answers.agents.includes(agent);
+        });
+    })
+    .flatMap(([file]) => {
+      return instructionArtifacts(workspace, file);
     });
-
-  const artifacts = read ? [adapterArtifact('AGENTS.md', answers)] : [];
-
-  return artifacts;
 };
