@@ -1,4 +1,6 @@
 import { globSync } from 'node:fs';
+import { posix } from 'node:path';
+import { versions } from 'node:process';
 
 import {
   difference,
@@ -6,22 +8,39 @@ import {
   range,
 } from 'es-toolkit';
 
+import { projectDirectoryOf } from '@utils/answerUtils';
 import { keysOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
-import { starterSourceEmitter, testSetupEmitter } from '@emitters';
+import {
+  buildArtifacts,
+  seedArtifacts,
+  starterSourceEmitter,
+  testSetupEmitter,
+  workspaceOf,
+} from '@emitters';
 
-import { type E2eCase, everyCase } from '../matrix/matrix';
+import {
+  type E2eCase,
+  type E2eProject,
+  everyCase,
+  projectsOf,
+} from '../matrix/matrix';
 
 import {
   LINTED_FILE,
   NEW_PROJECT,
+  STARTER_MIXES,
   STARTER_ROOT,
 } from './constants';
 import { type Copied, copiedOf } from './utils/copiedUtils';
 
-import type { Answers, Artifact } from '@config/types';
+import type {
+  Answers,
+  Artifact,
+  WorkspaceProject,
+} from '@config/types';
 
 export interface StarterCover {
   // Distinct texts a starter template can be written as, per target and destination.
@@ -246,5 +265,80 @@ export const starterCases = (labels: readonly string[]): E2eCase[] => {
       const known = found === undefined ? [] : [found];
 
       return known;
+    });
+};
+
+const targetsOf = (artifacts: Artifact[]): string[] => {
+  return writtenOf(artifacts)
+    .map(({ target }) => {
+      return target;
+    });
+};
+
+// Each mix whose every label names a case, as a monorepo of those cases.
+export const starterMixes = (mixes: typeof STARTER_MIXES): E2eCase[] => {
+  return mixes
+    .flatMap(([label, named]) => {
+      const projects = named
+        .flatMap(([name, caseLabel]) => {
+          return starterCases([caseLabel])
+            .map(({ answers }): E2eProject => {
+              const project: E2eProject = {
+                name,
+                answers: {
+                  ...answers,
+                  layout: 'monorepo',
+                },
+              };
+
+              return project;
+            });
+        });
+      const [first, ...rest] = projects;
+      const whole = first !== undefined && projects.length === named.length;
+      const mix: E2eCase[] = whole
+        ? [{
+            label: `${label} monorepo`,
+            answers: first.answers,
+            variant: 'monorepo',
+            projects: [first, ...rest],
+          }]
+        : [];
+
+      return mix;
+    });
+};
+
+const hostedOf = (project: E2eProject): WorkspaceProject => {
+  const answers = {
+    ...project.answers,
+    nodeVersion: versions.node,
+  };
+  const hosted: WorkspaceProject = {
+    ...project,
+    answers,
+  };
+
+  return hosted;
+};
+
+// A starter file or suite one project writes alone that its monorepo leaves out of the project's directory.
+export const unsuitedOf = (item: E2eCase, name: string): string[] => {
+  const [first, ...rest] = projectsOf(item, name);
+  const workspace = workspaceOf(name, [hostedOf(first), ...rest.map(hostedOf)]);
+  const written = new Set(targetsOf([...seedArtifacts(workspace), ...buildArtifacts(workspace)]));
+
+  return workspace.projects
+    .flatMap(({ answers, name: projectName }) => {
+      const directory = projectDirectoryOf(answers, projectName);
+      const starters = starterSourceEmitter(answers);
+
+      return targetsOf(starters)
+        .map((target) => {
+          return posix.join(directory, target);
+        });
+    })
+    .filter((target) => {
+      return !written.has(target);
     });
 };

@@ -102,6 +102,23 @@ export const STARTER_CASES: readonly string[] = [
   'solid pnpm vitest tanstack-form msw zod+es-toolkit+ts-pattern+t3-env',
 ];
 
+// A monorepo's projects, each a name and a STARTER_CASES label; React twice shares one repo-structure copy.
+export const STARTER_MIXES: readonly (readonly [string, readonly (readonly [string, string])[]])[] = [
+  ['react+vue+package', [
+    ['web', 'react pnpm vitest tanstack-router msw languages zod+es-toolkit+ts-pattern+t3-env'],
+    ['site', 'vue pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env'],
+    ['core', 'typescript pnpm vitest zod+es-toolkit+ts-pattern+t3-env'],
+  ]],
+  ['react+react', [
+    ['web', 'react pnpm vitest tanstack-router msw languages zod+es-toolkit+ts-pattern+t3-env'],
+    ['admin', 'react pnpm vitest react-router tanstack-query zod+es-toolkit+ts-pattern+t3-env'],
+  ]],
+  ['package+package', [
+    ['core', 'typescript pnpm vitest zod+es-toolkit+ts-pattern+t3-env'],
+    ['utils', 'typescript pnpm vitest zod+es-toolkit+ts-pattern+t3-env'],
+  ]],
+];
+
 export const LINTED_FILE = /\.(?:[cm]?[jt]sx?|astro|vue|svelte)$/u;
 
 export const STARTER_ROOT = 'starter-source';

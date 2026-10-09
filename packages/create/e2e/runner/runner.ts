@@ -7,6 +7,8 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
+import { projectDirectoryOf } from '@utils/answerUtils';
+
 import {
   CONFIG_PATH,
   parseLinteljsConfig,
@@ -16,6 +18,7 @@ import { parsePackageJson } from '@emitters';
 import { targetFor } from '@targets';
 
 import { browserProblems } from '../browser/browser';
+import { type E2eCase, projectsOf } from '../matrix/matrix';
 import { removedAfter } from '../utils/cleanupUtils';
 import {
   oneAtATime,
@@ -40,8 +43,12 @@ import {
   SVELTEKIT_VERSION_HASH,
 } from './constants';
 
-import type { PackageManager } from '@config/types';
-import type { E2eCase } from '../matrix/matrix';
+import type { Answers, PackageManager } from '@config/types';
+
+interface ProjectDir {
+  answers: Answers;
+  dir: string;
+}
 
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   pnpm: (output) => {
@@ -75,6 +82,20 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
         return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
       });
   },
+};
+
+// Each project's derived directory: the root in a single layout, `apps/` or `packages/` in a monorepo.
+const projectDirsOf = (item: E2eCase, project: string): ProjectDir[] => {
+  return projectsOf(item, item.answers.target)
+    .map(({ name, answers }) => {
+      const dir = join(project, projectDirectoryOf(answers, name));
+      const projectDir: ProjectDir = {
+        answers,
+        dir,
+      };
+
+      return projectDir;
+    });
 };
 
 const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
@@ -134,9 +155,13 @@ const missingStylexRules = (project: string): string => {
   return missing;
 };
 
-const expectCreated = async ({ answers, variant }: E2eCase, root: string): Promise<RunResult> => {
+const expectCreated = async ({
+  answers,
+  variant,
+  projects,
+}: E2eCase, root: string): Promise<RunResult> => {
   const flags = variant === undefined ? undefined : CREATE_FLAGS[variant];
-  const create = await createProject(root, answers.target, answers, flags);
+  const create = await createProject(root, answers.target, answers, flags, projects);
   // A skipped fix pass reports nothing.
   const expectedFixes = flags === undefined ? CLEAN_FIXES : null;
 
@@ -152,7 +177,9 @@ const expectCreated = async ({ answers, variant }: E2eCase, root: string): Promi
   return create;
 };
 
-const expectInstalled = async ({ answers, variant }: E2eCase, create: RunResult, project: string): Promise<void> => {
+const expectInstalled = async (item: E2eCase, create: RunResult, project: string): Promise<void> => {
+  const { answers, variant } = item;
+
   // The install a user runs after `--no-install`, under the same lifecycle.
   const installLater = async (): Promise<RunResult> => {
     return runPm(answers.packageManager, ['install'], project);
@@ -172,17 +199,19 @@ const expectInstalled = async ({ answers, variant }: E2eCase, create: RunResult,
   expect(create.output).not.toContain('next: ');
   expect(noise).toEqual([]);
 
-  const { publicDirectory } = targetFor(answers);
+  for (const app of projectDirsOf(item, project)) {
+    const { publicDirectory } = targetFor(app.answers);
 
-  if (answers.mocking === 'msw' && publicDirectory !== undefined) {
-    const app = answers.layout === 'monorepo' ? join(project, 'apps', answers.target) : project;
-    const hasWorker = existsSync(join(app, publicDirectory, 'mockServiceWorker.js'));
+    if (app.answers.mocking === 'msw' && publicDirectory !== undefined) {
+      const hasWorker = existsSync(join(app.dir, publicDirectory, 'mockServiceWorker.js'));
 
-    expect(hasWorker).toBe(true);
+      expect(hasWorker).toBe(true);
+    }
   }
 };
 
-const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<void> => {
+const expectRecorded = async (item: E2eCase, project: string): Promise<void> => {
+  const { answers } = item;
   const hasHooks = existsSync(join(project, '.husky/_'));
 
   expect(hasHooks).toBe(true);
@@ -201,6 +230,19 @@ const expectRecorded = async ({ answers }: E2eCase, project: string): Promise<vo
     ...answers,
     packageManagerVersion: managerVersion,
   });
+
+  if (item.projects !== undefined) {
+    const names = config.projects
+      .map(({ name }) => {
+        return name;
+      });
+    const expected = item.projects
+      .map(({ name }) => {
+        return name;
+      });
+
+    expect(names).toEqual(expected);
+  }
 
   const manifestText = readFileSync(join(project, 'package.json'), 'utf8');
   const manifest = parsePackageJson(manifestText);
@@ -239,7 +281,9 @@ const expectAdded = async ({ answers }: E2eCase, project: string): Promise<void>
   expect(results).toEqual(['sync --add: ok', 'install: ok']);
 };
 
-const expectWorking = async ({ answers, variant }: E2eCase, project: string): Promise<void> => {
+const expectWorking = async (item: E2eCase, project: string): Promise<void> => {
+  const { answers, variant } = item;
+
   // npm exits non-zero on a peer it resolved to an invalid range.
   if (answers.packageManager === 'npm') {
     const listing = await runPm('npm', ['ls', '--all'], project);
@@ -254,9 +298,13 @@ const expectWorking = async ({ answers, variant }: E2eCase, project: string): Pr
     await expectCommitted(project);
   }
 
-  if (answers.styling === 'stylex') {
-    const built = answers.layout === 'monorepo' ? join(project, 'apps', answers.target) : project;
-    const unstyled = missingStylexRules(built);
+  const stylex = projectDirsOf(item, project)
+    .filter((app) => {
+      return app.answers.styling === 'stylex';
+    });
+
+  for (const app of stylex) {
+    const unstyled = missingStylexRules(app.dir);
 
     expect(unstyled).toBe('');
   }

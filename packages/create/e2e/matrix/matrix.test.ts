@@ -17,7 +17,11 @@ import {
 } from '@answers';
 import { targetFor } from '@targets';
 
-import { type E2eCase, targetCases } from './matrix';
+import {
+  type E2eCase,
+  projectsOf,
+  targetCases,
+} from './matrix';
 
 import type { Answers } from '@config/types';
 
@@ -531,6 +535,32 @@ describe('targetCases', () => {
     expect(layouts).toEqual(expected);
   });
 
+  it('runs each monorepo as a react app, a vue app and a package on the workspace answers', () => {
+    const mixes = pairedCases('react')
+      .filter(({ variant }) => {
+        return variant === 'monorepo';
+      })
+      .map(({ answers, projects = [] }) => {
+        const shapes = projects
+          .map((project) => {
+            const agrees = project.answers.packageManager === answers.packageManager
+              && project.answers.layout === 'monorepo';
+
+            return `${project.name} ${project.answers.target} ${String(agrees)}`;
+          });
+
+        return shapes.join(', ');
+      });
+    const mix = 'web react true, site vue true, core typescript true';
+
+    expect(mixes).toEqual([
+      mix,
+      mix,
+      mix,
+      mix,
+    ]);
+  });
+
   it('runs the browser pass on every target a browser serves, and each create flag once', () => {
     const byLabel = (left: string, right: string): number => {
       return left.localeCompare(right);
@@ -641,5 +671,35 @@ describe('targetCases', () => {
 
       expect(firstLabels).toEqual(secondLabels);
     }
+  });
+});
+
+describe('projectsOf', () => {
+  it('reads a case without projects as one project under the given name', () => {
+    const item: E2eCase = {
+      label: 'one',
+      answers: DEFAULT_ANSWERS,
+    };
+    const projects = projectsOf(item, 'starter');
+
+    expect(projects).toStrictEqual([{
+      name: 'starter',
+      answers: DEFAULT_ANSWERS,
+    }]);
+  });
+
+  it('keeps the projects a case carries', () => {
+    const project = {
+      name: 'web',
+      answers: DEFAULT_ANSWERS,
+    };
+    const item: E2eCase = {
+      label: 'mixed',
+      answers: DEFAULT_ANSWERS,
+      projects: [project, project],
+    };
+    const projects = projectsOf(item, 'starter');
+
+    expect(projects).toStrictEqual([project, project]);
   });
 });

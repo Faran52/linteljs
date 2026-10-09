@@ -14,8 +14,8 @@ import { parseArgs } from 'node:util';
 
 import { once, Semaphore } from 'es-toolkit';
 
-import { STARTER_CASES } from '@e2e/starter-cover/constants';
-import { starterCases } from '@e2e/starter-cover/starterCover';
+import { STARTER_CASES, STARTER_MIXES } from '@e2e/starter-cover/constants';
+import { starterCases, starterMixes } from '@e2e/starter-cover/starterCover';
 
 import {
   log,
@@ -37,12 +37,13 @@ import {
   TYPECHECK_SCRIPT,
 } from './constants.ts';
 import {
-  appDirOf,
   fixedCopies,
   generate,
   monorepoCaseOf,
   moveGenerated,
   packed,
+  type ProjectDir,
+  projectDirsOf,
   pruneTarballs,
   readDurations,
   registryError,
@@ -72,8 +73,10 @@ const { values } = parseArgs({ options: flags });
 const every = values.all === true;
 const fixing = values.fix === true;
 
+const caseCount = STARTER_CASES.length + STARTER_MIXES.length;
+
 if (!existsSync(CACHE_ROOT)) {
-  logWarn(`No cache at ${CACHE_ROOT}: installing ${String(STARTER_CASES.length)} projects from scratch, `
+  logWarn(`No cache at ${CACHE_ROOT}: installing ${String(caseCount)} projects from scratch, `
     + 'which takes several minutes. Later runs reinstall only what changed.');
 }
 
@@ -176,13 +179,13 @@ const lintArgs = [
 ];
 
 // A fix run keeps its copies whether or not the lint passed.
-const lintStep = (item: E2eCase, dir: string): Step => {
+const lintStep = (project: ProjectDir): Step => {
   const fixArgs = fixing ? ['--fix'] : [];
   const step: Step = ['lint', async () => {
-    const linted = await spawnIn(dir, [...lintArgs, ...fixArgs]);
+    const linted = await spawnIn(project.dir, [...lintArgs, ...fixArgs]);
 
     if (fixing) {
-      copies.push(fixedCopies(item, dir));
+      copies.push(fixedCopies(project));
     }
 
     return linted;
@@ -192,20 +195,20 @@ const lintStep = (item: E2eCase, dir: string): Step => {
 };
 
 // A starter that leaves code unrun fails its project's own 100% coverage gate.
-const coverageSteps = (item: E2eCase, dir: string): Step[] => {
+const coverageSteps = ({ answers, dir }: ProjectDir): Step[] => {
   const steps = [stepOf(TEST_SCRIPT, dir, ['run', TEST_SCRIPT])];
 
-  return item.answers.testing === 'none' ? [] : steps;
+  return answers.testing === 'none' ? [] : steps;
 };
 
 // StyleX resolves its theme imports only when it compiles, which lint never reaches.
-const stylexSteps = (item: E2eCase, dir: string): Step[] => {
+const stylexSteps = ({ answers, dir }: ProjectDir): Step[] => {
   const steps = [stepOf('build', dir, ['run', 'build'])];
 
-  return item.answers.styling === 'stylex' ? steps : [];
+  return answers.styling === 'stylex' ? steps : [];
 };
 
-// A monorepo's root lints its own scripts/ apart from the app.
+// A monorepo's root lints its own scripts/ apart from the projects.
 const rootLintSteps = (item: E2eCase, dir: string): Step[] => {
   const steps = [stepOf('root lint', dir, lintArgs)];
 
@@ -214,12 +217,13 @@ const rootLintSteps = (item: E2eCase, dir: string): Step[] => {
 
 // Each reads the installed tree and writes only its own ignored output, so they run at once.
 const checkSteps = (item: E2eCase, dir: string): Step[] => {
-  const app = appDirOf(item, dir);
-  const steps = [
-    lintStep(item, app),
-    ...coverageSteps(item, app),
-    ...rootLintSteps(item, dir),
-  ];
+  const projectSteps = projectDirsOf(item, dir)
+    .flatMap((project) => {
+      const steps = [lintStep(project), ...coverageSteps(project)];
+
+      return steps;
+    });
+  const steps = [...projectSteps, ...rootLintSteps(item, dir)];
 
   return steps;
 };
@@ -231,22 +235,29 @@ const isUnchanged = (stampPath: string, stamp: string): boolean => {
 // A typecheck regenerates the framework types the checks read (`next typegen`, `astro sync`), so it runs before
 // them, and a build rewrites `.next/types`, so it runs after. A fix run keeps every step in turn, lint first.
 const failuresIn = async (item: E2eCase, dir: string): Promise<Failure[]> => {
-  const app = appDirOf(item, dir);
-  const setup = [installStep(dir), stepOf('prepare', app, prepareArgs)];
-  const typecheck = stepOf(TYPECHECK_SCRIPT, app, ['run', TYPECHECK_SCRIPT]);
+  const projects = projectDirsOf(item, dir);
+  const prepares = projects
+    .map((project) => {
+      return stepOf('prepare', project.dir, prepareArgs);
+    });
+  const setup = [installStep(dir), ...prepares];
+  const typechecks = projects
+    .map((project) => {
+      return stepOf(TYPECHECK_SCRIPT, project.dir, ['run', TYPECHECK_SCRIPT]);
+    });
   const checks = checkSteps(item, dir);
-  const builds = stylexSteps(item, app);
+  const builds = projects.flatMap(stylexSteps);
 
   if (fixing) {
     return firstFailure([
       ...setup,
       ...checks,
-      typecheck,
+      ...typechecks,
       ...builds,
     ]);
   }
 
-  const setupFailures = await firstFailure([...setup, typecheck]);
+  const setupFailures = await firstFailure([...setup, ...typechecks]);
 
   if (setupFailures.length > 0) {
     return setupFailures;
@@ -303,7 +314,12 @@ const semaphore = new Semaphore(concurrency);
 const labelled = starterCases(STARTER_CASES);
 const [first] = labelled;
 const monorepos = first === undefined ? [] : [monorepoCaseOf(first)];
-const cases = [...labelled, ...monorepos];
+const mixes = starterMixes(STARTER_MIXES);
+const cases = [
+  ...labelled,
+  ...monorepos,
+  ...mixes,
+];
 const durations = readDurations(DURATIONS);
 const slowestFirst = cases
   .toSorted((left, right) => {
@@ -358,10 +374,11 @@ log(`${String(cases.length)} starter projects: ${String(linted)} linted, `
   + `${String(unchanged)} unchanged since their last clean lint, ${String(failed)} failed`);
 
 // A label that names no case would lint nothing and say nothing.
-const isShort = labelled.length !== STARTER_CASES.length;
+const isShort = labelled.length !== STARTER_CASES.length || mixes.length !== STARTER_MIXES.length;
 
 if (isShort) {
-  logError(`${String(STARTER_CASES.length - labelled.length)} starter labels name no e2e case`);
+  logError(`${String(STARTER_CASES.length - labelled.length)} starter labels and `
+    + `${String(STARTER_MIXES.length - mixes.length)} starter mixes name no e2e case`);
 }
 
 process.exitCode = failed > 0 || isShort ? 1 : 0;

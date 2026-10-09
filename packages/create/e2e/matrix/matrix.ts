@@ -1,6 +1,10 @@
 import { env } from 'node:process';
 
-import { memoize, orderBy } from 'es-toolkit';
+import {
+  memoize,
+  orderBy,
+  pick,
+} from 'es-toolkit';
 
 import {
   type Answers,
@@ -16,6 +20,7 @@ import {
   ANSWERS,
   DEFAULT_ANSWERS,
   onlyFor,
+  WORKSPACE_KEYS,
 } from '@answers';
 import { targetFor, type TargetRecord } from '@targets';
 
@@ -41,11 +46,27 @@ import { coveringSubset } from './utils/pairwiseUtils';
 // the target under apps/ and commits through the hooks, `add` runs `sync --add` on that monorepo.
 export type E2eVariant = 'browser' | 'skip-fix' | 'no-install' | 'monorepo' | 'add';
 
+export interface E2eProject {
+  name: string;
+  answers: Answers;
+}
+
+// `answers` are the first project's; without `projects` they are the one project, named by the caller.
 export interface E2eCase {
   label: string;
   answers: Answers;
   variant?: E2eVariant;
+  projects?: [E2eProject, ...E2eProject[]];
 }
+
+export const projectsOf = (item: E2eCase, name: string): [E2eProject, ...E2eProject[]] => {
+  const projects: [E2eProject, ...E2eProject[]] = item.projects ?? [{
+    name,
+    answers: item.answers,
+  }];
+
+  return projects;
+};
 
 // Every pair rather than every combination, under pnpm alone: every defect found so far was a two-way interaction.
 // `E2E_FULL=1` runs the cross product instead.
@@ -348,17 +369,54 @@ const answerCount = ({ answers }: E2eCase): number => {
   return Object.keys(answers).length;
 };
 
-const onMonorepo = (widest: E2eCase) => {
+// Stable, so a tie keeps the first.
+const widestOf = (cases: E2eCase[]): E2eCase[] => {
+  return orderBy(cases, [answerCount], ['desc'])
+    .slice(0, 1);
+};
+
+// A package takes no answer flags, so it carries the defaults on the workspace's answers.
+const packageOf = (answers: Answers): Answers => {
+  const project: Answers = {
+    ...DEFAULT_ANSWERS,
+    ...pick(answers, WORKSPACE_KEYS),
+    target: 'typescript',
+  };
+
+  return project;
+};
+
+// The widest React app beside the widest Vue app and a package.
+const onMonorepo = (widest: E2eCase, widestVue: E2eCase) => {
   return (packageManager: PackageManager): E2eCase => {
     const { answers, label } = asCase({
       ...widest.answers,
       packageManager,
       layout: 'monorepo',
     });
+    const vue: Answers = {
+      ...widestVue.answers,
+      packageManager,
+      layout: 'monorepo',
+    };
     const monorepo: E2eCase = {
       label: `${label} monorepo`,
       answers,
       variant: 'monorepo',
+      projects: [
+        {
+          name: 'web',
+          answers,
+        },
+        {
+          name: 'site',
+          answers: vue,
+        },
+        {
+          name: 'core',
+          answers: packageOf(answers),
+        },
+      ],
     };
 
     return monorepo;
@@ -402,7 +460,13 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
   };
 
   const varied = variants.map(asVariant);
-  const monorepos = target === 'react' ? PACKAGE_MANAGERS.map(onMonorepo(widest)) : [];
+  const vues = target === 'react' ? widestOf(everyCase('vue')) : [];
+  const monorepos = vues
+    .flatMap((vue) => {
+      const onManager = onMonorepo(widest, vue);
+
+      return PACKAGE_MANAGERS.map(onManager);
+    });
   const added = monorepos
     .filter(({ answers }) => {
       return answers.packageManager === 'pnpm';
@@ -431,9 +495,7 @@ export const targetCases = (target: TargetId): E2eCase[] => {
 
   const paired = env['E2E_FULL'] === '1' ? every : coveringSubset(every);
 
-  // Stable, so a tie keeps the first.
-  const widest = orderBy(every, [answerCount], ['desc'])
-    .slice(0, 1);
+  const widest = widestOf(every);
   const extra = widest
     .flatMap((item) => {
       return fullCases(target, item);
@@ -443,8 +505,7 @@ export const targetCases = (target: TargetId): E2eCase[] => {
     .filter(({ answers }) => {
       return answers.router === 'react-router-framework';
     });
-  const framework = orderBy(frameworkCases, [answerCount], ['desc'])
-    .slice(0, 1)
+  const framework = widestOf(frameworkCases)
     .map(({ answers }): E2eCase => {
       const onNpm = asCase({
         ...answers,

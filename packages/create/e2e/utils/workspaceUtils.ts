@@ -15,6 +15,7 @@ import {
 } from './processUtils';
 
 import type { Answers, PackageManager } from '@config/types';
+import type { E2eProject } from '../matrix/matrix';
 
 export const workspace = mkdtempSync(WORKSPACE_PREFIX);
 
@@ -74,23 +75,30 @@ const listFlagIf = (flag: string, values: readonly string[] | undefined): string
   return pair;
 };
 
-// A flag a target never asks for is refused, so those go only when set.
-export const answerFlags = (answers: Answers): string[] => {
+const workspaceFlags = (answers: Answers): string[] => {
   const flags = [
-    '--target',
-    answers.target,
-    '--testing',
-    answers.testing,
     '--type-safety',
     answers.typeSafety,
-    '--libraries',
-    answers.libraries.join(','),
     '--agents',
     answers.agents.join(','),
     '--plugins',
     answers.plugins.join(','),
     '--layout',
     answers.layout,
+  ];
+
+  return flags;
+};
+
+// A flag a target never asks for is refused, so those go only when set.
+const projectFlags = (answers: Answers): string[] => {
+  const flags = [
+    '--target',
+    answers.target,
+    '--testing',
+    answers.testing,
+    '--libraries',
+    answers.libraries.join(','),
     ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
     ...flagIf('--hosted', answers.hostedFramework),
     ...listFlagIf('--surfaces', answers.surfaces),
@@ -106,11 +114,33 @@ export const answerFlags = (answers: Answers): string[] => {
   return flags;
 };
 
+// A package takes no answer flags.
+const projectGroup = ({ name, answers }: E2eProject): string[] => {
+  const flags = answers.target === 'typescript' ? ['--kind', 'package'] : projectFlags(answers);
+
+  const group = [
+    '--project',
+    name,
+    ...flags,
+  ];
+
+  return group;
+};
+
+export const answerFlags = (answers: Answers, projects?: readonly E2eProject[]): string[] => {
+  const perProject = projects === undefined ? projectFlags(answers) : projects.flatMap(projectGroup);
+
+  const flags = [...workspaceFlags(answers), ...perProject];
+
+  return flags;
+};
+
 export const createProject = async (
   root: string,
   name: string,
   answers: Answers,
   flags: readonly string[] = [],
+  projects?: readonly E2eProject[],
 ): Promise<RunResult> => {
   mkdirSync(root, { recursive: true });
 
@@ -123,7 +153,7 @@ export const createProject = async (
     return run('node', [
       registry.cliBin,
       name,
-      ...answerFlags(answers),
+      ...answerFlags(answers, projects),
       ...flags,
     ], root, agent);
   });

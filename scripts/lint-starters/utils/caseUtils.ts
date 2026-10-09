@@ -25,6 +25,11 @@ import { promisify } from 'node:util';
 import { projectDirectoryOf } from '@utils/answerUtils';
 
 import { TEMPLATES_ROOT } from '@disk';
+import {
+  type E2eCase,
+  type E2eProject,
+  projectsOf,
+} from '@e2e/matrix/matrix';
 import { writtenOf } from '@e2e/starter-cover/starterCover';
 import { templateOf } from '@e2e/starter-cover/utils/copiedUtils';
 import { failureOf } from '@e2e/starter-cover/utils/failureUtils';
@@ -47,7 +52,7 @@ import {
   UNSTAMPED,
 } from '../constants.ts';
 
-import type { E2eCase } from '@e2e/matrix/matrix';
+import type { Answers, WorkspaceProject } from '@config/types';
 import type { PipelineOptions } from '@pipeline/runs/pipeline/pipelineRun';
 
 export interface Tarballs {
@@ -65,6 +70,11 @@ interface SpawnError extends Error {
   signal?: string | null;
   stdout: string;
   stderr: string;
+}
+
+export interface ProjectDir {
+  answers: Answers;
+  dir: string;
 }
 
 const execFileAsync = promisify(execFile);
@@ -118,10 +128,18 @@ export const monorepoCaseOf = (item: E2eCase): E2eCase => {
   return monorepo;
 };
 
-export const appDirOf = (item: E2eCase, dir: string): string => {
-  const directory = projectDirectoryOf(item.answers, PROJECT_NAME);
+// Each project's derived directory: the root in a single layout, `apps/` or `packages/` in a monorepo.
+export const projectDirsOf = (item: E2eCase, dir: string): ProjectDir[] => {
+  return projectsOf(item, PROJECT_NAME)
+    .map(({ name, answers }) => {
+      const directory = projectDirectoryOf(answers, name);
+      const projectDir: ProjectDir = {
+        answers,
+        dir: join(dir, directory),
+      };
 
-  return join(dir, directory);
+      return projectDir;
+    });
 };
 
 // A monorepo's projects keep their own node_modules too.
@@ -157,22 +175,36 @@ const pnpmVersion = run('pnpm', ['--version'], '.')
 export const generate = async (item: E2eCase, dir: string, tarballs: Tarballs): Promise<void> => {
   clear(dir);
 
-  const answers = {
-    ...item.answers,
-    nodeVersion: versions.node,
-    packageManagerVersion: pnpmVersion,
+  const hostedOf = (project: E2eProject): WorkspaceProject => {
+    const hosted: WorkspaceProject = {
+      name: project.name,
+      answers: {
+        ...project.answers,
+        nodeVersion: versions.node,
+        packageManagerVersion: pnpmVersion,
+      },
+    };
+
+    return hosted;
   };
+
+  const [first, ...rest] = projectsOf(item, PROJECT_NAME);
+  const hostedFirst = hostedOf(first);
   const options: PipelineOptions = {
     name: PROJECT_NAME,
     cwd: dir,
-    answers,
+    answers: hostedFirst.answers,
+    projects: [hostedFirst, ...rest.map(hostedOf)],
     skip: ['install', 'fix'],
   };
 
   await pipelineRun(options);
 
-  const app = appDirOf(item, dir);
-  const manifests = new Set([join(dir, 'package.json'), join(app, 'package.json')]);
+  const projectManifests = projectDirsOf(item, dir)
+    .map((project) => {
+      return join(project.dir, 'package.json');
+    });
+  const manifests = new Set([join(dir, 'package.json'), ...projectManifests]);
 
   const patches = [...manifests]
     .map(async (manifest) => {
@@ -343,8 +375,8 @@ export const registryError = async (dir: string): Promise<string | undefined> =>
   }
 };
 
-export const fixedCopies = (item: E2eCase, dir: string): Map<string, string> => {
-  const artifacts = starterSourceEmitter(item.answers);
+export const fixedCopies = ({ answers, dir }: ProjectDir): Map<string, string> => {
+  const artifacts = starterSourceEmitter(answers);
   const whole = writtenOf(artifacts)
     .flatMap((artifact) => {
       const text = readFileSync(join(dir, artifact.target), 'utf8');
