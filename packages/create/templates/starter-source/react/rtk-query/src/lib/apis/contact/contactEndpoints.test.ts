@@ -15,7 +15,10 @@ const submit = async (values: ContactValues) => {
   const store = configureStore({
     reducer: { [baseApi.reducerPath]: baseApi.reducer },
     middleware: (getDefaultMiddleware) => {
-      return getDefaultMiddleware().concat(baseApi.middleware);
+      // The checks still run; only their timing hint, 32ms by default, trips on a loaded run.
+      const checks = { warnAfter: 1000 };
+
+      return getDefaultMiddleware({ immutableCheck: checks, serializableCheck: checks }).concat(baseApi.middleware);
     },
   });
 

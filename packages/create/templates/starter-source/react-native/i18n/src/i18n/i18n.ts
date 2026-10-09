@@ -1,7 +1,8 @@
 import { initReactI18next } from 'react-i18next';
-import { Platform } from 'react-native';
+import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { reloadAppAsync } from 'expo';
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 
@@ -14,14 +15,37 @@ import { directionOf, pickLanguage } from './utils/languageUtils';
 
 export { directionOf };
 
-// The web only: native lays out by the device's language at launch, as `extra.supportsRTL` in app.json asks.
-export const applyDirection = (language: string): void => {
-  if (Platform.OS !== 'web') {
+const directionStorageKey = 'direction';
+
+// Native lays out by a direction read at launch, so a switch across directions forces the new one and reloads.
+export const applyDirection = async (language: string): Promise<void> => {
+  const direction = directionOf(language);
+
+  if (Platform.OS === 'web') {
+    document.documentElement.lang = language;
+    document.documentElement.dir = direction;
+
     return;
   }
 
-  document.documentElement.lang = language;
-  document.documentElement.dir = directionOf(language);
+  const rtl = direction === 'rtl';
+
+  if (I18nManager.isRTL === rtl) {
+    return;
+  }
+
+  // Once per direction: a shell that ignores the forced direction would otherwise reload forever.
+  const forced = await AsyncStorage.getItem(directionStorageKey);
+
+  if (forced === direction) {
+    return;
+  }
+
+  await AsyncStorage.setItem(directionStorageKey, direction);
+  I18nManager.allowRTL(rtl);
+  I18nManager.forceRTL(rtl);
+
+  await reloadAppAsync();
 };
 
 // The one writer of the stored choice.
@@ -67,7 +91,9 @@ export const initI18n = (): typeof i18next => {
         },
       });
 
-    i18next.on('languageChanged', applyDirection);
+    i18next.on('languageChanged', (language) => {
+      void applyDirection(language);
+    });
   }
 
   return i18next;

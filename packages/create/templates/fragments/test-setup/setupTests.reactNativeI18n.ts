@@ -37,6 +37,18 @@ jest.mock('expo-localization', () => {
   return localization;
 });
 
+// A switch across directions reloads the app, which a suite only observes.
+jest.mock('expo', () => {
+  const expo = {
+    ...jest.requireActual<typeof import('expo')>('expo'),
+    reloadAppAsync: jest.fn(() => {
+      return Promise.resolve();
+    }),
+  };
+
+  return expo;
+});
+
 // Every suite renders translated text, so each starts with i18n running in English.
 beforeAll(() => {
   const { initI18n } = jest.requireActual<typeof import('@i18n/i18n')>('@i18n/i18n');

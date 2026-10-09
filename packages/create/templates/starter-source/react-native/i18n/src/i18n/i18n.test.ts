@@ -1,6 +1,7 @@
 import { I18nManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { reloadAppAsync } from 'expo';
 import { getLocales, type Locale } from 'expo-localization';
 import i18next from 'i18next';
 
@@ -48,6 +49,7 @@ describe('i18n', () => {
   afterEach(async () => {
     await AsyncStorage.clear();
     jest.restoreAllMocks();
+    jest.clearAllMocks();
     // Jest's native environment has no `document`; the web branch reads one.
     Reflect.deleteProperty(globalThis, 'document');
     await i18next.changeLanguage('en');
@@ -112,19 +114,29 @@ describe('i18n', () => {
     expect(i18next.language).toBe(last);
   });
 
-  it('leaves the native direction to the device, which app.json lets lay out right to left', () => {
+  it('forces the other direction and reloads once, on a switch across directions', async () => {
     const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
     const allowRTL = jest.spyOn(I18nManager, 'allowRTL');
 
-    for (const { id } of languages) {
-      applyDirection(id);
-    }
+    jest.replaceProperty(I18nManager, 'isRTL', true);
+    await applyDirection('en');
+    await applyDirection('en');
 
-    expect(forceRTL).not.toHaveBeenCalled();
-    expect(allowRTL).not.toHaveBeenCalled();
+    expect(allowRTL).toHaveBeenCalledWith(false);
+    expect(forceRTL).toHaveBeenCalledWith(false);
+    expect(reloadAppAsync).toHaveBeenCalledTimes(1);
   });
 
-  it('sets the document language and direction on the web', () => {
+  it('leaves the layout alone when the direction already matches', async () => {
+    const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
+
+    jest.replaceProperty(I18nManager, 'isRTL', false);
+    await applyDirection('en');
+
+    expect(forceRTL).not.toHaveBeenCalled();
+  });
+
+  it('sets the document language and direction on the web', async () => {
     const documentElement = { lang: '', dir: '' };
 
     const forceRTL = jest.spyOn(I18nManager, 'forceRTL');
@@ -133,7 +145,7 @@ describe('i18n', () => {
     Object.assign(globalThis, { document: { documentElement } });
 
     for (const { id, dir } of languages) {
-      applyDirection(id);
+      await applyDirection(id);
 
       const expected = { lang: id, dir };
       expect(documentElement).toEqual(expected);

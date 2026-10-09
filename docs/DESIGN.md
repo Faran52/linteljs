@@ -647,8 +647,11 @@ whose record carries `i18n` parts is asked.
   needs.
 - **The first render is English**, matching the static web export; the stored language switches in an effect.
 - **The picker is a button opening a `Modal`**: React Native has no select.
-- **Native direction follows the device's language.** Native lays out direction at launch, and Expo rules out
-  `forceRTL` from code, so a stored choice changes the text at once and never the layout direction.
+- **Native direction follows the chosen language.** Native lays out direction at launch, so a switch or a cold
+  launch whose language runs the other way calls `allowRTL` and `forceRTL`, then `reloadAppAsync` from `expo`,
+  which reloads in Expo Go, a dev build and a release alike. A stored key allows one reload per direction, so a
+  shell that ignores the forced direction never loops. Expo Go's iOS shell ships only `Base.lproj`, so its native
+  titles stay left to right; a dev build is needed to see those mirrored.
 - **The extension popup takes no library, not `chrome.i18n`**, which follows the browser's language and cannot
   switch at runtime. Only an extension with a popup is asked; the popup is translated, since it is the whole
   interface.

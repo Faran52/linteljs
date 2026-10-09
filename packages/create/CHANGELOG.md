@@ -289,6 +289,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **React Native with languages mirrors its layout for a right-to-left language.** A switch or a cold launch
+  whose language runs the other way forces the new direction and reloads the app, in Expo Go too.
+
+- **The RTK Query suites no longer print a state check's timing warning on a loaded run.**
+
 - **A web extension's popup language select matches the web headers' under every styling.** It took the
   borderless `.tab` look only where Tailwind's preflight reset the browser's border, and kept that border under
   StyleX. It now carries the tab's 44px target, padding, radius and hover in `base.css`. Angular's header select
