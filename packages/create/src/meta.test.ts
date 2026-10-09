@@ -154,7 +154,10 @@ const SHAPES: RingShape[] = [
   },
   {
     name: 'prompt',
-    suffixes: { errors: 'Error' },
+    suffixes: {
+      ask: 'Ask',
+      errors: 'Error',
+    },
   },
   {
     name: 'spawns',
