@@ -54,7 +54,7 @@ import { composeConfig } from '@linteljs/eslint-config/compose-config';
 const config = await composeConfig({
   framework: 'react',
   typescript: true,
-  vitest: true,
+  testing: 'vitest',
 });
 
 export default config;
@@ -71,8 +71,7 @@ Each layer switch is off unless you enable it.
 | --- | --- |
 | `framework` | Adds a framework layer: `'react'`, `'next'`, `'react-native'`, `'vue'`, `'nuxt'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React, `nuxt` includes Vue, and `react-native` is React without the web accessibility preset. |
 | `typescript` | Enables the TypeScript layer. |
-| `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
-| `jest` | The same for a project on Jest, such as React Native on `jest-expo`. |
+| `testing` | Enables rules for `*.test.*` and `*.spec.*` files from the runner's plugin: `'vitest'` or `'jest'` (React Native on `jest-expo`). |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
@@ -88,7 +87,7 @@ import sorting stays aligned with the framework that loaded it.
 
 ## Layer order
 
-The composer applies the layers in this order: base, TypeScript, framework, library, Vitest, Jest, HTML, then
+The composer applies the layers in this order: base, TypeScript, framework, library, testing, HTML, then
 Astro.
 Framework layers override shared layers. Vue and Svelte must come after TypeScript so their top-level parsers
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for

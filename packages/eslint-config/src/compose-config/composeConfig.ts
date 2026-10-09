@@ -1,21 +1,13 @@
 import { base } from '../layers/base/baseLayer';
 import { typescript } from '../layers/typescript/typescriptLayer';
 
-import { FRAMEWORKS, LIBRARIES } from './utils/loaderUtils';
+import {
+  FRAMEWORKS,
+  LIBRARIES,
+  TESTING,
+} from './utils/loaderUtils';
 
 import type { ComposeConfigOptions, Layer } from '../types';
-
-const loadVitest = async (): Promise<Layer> => {
-  const { vitest } = await import('../layers/vitest/vitestLayer');
-
-  return vitest();
-};
-
-const loadJest = async (): Promise<Layer> => {
-  const { jest } = await import('../layers/jest/jestLayer');
-
-  return jest();
-};
 
 const loadHtml = async (): Promise<Layer> => {
   const { html } = await import('../layers/html/htmlLayer');
@@ -34,8 +26,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
   const {
     framework,
     typescript: withTypescript,
-    vitest: withVitest,
-    jest: withJest,
+    testing,
     html: withHtml,
     libraries = [],
     tailwindEntryPoint,
@@ -49,8 +40,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     });
 
   const libraryLayers = await Promise.all(loading);
-  const vitestRules = withVitest === true ? await loadVitest() : [];
-  const jestRules = withJest === true ? await loadJest() : [];
+  const testingRules = testing === undefined ? [] : await TESTING[testing]();
   const htmlRules = withHtml === true ? await loadHtml() : [];
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
   const astroRules = baseOptions.astro === true ? await loadAstro() : [];
@@ -67,8 +57,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...(withTypescript === true ? typescript(options) : []),
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),
-    ...vitestRules,
-    ...jestRules,
+    ...testingRules,
     ...htmlRules,
     ...astroRules,
   ];

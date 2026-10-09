@@ -91,7 +91,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
   const runner = testRunnerOf(answers);
 
   if (runner !== undefined) {
-    rows.push([runner, 'true']);
+    rows.push(['testing', quote(runner)]);
   }
 
   if (target.html) {

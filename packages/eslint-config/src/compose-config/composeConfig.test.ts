@@ -187,7 +187,7 @@ describe('composeConfig', () => {
   it('composes a target with no framework from typescript and vitest, with no framework rule', async () => {
     const config = await composeConfig({
       typescript: true,
-      vitest: true,
+      testing: 'vitest',
     });
 
     const typed = await ruleIdsForFile(config, TYPED_FILE);
@@ -366,7 +366,7 @@ describe('composeConfig', () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    const vitestConfig = await composeConfig({ vitest: true });
+    const vitestConfig = await composeConfig({ testing: 'vitest' });
     const vitestRuleIds = await ruleIdsFor(vitestConfig, code, path);
     expect(vitestRuleIds).toContain('vitest/no-focused-tests');
 
@@ -381,7 +381,7 @@ describe('composeConfig', () => {
     // The plugin reads the installed Jest's major, and this workspace installs none.
     const jestVersion = { settings: { jest: { version: 29 } } };
 
-    const jestConfig = await composeConfig({ jest: true });
+    const jestConfig = await composeConfig({ testing: 'jest' });
     const jestRuleIds = await ruleIdsFor([...jestConfig, jestVersion], code, path);
     expect(jestRuleIds).toContain('jest/no-focused-tests');
 
@@ -512,7 +512,7 @@ const LOOKALIKES = [
 
 const WIDEST: ComposeConfigOptions = {
   typescript: true,
-  vitest: true,
+  testing: 'vitest',
   html: true,
   astro: true,
   libraries: [

@@ -234,8 +234,7 @@ interface ResolverOptions {
 export interface ComposeConfigOptions {
   framework?: Framework;
   typescript?: boolean;
-  vitest?: boolean;
-  jest?: boolean;
+  testing?: TestRunner;
   html?: boolean;
   astro?: boolean;
   libraries?: LibraryLayer[];

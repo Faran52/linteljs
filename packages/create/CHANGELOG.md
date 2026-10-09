@@ -29,7 +29,8 @@ when a version's change lives in a sibling it is described there instead:
 - **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
   `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
   config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers
-  `jiti` with the `@linteljs/eslint-config` peers.
+  `jiti` with the `@linteljs/eslint-config` peers. It names the test runner as `testing: 'vitest'` or
+  `testing: 'jest'`, the testing answer.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.

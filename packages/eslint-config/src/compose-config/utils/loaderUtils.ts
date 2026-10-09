@@ -2,6 +2,7 @@ import type {
   Framework,
   Layer,
   LibraryLayer,
+  Testing,
 } from '../../types';
 
 export interface FrameworkParts {
@@ -126,5 +127,18 @@ export const LIBRARIES: Record<LibraryLayer, (options: LibraryOptions) => Promis
     const { stylex } = await import('../../libraries/stylex/stylexLibrary');
 
     return stylex();
+  },
+};
+
+export const TESTING: Record<Testing, () => Promise<Layer>> = {
+  vitest: async () => {
+    const { vitest } = await import('../../layers/vitest/vitestLayer');
+
+    return vitest();
+  },
+  jest: async () => {
+    const { jest } = await import('../../layers/jest/jestLayer');
+
+    return jest();
   },
 };

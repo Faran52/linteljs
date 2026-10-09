@@ -51,5 +51,6 @@ export type {
   NamingConvention,
   NamingMap,
   ResolverOptions,
+  Testing,
   TypescriptOptions,
 } from './types';

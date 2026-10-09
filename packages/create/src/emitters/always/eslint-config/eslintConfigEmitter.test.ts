@@ -41,7 +41,7 @@ const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/
 const config = await composeConfig({
   framework: 'react',
   typescript: true,
-  vitest: true,
+  testing: 'vitest',
   html: true,
   ignores: [
     'dist/**',
@@ -168,9 +168,18 @@ describe('emitEslintConfig', () => {
 
   it('asks for the vitest layer only where a suite was chosen', () => {
     const withVitest = emitEslintConfig(answersFor({ testing: 'vitest' }));
-    expect(withVitest).toContain('vitest: true');
+    expect(withVitest).toContain("testing: 'vitest',");
     const withoutTesting = emitEslintConfig(answersFor({ testing: 'none' }));
     expect(withoutTesting).not.toContain('vitest');
+  });
+
+  it('names jest as the runner on react-native', () => {
+    const output = emitEslintConfig(answersFor({
+      target: 'react-native',
+      testing: 'jest',
+    }));
+
+    expect(output).toContain("testing: 'jest',");
   });
 
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {

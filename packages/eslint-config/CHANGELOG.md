@@ -13,7 +13,9 @@ when a version's change lives in a sibling it is described there instead:
 - **Node `>=22.0.0`**, up from 18.18. Node below 22 is dropped. ESLint stays `>=9`, flat config only.
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
   subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the
-  import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`; the options are the same.
+  import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`.
+- **`testing` names the test runner, in place of the `vitest` boolean.** It mirrors `@linteljs/create`'s answer:
+  `testing: 'vitest'` or `testing: 'jest'`. Replace `vitest: true` with `testing: 'vitest'`.
 - **`typescript` `>=5 <6.1.0` is a required peer.** The ceiling is the bundled `typescript-eslint`'s, so a fresh
   install no longer resolves a TypeScript 7 that every typed layer would refuse.
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
@@ -87,7 +89,7 @@ when a version's change lives in a sibling it is described there instead:
     CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
     pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts`
     file.
-  - `jest()` at `./jest` (`jest: true`), over the optional peer `eslint-plugin-jest` `>=29`: its
+  - `jest()` at `./jest` (`testing: 'jest'`), over the optional peer `eslint-plugin-jest` `>=29`: its
     `flat/recommended` rules on test files, the counterpart of `vitest` for a project on Jest, such as React
     Native on `jest-expo`.
 - `nuxtGroup`, `reactNativeGroup`, `tailwind` and the `TypescriptOptions` type join the barrel.

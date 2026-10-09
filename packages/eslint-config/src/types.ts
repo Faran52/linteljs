@@ -50,12 +50,13 @@ export type Framework
 
 export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | 'stylex';
 
+export type Testing = 'vitest' | 'jest';
+
 // `frameworkGroup` is dropped: the composer reads it off the framework layer.
 export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'>, TypescriptOptions {
   framework?: Framework;
   typescript?: boolean;
-  vitest?: boolean;
-  jest?: boolean;
+  testing?: Testing;
   html?: boolean;
   libraries?: LibraryLayer[];
   tailwindEntryPoint?: string;
