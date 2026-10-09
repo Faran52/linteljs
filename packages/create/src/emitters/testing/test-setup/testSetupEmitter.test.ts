@@ -242,6 +242,37 @@ describe('the shipped test setup', () => {
     expect(setup).toContain('TEST_QUERY_OPTIONS');
   });
 
+  it('keeps no gc timer on the app client only where the target asks, on React Native', async () => {
+    const native = await setupFor({
+      target: 'react-native',
+      libraries: [],
+      data: 'tanstack-query',
+    });
+    const web = await setupFor({
+      libraries: [],
+      data: 'tanstack-query',
+    });
+    const nativeWithoutQuery = await setupFor({
+      target: 'react-native',
+      libraries: [],
+    });
+
+    const withoutGc = [
+      native,
+      web,
+      nativeWithoutQuery,
+    ]
+      .map((setup) => {
+        return setup.includes('queryClient.setDefaultOptions');
+      });
+
+    expect(withoutGc).toEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+
   it('keeps the target own setup ahead of both fragments', async () => {
     const setup = await setupFor({
       target: 'react-native',

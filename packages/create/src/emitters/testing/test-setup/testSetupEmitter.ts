@@ -18,6 +18,7 @@ const setupSources = (answers: Answers, target: TargetRecord): string[] => {
     target.testSetup ?? 'fragments/test-setup/setupTests.ts',
     ...(target.routerMock === undefined ? [] : [target.routerMock]),
     ...(answers.data === 'tanstack-query' ? ['fragments/test-setup/setupTests.tanstackQuery.ts'] : []),
+    ...(answers.data !== 'tanstack-query' || target.querySetup === undefined ? [] : [target.querySetup]),
     ...(localesOf(answers).length === 0 || target.i18n?.testSetup === undefined ? [] : [target.i18n.testSetup]),
     // Last, so the interceptor is listening by the time anything else in the setup makes a request.
     ...(answers.mocking === 'msw' ? [target.mswSetup ?? TEST_RUNNERS[target.testRunner ?? 'vitest'].mswSetup] : []),

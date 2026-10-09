@@ -7,8 +7,8 @@ export interface DataProviderProps {
 }
 
 // One client for the application, made once rather than per render.
-const client = new QueryClient();
+export const queryClient = new QueryClient();
 
 export const DataProvider: FC<DataProviderProps> = ({ children }) => {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };

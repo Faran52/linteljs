@@ -127,6 +127,7 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.mswJest.ts',
       'packages/create/templates/fragments/test-setup/setupTests.i18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.reactNativeI18n.ts',
+      'packages/create/templates/fragments/test-setup/setupTests.reactNativeQuery.ts',
       'packages/create/templates/fragments/test-setup/setupTests.vueI18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.nuxtI18n.ts',
       'packages/create/templates/fragments/test-setup/setupTests.nuxtMsw.ts',

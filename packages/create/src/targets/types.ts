@@ -190,6 +190,8 @@ export interface TargetRecord {
   testEnvironment?: string;
   // Absent: the runner's own.
   mswSetup?: string;
+  // Joined after the TanStack Query fragment.
+  querySetup?: string;
   // Next has no Vite config, so it compiles StyleX through Babel and PostCSS.
   stylexBuild?: string[];
   // Only where StyleX compiles through PostCSS; elsewhere the at-rule expands to nothing.

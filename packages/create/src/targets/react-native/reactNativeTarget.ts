@@ -132,6 +132,7 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
       include: ['.expo/types/**/*.ts', 'expo-env.d.ts'],
     },
     testSetup: 'fragments/test-setup/setupTests.reactNative.ts',
+    querySetup: 'fragments/test-setup/setupTests.reactNativeQuery.ts',
     // jest-expo resolves as Metro does and renders through a test renderer, not a DOM.
     testRunner: 'jest',
     starterFiles: [
