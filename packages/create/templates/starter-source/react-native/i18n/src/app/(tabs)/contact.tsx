@@ -2,6 +2,7 @@ import {
   type ReactNode,
   useEffect,
   useRef,
+  useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -82,4 +83,23 @@ const ContactScreen = (): ReactNode => {
   );
 };
 
-export default ContactScreen;
+const unsubscribe = (): void => {
+  // The answer never changes after mount.
+};
+
+const subscribe = (): (() => void) => {
+  return unsubscribe;
+};
+
+// Client only: a static web render would build the form, whose devtools retry timer holds `expo export` open.
+const ContactRoute = (): ReactNode => {
+  const client = useSyncExternalStore(subscribe, () => {
+    return true;
+  }, () => {
+    return false;
+  });
+
+  return client ? <ContactScreen /> : null;
+};
+
+export default ContactRoute;

@@ -371,10 +371,11 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
       '@types/react',
       '@react-native/metro-config',
     ],
-    // jest-expo requires the preset as a peer.
+    // jest-expo requires the preset as a peer, and `@types/react-dom` types the contact suite's server render.
     testDevDependencies: [
       '@react-native/jest-preset',
       '@testing-library/react-native',
+      '@types/react-dom',
       'jest-expo',
       'test-renderer',
     ],

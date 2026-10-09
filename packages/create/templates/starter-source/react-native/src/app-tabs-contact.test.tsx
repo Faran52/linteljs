@@ -1,3 +1,4 @@
+import { renderToString } from 'react-dom/server';
 import { DeviceEventEmitter, ScrollView } from 'react-native';
 
 import {
@@ -21,6 +22,12 @@ const fill = async (label: string, value: string): Promise<void> => {
 };
 
 describe('the contact screen', () => {
+  it('renders nothing on a server, so a static render builds no form to leave a timer running', () => {
+    const html = renderToString(<ContactScreen />);
+
+    expect(html).toBe('');
+  });
+
   it('refuses what the rules refuse, and says why beside the field', async () => {
     await renderScreen(<ContactScreen />);
     await fill('Email', 'not-an-address');

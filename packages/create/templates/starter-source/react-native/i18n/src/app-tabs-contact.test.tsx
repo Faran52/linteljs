@@ -1,3 +1,4 @@
+import { renderToString } from 'react-dom/server';
 import { DeviceEventEmitter, ScrollView } from 'react-native';
 
 import {
@@ -28,6 +29,12 @@ describe('the contact screen', () => {
     await act(async () => {
       await i18next.changeLanguage('en');
     });
+  });
+
+  it('renders nothing on a server, so a static render builds no form to leave a timer running', () => {
+    const html = renderToString(<ContactScreen />);
+
+    expect(html).toBe('');
   });
 
   it('speaks the language chosen, its rules included', async () => {

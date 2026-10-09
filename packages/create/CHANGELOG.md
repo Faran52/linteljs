@@ -292,6 +292,9 @@ when a version's change lives in a sibling it is described there instead:
 - **React Native with languages mirrors its layout for a right-to-left language.** A switch or a cold launch
   whose language runs the other way forces the new direction and reloads the app, in Expo Go too.
 
+- **A React Native TanStack Form starter no longer holds `expo export` open.** The contact route renders on the
+  client only, so the static render never builds the form, whose devtools client retried a bus no server has.
+
 - **The RTK Query suites no longer print a state check's timing warning on a loaded run.**
 
 - **A web extension's popup language select matches the web headers' under every styling.** It took the
