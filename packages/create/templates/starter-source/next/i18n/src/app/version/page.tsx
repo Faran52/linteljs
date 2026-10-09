@@ -4,10 +4,12 @@ import { useTranslations } from 'next-intl';
 
 import { ANSWERS, STACK } from '@config/linteljs';
 
+import { CodeText } from '@ui/code-text/CodeText';
+
 import type { ReactNode } from 'react';
 
-const code = (chunks: ReactNode): ReactNode => {
-  return <code>{chunks}</code>;
+const code = (chunks: string): string => {
+  return `<code>${chunks}</code>`;
 };
 
 // Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
@@ -49,11 +51,12 @@ const VersionPage = (): ReactNode => {
             })}
         </dl>
         <p className="note">
-          {t.rich('versionRecorded', {
+          <CodeText text={t.markup('versionRecorded', {
             file: 'linteljs.config.json',
             command: 'sync',
             code,
           })}
+          />
         </p>
       </section>
     </main>

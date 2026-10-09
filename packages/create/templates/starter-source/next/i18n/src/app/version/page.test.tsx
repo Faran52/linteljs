@@ -52,7 +52,7 @@ describe('the version route', () => {
   it('fills the file it was recorded in into its sentence, as code', () => {
     render(<VersionPage />, { wrapper: I18nProvider });
 
-    const element = screen.getByText('linteljs.config.json', { selector: 'p > code' });
+    const element = screen.getByText('linteljs.config.json', { selector: 'p code' });
     expect(element).toBeTruthy();
   });
 

@@ -33,7 +33,7 @@ describe('the home route', () => {
   it('names the one command that runs the whole gate', () => {
     render(<HomePage />, { wrapper: I18nProvider });
 
-    const element = screen.getByText(CHECK, { selector: 'p > code' });
+    const element = screen.getByText(CHECK, { selector: 'p code' });
     expect(element).toBeTruthy();
   });
 

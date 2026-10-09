@@ -145,6 +145,9 @@ const I18N_ONLY_PATHS = [
   'src/components/ui/code-text/code-text.ts',
   'src/components/ui/code-text/code-text.html',
   'src/components/ui/code-text/code-text.spec.ts',
+  'src/components/features/language-select/language-select.ts',
+  'src/components/features/language-select/language-select.html',
+  'src/components/features/language-select/language-select.spec.ts',
   ...LANGUAGES
     .map((language) => {
       return `src/i18n/locales/${language}/common.json`;

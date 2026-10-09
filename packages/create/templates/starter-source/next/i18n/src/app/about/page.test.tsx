@@ -38,7 +38,7 @@ describe('the about route', () => {
   it('fills the command into its sentence, as code', () => {
     render(<AboutPage />, { wrapper: I18nProvider });
 
-    const element = screen.getByText(CHECK, { selector: 'p > code' });
+    const element = screen.getByText(CHECK, { selector: 'p code' });
     expect(element).toBeTruthy();
   });
 

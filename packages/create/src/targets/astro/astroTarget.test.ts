@@ -292,6 +292,8 @@ const I18N_ONLY_PATHS = [
   'src/i18n/utils/cookieUtils.ts',
   'src/i18n/utils/cookieUtils.test.ts',
   'src/components/ui/code-text/CodeText.astro',
+  'src/components/features/language-select/LanguageSelect.astro',
+  'src/components/features/language-select/LanguageSelect.test.ts',
   ...LANGUAGES
     .map((language) => {
       return `src/i18n/locales/${language}/common.json`;

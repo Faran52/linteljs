@@ -9,10 +9,12 @@ import {
 } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
+import { CodeText } from '@ui/code-text/CodeText';
+
 import type { ReactNode } from 'react';
 
-const code = (chunks: ReactNode): ReactNode => {
-  return <code>{chunks}</code>;
+const code = (chunks: string): string => {
+  return `<code>${chunks}</code>`;
 };
 
 // A client component, so it speaks the reader's language.
@@ -38,10 +40,11 @@ const AboutPage = (): ReactNode => {
             })}
         </ul>
         <p className="note">
-          {t.rich('aboutCheck', {
+          <CodeText text={t.markup('aboutCheck', {
             command: CHECK,
             code,
           })}
+          />
         </p>
       </section>
 
@@ -63,10 +66,11 @@ const AboutPage = (): ReactNode => {
       <section className="section">
         <h2 className="section-title">{t('aboutCurrent')}</h2>
         <p className="note">
-          {t.rich('aboutSync', {
+          <CodeText text={t.markup('aboutSync', {
             command: SYNC,
             code,
           })}
+          />
         </p>
       </section>
     </main>

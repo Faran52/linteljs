@@ -9,6 +9,9 @@ import {
 
 import type { StarterFile, StarterTest } from '../../types';
 
+// React's own, since it renders the string `t.markup` makes.
+const CODE_TEXT = 'src/components/ui/code-text/CodeText';
+
 // What i18n rewrites in the Next starter, each as the pair `translated` makes.
 export const nextI18nFiles = (): StarterFile[] => {
   const i18nOnly = [
@@ -18,16 +21,26 @@ export const nextI18nFiles = (): StarterFile[] => {
       }),
     'src/i18n/i18n.ts',
   ];
-  return i18nFiles({
-    translated: TRANSLATED,
-    pairs: [
-      {
-        target: 'src/app/contact/page.tsx',
-        when: hasForm,
-      },
-    ],
-    only: i18nOnly,
-  });
+  const files: StarterFile[] = [
+    ...i18nFiles({
+      translated: TRANSLATED,
+      pairs: [
+        {
+          target: 'src/app/contact/page.tsx',
+          when: hasForm,
+        },
+      ],
+      only: i18nOnly,
+    }),
+    {
+      target: `${CODE_TEXT}.tsx`,
+      when: hasI18n,
+      variant: 'i18n',
+      shared: 'react',
+    },
+  ];
+
+  return files;
 };
 
 export const nextI18nTests = (): StarterTest[] => {
@@ -60,6 +73,13 @@ export const nextI18nTests = (): StarterTest[] => {
 
         return test;
       }),
+    {
+      target: `${CODE_TEXT}.test.tsx`,
+      covers: `${CODE_TEXT}.tsx`,
+      when: hasI18n,
+      variant: 'i18n',
+      shared: 'react',
+    },
     {
       target: 'src/i18n/i18n.test.ts',
       covers: 'src/i18n/i18n.ts',

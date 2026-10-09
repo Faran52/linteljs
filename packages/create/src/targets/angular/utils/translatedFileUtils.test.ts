@@ -52,6 +52,8 @@ describe('angularI18nFiles', () => {
       'src/i18n/i18n.ts@i18n',
       'src/components/ui/code-text/code-text.ts@i18n',
       'src/components/ui/code-text/code-text.html@i18n',
+      'src/components/features/language-select/language-select.ts@i18n',
+      'src/components/features/language-select/language-select.html@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -78,6 +80,7 @@ describe('angularI18nTests', () => {
     const expected = [
       'src/i18n/i18n.spec.ts@i18n',
       'src/components/ui/code-text/code-text.spec.ts@i18n',
+      'src/components/features/language-select/language-select.spec.ts@i18n',
       'src/components/features/app-header/app-header.spec.ts@i18n',
       'src/app/home/home.spec.ts@i18n',
       'src/app/about/about.spec.ts@i18n',
@@ -90,6 +93,7 @@ describe('angularI18nTests', () => {
     const coveredFiles = [
       'src/i18n/i18n.ts',
       'src/components/ui/code-text/code-text.ts',
+      'src/components/features/language-select/language-select.ts',
       'src/components/features/app-header/app-header.ts',
       'src/components/features/app-header/app-header.ts',
       'src/app/home/home.ts',

@@ -298,6 +298,8 @@ const GATES: GateRow[] = [
   }]],
   ['src/components/features/language-select/LanguageSelect.tsx@i18n', WITH_I18N],
   ['src/components/features/language-select/LanguageSelect.test.tsx@i18n', WITH_I18N],
+  ['src/components/ui/code-text/CodeText.tsx@i18n', WITH_I18N],
+  ['src/components/ui/code-text/CodeText.test.tsx@i18n', WITH_I18N],
   ['src/root.tsx@react-router-framework', [{
     router: ['react-router-framework'],
     styling: [undefined, 'tailwind'],

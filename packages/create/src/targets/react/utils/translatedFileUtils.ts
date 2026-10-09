@@ -63,6 +63,11 @@ export const reactI18nFiles = (): StarterFile[] => {
       variant: 'i18n',
     },
     {
+      target: 'src/components/ui/code-text/CodeText.tsx',
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    {
       target: 'src/i18n/i18n.ts',
       when: hasI18n,
       variant: 'i18n',
@@ -101,6 +106,12 @@ export const reactI18nTests = (): StarterTest[] => {
     {
       target: 'src/components/features/language-select/LanguageSelect.test.tsx',
       covers: LANGUAGE_SELECT,
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    {
+      target: 'src/components/ui/code-text/CodeText.test.tsx',
+      covers: 'src/components/ui/code-text/CodeText.tsx',
       when: hasI18n,
       variant: 'i18n',
     },

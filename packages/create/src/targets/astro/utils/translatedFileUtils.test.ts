@@ -51,6 +51,7 @@ describe('astroI18nFiles', () => {
         }),
       'src/i18n/i18n.ts@i18n',
       'src/components/ui/code-text/CodeText.astro@i18n',
+      'src/components/features/language-select/LanguageSelect.astro@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -71,11 +72,15 @@ describe('astroI18nFiles', () => {
 });
 
 describe('astroI18nTests', () => {
-  it('covers the client script and the translated Version view once a language is chosen', () => {
+  it('covers the client script, the language select and the translated Version view once a language is chosen', () => {
     const written = writtenUnder(astroI18nTests(), withLanguage());
     const english = writtenUnder(astroI18nTests(), answersFor({ target: 'astro' }));
 
-    const expected = ['src/i18n/i18n.test.ts@i18n', 'src/views/version/VersionView.test.ts@i18n'];
+    const expected = [
+      'src/i18n/i18n.test.ts@i18n',
+      'src/components/features/language-select/LanguageSelect.test.ts@i18n',
+      'src/views/version/VersionView.test.ts@i18n',
+    ];
     expect(written).toEqual(expected);
     const englishExpected = ['src/views/version/VersionView.test.ts'];
     expect(english).toEqual(englishExpected);

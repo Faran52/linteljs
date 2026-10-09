@@ -1,10 +1,11 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { CHECK } from '@config/linteljs';
 
 import { useCounter } from '@store/counter/counterStore';
 
 import { Button, Mark } from '@ui';
+import { CodeText } from '@ui/code-text/CodeText';
 
 import type { FC } from 'react';
 
@@ -12,7 +13,6 @@ export interface HomePageProps {
   readonly name: string;
 }
 
-const CODE = { code: <code /> };
 const CHECK_VALUES = { command: CHECK };
 
 export const HomePage: FC<HomePageProps> = ({ name }) => {
@@ -33,12 +33,7 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
       <p className="caption">{t('homeCaption')}</p>
 
       <p className="hint">
-        <Trans
-          i18nKey="gateHint"
-          values={CHECK_VALUES}
-          components={CODE}
-          t={t}
-        />
+        <CodeText text={t('gateHint', CHECK_VALUES)} />
       </p>
     </main>
   );

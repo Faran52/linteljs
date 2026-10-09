@@ -99,6 +99,8 @@ const I18N_ONLY_PATHS = [
   'src/components/features/language-select/LanguageSelect.test.tsx',
   'src/lib/providers/i18n/I18nProvider.tsx',
   'src/lib/providers/i18n/I18nProvider.test.tsx',
+  'src/components/ui/code-text/CodeText.tsx',
+  'src/components/ui/code-text/CodeText.test.tsx',
   'src/i18n/i18n.ts',
   'src/i18n/i18n.test.ts',
   'src/i18n/locales.test.ts',

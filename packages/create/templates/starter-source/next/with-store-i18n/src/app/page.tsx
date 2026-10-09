@@ -7,11 +7,12 @@ import { CHECK, NAME } from '@config/linteljs';
 import { useCounter } from '@store/counter/counterStore';
 
 import { Button, Mark } from '@ui';
+import { CodeText } from '@ui/code-text/CodeText';
 
 import type { ReactNode } from 'react';
 
-const code = (chunks: ReactNode): ReactNode => {
-  return <code>{chunks}</code>;
+const code = (chunks: string): string => {
+  return `<code>${chunks}</code>`;
 };
 
 // A client component, because a store is state and state is the browser's.
@@ -32,10 +33,11 @@ const HomePage = (): ReactNode => {
       <p className="caption">{t('homeCaption')}</p>
 
       <p className="hint">
-        {t.rich('gateHint', {
+        <CodeText text={t.markup('gateHint', {
           command: CHECK,
           code,
         })}
+        />
       </p>
     </main>
   );

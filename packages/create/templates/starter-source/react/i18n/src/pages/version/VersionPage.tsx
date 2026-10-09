@@ -1,10 +1,11 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { ANSWERS, STACK } from '@config/linteljs';
 
+import { CodeText } from '@ui/code-text/CodeText';
+
 import type { FC } from 'react';
 
-const CODE = { code: <code /> };
 const RECORDED_VALUES = {
   file: 'linteljs.config.json',
   command: 'sync',
@@ -48,12 +49,7 @@ export const VersionPage: FC = () => {
             })}
         </dl>
         <p className="note">
-          <Trans
-            i18nKey="versionRecorded"
-            values={RECORDED_VALUES}
-            components={CODE}
-            t={t}
-          />
+          <CodeText text={t('versionRecorded', RECORDED_VALUES)} />
         </p>
       </section>
     </main>

@@ -4,12 +4,8 @@ import { provideRouter, Router } from '@angular/router';
 
 import { PAGES } from '@config/routes';
 
-import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '@i18n/config';
-import { applyLanguage, language } from '@i18n/i18n';
+import { languages, resources } from '@i18n/config';
+import { applyLanguage } from '@i18n/i18n';
 
 import { AppHeader } from './app-header';
 
@@ -70,55 +66,6 @@ describe('AppHeader', () => {
       ?.getAttribute('aria-label');
 
     expect(label).toBe(common.language);
-  });
-
-  it('offers every language, and shows the one applied', async () => {
-    applyLanguage(last);
-
-    const { root } = await open();
-    const select = root.querySelector('select');
-    const offered = [...root.querySelectorAll('option')]
-      .map((option) => {
-        const entry = {
-          id: option.value,
-          lang: option.lang,
-          label: option.textContent.trim(),
-        };
-
-        return entry;
-      });
-
-    const expected = languages
-      .map((option) => {
-        const entry = {
-          id: option.id,
-          lang: option.id,
-          label: option.label,
-        };
-
-        return entry;
-      });
-
-    expect(offered).toEqual(expected);
-    expect(select?.value).toBe(last);
-  });
-
-  it('stores and applies the language chosen', async () => {
-    const { root } = await open();
-    const select = root.querySelector('select');
-
-    if (select === null) {
-      throw new Error('No language select');
-    }
-
-    select.value = last;
-    select.dispatchEvent(new Event('change'));
-
-    const applied = language();
-    const stored = localStorage.getItem(languageStorageKey);
-
-    expect(applied).toBe(last);
-    expect(stored).toBe(last);
   });
 
   it('marks the page it is on with the class the stylesheet colours', async () => {

@@ -1,4 +1,4 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import {
   CHECK,
@@ -7,9 +7,10 @@ import {
 } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
 
+import { CodeText } from '@ui/code-text/CodeText';
+
 import type { FC } from 'react';
 
-const CODE = { code: <code /> };
 const CHECK_VALUES = { command: CHECK };
 const SYNC_VALUES = { command: SYNC };
 
@@ -35,12 +36,7 @@ export const AboutPage: FC = () => {
             })}
         </ul>
         <p className="note">
-          <Trans
-            i18nKey="aboutCheck"
-            values={CHECK_VALUES}
-            components={CODE}
-            t={t}
-          />
+          <CodeText text={t('aboutCheck', CHECK_VALUES)} />
         </p>
       </section>
 
@@ -62,12 +58,7 @@ export const AboutPage: FC = () => {
       <section className="section">
         <h2 className="section-title">{t('aboutCurrent')}</h2>
         <p className="note">
-          <Trans
-            i18nKey="aboutSync"
-            values={SYNC_VALUES}
-            components={CODE}
-            t={t}
-          />
+          <CodeText text={t('aboutSync', SYNC_VALUES)} />
         </p>
       </section>
     </main>

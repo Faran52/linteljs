@@ -47,6 +47,7 @@ describe('nextI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
       'src/lib/providers/i18n/I18nProvider.tsx@i18n',
       'src/i18n/i18n.ts@i18n',
+      'react:src/components/ui/code-text/CodeText.tsx@i18n',
     ];
     expect(written).toEqual(expected);
   });
@@ -119,6 +120,7 @@ describe('nextI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/lib/providers/i18n/I18nProvider.test.tsx@i18n',
       'src/components/features/status-page/StatusPage.test.tsx@i18n',
+      'react:src/components/ui/code-text/CodeText.test.tsx@i18n',
       'src/i18n/i18n.test.ts@i18n',
     ];
     expect(written).toEqual(expected);

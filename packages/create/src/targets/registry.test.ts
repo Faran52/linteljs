@@ -26,6 +26,7 @@ import { TEMPLATES_ROOT } from '@disk';
 import { buildDevDependencies } from '@emitters';
 
 import { targetFor, TARGETS } from './registry';
+import { starterApplies } from './utils/gateUtils';
 
 import type { TargetRecord } from './types';
 
@@ -579,6 +580,111 @@ describe('the emitted naming map on a utils file', () => {
       ];
     }
 
+    expect(actual).toEqual(expected);
+  });
+});
+
+const WEB_TARGETS: TargetId[] = [
+  'react',
+  'next',
+  'vue',
+  'nuxt',
+  'svelte',
+  'solid',
+  'angular',
+  'astro',
+];
+
+// Each framework's spelling of one component, folded to one name.
+const IDIOMS = new Map([
+  ['app-button', 'button'],
+  ['app-mark', 'mark'],
+  ['status', 'status-page'],
+]);
+
+// Astro routes `src/pages/`, so its status page is a view.
+const COMPONENT_DIRECTORY = /^src\/(?:components\/(?:ui|features)\/([^/]+)|views\/(status))\//u;
+
+// Error handling stays framework-native: these three have no built-in boundary that renders a fallback.
+const BOUNDED: TargetId[] = [
+  'react',
+  'vue',
+  'solid',
+];
+
+const alphabetical = (left: string, right: string): number => {
+  return left.localeCompare(right);
+};
+
+const componentsOf = (answers: Answers): string[] => {
+  const names = targetFor(answers).starterFiles
+    .filter((file) => {
+      return starterApplies(file, answers);
+    })
+    .map((file) => {
+      const match = COMPONENT_DIRECTORY.exec(file.target);
+
+      return match?.[1] ?? match?.[2];
+    })
+    .filter((name) => {
+      return name !== undefined;
+    })
+    .map((name) => {
+      return IDIOMS.get(name) ?? name;
+    });
+
+  const unique = [...new Set(names)];
+
+  return unique.toSorted(alphabetical);
+};
+
+const expectedComponents = (target: TargetId, hasLanguages: boolean, hasForm: boolean): string[] => {
+  const names = [
+    'app-header',
+    'mark',
+    'status-page',
+    // Astro's button comes with the contact island alone.
+    ...(target !== 'astro' || hasForm ? ['button'] : []),
+    // Angular's contact page always ships, on its own Reactive Forms.
+    ...(hasForm || target === 'angular' ? ['text-input'] : []),
+    ...(hasLanguages ? ['code-text', 'language-select'] : []),
+    ...(BOUNDED.includes(target) ? ['error-boundary'] : []),
+  ];
+
+  return names.toSorted(alphabetical);
+};
+
+const BOTH = [false, true];
+
+describe('the components every web target writes', () => {
+  const cases = WEB_TARGETS
+    .flatMap((target) => {
+      return BOTH
+        .flatMap((hasLanguages) => {
+          return BOTH
+            .map((hasForm): [TargetId, boolean, boolean] => {
+              const row: [TargetId, boolean, boolean] = [
+                target,
+                hasLanguages,
+                hasForm,
+              ];
+
+              return row;
+            });
+        });
+    });
+
+  it.each(cases)('%s, languages %s, form %s: one set', (target, hasLanguages, hasForm) => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target,
+      languages: hasLanguages ? ['en', 'ar'] : [],
+      ...(hasForm ? { form: 'tanstack-form' } : {}),
+      ...(target === 'astro' ? { hostedFramework: 'react' } : {}),
+    };
+
+    const actual = componentsOf(answers);
+    const expected = expectedComponents(target, hasLanguages, hasForm);
     expect(actual).toEqual(expected);
   });
 });

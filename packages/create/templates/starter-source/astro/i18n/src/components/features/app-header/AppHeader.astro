@@ -2,8 +2,9 @@
 import { PAGES } from '@config/routes';
 
 import { isCurrentPath } from '@utils/currentPathUtils';
-import { languages } from '@i18n/config';
 import { t, translateId } from '@i18n/i18n';
+
+import LanguageSelect from '@features/language-select/LanguageSelect.astro';
 
 import { styles } from './AppHeader.styles';
 
@@ -36,14 +37,5 @@ const here = Astro.url.pathname;
         );
       })}
   </nav>
-  <select
-    {...styles.tab(false)}
-    aria-label={t('language')}
-    data-language
-  >
-    {languages
-      .map((option) => {
-        return <option value={option.id} lang={option.id}>{option.label}</option>;
-      })}
-  </select>
+  <LanguageSelect {...styles.tab(false)} />
 </header>

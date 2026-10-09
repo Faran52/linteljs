@@ -413,7 +413,9 @@ recorded answers). The form is a page, not a hero control: two fields turn the h
 
 The components (`Button`, `TextInput`, `Mark`, `AppHeader`, `StatusPage`) are derived from those pages, not chosen
 as a kit. `TextInput` takes `multiline` rather than a second `TextArea`. A section label or a key-and-value row is a
-class, not a component: no props, no behaviour.
+class, not a component: no props, no behaviour. Under languages every web target adds `LanguageSelect` and
+`CodeText`. Three exceptions: Astro's `LanguageSelect` is a plain `.astro` component, since islands ship only with a
+form; Astro has no `Button` without one; Angular always has `TextInput`, its contact page being always on.
 
 ### The mark
 
@@ -436,6 +438,11 @@ that can tell a refusal from a crash. On client boundaries that is `ForbiddenErr
 no retry. A server render's error arrives without its class, so Next and React Router framework mode recognise it
 client-side only. Astro (static output: a crash fails the build) and the extension (no framework boundary) have no
 crash page; Next's `forbidden()` is experimental and unused.
+
+`ErrorBoundary` exists only where the framework has no boundary of its own (React, Vue, Solid), and `RouteError`
+only under a router that hands its error to a route component (React Router, TanStack Router). The rest use the
+native one: Next's `error.tsx`, Nuxt's `error.vue`, Svelte's `+error.svelte`, Astro's `500.astro`, Angular's
+`ErrorHandler`.
 
 ### Version renders what was recorded, and says so
 

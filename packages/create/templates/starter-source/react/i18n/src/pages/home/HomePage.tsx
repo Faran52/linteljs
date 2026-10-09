@@ -1,8 +1,9 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { CHECK } from '@config/linteljs';
 
 import { Mark } from '@ui';
+import { CodeText } from '@ui/code-text/CodeText';
 
 import type { FC } from 'react';
 
@@ -10,7 +11,6 @@ export interface HomePageProps {
   readonly name: string;
 }
 
-const CODE = { code: <code /> };
 const CHECK_VALUES = { command: CHECK };
 
 export const HomePage: FC<HomePageProps> = ({ name }) => {
@@ -22,12 +22,7 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
       <h1 className="title">{name}</h1>
       <p className="lede">{t('homeLedeReact')}</p>
       <p className="hint">
-        <Trans
-          i18nKey="gateHint"
-          values={CHECK_VALUES}
-          components={CODE}
-          t={t}
-        />
+        <CodeText text={t('gateHint', CHECK_VALUES)} />
       </p>
     </main>
   );

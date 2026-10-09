@@ -7,7 +7,11 @@ import type { StarterFile, StarterTest } from '../../types';
 
 const INDEX = 'src/i18n/i18n';
 
-const I18N_ONLY_FILES = [`${INDEX}.ts`, 'src/components/ui/code-text/CodeText.astro'];
+const I18N_ONLY_FILES = [
+  `${INDEX}.ts`,
+  'src/components/ui/code-text/CodeText.astro',
+  'src/components/features/language-select/LanguageSelect.astro',
+];
 
 // What i18n rewrites in the Astro starter, each as the pair `translated` makes.
 export const astroI18nFiles = (): StarterFile[] => {
@@ -30,6 +34,12 @@ export const astroI18nTests = (): StarterTest[] => {
     {
       target: `${INDEX}.test.ts`,
       covers: `${INDEX}.ts`,
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    {
+      target: 'src/components/features/language-select/LanguageSelect.test.ts',
+      covers: 'src/components/features/language-select/LanguageSelect.astro',
       when: hasI18n,
       variant: 'i18n',
     },
