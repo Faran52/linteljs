@@ -18,6 +18,20 @@ import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 import { coverageExclude, coverageInclude } from '../utils/coverageUtils';
 
+export type TestTarget = Pick<TargetRecord, 'testPool'
+  | 'packageProject'
+  | 'testEnvironment'
+  | 'testInline'
+  | 'testConditions'>;
+
+export interface VitestParts {
+  include: string;
+  exclude: string[];
+  setup: string;
+  target: TestTarget;
+  stylex: boolean;
+}
+
 const quoted = (values: string[]): string => {
   return values
     .map((value) => {
@@ -59,7 +73,7 @@ const testBlock = (
   exclude: string[],
   setup: string,
   indent: string,
-  target: TargetRecord,
+  target: TestTarget,
   stylex: boolean,
 ): string => {
   const { testPool: pool } = target;
@@ -84,8 +98,10 @@ const conditionsLine = (testConditions: string[] | undefined, indent: string): s
   return testConditions === undefined ? '' : `${indent}resolve: { conditions: [${quoted(testConditions)}] },\n`;
 };
 
-const mergedConfig = (block: string, testConditions: string[] | undefined): string => {
-  const conditions = conditionsLine(testConditions, '    ');
+// Over a project's own `vite.config.ts`.
+export const mergedVitestSource = (parts: VitestParts): string => {
+  const block = testBlock(parts.include, parts.exclude, parts.setup, '    ', parts.target, parts.stylex);
+  const conditions = conditionsLine(parts.target.testConditions, '    ');
 
   return `import { defineConfig, mergeConfig } from 'vitest/config';
 
@@ -151,9 +167,13 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   const stylex = answers.styling === 'stylex';
 
   if (target.vitePlugin !== undefined) {
-    const nestedBlock = testBlock(include, exclude, setup, '    ', target, stylex);
-
-    return mergedConfig(nestedBlock, target.testConditions);
+    return mergedVitestSource({
+      include,
+      exclude,
+      setup,
+      target,
+      stylex,
+    });
   }
 
   const block = testBlock(include, exclude, setup, '  ', target, stylex);

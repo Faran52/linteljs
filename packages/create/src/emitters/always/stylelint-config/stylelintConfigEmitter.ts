@@ -37,11 +37,11 @@ const overridesFor = (overrides: StyleOverride[]): string => {
   return `\n  overrides: [\n${blocks.join('\n')}\n  ],`;
 };
 
-export const emitStylelintConfig = (answers: Answers): string => {
+export const stylelintSource = (tailwind: boolean, sfcExtension?: string): string => {
   const extended = [
     'stylelint-config-standard',
     'stylelint-config-recess-order',
-    ...(answers.styling === 'tailwind' ? ['stylelint-config-tailwindcss'] : []),
+    ...(tailwind ? ['stylelint-config-tailwindcss'] : []),
   ];
 
   const entries = extended
@@ -50,7 +50,6 @@ export const emitStylelintConfig = (answers: Answers): string => {
     })
     .join('\n');
 
-  const { sfcExtension } = targetFor(answers);
   const overrides = overridesFor([
     ...(sfcExtension === undefined ? [] : [sfcOverride(sfcExtension)]),
     CSS_MODULE_OVERRIDE,
@@ -58,11 +57,15 @@ export const emitStylelintConfig = (answers: Answers): string => {
 
   const declared = [
     ...IMPORT_NOTATION,
-    ...(answers.styling === 'tailwind' ? TAILWIND_RULES : []),
+    ...(tailwind ? TAILWIND_RULES : []),
   ];
   const rules = `\n  rules: {\n  ${declared.join('\n  ')}\n  },`;
 
   return `const config = {\n  extends: [\n${entries}\n  ],${rules}${overrides}\n};\n\nexport default config;\n`;
+};
+
+export const emitStylelintConfig = (answers: Answers): string => {
+  return stylelintSource(answers.styling === 'tailwind', targetFor(answers).sfcExtension);
 };
 
 export const stylelintConfigEmitter = (answers: Answers): Artifact[] => {

@@ -25,5 +25,13 @@ export const FRAMEWORK_MODE_TSCONFIG: TsconfigDelta = {
 
 export const FRAMEWORK_MODE_GITIGNORE = ['/.react-router/', '/build/'];
 
+export const SETUP_TESTS = '__mocks__/setupTests.tsx';
+
+// The document: its parts are covered where each renders.
+export const FRAMEWORK_MODE_COVERAGE_EXCLUDE = ['src/root.tsx'];
+
+// React Router's route table is configuration; TanStack Router builds its tree in `App.tsx`.
+export const ROUTES_COVERAGE_EXCLUDE = ['src/routes/**'];
+
 // Every form drawer writes the `ui` barrel, so it imports as `@ui`.
 export const BARRELS = ['src/components/ui/index.ts'];

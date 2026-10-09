@@ -1,5 +1,7 @@
+import { OUTSIDE_TESTS } from '../constants';
+
 import type { AliasMap, Router } from '@config/types';
-import type { I18nParts } from '../types';
+import type { I18nParts, PluginSpec } from '../types';
 import type { AccessorNames } from '../utils/mockUtils';
 
 export const ROUTERS: readonly Router[] = [
@@ -58,13 +60,24 @@ export const WELL_KNOWN_404 = `{
       },
     }`;
 
+// React Router's plugin expects its server's preamble and fails every suite, so the test run takes plain React.
+export const FRAMEWORK_MODE_VITE_PLUGIN: PluginSpec = {
+  imports: [
+    "import { reactRouter } from '@react-router/dev/vite';",
+    "import react from '@vitejs/plugin-react';",
+  ],
+  calls: [WELL_KNOWN_404, `...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
+};
+
+export const REACT_I18N_SETUP = 'fragments/test-setup/setupTests.i18n.ts';
+
 // i18next is the most used React i18n, and react-i18next is its own.
 export const REACT_I18N: I18nParts = {
   dependencies: [
     'i18next',
     'react-i18next',
   ],
-  testSetup: 'fragments/test-setup/setupTests.i18n.ts',
+  testSetup: REACT_I18N_SETUP,
 };
 
 // Each `root.tsx` variant, and whether it is the StyleX one.

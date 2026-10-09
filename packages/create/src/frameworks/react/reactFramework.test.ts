@@ -1,15 +1,66 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
+import { emitStylelintConfig } from '@emitters/always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigSource } from '@emitters/always/tsconfig/tsconfigEmitter';
 import { emitI18nConfig } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
 import { FAVICON } from '@emitters/target/html-entry/constants';
 import { emitHtmlEntry } from '@emitters/target/html-entry/htmlEntryEmitter';
+import { emitViteConfig } from '@emitters/target/vite-config/viteConfigEmitter';
+import { testSetupEmitter } from '@emitters/testing/test-setup/testSetupEmitter';
+import { emitVitestConfig } from '@emitters/testing/vitest-config/vitestConfigEmitter';
 
+import { SETUP_TESTS } from './constants';
 import { reactFramework } from './reactFramework';
+
+import type { Answers, ProjectShape } from '@config/types';
+
+type Picked = Pick<Answers, 'testing'> & Partial<Pick<Answers, 'styling'
+  | 'router'
+  | 'data'
+  | 'mocking'>>;
+
+const FRESH: ProjectShape = {
+  setupTests: [],
+  styleEntries: [],
+};
+
+const CONFIG_PATHS = [
+  'vite.config.ts',
+  'stylelint.config.js',
+  'vitest.config.ts',
+  '__mocks__/setupTests.tsx',
+];
+
+const PARITY: Picked[] = [
+  { testing: 'vitest' },
+  { testing: 'none' },
+  {
+    testing: 'vitest',
+    styling: 'stylex',
+    router: 'react-router-framework',
+    data: 'rtk-query',
+  },
+  {
+    testing: 'vitest',
+    styling: 'tailwind',
+    router: 'tanstack-router',
+    data: 'tanstack-query',
+    mocking: 'msw',
+  },
+  {
+    testing: 'vitest',
+    router: 'react-router',
+  },
+  {
+    testing: 'none',
+    styling: 'stylex',
+  },
+];
 
 const NAMING = {
   'src/**/*.tsx': '!([a-z]*[A-Z]*)',
@@ -52,20 +103,33 @@ describe('reactFramework', () => {
       include: [],
     });
 
-    expect(framed.files).toEqual([
-      {
-        path: 'index.html',
-        text: page,
-      },
-      {
-        path: 'src/i18n/config.ts',
-        text: i18nConfig,
-      },
-      {
-        path: 'tsconfig.json',
-        text: tsconfig,
-      },
+    const paths = framed.files
+      .map((file) => {
+        return file.path;
+      });
+
+    expect(paths).toEqual([
+      'index.html',
+      'src/i18n/config.ts',
+      'tsconfig.json',
+      'vite.config.ts',
+      'stylelint.config.js',
     ]);
+
+    expect(framed.files).toContainEqual({
+      path: 'index.html',
+      text: page,
+    });
+
+    expect(framed.files).toContainEqual({
+      path: 'src/i18n/config.ts',
+      text: i18nConfig,
+    });
+
+    expect(framed.files).toContainEqual({
+      path: 'tsconfig.json',
+      text: tsconfig,
+    });
 
     expect(framed.share).toEqual({
       package: {
@@ -125,41 +189,51 @@ describe('reactFramework', () => {
       include: [],
     });
 
-    expect(framed).toEqual({
-      files: [
-        {
-          path: 'src/i18n/config.ts',
-          text: i18nConfig,
+    const paths = framed.files
+      .map((file) => {
+        return file.path;
+      });
+
+    expect(paths).toEqual([
+      'src/i18n/config.ts',
+      'tsconfig.json',
+      'vite.config.ts',
+      'stylelint.config.js',
+    ]);
+
+    expect(framed.files).toContainEqual({
+      path: 'src/i18n/config.ts',
+      text: i18nConfig,
+    });
+
+    expect(framed.files).toContainEqual({
+      path: 'tsconfig.json',
+      text: tsconfig,
+    });
+
+    expect(framed.share).toEqual({
+      package: {
+        scripts: { typecheck: 'react-router typegen && tsc --noEmit' },
+        devDependencies: {
+          '@eslint-react/eslint-plugin': '^5.23.5',
+          '@types/react': '^19.3.0',
+          '@types/react-dom': '^19.3.0',
+          '@vitejs/plugin-react': '6.1.1',
+          'eslint-plugin-jsx-a11y-x': '^0.2.0',
+          'eslint-plugin-react-hooks': '^7.1.1',
+          'typescript': '~6.0.3',
+          'vite': '^8.3.2',
         },
-        {
-          path: 'tsconfig.json',
-          text: tsconfig,
-        },
-      ],
-      share: {
-        package: {
-          scripts: { typecheck: 'react-router typegen && tsc --noEmit' },
-          devDependencies: {
-            '@eslint-react/eslint-plugin': '^5.23.5',
-            '@types/react': '^19.3.0',
-            '@types/react-dom': '^19.3.0',
-            '@vitejs/plugin-react': '6.1.1',
-            'eslint-plugin-jsx-a11y-x': '^0.2.0',
-            'eslint-plugin-react-hooks': '^7.1.1',
-            'typescript': '~6.0.3',
-            'vite': '^8.3.2',
-          },
-        },
-        eslint: {
-          framework: 'react',
-          typescript: true,
-          ignores: ['dist/**', 'coverage/**'],
-          aliases: ALIASES,
-          naming: NAMING,
-          folderNaming: FOLDER_NAMING,
-        },
-        gitignore: ['/.react-router/', '/build/'],
       },
+      eslint: {
+        framework: 'react',
+        typescript: true,
+        ignores: ['dist/**', 'coverage/**'],
+        aliases: ALIASES,
+        naming: NAMING,
+        folderNaming: FOLDER_NAMING,
+      },
+      gitignore: ['/.react-router/', '/build/'],
     });
   });
 
@@ -168,13 +242,55 @@ describe('reactFramework', () => {
       target: 'react',
       languages: ['ar', 'en'],
     });
-    const i18nConfig = framed.files
-      .find((file) => {
-        return file.path === 'src/i18n/config.ts';
-      });
-    const expected = emitI18nConfig(['ar', 'en']);
+    const expected = {
+      path: 'src/i18n/config.ts',
+      text: emitI18nConfig(['ar', 'en']),
+    };
 
-    expect(i18nConfig?.text).toBe(expected);
+    expect(framed.files).toContainEqual(expected);
+  });
+
+  it.each(PARITY)('writes the old pipeline\'s vite, vitest, setup and stylelint files for %o', (picked) => {
+    const framed = reactFramework('demo', {
+      target: 'react',
+      ...picked,
+    });
+    const old = answersFor({
+      target: 'react',
+      languages: ['en'],
+      ...picked,
+    });
+    const vite = emitViteConfig(old);
+    const vitest = emitVitestConfig(old, SETUP_TESTS);
+    const [setup] = testSetupEmitter(old, FRESH);
+    const expected = [
+      {
+        path: 'vite.config.ts',
+        text: vite,
+      },
+      {
+        path: 'stylelint.config.js',
+        text: emitStylelintConfig(old),
+      },
+      ...vitest === null
+        ? []
+        : [{
+            path: 'vitest.config.ts',
+            text: vitest,
+          }],
+      ...setup === undefined
+        ? []
+        : [{
+            path: SETUP_TESTS,
+            ...setup.content,
+          }],
+    ];
+    const built = framed.files
+      .filter((file) => {
+        return CONFIG_PATHS.includes(file.path);
+      });
+
+    expect(built).toEqual(expected);
   });
 
   it.each([
@@ -189,19 +305,19 @@ describe('reactFramework', () => {
       target: 'react',
       testing,
     });
-    const tsconfig = framed.files
-      .find((file) => {
-        return file.path === 'tsconfig.json';
-      });
-    const expected = tsconfigSource({
+    const tsconfig = tsconfigSource({
       delta: { jsx: 'react-jsx' },
       browser: true,
       types,
       aliases: ALIASES,
       include: [],
     });
+    const expected = {
+      path: 'tsconfig.json',
+      text: tsconfig,
+    };
 
-    expect(tsconfig?.text).toBe(expected);
+    expect(framed.files).toContainEqual(expected);
   });
 
   it.each([

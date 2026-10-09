@@ -241,7 +241,7 @@ const unitArtifactsOf = async (root: string, unit: Unit): Promise<Written[]> => 
     .map((file) => {
       const artifact: Written = {
         target: posix.join(unit.directory, file.path),
-        content: { text: file.text },
+        content: 'sources' in file ? { sources: file.sources } : { text: file.text },
       };
 
       return artifact;

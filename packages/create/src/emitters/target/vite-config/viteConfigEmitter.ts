@@ -1,8 +1,13 @@
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type Framework,
+  type Styling,
+} from '@config/types';
 
 import { localesOf } from '@utils/answerUtils';
 
-import { targetFor } from '@targets';
+import { type PluginSpec, targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
@@ -10,36 +15,31 @@ import { stylingPlugin } from '../../utils/stylingUtils';
 
 import { rollupInputs } from './utils/inputUtils';
 
+export interface ViteParts {
+  plugin: PluginSpec;
+  styling: Styling | undefined;
+  framework: Framework | undefined;
+  inputs?: Record<string, string> | undefined;
+  serveMocks: boolean;
+  hmrPort: boolean;
+}
+
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
-
-export const emitViteConfig = (answers: Answers): string | null => {
-  const record = targetFor(answers);
+export const viteConfigSource = (parts: ViteParts): string => {
   const {
-    vitePlugin: framework,
-    viteInputs,
-    i18n,
-  } = record;
-
-  if (framework === undefined) {
-    return null;
-  }
-
-  const compiler = localesOf(answers).length === 0 ? undefined : i18n?.compiler?.vitePlugin;
-  const vitePlugin = {
-    imports: [...framework.imports, ...compiler?.imports ?? []],
-    calls: [...framework.calls, ...compiler?.calls ?? []],
-  };
-
-  const styling = stylingPlugin(answers.styling);
+    plugin: vitePlugin,
+    styling: picked,
+  } = parts;
+  const styling = stylingPlugin(picked);
   const imports = sortedImports([
     "import { defineConfig } from 'vite';",
     ...vitePlugin.imports,
     ...styling.imports,
-  ], record.framework);
+  ], parts.framework);
 
   // StyleX first, as its documentation asks: after the framework plugin it breaks Fast Refresh.
   const stylingCalls = styling.call === undefined ? [] : [styling.call];
-  const calls = answers.styling === 'stylex'
+  const calls = picked === 'stylex'
     ? [...stylingCalls, ...vitePlugin.calls]
     : [...vitePlugin.calls, ...stylingCalls];
 
@@ -50,9 +50,9 @@ export const emitViteConfig = (answers: Answers): string | null => {
     })
     .join('');
 
-  const inputs = rollupInputs(viteInputs);
-  const fs = record.serveMocks === true && answers.mocking === 'msw' ? ", fs: { allow: ['__mocks__'] }" : '';
-  const hmr = record.hmrPort === true ? ', hmr: { port: 3000 }' : '';
+  const inputs = rollupInputs(parts.inputs);
+  const fs = parts.serveMocks ? ", fs: { allow: ['__mocks__'] }" : '';
+  const hmr = parts.hmrPort ? ', hmr: { port: 3000 }' : '';
   const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
 
   return `${imports}
@@ -64,6 +64,33 @@ ${inputs}  resolve: { tsconfigPaths: true },
   server: { port: 3000${hmr}${fs} },
 });
 `;
+};
+
+export const emitViteConfig = (answers: Answers): string | null => {
+  const record = targetFor(answers);
+  const {
+    vitePlugin: framework,
+    i18n,
+  } = record;
+
+  if (framework === undefined) {
+    return null;
+  }
+
+  const compiler = localesOf(answers).length === 0 ? undefined : i18n?.compiler?.vitePlugin;
+  const source = viteConfigSource({
+    plugin: {
+      imports: [...framework.imports, ...compiler?.imports ?? []],
+      calls: [...framework.calls, ...compiler?.calls ?? []],
+    },
+    styling: answers.styling,
+    framework: record.framework,
+    inputs: record.viteInputs,
+    serveMocks: record.serveMocks === true && answers.mocking === 'msw',
+    hmrPort: record.hmrPort === true,
+  });
+
+  return source;
 };
 
 // Birth only: a real project outgrows this config within its first feature.

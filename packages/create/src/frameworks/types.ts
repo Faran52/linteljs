@@ -6,9 +6,15 @@ export interface Generated {
   text: string;
 }
 
+// Template fragments under `templates/`, joined in order at write time.
+export interface Joined {
+  path: string;
+  sources: string[];
+}
+
 // What a framework adds to its picked drawers: the files it builds in code and its share of the generated ones.
 export interface Framed {
-  files: Generated[];
+  files: (Generated | Joined)[];
   share: Share;
 }
 

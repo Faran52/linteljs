@@ -7,7 +7,6 @@ import {
   COUNTER_MODULE_STORES,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
-  OUTSIDE_TESTS,
   PARTS,
   REACT_VITE_PLUGIN,
   ROUTER_MOCK,
@@ -50,13 +49,13 @@ import {
 import {
   ALWAYS,
   DECLARATIVE_ROUTERS,
+  FRAMEWORK_MODE_VITE_PLUGIN,
   REACT_ACCESSORS,
   REACT_I18N,
   ROOT_VARIANTS,
   ROUTER_ALIAS,
   ROUTERS,
   SHARED,
-  WELL_KNOWN_404,
 } from './constants';
 import {
   frameworkRouteFiles,
@@ -436,14 +435,7 @@ const frameworkMode = (): Partial<TargetRecord> => {
     gitignore: ['/.react-router/', '/build/'],
     html: false,
     htmlEntry: undefined,
-    // React Router's plugin expects its server's preamble and fails every suite, so the test run takes plain React.
-    vitePlugin: {
-      imports: [
-        "import { reactRouter } from '@react-router/dev/vite';",
-        "import react from '@vitejs/plugin-react';",
-      ],
-      calls: [WELL_KNOWN_404, `...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
-    },
+    vitePlugin: FRAMEWORK_MODE_VITE_PLUGIN,
     // `typegen` first: a route module's `Route.*` types resolve to what it writes.
     typecheck: 'react-router typegen && tsc --noEmit',
     prepare: 'react-router typegen',

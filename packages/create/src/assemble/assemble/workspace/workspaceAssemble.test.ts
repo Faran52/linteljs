@@ -105,6 +105,7 @@ describe('workspaceAssemble', () => {
     const expectedText = `${JSON.stringify(expectedManifest, null, 2)}\n`;
 
     expect(written).toEqual([
+      join('__mocks__', 'setupTests.tsx'),
       'CLAUDE.txt',
       'eslint.config.ts',
       'index.html',
@@ -117,8 +118,11 @@ describe('workspaceAssemble', () => {
       join('src', 'main.txt'),
       join('src', 'routes.ts'),
       join('src', 'setup.txt'),
+      'stylelint.config.js',
       'styles.txt',
       'tsconfig.json',
+      'vite.config.ts',
+      'vitest.config.ts',
     ]);
 
     expect(manifest).toBe(expectedText);
@@ -155,7 +159,9 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'src', 'i18n', 'config.ts'),
       join('apps', 'web', 'src', 'main.txt'),
       join('apps', 'web', 'src', 'routes.ts'),
+      join('apps', 'web', 'stylelint.config.js'),
       join('apps', 'web', 'tsconfig.json'),
+      join('apps', 'web', 'vite.config.ts'),
       'CLAUDE.txt',
       'linteljs.config.json',
       'package.json',

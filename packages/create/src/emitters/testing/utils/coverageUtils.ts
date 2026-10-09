@@ -22,22 +22,30 @@ const MEASURABLE = [
   'mjs',
 ];
 
-export const coverageInclude = (answers: Answers): string => {
-  const { sfcExtension } = targetFor(answers);
+export const measuredGlob = (sfcExtension?: string): string => {
   const extensions = sfcExtension === undefined ? MEASURABLE : [...MEASURABLE, sfcExtension];
 
   return `src/**/*.{${extensions.join(',')}}`;
 };
 
+export const coverageInclude = (answers: Answers): string => {
+  return measuredGlob(targetFor(answers).sfcExtension);
+};
+
+export const excludedWith = (own: string[]): string[] => {
+  const exclude = [...SHARED_COVERAGE_EXCLUDE, ...own];
+
+  return exclude;
+};
+
 // React Router's route table is configuration; TanStack Router builds its tree in `App.tsx`.
 export const coverageExclude = (answers: Answers): string[] => {
   const target = targetFor(answers);
-  const exclude = [
-    ...SHARED_COVERAGE_EXCLUDE,
+  const exclude = excludedWith([
     ...target.coverageExclude ?? [],
     ...answers.mocking === 'msw' && target.workerEntry !== undefined ? [target.workerEntry] : [],
     ...(answers.router === undefined || answers.router === 'tanstack-router' ? [] : ['src/routes/**']),
-  ];
+  ]);
 
   return exclude;
 };
