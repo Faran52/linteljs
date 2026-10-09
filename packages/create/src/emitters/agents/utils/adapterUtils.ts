@@ -99,7 +99,7 @@ export const projectFacts = (workspace: Workspace, { name, answers }: WorkspaceP
 
 # ${name}
 
-- A ${kindOf(answers)} on ${answers.target}, in \`${directory}\`.
+- Kind: ${kindOf(answers)} on ${answers.target}, in \`${directory}\`.
 - \`${run} check\` run here checks this project alone; run at the repository root, every project.
 - Its rule files, in \`plugins/linteljs/skills/linteljs/references/\` at the repository root:
 ${rules.join('\n')}

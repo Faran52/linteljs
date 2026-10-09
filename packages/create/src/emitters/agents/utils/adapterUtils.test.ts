@@ -118,7 +118,7 @@ describe('projectFacts', () => {
 
 # shared
 
-- A package on typescript, in \`packages/shared\`.
+- Kind: package on typescript, in \`packages/shared\`.
 - \`pnpm check\` run here checks this project alone; run at the repository root, every project.
 - Its rule files, in \`plugins/linteljs/skills/linteljs/references/\` at the repository root:
   - \`type-standards.md\`
