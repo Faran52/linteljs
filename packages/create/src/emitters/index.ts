@@ -19,10 +19,11 @@ export {
 export {
   GATE_SCRIPTS,
   HOOK_DEV_DEPENDENCIES,
+  SHARED_DEV_DEPENDENCIES,
   STYLE_GLOB,
   TEST_RUNNERS,
 } from './constants';
-export { rootAnswersOf } from './layout/workspace-root/workspaceRootEmitter';
+export { rootAnswersOf, workspaceRootOf } from './layout/workspace-root/workspaceRootEmitter';
 export { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 export {
   buildArtifacts,

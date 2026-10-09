@@ -1,6 +1,6 @@
 import { posix, relative } from 'node:path';
 
-import { partition } from 'es-toolkit';
+import { difference, partition } from 'es-toolkit';
 
 import { RUN_PREFIX } from '@config/constants';
 
@@ -22,8 +22,11 @@ import {
   installScriptOf,
   lintScriptsOf,
   mergeGitignore,
+  rootAnswersOf,
+  SHARED_DEV_DEPENDENCIES,
   STYLE_GLOB,
   versioned,
+  workspaceRootOf,
 } from '@emitters';
 import { FRAMEWORK_MODULES } from '@frameworks/registry';
 import { projectWriter } from '@io/write/project/projectWriter';
@@ -69,8 +72,8 @@ interface Unit {
   drawers: string[];
   share: Share;
   framed: Framed[];
-  // The hooks, the configs they run and the scripts behind them.
-  gate: Artifact[];
+  // The old emitters' files: the hooks, the configs and scripts they run, and a monorepo root's manifest.
+  tooling: Artifact[];
   answers: Answered;
 }
 
@@ -124,26 +127,22 @@ const agentDrawersOf = (answers: Answered): string[] => {
 
 const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
   const [first] = workspace.projects;
-  const rootShare: Share = {
-    package: {
-      name: workspace.name,
-      packageManager: `${workspace.host.packageManager}@${workspace.host.packageManagerVersion}`,
-    },
-  };
 
   if (first.answers.layout !== 'monorepo') {
     const frameworkDrawers = await frameworkDrawersOf(workspace, first.answers);
     const single: Unit = {
       directory: '.',
       drawers: [...frameworkDrawers, ...agentDrawersOf(first.answers)],
-      share: mergedShare(rootShare, {
+      share: {
         package: {
+          name: workspace.name,
+          packageManager: `${workspace.host.packageManager}@${workspace.host.packageManagerVersion}`,
           scripts: lintScriptsOf(false, STYLE_GLOB),
-          devDependencies: versioned(HOOK_DEV_DEPENDENCIES),
+          devDependencies: versioned(SHARED_DEV_DEPENDENCIES),
         },
-      }),
+      },
       framed: framedOf(first.name, first.answers, workspace.host),
-      gate: gateOf(workspace, false),
+      tooling: gateOf(workspace, false),
       answers: first.answers,
     };
 
@@ -160,6 +159,8 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
     .map(async ({ name, answers }) => {
       const group = answers.target === 'typescript' ? 'packages' : 'apps';
       const drawers = await frameworkDrawersOf(workspace, answers);
+      // The hooks run from the root manifest.
+      const devDependencies = difference(SHARED_DEV_DEPENDENCIES, HOOK_DEV_DEPENDENCIES);
       const unit: Unit = {
         directory: `${group}/${name}`,
         drawers,
@@ -167,21 +168,27 @@ const unitsOf = async (workspace: Workspace): Promise<Unit[]> => {
           package: {
             name,
             scripts: lintScriptsOf(true, STYLE_GLOB),
+            devDependencies: versioned(devDependencies),
           },
         },
         framed: framedOf(name, answers, workspace.host),
-        gate: projectGate,
+        tooling: projectGate,
         answers,
       };
 
       return unit;
     });
+  const root = {
+    ...rootAnswersOf(workspace.host),
+    packageManagerVersion: workspace.host.packageManagerVersion,
+  };
   const rootUnit: Unit = {
     directory: '.',
     drawers: ['common/monorepo', ...agentDrawersOf(first.answers)],
-    share: rootShare,
+    share: {},
     framed: [],
-    gate: rootGate,
+    // The projects carry no old answers yet, so the root reads its fields off its own.
+    tooling: [...rootGate, ...workspaceRootOf(workspace.name, root, [root])],
     answers: first.answers,
   };
   const units = await Promise.all(projectUnits);
@@ -212,19 +219,19 @@ const generatedOf = async (workspace: Workspace, share: Share, unit: Unit): Prom
     ...gates.length === 0 ? {} : { check: checkScriptOf(run, gates) },
     ...installScriptOf(packageManager, install),
   };
-  const manifestShare = mergedShare(packageShare, { scripts });
-  const manifest = packageJsonWriter(manifestShare);
-  const records = unit.framed
+  const generated = unit.framed
     .map(({ record }) => {
       return record(scripts);
     });
-  const generated: Generated[] = [
-    {
+
+  if (Object.hasOwn(share, 'package')) {
+    const manifest = packageJsonWriter(mergedShare(packageShare, { scripts }));
+
+    generated.push({
       path: 'package.json',
       text: manifest,
-    },
-    ...records,
-  ];
+    });
+  }
 
   if (Object.hasOwn(share, 'gitignore')) {
     const entries = gitignoreEntries(packageManager, stringsOf(share, 'gitignore'));
@@ -335,7 +342,7 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
       return artifact;
     });
 
-  const gate = unit.gate
+  const tooling = unit.tooling
     .map((artifact) => {
       const placed: Written = {
         ...artifact,
@@ -348,7 +355,7 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
   const artifacts = [
     ...copied,
     ...emitted,
-    ...gate,
+    ...tooling,
   ];
 
   return artifacts;

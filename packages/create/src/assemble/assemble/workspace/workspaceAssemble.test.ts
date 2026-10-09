@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { answersFor } from '@mocks/answersFor';
+import { answersFor, hostedAnswersFor } from '@mocks/answersFor';
 import { DRAWERS_ROOT } from '@mocks/drawersRoot';
 import { pick } from 'es-toolkit';
 import {
@@ -28,7 +28,9 @@ import { commitGateEmitter } from '@emitters/always/commit-gate/commitGateEmitte
 import { gitignoreEmitter } from '@emitters/always/gitignore/gitignoreEmitter';
 import { huskyEmitter } from '@emitters/always/husky/huskyEmitter';
 import { emitLinteljsRecord, RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
+import { patchPackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 import { buildScripts } from '@emitters/always/utils/scriptUtils';
+import { workspaceRootEmitter } from '@emitters/layout/workspace-root/workspaceRootEmitter';
 import { inProject } from '@emitters/utils/layoutUtils';
 import { projectWriter } from '@io/write/project/projectWriter';
 
@@ -40,7 +42,10 @@ import {
   workspaceAssemble,
 } from './workspaceAssemble';
 
-import type { Answers } from '@config/types';
+import type { Answers, PackageManager } from '@config/types';
+
+type DevPicked = Pick<Answers, 'packageManager' | 'layout' | 'testing'>
+  & Partial<Pick<Answers, 'router' | 'mocking' | 'styling'>>;
 
 const INSTALL_SCRIPTS = ['prepare', 'postinstall'];
 
@@ -89,6 +94,43 @@ const SCRIPT_PARITY: (Pick<Answers, 'packageManager' | 'testing'> & Partial<Pick
     router: 'tanstack-router',
     mocking: 'msw',
   },
+];
+
+const DEV_PARITY: DevPicked[] = [
+  {
+    packageManager: 'pnpm',
+    layout: 'single',
+    testing: 'vitest',
+    router: 'react-router',
+  },
+  {
+    packageManager: 'yarn',
+    layout: 'single',
+    testing: 'none',
+    router: 'tanstack-router',
+    styling: 'stylex',
+  },
+  {
+    packageManager: 'pnpm',
+    layout: 'monorepo',
+    testing: 'vitest',
+    router: 'react-router-framework',
+    mocking: 'msw',
+  },
+  {
+    packageManager: 'yarn',
+    layout: 'monorepo',
+    testing: 'vitest',
+    router: 'react-router',
+  },
+];
+
+const ROOT_PARITY: PackageManager[] = ['pnpm', 'yarn'];
+
+const ROOT_FILES = [
+  'package.json',
+  '.gitignore',
+  'lint-staged.config.js',
 ];
 
 const GATE_BLOCK = /export const GATE = \[[\s\S]*?\] as const;\n/;
@@ -202,14 +244,22 @@ describe('workspaceAssemble', () => {
         '@eslint-react/eslint-plugin': '^5.23.5',
         '@html-eslint/eslint-plugin': '^0.66.1',
         '@html-eslint/parser': '^0.66.1',
+        '@linteljs/eslint-config': '^2.0.0',
+        '@types/node': '^26.6.4',
         '@types/react': '^19.3.0',
         '@types/react-dom': '^19.3.0',
         '@vitejs/plugin-react': '6.1.1',
+        'eslint': '^10.12.0',
         'eslint-plugin-jsx-a11y-x': '^0.2.0',
         'eslint-plugin-react-hooks': '^7.1.1',
         'husky': '^9.1.7',
+        'jiti': '^2.7.0',
         'lint-staged': '^17.6.0',
         'oxc-transform-react': '^0.145.0',
+        'stylelint': '^17.16.0',
+        'stylelint-config-recess-order': '^7.8.0',
+        'stylelint-config-standard': '^40.0.0',
+        'stylelint-order': '^8.1.1',
         'typescript': '~6.0.3',
         'vite': '^8.3.2',
         'vitest': '^4.0.0',
@@ -277,14 +327,12 @@ describe('workspaceAssemble', () => {
     const written = await filesUnder(cwd);
     const manifest = await readFile(join(cwd, 'apps', 'web', 'package.json'), 'utf8');
     const parsed = parsePackageJson(manifest);
-    const root = await readFile(join(cwd, 'package.json'), 'utf8');
-    const rootParsed = parsePackageJson(root);
 
     expect(parsed.scripts).not.toHaveProperty('prepare');
     expect(parsed.scripts).toHaveProperty(['lint:types'], 'node ../../scripts/checkBannedPatterns.ts src');
-    expect(rootParsed).not.toHaveProperty(['scripts', 'check']);
 
     expect(written).toEqual([
+      '.gitignore',
       join('.husky', 'commit-msg'),
       join('.husky', 'pre-commit'),
       join('apps', 'web', '.gitignore'),
@@ -301,6 +349,7 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'vite.config.ts'),
       'CLAUDE.txt',
       'commitlint.config.js',
+      'lint-staged.config.js',
       'linteljs.config.json',
       'package.json',
       join('packages', 'shared', 'lint-staged.config.js'),
@@ -444,6 +493,84 @@ describe('workspaceAssemble', () => {
 
     expect(scripts).toEqual(buildScripts(answers));
     expect(gate).toBe(oldGate);
+  });
+
+  it.each(DEV_PARITY)('writes the old devDependencies from the real drawers for %o', async (picked) => {
+    const { packageManager, ...chosen } = picked;
+    const project: AssembledProject = {
+      name: 'web',
+      answers: {
+        target: 'react',
+        ...chosen,
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      root: TEMPLATES_ROOT,
+      host: {
+        ...workspace.host,
+        packageManager,
+      },
+    });
+
+    const directory = picked.layout === 'monorepo' ? join('apps', 'web') : '.';
+    const manifest = await readFile(join(cwd, directory, 'package.json'), 'utf8');
+    const { devDependencies } = parsePackageJson(manifest);
+    const old = patchPackageJson({}, answersFor(picked));
+
+    expect(devDependencies).toEqual(old.devDependencies);
+  });
+
+  it.each(ROOT_PARITY)('writes the old monorepo root files on %s', async (packageManager) => {
+    const project: AssembledProject = {
+      name: 'web',
+      answers: {
+        target: 'react',
+        layout: 'monorepo',
+        router: 'react-router',
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      root: TEMPLATES_ROOT,
+      host: {
+        ...workspace.host,
+        packageManager,
+      },
+    });
+
+    const answers = hostedAnswersFor({
+      layout: 'monorepo',
+      packageManager,
+      packageManagerVersion: workspace.host.packageManagerVersion,
+    });
+    const old = workspaceRootEmitter({
+      name: 'demo',
+      projects: [{
+        name: 'web',
+        answers,
+      }],
+    });
+
+    await projectWriter(previous, old);
+
+    const textsOf = async (root: string) => {
+      const texts = ROOT_FILES
+        .map(async (path) => {
+          return await readFile(join(root, path), 'utf8');
+        });
+
+      return await Promise.all(texts);
+    };
+
+    const written = await textsOf(cwd);
+    const expected = await textsOf(previous);
+
+    expect(written).toEqual(expected);
   });
 
   it('ignores the framework-mode output in eslint.config.ts', async () => {
