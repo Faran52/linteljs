@@ -523,6 +523,26 @@ describe('workspaceAssemble', () => {
     expect(devDependencies).toEqual(old.devDependencies);
   });
 
+  it('picks the default drawer of an unanswered question, as a recorded config leaves router none out', async () => {
+    const project: AssembledProject = {
+      name: 'web',
+      answers: {
+        target: 'react',
+        layout: 'monorepo',
+      },
+    };
+    const workspace = await workspaceOf([project]);
+
+    await workspaceAssemble({
+      ...workspace,
+      root: TEMPLATES_ROOT,
+    });
+
+    const written = await filesUnder(cwd);
+
+    expect(written).toContain(join('apps', 'web', 'src', 'router', 'router.tsx'));
+  });
+
   it.each(ROOT_PARITY)('writes the old monorepo root files on %s', async (packageManager) => {
     const project: AssembledProject = {
       name: 'web',

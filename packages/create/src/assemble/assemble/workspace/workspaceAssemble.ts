@@ -4,6 +4,7 @@ import { difference, partition } from 'es-toolkit';
 
 import { RUN_PREFIX } from '@config/constants';
 
+import { answersCheck } from '@choices/check/answers/answersCheck';
 import { drawersPick } from '@choices/pick/drawers/drawersPick';
 import { catalogReader } from '@choices/read/catalog/catalogReader';
 import { type Answered, type Question } from '@choices/read/manifest/manifestReader';
@@ -92,8 +93,13 @@ const frameworkDrawersOf = async (workspace: Workspace, answers: Answered): Prom
   const perTarget = answeredValues(answers, 'target')
     .map(async (target) => {
       const catalog = await catalogReader(workspace.questions, workspace.root, target);
+      // An unanswered question still picks its default's drawer: a recorded config leaves `none` out.
+      const filled = {
+        ...answersCheck(workspace.questions, catalog, {}),
+        ...answers,
+      };
 
-      return drawersPick(catalog, answers)
+      return drawersPick(catalog, filled)
         .map((drawer) => {
           return `frameworks/${target}/${drawer}`;
         });
