@@ -43,7 +43,8 @@ what they hold, never for a mechanism: `model` and `render` rather than `core` a
   `index.ts` holding an implementation all fail this: a plural noun or a bare verb promises data or an
   action the file does not contain.
 - **`index.ts` is a barrel and nothing else.** It re-exports. The moment it holds a function, the
-  package has two names for the same thing and neither is searchable.
+  package has two names for the same thing and neither is searchable. A ring other rings import has one;
+  a folder local to one subject has none, and a `utils/` folder never does: their readers import the file.
 - **A helper used by one subject lives in that subject's own `utils/`.** It moves up to a shared
   `utils/` the moment a second subject needs it, not before and not after.
 - **A constant used by one module lives in that module.** Move it to a sibling `constants.ts` once

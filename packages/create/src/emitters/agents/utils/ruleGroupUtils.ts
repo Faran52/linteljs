@@ -36,6 +36,7 @@ type Condition
     | 'background'
     | 'devtools-panel'
     | 'tailwind'
+    | 'es-toolkit'
     | Mocking
     | Data
     | Router;
@@ -68,6 +69,9 @@ const CONDITIONS: Record<Condition, (answers: Answers) => boolean> = {
   },
   'tailwind': (answers) => {
     return answers.styling === 'tailwind';
+  },
+  'es-toolkit': (answers) => {
+    return hasLibrary(answers, 'es-toolkit');
   },
   'msw': (answers) => {
     return answers.mocking === 'msw';

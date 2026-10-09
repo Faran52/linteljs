@@ -35,6 +35,9 @@ Create it then, not before.
 - **`index.ts` is a re-export barrel only**, nothing but `export ... from` lines. Code that runs or defines
   anything is an entry named for its subject (`i18n/i18n.ts`, `background/background.ts`, `main.tsx`). A route
   file the router names `index` is the router's.
+- **A barrel is for what several readers reuse**: a shared folder of subjects (`components/ui/`, `lib/hooks/`)
+  has one and its readers import through it. A folder local to one subject (`contact/hooks/`, `card/partials/`)
+  has none, and a `utils/` folder never does, local or shared: their readers import the file.
 - `i18n/` holds its entry `i18n.ts`, the `config.ts` it and the language select read (languages, messages, tag lookup) and `locales/<tag>/`, each named by its BCP 47 tag (`zh-TW`) rather than kebab-case. <!-- when languages -->
 
 ## The folders a new file most often lands in

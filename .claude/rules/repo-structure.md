@@ -31,6 +31,9 @@ before that package publishes. The types it redeclares are held equal by `packag
   `constants.ts` for a table it alone reads, and a `utils/` for helpers only it reads. No loose files at a
   ring or group root beyond the barrel, `registry.ts` and `constants.ts`. Caught by each package's
   `src/meta.test.ts`.
+- **A barrel re-exports what other rings reuse, and only its own ring's code.** A folder local to one subject
+  has none, and a `utils/` folder never does, local or shared: their readers import the file. Generated
+  projects get the same rule from `repo-structure.standard.md`.
 - **One code file, one test file beside it.** A data-only `constants.ts` and a pure re-export barrel have none.
   Caught by `pnpm test:isolated`, which also fails a `constants.ts` with a function or branch.
 - **`constants.ts` holds data only**, never a function. A table of functions goes in a `utils/` module.

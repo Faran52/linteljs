@@ -51,6 +51,7 @@ describe('forAnswers', () => {
     ['devtools-panel', { surfaces: ['devtools-panel'] }],
     ['tailwind', { styling: 'tailwind' }],
     ['msw', { mocking: 'msw' }],
+    ['es-toolkit', { libraries: ['es-toolkit'] }],
     ['tanstack-query', { data: 'tanstack-query' }],
     ['rtk-query', { data: 'rtk-query' }],
     ['tanstack-router', { router: 'tanstack-router' }],
@@ -67,6 +68,7 @@ describe('forAnswers', () => {
 
     const without = alone({
       ...opposite,
+      libraries: [],
       surfaces: [],
     });
 

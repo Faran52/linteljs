@@ -18,6 +18,13 @@ copy. Below is only where this workspace differs.
   be a predicate, write it as one (`isFixReport` in `fixPass.ts`, handed to `parsedAs` in
   `packages/create/src/utils/objectUtils.ts`).
 - **Casts.** Three survive in `eslint-plugin`, listed in that package's `CLAUDE.md`. Add none.
+- **Node 26 built-ins.** Every package runs on Node 26 and the shipped code is transpiled, so use its methods
+  (`RegExp.escape`, `Error.isError`, `Iterator` helpers, `Set` methods, `Object.groupBy`) over a loop or helper
+  that redoes them.
+- **`es-toolkit` wherever it simplifies**: every package depends on it. A Node 26 built-in comes first; its strict
+  entry over a hand-rolled helper; `es-toolkit/compat` stays banned (below).
+- **Fix what you touch.** A change fixes the papered types, folder-shape breaks and dead code it finds in the
+  files it touches; no repo-wide sweep unasked.
 - **`es-toolkit/compat` is banned** everywhere, enforced by the `base` layer. Use the strict entry or the
   standard library.
 

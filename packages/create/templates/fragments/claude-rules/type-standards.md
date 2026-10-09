@@ -47,6 +47,15 @@ state rule.
 - `noUncheckedIndexedAccess` is on, so index access is `T | undefined`. Handle it; do not cast it
   away. Two parallel arrays walked by one index are a smell the compiler is surfacing, so fold them
   into one record.
+- **No papering over a type in an expression.** `as const` sits only on a named literal table, never
+  inline (`([a, b] as const).map(...)`). A default (`??`, `||`, a destructuring default) stands for a
+  case that really happens, never for one that only quiets an optional type: no `(list ?? []).map(...)`,
+  `(options ?? {}).key` or `?? ''` on a value that is always there. Make the value non-optional where
+  it is produced, or branch and return where it can truly be missing.
+- **Use the runtime's current built-ins** over a hand-rolled loop or a dependency: `Object.groupBy`,
+  `toSorted`, `toReversed`, `with`, `findLast`, `Set` `union` and `difference`, `Promise.withResolvers`,
+  `Array.fromAsync`, `structuredClone`, iterator helpers.
+- **`es-toolkit` before a hand-rolled helper** where no built-in does it: its strict entry, never `es-toolkit/compat`. <!-- when es-toolkit -->
 - No alias or back-compat re-exports of a type or value. Import the canonical definition from its
   home.
 
