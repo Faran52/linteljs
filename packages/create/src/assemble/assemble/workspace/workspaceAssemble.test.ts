@@ -118,6 +118,7 @@ describe('workspaceAssemble', () => {
       join('src', 'routes.ts'),
       join('src', 'setup.txt'),
       'styles.txt',
+      'tsconfig.json',
     ]);
 
     expect(manifest).toBe(expectedText);
@@ -154,6 +155,7 @@ describe('workspaceAssemble', () => {
       join('apps', 'web', 'src', 'i18n', 'config.ts'),
       join('apps', 'web', 'src', 'main.txt'),
       join('apps', 'web', 'src', 'routes.ts'),
+      join('apps', 'web', 'tsconfig.json'),
       'CLAUDE.txt',
       'linteljs.config.json',
       'package.json',

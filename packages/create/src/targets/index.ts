@@ -14,6 +14,7 @@ export type {
   StarterFile,
   StarterTest,
   TargetRecord,
+  TsconfigDelta,
   TsconfigPlugin,
   WorkerStart,
 } from './types';

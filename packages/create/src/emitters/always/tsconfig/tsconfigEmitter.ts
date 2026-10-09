@@ -1,8 +1,16 @@
 import { mapValues } from 'es-toolkit';
 
-import { type Answers, type Artifact } from '@config/types';
+import {
+  type AliasMap,
+  type Answers,
+  type Artifact,
+} from '@config/types';
 
-import { targetFor, type TsconfigPlugin } from '@targets';
+import {
+  targetFor,
+  type TsconfigDelta,
+  type TsconfigPlugin,
+} from '@targets';
 
 import { TEST_RUNNERS } from '../../constants';
 import { buildAliases } from '../../utils/aliasUtils';
@@ -48,6 +56,14 @@ export interface CompilerOptions {
   paths?: Record<string, string[]>;
 }
 
+export interface TsconfigParts {
+  delta: TsconfigDelta;
+  browser: boolean;
+  types: string[];
+  aliases: AliasMap;
+  include: string[];
+}
+
 export interface TsconfigFile {
   extends?: string;
   compilerOptions: CompilerOptions;
@@ -85,9 +101,7 @@ const typesFor = (answers: Answers): string[] => {
   return types;
 };
 
-const pathsFrom = (answers: Answers): Record<string, string[]> => {
-  const aliases = buildAliases(answers);
-
+const pathsFrom = (aliases: AliasMap): Record<string, string[]> => {
   return mapValues(aliases, (directory) => {
     const locations: string[] = [directory];
 
@@ -95,22 +109,21 @@ const pathsFrom = (answers: Answers): Record<string, string[]> => {
   });
 };
 
-const compilerOptionsFor = (answers: Answers): CompilerOptions => {
-  const target = targetFor(answers);
-  const delta = target.tsconfig;
+const compilerOptionsFor = (parts: TsconfigParts): CompilerOptions => {
+  const { delta } = parts;
 
   const compilerOptions: CompilerOptions = {
     rootDir: '.',
     ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
 
     target: 'esnext',
-    lib: target.packageProject === true
-      ? ['esnext']
-      : [
+    lib: parts.browser
+      ? [
           'dom',
           'dom.iterable',
           'esnext',
-        ],
+        ]
+      : ['esnext'],
     // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
     useDefineForClassFields: delta.useDefineForClassFields ?? true,
     ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
@@ -147,27 +160,25 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     esModuleInterop: true,
     forceConsistentCasingInFileNames: true,
 
-    types: typesFor(answers),
+    types: parts.types,
     ...(delta.plugins === undefined ? {} : { plugins: delta.plugins }),
 
-    ...(delta.dropsPaths === true ? {} : { paths: pathsFrom(answers) }),
+    ...(delta.dropsPaths === true ? {} : { paths: pathsFrom(parts.aliases) }),
   };
 
   return compilerOptions;
 };
 
-export const buildTsconfig = (answers: Answers): TsconfigFile => {
-  const record = targetFor(answers);
-  const delta = record.tsconfig;
-  const styled = answers.styling === 'tailwind' ? record.tailwind?.tsconfigInclude ?? [] : [];
+export const tsconfigOf = (parts: TsconfigParts): TsconfigFile => {
+  const { delta } = parts;
 
   const tsconfig: TsconfigFile = {
     ...(delta.extends === undefined ? {} : { extends: delta.extends }),
-    compilerOptions: compilerOptionsFor(answers),
+    compilerOptions: compilerOptionsFor(parts),
     include: [
       ...BASE_INCLUDE,
-      ...(delta.include ?? []),
-      ...styled,
+      ...delta.include ?? [],
+      ...parts.include,
     ],
     exclude: BASE_EXCLUDE,
   };
@@ -175,10 +186,37 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
   return tsconfig;
 };
 
-export const emitTsconfig = (answers: Answers): string => {
-  const tsconfig = buildTsconfig(answers);
+export const tsconfigSource = (parts: TsconfigParts): string => {
+  const tsconfig = tsconfigOf(parts);
 
   return `${JSON.stringify(tsconfig, null, 2)}\n`;
+};
+
+const partsOf = (answers: Answers): TsconfigParts => {
+  const record = targetFor(answers);
+  const styled = answers.styling === 'tailwind' ? record.tailwind?.tsconfigInclude ?? [] : [];
+
+  const parts: TsconfigParts = {
+    delta: record.tsconfig,
+    browser: record.packageProject !== true,
+    types: typesFor(answers),
+    aliases: buildAliases(answers),
+    include: styled,
+  };
+
+  return parts;
+};
+
+export const buildTsconfig = (answers: Answers): TsconfigFile => {
+  const parts = partsOf(answers);
+
+  return tsconfigOf(parts);
+};
+
+export const emitTsconfig = (answers: Answers): string => {
+  const parts = partsOf(answers);
+
+  return tsconfigSource(parts);
 };
 
 export const tsconfigEmitter = (answers: Answers): Artifact[] => {

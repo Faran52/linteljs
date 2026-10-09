@@ -4,6 +4,7 @@ import {
   it,
 } from 'vitest';
 
+import { tsconfigSource } from '@emitters/always/tsconfig/tsconfigEmitter';
 import { emitI18nConfig } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
 import { FAVICON } from '@emitters/target/html-entry/constants';
 import { emitHtmlEntry } from '@emitters/target/html-entry/htmlEntryEmitter';
@@ -18,6 +19,24 @@ const NAMING = {
   'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
 };
 
+const ALIASES = {
+  '@router/*': './src/router/*',
+  '@pages/*': './src/pages/*',
+  '@components/*': './src/components/*',
+  '@ui/*': './src/components/ui/*',
+  '@ui': './src/components/ui',
+  '@features/*': './src/components/features/*',
+  '@lib/*': './src/lib/*',
+  '@store/*': './src/lib/store/*',
+  '@hooks/*': './src/lib/hooks/*',
+  '@utils/*': './src/lib/utils/*',
+  '@services/*': './src/lib/services/*',
+  '@styles/*': './src/styles/*',
+  '@config/*': './src/config/*',
+  '@i18n/*': './src/i18n/*',
+  '@mocks/*': './__mocks__/*',
+};
+
 const FOLDER_NAMING = { 'src/**/': String.raw`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\[*\]|\(*\)|{*})` };
 
 describe('reactFramework', () => {
@@ -25,6 +44,13 @@ describe('reactFramework', () => {
     const framed = reactFramework('@acme/demo', { target: 'react' });
     const page = emitHtmlEntry('demo', 'src/main.tsx', FAVICON);
     const i18nConfig = emitI18nConfig([]);
+    const tsconfig = tsconfigSource({
+      delta: { jsx: 'react-jsx' },
+      browser: true,
+      types: ['node', 'vite/client'],
+      aliases: ALIASES,
+      include: [],
+    });
 
     expect(framed.files).toEqual([
       {
@@ -34,6 +60,10 @@ describe('reactFramework', () => {
       {
         path: 'src/i18n/config.ts',
         text: i18nConfig,
+      },
+      {
+        path: 'tsconfig.json',
+        text: tsconfig,
       },
     ]);
 
@@ -63,10 +93,16 @@ describe('reactFramework', () => {
         framework: 'react',
         typescript: true,
         ignores: ['dist/**', 'coverage/**'],
+        aliases: ALIASES,
         naming: NAMING,
         folderNaming: FOLDER_NAMING,
         html: true,
       },
+      gitignore: [
+        'dist',
+        'dist-ssr',
+        '*.local',
+      ],
     });
   });
 
@@ -77,12 +113,29 @@ describe('reactFramework', () => {
       languages: ['en'],
     });
     const i18nConfig = emitI18nConfig(['en']);
+    const tsconfig = tsconfigSource({
+      delta: {
+        jsx: 'react-jsx',
+        include: ['.react-router/types/**/*'],
+        rootDirs: ['.', './.react-router/types'],
+      },
+      browser: true,
+      types: ['node', 'vite/client'],
+      aliases: ALIASES,
+      include: [],
+    });
 
     expect(framed).toEqual({
-      files: [{
-        path: 'src/i18n/config.ts',
-        text: i18nConfig,
-      }],
+      files: [
+        {
+          path: 'src/i18n/config.ts',
+          text: i18nConfig,
+        },
+        {
+          path: 'tsconfig.json',
+          text: tsconfig,
+        },
+      ],
       share: {
         package: {
           scripts: { typecheck: 'react-router typegen && tsc --noEmit' },
@@ -101,9 +154,11 @@ describe('reactFramework', () => {
           framework: 'react',
           typescript: true,
           ignores: ['dist/**', 'coverage/**'],
+          aliases: ALIASES,
           naming: NAMING,
           folderNaming: FOLDER_NAMING,
         },
+        gitignore: ['/.react-router/', '/build/'],
       },
     });
   });
@@ -120,5 +175,57 @@ describe('reactFramework', () => {
     const expected = emitI18nConfig(['ar', 'en']);
 
     expect(i18nConfig?.text).toBe(expected);
+  });
+
+  it.each([
+    ['vitest', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+    ]],
+    ['none', ['node', 'vite/client']],
+  ])('writes a tsconfig with every drawer alias, typed for testing %s', (testing, types) => {
+    const framed = reactFramework('demo', {
+      target: 'react',
+      testing,
+    });
+    const tsconfig = framed.files
+      .find((file) => {
+        return file.path === 'tsconfig.json';
+      });
+    const expected = tsconfigSource({
+      delta: { jsx: 'react-jsx' },
+      browser: true,
+      types,
+      aliases: ALIASES,
+      include: [],
+    });
+
+    expect(tsconfig?.text).toBe(expected);
+  });
+
+  it.each([
+    ['data', 'tanstack-query'],
+    ['data', 'rtk-query'],
+    ['store', 'redux-toolkit'],
+  ])('aliases @apis when %s is %s, which writes src/lib/apis', (key, value) => {
+    const framed = reactFramework('demo', {
+      target: 'react',
+      [key]: value,
+    });
+    const { eslint } = framed.share;
+
+    expect(eslint).toHaveProperty(['aliases', '@apis/*'], './src/lib/apis/*');
+  });
+
+  it('aliases no @apis when no drawer writes src/lib/apis', () => {
+    const framed = reactFramework('demo', {
+      target: 'react',
+      data: 'none',
+      store: 'zustand',
+    });
+    const { eslint } = framed.share;
+
+    expect(eslint).not.toHaveProperty(['aliases', '@apis/*']);
   });
 });
