@@ -44,7 +44,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "verdaccio": "^6.10.4",
+    "verdaccio": "^6.10.5",
     "vitest": "catalog:"
   }
 }

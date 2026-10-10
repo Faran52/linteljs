@@ -73,14 +73,14 @@
     "prepare": "pnpm run build"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.7.2",
+    "@inquirer/prompts": "^8.7.3",
     "es-toolkit": "catalog:"
   },
   "devDependencies": {
     "@linteljs/eslint-config": "workspace:*",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
-    "playwright-core": "^1.63.0",
+    "playwright-core": "^1.64.0",
     "tsx": "catalog:",
     "typescript": "catalog:"
   }

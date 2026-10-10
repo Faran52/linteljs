@@ -241,7 +241,7 @@ describe('workspaceAssemble', () => {
       devDependencies: {
         '@commitlint/cli': '^21.2.3',
         '@commitlint/config-conventional': '^21.2.3',
-        '@eslint-react/eslint-plugin': '^5.23.5',
+        '@eslint-react/eslint-plugin': '^5.24.8',
         '@html-eslint/eslint-plugin': '^0.66.1',
         '@html-eslint/parser': '^0.66.1',
         '@linteljs/eslint-config': '^2.0.0',

@@ -375,7 +375,11 @@ describe('reactCore', () => {
     ['@eslint-react/no-misused-capture-owner-stack', [2]],
     ['@eslint-react/no-unstable-context-value', [2]],
     ['@eslint-react/no-unstable-default-props', [2, { safeDefaultProps: [] }]],
-    ['@eslint-react/use-state', [2]],
+    ['@eslint-react/use-state', [2, {
+      enforceAssignment: true,
+      enforceLazyInitialization: true,
+      enforceSetterName: true,
+    }]],
     ['react-hooks/void-use-memo', [2]],
   ];
 
