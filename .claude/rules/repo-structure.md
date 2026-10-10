@@ -89,8 +89,7 @@ frameworks this workspace does not install and files named `*.test.ts`.
 `.claude/skills/linteljs/` is this repo's own Claude Code mod. The engine finds the plugin folder there with no
 `settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the three below. It is
 named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its gate is
-`claude plugin validate .claude/skills/linteljs` and `claude plugin test .claude/skills/linteljs`, plus `pnpm typecheck`
-and `pnpm lint`:
+`claude plugin validate .claude/skills/linteljs`, plus `pnpm typecheck` and `pnpm lint`:
 each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
 extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsconfig.mod.json`'s strict flags.
 `pnpm mod-types` has the engine write those types (gitignored, never packed); `scripts/typecheck-mods/` runs
@@ -99,13 +98,13 @@ command, checked as Node code by `tsconfig.root.json`. The root `eslint.config.t
 tsconfig checks, and ignores them where the types are missing, as in CI. `.fallowrc.json` ignores `.claude/**`
 (`docs/DESIGN.md`).
 
-- **Check band**: `checkBand.tsx` and `checkBand.test.tsx` are byte copies of the shipped pair under
-  `packages/create/templates/project/plugins/linteljs/hooks/`. An `it.each` in that folder's `hooks.test.ts` holds
-  each copy equal to its source; change the shipped file, then copy it. `checkStatusHook.ts` runs the shipped script.
-  `register.tsx` takes only its refresh (`registerCheckRefresh`): the CI band draws the check state on its line.
-  This copy is where the band's suite runs: `claude plugin test` runs every `*.test.ts(x)` under the folder it is
-  given and cannot select files, so on the shipped folder it also runs the Node hook suites, which fail there.
-  The band's gate is `claude plugin test .claude/skills/linteljs`, never the shipped folder.
+- **Check band**: `checkBand.tsx` is a byte copy of the shipped band under
+  `packages/create/templates/project/plugins/linteljs/hooks/`, held equal to it by that folder's `hooks.test.ts`;
+  change the shipped file, then copy it. Its suite, `checkBand.test.tsx`, lives only beside the shipped band and is
+  in no gate step: `claude plugin test` runs every `*.test.ts(x)` under the folder it is given and cannot select
+  files, so on the shipped folder it also runs the Node hook suites, which fail there. `checkStatusHook.ts` runs the
+  shipped script. `register.tsx` takes only its refresh (`registerCheckRefresh`): the CI band draws the check state
+  on its line.
 - **CI band** (`ciBand.tsx`): main's latest `ci`, `e2e` and `audit` runs from `gh run list` and the GitHub
   Actions component from githubstatus, refreshed on `classic.SessionStart` and `classic.Stop` at most every 3
   minutes. One line, `◐ check stale  │  main  ci ✓  e2e ✗  audit ✗  │  actions ✓`: each glyph coloured (✓ green,

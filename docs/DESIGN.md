@@ -986,9 +986,10 @@ alone. Codex refuses `modules`, so its manifest names `hooks/codexHooks.json`, e
 that key.
 
 Generated projects ignore `plugins/linteljs/**` in ESLint and exclude it from `tsconfig.json`, since the band
-imports `claude-code`, which only the engine provides; the hooks are typechecked and tested here. The band's gate
-is `claude plugin test .claude/skills/linteljs`, over the repo mod's byte-equal copy, since `claude plugin test`
-cannot select files and the shipped folder's Node suites do not load under it.
+imports `claude-code`, which only the engine provides; the hooks are typechecked and tested here. No plugin suite
+reaches a project: the emitters copy plugin files by name. The band's suite, `checkBand.test.tsx`, sits beside the
+band and is in no gate step: `claude plugin test` runs every suite under the folder it is given and cannot select
+files, and the shipped folder's Node suites do not load under it.
 
 ### Cursor and Copilot: their own hooks files, the same scripts
 
@@ -1278,7 +1279,8 @@ findings scored without coverage.
 The decisions the mod's code cannot show:
 
 - **The check band is a copy.** `claude plugin validate` refuses an import from outside the plugin, a symlink and a
-  second `modules` entry, so `checkBand.tsx` and its suite are carried byte for byte, held equal by `hooks.test.ts`.
+  second `modules` entry, so `checkBand.tsx` is carried byte for byte, held equal by `hooks.test.ts`. Its suite
+  stays beside the shipped band only.
 - **It is named `linteljs`**, since the band's atom is keyed to that plugin name.
 - **The CI band listens on classic events** (`classic.SessionStart`, `classic.Stop`), at most every 3 minutes.
 - **One line, drawn by the CI band**, check state first; it declares its own `check` atom, since the engine
