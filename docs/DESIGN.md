@@ -1078,8 +1078,7 @@ runtimes, which this workspace does not install, and outside a project the type-
 
 So `pnpm lint:starters` lints each starter where it will run: in a generated, installed project, under its own
 `eslint . --max-warnings 0`, with the packages packed from this checkout. `STARTER_CASES` names the cases that
-between them write every distinct starter text, and `starterCover.test.ts` fails when a text is written by no case;
-what emitters write is left to the end-to-end matrix. Each case also runs `test:coverage` (a Solid island once
+between them write every distinct starter text (the harness is repo tooling, so no suite holds that); what emitters write is left to the end-to-end matrix. Each case also runs `test:coverage` (a Solid island once
 passed `test` at 95% branches), and the StyleX cases run `build`, since StyleX resolves theme imports only when it
 compiles.
 
@@ -1175,8 +1174,7 @@ dependency set would save about 30%, not worth a tree-cloning mechanism.
 Every defect the suite has found was a two-way interaction (Vue host with TanStack Query, Angular with
 `testing: none`, and so on). The greedy cover picks only from the legal enumeration, so the pair universe is the
 reachable one, and it is deterministic, so a failed label names the same case under `-t`. Three-way interactions
-are given up; `E2E_FULL=1` runs the cross product. `matrix.test.ts` pins that no reachable pair is lost, against a
-pair definition of its own, and that each found defect's combination still appears.
+are given up; `E2E_FULL=1` runs the cross product.
 
 The manager is not an axis: the widest case holds every dependency a target can emit, so one smoke per manager and
 target installs them all. A manager resolving differently but still installing is the accepted risk under

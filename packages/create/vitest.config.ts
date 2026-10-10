@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitest/config';
 
-// A vitest project does not inherit the root's `test.exclude`; without this the e2e files run.
 export default defineConfig({
   // Not each file's nearest: a mod's tsconfig extends engine-written types that CI lacks.
   tsconfig: 'tsconfig.json',
@@ -15,20 +14,8 @@ export default defineConfig({
     testTimeout: 30000,
     include: [
       'src/**/*.test.ts',
-      'e2e/**/*.test.ts',
       'templates/project/scripts/**/*.test.ts',
       'templates/project/plugins/**/*.test.ts',
     ],
-    exclude: ['**/*.e2e.test.ts'],
-    // What the e2e `globalSetup` provides, so the harness's own suites can spawn without a registry.
-    provide: {
-      registry: {
-        url: 'http://127.0.0.1:1',
-        version: '0.0.0',
-        cliBin: 'cli.mjs',
-        cacheDir: 'cache',
-        runDir: 'run',
-      },
-    },
   },
 });

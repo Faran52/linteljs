@@ -16,12 +16,11 @@ why of everything below.
   `test:isolated` or Stryker. `matrix/matrix.ts` enumerates the cases (`targetCases`), `registry/registry.ts` is the
   `globalSetup`, `runner/runner.ts` runs one case, `targets/targets.e2e.test.ts` is the one file every target's
   cases run from. The `.e2e.` infix keeps it out of the default run. `starter-cover/` names the cases
-  `pnpm lint:starters` installs (`STARTER_CASES`) and holds that they write every starter text; it runs in the
-  default suite, and the root script lints those cases outside this harness.
+  `pnpm lint:starters` installs (`STARTER_CASES`), which the root script lints outside this harness. The harness
+  is repo tooling and carries no suites of its own.
 - **Every pair, not every combination, under pnpm**: per target, a greedy cover keeps enough pnpm combinations
   that every pair of answer values appears once, each library its own on/off axis, `agents`, `plugins` and
-  `surfaces` at their full value, `typeSafety` strict. `matrix.test.ts` holds that no reachable pair is lost and
-  that each past defect's combination survives.
+  `surfaces` at their full value, `typeSafety` strict.
 - **One smoke per other manager**: each target's widest case runs once on npm, Yarn 4 and bun, so every
   manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case, and
   its widest case as a monorepo on every manager, which also commits through the hooks, and on pnpm once more

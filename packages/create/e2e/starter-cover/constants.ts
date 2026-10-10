@@ -1,5 +1,3 @@
-import type { ProjectShape } from '@config/types';
-
 // What `pnpm lint:starters` installs and lints: between them, every text a starter template can be written as.
 export const STARTER_CASES: readonly string[] = [
   'react pnpm vitest tanstack-form react-router-framework zustand stylex'
@@ -118,16 +116,6 @@ export const STARTER_MIXES: readonly (readonly [string, readonly (readonly [stri
     ['utils', 'typescript pnpm vitest zod+es-toolkit+ts-pattern+t3-env'],
   ]],
 ];
-
-export const LINTED_FILE = /\.(?:[cm]?[jt]sx?|astro|vue|svelte)$/u;
-
-export const STARTER_ROOT = 'starter-source';
-
-// A new project's shape, which is where the joined test setup lands.
-export const NEW_PROJECT: ProjectShape = {
-  setupTests: [],
-  styleEntries: [],
-};
 
 // Lines of each stream a failed step prints: enough for an ESLint report, not a whole install log.
 export const OUTPUT_TAIL_LINES = 40;

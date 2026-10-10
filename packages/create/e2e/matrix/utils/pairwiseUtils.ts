@@ -2,7 +2,7 @@ import { LIBRARIES } from '../constants';
 
 import type { Answers } from '@config/types';
 
-export interface PairwiseCase {
+interface PairwiseCase {
   answers: Answers;
 }
 
@@ -30,19 +30,6 @@ const axesOf = (answers: Answers): string[] => {
   ];
 
   return axes;
-};
-
-export const pairsOf = (answers: Answers): string[] => {
-  const axes = axesOf(answers);
-
-  return axes
-    .flatMap((left, index) => {
-      return axes
-        .slice(index + 1)
-        .map((right) => {
-          return `${left}|${right}`;
-        });
-    });
 };
 
 export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {

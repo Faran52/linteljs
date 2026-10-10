@@ -33,7 +33,7 @@ import {
 import { writtenOf } from '@e2e/starter-cover/starterCover';
 import { templateOf } from '@e2e/starter-cover/utils/copiedUtils';
 import { failureOf } from '@e2e/starter-cover/utils/failureUtils';
-import { starterSourceEmitter } from '@emitters';
+import { starterSourceEmitter } from '@emitters/target/starter-source/starterSourceEmitter';
 import { pipelineRun } from '@pipeline';
 
 import { packTarball, run } from '../../utils/processUtils.ts';

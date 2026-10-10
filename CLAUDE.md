@@ -26,8 +26,8 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
 - `pnpm test` inside a package runs that package's suite alone (every package declares `test`, since pnpm's
   shorthand exits 0 where the script is missing). Coverage is a root-only gate:
   one global 100% block over the root `coverage.include`.
-- `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck` and
-  `test:coverage` at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
+- `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck`,
+  `test:coverage` and `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it) at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
   a failed step prints a short excerpt and its log's path, so read that, not the whole run. `build` goes first
   because the packages typecheck against each other's built declarations. `lint:css` passes on an empty glob:
   this workspace has no CSS, and it ships the gate to every target. Outside `CI` a step whose every input matches
@@ -48,7 +48,7 @@ Claim nothing that has not been run.
 - New or touched code carries zero loose types, TypeScript errors and ESLint findings before it is declared done.
 - One code file has exactly one test file beside it; a data-only `constants.ts`, a pure re-export barrel and the
   repo tooling have none. Tests cover only shipped code: `packages/*/src/` and the templates. Root `scripts/`,
-  `packages/*/scripts/` and the repo mod carry no suites. `pnpm test:isolated` holds each source to its own suite.
+  `packages/*/scripts/`, the e2e harness and the repo mod carry no suites. `pnpm test:isolated` holds each source to its own suite.
 - Prove a new test can fail: break the code, watch it go red, revert. A test that passes with the fix reverted
   has pinned nothing.
 - A fix to a rule or a fixer needs a case in the rule's own suite *and*, when it is about what a fixer emits, an

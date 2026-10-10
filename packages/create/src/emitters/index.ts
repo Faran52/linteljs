@@ -30,8 +30,6 @@ export {
   projectArtifacts,
   seedArtifacts,
 } from './registry';
-export { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
-export { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 export {
   atRoot,
   packageAnswersOf,

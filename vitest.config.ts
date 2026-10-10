@@ -13,7 +13,6 @@ export default defineConfig({
       include: [
         'packages/*/src/**/*.ts',
         'packages/create/templates/project/**/utils/*.ts',
-        'packages/create/e2e/matrix/matrix.ts',
       ],
       exclude: [
         '**/*.test.ts',
