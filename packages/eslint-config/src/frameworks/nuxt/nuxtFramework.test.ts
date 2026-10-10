@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import {
   enabledRuleIdsFor,
+  isIgnored,
   ownBlockNames,
   ruleIdsForFile,
   SFC_FIXTURES,
@@ -84,7 +85,24 @@ describe('nuxt', () => {
     const actual = ownBlockNames(nuxt());
     const expected = [
       '@linteljs/nuxt/route-files',
+      '@linteljs/nuxt/ignores',
     ];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('nuxt: ignores', () => {
+  it.each([
+    '.nuxt/app.js',
+    '.output/server/index.mjs',
+    'dist/app.js',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(nuxt(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored([...base(), ...nuxt()], 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });

@@ -26,6 +26,8 @@ const VUE_SONARJS_RULES = {
 } satisfies Linter.RulesRecord;
 
 // After `typescript()`: `vue-eslint-parser` is the top-level SFC parser, and placed earlier it is overwritten.
+const BUILD_OUTPUT = ['dist/**'];
+
 export const vue = (): Layer => {
   const layer: Layer = [
     ...presetOf(vuePlugin.configs['flat/recommended'], 'vue/flat/recommended'),
@@ -63,6 +65,10 @@ export const vue = (): Layer => {
       },
     },
 
+    {
+      name: '@linteljs/vue/ignores',
+      ignores: BUILD_OUTPUT,
+    },
   ];
 
   return layer;

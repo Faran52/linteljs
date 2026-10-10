@@ -1,4 +1,5 @@
 import {
+  isIgnored,
   LEAKED_RENDER_FIXTURE,
   ownBlockNames,
   ruleEntryFor,
@@ -109,6 +110,7 @@ describe('solid', () => {
     const expected = [
       '@linteljs/solid/sonarjs',
       '@linteljs/solid',
+      '@linteljs/solid/ignores',
     ];
     expect(actual).toEqual(expected);
   });
@@ -133,5 +135,19 @@ describe('solid', () => {
     });
 
     expect(layer).toThrow(`${label} is not published`);
+  });
+});
+
+describe('solid: ignores', () => {
+  it.each([
+    'dist/app.js',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(solid(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored([...base(), ...solid()], 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });

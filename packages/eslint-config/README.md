@@ -144,6 +144,10 @@ loads every layer, so it needs every optional peer installed.
 | `tailwind(entryPoint?)` | `/tailwind` | better-tailwindcss's `recommended`: class order, line wrapping, and duplicate, conflicting, deprecated and non-canonical classes. Scripts, SFCs and `.astro` files. | `eslint-plugin-better-tailwindcss` |
 | `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` or `style` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
 
+A framework layer ignores the build output its framework's own config ignores: `next()` `.next/**`, `out/**`,
+`build/**` and `next-env.d.ts`; `nuxt()` `.nuxt/**`, `.output/**` and `dist/**`; `reactNative()` `dist/*` and
+`android/app/build/**`; `react()`, `vue()` and `solid()` `dist/**`.
+
 ## Base options
 
 ```ts
@@ -165,8 +169,8 @@ interface BaseOptions {
 
 Pass `root: import.meta.dirname`. `base` reads two files there and nowhere else, never `process.cwd()`: the
 `.gitignore`, whose entries become ESLint ignores (`gitignore: false` skips it), and `tsconfig.json`, whose
-`paths` (followed through `extends`) name the alias import-sort groups. Without `root` it reads neither. Set `resolver.project` when the relevant tsconfig is not the one the
-resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
+`paths` (followed through `extends`) name the alias import-sort groups. Without `root` it reads neither. Set
+`resolver.project` when the relevant tsconfig is not the one the resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
 rule a script gets; the composer sets it with its own `astro` switch, and a hand-composed config sets it beside

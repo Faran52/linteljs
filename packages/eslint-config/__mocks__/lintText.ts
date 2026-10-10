@@ -247,3 +247,13 @@ export const sortsAheadOfPackages = async (config: Layer, specifier: string): Pr
 
   return !ruleIds.includes('simple-import-sort/imports');
 };
+
+export const isIgnored = async (config: Layer, filePath: string): Promise<boolean> => {
+  const eslint = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+  });
+  const ignored = await eslint.isPathIgnored(filePath);
+
+  return ignored;
+};

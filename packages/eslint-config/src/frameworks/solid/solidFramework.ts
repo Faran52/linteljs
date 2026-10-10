@@ -15,6 +15,8 @@ export const solidGroup: string[] = [
 ];
 
 // Scoped, since the preset carries no `files` glob.
+const BUILD_OUTPUT = ['dist/**'];
+
 export const solid = (): Layer => {
   const layer: Layer = [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SCRIPT_FILES),
@@ -33,6 +35,10 @@ export const solid = (): Layer => {
         ...JSX_STYLE_RULES,
         '@linteljs/no-duplicate-jsx-props': 'error',
       },
+    },
+    {
+      name: '@linteljs/solid/ignores',
+      ignores: BUILD_OUTPUT,
     },
   ];
 

@@ -17,6 +17,12 @@ const ROUTE_FILES = [
   '**/error.vue',
 ];
 
+const BUILD_OUTPUT = [
+  '.nuxt/**',
+  '.output/**',
+  'dist/**',
+];
+
 export const nuxt = (): Layer => {
   const layer: Layer = [
     {
@@ -26,6 +32,10 @@ export const nuxt = (): Layer => {
         // A page's filename is its URL.
         'vue/multi-word-component-names': 'off',
       },
+    },
+    {
+      name: '@linteljs/nuxt/ignores',
+      ignores: BUILD_OUTPUT,
     },
   ];
 

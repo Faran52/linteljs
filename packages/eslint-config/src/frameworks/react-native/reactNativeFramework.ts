@@ -14,6 +14,11 @@ import type { Layer } from '../../types';
 export const reactNativeGroup: string[] = reactGroup;
 
 // `jsx-a11y-x` keys on lowercase DOM names, so it reads React Native markup as custom components and skips it.
+const BUILD_OUTPUT = [
+  'dist/*',
+  'android/app/build/**',
+];
+
 export const reactNative = (): Layer => {
   const layer: Layer = [
     ...reactCore(),
@@ -42,6 +47,10 @@ export const reactNative = (): Layer => {
         '**/utils/**',
       ],
       rules: MARKUP_SIZE_RULES,
+    },
+    {
+      name: '@linteljs/react-native/ignores',
+      ignores: BUILD_OUTPUT,
     },
   ];
 

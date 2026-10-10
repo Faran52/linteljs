@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import {
   codeLines,
   functionOf,
+  isIgnored,
   messagesForFile,
   ownBlockNames,
   ruleIdsFor,
@@ -135,6 +136,7 @@ describe('vue', () => {
       '@linteljs/vue',
       '@linteljs/vue/sonarjs',
       '@linteljs/vue/sfc-import-seam',
+      '@linteljs/vue/ignores',
     ];
     expect(actual).toEqual(expected);
   });
@@ -195,5 +197,19 @@ describe('vue', () => {
     });
 
     expect(layer).toThrow(`${label} is not published`);
+  });
+});
+
+describe('vue: ignores', () => {
+  it.each([
+    'dist/app.js',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(vue(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored([...base(), ...vue()], 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });

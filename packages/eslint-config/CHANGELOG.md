@@ -31,6 +31,9 @@ when a version's change lives in a sibling it is described there instead:
 - **`root` replaces `aliases` and `process.cwd()`.** `base` reads the `.gitignore` and the tsconfig `paths` in
   `root` (`root: import.meta.dirname`), never the working directory; `gitignore: false` skips the `.gitignore`.
   The `aliases` option and the `AliasMap` type are gone: the import-sort groups follow the tsconfig `paths`.
+- **Framework layers ignore their build output.** `next()`, `nuxt()`, `reactNative()`, `react()`, `vue()` and
+  `solid()` each add a `@linteljs/<layer>/ignores` block with what the framework's own config ignores (README,
+  Layers), so a config that linted `dist/` or `.next/` under one of them no longer does.
 - **`base` lays out lists at three or more.** `@linteljs/member-newline` owns object literals, object patterns,
   interfaces and type literals, and `@linteljs/array-newline` arrays: three or more items go one per line, two or
   fewer stay as written unless half split. `@stylistic/object-property-newline`, which split at two, is off, and

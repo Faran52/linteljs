@@ -1,4 +1,5 @@
 import {
+  isIgnored,
   NEXT_PROJECT,
   ownBlockNames,
   ruleIdsFor,
@@ -136,6 +137,7 @@ describe('next', () => {
     const expected = [
       '@linteljs/next',
       '@linteljs/next/convention-filenames',
+      '@linteljs/next/ignores',
     ];
     expect(actual).toEqual(expected);
   });
@@ -156,5 +158,22 @@ describe('next', () => {
 
     expect(unexempted).toContain(FILENAME_RULE);
     expect(exempted).not.toContain(FILENAME_RULE);
+  });
+});
+
+describe('next: ignores', () => {
+  it.each([
+    '.next/server/page.js',
+    'out/index.js',
+    'build/app.js',
+    'next-env.d.ts',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(next(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored(composed(), 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });

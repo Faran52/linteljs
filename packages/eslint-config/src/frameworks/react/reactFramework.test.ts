@@ -1,4 +1,5 @@
 import {
+  isIgnored,
   ownBlockNames,
   ruleEntryFor,
   ruleIdsFor,
@@ -39,6 +40,7 @@ describe('react', () => {
       '@linteljs/react',
       '@linteljs/react/javascript',
       '@linteljs/react/dom',
+      '@linteljs/react/ignores',
     ];
     expect(actual).toEqual(expected);
   });
@@ -68,5 +70,19 @@ describe('react', () => {
     });
 
     expect(layer).toThrow(`${label} is not published`);
+  });
+});
+
+describe('react: ignores', () => {
+  it.each([
+    'dist/app.js',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(react(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored([...base(), ...react()], 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });

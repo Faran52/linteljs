@@ -8,6 +8,8 @@ import type { Layer } from '../../types';
 
 export { reactGroup };
 
+const BUILD_OUTPUT = ['dist/**'];
+
 export const react = (): Layer => {
   const layer: Layer = [
     ...reactCore(),
@@ -23,6 +25,10 @@ export const react = (): Layer => {
         '@eslint-react/dom-no-script-url': 'error',
         '@eslint-react/dom-no-unsafe-target-blank': 'error',
       },
+    },
+    {
+      name: '@linteljs/react/ignores',
+      ignores: BUILD_OUTPUT,
     },
   ];
 

@@ -13,6 +13,13 @@ export const nextGroup: string[] = [
   '^next/',
 ];
 
+const BUILD_OUTPUT = [
+  '.next/**',
+  'out/**',
+  'build/**',
+  'next-env.d.ts',
+];
+
 export const next = (): Layer => {
   const layer: Layer = [
     {
@@ -37,6 +44,10 @@ export const next = (): Layer => {
       rules: {
         'check-file/filename-naming-convention': 'off',
       },
+    },
+    {
+      name: '@linteljs/next/ignores',
+      ignores: BUILD_OUTPUT,
     },
   ];
 

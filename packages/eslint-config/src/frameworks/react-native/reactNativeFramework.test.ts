@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   codeLines,
+  isIgnored,
   ownBlockNames,
   ruleEntryFor,
   ruleIdsFor,
@@ -123,6 +124,7 @@ describe('reactNative', () => {
       '@linteljs/react/javascript',
       '@linteljs/react-native/accessibility',
       '@linteljs/react-native/markup-size',
+      '@linteljs/react-native/ignores',
     ];
     expect(actual).toEqual(expected);
   });
@@ -154,5 +156,20 @@ describe('reactNative: markup size', () => {
     const ruleIds = await ruleIdsFor(config, codeLines(351), path);
 
     expect(ruleIds).not.toContain('max-lines');
+  });
+});
+
+describe('reactNative: ignores', () => {
+  it.each([
+    'dist/bundle.js',
+    'android/app/build/index.js',
+  ])('ignores the build output %s', async (filePath) => {
+    const ignored = await isIgnored(reactNative(), filePath);
+    expect(ignored).toBe(true);
+  });
+
+  it('lints the source', async () => {
+    const ignored = await isIgnored([...base(), ...reactNative()], 'src/app.ts');
+    expect(ignored).toBe(false);
   });
 });
