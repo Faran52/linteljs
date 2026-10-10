@@ -4,8 +4,6 @@ import type { Linter } from 'eslint';
 
 export type Layer = Linter.Config[];
 
-export type AliasMap = Record<string, string>;
-
 export type NamingConvention = 'PASCAL_CASE' | 'CAMEL_CASE' | 'KEBAB_CASE';
 
 // A case name or a raw glob; `& {}` keeps the case names as completions.
@@ -21,10 +19,12 @@ export interface ResolverOptions {
 }
 
 export interface BaseOptions {
+  // The project directory: its `.gitignore` is ignored and its tsconfig `paths` name the alias import groups.
+  root?: string;
+  gitignore?: boolean;
   ignores?: string[];
   naming?: NamingMap;
   folderNaming?: NamingMap;
-  aliases?: AliasMap;
   frameworkGroup?: string[];
   resolver?: ResolverOptions;
   astro?: boolean;

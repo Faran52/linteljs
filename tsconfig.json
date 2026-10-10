@@ -50,20 +50,25 @@
 
     /**
      * `@linteljs/create`'s ring aliases, for what sits outside a package and reads its source: the root scripts, run
-     * by tsx, which reads this file. A child's `paths` replaces this map rather than merging, so each package
-     * declares its own.
+     * by tsx, which reads this file, and the root `base()` import groups. A child's `paths` replaces this map rather
+     * than merging, so each package declares its own.
      */
     "paths": {
       "@answers": ["./packages/create/src/answers/index.ts"],
       "@answers/*": ["./packages/create/src/answers/*"],
+      "@assemble/*": ["./packages/create/src/assemble/*"],
+      "@choices/*": ["./packages/create/src/choices/*"],
       "@config/*": ["./packages/create/src/config/*"],
       "@disk": ["./packages/create/src/disk/index.ts"],
       "@disk/*": ["./packages/create/src/disk/*"],
       "@e2e/*": ["./packages/create/e2e/*"],
       "@emitters": ["./packages/create/src/emitters/index.ts"],
       "@emitters/*": ["./packages/create/src/emitters/*"],
+      "@frameworks/*": ["./packages/create/src/frameworks/*"],
+      "@io/*": ["./packages/create/src/io/*"],
       "@pipeline": ["./packages/create/src/pipeline/index.ts"],
       "@pipeline/*": ["./packages/create/src/pipeline/*"],
+      "@prompt/*": ["./packages/create/src/prompt/*"],
       "@spawns": ["./packages/create/src/spawns/index.ts"],
       "@spawns/*": ["./packages/create/src/spawns/*"],
       "@targets": ["./packages/create/src/targets/index.ts"],

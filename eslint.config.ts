@@ -8,7 +8,6 @@ import {
   INNER_RINGS,
   MIDDLE_RINGS,
   OUTER_RINGS,
-  RINGS,
   WORLDS,
 } from './packages/create/src/rings';
 import base from './packages/eslint-config/src/layers/base/baseLayer';
@@ -28,18 +27,6 @@ interface Zone {
 const ring = (name: string): string => {
   return `packages/create/src/${name}`;
 };
-
-// `buildGroups` reads the keys only; `config/` and `utils/` have no barrel, so no bare form.
-const aliases = Object.fromEntries(RINGS
-  .flatMap((name) => {
-    const subpath: [string, string] = [`@${name}/*`, `${ring(name)}/*`];
-
-    const barrel: [string, string] = [`@${name}`, ring(name)];
-
-    const entries = name === 'config' || name === 'utils' ? [subpath] : [barrel, subpath];
-
-    return entries;
-  }));
 
 // `base` exempts every `e2e/` as a suite; this one is the create harness, so only its suites keep the exemption.
 // docs/DESIGN.md: `@linteljs/workspace/e2e-source`
@@ -113,6 +100,7 @@ const config = [
   { linterOptions: { noInlineConfig: true } },
 
   ...base({
+    root: import.meta.dirname,
     // docs/DESIGN.md: Ignores
     ignores: [
       '**/dist/**',
@@ -145,10 +133,6 @@ const config = [
     folderNaming: {
       'packages/*/src/**/': 'KEBAB_CASE',
       'packages/create/e2e/**/': 'KEBAB_CASE',
-    },
-    aliases: {
-      ...aliases,
-      '@e2e/*': 'packages/create/e2e/*',
     },
     // docs/DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
     resolver: {

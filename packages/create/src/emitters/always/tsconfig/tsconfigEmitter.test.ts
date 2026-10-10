@@ -12,7 +12,6 @@ import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
 import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
 import { buildAliases } from '../../utils/aliasUtils';
-import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
 
 import {
   buildTsconfig,
@@ -467,40 +466,25 @@ describe('alias coupling', () => {
       const libraries: Library[] = withZod ? zod : [];
       const label = `${target}${withZod ? ' with zod' : ''}`;
 
-      it(`emits the same alias map into tsconfig paths and base() for ${label}`, () => {
+      it(`emits the alias map into tsconfig paths for ${label}`, () => {
         const answers = answersFor({
           target,
           libraries,
         });
         const aliases = buildAliases(answers);
         const { paths } = buildTsconfig(answers).compilerOptions;
-        const config = emitEslintConfig(answers);
-
-        const actual = Object.keys(paths ?? {});
+        const actual = paths && Object.keys(paths);
         expect(actual).toEqual(Object.keys(aliases));
 
         for (const [alias, directory] of Object.entries(aliases)) {
           const expected = [directory];
           expect(paths?.[alias]).toEqual(expected);
-          expect(config).toContain(`'${alias}': '${directory}',`);
         }
-
-        const body = config.replaceAll(/^import .*$/gm, '');
-        const emitted = body.match(/'[@$][\w-]*(?:\/[\w-]+)*(?:\/\*)?'/g) ?? [];
-
-        const quotedAliases = Object.keys(aliases)
-          .map((alias) => {
-            return `'${alias}'`;
-          });
-
-        expect(emitted).toEqual(
-          quotedAliases,
-        );
       });
     }
   }
 
-  it("carries a project's own aliases through all three consumers", () => {
+  it("carries a project's own aliases into tsconfig paths", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
       aliases: {
@@ -509,22 +493,17 @@ describe('alias coupling', () => {
       },
     };
     const { paths } = buildTsconfig(answers).compilerOptions;
-    const config = emitEslintConfig(answers);
-
     const expected = ['./src/lib/engine/index.ts'];
     expect(paths?.['@engine']).toEqual(expected);
     const workers = ['./src/workers/*'];
     expect(paths?.['@workers/*']).toEqual(workers);
     expect(buildAliases(answers)['@engine']).toBe('./src/lib/engine/index.ts');
-    expect(config).toContain("'@engine': './src/lib/engine/index.ts',");
-    expect(config).toContain("'@workers/*': './src/workers/*',");
   });
 
   it('carries the alias map through nuxt.config for nuxt, whose tsconfig declares none', () => {
     const answers = answersFor({ target: 'nuxt' });
     const aliases = buildAliases(answers);
     const nuxtConfig = emitNuxtConfig(answers, 'demo-app');
-    const config = emitEslintConfig(answers);
 
     expect(buildTsconfig(answers).compilerOptions.paths).toBeUndefined();
 
@@ -536,7 +515,6 @@ describe('alias coupling', () => {
 
       expect(nuxtConfig).toContain(`'${prefix}': join(import.meta.dirname, '${root}'),`);
       expect(nuxtConfig).toContain(`'${prefix}/*': join(import.meta.dirname, '${root}/*'),`);
-      expect(config).toContain(`'${alias}': '${directory}',`);
     }
   });
 
@@ -551,7 +529,7 @@ describe('alias coupling', () => {
     expect(Object.keys(aliases)[0]).toBe('@router/*');
   });
 
-  it('carries the target-only aliases through all three consumers', () => {
+  it('carries the target-only aliases into tsconfig paths', () => {
     const answers = answersFor({ target: 'next' });
     const { paths } = buildTsconfig(answers).compilerOptions;
 
@@ -560,8 +538,6 @@ describe('alias coupling', () => {
     const content = ['./src/content/*'];
     expect(paths?.['@content/*']).toEqual(content);
     expect(buildAliases(answers)['@server/*']).toBe('./src/lib/server/*');
-    const eslintConfig = emitEslintConfig(answers);
-    expect(eslintConfig).toContain("'@content/*': './src/content/*',");
   });
 
   it('gives them to no other target', () => {
@@ -573,8 +549,8 @@ describe('alias coupling', () => {
     for (const target of others) {
       const { compilerOptions: { paths } } = buildTsconfig(answersFor({ target }));
 
-      expect(paths ?? {}).not.toHaveProperty('@server/*');
-      expect(paths ?? {}).not.toHaveProperty('@content/*');
+      expect(paths?.['@server/*']).toBeUndefined();
+      expect(paths?.['@content/*']).toBeUndefined();
     }
   });
 

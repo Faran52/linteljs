@@ -46,6 +46,9 @@ interface ConfigsBearing {
   configs: object;
 }
 
+// ESLint lints only under its working directory, so the project dir stands in for it.
+type ProjectRun = (root: string) => Promise<void> | void;
+
 const TS_FILE = 'src/lib/utils/sample.ts';
 
 describe('base: stylistic', () => {
@@ -295,6 +298,29 @@ describe('base: stylistic', () => {
   });
 });
 
+const withProject = async (files: Record<string, string>, run: ProjectRun): Promise<void> => {
+  const prefix = join(tmpdir(), 'linteljs-root-');
+  const tempDir = await mkdtemp(prefix);
+  const root = await realpath(tempDir);
+  const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
+
+  try {
+    for (const [name, text] of Object.entries(files)) {
+      await writeFile(join(root, name), text);
+    }
+
+    await run(root);
+  }
+  finally {
+    spy.mockRestore();
+
+    await rm(root, {
+      recursive: true,
+      force: true,
+    });
+  }
+};
+
 describe('base: ignores', () => {
   const doubleQuoted = 'export const value = "x";\n';
   const built = 'src/generated/bundle.js';
@@ -310,40 +336,37 @@ describe('base: ignores', () => {
     expect(ruleIds).not.toContain('@stylistic/quotes');
   });
 
-  it('reports nothing under a path only .gitignore covers', async () => {
-    const prefix = join(tmpdir(), 'linteljs-gitignore-');
-    const tempDir = await mkdtemp(prefix);
-    const root = await realpath(tempDir);
+  const GITIGNORED = { '.gitignore': 'dist\n' };
 
-    await writeFile(join(root, '.gitignore'), 'dist\n');
-
-    const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
-
-    try {
-      const ruleIds = await ruleIdsFor(base(), doubleQuoted, join(root, 'dist/bundle.js'));
+  it('reports nothing under a path only the .gitignore in root covers', async () => {
+    await withProject(GITIGNORED, async (root) => {
+      const ruleIds = await ruleIdsFor(base({ root }), doubleQuoted, join(root, 'dist/bundle.js'));
       expect(ruleIds).not.toContain('@stylistic/quotes');
-    }
-    finally {
-      spy.mockRestore();
+    });
+  });
 
-      await rm(root, {
-        recursive: true,
-        force: true,
+  it('reads no .gitignore when gitignore is false', async () => {
+    await withProject(GITIGNORED, async (root) => {
+      const config = base({
+        root,
+        gitignore: false,
       });
-    }
+      const ruleIds = await ruleIdsFor(config, doubleQuoted, join(root, 'dist/bundle.js'));
+      expect(ruleIds).toContain('@stylistic/quotes');
+    });
+  });
+
+  it('reads no .gitignore from the working directory without a root', async () => {
+    await withProject(GITIGNORED, async (root) => {
+      const ruleIds = await ruleIdsFor(base(), doubleQuoted, join(root, 'dist/bundle.js'));
+      expect(ruleIds).toContain('@stylistic/quotes');
+    });
   });
 
   it('names every block it writes', async () => {
-    const prefix = join(tmpdir(), 'linteljs-names-');
-    const tempDir = await mkdtemp(prefix);
-    const root = await realpath(tempDir);
-
-    await writeFile(join(root, '.gitignore'), 'dist\n');
-
-    const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
-
-    try {
+    await withProject(GITIGNORED, (root) => {
       const config = base({
+        root,
         ignores: ['build/**'],
         naming: { 'src/**/*.ts': 'CAMEL_CASE' },
       });
@@ -374,40 +397,55 @@ describe('base: ignores', () => {
         '@linteljs/base/naming',
       ];
       expect(baseBlocks).toEqual(expected);
-    }
-    finally {
-      spy.mockRestore();
-
-      await rm(root, {
-        recursive: true,
-        force: true,
-      });
-    }
+    });
   });
 
-  it('still builds a config where there is no .gitignore to read', async () => {
-    const prefix = join(tmpdir(), 'linteljs-nogit-');
-    const root = await mkdtemp(prefix);
-    const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
-
-    try {
-      const gitignoreEntries = base()
+  it('still builds a config where root has no .gitignore or tsconfig to read', async () => {
+    await withProject({}, async (root) => {
+      const gitignoreEntries = base({ root })
         .filter((entry) => {
           return entry.name === '@linteljs/base/gitignore';
         });
 
       expect(gitignoreEntries).toEqual([]);
-      const ruleIds = await ruleIdsFor(base(), doubleQuoted, built);
+      const ruleIds = await ruleIdsFor(base({ root }), doubleQuoted, built);
       expect(ruleIds).toContain('@stylistic/quotes');
-    }
-    finally {
-      spy.mockRestore();
+    });
+  });
+});
 
-      await rm(root, {
-        recursive: true,
-        force: true,
-      });
-    }
+describe('base: aliases', () => {
+  const tsconfig = JSON.stringify({ compilerOptions: { paths: { '@widgets/*': ['./src/widgets/*'] } } });
+  const code = "import { b } from 'zod';\n\nimport { a } from '@widgets/card';\n\nexport const value = [a, b];\n";
+
+  const groupsAfterPackages = async (config: Layer): Promise<boolean> => {
+    const ruleIds = await ruleIdsFor(config, code, 'src/lib/sample.ts');
+
+    return !ruleIds.includes('simple-import-sort/imports');
+  };
+
+  it('groups an import named by a tsconfig path in root after the packages', async () => {
+    await withProject({ 'tsconfig.json': tsconfig }, async (root) => {
+      const actual = await groupsAfterPackages(base({ root }));
+      expect(actual).toBe(true);
+    });
+  });
+
+  it('reads the paths a tsconfig in root inherits through extends', async () => {
+    const files = {
+      'tsconfig.base.json': tsconfig,
+      'tsconfig.json': JSON.stringify({ extends: './tsconfig.base.json' }),
+    };
+
+    await withProject(files, async (root) => {
+      const actual = await groupsAfterPackages(base({ root }));
+      expect(actual).toBe(true);
+    });
+  });
+
+  it('sorts the same import with the packages without a root', async () => {
+    const actual = await groupsAfterPackages(base());
+    expect(actual).toBe(false);
   });
 });
 

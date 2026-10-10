@@ -1,7 +1,5 @@
 import { uniq } from 'es-toolkit';
 
-import type { AliasMap } from '../../../types';
-
 const BUILTIN_GROUP = [
   '^node:',
   '^fs$',
@@ -104,15 +102,14 @@ const knownAliasGroups = (aliases: string[]): string[][] => {
     });
 };
 
-export const buildGroups = (aliases: AliasMap = {}, frameworkGroup?: string[]): string[][] => {
-  const declared = Object.keys(aliases);
-  const unknown = unknownAliasesIn(declared);
+export const buildGroups = (aliases: string[] = [], frameworkGroup?: string[]): string[][] => {
+  const unknown = unknownAliasesIn(aliases);
 
   const groups = [
     BUILTIN_GROUP,
     ...(frameworkGroup && frameworkGroup.length > 0 ? [frameworkGroup] : []),
     PACKAGE_GROUP,
-    ...knownAliasGroups(declared),
+    ...knownAliasGroups(aliases),
     ...(unknown.length > 0 ? [unknown] : []),
     PARENT_GROUP,
     SIBLING_GROUP,

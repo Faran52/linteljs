@@ -39,6 +39,7 @@ const TARGET_IDS = keysOf(ANSWERS.target.values);
 const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
 const config = await composeConfig({
+  root: import.meta.dirname,
   framework: 'react',
   typescript: true,
   testing: 'vitest',
@@ -50,22 +51,6 @@ const config = await composeConfig({
     '.agents/**',
     'plugins/linteljs/**',
   ],
-  aliases: {
-    '@router/*': './src/router/*',
-    '@pages/*': './src/pages/*',
-    '@components/*': './src/components/*',
-    '@ui/*': './src/components/ui/*',
-    '@ui': './src/components/ui',
-    '@features/*': './src/components/features/*',
-    '@lib/*': './src/lib/*',
-    '@store/*': './src/lib/store/*',
-    '@hooks/*': './src/lib/hooks/*',
-    '@utils/*': './src/lib/utils/*',
-    '@services/*': './src/lib/services/*',
-    '@styles/*': './src/styles/*',
-    '@config/*': './src/config/*',
-    '@mocks/*': './__mocks__/*',
-  },
   naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec|*.styles).ts': 'CAMEL_CASE',
@@ -115,40 +100,6 @@ describe('emitEslintConfig', () => {
     expect(angularConfig).toContain("framework: 'angular',");
     const solidConfig = emitEslintConfig(answersFor({ target: 'solid' }));
     expect(solidConfig).toContain("framework: 'solid',");
-  });
-
-  it('renames the hooks alias per framework', () => {
-    const vueConfig = emitEslintConfig(answersFor({ target: 'vue' }));
-
-    expect(vueConfig).toContain(
-      "'@composables/*': './src/lib/composables/*',",
-    );
-
-    expect(vueConfig).not.toContain("'@hooks/*'");
-
-    const solidConfig = emitEslintConfig(answersFor({ target: 'solid' }));
-
-    expect(solidConfig).toContain(
-      "'@primitives/*': './src/lib/primitives/*',",
-    );
-  });
-
-  it('omits the hooks alias where the framework has no hook equivalent', () => {
-    const angularConfig = emitEslintConfig(answersFor({ target: 'angular' }));
-    expect(angularConfig).not.toContain('/src/lib/hooks/');
-    const webextensionConfig = emitEslintConfig(answersFor({ target: 'webextension' }));
-    expect(webextensionConfig).not.toContain('/src/lib/hooks/');
-  });
-
-  it('emits @apis only with Zod', () => {
-    const withoutZod = emitEslintConfig(answersFor({}));
-    expect(withoutZod).not.toContain("'@apis/*'");
-
-    const withZod = emitEslintConfig(answersFor({ libraries: ['zod'] }));
-
-    expect(withZod).toContain(
-      "'@apis/*': './src/lib/apis/*',",
-    );
   });
 
   it('names no framework at all for plain TypeScript', () => {
@@ -365,16 +316,6 @@ describe('emitEslintConfig', () => {
     expect(nextConfig).not.toContain('html');
     const reactConfig = emitEslintConfig(answersFor({ target: 'react' }));
     expect(reactConfig).toContain('html: true,');
-  });
-
-  it('gives Next the aliases for the directories only it has', () => {
-    const next = emitEslintConfig(answersFor({ target: 'next' }));
-    const react = emitEslintConfig(answersFor({ target: 'react' }));
-
-    expect(next).toContain("'@server/*': './src/lib/server/*',");
-    expect(next).toContain("'@content/*': './src/content/*',");
-    expect(react).not.toContain("'@server/*'");
-    expect(react).not.toContain("'@content/*'");
   });
 
   it('carries the target ignores on top of the shared ones', () => {

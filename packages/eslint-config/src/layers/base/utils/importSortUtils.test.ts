@@ -10,16 +10,14 @@ import base from '../baseLayer';
 
 import { buildGroups } from './importSortUtils';
 
-import type { AliasMap } from '../../../types';
-
-const ALIASES: AliasMap = {
-  '@components/*': './src/components/*',
-  '@ui/*': './src/components/ui/*',
-  '@lib/*': './src/lib/*',
-  '@hooks/*': './src/lib/hooks/*',
-  '@config/*': './src/config/*',
-  '@mocks/*': './__mocks__/*',
-};
+const ALIASES = [
+  '@components/*',
+  '@ui/*',
+  '@lib/*',
+  '@hooks/*',
+  '@config/*',
+  '@mocks/*',
+];
 
 const indexOfPattern = (groups: string[][], pattern: string): number => {
   return groups
@@ -84,27 +82,27 @@ describe('buildGroups', () => {
   });
 
   it('gives an alias no bucket names its own group rather than losing it to node_modules', () => {
-    const groups = buildGroups({ '@/*': './src/*' });
+    const groups = buildGroups(['@/*']);
 
     const actual = indexOfPattern(groups, '^@(?:/|$)');
     expect(actual).toBeGreaterThan(indexOfPattern(groups, String.raw`^@?\w`));
   });
 
   it('sorts the unnamed aliases so the group is stable between runs', () => {
-    const groups = buildGroups({
-      '@widgets/*': './src/widgets/*',
-      '@assets/*': './src/assets/*',
-    });
+    const groups = buildGroups([
+      '@widgets/*',
+      '@assets/*',
+    ]);
 
     const expected = ['^@assets(?:/|$)', '^@widgets(?:/|$)'];
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(expected);
   });
 
   it('matches a bare alias as well as a deep one', () => {
-    const groups = buildGroups({
-      '@engine': './src/engine',
-      '@utils/*': './src/utils/*',
-    });
+    const groups = buildGroups([
+      '@engine',
+      '@utils/*',
+    ]);
     const engine = new RegExp(groups
       .flat()
       .find((pattern) => {
@@ -123,7 +121,7 @@ describe('buildGroups', () => {
 
   it('matches a bare alias in a named bucket too', () => {
     const utils = new RegExp(
-      buildGroups({ '@utils': './src/utils' })
+      buildGroups(['@utils'])
         .flat()
         .find((pattern) => {
           return pattern.startsWith('^@utils');
@@ -137,10 +135,10 @@ describe('buildGroups', () => {
   });
 
   it('escapes an alias whose name is regex syntax', () => {
-    const patterns = buildGroups({
-      '$lib': './src/lib',
-      '$lib/*': './src/lib/*',
-    }).flat();
+    const patterns = buildGroups([
+      '$lib',
+      '$lib/*',
+    ]).flat();
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');
@@ -173,11 +171,10 @@ describe('buildGroups', () => {
       '@mocks',
     ];
     const aliasNames = [...named, '@widgets'];
-    const aliases = Object.fromEntries(aliasNames
+    const aliases = aliasNames
       .map((name) => {
-        const entry = [`${name}/*`, `./src/${name.slice(1)}/*`] as const;
-        return entry;
-      }));
+        return `${name}/*`;
+      });
 
     const pattern = (name: string): string => {
       return `^${name}(?:/|$)`;
@@ -222,15 +219,15 @@ describe('buildGroups', () => {
   });
 
   it('adds no framework bucket for an empty framework group', () => {
-    const groups = buildGroups({}, []);
+    const groups = buildGroups([], []);
     expect(groups).toEqual(buildGroups());
   });
 
   it('matches an alias whose wildcard sits mid-key', () => {
-    const patterns = buildGroups({
-      '@features/*/api': './src/features/*/api',
-      '@app/shared/*': './src/app/shared/*',
-    }).flat();
+    const patterns = buildGroups([
+      '@features/*/api',
+      '@app/shared/*',
+    ]).flat();
 
     expect(patterns).toContain('^@features(?:/|$)');
     expect(patterns).toContain('^@app/shared(?:/|$)');

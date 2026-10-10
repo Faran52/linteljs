@@ -1,5 +1,4 @@
 import {
-  type AliasMap as UpstreamAliasMap,
   angularGroup,
   type ComposeConfigOptions as UpstreamComposeConfigOptions,
   type Framework as UpstreamFramework,
@@ -24,7 +23,6 @@ import { FRAMEWORK_GROUPS } from '@config/constants';
 import { LIBRARY_LAYERS } from '@emitters/always/eslint-config/constants';
 
 import type {
-  AliasMap,
   ComposeConfigOptions,
   Framework,
   LibraryLayer,
@@ -32,7 +30,6 @@ import type {
 } from '@config/types';
 
 it('mirrors eslint-config exactly', () => {
-  expectTypeOf<AliasMap>().toEqualTypeOf<UpstreamAliasMap>();
   expectTypeOf<NamingMap>().toEqualTypeOf<UpstreamNamingMap>();
   expectTypeOf<Framework>().toEqualTypeOf<UpstreamFramework>();
   expectTypeOf<LibraryLayer>().toEqualTypeOf<UpstreamLibraryLayer>();

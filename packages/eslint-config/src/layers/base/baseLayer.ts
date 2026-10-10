@@ -9,6 +9,7 @@ import importX from 'eslint-plugin-import-x';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
+import ts from 'typescript';
 import tseslint from 'typescript-eslint';
 
 import {
@@ -47,9 +48,8 @@ const NUMBER_EXEMPT_FILES = ['**/*.config.*', '**/constants.ts'];
 
 const MAX_COGNITIVE_COMPLEXITY = 15;
 
-// The global `process.cwd()`, which a test can replace: this file sits in `node_modules`, not the project.
-const gitignored = (): Layer => {
-  const path = join(process.cwd(), '.gitignore');
+const gitignored = (root: string): Layer => {
+  const path = join(root, '.gitignore');
 
   if (!existsSync(path)) {
     return [];
@@ -60,13 +60,30 @@ const gitignored = (): Layer => {
   return gitignoreLayer;
 };
 
+// No directory walk: only `paths` is read. A missing tsconfig parses as empty.
+const aliasesIn = (root: string): string[] => {
+  const tsconfig = ts.readConfigFile(join(root, 'tsconfig.json'), (path) => {
+    return ts.sys.readFile(path);
+  });
+  const host = {
+    ...ts.sys,
+    readDirectory: (): string[] => {
+      return [];
+    },
+  };
+  const { paths } = ts.parseJsonConfigFileContent(tsconfig.config, host, root).options;
+
+  return paths ? Object.keys(paths) : [];
+};
+
 // Nothing here is type-aware, so `base` alone works on plain JavaScript.
 export const base = (options: BaseOptions = {}): Layer => {
   const {
+    root,
+    gitignore = true,
     ignores,
     naming,
     folderNaming,
-    aliases,
     frameworkGroup,
     resolver,
     astro = false,
@@ -96,8 +113,10 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
   };
 
+  const aliases = root === undefined ? [] : aliasesIn(root);
+
   const layer: Layer = [
-    ...gitignored(),
+    ...(root !== undefined && gitignore ? gitignored(root) : []),
     ...(ignores
       ? [{
           name: '@linteljs/base/ignores',

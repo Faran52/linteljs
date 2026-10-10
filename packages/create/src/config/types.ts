@@ -238,6 +238,8 @@ interface ResolverOptions {
 }
 
 export interface ComposeConfigOptions {
+  root?: string;
+  gitignore?: boolean;
   framework?: Framework;
   typescript?: boolean;
   testing?: TestRunner;
@@ -250,7 +252,6 @@ export interface ComposeConfigOptions {
   ignores?: string[];
   naming?: NamingMap;
   folderNaming?: NamingMap;
-  aliases?: AliasMap;
   resolver?: ResolverOptions;
   aliasExempt?: string[];
   enforceRelativeImports?: boolean;

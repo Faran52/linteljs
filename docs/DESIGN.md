@@ -104,8 +104,10 @@ Decisions, not omissions. Re-adding any of them needs an argument.
 
 ### What git ignores, ESLint ignores
 
-Flat config reads no `.gitignore`, so `base()` reads it through `includeIgnoreFile` rather than a hand-written
-conversion of gitignore semantics. The hardcoded entries stay: a project may not gitignore `dist/`, and
+Flat config reads no `.gitignore`, so `base()` reads the one in `root` through `includeIgnoreFile` rather than a
+hand-written conversion of gitignore semantics. Never `process.cwd()`: in a monorepo that is whichever directory
+ESLint started from, so one config ignored different files per run. The import-sort alias groups come from the
+`paths` of the tsconfig in `root` for the same reason: a second alias list beside the tsconfig drifts. The hardcoded entries stay: a project may not gitignore `dist/`, and
 `plugins/linteljs/` is committed on purpose.
 
 ### Accessibility belongs to the markup, not to a framework

@@ -50,7 +50,6 @@ export { tailwind } from './libraries/tailwind/tailwindLibrary';
 export { tanstackQuery } from './libraries/tanstack-query/tanstackQueryLibrary';
 export { tanstackRouter } from './libraries/tanstack-router/tanstackRouterLibrary';
 export type {
-  AliasMap,
   BaseOptions,
   ComposeConfigOptions,
   E2e,

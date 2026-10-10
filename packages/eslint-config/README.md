@@ -52,6 +52,7 @@ typescript-eslint supports. ESLint loads a TypeScript config through jiti.
 import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
 const config = await composeConfig({
+  root: import.meta.dirname,
   framework: 'react',
   typescript: true,
   testing: 'vitest',
@@ -79,7 +80,7 @@ Each layer switch is off unless you enable it.
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
 | `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
 | `aliasExempt`, `enforceRelativeImports` | Options of `@linteljs/prefer-alias`, passed to the TypeScript layer. Ignored unless `typescript` is on. |
-| `ignores`, `naming`, `folderNaming`, `aliases`, `resolver` | Passed through to `base` under the same names. |
+| `root`, `gitignore`, `ignores`, `naming`, `folderNaming`, `resolver` | Passed through to `base` under the same names. |
 
 Without `tailwindEntryPoint`, the Tailwind rules only reason about Tailwind's default theme. Point it at the
 project stylesheet so the project's own tokens sort into the right group.
@@ -108,7 +109,7 @@ import typescript from '@linteljs/eslint-config/typescript';
 import react, { reactGroup } from '@linteljs/eslint-config/react';
 
 export default [
-  ...base({ frameworkGroup: reactGroup, aliases: { /* ... */ } }),
+  ...base({ root: import.meta.dirname, frameworkGroup: reactGroup }),
   ...typescript(),
   ...react(),
 ];
@@ -147,10 +148,11 @@ loads every layer, so it needs every optional peer installed.
 
 ```ts
 interface BaseOptions {
+  root?: string;
+  gitignore?: boolean;
   ignores?: string[];
   naming?: NamingMap;
   folderNaming?: NamingMap;
-  aliases?: AliasMap;
   frameworkGroup?: string[];
   resolver?: {
     project?: string;
@@ -161,17 +163,14 @@ interface BaseOptions {
 }
 ```
 
-Pass aliases to the composer instead of adding them in a later block. The base layer reads them for the
-import-sort groups; resolution reads the tsconfig. Set `resolver.project` when the relevant tsconfig is not the one the
+Pass `root: import.meta.dirname`. `base` reads two files there and nowhere else, never `process.cwd()`: the
+`.gitignore`, whose entries become ESLint ignores (`gitignore: false` skips it), and `tsconfig.json`, whose
+`paths` (followed through `extends`) name the alias import-sort groups. Without `root` it reads neither. Set `resolver.project` when the relevant tsconfig is not the one the
 resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
 rule a script gets; the composer sets it with its own `astro` switch, and a hand-composed config sets it beside
 `astro()`, which supplies the parser.
-
-`base` also reads `.gitignore` from `process.cwd()` and turns what git ignores into what ESLint ignores. In a
-monorepo that means the `.gitignore` of whichever directory ESLint was started from, so a package-level run picks
-up that package's file and not the repository root's. Pass `ignores` for anything the root file covers.
 
 ## Import order
 
@@ -180,7 +179,7 @@ up that package's file and not the repository root's. Pass `ignores` for anythin
 1. Node built-ins (`node:*`, `fs`, `path`).
 2. The framework's own packages, from the framework layer.
 3. Other packages.
-4. Your aliases, in dependency order. Each bucket appears only when you declare one of its aliases:
+4. Your aliases, in dependency order. Each bucket appears only when the tsconfig `paths` declare one of its aliases:
    `@config`, `@typings`, `@styles`; then `@lib`, `@store`, `@services`, `@providers`, `@apis`, `@utils`,
    `@i18n`; then `@hooks`, `@composables`, `@primitives`; then `@ui`, `@features`, `@components`; then `@mocks`.
 5. Any other alias you declare, in one group.

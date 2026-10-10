@@ -28,6 +28,9 @@ when a version's change lives in a sibling it is described there instead:
   `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`, and `no-angular-bypass-sanitization` to
   `angular()`. An override of one of them in a `base`-only config now names a rule that is off.
 - **`newline-destructuring` is `@linteljs/member-newline`.** Rename any override of it.
+- **`root` replaces `aliases` and `process.cwd()`.** `base` reads the `.gitignore` and the tsconfig `paths` in
+  `root` (`root: import.meta.dirname`), never the working directory; `gitignore: false` skips the `.gitignore`.
+  The `aliases` option and the `AliasMap` type are gone: the import-sort groups follow the tsconfig `paths`.
 - **`base` lays out lists at three or more.** `@linteljs/member-newline` owns object literals, object patterns,
   interfaces and type literals, and `@linteljs/array-newline` arrays: three or more items go one per line, two or
   fewer stay as written unless half split. `@stylistic/object-property-newline`, which split at two, is off, and

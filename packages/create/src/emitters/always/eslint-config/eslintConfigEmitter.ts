@@ -9,7 +9,6 @@ import {
 import { targetFor } from '@targets';
 
 import { MAX_LINE } from '../../constants';
-import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 import { quote } from '../../utils/quoteUtils';
 import { testRunnerOf } from '../../utils/runnerUtils';
@@ -78,7 +77,7 @@ export const objectLiteral = (entries: [string, string][], level: number): strin
 
 const optionRows = (answers: Answers): OptionRow[] => {
   const target = targetFor(answers);
-  const rows: OptionRow[] = [];
+  const rows: OptionRow[] = [['root', 'import.meta.dirname']];
 
   if (target.framework !== undefined) {
     rows.push(['framework', quote(target.framework)]);
@@ -139,11 +138,6 @@ const optionRows = (answers: Answers): OptionRow[] => {
     ...target.ignores,
     ...answers.ignores ?? [],
   ]));
-
-  const aliases = buildAliases(answers);
-  const aliasEntries = Object.entries(aliases);
-
-  rows.push(['aliases', objectLiteral(aliasEntries, 1)]);
 
   // React Router's typegen reads `src/routes.ts` without the tsconfig aliases.
   if (answers.router === 'react-router-framework') {
