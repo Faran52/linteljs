@@ -24,6 +24,7 @@
     "test:merge": "vitest run --merge-reports --coverage",
     "test:isolated": "tsx scripts/isolated-coverage/isolatedCoverageScript.ts",
     "build": "pnpm -r build",
+    "typegen": "pnpm --filter @linteljs/eslint-config typegen",
     "check": "pnpm build && tsx scripts/gate/gateScript.ts",
     "prepare": "husky"
   },

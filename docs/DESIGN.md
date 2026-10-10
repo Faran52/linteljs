@@ -119,6 +119,14 @@ goes through `withPeer`: when Node reports `Cannot find package`, the error name
 install command of the package manager in `npm_config_user_agent`, npm when none ran ESLint (an editor). The
 peer is never installed for the user.
 
+### Rule names and options are generated, and committed
+
+`eslint-typegen` turns each rule's JSON schema into a type, so the configs handed to `linteljs()` after its options
+are checked against every rule `linteljs()` can load: ESLint's own and every plugin with all keys on.
+`scripts/typegen/typegenScript.ts` writes `src/typegen.d.ts`, and the gate's `typegen` step fails when that changed
+the file, so a plugin bump that adds or reshapes a rule lands with its types. `Rules` stays open to any other name,
+since a block after the options may add a plugin of its own; a known name still has its options checked.
+
 ### Accessibility belongs to the markup, not to a framework
 
 A nameless element is the same defect on every framework, so `react()` and `solid()` enable the `jsx-a11y-x`
@@ -1241,6 +1249,10 @@ exemption whose measurement is missing here is one to delete.
 `__mocks__/fixtures/` is deliberately defective input for `eslint-config`'s tests (a cycle, an unawaited promise,
 an SFC pair that cannot parse without the composed layers); linting it reports the defect each exists to trigger.
 
+`packages/eslint-config/src/typegen.d.ts` is generated ("Rule names and options are generated, and
+committed") and rewritten on every gate run, so a fix to it is overwritten. Linted, its 22,579 lines report 21,921 errors, 19,320 of them fixable style (mostly
+`@stylistic/member-delimiter-style` and `quotes`) and 2,279 `@linteljs/no-inline-object-types`.
+
 The shipped `templates/fragments/test-setup/setupTests.*.ts` files listed in the config,
 `templates/starter-source/**` and the rewrite's drawers under `templates/frameworks/**` are shipped source, never imported here. Each imports a framework this workspace does
 not install, or a path or alias (`./msw/node`, `@i18n`) only the generated project has, so every import is
@@ -1333,6 +1345,12 @@ given, since severity alone inherits the layer's `allow`), and `scripts-logger` 
 which otherwise reports 6 findings. `base()` still stands the rule down under `scripts/` for consumers.
 `runRulesRelease.ts` writes to `process.stdout`: it runs in a container with only the plugin's `dist/` and
 `scripts/`.
+
+### `@linteljs/workspace/typegen`
+
+`typegenScript.ts` reads ESLint's own rules from `builtinRules` in `eslint/use-at-your-own-risk`, marked deprecated
+with no replacement: it is the only export that hands over the core rule modules and their schemas. Without the
+block: 3 findings, all that one import (`sonarjs/deprecation` twice, `@typescript-eslint/no-deprecated` once).
 
 ### `@linteljs/workspace/ast-identity`
 

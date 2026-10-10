@@ -16,7 +16,8 @@ paths:
   `frameworks/utils/reactCoreUtils.ts` what several frameworks read; `layers/base/utils/` the naming and
   import-sort builders only `base` reads; `utils/presetUtils.ts` what the whole package reads. A shared table is
   data, so it never goes in `utils/`.
-- **`index.ts` and `types.ts`** stay at the root as the package's entry points.
+- **`index.ts` and `types.ts`** stay at the root as the package's entry points, beside `typegen.d.ts`, the rule
+  types `scripts/typegen/typegenScript.ts` generates (`pnpm typegen`); never edit it by hand.
 - **Every entry backs a published `exports` subpath** through a keyed tsdown entry, so `dist/` stays flat however
   deep the source sits (`dist/reactNative.mjs`). `src/meta.test.ts` holds the tree, and the tsdown entries one to
   one against `exports`; `scripts/smoke/smokeScript.ts` resolves every subpath against the packed tarball.

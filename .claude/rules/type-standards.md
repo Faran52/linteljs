@@ -40,6 +40,7 @@ Each implements somebody else's interface, where `unknown` is the upstream contr
 
 | file | reason |
 | --- | --- |
+| `eslint-config/src/typegen.d.ts` | Generated from the rule schemas by `eslint-typegen`; a schema that allows any value becomes `unknown`, and the gate rewrites the file on every run. |
 | `eslint-config/src/utils/presetUtils.ts` | `Extract<PluginConfig, { rules?: unknown }>` is a type-level wildcard; no value is typed `unknown`. |
 | `eslint-plugin/src/meta.test.ts` | `readJson` answers `Record<string, unknown>` and `ruleIdsIn` narrows the `any` from `ESLint.calculateConfigForFile`. Both are granted in prose; no regex can confirm them. |
 | `create/templates/project/src/typings/` | Shipped template text, written against the relaxed floor on purpose. |

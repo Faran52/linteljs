@@ -95,6 +95,8 @@ when a version's change lives in a sibling it is described there instead:
   `svelte`. The configs after the options are appended last. A key whose optional peer is missing throws with the
   command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
   `LinteljsOptions`, `FrameworkKey`, `LayerKey` and `TailwindOptions` join the types.
+- **Typed `rules` in the configs handed to `linteljs()`**: every rule of ESLint and of every plugin a layer can load,
+  with its options, generated from the rule schemas by `eslint-typegen`. Exported as `Rules`.
 - **One test-file table, exported**: `TEST_FILES` (`*.{test,spec}.*`, `__tests__/**`), `E2E_FILES` (`*.e2e.*`,
   `e2e/**`), `STORY_FILES` (`*.stories.*`) and `MOCK_FILES` (`__mocks__/**`). `base`, `vitest()`, `jest()` and
   `playwright()` all read it, so a suite under `__tests__/` gets the test runner's rules and the suite exemptions,

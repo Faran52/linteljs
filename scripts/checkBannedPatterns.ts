@@ -8,6 +8,7 @@ const SHIPPED = join(import.meta.dirname, '../packages/create/templates/project/
 
 // Each reason is in `.claude/rules/type-standards.md`.
 const SKIPPED = [
+  'packages/eslint-config/src/typegen.d.ts',
   'packages/eslint-config/src/utils/presetUtils.ts',
   'packages/eslint-plugin/src/meta.test.ts',
   'packages/create/templates/project/src/typings/',

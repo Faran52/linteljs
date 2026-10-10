@@ -12,10 +12,15 @@ import {
   withPeer,
 } from './utils/loaderUtils';
 
-import type { Layer, LinteljsOptions } from '../types';
+import type { Linter } from 'eslint';
+import type {
+  Layer,
+  LinteljsOptions,
+  Rules,
+} from '../types';
 
 // Layer order is fixed here: `vue()`/`svelte()` nest typescript-eslint under their own parser and must follow it.
-export const linteljs = async (options: LinteljsOptions = {}, ...configs: Layer): Promise<Layer> => {
+export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter.Config<Rules>[]): Promise<Layer> => {
   const frameworkKeys = FRAMEWORK_KEYS
     .filter((key) => {
       const implied = IMPLIED_BY[key]

@@ -6,6 +6,7 @@ export const STEPS = [
   'lint:css',
   'typecheck',
   'test:coverage',
+  'typegen',
 ];
 
 // Set for the steps, so `pnpm pack` skips the `prepack` build the gate has already run.

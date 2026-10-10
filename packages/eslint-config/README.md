@@ -68,6 +68,9 @@ after, to override a rule or scope an exception:
 const config = await linteljs({ react: true }, { rules: { 'no-console': 'off' } });
 ```
 
+Their `rules` are typed: every rule a layer can load completes by name, and its options are checked against the
+rule's schema. A rule from a plugin you add yourself is accepted unchecked. The type is exported as `Rules`.
+
 ## Options
 
 One key per layer, each off unless you enable it. A key whose layer needs an optional peer that is not

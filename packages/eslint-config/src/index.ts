@@ -14,6 +14,7 @@ export type {
   NamingConvention,
   NamingMap,
   ResolverOptions,
+  Rules,
   TailwindOptions,
   TypescriptOptions,
 } from './types';

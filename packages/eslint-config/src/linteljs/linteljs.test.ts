@@ -13,6 +13,7 @@ import { Linter } from 'eslint';
 import {
   describe,
   expect,
+  expectTypeOf,
   it,
   onTestFinished,
   vi,
@@ -37,6 +38,7 @@ import type {
   FrameworkKey,
   Layer,
   LinteljsOptions,
+  Rules,
 } from '../types';
 
 const SFC_FIXTURES = join(import.meta.dirname, '../../__mocks__/fixtures/sfc');
@@ -597,6 +599,23 @@ describe('linteljs', () => {
     const extended = await linteljs({}, { rules: { '@stylistic/quotes': 'off' } });
     const extendedRuleIds = await ruleIdsFor(extended, code, 'src/lib/utils/sample.ts');
     expect(extendedRuleIds).not.toContain('@stylistic/quotes');
+  });
+
+  it('types the rules of the configs it is handed from each rule schema', () => {
+    type Extra = Parameters<typeof linteljs>[1];
+    type Quotes = NonNullable<NonNullable<Extra['rules']>['@stylistic/quotes']>;
+
+    expectTypeOf<['error', 'single']>().toExtend<Quotes>();
+    expectTypeOf<['error', 'backtick-ish']>().not.toExtend<Quotes>();
+    interface NumericAllow {
+      allow: number;
+    }
+    interface TextSingleline {
+      singleline: string;
+    }
+
+    expectTypeOf<['error', NumericAllow]>().not.toExtend<NonNullable<Rules['no-console']>>();
+    expectTypeOf<['error', TextSingleline]>().not.toExtend<NonNullable<Rules['vue/max-attributes-per-line']>>();
   });
 });
 

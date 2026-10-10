@@ -1,8 +1,12 @@
 import type { Linter } from 'eslint';
+import type { RuleOptions } from './typegen';
 
 // Frozen contract with `@linteljs/create`, which mirrors these types without resolving this package.
 
 export type Layer = Linter.Config[];
+
+// Every rule a `linteljs()` layer can load, with its options, open to the rules of plugins added after it.
+export type Rules = RuleOptions & Linter.RulesRecord;
 
 export type NamingConvention = 'PASCAL_CASE' | 'CAMEL_CASE' | 'KEBAB_CASE';
 

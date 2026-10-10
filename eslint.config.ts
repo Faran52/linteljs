@@ -109,6 +109,7 @@ const config = [
       '**/.compat/**',
       '**/reports/**',
       '**/__mocks__/fixtures/**',
+      'packages/eslint-config/src/typegen.d.ts',
       'packages/create/templates/fragments/test-setup/setupTests.angular.ts',
       'packages/create/templates/fragments/test-setup/setupTests.reactNative.ts',
       'packages/create/templates/fragments/test-setup/setupTests.msw.ts',
@@ -225,6 +226,16 @@ const config = [
     name: '@linteljs/workspace/scripts-logger',
     files: ['packages/create/templates/project/scripts/utils/loggerUtils.ts'],
     rules: { 'no-console': 'off' },
+  },
+
+  // docs/DESIGN.md: `@linteljs/workspace/typegen`
+  {
+    name: '@linteljs/workspace/typegen',
+    files: ['packages/eslint-config/scripts/typegen/typegenScript.ts'],
+    rules: {
+      'sonarjs/deprecation': 'off',
+      '@typescript-eslint/no-deprecated': 'off',
+    },
   },
 
   // sonarjs cannot read an AST identity check. docs/DESIGN.md: `@linteljs/workspace/ast-identity`
