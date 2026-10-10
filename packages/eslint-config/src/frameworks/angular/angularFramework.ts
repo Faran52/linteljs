@@ -24,14 +24,14 @@ export const angular = (): Layer => {
     ...presetOf(angularEslint.configs.tsRecommended, 'angular-eslint/tsRecommended', TS_FILES),
 
     {
-      name: '@linteljs/angular/inline-templates',
+      name: 'linteljs/angular/inline-templates',
       files: TS_FILES,
       processor: angularEslint.processInlineTemplates,
     },
 
     {
       // Angular declares a component by decorator; without this every presentational component fails.
-      name: '@linteljs/angular/decorated-classes',
+      name: 'linteljs/angular/decorated-classes',
       files: TS_FILES,
       // Declared so the layer stands alone: no preset above registers this plugin.
       plugins: { '@typescript-eslint': tseslint.plugin },
@@ -39,7 +39,7 @@ export const angular = (): Layer => {
     },
 
     // `sonarjs/recommended`'s Angular rule, which `base` turns off.
-    ...sonarjsRules('@linteljs/angular/sonarjs', ANGULAR_SONARJS_RULES, TS_FILES),
+    ...sonarjsRules('linteljs/angular/sonarjs', ANGULAR_SONARJS_RULES, TS_FILES),
 
     ...presetOf(angularEslint.configs.templateRecommended, 'angular-eslint/template', TEMPLATE_FILES),
 

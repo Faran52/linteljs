@@ -23,7 +23,7 @@ const BUILD_OUTPUT = [
 export const next = (): Layer => {
   const layer: Layer = [
     {
-      name: '@linteljs/next',
+      name: 'linteljs/next',
       files: SCRIPT_FILES,
       plugins: { '@next/next': nextPlugin },
       rules: {
@@ -39,14 +39,14 @@ export const next = (): Layer => {
 
     {
       // A name Next reads, which no naming convention spells.
-      name: '@linteljs/next/convention-filenames',
+      name: 'linteljs/next/convention-filenames',
       files: ['**/instrumentation-client.ts'],
       rules: {
         'check-file/filename-naming-convention': 'off',
       },
     },
     {
-      name: '@linteljs/next/ignores',
+      name: 'linteljs/next/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];

@@ -21,10 +21,10 @@ export const solid = (): Layer => {
   const layer: Layer = [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SCRIPT_FILES),
     ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SCRIPT_FILES),
-    ...sonarjsRules('@linteljs/solid/sonarjs', { 'sonarjs/jsx-no-leaked-render': 'error' }, SCRIPT_FILES),
+    ...sonarjsRules('linteljs/solid/sonarjs', { 'sonarjs/jsx-no-leaked-render': 'error' }, SCRIPT_FILES),
 
     {
-      name: '@linteljs/solid',
+      name: 'linteljs/solid',
       files: SCRIPT_FILES,
       plugins: {
         '@linteljs': linteljs,
@@ -37,7 +37,7 @@ export const solid = (): Layer => {
       },
     },
     {
-      name: '@linteljs/solid/ignores',
+      name: 'linteljs/solid/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];

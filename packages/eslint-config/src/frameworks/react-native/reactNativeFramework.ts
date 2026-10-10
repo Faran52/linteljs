@@ -23,7 +23,7 @@ export const reactNative = (): Layer => {
   const layer: Layer = [
     ...reactCore(),
     {
-      name: '@linteljs/react-native/accessibility',
+      name: 'linteljs/react-native/accessibility',
       // `reactCore()` above registers the plugin over the same files.
       files: SCRIPT_FILES,
       // Each is an opt-out, so `recommended` does not carry them.
@@ -37,7 +37,7 @@ export const reactNative = (): Layer => {
     },
     // After `base`, so it restates the exemptions `base` grants after its own markup cap.
     {
-      name: '@linteljs/react-native/markup-size',
+      name: 'linteljs/react-native/markup-size',
       files: JS_MARKUP_FILES,
       ignores: [
         ...TEST_FILES,
@@ -49,7 +49,7 @@ export const reactNative = (): Layer => {
       rules: MARKUP_SIZE_RULES,
     },
     {
-      name: '@linteljs/react-native/ignores',
+      name: 'linteljs/react-native/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];

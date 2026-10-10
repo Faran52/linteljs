@@ -49,7 +49,7 @@ export const LEAKED_RENDER_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Cou
 export const ownBlockNames = (layer: Layer): string[] => {
   return layer
     .flatMap(({ name }) => {
-      if (!name?.startsWith('@linteljs/')) {
+      if (!name?.startsWith('linteljs/')) {
         return [];
       }
 

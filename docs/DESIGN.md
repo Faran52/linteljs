@@ -133,7 +133,7 @@ Svelte reports a11y as warnings and `svelte-check` exits 0 on one; drop the flag
 Vue's preset is ordered *ahead* of `@linteljs/vue`: placed later, its `**/*.vue` parser entry takes the
 `parserOptions` carrying `projectService` with it.
 
-`@linteljs/vue/sfc-import-seam` turns `no-unsafe-argument` and `no-unsafe-assignment` off for every `.ts` file in a
+`linteljs/vue/sfc-import-seam` turns `no-unsafe-argument` and `no-unsafe-assignment` off for every `.ts` file in a
 Vue or Nuxt project: lint's program reads an SFC import as an error type (Vue starters: 11 findings, all SFC
 imports; Nuxt likewise), and `vue-tsc` checks that seam. No glob can name what imports an SFC.
 

@@ -374,27 +374,27 @@ describe('base: ignores', () => {
 
       const baseBlocks = names
         .filter((name) => {
-          return name.startsWith('@linteljs/base');
+          return name.startsWith('linteljs/base');
         });
 
       const expected = [
-        '@linteljs/base/gitignore',
-        '@linteljs/base/ignores',
-        '@linteljs/base/typescript-syntax',
-        '@linteljs/base/tsx',
-        '@linteljs/base',
-        '@linteljs/base/typescript-rules',
-        '@linteljs/base/prefer-alias',
-        '@linteljs/base/scripts',
-        '@linteljs/base/fixtures',
-        '@linteljs/base/markup-size',
-        '@linteljs/base/utils-size',
-        '@linteljs/base/test-size',
-        '@linteljs/base/magic-numbers',
-        '@linteljs/base/expression-complexity',
-        '@linteljs/base/test-comments',
-        '@linteljs/base/name-before-use',
-        '@linteljs/base/naming',
+        'linteljs/base/gitignore',
+        'linteljs/base/ignores',
+        'linteljs/base/typescript-syntax',
+        'linteljs/base/tsx',
+        'linteljs/base',
+        'linteljs/base/typescript-rules',
+        'linteljs/base/prefer-alias',
+        'linteljs/base/scripts',
+        'linteljs/base/fixtures',
+        'linteljs/base/markup-size',
+        'linteljs/base/utils-size',
+        'linteljs/base/test-size',
+        'linteljs/base/magic-numbers',
+        'linteljs/base/expression-complexity',
+        'linteljs/base/test-comments',
+        'linteljs/base/name-before-use',
+        'linteljs/base/naming',
       ];
       expect(baseBlocks).toEqual(expected);
     });
@@ -404,7 +404,7 @@ describe('base: ignores', () => {
     await withProject({}, async (root) => {
       const gitignoreEntries = base({ root })
         .filter((entry) => {
-          return entry.name === '@linteljs/base/gitignore';
+          return entry.name === 'linteljs/base/gitignore';
         });
 
       expect(gitignoreEntries).toEqual([]);

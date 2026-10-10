@@ -41,7 +41,7 @@ export const reactCore = (): Layer => {
     // `@eslint-react` 5 republishes these under its own prefix, so both presets would report every hook defect twice.
     // `react-hooks` stays the owner: seven of its rules, `refs` among them, have no `@eslint-react` copy.
     {
-      name: '@linteljs/react/hooks-one-owner',
+      name: 'linteljs/react/hooks-one-owner',
       files: SCRIPT_FILES,
       rules: {
         '@eslint-react/error-boundaries': 'off',
@@ -56,10 +56,10 @@ export const reactCore = (): Layer => {
       },
     },
 
-    ...sonarjsRules('@linteljs/react/sonarjs', REACT_SONARJS_RULES, SCRIPT_FILES),
+    ...sonarjsRules('linteljs/react/sonarjs', REACT_SONARJS_RULES, SCRIPT_FILES),
 
     {
-      name: '@linteljs/react',
+      name: 'linteljs/react',
       files: SCRIPT_FILES,
       plugins: {
         '@linteljs': linteljs,
@@ -86,7 +86,7 @@ export const reactCore = (): Layer => {
 
     // tsc reports a duplicate JSX prop in `.tsx` as TS17001.
     {
-      name: '@linteljs/react/javascript',
+      name: 'linteljs/react/javascript',
       files: JAVASCRIPT_FILES,
       rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },

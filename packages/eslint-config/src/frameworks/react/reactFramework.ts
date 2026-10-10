@@ -17,7 +17,7 @@ export const react = (): Layer => {
 
     // DOM only, so not in `reactCore()`, which React Native shares.
     {
-      name: '@linteljs/react/dom',
+      name: 'linteljs/react/dom',
       files: SCRIPT_FILES,
       rules: {
         '@eslint-react/dom-no-missing-button-type': 'error',
@@ -27,7 +27,7 @@ export const react = (): Layer => {
       },
     },
     {
-      name: '@linteljs/react/ignores',
+      name: 'linteljs/react/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];

@@ -55,7 +55,7 @@ const gitignored = (root: string): Layer => {
     return [];
   }
 
-  const gitignoreLayer = [includeIgnoreFile(path, '@linteljs/base/gitignore')];
+  const gitignoreLayer = [includeIgnoreFile(path, 'linteljs/base/gitignore')];
 
   return gitignoreLayer;
 };
@@ -119,7 +119,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     ...(root !== undefined && gitignore ? gitignored(root) : []),
     ...(ignores
       ? [{
-          name: '@linteljs/base/ignores',
+          name: 'linteljs/base/ignores',
           ignores,
         }]
       : []),
@@ -139,14 +139,14 @@ export const base = (options: BaseOptions = {}): Layer => {
       }),
 
     {
-      name: '@linteljs/base/typescript-syntax',
+      name: 'linteljs/base/typescript-syntax',
       files: ['**/*.{ts,tsx,mts,cts}'],
       languageOptions: { parser: tseslint.parser },
     },
 
     // The parser reads JSX off the extension, but `@stylistic/comma-dangle` keeps `<T,>` only when this flag is set.
     {
-      name: '@linteljs/base/tsx',
+      name: 'linteljs/base/tsx',
       files: ['**/*.tsx'],
       languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     },
@@ -158,7 +158,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', scriptFiles),
 
     {
-      name: '@linteljs/base',
+      name: 'linteljs/base',
       files: scriptFiles,
 
       plugins: {
@@ -327,7 +327,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // Restated over the SFC extensions the plugin's own preset cannot reach.
     {
-      name: '@linteljs/base/typescript-rules',
+      name: 'linteljs/base/typescript-rules',
       files: reaching(TYPED_FILES),
       rules: {
         '@linteljs/union-newline': 'error',
@@ -339,27 +339,27 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // Not over `.astro`, even when `astro` is on.
     {
-      name: '@linteljs/base/prefer-alias',
+      name: 'linteljs/base/prefer-alias',
       files: TYPED_FILES,
       rules: { '@linteljs/prefer-alias': 'error' },
     },
 
     // A script's stdout is its output.
     {
-      name: '@linteljs/base/scripts',
+      name: 'linteljs/base/scripts',
       files: [`scripts/**/*.{${SCRIPT_EXTENSIONS}}`],
       rules: { 'no-console': 'off' },
     },
 
     // A fake of `inspectedWindow.eval` has to execute a string; `no-implied-eval` stays on.
     {
-      name: '@linteljs/base/fixtures',
+      name: 'linteljs/base/fixtures',
       files: MOCK_FILES,
       rules: { 'sonarjs/code-eval': 'off' },
     },
 
     {
-      name: '@linteljs/base/markup-size',
+      name: 'linteljs/base/markup-size',
       files: reaching(MARKUP_FILES),
       ignores: [...TEST_FILES, ...STORY_FILES],
       rules: MARKUP_SIZE_RULES,
@@ -367,7 +367,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // A `utils/` module is a drawer of small helpers, so it may run longer than a subject's entry.
     {
-      name: '@linteljs/base/utils-size',
+      name: 'linteljs/base/utils-size',
       files: [`**/utils/**/*.{${SCRIPT_EXTENSIONS}}`],
       rules: {
         'max-lines': ['error', {
@@ -380,7 +380,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // A suite is a list of cases rather than a function.
     {
-      name: '@linteljs/base/test-size',
+      name: 'linteljs/base/test-size',
       files: SUITE_FILES,
       rules: {
         'max-lines': 'off',
@@ -390,7 +390,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // The typescript-eslint copy, which knows enums and literal types, on plain JavaScript as well.
     {
-      name: '@linteljs/base/magic-numbers',
+      name: 'linteljs/base/magic-numbers',
       files: scriptFiles,
       ignores: [...SUITE_FILES, ...NUMBER_EXEMPT_FILES],
       plugins: { '@typescript-eslint': tseslint.plugin },
@@ -418,7 +418,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // A case may spell out its condition; source names its parts.
     {
-      name: '@linteljs/base/expression-complexity',
+      name: 'linteljs/base/expression-complexity',
       files: scriptFiles,
       ignores: SUITE_FILES,
       rules: {
@@ -428,14 +428,14 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // A suite carries no prose comments, a different rule's business.
     {
-      name: '@linteljs/base/test-comments',
+      name: 'linteljs/base/test-comments',
       files: TEST_FILES,
       rules: { '@linteljs/comment-delimiter': 'off' },
     },
 
     // Outside the plugin's `recommended`, so restated here; suites included.
     {
-      name: '@linteljs/base/name-before-use',
+      name: 'linteljs/base/name-before-use',
       files: scriptFiles,
       rules: {
         '@linteljs/name-before-use': ['error', {

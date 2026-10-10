@@ -27,12 +27,15 @@ when a version's change lives in a sibling it is described there instead:
   the React frameworks, its Vue rules (`no-vue-class-component`, `no-vue-mixins`,
   `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`, and `no-angular-bypass-sanitization` to
   `angular()`. An override of one of them in a `base`-only config now names a rule that is off.
+- **Blocks are named `linteljs/<layer>` and `linteljs/<layer>/<part>`**, without the `@`: `@linteljs/base` is
+  `linteljs/base`, `@linteljs/vue/sonarjs` is `linteljs/vue/sonarjs`. Rule ids keep `@linteljs/`. A config or tool
+  that finds a block by name follows the rename.
 - **`newline-destructuring` is `@linteljs/member-newline`.** Rename any override of it.
 - **`root` replaces `aliases` and `process.cwd()`.** `base` reads the `.gitignore` and the tsconfig `paths` in
   `root` (`root: import.meta.dirname`), never the working directory; `gitignore: false` skips the `.gitignore`.
   The `aliases` option and the `AliasMap` type are gone: the import-sort groups follow the tsconfig `paths`.
 - **Framework layers ignore their build output.** `next()`, `nuxt()`, `reactNative()`, `react()`, `vue()` and
-  `solid()` each add a `@linteljs/<layer>/ignores` block with what the framework's own config ignores (README,
+  `solid()` each add a `linteljs/<layer>/ignores` block with what the framework's own config ignores (README,
   Layers), so a config that linted `dist/` or `.next/` under one of them no longer does.
 - **`base` lays out lists at three or more.** `@linteljs/member-newline` owns object literals, object patterns,
   interfaces and type literals, and `@linteljs/array-newline` arrays: three or more items go one per line, two or

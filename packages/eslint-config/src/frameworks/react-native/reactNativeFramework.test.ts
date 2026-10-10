@@ -118,13 +118,13 @@ describe('reactNative', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(reactNative());
     const expected = [
-      '@linteljs/react/hooks-one-owner',
-      '@linteljs/react/sonarjs',
-      '@linteljs/react',
-      '@linteljs/react/javascript',
-      '@linteljs/react-native/accessibility',
-      '@linteljs/react-native/markup-size',
-      '@linteljs/react-native/ignores',
+      'linteljs/react/hooks-one-owner',
+      'linteljs/react/sonarjs',
+      'linteljs/react',
+      'linteljs/react/javascript',
+      'linteljs/react-native/accessibility',
+      'linteljs/react-native/markup-size',
+      'linteljs/react-native/ignores',
     ];
     expect(actual).toEqual(expected);
   });

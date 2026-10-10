@@ -309,7 +309,7 @@ describe('composeConfig', () => {
     });
     const block = config
       .find(({ name }) => {
-        return name === '@linteljs/typescript/prefer-alias';
+        return name === 'linteljs/typescript/prefer-alias';
       });
 
     const expected = {
@@ -328,7 +328,7 @@ describe('composeConfig', () => {
     });
     const block = config
       .find(({ name }) => {
-        return name === '@linteljs/tailwind';
+        return name === 'linteljs/tailwind';
       });
 
     const expected = { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } };

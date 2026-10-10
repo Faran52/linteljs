@@ -10,7 +10,7 @@ export const html = (): Layer => {
   const layer: Layer = [
     {
       ...presetOf(htmlPlugin.configs['flat/recommended'], 'html-eslint/flat/recommended')[0],
-      name: '@linteljs/html',
+      name: 'linteljs/html',
       files: ['**/*.html'],
       languageOptions: { parser: htmlParser },
     },

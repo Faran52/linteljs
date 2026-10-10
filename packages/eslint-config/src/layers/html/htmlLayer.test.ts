@@ -56,7 +56,7 @@ describe('html', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(html());
     const expected = [
-      '@linteljs/html',
+      'linteljs/html',
     ];
     expect(actual).toEqual(expected);
   });

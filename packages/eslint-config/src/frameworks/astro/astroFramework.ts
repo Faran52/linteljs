@@ -39,39 +39,39 @@ export const astro = (): Layer => {
     ...recommended,
     ...a11y,
     {
-      name: '@linteljs/astro/framework-specifiers',
+      name: 'linteljs/astro/framework-specifiers',
       rules: {
         'import-x/no-unresolved': ['error', { ignore: VIRTUAL_MODULES }],
       },
     },
     // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree when that fails.
     {
-      name: '@linteljs/astro/typescript',
+      name: 'linteljs/astro/typescript',
       files: ASTRO_FILES,
       languageOptions: { parserOptions: { parser: tseslint.parser } },
       processor: 'astro/client-side-ts',
     },
     {
-      name: '@linteljs/astro/jsx-layout',
+      name: 'linteljs/astro/jsx-layout',
       files: ASTRO_FILES,
       plugins: { '@stylistic': stylistic },
       rules: JSX_LAYOUT_RULES,
     },
     // Astro keeps a text node's line break as a space, so splitting `<code>x</code>, which` renders ` , which`.
     {
-      name: '@linteljs/astro/text-whitespace',
+      name: 'linteljs/astro/text-whitespace',
       files: ASTRO_FILES,
       rules: { '@stylistic/jsx-one-expression-per-line': 'off' },
     },
     {
-      name: '@linteljs/astro/typescript-scripts',
+      name: 'linteljs/astro/typescript-scripts',
       files: ['**/*.astro/*.ts'],
       languageOptions: { parser: tseslint.parser },
     },
     // After `typescript()`, which is why `composeConfig` composes this last.
     {
       ...tseslint.configs.disableTypeChecked,
-      name: '@linteljs/astro/untyped',
+      name: 'linteljs/astro/untyped',
       files: ASTRO_TYPELESS,
     },
   ];

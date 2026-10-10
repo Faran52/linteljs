@@ -134,7 +134,7 @@ describe('typescript', () => {
   it('restates the prefer-alias defaults', () => {
     const block = typescript()
       .find(({ name }) => {
-        return name === '@linteljs/typescript/prefer-alias';
+        return name === 'linteljs/typescript/prefer-alias';
       });
 
     const expected = {
@@ -184,12 +184,12 @@ describe('typescript', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(typescript());
     const expected = [
-      '@linteljs/typescript',
-      '@linteljs/typescript/untyped',
-      '@linteljs/typescript/prefer-destructuring',
-      '@linteljs/typescript/unused-vars-handover',
-      '@linteljs/typescript/prefer-alias',
-      '@linteljs/typescript/asset-requires',
+      'linteljs/typescript',
+      'linteljs/typescript/untyped',
+      'linteljs/typescript/prefer-destructuring',
+      'linteljs/typescript/unused-vars-handover',
+      'linteljs/typescript/prefer-alias',
+      'linteljs/typescript/asset-requires',
     ];
     expect(actual).toEqual(expected);
   });

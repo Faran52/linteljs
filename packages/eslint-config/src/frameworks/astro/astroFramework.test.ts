@@ -129,18 +129,18 @@ describe('astro', () => {
   it('names the TypeScript parser for a template and its virtual scripts', () => {
     const typed = astro()
       .filter(({ name }) => {
-        return name?.startsWith('@linteljs/astro/typescript');
+        return name?.startsWith('linteljs/astro/typescript');
       });
 
     const expected = [
       {
-        name: '@linteljs/astro/typescript',
+        name: 'linteljs/astro/typescript',
         files: ['**/*.astro'],
         languageOptions: { parserOptions: { parser: tseslint.parser } },
         processor: 'astro/client-side-ts',
       },
       {
-        name: '@linteljs/astro/typescript-scripts',
+        name: 'linteljs/astro/typescript-scripts',
         files: ['**/*.astro/*.ts'],
         languageOptions: { parser: tseslint.parser },
       },
@@ -158,12 +158,12 @@ describe('astro', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(astro());
     const expected = [
-      '@linteljs/astro/framework-specifiers',
-      '@linteljs/astro/typescript',
-      '@linteljs/astro/jsx-layout',
-      '@linteljs/astro/text-whitespace',
-      '@linteljs/astro/typescript-scripts',
-      '@linteljs/astro/untyped',
+      'linteljs/astro/framework-specifiers',
+      'linteljs/astro/typescript',
+      'linteljs/astro/jsx-layout',
+      'linteljs/astro/text-whitespace',
+      'linteljs/astro/typescript-scripts',
+      'linteljs/astro/untyped',
     ];
     expect(actual).toEqual(expected);
   });

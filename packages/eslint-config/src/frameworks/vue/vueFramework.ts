@@ -36,7 +36,7 @@ export const vue = (): Layer => {
     ...presetOf(vueA11y.configs['flat/recommended'], 'vuejs-accessibility/flat/recommended', VUE_FILES),
 
     {
-      name: '@linteljs/vue',
+      name: 'linteljs/vue',
       files: VUE_FILES,
       languageOptions: {
         parserOptions: {
@@ -53,11 +53,11 @@ export const vue = (): Layer => {
     },
 
     // `sonarjs/recommended`'s Vue rules, which `base` turns off.
-    ...sonarjsRules('@linteljs/vue/sonarjs', VUE_SONARJS_RULES, SCRIPT_AND_SFC_FILES),
+    ...sonarjsRules('linteljs/vue/sonarjs', VUE_SONARJS_RULES, SCRIPT_AND_SFC_FILES),
 
     {
       // `vue-tsc --noEmit` covers SFC imports. Measured: `@vue/typescript-plugin` trades 2 findings for 376.
-      name: '@linteljs/vue/sfc-import-seam',
+      name: 'linteljs/vue/sfc-import-seam',
       files: ['**/*.ts'],
       rules: {
         '@typescript-eslint/no-unsafe-argument': 'off',
@@ -66,7 +66,7 @@ export const vue = (): Layer => {
     },
 
     {
-      name: '@linteljs/vue/ignores',
+      name: 'linteljs/vue/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];

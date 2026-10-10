@@ -84,8 +84,8 @@ describe('nuxt', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(nuxt());
     const expected = [
-      '@linteljs/nuxt/route-files',
-      '@linteljs/nuxt/ignores',
+      'linteljs/nuxt/route-files',
+      'linteljs/nuxt/ignores',
     ];
     expect(actual).toEqual(expected);
   });

@@ -8,7 +8,7 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
     ...tseslint.configs.stylisticTypeChecked,
 
     {
-      name: '@linteljs/typescript',
+      name: 'linteljs/typescript',
       files: ['**/*.{ts,tsx,mts,cts}'],
       languageOptions: {
         // Not a `project` glob: `projectService` types a config file outside every tsconfig `include`.
@@ -25,12 +25,12 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
     // `strictTypeChecked` has no files glob; JavaScript and HTML stay untyped.
     {
       ...tseslint.configs.disableTypeChecked,
-      name: '@linteljs/typescript/untyped',
+      name: 'linteljs/typescript/untyped',
       files: ['**/*.{js,jsx,mjs,cjs}', '**/*.html'],
     },
 
     {
-      name: '@linteljs/typescript/prefer-destructuring',
+      name: 'linteljs/typescript/prefer-destructuring',
       files: ['**/*.{ts,tsx,mts,cts}'],
       rules: {
         'prefer-destructuring': 'off',
@@ -56,13 +56,13 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
 
     // `strictTypeChecked` re-enables what `base` handed to `unused-imports`.
     {
-      name: '@linteljs/typescript/unused-vars-handover',
+      name: 'linteljs/typescript/unused-vars-handover',
       rules: { '@typescript-eslint/no-unused-vars': 'off' },
     },
 
     // The SFC parsers nest typescript-eslint with `projectService`, so `.vue` and `.svelte` get a program too.
     {
-      name: '@linteljs/typescript/prefer-alias',
+      name: 'linteljs/typescript/prefer-alias',
       files: ['**/*.{ts,tsx,mts,cts,vue,svelte}'],
       rules: {
         '@linteljs/prefer-alias': ['error', {
@@ -74,7 +74,7 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
 
     // Metro assets need `require`; a package import is still reported.
     {
-      name: '@linteljs/typescript/asset-requires',
+      name: 'linteljs/typescript/asset-requires',
       rules: {
         '@typescript-eslint/no-require-imports': ['error', {
           allow: ['\\.(png|jpe?g|gif|webp|avif|bmp|svg|ttf|otf|woff2?|mp[34]|wav|aac|m4a|mov|webm)$'],

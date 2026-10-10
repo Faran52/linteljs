@@ -34,7 +34,7 @@ const layer = (): Layer => {
 const ownBlockOf = (built: Layer): Layer[number] => {
   const block = built
     .find((entry) => {
-      return entry.name === '@linteljs/tailwind';
+      return entry.name === 'linteljs/tailwind';
     });
 
   if (block === undefined) {

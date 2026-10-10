@@ -135,9 +135,9 @@ describe('next', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(next());
     const expected = [
-      '@linteljs/next',
-      '@linteljs/next/convention-filenames',
-      '@linteljs/next/ignores',
+      'linteljs/next',
+      'linteljs/next/convention-filenames',
+      'linteljs/next/ignores',
     ];
     expect(actual).toEqual(expected);
   });

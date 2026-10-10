@@ -130,9 +130,9 @@ describe('svelte', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(svelte());
     const expected = [
-      '@linteljs/svelte/framework-specifiers',
-      '@linteljs/svelte/route-filenames',
-      '@linteljs/svelte',
+      'linteljs/svelte/framework-specifiers',
+      'linteljs/svelte/route-filenames',
+      'linteljs/svelte',
     ];
     expect(actual).toEqual(expected);
   });

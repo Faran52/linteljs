@@ -79,7 +79,7 @@ describe('vitest', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(vitest());
     const expected = [
-      '@linteljs/vitest',
+      'linteljs/vitest',
     ];
     expect(actual).toEqual(expected);
   });

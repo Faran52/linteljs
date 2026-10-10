@@ -108,9 +108,9 @@ describe('solid', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(solid());
     const expected = [
-      '@linteljs/solid/sonarjs',
-      '@linteljs/solid',
-      '@linteljs/solid/ignores',
+      'linteljs/solid/sonarjs',
+      'linteljs/solid',
+      'linteljs/solid/ignores',
     ];
     expect(actual).toEqual(expected);
   });

@@ -133,9 +133,9 @@ describe('angular', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(angular());
     const expected = [
-      '@linteljs/angular/inline-templates',
-      '@linteljs/angular/decorated-classes',
-      '@linteljs/angular/sonarjs',
+      'linteljs/angular/inline-templates',
+      'linteljs/angular/decorated-classes',
+      'linteljs/angular/sonarjs',
     ];
     expect(actual).toEqual(expected);
   });

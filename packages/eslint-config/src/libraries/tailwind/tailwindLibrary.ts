@@ -13,7 +13,7 @@ export const tailwind = (entryPoint?: string): Layer => {
   const layer: Layer = [
     ...presetOf(betterTailwindcss.configs.recommended, 'better-tailwindcss/recommended', TAILWIND_FILES),
     {
-      name: '@linteljs/tailwind',
+      name: 'linteljs/tailwind',
       files: TAILWIND_FILES,
       ...(entryPoint === undefined ? {} : { settings: { 'better-tailwindcss': { entryPoint } } }),
       rules: {

@@ -31,14 +31,14 @@ export const svelte = (): Layer => {
     ...presetOf(sveltePlugin.configs['flat/recommended'], 'svelte/flat/recommended'),
 
     {
-      name: '@linteljs/svelte/framework-specifiers',
+      name: 'linteljs/svelte/framework-specifiers',
       rules: {
         'import-x/no-unresolved': ['error', { ignore: VIRTUAL_MODULES }],
       },
     },
 
     {
-      name: '@linteljs/svelte/route-filenames',
+      name: 'linteljs/svelte/route-filenames',
       files: SVELTEKIT_ROUTE_FILES,
       rules: {
         'check-file/filename-naming-convention': 'off',
@@ -46,7 +46,7 @@ export const svelte = (): Layer => {
     },
 
     {
-      name: '@linteljs/svelte',
+      name: 'linteljs/svelte',
       // Not `.svelte.js`: `typescript()` turns type-aware rules off every `.js` file.
       files: [`**/*${SVELTE_EXTENSION}`, `**/*${SVELTE_EXTENSION}.ts`],
       languageOptions: {

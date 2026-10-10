@@ -35,12 +35,12 @@ describe('react', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(react());
     const expected = [
-      '@linteljs/react/hooks-one-owner',
-      '@linteljs/react/sonarjs',
-      '@linteljs/react',
-      '@linteljs/react/javascript',
-      '@linteljs/react/dom',
-      '@linteljs/react/ignores',
+      'linteljs/react/hooks-one-owner',
+      'linteljs/react/sonarjs',
+      'linteljs/react',
+      'linteljs/react/javascript',
+      'linteljs/react/dom',
+      'linteljs/react/ignores',
     ];
     expect(actual).toEqual(expected);
   });

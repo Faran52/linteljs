@@ -26,7 +26,7 @@ const BUILD_OUTPUT = [
 export const nuxt = (): Layer => {
   const layer: Layer = [
     {
-      name: '@linteljs/nuxt/route-files',
+      name: 'linteljs/nuxt/route-files',
       files: ROUTE_FILES,
       rules: {
         // A page's filename is its URL.
@@ -34,7 +34,7 @@ export const nuxt = (): Layer => {
       },
     },
     {
-      name: '@linteljs/nuxt/ignores',
+      name: 'linteljs/nuxt/ignores',
       ignores: BUILD_OUTPUT,
     },
   ];
