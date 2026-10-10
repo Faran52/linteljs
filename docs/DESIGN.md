@@ -1105,7 +1105,7 @@ file `git ls-files -co --exclude-standard` lists (so the whole program, every co
 gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_modules/.pnpm/lock.yaml`), the
 node and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env. Only `lint` and `typecheck` leave out
 `*.md`, which neither reads. Never per file, unlike ESLint `--cache`: a type changed in one file reruns the step
-that fails in another (`packages/create/scripts/gate/utils/stepCacheUtils.test.ts`). Only a pass is stored, and
+that fails in another. Only a pass is stored, and
 only when no input moved while the step ran. `lint:starters` keeps its own per-case cache. `CI` neither reads nor
 writes it; `LINTELJS_GATE_NO_CACHE=1` reruns every step. The commit gate still holds: a skipped step passed on
 inputs identical to this tree's.

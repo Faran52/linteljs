@@ -53,7 +53,7 @@ before that package publishes. The types it redeclares are held equal by `packag
 
 Each script is `scripts/<group>/<kebab>/<camel><Group>.ts` with its own `utils/*Utils.ts` and `constants.ts`
 (`packages/eslint-plugin/scripts/audit/real-code/realCodeAudit.ts`). A `scripts/` with no groups suffixes
-`Script` (`scripts/lint-starters/lintStartersScript.ts`). Root scripts carry no suites; what one decides that
+`Script` (`scripts/lint-starters/lintStartersScript.ts`). Repo tooling carries no suites, root or package `scripts/` alike; what one decides that
 needs a test lives in a package (`lint:starters` reads its cases from `packages/create/e2e/starter-cover/`).
 Helpers several scripts read go in the nearest shared `utils/`, the root `scripts/utils/` for all packages.
 Every script reports through the shipped `packages/create/templates/project/scripts/utils/loggerUtils.ts`
