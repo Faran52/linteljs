@@ -116,6 +116,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- The React layers run `@linteljs/no-duplicate-jsx-props` over `.js`, `.jsx`, `.mjs` and `.cjs` only: TypeScript
+  reports a duplicate JSX prop in `.tsx` itself (TS17001). `solid()` keeps it on every script file.
+- `base({ astro: true })` leaves `@linteljs/prefer-alias` off in `.astro` files.
 - `svelte()` sorts SvelteKit 3's `#lib` into its framework group and resolves it through `package.json` `imports`,
   so `$lib` is no longer let go unresolved. Kit 3 has no `$env/*` modules either, so `$env/` leaves the group
   and the unresolved ignore list.

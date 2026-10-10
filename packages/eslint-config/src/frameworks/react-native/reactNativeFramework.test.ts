@@ -119,6 +119,7 @@ describe('reactNative', () => {
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
+      '@linteljs/react/javascript',
       '@linteljs/react-native/accessibility',
     ];
     expect(actual).toEqual(expected);

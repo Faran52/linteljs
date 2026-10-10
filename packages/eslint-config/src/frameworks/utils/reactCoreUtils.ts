@@ -3,7 +3,11 @@ import linteljs from '@linteljs/eslint-plugin';
 import stylistic from '@stylistic/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
+import {
+  JAVASCRIPT_FILES,
+  JSX_STYLE_RULES,
+  SCRIPT_FILES,
+} from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Linter } from 'eslint';
@@ -63,7 +67,6 @@ export const reactCore = (): Layer => {
       },
       rules: {
         ...JSX_STYLE_RULES,
-        '@linteljs/no-duplicate-jsx-props': 'error',
         '@linteljs/prefer-destructured-props': 'error',
         '@linteljs/react-no-global-namespace': 'error',
         '@linteljs/sort-hook-dependencies': 'error',
@@ -79,6 +82,13 @@ export const reactCore = (): Layer => {
         '@eslint-react/use-state': 'error',
         'react-hooks/void-use-memo': 'error',
       },
+    },
+
+    // tsc reports a duplicate JSX prop in `.tsx` as TS17001.
+    {
+      name: '@linteljs/react/javascript',
+      files: JAVASCRIPT_FILES,
+      rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },
   ];
 

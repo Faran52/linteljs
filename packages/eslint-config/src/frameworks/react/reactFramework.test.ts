@@ -37,6 +37,7 @@ describe('react', () => {
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
+      '@linteljs/react/javascript',
       '@linteljs/react/dom',
     ];
     expect(actual).toEqual(expected);

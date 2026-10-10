@@ -32,6 +32,15 @@ export const NEXT_PROJECT: Layer = [
   },
 ];
 
+// What a JSX-in-JS project sets: no layer parses JSX in `.js` or `.jsx`.
+export const JSX_IN_JS: Layer = [
+  {
+    name: 'test/jsx-in-js',
+    files: ['**/*.{js,jsx}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+  },
+];
+
 // On disk beside its own tsconfig, for `projectService`.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 

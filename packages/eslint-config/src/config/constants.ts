@@ -6,6 +6,8 @@ export const SCRIPT_EXTENSIONS = `js,jsx,mjs,cjs,${TYPESCRIPT_EXTENSIONS}`;
 
 export const SCRIPT_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
 
+export const JAVASCRIPT_FILES = ['**/*.{js,jsx,mjs,cjs}'];
+
 // The one test-file table every layer reads; `*` and `/**` endings never pull a file into the lint on their own.
 export const TEST_FILES = ['**/*.{test,spec}.*', '**/__tests__/**'];
 

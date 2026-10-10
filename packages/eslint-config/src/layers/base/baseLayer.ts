@@ -314,8 +314,14 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@linteljs/interface-order': 'error',
         '@linteljs/no-inline-object-types': 'error',
         '@linteljs/no-duplicate-interface': 'error',
-        '@linteljs/prefer-alias': 'error',
       },
+    },
+
+    // Not over `.astro`, even when `astro` is on.
+    {
+      name: '@linteljs/base/prefer-alias',
+      files: TYPED_FILES,
+      rules: { '@linteljs/prefer-alias': 'error' },
     },
 
     // A script's stdout is its output.

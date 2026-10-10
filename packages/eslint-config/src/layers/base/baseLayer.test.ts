@@ -361,6 +361,7 @@ describe('base: ignores', () => {
         '@linteljs/base/tsx',
         '@linteljs/base',
         '@linteljs/base/typescript-rules',
+        '@linteljs/base/prefer-alias',
         '@linteljs/base/scripts',
         '@linteljs/base/fixtures',
         '@linteljs/base/component-size',
@@ -650,8 +651,13 @@ describe('base: astro', () => {
     const astroConfig = base({ astro: true });
     const component = await enabledRuleIdsFor(astroConfig, 'src/pages/index.astro');
     const unordered = new Set(component);
+    const expected = script
+      .filter((ruleId) => {
+        return ruleId !== '@linteljs/prefer-alias';
+      });
 
-    expect(unordered).toEqual(new Set(script));
+    expect(unordered).toEqual(new Set(expected));
+    expect(script).toContain('@linteljs/prefer-alias');
   });
 
   it('lints the frontmatter of a .astro file only on request', async () => {

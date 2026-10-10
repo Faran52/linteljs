@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import {
   enabledRuleIdsFor,
   frameworkRuleIdsFor,
+  JSX_IN_JS,
   messagesForFile,
   NEXT_PROJECT,
   ruleIdsFor,
@@ -242,7 +243,8 @@ describe('composeConfig', () => {
 
     expect(web).toContain('jsx-a11y-x/alt-text');
     expect(native).not.toContain('jsx-a11y-x/alt-text');
-    expect(native).toContain('@linteljs/no-duplicate-jsx-props');
+    const nativeScript = await ruleIdsFor([...nativeConfig, ...JSX_IN_JS], code, 'src/Logo.jsx');
+    expect(nativeScript).toContain('@linteljs/no-duplicate-jsx-props');
   });
 
   it('composes the library layers on top of the framework', async () => {
