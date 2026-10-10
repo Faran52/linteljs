@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config)
 [![Node](https://img.shields.io/node/v/@linteljs/eslint-config?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config)
 
-Composable ESLint flat-config layers for TypeScript projects. Use `composeConfig` when you want the shared
+Composable ESLint flat-config layers for TypeScript projects. Use `linteljs` when you want the shared
 layer order without hand-writing the stack.
 
 <details open>
@@ -49,49 +49,55 @@ typescript-eslint supports. ESLint loads a TypeScript config through jiti.
 
 ```ts
 // eslint.config.ts
-import { composeConfig } from '@linteljs/eslint-config/compose-config';
+import { linteljs } from '@linteljs/eslint-config';
 
-const config = await composeConfig({
+const config = await linteljs({
   root: import.meta.dirname,
-  framework: 'react',
+  react: true,
   typescript: true,
-  testing: 'vitest',
+  vitest: true,
 });
 
 export default config;
 ```
 
-`composeConfig` returns a flat-config array. Add your own blocks after it to override a rule or scope an
-exception.
+`linteljs` returns a flat-config array. Hand it your own blocks after the options, or spread it and add them
+after, to override a rule or scope an exception:
+
+```ts
+const config = await linteljs({ react: true }, { rules: { 'no-console': 'off' } });
+```
 
 ## Options
 
-Each layer switch is off unless you enable it.
+One key per layer, each off unless you enable it. A key whose layer needs an optional peer that is not
+installed throws, naming the key, the package and the command that installs it with the package manager that
+ran ESLint (`pnpm add -D eslint-plugin-solid`).
 
 | Option | Effect |
 | --- | --- |
-| `framework` | Adds a framework layer: `'react'`, `'next'`, `'react-native'`, `'vue'`, `'nuxt'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React, `nuxt` includes Vue, and `react-native` is React without the web accessibility preset. |
+| `react`, `next`, `expo`, `vue`, `nuxt`, `svelte`, `sveltekit`, `solid`, `angular` | Add a framework layer. `next` includes React and `nuxt` includes Vue. `expo` is React without the web accessibility preset. `sveltekit` is the Svelte layer. A key whose layer another enabled key includes adds nothing. |
 | `typescript` | Enables the TypeScript layer. |
-| `testing` | Enables rules for `*.test.*` and `*.spec.*` files from the runner's plugin: `'vitest'` or `'jest'` (React Native on `jest-expo`). |
-| `e2e` | `'playwright'` enables Playwright rules for `*.e2e.*` files and anything under `e2e/`. `'maestro'` adds nothing, since Maestro flows are YAML. |
-| `stories` | `'storybook'` enables Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |
+| `vitest`, `jest` | Enable rules for `*.test.*` and `*.spec.*` files from the runner's plugin (React Native on `jest-expo`). |
+| `playwright` | Enables Playwright rules for `*.e2e.*` files and anything under `e2e/`. |
+| `storybook` | Enables Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
-| `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
-| `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
+| `tanstackQuery`, `tanstackRouter`, `stylex` | Enable that library's layer. |
+| `tailwind` | `true`, or `{ entryPoint }`: the path to the CSS file that contains `@import "tailwindcss"`. |
 | `aliasExempt`, `enforceRelativeImports` | Options of `@linteljs/prefer-alias`, passed to the TypeScript layer. Ignored unless `typescript` is on. |
 | `root`, `gitignore`, `ignores`, `naming`, `folderNaming`, `resolver` | Passed through to `base` under the same names. |
 
-Without `tailwindEntryPoint`, the Tailwind rules only reason about Tailwind's default theme. Point it at the
+Without an `entryPoint`, the Tailwind rules only reason about Tailwind's default theme. Point it at the
 project stylesheet so the project's own tokens sort into the right group.
 
-`frameworkGroup` is intentionally not a public option here. The composer reads it from the framework layer so
-import sorting stays aligned with the framework that loaded it.
+`frameworkGroup` is intentionally not a public option here. The composer reads it from the framework layers so
+import sorting stays aligned with the frameworks that loaded it.
 
 ## Layer order
 
 The composer applies the layers in this order: base, TypeScript, framework, library, testing, end-to-end,
-stories, HTML, then Astro.
+stories, HTML, then Astro, then the configs you hand `linteljs` after its options.
 Framework layers override shared layers. Vue and Svelte must come after TypeScript so their top-level parsers
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
 `.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
@@ -115,14 +121,15 @@ export default [
 ];
 ```
 
-Apply the same order yourself. The root export re-exports every layer except `composeConfig`, but importing it
-loads every layer, so it needs every optional peer installed.
+Apply the same order yourself. The root export carries `linteljs` and also re-exports every layer, so importing
+anything from it loads every layer and needs every optional peer installed.
 
 ## Layers
 
 | Export | Subpath | Purpose | Optional peers to install |
 | --- | --- | --- | --- |
-| `composeConfig(options?)` | `/compose-config` | Loads requested layers and orders them. | Those of the layers it loads. |
+| `linteljs(options?, ...configs)` | `.` | Loads requested layers, orders them, and appends `configs`. | Those of the layers it loads. |
+| `composeConfig(options?)` | `/compose-config` | The enum-keyed composer `linteljs` replaces, kept until `@linteljs/create` moves over. | Those of the layers it loads. |
 | `base(options?)` | `/base` | `@stylistic` layout, `import-x` module checks, import sorting, unused imports, file and folder naming, sonarjs, size caps, no magic numbers outside tests and config, at most three operators in one expression outside tests, `@linteljs/name-before-use`, `prefer-destructuring`, and the plugin's `recommended`. It works for JavaScript on its own. It extends the plugin's five TypeScript-only rules to `.vue` and `.svelte` files. The four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
 | `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |

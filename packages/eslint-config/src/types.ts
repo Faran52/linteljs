@@ -67,3 +67,39 @@ export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'
   libraries?: LibraryLayer[];
   tailwindEntryPoint?: string;
 }
+
+export type FrameworkKey
+  = 'react'
+    | 'next'
+    | 'expo'
+    | 'vue'
+    | 'nuxt'
+    | 'svelte'
+    | 'sveltekit'
+    | 'solid'
+    | 'angular';
+
+export type LayerKey
+  = 'tanstackQuery'
+    | 'tanstackRouter'
+    | 'tailwind'
+    | 'stylex'
+    | 'vitest'
+    | 'jest'
+    | 'playwright'
+    | 'storybook'
+    | 'html'
+    | 'astro';
+
+export interface TailwindOptions {
+  entryPoint?: string;
+}
+
+// One key per layer; `next` and `expo` imply `react`, `nuxt` implies `vue`, `sveltekit` implies `svelte`.
+export interface LinteljsOptions
+  extends Omit<BaseOptions, 'frameworkGroup'>,
+  TypescriptOptions,
+  Partial<Record<FrameworkKey | Exclude<LayerKey, 'tailwind'>, boolean>> {
+  typescript?: boolean;
+  tailwind?: boolean | TailwindOptions;
+}

@@ -1,4 +1,3 @@
-// No `composeConfig`: it would load every framework layer, so it lives at `/compose-config`.
 export {
   E2E_FILES,
   MOCK_FILES,
@@ -49,17 +48,22 @@ export { stylex } from './libraries/stylex/stylexLibrary';
 export { tailwind } from './libraries/tailwind/tailwindLibrary';
 export { tanstackQuery } from './libraries/tanstack-query/tanstackQueryLibrary';
 export { tanstackRouter } from './libraries/tanstack-router/tanstackRouterLibrary';
+export { linteljs } from './linteljs/linteljs';
 export type {
   BaseOptions,
   ComposeConfigOptions,
   E2e,
   Framework,
+  FrameworkKey,
   Layer,
+  LayerKey,
   LibraryLayer,
+  LinteljsOptions,
   NamingConvention,
   NamingMap,
   ResolverOptions,
   Stories,
+  TailwindOptions,
   Testing,
   TypescriptOptions,
 } from './types';

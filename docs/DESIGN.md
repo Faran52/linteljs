@@ -110,6 +110,15 @@ ESLint started from, so one config ignored different files per run. The import-s
 `paths` of the tsconfig in `root` for the same reason: a second alias list beside the tsconfig drifts. The hardcoded entries stay: a project may not gitignore `dist/`, and
 `plugins/linteljs/` is committed on purpose.
 
+### One key per layer, and a missing peer names its install command
+
+`linteljs()` takes a flat key per layer, so a new framework is one key and `@linteljs/create` writes what a
+standalone user would type. A key whose layer another enabled key already includes is dropped (`react` beside
+`next` or `expo`, `vue` beside `nuxt`, `svelte` beside `sveltekit`), so no layer is composed twice. Every load
+goes through `withPeer`: when Node reports `Cannot find package`, the error names the key, the package and the
+install command of the package manager in `npm_config_user_agent`, npm when none ran ESLint (an editor). The
+peer is never installed for the user.
+
 ### Accessibility belongs to the markup, not to a framework
 
 A nameless element is the same defect on every framework, so `react()` and `solid()` enable the `jsx-a11y-x`

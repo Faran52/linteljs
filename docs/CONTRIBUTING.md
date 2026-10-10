@@ -60,7 +60,7 @@ the package name into text, which is why it can be built and tested before that 
 - **`packages/eslint-config`** is the flat config layers. One directory per layer under `layers/`,
   `frameworks/` or `libraries/`, holding an entry named for it with the group's suffix
   (`frameworks/react/reactFramework.ts` exports `react`) and its test beside it.
-  `compose-config/composeConfig.ts` composes them and owns the ordering.
+  `linteljs/linteljs.ts` composes them and owns the ordering (`compose-config/` is its predecessor).
 - **`packages/create`** is the scaffolder, in rings listed once in `src/rings.ts`: `answers/`,
   `config/`, `targets/` and `utils/` inside, `emitters/` turning answers into file text, and
   `disk/`, `spawns/`, `terminal/` and `pipeline/` outside. The direction points inward only,

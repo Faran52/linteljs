@@ -87,6 +87,13 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- **`linteljs(options?, ...configs)` on the root export**, one flat key per layer: `react`, `next`, `expo`, `vue`,
+  `nuxt`, `svelte`, `sveltekit`, `solid`, `angular`, `typescript`, `vitest`, `jest`, `playwright`, `storybook`,
+  `html`, `astro`, `tanstackQuery`, `tanstackRouter`, `stylex`, and `tailwind` (`true` or `{ entryPoint }`), with
+  `base`'s options beside them. `next` and `expo` imply `react`, `nuxt` implies `vue`, `sveltekit` implies
+  `svelte`. The configs after the options are appended last. A key whose optional peer is missing throws with the
+  command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
+  `LinteljsOptions`, `FrameworkKey`, `LayerKey` and `TailwindOptions` join the types.
 - **One test-file table, exported**: `TEST_FILES` (`*.{test,spec}.*`, `__tests__/**`), `E2E_FILES` (`*.e2e.*`,
   `e2e/**`), `STORY_FILES` (`*.stories.*`) and `MOCK_FILES` (`__mocks__/**`). `base`, `vitest()`, `jest()` and
   `playwright()` all read it, so a suite under `__tests__/` gets the test runner's rules and the suite exemptions,

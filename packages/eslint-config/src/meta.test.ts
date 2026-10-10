@@ -109,6 +109,27 @@ it('holds compose-config to its entry, its suite and its loaders', () => {
   expect(composeUtils).toEqual(expectedUtils);
 });
 
+it('holds linteljs to its entry, its suite, its tables and its loaders', () => {
+  const linteljsDir = join(srcDir, 'linteljs');
+  const linteljsFiles = readdirSync(linteljsDir)
+    .toSorted(byName);
+
+  const expected = [
+    'constants.ts',
+    'linteljs.test.ts',
+    'linteljs.ts',
+    'utils',
+  ];
+  expect(linteljsFiles).toEqual(expected);
+
+  const utilsDir = join(linteljsDir, 'utils');
+  const linteljsUtils = readdirSync(utilsDir)
+    .toSorted(byName);
+
+  const expectedUtils = ['loaderUtils.test.ts', 'loaderUtils.ts'];
+  expect(linteljsUtils).toEqual(expectedUtils);
+});
+
 describe('tsdown entries', () => {
   const { entry } = tsdownConfig;
   const entries = typeof entry === 'object' && !Array.isArray(entry) ? Object.entries(entry) : [];
