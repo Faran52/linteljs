@@ -1,6 +1,6 @@
 // The gate's steps after `build`, at once outside CI, each into its own log; a failed one prints a short excerpt.
 // Outside CI a step whose inputs all match its last pass is skipped whole (`docs/DESIGN.md`, Gate cache).
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import {
   closeSync,
   mkdirSync,
@@ -11,6 +11,7 @@ import { resolve } from 'node:path';
 import process, { env } from 'node:process';
 
 import { signalOf } from '@e2e/starter-cover/utils/failureUtils';
+import { resolvedBinary } from '@spawns/utils/binaryUtils';
 
 import {
   isCached,
@@ -21,6 +22,7 @@ import { log, logError } from '../../packages/create/templates/project/scripts/u
 
 import {
   BUILT_ENV,
+  ENGINES,
   HEAD_LINES,
   IGNORED_INPUTS,
   LOG_DIR,
@@ -40,6 +42,8 @@ interface Result {
   seconds: string;
   path: string;
   cached: boolean;
+  // The engine it needs, when that is not on PATH.
+  missing: string | undefined;
 }
 
 // pnpm's own binary, by absolute path, rather than a lookup on PATH.
@@ -62,6 +66,24 @@ const steps = STEPS
     return !skipped.includes(step);
   });
 
+const versionOf = (name: string): string | undefined => {
+  const binary = resolvedBinary(name);
+
+  if (binary === undefined) {
+    return undefined;
+  }
+
+  return execFileSync(binary, ['--version'], { encoding: 'utf8' });
+};
+
+const engineVersions = new Map<string, string | undefined>();
+
+for (const [step, name] of ENGINES) {
+  if (steps.includes(step)) {
+    engineVersions.set(step, versionOf(name));
+  }
+}
+
 // CI never reads or writes the cache: each run there starts clean.
 const keyOf = (step: string): string | undefined => {
   if (ci !== undefined || UNCACHED.has(step)) {
@@ -74,12 +96,29 @@ const keyOf = (step: string): string | undefined => {
     ignored: IGNORED_INPUTS,
     env,
   });
+  const engine = engineVersions.get(step);
 
-  return key;
+  return engine === undefined ? key : `${key} ${engine}`;
 };
 
 const runStep = async (step: string): Promise<Result> => {
   const path = resolve(LOG_DIR, `${step.replaceAll(':', '-')}.log`);
+  const engine = ENGINES.get(step);
+
+  if (engine !== undefined && engineVersions.get(step) === undefined) {
+    const missingEngine: Result = {
+      step,
+      code: 0,
+      signal: undefined,
+      seconds: SKIPPED_SECONDS,
+      path,
+      cached: false,
+      missing: engine,
+    };
+
+    return missingEngine;
+  }
+
   const key = keyOf(step);
 
   if (key !== undefined && env[NO_CACHE_ENV] === undefined && isCached(LOG_DIR, step, key)) {
@@ -90,6 +129,7 @@ const runStep = async (step: string): Promise<Result> => {
       seconds: SKIPPED_SECONDS,
       path,
       cached: true,
+      missing: undefined,
     };
 
     return skippedStep;
@@ -132,6 +172,7 @@ const runStep = async (step: string): Promise<Result> => {
           seconds,
           path,
           cached: false,
+          missing: undefined,
         });
       });
   });
@@ -182,9 +223,12 @@ for (const result of results) {
     ? `FAILED (exit ${String(result.code)})`
     : `KILLED by ${result.signal}, not a failure of the step: rerun it`;
   const status = result.code === 0 ? 'ok' : failure;
-  const line = result.cached
+  const ran = result.cached
     ? `${result.step}: ok, inputs unchanged since it last passed`
     : `${result.step}: ${status} in ${result.seconds}s`;
+  const line = result.missing === undefined
+    ? ran
+    : `${result.step}: skipped, \`${result.missing}\` is not on PATH`;
 
   log(line);
 }

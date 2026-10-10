@@ -7,7 +7,11 @@ export const STEPS = [
   'typecheck',
   'test:coverage',
   'typegen',
+  'test:band',
 ];
+
+// A step that needs a binary the workspace does not install: skipped where it is not on PATH, keyed on its version.
+export const ENGINES = new Map([['test:band', 'claude']]);
 
 // Set for the steps, so `pnpm pack` skips the `prepack` build the gate has already run.
 export const BUILT_ENV = 'LINTELJS_GATE_BUILT';

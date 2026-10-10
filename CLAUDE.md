@@ -27,7 +27,8 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
   shorthand exits 0 where the script is missing). Coverage is a root-only gate:
   one global 100% block over the root `coverage.include`.
 - `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck`,
-  `test:coverage` and `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it) at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
+  `test:coverage`, `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it) and
+  `test:band` (`claude plugin test` on the shipped check band, skipped when `claude` is not on PATH) at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
   a failed step prints a short excerpt and its log's path, so read that, not the whole run. `build` goes first
   because the packages typecheck against each other's built declarations. `lint:css` passes on an empty glob:
   this workspace has no CSS, and it ships the gate to every target. Outside `CI` a step whose every input matches

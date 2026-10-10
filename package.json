@@ -23,6 +23,7 @@
     "test:shard": "vitest run --coverage --coverage.thresholds.100=false --reporter=blob --reporter=default",
     "test:merge": "vitest run --merge-reports --coverage",
     "test:isolated": "tsx scripts/isolated-coverage/isolatedCoverageScript.ts",
+    "test:band": "tsx scripts/test-band/testBandScript.ts",
     "build": "pnpm -r build",
     "typegen": "pnpm --filter @linteljs/eslint-config typegen",
     "check": "pnpm build && tsx scripts/gate/gateScript.ts",

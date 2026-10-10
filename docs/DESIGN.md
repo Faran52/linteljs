@@ -988,8 +988,9 @@ that key.
 Generated projects ignore `plugins/linteljs/**` in ESLint and exclude it from `tsconfig.json`, since the band
 imports `claude-code`, which only the engine provides; the hooks are typechecked and tested here. No plugin suite
 reaches a project: the emitters copy plugin files by name. The band's suite, `checkBand.test.tsx`, sits beside the
-band and is in no gate step: `claude plugin test` runs every suite under the folder it is given and cannot select
-files, and the shipped folder's Node suites do not load under it.
+band. `claude plugin test` runs every suite under the folder it is given and cannot select files, and the shipped
+folder's Node suites do not load under it, so the gate's `test:band` step (`scripts/test-band/`) runs it on a temp
+copy of the folder without its `*.test.ts`, then removes the copy.
 
 ### Cursor and Copilot: their own hooks files, the same scripts
 
@@ -1109,14 +1110,18 @@ sets it.
 
 ## How `check` runs
 
-`build` first, since the packages typecheck against each other's built declarations; then the other six at once,
+`build` first, since the packages typecheck against each other's built declarations; then the other steps at once,
 each logging under `node_modules/.cache/linteljs-gate/` (ignored, so the commit gate's tree never sees it). A
 failed step prints a short excerpt, so a failure reads in about fifteen lines; under `CI` it prints the whole log.
 
-The six are independent only because none writes what another reads: the gate sets `LINTELJS_GATE_BUILT=1` so
+The steps are independent only because none writes what another reads: the gate sets `LINTELJS_GATE_BUILT=1` so
 `lint:starters` packs with `--ignore-scripts` instead of rebuilding `dist` under `typecheck`.
 
-Under `CI` the six run in series: a 4-core runner is saturated by `test:coverage` alone.
+Under `CI` they run in series: a 4-core runner is saturated by `test:coverage` alone.
+
+`test:band` needs the `claude` binary, which the workspace does not install: where it is not on PATH the gate
+reports the step skipped, not passed, and stores nothing. `ci.yml` installs `@anthropic-ai/claude-code` at an exact
+version before `check`, so it runs there; the suite needs no login or network.
 
 Tried and left out:
 
@@ -1130,7 +1135,7 @@ Tried and left out:
 Outside `CI`, a step is skipped whole when its key matches the one stored after its last pass. The key hashes every
 file `git ls-files -co --exclude-standard` lists (so the whole program, every config and `pnpm-lock.yaml`), the
 gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_modules/.pnpm/lock.yaml`), the node
-and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env. Only `lint` and `typecheck` leave out
+and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env; `test:band`'s adds `claude --version`. Only `lint` and `typecheck` leave out
 `*.md`, which neither reads. Never per file, unlike ESLint `--cache`: a type changed in one file reruns the step
 that fails in another. Only a pass is stored, and only when no input moved while the step ran. `lint:starters` is
 never skipped whole: it keeps a cache per case instead (above). `CI` neither reads nor writes the gate's, and runs
