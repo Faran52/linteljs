@@ -12,8 +12,11 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
 import {
+  E2E_FILES,
+  MOCK_FILES,
   SCRIPT_AND_SFC_FILES,
   SCRIPT_EXTENSIONS,
+  TEST_FILES,
   TYPESCRIPT_EXTENSIONS,
 } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
@@ -32,10 +35,10 @@ const COMPONENT_FILES = ['**/*.{tsx,jsx,vue,svelte}'];
 // Only on request: naming `.astro` would pull it into a project that has no parser for it.
 const ASTRO_FILES = ['**/*.astro'];
 
-const TEST_FILES = [
-  '**/*.{test,spec}.*',
-  '**/__mocks__/**',
-  '**/e2e/**',
+const SUITE_FILES = [
+  ...TEST_FILES,
+  ...MOCK_FILES,
+  ...E2E_FILES,
 ];
 
 // A config states its numbers as options; a `constants.ts` already names every number it holds.
@@ -325,7 +328,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     // A fake of `inspectedWindow.eval` has to execute a string; `no-implied-eval` stays on.
     {
       name: '@linteljs/base/fixtures',
-      files: [`**/__mocks__/**/*.{${SCRIPT_EXTENSIONS}}`],
+      files: MOCK_FILES,
       rules: { 'sonarjs/code-eval': 'off' },
     },
 
@@ -357,7 +360,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     // A suite is a list of cases rather than a function.
     {
       name: '@linteljs/base/test-size',
-      files: TEST_FILES,
+      files: SUITE_FILES,
       rules: {
         'max-lines': 'off',
         'max-lines-per-function': 'off',
@@ -368,7 +371,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     {
       name: '@linteljs/base/magic-numbers',
       files: scriptFiles,
-      ignores: [...TEST_FILES, ...NUMBER_EXEMPT_FILES],
+      ignores: [...SUITE_FILES, ...NUMBER_EXEMPT_FILES],
       plugins: { '@typescript-eslint': tseslint.plugin },
       rules: {
         'no-magic-numbers': 'off',
@@ -396,10 +399,17 @@ export const base = (options: BaseOptions = {}): Layer => {
     {
       name: '@linteljs/base/expression-complexity',
       files: scriptFiles,
-      ignores: TEST_FILES,
+      ignores: SUITE_FILES,
       rules: {
         'sonarjs/expression-complexity': 'error',
       },
+    },
+
+    // A suite carries no prose comments, a different rule's business.
+    {
+      name: '@linteljs/base/test-comments',
+      files: TEST_FILES,
+      rules: { '@linteljs/comment-delimiter': 'off' },
     },
 
     // Outside the plugin's `recommended`, so restated here; suites included.

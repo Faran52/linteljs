@@ -44,6 +44,8 @@ when a version's change lives in a sibling it is described there instead:
 - **`prefer-destructured-props` judges a component by what it does, not only its name.** A PascalCase function
   counts only when its body holds JSX or a hook call, so an uppercase helper with neither is no longer
   reported. A `memo` or `forwardRef` callback counts whatever its name, anonymous ones included.
+- **`comment-delimiter` reports in test files too.** It no longer detects a test file by its name; the config that
+  enables it exempts suites. `@linteljs/eslint-config`'s `base` turns it off over its `TEST_FILES` table.
 
 ### Added
 

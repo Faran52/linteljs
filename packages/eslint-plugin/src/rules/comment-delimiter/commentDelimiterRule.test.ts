@@ -47,33 +47,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
         return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
       }),
     '/** */\nexport const value = 1;\n',
-    {
-      code: '/** short doc */\n// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
-      filename: 'src/lib/utils/sample.test.ts',
-    },
-    {
-      code: '/** short doc */\nexport const value = 1;\n',
-      filename: 'src/lib/utils/sample.spec.tsx',
-    },
-    {
-      code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
-      filename: '__tests__/sample.ts',
-    },
-    ...[
-      'test.ts',
-      'src/sample.test.cts',
-      'src/sample.spec.mts',
-      'src\\sample.test.js',
-      'src/__tests__',
-    ]
-      .map((filename) => {
-        const testCase = {
-          code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
-          filename,
-        };
-
-        return testCase;
-      }),
     '/** short */ const value = 1;',
     '/** short */ a',
     '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
@@ -102,22 +75,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
         const testCase = {
           code: `// alpha\n${line}\n// charlie\nexport const value = 1;`,
           output: `/**\n * alpha\n * ${line.slice(3)}\n * charlie\n */\nexport const value = 1;`,
-          errors: [{ messageId: 'useJsdoc' as const }],
-        };
-
-        return testCase;
-      }),
-    ...[
-      'src/contest.ts',
-      'src/sample.test.ts.snap',
-      'src/my__tests__/sample.ts',
-      'src/__tests__x/sample.ts',
-    ]
-      .map((filename) => {
-        const testCase = {
-          code: '// alpha\n// bravo\n// charlie\nexport const value = 1;',
-          filename,
-          output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
           errors: [{ messageId: 'useJsdoc' as const }],
         };
 

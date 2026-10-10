@@ -1,5 +1,11 @@
 // No `composeConfig`: it would load every framework layer, so it lives at `/compose-config`.
 export {
+  E2E_FILES,
+  MOCK_FILES,
+  STORY_FILES,
+  TEST_FILES,
+} from './config/constants';
+export {
   angular,
   angularGroup,
 } from './frameworks/angular/angularFramework';

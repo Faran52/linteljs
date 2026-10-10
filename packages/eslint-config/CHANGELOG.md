@@ -78,6 +78,12 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- **One test-file table, exported**: `TEST_FILES` (`*.{test,spec}.*`, `__tests__/**`), `E2E_FILES` (`*.e2e.*`,
+  `e2e/**`), `STORY_FILES` (`*.stories.*`) and `MOCK_FILES` (`__mocks__/**`). `base`, `vitest()`, `jest()` and
+  `playwright()` all read it, so a suite under `__tests__/` gets the test runner's rules and the suite exemptions,
+  and an `*.e2e.*` file of any extension gets Playwright's. `base` turns `@linteljs/comment-delimiter` off in
+  `TEST_FILES`.
+
 - New layers, each on its own subpath, on the barrel, and in `composeConfig`:
   - `reactNative()` at `./react-native` (`framework: 'react-native'`): the hooks and component rules React has,
     without the DOM accessibility ones, plus the five `@linteljs/native-*` rules.

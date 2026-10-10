@@ -6,6 +6,15 @@ export const SCRIPT_EXTENSIONS = `js,jsx,mjs,cjs,${TYPESCRIPT_EXTENSIONS}`;
 
 export const SCRIPT_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
 
+// The one test-file table every layer reads; `*` and `/**` endings never pull a file into the lint on their own.
+export const TEST_FILES = ['**/*.{test,spec}.*', '**/__tests__/**'];
+
+export const E2E_FILES = ['**/*.e2e.*', '**/e2e/**'];
+
+export const STORY_FILES = ['**/*.stories.*'];
+
+export const MOCK_FILES = ['**/__mocks__/**'];
+
 export const SCRIPT_AND_SFC_FILES = [`**/*.{${SCRIPT_EXTENSIONS},vue,svelte}`];
 
 // `@stylistic`'s `recommended` JSX set, which `base` builds its preset without: a `.ts` or `.vue` file holds no JSX.

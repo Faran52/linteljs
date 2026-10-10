@@ -368,6 +368,7 @@ describe('base: ignores', () => {
         '@linteljs/base/test-size',
         '@linteljs/base/magic-numbers',
         '@linteljs/base/expression-complexity',
+        '@linteljs/base/test-comments',
         '@linteljs/base/name-before-use',
         '@linteljs/base/naming',
       ];
@@ -1054,6 +1055,8 @@ describe('base: size', () => {
     '__mocks__/handlers.ts',
     'src/__mocks__/fixtures/big.ts',
     'e2e/checkout.ts',
+    'src/checkout.e2e.ts',
+    'src/__tests__/format.ts',
     'packages/create/e2e/runner/runner.ts',
   ])('holds neither limit on the test file %s', async (path) => {
     const code = `${codeLines(900)}${functionOf(400)}`;
@@ -1062,5 +1065,22 @@ describe('base: size', () => {
     expect(ruleIds).not.toContain(null);
     expect(ruleIds).not.toContain(FILE_RULE);
     expect(ruleIds).not.toContain(FUNCTION_RULE);
+  });
+});
+
+describe('base: test comments', () => {
+  const code = '// alpha\n// bravo\n// charlie\nexport const value = 1;\n';
+
+  it.each([
+    ['src/format.test.ts', false],
+    ['src/format.spec.tsx', false],
+    ['src/__tests__/format.ts', false],
+    ['src/format.ts', true],
+    ['e2e/checkout.ts', true],
+  ])('reports comment-delimiter in %s: %s', async (path, reported) => {
+    const ruleIds = await ruleIdsFor(base(), code, path);
+    const hasDelimiter = ruleIds.includes('@linteljs/comment-delimiter');
+
+    expect(hasDelimiter).toBe(reported);
   });
 });

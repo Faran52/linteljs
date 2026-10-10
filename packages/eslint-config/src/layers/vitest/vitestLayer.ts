@@ -1,11 +1,9 @@
 import vitestPlugin from '@vitest/eslint-plugin';
 
-import { SCRIPT_EXTENSIONS } from '../../config/constants';
+import { TEST_FILES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
-
-const TEST_FILES = [`**/*.{test,spec}.{${SCRIPT_EXTENSIONS}}`];
 
 export const vitest = (): Layer => {
   const layer: Layer = [

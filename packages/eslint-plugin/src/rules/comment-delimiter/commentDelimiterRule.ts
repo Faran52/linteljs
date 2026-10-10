@@ -26,9 +26,6 @@ const DIRECTIVE_OPENER = /^#!|^\/\/\/\s*<reference\b/;
 const DIRECTIVE_KEYWORD = /^\/\/\s*(?:eslint-\w+|@?ts-\w+|[vc]8 ignore|istanbul ignore|prettier-ignore)\b/;
 const SOURCE_MAP = /^\/\/\s*[#@]\s*source(?:Mapping)?URL=/;
 
-// Test files carry no comments at all, which is a different rule's business.
-const TEST_FILE_PATTERN = /(?:^|[/\\.])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|[/\\])__tests__(?:[/\\]|$)/;
-
 // Every reader of a tagged block stops at `/**`: a pragma or type annotation in a `//` line is inert.
 const JSDOC_TAG = /(^|\s)@[a-z]/i;
 
@@ -226,12 +223,6 @@ export const commentDelimiter = createRule('comment-delimiter', {
     schema: [],
   },
   create: (context) => {
-    const filename = context.physicalFilename;
-
-    if (TEST_FILE_PATTERN.test(filename)) {
-      return {};
-    }
-
     const { sourceCode } = context;
     const eol = lineTerminatorOf(sourceCode);
 

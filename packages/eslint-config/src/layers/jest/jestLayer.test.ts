@@ -34,8 +34,12 @@ describe('jest', () => {
     return built;
   };
 
-  it('reports a focused test', async () => {
-    const ruleIds = await ruleIdsFor(layer(), FOCUSED, 'src/lib/utils/sample.test.ts');
+  it.each([
+    'src/lib/utils/sample.test.ts',
+    'src/lib/utils/sample.spec.tsx',
+    'src/__tests__/sample.ts',
+  ])('reports a focused test in %s', async (path) => {
+    const ruleIds = await ruleIdsFor(layer(), FOCUSED, path);
     expect(ruleIds).toContain('jest/no-focused-tests');
   });
 
