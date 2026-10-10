@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import {
   enabledRuleIdsFor,
   frameworkRuleIdsFor,
-  JSX_IN_JS,
   messagesForFile,
   NEXT_PROJECT,
   ruleIdsFor,
@@ -308,7 +307,7 @@ describe('linteljs', () => {
 
     expect(web).toContain('jsx-a11y-x/alt-text');
     expect(native).not.toContain('jsx-a11y-x/alt-text');
-    const nativeScript = await ruleIdsFor([...nativeConfig, ...JSX_IN_JS], code, 'src/Logo.jsx');
+    const nativeScript = await ruleIdsFor(nativeConfig, code, 'src/Logo.jsx');
     expect(nativeScript).toContain('@linteljs/no-duplicate-jsx-props');
   });
 

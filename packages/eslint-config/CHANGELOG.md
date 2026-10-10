@@ -144,8 +144,10 @@ when a version's change lives in a sibling it is described there instead:
 - The 350-line cap is a markup-file policy: `base` holds `.tsx`, `.vue`, `.svelte` (and `.astro` on request) to
   it, story files excepted, and no longer `.jsx`. `reactNative()` adds `.js` and `.jsx`, where React Native keeps
   its markup, outside suites, stories and `utils/`.
-- The React layers run `@linteljs/no-duplicate-jsx-props` over `.js`, `.jsx`, `.mjs` and `.cjs` only: TypeScript
-  reports a duplicate JSX prop in `.tsx` itself (TS17001). `solid()` keeps it on every script file.
+- `react()`, `solid()` and `reactNative()` run `@linteljs/no-duplicate-jsx-props` over `.js` and `.jsx` only:
+  TypeScript reports a duplicate JSX prop in `.tsx` itself (TS17001).
+- `react()` and `reactNative()` parse JSX in `.js` and `.jsx` files, so a project no longer sets
+  `ecmaFeatures.jsx` itself.
 - `base({ astro: true })` leaves `@linteljs/prefer-alias` off in `.astro` files.
 - `svelte()` sorts SvelteKit 3's `#lib` into its framework group and resolves it through `package.json` `imports`,
   so `$lib` is no longer let go unresolved. Kit 3 has no `$env/*` modules either, so `$env/` leaves the group

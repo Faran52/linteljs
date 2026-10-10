@@ -3,7 +3,11 @@ import stylistic from '@stylistic/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
-import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
+import {
+  JS_MARKUP_FILES,
+  JSX_STYLE_RULES,
+  SCRIPT_FILES,
+} from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
@@ -31,10 +35,13 @@ export const solid = (): Layer => {
         '@stylistic': stylistic,
       },
       // Not the other two React rules: hooks do not exist here and destructured props break reactivity.
-      rules: {
-        ...JSX_STYLE_RULES,
-        '@linteljs/no-duplicate-jsx-props': 'error',
-      },
+      rules: JSX_STYLE_RULES,
+    },
+    // tsc reports a duplicate JSX prop in `.tsx` as TS17001.
+    {
+      name: 'linteljs/solid/javascript',
+      files: JS_MARKUP_FILES,
+      rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },
     {
       name: 'linteljs/solid/ignores',

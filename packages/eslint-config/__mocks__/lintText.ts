@@ -32,7 +32,7 @@ export const NEXT_PROJECT: Layer = [
   },
 ];
 
-// What a JSX-in-JS project sets: no layer parses JSX in `.js` or `.jsx`.
+// What a Solid project with JSX in `.js` or `.jsx` sets: `solid()` parses none there.
 export const JSX_IN_JS: Layer = [
   {
     name: 'test/jsx-in-js',

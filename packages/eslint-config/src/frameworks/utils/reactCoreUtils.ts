@@ -4,7 +4,7 @@ import stylistic from '@stylistic/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 import {
-  JAVASCRIPT_FILES,
+  JS_MARKUP_FILES,
   JSX_STYLE_RULES,
   SCRIPT_FILES,
 } from '../../config/constants';
@@ -87,7 +87,8 @@ export const reactCore = (): Layer => {
     // tsc reports a duplicate JSX prop in `.tsx` as TS17001.
     {
       name: 'linteljs/react/javascript',
-      files: JAVASCRIPT_FILES,
+      files: JS_MARKUP_FILES,
+      languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
       rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },
   ];

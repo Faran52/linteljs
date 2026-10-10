@@ -1,6 +1,5 @@
 import {
   JSX_FIXTURE,
-  JSX_IN_JS,
   ownBlockNames,
   ruleEntryFor,
   ruleIdsFor,
@@ -187,11 +186,7 @@ describe('reactCore', () => {
     ['src/components/ui/Chip.tsx', false],
   ])('reports a JSX prop named twice on one element in %s: %s, tsc covering .tsx', async (path, reported) => {
     const code = 'export const Chip = () => {\n  return <span className="a" className="b" />;\n};\n';
-    const config = [
-      ...base(),
-      ...reactCore(),
-      ...JSX_IN_JS,
-    ];
+    const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, path);
     const hasDuplicate = ruleIds.includes('@linteljs/no-duplicate-jsx-props');
 
@@ -201,11 +196,7 @@ describe('reactCore', () => {
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span className="default" {...props} className="override" />;\n};\n';
-    const config = [
-      ...base(),
-      ...reactCore(),
-      ...JSX_IN_JS,
-    ];
+    const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.jsx');
 
     expect(ruleIds).not.toContain(null);
