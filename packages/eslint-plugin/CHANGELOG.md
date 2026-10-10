@@ -41,6 +41,9 @@ when a version's change lives in a sibling it is described there instead:
 - **`recommended` gains seven rules**, so a project on it reports more on upgrade: `array-newline`,
   `chain-call-newline`, `interface-order`, `no-duplicate-interface`, `no-eslint-disable`,
   `no-inline-object-types` and `prefer-alias`.
+- **`prefer-destructured-props` judges a component by what it does, not only its name.** A PascalCase function
+  counts only when its body holds JSX or a hook call, so an uppercase helper with neither is no longer
+  reported. A `memo` or `forwardRef` callback counts whatever its name, anonymous ones included.
 
 ### Added
 
@@ -95,6 +98,7 @@ when a version's change lives in a sibling it is described there instead:
   and reports a run of `//` lines carrying a JSDoc tag without a fix, since a block would make the tag live.
 - `export-specifier-newline` keeps a trailing comma on the last specifier's line instead of pushing it to column 0.
 - `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
+  In a Vue file its fix no longer moves a type from `<script setup>` into the `<script>` above it.
 - `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later
   `case` of its `switch`, both of which threw `ReferenceError`. It no longer asks for a block body in a StyleX
   dynamic style inside `stylex.create()`, which the compiler refuses, and a fix inside a converted function's

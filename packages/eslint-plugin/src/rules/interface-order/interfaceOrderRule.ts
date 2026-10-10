@@ -139,6 +139,45 @@ const cutsFor = (sourceCode: SourceCode, body: ProgramEntry[], firstRuntimeIndex
   return cuts;
 };
 
+// Between two statements, anything but comments and whitespace is markup.
+const isMarkupBetween = (sourceCode: SourceCode, previous: ProgramEntry, entry: ProgramEntry): boolean => {
+  const comments = sourceCode.getCommentsBefore(entry);
+  const stops = [
+    previous,
+    ...comments,
+    entry,
+  ];
+  const pairs = [...adjacentPairs(stops)];
+
+  return pairs
+    .some(([before, after]) => {
+      const gap = sourceCode.text.slice(rangeOf(before)[1], rangeOf(after)[0]);
+
+      return /\S/u.test(gap);
+    });
+};
+
+// vue-eslint-parser joins `<script>` and `<script setup>` into one `Program.body`; a move stays in its block.
+const scriptBlocksOf = (sourceCode: SourceCode, body: ProgramEntry[]): ProgramEntry[][] => {
+  const blocks: ProgramEntry[][] = [];
+  let current: ProgramEntry[] = [];
+
+  for (const [index, entry] of body.entries()) {
+    const previous = body[index - 1];
+
+    if (previous && isMarkupBetween(sourceCode, previous, entry)) {
+      blocks.push(current);
+      current = [];
+    }
+
+    current.push(entry);
+  }
+
+  blocks.push(current);
+
+  return blocks;
+};
+
 export const interfaceOrder = createRule('interface-order', {
   meta: {
     type: 'layout',
@@ -238,7 +277,9 @@ export const interfaceOrder = createRule('interface-order', {
     const visitors: Rule.RuleListener = {
       // Intersecting the node union with a `body` shape distributes and needs a cast to undo.
       'Program:exit': (node) => {
-        check(node.body);
+        for (const block of scriptBlocksOf(sourceCode, node.body)) {
+          check(block);
+        }
       },
 
       'SvelteScriptElement:exit': (node: ScriptElement) => {

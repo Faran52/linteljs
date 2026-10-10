@@ -10,10 +10,13 @@ A component that reads `props.alpha` here and `props.bravo` there makes the read
 inputs one member at a time. Destructuring in the signature puts the whole surface on the first
 line, where the next reader looks for it.
 
-A function counts as a component when its binding name starts with an uppercase letter: the id of
-a declaration, the variable an arrow or function expression is assigned to, or the variable a
-call wrapper chain is assigned to, so `const Widget = memo(forwardRef((props, ref) => ...))` is
-judged like a bare component. Its first parameter must be a plain identifier, and every reference
+A function counts as a component when its binding name is PascalCase and its body holds JSX or a
+hook call (`use` or `use*`, bare or as a member such as `React.useState`), or when it is the first
+argument of `memo` or `forwardRef`, whatever its name. The binding name is the id of a declaration,
+the variable an arrow or function expression is assigned to, or the variable a call wrapper chain
+is assigned to, so `const Widget = observer((props) => <div />)` is judged like a bare component.
+JSX in a nested callback, such as a `map` over items, counts for the enclosing function. Its first
+parameter must be a plain identifier, and every reference
 to that identifier must be a member read with a destructurable key. One use of the object itself,
 anywhere, and the rule stays quiet.
 
@@ -23,21 +26,25 @@ anywhere, and the rule stays quiet.
 // incorrect: every reference is a member read
 const Widget = (props) => <div>{props.alpha}{props.bravo}</div>;
 
-// incorrect: a declaration is judged by its own name
+// incorrect: a declaration is judged by its own name, and a hook call marks a component
 function Widget(props) {
-  return props.alpha;
+  const [value] = useState(props.alpha);
+
+  return value;
 }
 
 // incorrect: bracket access is still a member read
-const Widget = (props) => props['alpha'];
+const Widget = (props) => <div>{props['alpha']}</div>;
 
 // incorrect: a function expression is judged by the const it is assigned to
 const Widget = function (props) {
-  return props.alpha;
+  return <div>{props.alpha}</div>;
 };
 
-// incorrect: the declarator names the component through its wrappers
-const Widget = memo((props) => props.alpha);
+// incorrect: a memo or forwardRef callback is a component whatever its name
+export default memo(function (props) {
+  return props.alpha;
+});
 ```
 
 ## Examples of correct code for this rule
@@ -50,20 +57,23 @@ const Widget = ({ alpha, bravo }) => <div>{alpha}{bravo}</div>;
 const Wrapper = (props) => <input {...props} />;
 
 // correct: passed on as an argument
-const Widget = (props) => render(props);
+const Widget = (props) => <div>{render(props)}</div>;
 
 // correct: a lowercase name is a hook or a helper, not a component
-const useWidget = (props) => props.alpha;
+const useWidget = (props) => useStore(props.alpha);
+
+// correct: no JSX and no hook call, so not a component
+const Widget = (props) => props.alpha;
 
 // correct: one whole-value use beside the member reads
 const Widget = (props) => {
   log(props);
 
-  return props.alpha;
+  return <div>{props.alpha}</div>;
 };
 
 // correct: a dynamic key cannot be destructured
-const Widget = (props) => props[key];
+const Widget = (props) => <div>{props[key]}</div>;
 
 // correct: a member component uses the object itself
 const Widget = (props) => <props.Icon />;
@@ -72,7 +82,7 @@ const Widget = (props) => <props.Icon />;
 const Widget = (props) => {
   props.count++;
 
-  return props.alpha;
+  return <div>{props.alpha}</div>;
 };
 ```
 
@@ -91,9 +101,7 @@ A write through the parameter, anywhere, ends it too: `props.alpha = 1`, `props.
 `props.count++`, `delete props.alpha`, or a member as a destructuring or `for...of` target. Each
 changes the object, and a destructured local would take the write in its place.
 
-An unused props parameter is not reported either; that is `no-unused-vars`' finding. A wrapped
-component with no declarator to name it, `export default memo(function (props) {...})`, has no
-binding to test for case and is declined rather than guessed at.
+An unused props parameter is not reported either; that is `no-unused-vars`' finding.
 
 ## Why there is no autofix
 

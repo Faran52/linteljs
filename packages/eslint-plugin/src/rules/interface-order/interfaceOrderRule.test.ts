@@ -1,4 +1,9 @@
-import { svelteRuleTester, tsRuleTester } from '@mocks/ruleTesters';
+import {
+  astroRuleTester,
+  svelteRuleTester,
+  tsRuleTester,
+  vueRuleTester,
+} from '@mocks/ruleTesters';
 
 import { interfaceOrder } from './interfaceOrderRule.ts';
 
@@ -261,6 +266,92 @@ svelteRuleTester.run('interface-order: svelte', interfaceOrder, {
         '',
       ].join('\n'),
       errors: [{ messageId: 'moveAfterImports' }, { messageId: 'moveAfterImports' }],
+    },
+  ],
+});
+
+vueRuleTester.run('interface-order: vue', interfaceOrder, {
+  valid: [
+    {
+      code: [
+        '<script lang="ts">',
+        'export const limit = 3;',
+        '</script>',
+        '',
+        '<script setup lang="ts">',
+        'interface Row { id: number }',
+        '',
+        'const rows: Row[] = [];',
+        '</script>',
+        '',
+      ].join('\n'),
+      filename: 'Rows.vue',
+    },
+  ],
+  invalid: [
+    {
+      code: [
+        '<script lang="ts">',
+        'export const limit = 3;',
+        '// trailing note',
+        '</script>',
+        '',
+        '<script setup lang="ts">',
+        'const rows = [limit];',
+        '',
+        'interface Row { id: number }',
+        '</script>',
+        '',
+      ].join('\n'),
+      filename: 'Rows.vue',
+      output: [
+        '<script lang="ts">',
+        'export const limit = 3;',
+        '// trailing note',
+        '</script>',
+        '',
+        '<script setup lang="ts">',
+        'interface Row { id: number }',
+        '',
+        'const rows = [limit];',
+        '</script>',
+        '',
+      ].join('\n'),
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+  ],
+});
+
+astroRuleTester.run('interface-order: astro', interfaceOrder, {
+  valid: [],
+  invalid: [
+    {
+      code: [
+        '---',
+        "import Layout from '../layouts/Layout.astro';",
+        '',
+        'const { title } = Astro.props;',
+        '',
+        'interface Props { title: string }',
+        '---',
+        '',
+        '<Layout title={title} />',
+        '',
+      ].join('\n'),
+      filename: 'index.astro',
+      output: [
+        '---',
+        "import Layout from '../layouts/Layout.astro';",
+        '',
+        'interface Props { title: string }',
+        '',
+        'const { title } = Astro.props;',
+        '---',
+        '',
+        '<Layout title={title} />',
+        '',
+      ].join('\n'),
+      errors: [{ messageId: 'moveAfterImports' }],
     },
   ],
 });

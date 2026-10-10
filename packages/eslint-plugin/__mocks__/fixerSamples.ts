@@ -738,6 +738,25 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join('\n'),
     filename: 'Panel.vue',
   },
+  // interface-order's move stays inside the block it came from.
+  {
+    name: 'vue <script setup> with a type after runtime code',
+    code: [
+      '<script lang="ts">',
+      'export const limit = 3;',
+      '</script>',
+      '',
+      '<script setup lang="ts">',
+      'const rows = [limit];',
+      '',
+      'interface Row { id: number }',
+      '</script>',
+      '',
+      '<template><p>{{ rows }}</p></template>',
+      '',
+    ].join('\n'),
+    filename: 'Rows.vue',
+  },
   {
     name: 'vue options api in plain javascript',
     code: [

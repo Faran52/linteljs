@@ -1,8 +1,10 @@
 import { join } from 'node:path';
 
+import * as astroParser from 'astro-eslint-parser';
 import { RuleTester } from 'eslint';
 import svelteParser from 'svelte-eslint-parser';
 import tseslint from 'typescript-eslint';
+import vueParser from 'vue-eslint-parser';
 
 export const jsRuleTester = new RuleTester({
   languageOptions: {
@@ -36,6 +38,28 @@ export const svelteRuleTester = new RuleTester({
   languageOptions: {
     parser: svelteParser,
     parserOptions: { parser: tseslint.parser },
+  },
+});
+
+export const vueRuleTester = new RuleTester({
+  files: ['**/*.vue'],
+  languageOptions: {
+    parser: vueParser,
+    parserOptions: {
+      parser: tseslint.parser,
+      sourceType: 'module',
+    },
+  },
+});
+
+export const astroRuleTester = new RuleTester({
+  files: ['**/*.astro'],
+  languageOptions: {
+    parser: astroParser,
+    parserOptions: {
+      parser: tseslint.parser,
+      sourceType: 'module',
+    },
   },
 });
 

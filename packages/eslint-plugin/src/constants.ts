@@ -22,3 +22,6 @@ export const TRANSPARENT_WRAPPER_TYPES = new Set([
   'TSSatisfiesExpression',
   'TSTypeAssertion',
 ]);
+
+// React calls whose first argument is a component whatever its name.
+export const COMPONENT_WRAPPERS = new Set(['forwardRef', 'memo']);

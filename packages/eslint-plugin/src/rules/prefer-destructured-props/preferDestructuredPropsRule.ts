@@ -1,3 +1,4 @@
+import { COMPONENT_WRAPPERS } from '../../constants.ts';
 import {
   createRule,
   type FunctionNode,
@@ -11,6 +12,12 @@ import {
 
 import type { Rule } from 'eslint';
 
+interface CallExpressionMatch {
+  type: 'CallExpression';
+}
+
+type CallExpressionNode = Extract<Rule.Node, CallExpressionMatch>;
+
 interface Identified {
   id?: NamedNode | null;
 }
@@ -22,6 +29,10 @@ type Parent = FunctionLike['parent'];
 interface Called {
   arguments: Ranged[];
 }
+
+const PASCAL_CASE = /^[A-Z][\dA-Za-z]*$/;
+
+const HOOK_NAME = /^use(?:[A-Z]|$)/;
 
 // A pattern or an anonymous declaration has no name, so it reads as no component.
 const nameOf = (node: (TypedNode & Partial<NamedNode>) | null | undefined): string => {
@@ -47,6 +58,26 @@ const bindingNameOf = (fn: FunctionLike): string => {
   }
 
   return fn.type === 'FunctionDeclaration' ? nameOf(fn.id) : '';
+};
+
+const calleeNameOf = (callee: CallExpressionNode['callee']): string => {
+  return callee.type === 'MemberExpression' ? nameOf(callee.property) : nameOf(callee);
+};
+
+const isFirstArgumentOf = (call: Called, node: Ranged): boolean => {
+  return call.arguments[0] === node;
+};
+
+const isWrappedComponent = (fn: FunctionLike): boolean => {
+  const { parent } = fn;
+
+  if (parent.type !== 'CallExpression' || !isFirstArgumentOf(parent, fn)) {
+    return false;
+  }
+
+  const wrapperName = calleeNameOf(parent.callee);
+
+  return COMPONENT_WRAPPERS.has(wrapperName);
 };
 
 const spanOf = (node: Ranged): string => {
@@ -91,8 +122,42 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
   create: (context) => {
     // A scope reference's identifier is typed without `parent`, so reading it back would take a cast.
     const memberObjects = new Map<string, boolean>();
+    const open: FunctionLike[] = [];
+    const rendering = new Set<FunctionLike>();
+
+    const markRendering = (): void => {
+      const current = open.at(-1);
+
+      if (current) {
+        rendering.add(current);
+      }
+    };
+
+    const isComponent = (fn: FunctionLike): boolean => {
+      if (isWrappedComponent(fn)) {
+        return true;
+      }
+
+      const bindingName = bindingNameOf(fn);
+
+      return rendering.has(fn) && PASCAL_CASE.test(bindingName);
+    };
 
     const visitors: Rule.RuleListener = {
+      ':function': (node: FunctionLike) => {
+        open.push(node);
+      },
+
+      'JSXElement, JSXFragment': markRendering,
+
+      'CallExpression': (node: CallExpressionNode) => {
+        const calleeName = calleeNameOf(node.callee);
+
+        if (HOOK_NAME.test(calleeName)) {
+          markRendering();
+        }
+      },
+
       'MemberExpression': (node: MemberExpressionNode) => {
         const destructurable = !node.computed || node.property.type === 'Literal';
 
@@ -100,9 +165,14 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
       },
 
       ':function:exit': (node: FunctionLike) => {
-        const bindingName = bindingNameOf(node);
+        open.pop();
 
-        if (!/^[A-Z]/.test(bindingName)) {
+        // JSX or a hook in a nested callback renders for the enclosing function too.
+        if (rendering.has(node)) {
+          markRendering();
+        }
+
+        if (!isComponent(node)) {
           return;
         }
 
