@@ -37,6 +37,13 @@ import type {
   UiFramework,
 } from '../../types';
 
+const EXPO_IGNORES: Layer = [
+  {
+    name: 'linteljs/expo/ignores',
+    ignores: ['dist/*'],
+  },
+];
+
 // Each layer the framework spreads, in order, and its import group.
 const FRAMEWORK_PARTS: [UiFramework, (() => Layer)[], string[]][] = [
   [
@@ -51,7 +58,12 @@ const FRAMEWORK_PARTS: [UiFramework, (() => Layer)[], string[]][] = [
   ],
   [
     'expo',
-    [reactNative],
+    [
+      reactNative,
+      () => {
+        return EXPO_IGNORES;
+      },
+    ],
     reactNativeGroup,
   ],
   [

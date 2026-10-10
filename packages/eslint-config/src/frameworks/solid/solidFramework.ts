@@ -28,7 +28,7 @@ export const solid = (): Layer => {
     ...sonarjsRules('linteljs/solid/sonarjs', { 'sonarjs/jsx-no-leaked-render': 'error' }, SCRIPT_FILES),
 
     {
-      name: 'linteljs/solid',
+      name: 'linteljs/solid/rules',
       files: SCRIPT_FILES,
       plugins: {
         '@linteljs': linteljs,

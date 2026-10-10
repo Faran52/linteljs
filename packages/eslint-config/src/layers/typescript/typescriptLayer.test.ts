@@ -184,7 +184,7 @@ describe('typescript', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(typescript());
     const expected = [
-      'linteljs/typescript',
+      'linteljs/typescript/rules',
       'linteljs/typescript/untyped',
       'linteljs/typescript/prefer-destructuring',
       'linteljs/typescript/unused-vars-handover',

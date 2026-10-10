@@ -23,7 +23,7 @@ const BUILD_OUTPUT = [
 export const next = (): Layer => {
   const layer: Layer = [
     {
-      name: 'linteljs/next',
+      name: 'linteljs/next/rules',
       files: SCRIPT_FILES,
       plugins: { '@next/next': nextPlugin },
       rules: {

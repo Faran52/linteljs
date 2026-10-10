@@ -1,5 +1,6 @@
 import type {
   Framework,
+  Layer,
   LayerKey,
   LinteljsOptions,
   WxtIsland,
@@ -60,6 +61,14 @@ export const LAYER_OPTIONS: [LayerKey, keyof LinteljsOptions, string | boolean][
 ];
 
 export const HOSTS: Framework[] = ['astro', 'wxt'];
+
+// Expo's web export; a bare React Native app has no `dist`.
+export const EXPO_LAYER: Layer = [
+  {
+    name: 'linteljs/expo/ignores',
+    ignores: ['dist/*'],
+  },
+];
 
 // Every option, so a misspelt one is caught rather than ignored.
 export const OPTION_NAMES: Record<keyof LinteljsOptions, true> = {

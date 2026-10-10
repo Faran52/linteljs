@@ -37,7 +37,7 @@ describe('react', () => {
     const expected = [
       'linteljs/react/hooks-one-owner',
       'linteljs/react/sonarjs',
-      'linteljs/react',
+      'linteljs/react/rules',
       'linteljs/react/javascript',
       'linteljs/react/dom',
       'linteljs/react/ignores',

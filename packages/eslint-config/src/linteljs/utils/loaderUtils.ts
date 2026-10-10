@@ -1,6 +1,7 @@
 import process from 'node:process';
 
 import {
+  EXPO_LAYER,
   INSTALL_COMMANDS,
   MISSING_PACKAGE,
   NPM_INSTALL,
@@ -70,7 +71,7 @@ export const FRAMEWORKS: Record<UiFramework, () => Promise<FrameworkParts>> = {
     const { reactNative, reactNativeGroup } = await import('../../frameworks/react-native/reactNativeFramework');
 
     const parts: FrameworkParts = {
-      layer: reactNative(),
+      layer: [...reactNative(), ...EXPO_LAYER],
       group: reactNativeGroup,
     };
 

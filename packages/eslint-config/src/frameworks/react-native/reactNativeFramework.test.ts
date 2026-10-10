@@ -120,7 +120,7 @@ describe('reactNative', () => {
     const expected = [
       'linteljs/react/hooks-one-owner',
       'linteljs/react/sonarjs',
-      'linteljs/react',
+      'linteljs/react/rules',
       'linteljs/react/javascript',
       'linteljs/react-native/accessibility',
       'linteljs/react-native/markup-size',
@@ -160,12 +160,14 @@ describe('reactNative: markup size', () => {
 });
 
 describe('reactNative: ignores', () => {
-  it.each([
-    'dist/bundle.js',
-    'android/app/build/index.js',
-  ])('ignores the build output %s', async (filePath) => {
-    const ignored = await isIgnored(reactNative(), filePath);
+  it('ignores the android build output', async () => {
+    const ignored = await isIgnored(reactNative(), 'android/app/build/index.js');
     expect(ignored).toBe(true);
+  });
+
+  it('leaves dist to the expo key', async () => {
+    const ignored = await isIgnored([...base(), ...reactNative()], 'dist/bundle.js');
+    expect(ignored).toBe(false);
   });
 
   it('lints the source', async () => {

@@ -36,7 +36,7 @@ export const vue = (): Layer => {
     ...presetOf(vueA11y.configs['flat/recommended'], 'vuejs-accessibility/flat/recommended', VUE_FILES),
 
     {
-      name: 'linteljs/vue',
+      name: 'linteljs/vue/rules',
       files: VUE_FILES,
       languageOptions: {
         parserOptions: {

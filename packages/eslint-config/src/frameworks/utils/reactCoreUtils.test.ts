@@ -408,7 +408,7 @@ describe('reactCore', () => {
     const expected = [
       'linteljs/react/hooks-one-owner',
       'linteljs/react/sonarjs',
-      'linteljs/react',
+      'linteljs/react/rules',
       'linteljs/react/javascript',
     ];
     expect(actual).toEqual(expected);

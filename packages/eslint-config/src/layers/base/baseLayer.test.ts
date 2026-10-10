@@ -374,7 +374,7 @@ describe('base: ignores', () => {
 
       const baseBlocks = names
         .filter((name) => {
-          return name.startsWith('linteljs/base');
+          return name.startsWith('linteljs/base/');
         });
 
       const expected = [
@@ -382,7 +382,7 @@ describe('base: ignores', () => {
         'linteljs/base/ignores',
         'linteljs/base/typescript-syntax',
         'linteljs/base/tsx',
-        'linteljs/base',
+        'linteljs/base/rules',
         'linteljs/base/typescript-rules',
         'linteljs/base/prefer-alias',
         'linteljs/base/scripts',

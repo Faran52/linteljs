@@ -125,7 +125,7 @@ describe('solid', () => {
     const actual = ownBlockNames(solid());
     const expected = [
       'linteljs/solid/sonarjs',
-      'linteljs/solid',
+      'linteljs/solid/rules',
       'linteljs/solid/javascript',
       'linteljs/solid/ignores',
     ];

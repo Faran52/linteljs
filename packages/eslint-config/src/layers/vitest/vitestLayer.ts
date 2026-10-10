@@ -12,7 +12,7 @@ export const vitest = (): Layer => {
       files: TEST_FILES,
     },
     {
-      name: 'linteljs/vitest',
+      name: 'linteljs/vitest/rules',
       files: TEST_FILES,
       rules: {
         // `expectTypeOf` and `assertType` are vitest's assertions over types; the rule counts only `expect`.

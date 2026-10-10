@@ -133,7 +133,7 @@ describe('stylex', () => {
 
   it('names its one block', () => {
     const actual = ownBlockNames(stylex());
-    const expected = ['linteljs/stylex'];
+    const expected = ['linteljs/stylex/rules'];
     expect(actual).toEqual(expected);
   });
 

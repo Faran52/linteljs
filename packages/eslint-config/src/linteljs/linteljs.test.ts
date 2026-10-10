@@ -395,7 +395,7 @@ describe('linteljs', () => {
     });
     const block = config
       .find(({ name }) => {
-        return name === 'linteljs/tailwind';
+        return name === 'linteljs/tailwind/rules';
       });
 
     const expected = { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } };

@@ -59,7 +59,7 @@ export const reactCore = (): Layer => {
     ...sonarjsRules('linteljs/react/sonarjs', REACT_SONARJS_RULES, SCRIPT_FILES),
 
     {
-      name: 'linteljs/react',
+      name: 'linteljs/react/rules',
       files: SCRIPT_FILES,
       plugins: {
         '@linteljs': linteljs,

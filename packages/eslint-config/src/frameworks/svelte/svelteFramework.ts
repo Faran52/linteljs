@@ -46,7 +46,7 @@ export const svelte = (): Layer => {
     },
 
     {
-      name: 'linteljs/svelte',
+      name: 'linteljs/svelte/rules',
       // Not `.svelte.js`: `typescript()` turns type-aware rules off every `.js` file.
       files: [`**/*${SVELTE_EXTENSION}`, `**/*${SVELTE_EXTENSION}.ts`],
       languageOptions: {

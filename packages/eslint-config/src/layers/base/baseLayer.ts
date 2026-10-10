@@ -158,7 +158,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', scriptFiles),
 
     {
-      name: 'linteljs/base',
+      name: 'linteljs/base/rules',
       files: scriptFiles,
 
       plugins: {

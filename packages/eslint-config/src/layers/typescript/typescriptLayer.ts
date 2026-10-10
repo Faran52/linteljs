@@ -8,7 +8,7 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
     ...tseslint.configs.stylisticTypeChecked,
 
     {
-      name: 'linteljs/typescript',
+      name: 'linteljs/typescript/rules',
       files: ['**/*.{ts,tsx,mts,cts}'],
       languageOptions: {
         // Not a `project` glob: `projectService` types a config file outside every tsconfig `include`.

@@ -133,7 +133,7 @@ describe('vue', () => {
   it('names every block it writes', () => {
     const actual = ownBlockNames(vue());
     const expected = [
-      'linteljs/vue',
+      'linteljs/vue/rules',
       'linteljs/vue/sonarjs',
       'linteljs/vue/sfc-import-seam',
       'linteljs/vue/ignores',

@@ -84,7 +84,7 @@ export const stylex = (): Layer => {
   const propLimits = Object.fromEntries(shorthandLimits);
 
   const layer: Layer = [{
-    name: 'linteljs/stylex',
+    name: 'linteljs/stylex/rules',
     files: [...SCRIPT_AND_SFC_FILES, '**/*.astro'],
     plugins: { '@stylexjs': plugin },
     rules: {

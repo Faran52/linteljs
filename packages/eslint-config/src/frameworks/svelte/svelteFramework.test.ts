@@ -132,7 +132,7 @@ describe('svelte', () => {
     const expected = [
       'linteljs/svelte/framework-specifiers',
       'linteljs/svelte/route-filenames',
-      'linteljs/svelte',
+      'linteljs/svelte/rules',
     ];
     expect(actual).toEqual(expected);
   });

@@ -156,8 +156,9 @@ layer, so importing it loads no optional peer.
 | `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` or `style` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
 
 A framework layer ignores the build output its framework's own config ignores: `next()` `.next/**`, `out/**`,
-`build/**` and `next-env.d.ts`; `nuxt()` `.nuxt/**`, `.output/**` and `dist/**`; `reactNative()` `dist/*` and
-`android/app/build/**`; `react()`, `vue()` and `solid()` `dist/**`.
+`build/**` and `next-env.d.ts`; `nuxt()` `.nuxt/**`, `.output/**` and `dist/**`; `reactNative()`
+`android/app/build/**`, and `linteljs({ framework: 'expo' })` `dist/*` on top; `react()`, `vue()` and `solid()`
+`dist/**`.
 
 ## Base options
 
