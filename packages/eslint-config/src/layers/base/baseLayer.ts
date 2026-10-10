@@ -14,12 +14,9 @@ import tseslint from 'typescript-eslint';
 
 import {
   E2E_FILES,
-  MARKUP_FILES,
-  MARKUP_SIZE_RULES,
   MOCK_FILES,
   SCRIPT_AND_SFC_FILES,
   SCRIPT_EXTENSIONS,
-  STORY_FILES,
   TEST_FILES,
   TYPESCRIPT_EXTENSIONS,
 } from '../../config/constants';
@@ -356,13 +353,6 @@ export const base = (options: BaseOptions = {}): Layer => {
       name: 'linteljs/base/fixtures',
       files: MOCK_FILES,
       rules: { 'sonarjs/code-eval': 'off' },
-    },
-
-    {
-      name: 'linteljs/base/markup-size',
-      files: reaching(MARKUP_FILES),
-      ignores: [...TEST_FILES, ...STORY_FILES],
-      rules: MARKUP_SIZE_RULES,
     },
 
     // A `utils/` module is a drawer of small helpers, so it may run longer than a subject's entry.

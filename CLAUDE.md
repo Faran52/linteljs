@@ -62,8 +62,8 @@ Detail per package is in `.claude/rules/`; these hold everywhere.
 - One subject, one kebab-case directory, one entry named for it in camelCase. No loose files at a folder root.
 - `constants.ts` holds data only; a function goes to a `utils/`.
 - Helpers live in a `utils/` at the level of their readers, each file named `*Utils.ts`.
-- Size, in lines of code (blanks and comments free), from the `base` layer: a function 350, a file 500, a
-  component file (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.astro`) 350, a file under `utils/` 800. Suites exempt.
+- Size, in lines of code (blanks and comments free), from the `base` layer: a function 350, a file 500,
+  components included, a file under `utils/` 800. Suites exempt.
 
 ## Operating contract
 

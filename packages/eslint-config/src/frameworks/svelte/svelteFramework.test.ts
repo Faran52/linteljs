@@ -137,14 +137,14 @@ describe('svelte', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('caps a component file at 350 lines of code, markup and script together', async () => {
+  it('caps a component file at 500 lines of code, markup and script together', async () => {
     const component = (lines: number): string => {
       return `<script>\n${codeLines(lines - 3)}</script>\n\n<main></main>\n`;
     };
 
     const config = [...base(), ...svelte()];
-    const atLimit = await ruleIdsForSfc(config, component(350), 'Big.svelte');
-    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.svelte');
+    const atLimit = await ruleIdsForSfc(config, component(500), 'Big.svelte');
+    const overLimit = await ruleIdsForSfc(config, component(501), 'Big.svelte');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');

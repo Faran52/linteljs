@@ -150,14 +150,14 @@ describe('vue', () => {
     expect(ruleIds).toContain('sonarjs/no-mutate-reactive-state-in-updated-hook');
   });
 
-  it('caps a component file at 350 lines of code, template and script together', async () => {
+  it('caps a component file at 500 lines of code, template and script together', async () => {
     const component = (lines: number): string => {
       return `<template>\n  <main />\n</template>\n\n<script setup>\n${codeLines(lines - 5)}</script>\n`;
     };
 
     const config = [...base(), ...vue()];
-    const atLimit = await ruleIdsForSfc(config, component(350), 'Big.vue');
-    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.vue');
+    const atLimit = await ruleIdsForSfc(config, component(500), 'Big.vue');
+    const overLimit = await ruleIdsForSfc(config, component(501), 'Big.vue');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');

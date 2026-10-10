@@ -1,12 +1,4 @@
-import {
-  E2E_FILES,
-  JS_MARKUP_FILES,
-  MARKUP_SIZE_RULES,
-  MOCK_FILES,
-  SCRIPT_FILES,
-  STORY_FILES,
-  TEST_FILES,
-} from '../../config/constants';
+import { SCRIPT_FILES } from '../../config/constants';
 import { reactCore, reactGroup } from '../utils/reactCoreUtils';
 
 import type { Layer } from '../../types';
@@ -31,19 +23,6 @@ export const reactNative = (): Layer => {
         '@linteljs/native-valid-accessibility-role': 'error',
         '@linteljs/native-valid-accessibility-state': 'error',
       },
-    },
-    // After `base`, so it restates the exemptions `base` grants after its own markup cap.
-    {
-      name: 'linteljs/react-native/markup-size',
-      files: JS_MARKUP_FILES,
-      ignores: [
-        ...TEST_FILES,
-        ...E2E_FILES,
-        ...MOCK_FILES,
-        ...STORY_FILES,
-        '**/utils/**',
-      ],
-      rules: MARKUP_SIZE_RULES,
     },
     {
       name: 'linteljs/react-native/ignores',

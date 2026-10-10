@@ -210,8 +210,8 @@ a direct consumer. Its fix is report-only `reorder`. `base` restates it over `TY
 
 ### Size limits count code, and a suite has none
 
-Limits: function 350, file 500, component file 350, `utils/` file 800, blanks and comments free. A React or Solid
-component meets the function cap; an SFC meets the file cap. `utils/` gets the most room because it is a drawer of
+Limits: function 350, file 500, `utils/` file 800, blanks and comments free. A component file gets the same 500 as
+any file: a React or Solid component meets the function cap; an SFC meets the file cap. `utils/` gets the most room because it is a drawer of
 helpers, and the glob is `**/utils/**` because Angular spells the suffix in kebab. Suites, `__mocks__/` and `e2e/`
 are exempt: a suite is as long as its case list. `.astro` is named only with `astro: true`, or a project without
 the parser would lint it.

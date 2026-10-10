@@ -168,13 +168,13 @@ describe('astro', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('caps a component file at 350 lines of code, frontmatter and template together', async () => {
+  it('caps a component file at 500 lines of code, frontmatter and template together', async () => {
     const component = (lines: number): string => {
       return `---\n${codeLines(lines - 3)}---\n\n<main></main>\n`;
     };
 
-    const atLimit = await ruleIdsFor(WITH_BASE(), component(350), 'src/components/Big.astro');
-    const overLimit = await ruleIdsFor(WITH_BASE(), component(351), 'src/components/Big.astro');
+    const atLimit = await ruleIdsFor(WITH_BASE(), component(500), 'src/components/Big.astro');
+    const overLimit = await ruleIdsFor(WITH_BASE(), component(501), 'src/components/Big.astro');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');

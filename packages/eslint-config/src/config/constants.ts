@@ -15,18 +15,8 @@ export const STORY_FILES = ['**/*.stories.*'];
 
 export const MOCK_FILES = ['**/__mocks__/**'];
 
-export const MARKUP_FILES = ['**/*.{tsx,vue,svelte}'];
-
 // For a JSX-in-JS framework, where a `.js` or `.jsx` file holds markup.
 export const JS_MARKUP_FILES = ['**/*.{js,jsx}'];
-
-export const MARKUP_SIZE_RULES = {
-  'max-lines': ['error', {
-    max: 350,
-    skipBlankLines: true,
-    skipComments: true,
-  }],
-} satisfies Linter.RulesRecord;
 
 export const SCRIPT_AND_SFC_FILES = [`**/*.{${SCRIPT_EXTENSIONS},vue,svelte}`];
 

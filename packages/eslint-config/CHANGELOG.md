@@ -46,8 +46,8 @@ when a version's change lives in a sibling it is described there instead:
   fewer stay as written unless half split. `@stylistic/object-property-newline`, which split at two, is off, and
   `@stylistic/object-curly-newline` keeps only `consistent`.
 - **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350, and
-  `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory. Tests,
-  `__mocks__/` and `e2e/` are exempt.
+  `max-lines` at 500, a component file included, and 800 under a `utils/` directory. Tests, `__mocks__/` and
+  `e2e/` are exempt.
 - **`base` reports more.**
   - The plugin's `recommended` adds `@linteljs/chain-call-newline`, `no-duplicate-interface`, `no-eslint-disable`
     and `no-inline-object-types`, and reaches `.vue` and `.svelte` files as well as scripts.

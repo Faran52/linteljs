@@ -41,10 +41,10 @@ before that package publishes. The types it redeclares are held equal by `packag
   group's or ring's `utils/` for several, `packages/create/src/utils/` for several rings.
 - **`*Utils.ts` on every file in a `utils/` directory** (`ruleUtils.ts`, not `ruleApi.ts`). Caught by the
   `naming` map in the root `eslint.config.ts` (`**/utils/*.ts` to `*Utils`). Generated projects follow it too.
-- **Size**, counted in lines of code with blanks and comments free: a function at most 350, a code file 500, a
-  component file (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.astro`) 350, a file under `utils/` 800. Tests, `__mocks__/`
-  and e2e are exempt. Caught by `max-lines` and `max-lines-per-function` in the `base` layer, the same limits a
-  generated project gets; `docs/DESIGN.md` carries the measurement.
+- **Size**, counted in lines of code with blanks and comments free: a function at most 350, a code file 500,
+  components included, a file under `utils/` 800. Tests, `__mocks__/` and e2e are exempt. Caught by `max-lines`
+  and `max-lines-per-function` in the `base` layer, the same limits a generated project
+  gets; `docs/DESIGN.md` carries the measurement.
 - **Coverage is 100% on all four metrics** in all three packages, with no ignore comment. Delete an unreachable
   line rather than ignore it. Caught by `scripts/checkBannedPatterns.ts`, which bans every `v8`, `c8` and
   `istanbul` ignore in `packages/*/src`.

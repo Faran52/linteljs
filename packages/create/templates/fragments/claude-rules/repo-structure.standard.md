@@ -3,9 +3,9 @@ Create it then, not before.
 
 ## Files
 
-- **Size is capped in lines of code**, blank lines and comments free: a function at 350, a code file at 500, a
-  component file (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.astro`) at 350, a file under `utils/` at 800. Tests are
-  exempt. ESLint enforces it; past a cap, split along the subjects rather than squeezing lines.
+- **Size is capped in lines of code**, blank lines and comments free: a function at 350, a code file at 500,
+  components included, a file under `utils/` at 800. Tests are exempt. ESLint enforces it; past a cap,
+  split along the subjects rather than squeezing lines.
 - **A component, page or hook is a subject directory**: kebab-case, holding one entry file named for the
   directory (`button/Button.tsx`, `use-extended-query/useExtendedQuery.ts`), its test beside it, and anything
   only it reads. A Solid primitive and a Vue composable count as hooks

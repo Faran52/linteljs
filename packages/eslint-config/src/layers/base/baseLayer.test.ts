@@ -387,7 +387,6 @@ describe('base: ignores', () => {
         'linteljs/base/prefer-alias',
         'linteljs/base/scripts',
         'linteljs/base/fixtures',
-        'linteljs/base/markup-size',
         'linteljs/base/utils-size',
         'linteljs/base/test-size',
         'linteljs/base/magic-numbers',
@@ -1034,11 +1033,11 @@ describe('base: size', () => {
   it.each([
     ['src/app/format.ts', 500],
     ['src/app/format.js', 500],
-    ['src/components/button/Button.tsx', 350],
+    ['src/components/button/Button.tsx', 500],
     ['src/components/button/Button.jsx', 500],
     ['src/components/button/Button.js', 500],
-    ['src/components/button/Button.vue', 350],
-    ['src/components/button/Button.stories.tsx', 500],
+    ['src/components/button/Button.vue', 500],
+    ['src/components/button/Button.svelte', 500],
     ['src/lib/utils/formatUtils.ts', 800],
     ['src/lib/utils/format.ts', 800],
     ['packages/core/src/rules/utils/nested/jsxUtils.ts', 800],
@@ -1052,7 +1051,6 @@ describe('base: size', () => {
 
   it.each([
     ['src/app/format.ts', 500],
-    ['src/components/button/Button.tsx', 350],
     ['src/lib/utils/formatUtils.ts', 800],
   ])('counts neither blank lines nor comments in %s', async (path, max) => {
     const padded = `${codeLines(max)}\n\n// a note\n/*\n * a block\n */\n`;
