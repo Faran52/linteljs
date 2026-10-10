@@ -129,7 +129,6 @@ layer, so importing it loads no optional peer.
 | Export | Subpath | Purpose | Optional peers to install |
 | --- | --- | --- | --- |
 | `linteljs(options?, ...configs)` | `.` | Loads requested layers, orders them, and appends `configs`. | Those of the layers it loads. |
-| `composeConfig(options?)` | `/compose-config` | The enum-keyed composer `linteljs` replaces, kept until `@linteljs/create` moves over. | Those of the layers it loads. |
 | `base(options?)` | `/base` | `@stylistic` layout, `import-x` module checks, import sorting, unused imports, file and folder naming, sonarjs, size caps, no magic numbers outside tests and config, at most three operators in one expression outside tests, `@linteljs/name-before-use`, `prefer-destructuring`, and the plugin's `recommended`. It works for JavaScript on its own. It extends the plugin's five TypeScript-only rules to `.vue` and `.svelte` files. The four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
 | `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |

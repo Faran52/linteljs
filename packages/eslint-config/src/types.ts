@@ -37,37 +37,6 @@ export interface TypescriptOptions {
   enforceRelativeImports?: boolean;
 }
 
-// `next` implies `react` beneath it and `nuxt` implies `vue`; `react-native` is `react` without the a11y preset.
-export type Framework
-  = 'react'
-    | 'next'
-    | 'react-native'
-    | 'vue'
-    | 'nuxt'
-    | 'svelte'
-    | 'solid'
-    | 'angular';
-
-export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | 'stylex';
-
-export type Testing = 'vitest' | 'jest';
-
-export type E2e = 'playwright' | 'maestro';
-
-export type Stories = 'storybook';
-
-// `frameworkGroup` is dropped: the composer reads it off the framework layer.
-export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'>, TypescriptOptions {
-  framework?: Framework;
-  typescript?: boolean;
-  testing?: Testing;
-  e2e?: E2e;
-  stories?: Stories;
-  html?: boolean;
-  libraries?: LibraryLayer[];
-  tailwindEntryPoint?: string;
-}
-
 export type FrameworkKey
   = 'react'
     | 'next'

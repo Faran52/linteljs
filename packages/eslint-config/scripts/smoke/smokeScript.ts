@@ -118,11 +118,9 @@ export const check = async (subpath, namespace) => {
     return;
   }
 
-  // \`compose-config\` exports its function by name only, and answers a promise where a layer answers an array.
-  const entry = subpath === './compose-config' ? namespace.composeConfig : namespace.default;
+  const entry = namespace.default;
 
   assert.equal(typeof entry, 'function', label + ': entry export is not a function');
-  assert.equal(subpath === './compose-config', namespace.default === undefined, label + ': default export');
 
   const configs = await entry();
 

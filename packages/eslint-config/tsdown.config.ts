@@ -5,7 +5,6 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     base: 'src/layers/base/baseLayer.ts',
-    composeConfig: 'src/compose-config/composeConfig.ts',
     typescript: 'src/layers/typescript/typescriptLayer.ts',
     vitest: 'src/layers/vitest/vitestLayer.ts',
     jest: 'src/layers/jest/jestLayer.ts',

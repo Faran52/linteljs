@@ -68,7 +68,7 @@ export const astro = (): Layer => {
       files: ['**/*.astro/*.ts'],
       languageOptions: { parser: tseslint.parser },
     },
-    // After `typescript()`, which is why `composeConfig` composes this last.
+    // After `typescript()`, which is why `linteljs` composes this last.
     {
       ...tseslint.configs.disableTypeChecked,
       name: 'linteljs/astro/untyped',

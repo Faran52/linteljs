@@ -9,9 +9,9 @@ paths:
   `frameworks/<name>/<name>Framework.ts` for the nine frameworks; `libraries/<name>/<name>Library.ts` for
   `stylex`, `tailwind`, `tanstack-query` and `tanstack-router`. Each has its suite beside it.
 - **The suffix is on the file, not the export**: `baseLayer.ts` exports `base`.
-- **`linteljs/linteljs.ts`** (and its predecessor `compose-config/composeConfig.ts`) composes the layers and owns their order, which is load-bearing. It takes
+- **`linteljs/linteljs.ts`** composes the layers and owns their order, which is load-bearing. It takes
   no suffix, since nothing names a kind for it. Its loader tables are functions, so they sit in
-  `compose-config/utils/loaderUtils.ts`, not a `constants.ts`.
+  `linteljs/utils/loaderUtils.ts`, not a `constants.ts`.
 - **Shared code**: `config/constants.ts` holds the glob and extension tables several layers read;
   `frameworks/utils/reactCoreUtils.ts` what several frameworks read; `layers/base/utils/` the naming and
   import-sort builders only `base` reads; `utils/presetUtils.ts` what the whole package reads. A shared table is

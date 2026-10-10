@@ -89,26 +89,6 @@ describe.each(subjects)('$group/$name', ({
   });
 });
 
-it('holds compose-config to its entry, its suite and its loaders', () => {
-  const composeDir = join(srcDir, 'compose-config');
-  const composeFiles = readdirSync(composeDir)
-    .toSorted(byName);
-
-  const expected = [
-    'composeConfig.test.ts',
-    'composeConfig.ts',
-    'utils',
-  ];
-  expect(composeFiles).toEqual(expected);
-
-  const utilsDir = join(composeDir, 'utils');
-  const composeUtils = readdirSync(utilsDir)
-    .toSorted(byName);
-
-  const expectedUtils = ['loaderUtils.test.ts', 'loaderUtils.ts'];
-  expect(composeUtils).toEqual(expectedUtils);
-});
-
 it('holds linteljs to its entry, its suite, its tables and its loaders', () => {
   const linteljsDir = join(srcDir, 'linteljs');
   const linteljsFiles = readdirSync(linteljsDir)

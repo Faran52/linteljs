@@ -76,7 +76,7 @@ the project's own manager, updates it. The
 | Package | Version | Use it for |
 | --- | --- | --- |
 | [`@linteljs/create`](packages/create/README.md) | [![npm](https://img.shields.io/npm/v/@linteljs/create.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/create) | Start a project, or bring an existing one under the standard. |
-| [`@linteljs/eslint-config`](packages/eslint-config/README.md) | [![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config) | Compose ESLint flat-config layers, by hand or through `composeConfig`. |
+| [`@linteljs/eslint-config`](packages/eslint-config/README.md) | [![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-config) | Compose ESLint flat-config layers, by hand or through `linteljs`. |
 | [`@linteljs/eslint-plugin`](packages/eslint-plugin/README.md) | [![npm](https://img.shields.io/npm/v/@linteljs/eslint-plugin.svg?style=for-the-badge)](https://www.npmjs.com/package/@linteljs/eslint-plugin) | Use the rules on their own. `recommended` holds the ones the config builds on. |
 
 ## Why

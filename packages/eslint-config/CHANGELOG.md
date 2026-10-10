@@ -13,11 +13,10 @@ when a version's change lives in a sibling it is described there instead:
 - **The root export carries `linteljs`, the file globs and the types, and no layer.** Import a layer and its
   group from its subpath (`import react, { reactGroup } from '@linteljs/eslint-config/react'`).
 - **Node `>=22.0.0`**, up from 18.18. Node below 22 is dropped. ESLint stays `>=9`, flat config only.
-- **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
-  subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the
-  import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`.
-- **`testing` names the test runner, in place of the `vitest` boolean.** It mirrors `@linteljs/create`'s answer:
-  `testing: 'vitest'` or `testing: 'jest'`. Replace `vitest: true` with `testing: 'vitest'`.
+- **`defineConfig` is now `linteljs`, on the root export.** The `./define-config` subpath and
+  `DefineConfigOptions` are gone, and there is no default export. `framework`, `libraries` and
+  `tailwindEntryPoint` become one key per layer (under Added): `{ framework: 'react', libraries: ['tailwind'] }`
+  is `{ react: true, tailwind: true }`, and `react-native` is `expo`.
 - **`typescript` `>=5 <6.1.0` is a required peer.** The ceiling is the bundled `typescript-eslint`'s, so a fresh
   install no longer resolves a TypeScript 7 that every typed layer would refuse.
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
@@ -102,31 +101,28 @@ when a version's change lives in a sibling it is described there instead:
   and an `*.e2e.*` file of any extension gets Playwright's. `base` turns `@linteljs/comment-delimiter` off in
   `TEST_FILES`.
 
-- New layers, each on its own subpath, on the barrel, and in `composeConfig`:
-  - `reactNative()` at `./react-native` (`framework: 'react-native'`): the hooks and component rules React has,
+- New layers, each on its own subpath and behind a `linteljs` key:
+  - `reactNative()` at `./react-native` (`expo`): the hooks and component rules React has,
     without the DOM accessibility ones, plus the five `@linteljs/native-*` rules.
-  - `nuxt()` at `./nuxt` (`framework: 'nuxt'`).
-  - `tanstackRouter()` at `./tanstack-router` (`libraries: ['tanstack-router']`), over the optional peer
+  - `nuxt()` at `./nuxt` (`nuxt`).
+  - `tanstackRouter()` at `./tanstack-router` (`tanstackRouter`), over the optional peer
     `@tanstack/eslint-plugin-router`.
-  - `stylex()` at `./stylex` (`libraries: ['stylex']`), over the optional peer `@stylexjs/eslint-plugin`. It
+  - `stylex()` at `./stylex` (`stylex`), over the optional peer `@stylexjs/eslint-plugin`. It
     validates styles in scripts, `.vue`, `.svelte` and `.astro` files, bans the shorthands StyleX compiles to no
     CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
     pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts`
     file.
-  - `jest()` at `./jest` (`testing: 'jest'`), over the optional peer `eslint-plugin-jest` `>=29`: its
+  - `jest()` at `./jest` (`jest`), over the optional peer `eslint-plugin-jest` `>=29`: its
     `flat/recommended` rules on test files, the counterpart of `vitest` for a project on Jest, such as React
     Native on `jest-expo`.
-  - `playwright()` at `./playwright` (`e2e: 'playwright'`), over the optional peer `eslint-plugin-playwright`
-    `>=2`: its `flat/recommended` rules on `*.e2e.*` files and `e2e/`. `e2e: 'maestro'` adds no layer.
-  - `storybook()` at `./storybook` (`stories: 'storybook'`), over the optional peer `eslint-plugin-storybook`
+  - `playwright()` at `./playwright` (`playwright`), over the optional peer `eslint-plugin-playwright`
+    `>=2`: its `flat/recommended` rules on `*.e2e.*` files and `e2e/`.
+  - `storybook()` at `./storybook` (`storybook`), over the optional peer `eslint-plugin-storybook`
     `>=10`: its `flat/recommended` rules on story files and `.storybook/main.*`.
-  - `composeConfig` names the option and the peer when `e2e` or `stories` asks for a plugin that is not
-    installed.
-- `nuxtGroup`, `reactNativeGroup`, `tailwind` and the `TypescriptOptions` type join the barrel.
+- `nuxtGroup` and `reactNativeGroup` sit on their layers' subpaths, and `TypescriptOptions` joins the types.
 - `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, and
-  takes `aliasExempt` and `enforceRelativeImports` for it, as does `composeConfig`.
-- Astro projects lint `.astro` files as scripts. `base({ astro: true })`, which `composeConfig` sets from its own
-  `astro` switch, gives the frontmatter and template every rule a script gets, including the 350-line component
+  takes `aliasExempt` and `enforceRelativeImports` for it, as does `linteljs`.
+- Astro projects lint `.astro` files as scripts. `base({ astro: true })`, which `linteljs` sets from its `astro` key, gives the frontmatter and template every rule a script gets, including the 350-line component
   cap. The Tailwind layer reaches `.astro` class attributes too. `@stylistic/jsx-one-expression-per-line` stays
   off in `.astro`, where a line break in text renders as a space.
 - `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose `project` is a

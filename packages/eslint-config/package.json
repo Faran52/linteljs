@@ -47,12 +47,6 @@
         "default": "./dist/base.mjs"
       }
     },
-    "./compose-config": {
-      "import": {
-        "types": "./dist/composeConfig.d.mts",
-        "default": "./dist/composeConfig.mjs"
-      }
-    },
     "./typescript": {
       "import": {
         "types": "./dist/typescript.d.mts",

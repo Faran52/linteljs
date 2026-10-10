@@ -18,10 +18,18 @@ import {
   vi,
 } from 'vitest';
 
+import angular from '../frameworks/angular/angularFramework';
+import next from '../frameworks/next/nextFramework';
+import react from '../frameworks/react/reactFramework';
+import reactNative from '../frameworks/react-native/reactNativeFramework';
+import solid from '../frameworks/solid/solidFramework';
 import svelte from '../frameworks/svelte/svelteFramework';
 import vue from '../frameworks/vue/vueFramework';
 import base from '../layers/base/baseLayer';
+import html from '../layers/html/htmlLayer';
 import typescript from '../layers/typescript/typescriptLayer';
+import vitest from '../layers/vitest/vitestLayer';
+import tanstackQuery from '../libraries/tanstack-query/tanstackQueryLibrary';
 
 import { linteljs } from './linteljs';
 
@@ -701,5 +709,77 @@ describe('one owner per rule name', () => {
       });
 
     expect(duplicated).toEqual([]);
+  });
+});
+
+const composes = (config: Layer): void => {
+  new Linter().verify('const value = 1;\n', config, 'src/lib/utils/sample.ts');
+};
+
+const LAYERS: [string, () => Layer][] = [
+  ['react', react],
+  ['react-native', reactNative],
+  ['vue', vue],
+  ['svelte', svelte],
+  ['solid', solid],
+  ['angular', angular],
+];
+
+describe('composition', () => {
+  it.each(LAYERS)('composes base + typescript + %s', (_name, layer) => {
+    expect(() => {
+      const config = [
+        ...base(),
+        ...typescript(),
+        ...layer(),
+      ];
+      composes(config);
+    }).not.toThrow();
+  });
+
+  it('composes next on top of react, in that order', () => {
+    expect(() => {
+      const config = [
+        ...base(),
+        ...typescript(),
+        ...react(),
+        ...next(),
+      ];
+      composes(config);
+    }).not.toThrow();
+  });
+
+  it('composes the library and file-type layers alongside a framework', () => {
+    expect(() => {
+      const config = [
+        ...base(),
+        ...typescript(),
+        ...react(),
+        ...tanstackQuery(),
+        ...vitest(),
+        ...html(),
+      ];
+      composes(config);
+    }).not.toThrow();
+  });
+
+  it('composes every framework layer at once, which is what proves the plugin identities are shared', () => {
+    const everything = LAYERS
+      .flatMap(([, layer]) => {
+        return layer();
+      });
+
+    expect(() => {
+      const config = [
+        ...base(),
+        ...typescript(),
+        ...everything,
+        ...next(),
+        ...tanstackQuery(),
+        ...vitest(),
+        ...html(),
+      ];
+      composes(config);
+    }).not.toThrow();
   });
 });

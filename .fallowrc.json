@@ -24,9 +24,6 @@
     "svelte",
     "verdaccio"
   ],
-  "ignoreUnresolvedImports": [
-    "@linteljs/eslint-config/compose-config"
-  ],
   "rules": {
     "duplicate-exports": "off"
   },
