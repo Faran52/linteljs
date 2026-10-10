@@ -531,6 +531,7 @@ describe('the emitted naming map on a utils file', () => {
     const config = await linteljs({
       naming,
       folderNaming,
+      typescript: false,
     });
     const eslint = new ESLint({
       cwd: '/project',

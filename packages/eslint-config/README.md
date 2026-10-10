@@ -54,7 +54,6 @@ import { linteljs } from '@linteljs/eslint-config';
 const config = await linteljs({
   root: import.meta.dirname,
   react: true,
-  typescript: true,
   vitest: true,
 });
 
@@ -73,14 +72,14 @@ rule's schema. A rule from a plugin you add yourself is accepted unchecked. The 
 
 ## Options
 
-One key per layer, each off unless you enable it. A key whose layer needs an optional peer that is not
-installed throws, naming the key, the package and the command that installs it with the package manager that
-ran ESLint (`pnpm add -D eslint-plugin-solid`).
+One key per layer, each off unless you enable it, except `typescript`, which is on unless you set it to
+`false`. A key whose layer needs an optional peer that is not installed throws, naming the key, the package
+and the command that installs it with the package manager that ran ESLint (`pnpm add -D eslint-plugin-solid`).
 
 | Option | Effect |
 | --- | --- |
 | `react`, `next`, `expo`, `vue`, `nuxt`, `svelte`, `sveltekit`, `solid`, `angular` | Add a framework layer. `next` includes React and `nuxt` includes Vue. `expo` is React without the web accessibility preset. `sveltekit` is the Svelte layer. A key whose layer another enabled key includes adds nothing. |
-| `typescript` | Enables the TypeScript layer. |
+| `typescript` | The TypeScript layer, on by default. `false` turns it off for a JavaScript project. |
 | `vitest`, `jest` | Enable rules for `*.test.*` and `*.spec.*` files from the runner's plugin (React Native on `jest-expo`). |
 | `playwright` | Enables Playwright rules for `*.e2e.*` files and anything under `e2e/`. |
 | `storybook` | Enables Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |

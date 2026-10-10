@@ -73,7 +73,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
       astro,
       frameworkGroup,
     }),
-    ...(options.typescript === true ? typescript(options) : []),
+    ...(options.typescript === false ? [] : typescript(options)),
     ...frameworks
       .flatMap(({ layer }) => {
         return layer;

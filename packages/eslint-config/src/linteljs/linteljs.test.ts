@@ -233,8 +233,8 @@ describe('linteljs', () => {
     expect(reported).toBe(true);
   });
 
-  it('returns base alone when asked for nothing, rather than a default nobody wrote', async () => {
-    const baseOnly = await linteljs();
+  it('returns base alone with typescript turned off, for a JavaScript project', async () => {
+    const baseOnly = await linteljs({ typescript: false });
 
     const ruleIds = await ruleIdsFor(baseOnly, 'export const value = "x";\n', 'src/lib/utils/sample.ts');
     expect(ruleIds).toContain('@stylistic/quotes');
@@ -243,8 +243,8 @@ describe('linteljs', () => {
     expect(actual).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
-  it('composes the type-aware layer on request', async () => {
-    const config = await linteljs({ typescript: true });
+  it('composes the type-aware layer unless typescript is false', async () => {
+    const config = await linteljs();
     const ruleIds = await ruleIdsForFile(config, TYPED_FILE);
 
     expect(ruleIds).toContain('@typescript-eslint/no-floating-promises');
@@ -267,10 +267,10 @@ describe('linteljs', () => {
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {
     const code = sortedFor(specifier);
 
-    const composed = await linteljs(only(framework));
+    const composed = await linteljs({ ...only(framework), typescript: false });
     const config = [...composed, ...NEXT_PROJECT];
     const own = await ruleIdsFor(config, code, 'src/app/entry.ts');
-    const defaults = await linteljs();
+    const defaults = await linteljs({ typescript: false });
     const none = await ruleIdsFor(defaults, code, 'src/app/entry.ts');
 
     expect(own).not.toContain(SORT_RULE);
@@ -292,7 +292,7 @@ describe('linteljs', () => {
     ];
     const code = lines.join('\n');
 
-    const config = await linteljs({ next: true });
+    const config = await linteljs({ next: true, typescript: false });
     const ruleIds = await ruleIdsFor(config, code, 'src/app/page.tsx');
 
     expect(ruleIds).toContain('@next/next/no-img-element');
@@ -301,9 +301,9 @@ describe('linteljs', () => {
 
   it('composes react-native as react without the accessibility preset', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
-    const nativeConfig = await linteljs({ expo: true });
+    const nativeConfig = await linteljs({ expo: true, typescript: false });
     const native = await ruleIdsFor(nativeConfig, code, 'src/Logo.tsx');
-    const webConfig = await linteljs({ react: true });
+    const webConfig = await linteljs({ react: true, typescript: false });
     const web = await ruleIdsFor(webConfig, code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
@@ -324,6 +324,7 @@ describe('linteljs', () => {
     const code = lines.join('\n');
 
     const config = await linteljs({
+      typescript: false,
       react: true,
       tanstackQuery: true,
     });
@@ -344,6 +345,7 @@ describe('linteljs', () => {
     ];
     const code = lines.join('\n');
     const config = await linteljs({
+      typescript: false,
       react: true,
       tanstackRouter: true,
     });
@@ -355,6 +357,7 @@ describe('linteljs', () => {
   it('composes the tailwind layer through the same door', async () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
     const config = await linteljs({
+      typescript: false,
       react: true,
       tailwind: true,
     });
@@ -408,6 +411,7 @@ describe('linteljs', () => {
     ];
     const code = lines.join('\n');
     const config = await linteljs({
+      typescript: false,
       react: true,
       stylex: true,
     });
@@ -417,7 +421,7 @@ describe('linteljs', () => {
   });
 
   it('puts vue underneath nuxt rather than beside it', async () => {
-    const config = await linteljs({ nuxt: true });
+    const config = await linteljs({ nuxt: true, typescript: false });
 
     const enabledRuleIds = await enabledRuleIdsFor(config, 'src/components/badge.vue');
     expect(enabledRuleIds).toContain('vue/multi-word-component-names');
@@ -430,11 +434,11 @@ describe('linteljs', () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    const vitestConfig = await linteljs({ vitest: true });
+    const vitestConfig = await linteljs({ vitest: true, typescript: false });
     const vitestRuleIds = await ruleIdsFor(vitestConfig, code, path);
     expect(vitestRuleIds).toContain('vitest/no-focused-tests');
 
-    const plainConfig = await linteljs();
+    const plainConfig = await linteljs({ typescript: false });
     const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
     expect(plainRuleIds).not.toContain('vitest/no-focused-tests');
   });
@@ -445,11 +449,11 @@ describe('linteljs', () => {
     // The plugin reads the installed Jest's major, and this workspace installs none.
     const jestVersion = { settings: { jest: { version: 29 } } };
 
-    const jestConfig = await linteljs({ jest: true });
+    const jestConfig = await linteljs({ jest: true, typescript: false });
     const jestRuleIds = await ruleIdsFor([...jestConfig, jestVersion], code, path);
     expect(jestRuleIds).toContain('jest/no-focused-tests');
 
-    const plainConfig = await linteljs();
+    const plainConfig = await linteljs({ typescript: false });
     const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
     expect(plainRuleIds).not.toContain('jest/no-focused-tests');
   });
@@ -458,12 +462,12 @@ describe('linteljs', () => {
     const code = "test.only('opens', async () => {\n  await Promise.resolve();\n});\n";
     const path = 'src/flows/checkout/checkout.e2e.ts';
 
-    const playwrightConfig = await linteljs({ playwright: true });
+    const playwrightConfig = await linteljs({ playwright: true, typescript: false });
     const playwrightRuleIds = await ruleIdsFor(playwrightConfig, code, path);
     expect(playwrightRuleIds).toContain('playwright/no-focused-test');
 
-    const offConfig = await linteljs({ playwright: false });
-    const plainConfig = await linteljs();
+    const offConfig = await linteljs({ playwright: false, typescript: false });
+    const plainConfig = await linteljs({ typescript: false });
     expect(offConfig).toStrictEqual(plainConfig);
   });
 
@@ -471,11 +475,11 @@ describe('linteljs', () => {
     const code = 'export const Primary = {};\n';
     const path = 'src/components/button/Button.stories.ts';
 
-    const storybookConfig = await linteljs({ storybook: true });
+    const storybookConfig = await linteljs({ storybook: true, typescript: false });
     const storybookRuleIds = await ruleIdsFor(storybookConfig, code, path);
     expect(storybookRuleIds).toContain('storybook/default-exports');
 
-    const plainConfig = await linteljs();
+    const plainConfig = await linteljs({ typescript: false });
     const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
     expect(plainRuleIds).not.toContain('storybook/default-exports');
   });
@@ -551,6 +555,7 @@ describe('linteljs', () => {
 
   it('passes the base options through under the names base already uses', async () => {
     const config = await linteljs({
+      typescript: false,
       react: true,
       ignores: ['generated/**'],
       naming: {
@@ -570,16 +575,18 @@ describe('linteljs', () => {
 
   it.each(IMPLIED)('composes %s once, with %s beside it adding nothing', async (key, implied) => {
     const both = await linteljs({
+      typescript: false,
       ...only(key),
       ...only(implied),
     });
-    const alone = await linteljs(only(key));
+    const alone = await linteljs({ ...only(key), typescript: false });
 
     expect(both).toEqual(alone);
   });
 
   it('gives base the sort bucket of every framework asked for', async () => {
     const config = await linteljs({
+      typescript: false,
       react: true,
       vue: true,
     });
@@ -592,11 +599,11 @@ describe('linteljs', () => {
 
   it('appends the configs it is handed after its own', async () => {
     const code = 'export const value = "x";\n';
-    const own = await linteljs();
+    const own = await linteljs({ typescript: false });
     const ownRuleIds = await ruleIdsFor(own, code, 'src/lib/utils/sample.ts');
     expect(ownRuleIds).toContain('@stylistic/quotes');
 
-    const extended = await linteljs({}, { rules: { '@stylistic/quotes': 'off' } });
+    const extended = await linteljs({ typescript: false }, { rules: { '@stylistic/quotes': 'off' } });
     const extendedRuleIds = await ruleIdsFor(extended, code, 'src/lib/utils/sample.ts');
     expect(extendedRuleIds).not.toContain('@stylistic/quotes');
   });

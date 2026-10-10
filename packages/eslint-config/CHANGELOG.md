@@ -92,8 +92,9 @@ when a version's change lives in a sibling it is described there instead:
   `nuxt`, `svelte`, `sveltekit`, `solid`, `angular`, `typescript`, `vitest`, `jest`, `playwright`, `storybook`,
   `html`, `astro`, `tanstackQuery`, `tanstackRouter`, `stylex`, and `tailwind` (`true` or `{ entryPoint }`), with
   `base`'s options beside them. `next` and `expo` imply `react`, `nuxt` implies `vue`, `sveltekit` implies
-  `svelte`. The configs after the options are appended last. A key whose optional peer is missing throws with the
-  command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
+  `svelte`. `typescript` is on unless set to `false`; every other key is off unless set. The configs after the
+  options are appended last. A key whose optional peer is missing throws with the command that installs it
+  (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
   `LinteljsOptions`, `FrameworkKey`, `LayerKey` and `TailwindOptions` join the types.
 - **Typed `rules` in the configs handed to `linteljs()`**: every rule of ESLint and of every plugin a layer can load,
   with its options, generated from the rule schemas by `eslint-typegen`. Exported as `Rules`.
