@@ -206,10 +206,9 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
   };
 
   const eslint = {
-    react: true,
+    framework: 'react',
     typescript: true,
     ignores: IGNORES,
-    aliases,
     naming: componentNaming(),
     folderNaming: { 'src/**/': FOLDER_ROUTED },
   };

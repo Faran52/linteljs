@@ -53,8 +53,8 @@ import { linteljs } from '@linteljs/eslint-config';
 
 const config = await linteljs({
   root: import.meta.dirname,
-  react: true,
-  vitest: true,
+  framework: 'react',
+  testing: 'vitest',
 });
 
 export default config;
@@ -64,7 +64,7 @@ export default config;
 after, to override a rule or scope an exception:
 
 ```ts
-const config = await linteljs({ react: true }, { rules: { 'no-console': 'off' } });
+const config = await linteljs({ framework: 'react' }, { rules: { 'no-console': 'off' } });
 ```
 
 Their `rules` are typed: every rule a layer can load completes by name, and its options are checked against the
@@ -72,21 +72,24 @@ rule's schema. A rule from a plugin you add yourself is accepted unchecked. The 
 
 ## Options
 
-One key per layer, each off unless you enable it, except `typescript`, which is on unless you set it to
-`false`. A key whose layer needs an optional peer that is not installed throws, naming the key, the package
-and the command that installs it with the package manager that ran ESLint (`pnpm add -D eslint-plugin-solid`).
+The options are named after the answers `@linteljs/create` asks. Each is off unless you set it, except
+`typescript`, which is on unless you set it to `false`. An unknown option, or a value an option does not take,
+throws and names the closest one (`unknown option 'framwork'. Did you mean 'framework'?`). An option whose layer
+needs an optional peer that is not installed throws, naming the option, the package and the command that installs
+it with the package manager that ran ESLint (`pnpm add -D eslint-plugin-solid`).
 
 | Option | Effect |
 | --- | --- |
-| `react`, `next`, `expo`, `vue`, `nuxt`, `svelte`, `sveltekit`, `solid`, `angular` | Add a framework layer. `next` includes React and `nuxt` includes Vue. `expo` is React without the web accessibility preset. `sveltekit` is the Svelte layer. A key whose layer another enabled key includes adds nothing. |
+| `framework` | `react`, `vue`, `solid`, `angular`, `svelte`, `next`, `nuxt`, `sveltekit`, `analog`, `expo`, `astro` or `wxt`, with its UI rules. `next` brings the React layer and `nuxt` the Vue layer under their own; `sveltekit` is the Svelte layer and `analog` the Angular one. `expo` is the React Native layer alone: React without the web accessibility preset. `astro` adds Astro rules for `.astro` templates and widens `base` to them. |
+| `islands` | The UI frameworks an `astro` project hosts (any of `react`, `vue`, `solid`, `svelte`, `angular`) or the one a `wxt` extension uses. Each adds its framework layer. Any other `framework` throws, as does a second `wxt` island or an `angular` one, since WXT has no Angular module. |
 | `typescript` | The TypeScript layer, on by default. `false` turns it off for a JavaScript project. |
-| `vitest`, `jest` | Enable rules for `*.test.*` and `*.spec.*` files from the runner's plugin (React Native on `jest-expo`). |
-| `playwright` | Enables Playwright rules for `*.e2e.*` files and anything under `e2e/`. |
-| `storybook` | Enables Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |
-| `html` | Enables the HTML layer. |
-| `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
-| `tanstackQuery`, `tanstackRouter`, `stylex` | Enable that library's layer. |
-| `tailwind` | `true`, or `{ entryPoint }`: the path to the CSS file that contains `@import "tailwindcss"`. |
+| `testing` | `vitest` or `jest`: rules for `*.test.*` and `*.spec.*` files from the runner's plugin (React Native on `jest-expo`). |
+| `e2e` | `playwright`: Playwright rules for `*.e2e.*` files and anything under `e2e/`. |
+| `stories` | `storybook`: Storybook rules for `*.stories.*` script files and `.storybook/main.*`. |
+| `html` | `true` enables the HTML layer. |
+| `router`, `data` | `tanstack-router`, `tanstack-query`: that library's layer. |
+| `styling` | `tailwind` or `stylex`: that library's layer. |
+| `tailwind` | `{ entryPoint }`, beside `styling: 'tailwind'`: the path to the CSS file that contains `@import "tailwindcss"`. |
 | `aliasExempt`, `enforceRelativeImports` | Options of `@linteljs/prefer-alias`, passed to the TypeScript layer. Ignored unless `typescript` is on. |
 | `root`, `gitignore`, `ignores`, `naming`, `folderNaming`, `resolver` | Passed through to `base` under the same names. |
 
@@ -181,7 +184,7 @@ Pass `root: import.meta.dirname`. `base` reads two files there and nowhere else,
 `resolver.project` when the relevant tsconfig is not the one the resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
-rule a script gets; the composer sets it with its own `astro` switch, and a hand-composed config sets it beside
+rule a script gets; the composer sets it for `framework: 'astro'`, and a hand-composed config sets it beside
 `astro()`, which supplies the parser.
 
 ## Import order

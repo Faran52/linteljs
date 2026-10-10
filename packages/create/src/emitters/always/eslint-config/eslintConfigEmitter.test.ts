@@ -44,10 +44,10 @@ const CANONICAL_REACT = `import { linteljs } from '@linteljs/eslint-config';
 
 const config = await linteljs({
   root: import.meta.dirname,
-  react: true,
+  framework: 'react',
   typescript: true,
-  vitest: true,
   html: true,
+  testing: 'vitest',
   ignores: [
     'dist/**',
     'coverage/**',
@@ -92,31 +92,55 @@ describe('emitEslintConfig', () => {
   it('names next as one framework rather than composing react beneath it here', () => {
     const output = emitEslintConfig(answersFor({ target: 'next' }));
 
-    expect(output).toContain('next: true,');
+    expect(output).toContain("framework: 'next',");
     expect(output).not.toContain('react');
     expect(output).not.toContain('Group');
   });
 
-  it('names the framework rather than an order for every target that has one', () => {
-    const svelteConfig = emitEslintConfig(answersFor({ target: 'svelte' }));
-    expect(svelteConfig).toContain('svelte: true,');
-    const angularConfig = emitEslintConfig(answersFor({ target: 'angular' }));
-    expect(angularConfig).toContain('angular: true,');
-    const solidConfig = emitEslintConfig(answersFor({ target: 'solid' }));
-    expect(solidConfig).toContain('solid: true,');
+  it.each<[TargetId, string]>([
+    ['svelte', 'sveltekit'],
+    ['angular', 'angular'],
+    ['solid', 'solid'],
+    ['vue', 'vue'],
+    ['nuxt', 'nuxt'],
+    ['react-native', 'expo'],
+  ])('names the %s target as framework %s', (target, framework) => {
+    const config = emitEslintConfig(answersFor({ target }));
+
+    expect(config).toContain(`  framework: '${framework}',\n`);
+    expect(config).not.toContain('islands');
+  });
+
+  it.each<[TargetId, HostedFramework, string]>([
+    [
+      'astro',
+      'svelte',
+      'astro',
+    ],
+    [
+      'webextension',
+      'vue',
+      'wxt',
+    ],
+  ])('names the %s target as its host with %s as the island', (target, hostedFramework, framework) => {
+    const config = emitEslintConfig(answersFor({
+      target,
+      hostedFramework,
+    }));
+
+    expect(config).toContain(`  framework: '${framework}',\n  islands: ['${hostedFramework}'],\n`);
+  });
+
+  it('names a host with no island when none is hosted', () => {
+    const config = emitEslintConfig(answersFor({ target: 'webextension' }));
+
+    expect(config).toContain("  framework: 'wxt',\n  typescript: true,\n");
   });
 
   it('names no framework at all for plain TypeScript', () => {
-    const output = emitEslintConfig(answersFor({ target: 'webextension' }));
+    const output = emitEslintConfig(answersFor({ target: 'typescript' }));
 
-    const rows = output.match(/^ {2}\w+: true,$/gmu);
-
-    expect(rows).toStrictEqual([
-      '  typescript: true,',
-      '  vitest: true,',
-      '  html: true,',
-    ]);
-
+    expect(output).not.toContain('framework');
     expect(output).not.toContain('Group');
   });
 
@@ -130,7 +154,7 @@ describe('emitEslintConfig', () => {
 
   it('asks for the vitest layer only where a suite was chosen', () => {
     const withVitest = emitEslintConfig(answersFor({ testing: 'vitest' }));
-    expect(withVitest).toContain('vitest: true,');
+    expect(withVitest).toContain("testing: 'vitest',");
     const withoutTesting = emitEslintConfig(answersFor({ testing: 'none' }));
     expect(withoutTesting).not.toContain('vitest');
   });
@@ -141,8 +165,8 @@ describe('emitEslintConfig', () => {
       testing: 'jest',
     }));
 
-    expect(output).toContain('expo: true,');
-    expect(output).toContain('jest: true,');
+    expect(output).toContain("framework: 'expo',");
+    expect(output).toContain("testing: 'jest',");
   });
 
   it('asks for no layer for maestro, whose flows are YAML', () => {
@@ -160,8 +184,8 @@ describe('emitEslintConfig', () => {
       e2e: 'playwright',
       stories: 'storybook',
     }));
-    expect(answered).toContain('playwright: true,');
-    expect(answered).toContain('storybook: true,');
+    expect(answered).toContain("e2e: 'playwright',");
+    expect(answered).toContain("stories: 'storybook',");
     const unanswered = emitEslintConfig(answersFor({}));
     expect(unanswered).not.toContain('playwright');
     expect(unanswered).not.toContain('storybook');
@@ -194,21 +218,21 @@ describe('emitEslintConfig', () => {
       data: 'tanstack-query',
     }));
 
-    expect(withQuery).toContain('tanstackQuery: true,');
+    expect(withQuery).toContain("data: 'tanstack-query',");
 
     const withRouter = emitEslintConfig(answersFor({
       libraries: [],
       router: 'tanstack-router',
     }));
 
-    expect(withRouter).toContain('tanstackRouter: true,');
+    expect(withRouter).toContain("router: 'tanstack-router',");
 
     const withStylex = emitEslintConfig(answersFor({
       libraries: [],
       styling: 'stylex',
     }));
 
-    expect(withStylex).toContain('stylex: true,');
+    expect(withStylex).toContain("styling: 'stylex',");
     const eslintConfig = emitEslintConfig(answersFor({ libraries: ['zod'] }));
     expect(eslintConfig).not.toMatch(/tanstack|tailwind|stylex/u);
   });
@@ -239,7 +263,7 @@ describe('emitEslintConfig', () => {
       styling: 'tailwind',
     }));
 
-    expect(config).toContain(`  tailwind: {\n    entryPoint: '${entry}',\n  },`);
+    expect(config).toContain(`  styling: 'tailwind',\n  tailwind: {\n    entryPoint: '${entry}',\n  },`);
   });
 
   it('emits the resolver conditions a project recorded', () => {
@@ -314,13 +338,14 @@ describe('emitEslintConfig', () => {
     expect(config).not.toContain('tailwind');
   });
 
-  it('turns tailwind on bare for a target with no stylesheet', () => {
+  it('names tailwind with no entry point for a target with no stylesheet', () => {
     const config = emitEslintConfig(answersFor({
       target: 'typescript',
       styling: 'tailwind',
     }));
 
-    expect(config).toContain('  tailwind: true,');
+    expect(config).toContain("  styling: 'tailwind',\n");
+    expect(config).not.toContain('tailwind:');
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
@@ -405,13 +430,6 @@ describe('emitEslintConfig', () => {
 
     expect(config).toContain("'build\\\\'");
     expect(config).toContain("'a\\nb'");
-  });
-
-  it('asks for the astro layer on astro alone', () => {
-    const astroConfig = emitEslintConfig(answersFor({ target: 'astro' }));
-    expect(astroConfig).toContain('  astro: true,\n');
-    const reactConfig = emitEslintConfig(answersFor({ target: 'react' }));
-    expect(reactConfig).not.toContain('astro');
   });
 
   it('turns the typescript layer on for every target', () => {
@@ -840,7 +858,7 @@ describe('the router', () => {
       router: 'tanstack-router',
     }));
 
-    expect(config).toContain('tanstackRouter: true,');
+    expect(config).toContain("router: 'tanstack-router',");
     expect(config).not.toContain('routeTree.gen.ts');
   });
 

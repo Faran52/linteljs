@@ -7,10 +7,10 @@ import {
 } from '../constants';
 
 import type {
-  FrameworkKey,
   Layer,
   LayerKey,
   LinteljsOptions,
+  UiFramework,
 } from '../../types';
 
 export interface FrameworkParts {
@@ -18,8 +18,30 @@ export interface FrameworkParts {
   group: string[];
 }
 
+const svelteParts = async (): Promise<FrameworkParts> => {
+  const { svelte, svelteGroup } = await import('../../frameworks/svelte/svelteFramework');
+
+  const parts: FrameworkParts = {
+    layer: svelte(),
+    group: svelteGroup,
+  };
+
+  return parts;
+};
+
+const angularParts = async (): Promise<FrameworkParts> => {
+  const { angular, angularGroup } = await import('../../frameworks/angular/angularFramework');
+
+  const parts: FrameworkParts = {
+    layer: angular(),
+    group: angularGroup,
+  };
+
+  return parts;
+};
+
 // Loaded on demand: each plugin is an optional peer.
-export const FRAMEWORKS: Record<FrameworkKey, () => Promise<FrameworkParts>> = {
+export const FRAMEWORKS: Record<UiFramework, () => Promise<FrameworkParts>> = {
   react: async () => {
     const { react, reactGroup } = await import('../../frameworks/react/reactFramework');
 
@@ -78,27 +100,9 @@ export const FRAMEWORKS: Record<FrameworkKey, () => Promise<FrameworkParts>> = {
     return parts;
   },
 
-  svelte: async () => {
-    const { svelte, svelteGroup } = await import('../../frameworks/svelte/svelteFramework');
+  svelte: svelteParts,
 
-    const parts: FrameworkParts = {
-      layer: svelte(),
-      group: svelteGroup,
-    };
-
-    return parts;
-  },
-
-  sveltekit: async () => {
-    const { svelte, svelteGroup } = await import('../../frameworks/svelte/svelteFramework');
-
-    const parts: FrameworkParts = {
-      layer: svelte(),
-      group: svelteGroup,
-    };
-
-    return parts;
-  },
+  sveltekit: svelteParts,
 
   solid: async () => {
     const { solid, solidGroup } = await import('../../frameworks/solid/solidFramework');
@@ -111,16 +115,9 @@ export const FRAMEWORKS: Record<FrameworkKey, () => Promise<FrameworkParts>> = {
     return parts;
   },
 
-  angular: async () => {
-    const { angular, angularGroup } = await import('../../frameworks/angular/angularFramework');
+  angular: angularParts,
 
-    const parts: FrameworkParts = {
-      layer: angular(),
-      group: angularGroup,
-    };
-
-    return parts;
-  },
+  analog: angularParts,
 };
 
 export const LAYERS: Record<LayerKey, (options: LinteljsOptions) => Promise<Layer>> = {
@@ -136,9 +133,7 @@ export const LAYERS: Record<LayerKey, (options: LinteljsOptions) => Promise<Laye
   },
   tailwind: async (options) => {
     const { tailwind } = await import('../../libraries/tailwind/tailwindLibrary');
-    const { tailwind: value } = options;
-
-    return tailwind(typeof value === 'object' ? value.entryPoint : undefined);
+    return tailwind(options.tailwind?.entryPoint);
   },
   stylex: async () => {
     const { stylex } = await import('../../libraries/stylex/stylexLibrary');
@@ -187,8 +182,8 @@ const installCommand = (): string => {
   return match === undefined ? NPM_INSTALL : match[1];
 };
 
-// Names the key and the command that installs its peer, where Node would only name the package it could not find.
-export const withPeer = async <T>(key: string, load: () => Promise<T>): Promise<T> => {
+// Names the option and the command that installs its peer, where Node would only name the package it could not find.
+export const withPeer = async <T>(option: string, load: () => Promise<T>): Promise<T> => {
   try {
     return await load();
   }
@@ -200,7 +195,7 @@ export const withPeer = async <T>(key: string, load: () => Promise<T>): Promise<
       throw error;
     }
 
-    const message = `@linteljs/eslint-config: ${key} needs ${peer}. Install it with: ${installCommand()} ${peer}`;
+    const message = `@linteljs/eslint-config: ${option} needs ${peer}. Install it with: ${installCommand()} ${peer}`;
 
     throw new Error(message, { cause: error });
   }

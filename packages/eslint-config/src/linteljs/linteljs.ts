@@ -1,49 +1,61 @@
 import { base } from '../layers/base/baseLayer';
 import { typescript } from '../layers/typescript/typescriptLayer';
 
-import {
-  FRAMEWORK_KEYS,
-  IMPLIED_BY,
-  LAYER_KEYS,
-} from './constants';
+import { LAYER_OPTIONS } from './constants';
 import {
   FRAMEWORKS,
   LAYERS,
   withPeer,
 } from './utils/loaderUtils';
+import { checkOptions } from './utils/optionUtils';
 
 import type { Linter } from 'eslint';
 import type {
   Layer,
   LinteljsOptions,
   Rules,
+  UiFramework,
 } from '../types';
+
+const uiFrameworksOf = (options: LinteljsOptions): [string, UiFramework][] => {
+  const { framework, islands } = options;
+  const named: [string, UiFramework][] = [];
+
+  if (framework !== undefined && framework !== 'astro' && framework !== 'wxt') {
+    named.push([`framework: ${JSON.stringify(framework)}`, framework]);
+  }
+
+  if (islands !== undefined) {
+    for (const island of islands) {
+      named.push([`islands: ${JSON.stringify(island)}`, island]);
+    }
+  }
+
+  return named;
+};
 
 // Layer order is fixed here: `vue()`/`svelte()` nest typescript-eslint under their own parser and must follow it.
 export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter.Config<Rules>[]): Promise<Layer> => {
-  const frameworkKeys = FRAMEWORK_KEYS
-    .filter((key) => {
-      const implied = IMPLIED_BY[key]
-        .some((by) => {
-          return options[by] === true;
-        });
+  checkOptions(options);
 
-      return options[key] === true && !implied;
-    });
-  const layerKeys = LAYER_KEYS
-    .filter((key) => {
-      const value = options[key];
-
-      return value !== undefined && value !== false;
-    });
-
-  const frameworks = await Promise.all(frameworkKeys
-    .map((key) => {
-      return withPeer(key, FRAMEWORKS[key]);
+  const frameworks = await Promise.all(uiFrameworksOf(options)
+    .map(([label, key]) => {
+      return withPeer(label, FRAMEWORKS[key]);
     }));
-  const layers = await Promise.all(layerKeys
-    .map((key) => {
-      return withPeer(key, () => {
+  const layers = await Promise.all(LAYER_OPTIONS
+    .filter(([
+      ,
+      option,
+      value,
+    ]) => {
+      return options[option] === value;
+    })
+    .map(([
+      key,
+      option,
+      value,
+    ]) => {
+      return withPeer(`${option}: ${JSON.stringify(value)}`, () => {
         return LAYERS[key](options);
       });
     }));
@@ -55,7 +67,6 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
     naming,
     folderNaming,
     resolver,
-    astro,
   } = options;
   const frameworkGroup = frameworks
     .flatMap(({ group }) => {
@@ -70,7 +81,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
       naming,
       folderNaming,
       resolver,
-      astro,
+      astro: options.framework === 'astro',
       frameworkGroup,
     }),
     ...(options.typescript === false ? [] : typescript(options)),

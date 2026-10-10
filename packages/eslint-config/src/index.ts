@@ -7,9 +7,9 @@ export {
 export { linteljs } from './linteljs/linteljs';
 export type {
   BaseOptions,
-  FrameworkKey,
+  Framework,
+  Island,
   Layer,
-  LayerKey,
   LinteljsOptions,
   NamingConvention,
   NamingMap,

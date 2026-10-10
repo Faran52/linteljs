@@ -8,7 +8,7 @@
     }
   },
   "eslint": {
-    "tanstackQuery": true
+    "data": "tanstack-query"
   },
   "routes": [
     { "path": "/list", "name": "list", "from": "@pages/list/ListPage" }

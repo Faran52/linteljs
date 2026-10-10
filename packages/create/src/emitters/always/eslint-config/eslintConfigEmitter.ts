@@ -15,6 +15,7 @@ import { testRunnerOf } from '../../utils/runnerUtils';
 import {
   BASE_IGNORES,
   FRAMEWORK_KEYS,
+  HOST_FRAMEWORKS,
   IDENTIFIER,
 } from './constants';
 
@@ -68,56 +69,61 @@ const optionRows = (answers: Answers): OptionRow[] => {
   const target = targetFor(answers);
   const rows: OptionRow[] = [['root', 'import.meta.dirname']];
 
-  if (target.framework !== undefined) {
-    rows.push([FRAMEWORK_KEYS[target.framework], 'true']);
+  const host = HOST_FRAMEWORKS[target.id];
+
+  if (host !== undefined) {
+    rows.push(['framework', quote(host)]);
+
+    if (target.framework !== undefined) {
+      rows.push(arrayRow('islands', [target.framework]));
+    }
+  }
+  else if (target.framework !== undefined) {
+    rows.push(['framework', quote(FRAMEWORK_KEYS[target.framework])]);
   }
 
   // This CLI generates TypeScript only.
   rows.push(['typescript', 'true']);
 
-  // The layer imports its runner's plugin, which dies on ERR_MODULE_NOT_FOUND without the suite.
-  const runner = testRunnerOf(answers);
-
-  if (runner !== undefined) {
-    rows.push([runner, 'true']);
-  }
-
-  // Maestro flows are YAML, so no layer lints them.
-  if (answers.e2e === 'playwright') {
-    rows.push(['playwright', 'true']);
-  }
-
-  if (answers.stories === 'storybook') {
-    rows.push(['storybook', 'true']);
-  }
-
   if (target.html) {
     rows.push(['html', 'true']);
   }
 
-  // A file type, so it stacks with the hosted framework.
-  if (target.astro === true) {
-    rows.push(['astro', 'true']);
+  // The layer imports its runner's plugin, which dies on ERR_MODULE_NOT_FOUND without the suite.
+  const runner = testRunnerOf(answers);
+
+  if (runner !== undefined) {
+    rows.push(['testing', quote(runner)]);
   }
 
-  if (answers.data === 'tanstack-query') {
-    rows.push(['tanstackQuery', 'true']);
+  // Maestro flows are YAML, so no layer lints them.
+  if (answers.e2e === 'playwright') {
+    rows.push(['e2e', quote('playwright')]);
+  }
+
+  if (answers.stories === 'storybook') {
+    rows.push(['stories', quote('storybook')]);
   }
 
   if (answers.router === 'tanstack-router') {
-    rows.push(['tanstackRouter', 'true']);
+    rows.push(['router', quote('tanstack-router')]);
+  }
+
+  if (answers.data === 'tanstack-query') {
+    rows.push(['data', quote('tanstack-query')]);
+  }
+
+  const { styling } = answers;
+
+  if (styling !== undefined) {
+    rows.push(['styling', quote(styling)]);
   }
 
   // Without the entry point `better-tailwindcss` warns once per class string: 63 on one real project.
-  if (answers.styling === 'tailwind') {
-    const { styleEntry } = target;
-    const tailwind = styleEntry === undefined ? 'true' : objectLiteral([['entryPoint', `./${styleEntry}`]], 1);
+  const { styleEntry } = target;
 
-    rows.push(['tailwind', tailwind]);
-  }
-
-  if (answers.styling === 'stylex') {
-    rows.push(['stylex', 'true']);
+  if (styling === 'tailwind' && styleEntry !== undefined) {
+    rows.push(['tailwind', objectLiteral([['entryPoint', `./${styleEntry}`]], 1)]);
   }
 
   // A block: inline, the closing ` }` runs past `max-len`.

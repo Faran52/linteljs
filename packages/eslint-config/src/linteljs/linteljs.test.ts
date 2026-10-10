@@ -35,7 +35,7 @@ import tanstackQuery from '../libraries/tanstack-query/tanstackQueryLibrary';
 import { linteljs } from './linteljs';
 
 import type {
-  FrameworkKey,
+  Framework,
   Layer,
   LinteljsOptions,
   Rules,
@@ -57,14 +57,13 @@ const sortedFor = (specifier: string): string => {
   return lines.join('\n');
 };
 
-const only = (key: FrameworkKey): LinteljsOptions => {
-  const options: LinteljsOptions = {};
-  options[key] = true;
+const only = (framework: Framework): LinteljsOptions => {
+  const options: LinteljsOptions = { framework };
 
   return options;
 };
 
-const FRAMEWORK_PACKAGES: [FrameworkKey, string][] = [
+const FRAMEWORK_PACKAGES: [Framework, string][] = [
   ['react', 'react'],
   ['next', 'next'],
   ['expo', 'react'],
@@ -74,34 +73,35 @@ const FRAMEWORK_PACKAGES: [FrameworkKey, string][] = [
   ['sveltekit', 'svelte'],
   ['solid', 'solid-js'],
   ['angular', '@angular/core'],
+  ['analog', '@angular/core'],
 ];
 
-// Each key, and a key it implies.
-const IMPLIED: [FrameworkKey, FrameworkKey][] = [
-  ['next', 'react'],
-  ['expo', 'react'],
-  ['nuxt', 'vue'],
+// Each framework, and the one whose UI rules it brings unchanged.
+const SAME_RULES: [Framework, Framework][] = [
   ['sveltekit', 'svelte'],
+  ['analog', 'angular'],
 ];
 
 // A framework and a layer, each loaded through its own door.
-const MISSING_PEERS: [string, LinteljsOptions, string, string][] = [
+const MISSING_PEERS: [string, LinteljsOptions, string, string, string][] = [
   [
     'solid',
-    { solid: true },
+    { framework: 'solid' },
     '../frameworks/solid/solidFramework',
     'eslint-plugin-solid',
+    'framework: "solid"',
   ],
   [
     'storybook',
-    { storybook: true },
+    { stories: 'storybook' },
     '../layers/storybook/storybookLayer',
     'eslint-plugin-storybook',
+    'stories: "storybook"',
   ],
 ];
 
 describe('a missing peer', () => {
-  it.each(MISSING_PEERS)('names the command that installs the %s peer', async (key, options, path, peer) => {
+  it.each(MISSING_PEERS)('names the command that installs the %s peer', async (key, options, path, peer, label) => {
     vi.doMock(path, () => {
       const missing = (): never => {
         throw new Error(`Cannot find package '${peer}' imported from /project`);
@@ -124,7 +124,7 @@ describe('a missing peer', () => {
 
     const loading = linteljs(options);
 
-    await expect(loading).rejects.toThrow(`${key} needs ${peer}. Install it with: pnpm add -D ${peer}`);
+    await expect(loading).rejects.toThrow(`${label} needs ${peer}. Install it with: pnpm add -D ${peer}`);
   });
 });
 
@@ -253,7 +253,7 @@ describe('linteljs', () => {
   it('composes a target with no framework from typescript and vitest, with no framework rule', async () => {
     const config = await linteljs({
       typescript: true,
-      vitest: true,
+      testing: 'vitest',
     });
 
     const typed = await ruleIdsForFile(config, TYPED_FILE);
@@ -292,7 +292,7 @@ describe('linteljs', () => {
     ];
     const code = lines.join('\n');
 
-    const config = await linteljs({ next: true, typescript: false });
+    const config = await linteljs({ framework: 'next', typescript: false });
     const ruleIds = await ruleIdsFor(config, code, 'src/app/page.tsx');
 
     expect(ruleIds).toContain('@next/next/no-img-element');
@@ -301,9 +301,9 @@ describe('linteljs', () => {
 
   it('composes react-native as react without the accessibility preset', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
-    const nativeConfig = await linteljs({ expo: true, typescript: false });
+    const nativeConfig = await linteljs({ framework: 'expo', typescript: false });
     const native = await ruleIdsFor(nativeConfig, code, 'src/Logo.tsx');
-    const webConfig = await linteljs({ react: true, typescript: false });
+    const webConfig = await linteljs({ framework: 'react', typescript: false });
     const web = await ruleIdsFor(webConfig, code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
@@ -325,8 +325,8 @@ describe('linteljs', () => {
 
     const config = await linteljs({
       typescript: false,
-      react: true,
-      tanstackQuery: true,
+      framework: 'react',
+      data: 'tanstack-query',
     });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts');
@@ -346,8 +346,8 @@ describe('linteljs', () => {
     const code = lines.join('\n');
     const config = await linteljs({
       typescript: false,
-      react: true,
-      tanstackRouter: true,
+      framework: 'react',
+      router: 'tanstack-router',
     });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/routes/index.tsx');
@@ -358,8 +358,8 @@ describe('linteljs', () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
     const config = await linteljs({
       typescript: false,
-      react: true,
-      tailwind: true,
+      framework: 'react',
+      styling: 'tailwind',
     });
     const pinned = [...config, {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
@@ -390,7 +390,10 @@ describe('linteljs', () => {
   });
 
   it('hands the tailwind entry point to the tailwind layer', async () => {
-    const config = await linteljs({ tailwind: { entryPoint: './src/app/globals.css' } });
+    const config = await linteljs({
+      styling: 'tailwind',
+      tailwind: { entryPoint: './src/app/globals.css' },
+    });
     const block = config
       .find(({ name }) => {
         return name === 'linteljs/tailwind';
@@ -412,8 +415,8 @@ describe('linteljs', () => {
     const code = lines.join('\n');
     const config = await linteljs({
       typescript: false,
-      react: true,
-      stylex: true,
+      framework: 'react',
+      styling: 'stylex',
     });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/components/card/styles.ts');
@@ -421,7 +424,7 @@ describe('linteljs', () => {
   });
 
   it('puts vue underneath nuxt rather than beside it', async () => {
-    const config = await linteljs({ nuxt: true, typescript: false });
+    const config = await linteljs({ framework: 'nuxt', typescript: false });
 
     const enabledRuleIds = await enabledRuleIdsFor(config, 'src/components/badge.vue');
     expect(enabledRuleIds).toContain('vue/multi-word-component-names');
@@ -434,7 +437,7 @@ describe('linteljs', () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    const vitestConfig = await linteljs({ vitest: true, typescript: false });
+    const vitestConfig = await linteljs({ testing: 'vitest', typescript: false });
     const vitestRuleIds = await ruleIdsFor(vitestConfig, code, path);
     expect(vitestRuleIds).toContain('vitest/no-focused-tests');
 
@@ -449,7 +452,7 @@ describe('linteljs', () => {
     // The plugin reads the installed Jest's major, and this workspace installs none.
     const jestVersion = { settings: { jest: { version: 29 } } };
 
-    const jestConfig = await linteljs({ jest: true, typescript: false });
+    const jestConfig = await linteljs({ testing: 'jest', typescript: false });
     const jestRuleIds = await ruleIdsFor([...jestConfig, jestVersion], code, path);
     expect(jestRuleIds).toContain('jest/no-focused-tests');
 
@@ -458,24 +461,24 @@ describe('linteljs', () => {
     expect(plainRuleIds).not.toContain('jest/no-focused-tests');
   });
 
-  it('composes the playwright layer for true and none for false', async () => {
+  it('composes the playwright layer on request and not otherwise', async () => {
     const code = "test.only('opens', async () => {\n  await Promise.resolve();\n});\n";
     const path = 'src/flows/checkout/checkout.e2e.ts';
 
-    const playwrightConfig = await linteljs({ playwright: true, typescript: false });
+    const playwrightConfig = await linteljs({ e2e: 'playwright', typescript: false });
     const playwrightRuleIds = await ruleIdsFor(playwrightConfig, code, path);
     expect(playwrightRuleIds).toContain('playwright/no-focused-test');
 
-    const offConfig = await linteljs({ playwright: false, typescript: false });
     const plainConfig = await linteljs({ typescript: false });
-    expect(offConfig).toStrictEqual(plainConfig);
+    const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
+    expect(plainRuleIds).not.toContain('playwright/no-focused-test');
   });
 
   it('composes the storybook layer on request and not otherwise', async () => {
     const code = 'export const Primary = {};\n';
     const path = 'src/components/button/Button.stories.ts';
 
-    const storybookConfig = await linteljs({ storybook: true, typescript: false });
+    const storybookConfig = await linteljs({ stories: 'storybook', typescript: false });
     const storybookRuleIds = await ruleIdsFor(storybookConfig, code, path);
     expect(storybookRuleIds).toContain('storybook/default-exports');
 
@@ -504,7 +507,7 @@ describe('linteljs', () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
     const astroConfig = await linteljs({
-      astro: true,
+      framework: 'astro',
       typescript: true,
     });
     const ruleIds = ruleIdsFor(astroConfig, page, 'src/pages/index.astro');
@@ -519,7 +522,7 @@ describe('linteljs', () => {
   it('widens base to the frontmatter when astro is asked for', async () => {
     const page = '---\nfunction title() {\n  return 1;\n}\n---\n\n<h1>{title()}</h1>\n';
     const config = await linteljs({
-      astro: true,
+      framework: 'astro',
       typescript: true,
     });
     const ruleIds = await ruleIdsFor(config, page, 'src/pages/index.astro');
@@ -529,8 +532,8 @@ describe('linteljs', () => {
 
   it('composes the astro layer beside a hosted framework rather than instead of one', async () => {
     const config = await linteljs({
-      astro: true,
-      solid: true,
+      framework: 'astro',
+      islands: ['solid'],
       typescript: true,
     });
     const rules = config
@@ -553,10 +556,30 @@ describe('linteljs', () => {
     expect(hasSolid).toBe(true);
   });
 
+  it('composes the one island wxt hosts, and no framework without one', async () => {
+    const hosted = await linteljs({
+      framework: 'wxt',
+      islands: ['solid'],
+      typescript: false,
+    });
+    const solidAlone = await linteljs({ framework: 'solid', typescript: false });
+    expect(hosted).toEqual(solidAlone);
+
+    const bare = await linteljs({ framework: 'wxt', typescript: false });
+    const plain = await linteljs({ typescript: false });
+    expect(bare).toEqual(plain);
+  });
+
+  it('checks its options before it loads anything', async () => {
+    const loading = linteljs({ framework: 'next', islands: ['react'] });
+
+    await expect(loading).rejects.toThrow("islands needs framework 'astro' or 'wxt'");
+  });
+
   it('passes the base options through under the names base already uses', async () => {
     const config = await linteljs({
       typescript: false,
-      react: true,
+      framework: 'react',
       ignores: ['generated/**'],
       naming: {
         'src/**/*.ts': 'CAMEL_CASE',
@@ -573,22 +596,18 @@ describe('linteljs', () => {
     expect(filtered).toEqual([]);
   });
 
-  it.each(IMPLIED)('composes %s once, with %s beside it adding nothing', async (key, implied) => {
-    const both = await linteljs({
-      typescript: false,
-      ...only(key),
-      ...only(implied),
-    });
-    const alone = await linteljs({ ...only(key), typescript: false });
+  it.each(SAME_RULES)('composes %s as %s', async (framework, same) => {
+    const composed = await linteljs({ ...only(framework), typescript: false });
+    const expected = await linteljs({ ...only(same), typescript: false });
 
-    expect(both).toEqual(alone);
+    expect(composed).toEqual(expected);
   });
 
   it('gives base the sort bucket of every framework asked for', async () => {
     const config = await linteljs({
       typescript: false,
-      react: true,
-      vue: true,
+      framework: 'astro',
+      islands: ['react', 'vue'],
     });
 
     const reactRuleIds = await ruleIdsFor(config, sortedFor('react'), 'src/app/entry.ts');
@@ -652,15 +671,13 @@ const LOOKALIKES = [
   'simple-import-sort/imports + solid/imports',
 ];
 
-const WIDEST: LinteljsOptions = {
+const WIDEST: Omit<LinteljsOptions, 'framework' | 'islands'> = {
   typescript: true,
-  vitest: true,
+  testing: 'vitest',
   html: true,
-  astro: true,
-  tanstackQuery: true,
-  tanstackRouter: true,
-  tailwind: true,
-  stylex: true,
+  data: 'tanstack-query',
+  router: 'tanstack-router',
+  styling: 'tailwind',
 };
 
 const DUPLICATE_CASES: [string, LinteljsOptions, string][] = [
@@ -676,48 +693,70 @@ const DUPLICATE_CASES: [string, LinteljsOptions, string][] = [
   ],
   [
     'react',
-    { react: true },
+    { framework: 'react' },
     'src/components/ui/Widget.tsx',
   ],
   [
     'next',
-    { next: true },
+    { framework: 'next' },
     'src/app/page.tsx',
   ],
   [
     'expo',
-    { expo: true },
+    { framework: 'expo' },
     'src/components/ui/Widget.tsx',
   ],
   [
     'vue',
-    { vue: true },
+    { framework: 'vue' },
     'src/components/ui/Card.vue',
   ],
   [
     'nuxt',
-    { nuxt: true },
+    { framework: 'nuxt' },
     'src/components/ui/Card.vue',
   ],
   [
     'svelte',
-    { svelte: true },
+    { framework: 'svelte' },
     'src/components/ui/Card.svelte',
   ],
   [
     'sveltekit',
-    { sveltekit: true },
+    { framework: 'sveltekit' },
     'src/components/ui/Card.svelte',
   ],
   [
     'solid',
-    { solid: true },
+    { framework: 'solid' },
     'src/components/ui/Widget.tsx',
   ],
   [
     'angular',
-    { angular: true },
+    { framework: 'angular' },
     'src/app/app.component.ts',
+  ],
+  [
+    'stylex',
+    {
+      framework: 'react',
+      styling: 'stylex',
+    },
+    'src/components/ui/Widget.tsx',
+  ],
+  [
+    'astro with every island',
+    {
+      framework: 'astro',
+      islands: [
+        'react',
+        'vue',
+        'solid',
+        'svelte',
+        'angular',
+      ],
+    },
+    'src/components/ui/Widget.tsx',
   ],
 ];
 

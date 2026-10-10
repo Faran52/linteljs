@@ -106,7 +106,12 @@ it('holds linteljs to its entry, its suite, its tables and its loaders', () => {
   const linteljsUtils = readdirSync(utilsDir)
     .toSorted(byName);
 
-  const expectedUtils = ['loaderUtils.test.ts', 'loaderUtils.ts'];
+  const expectedUtils = [
+    'loaderUtils.test.ts',
+    'loaderUtils.ts',
+    'optionUtils.test.ts',
+    'optionUtils.ts',
+  ];
   expect(linteljsUtils).toEqual(expectedUtils);
 });
 

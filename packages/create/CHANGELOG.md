@@ -29,10 +29,10 @@ when a version's change lives in a sibling it is described there instead:
 - **The generated ESLint config is `eslint.config.ts`, calling `linteljs` from `@linteljs/eslint-config`.**
   `jiti` is a new dev dependency, which ESLint loads a TypeScript config through. `sync` offers to move the old
   `eslint.config.js` to `.bak` and write the new file, and offers `jiti` with the `@linteljs/eslint-config`
-  peers. It turns on one key per layer: the framework (`expo` on React Native), the test runner (`vitest` or
-  `jest`), `playwright` and `storybook` from their answers, with `eslint-plugin-playwright` or
-  `eslint-plugin-storybook` as a dev dependency, and `tanstackQuery`, `tanstackRouter`, `stylex` and
-  `tailwind` (`{ entryPoint }` where the target has a stylesheet). Next and Nuxt no longer list their build
+  peers. It passes the answers as `linteljs` options: `framework` (`expo` on React Native, `sveltekit` on Svelte,
+  `astro` and `wxt` with the hosted framework as `islands`), `testing`, `e2e` and `stories`, with
+  `eslint-plugin-playwright` or `eslint-plugin-storybook` as a dev dependency, `router`, `data`, `styling` and
+  `tailwind: { entryPoint }` where the target has a stylesheet. Next and Nuxt no longer list their build
   output in `ignores`: their layers ignore it.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex

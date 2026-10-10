@@ -110,19 +110,21 @@ ESLint started from, so one config ignored different files per run. The import-s
 `paths` of the tsconfig in `root` for the same reason: a second alias list beside the tsconfig drifts. The hardcoded entries stay: a project may not gitignore `dist/`, and
 `plugins/linteljs/` is committed on purpose.
 
-### One key per layer, and a missing peer names its install command
+### Options named after create's answers, and a missing peer names its install command
 
-`linteljs()` takes a flat key per layer, so a new framework is one key and `@linteljs/create` writes what a
-standalone user would type. A key whose layer another enabled key already includes is dropped (`react` beside
-`next` or `expo`, `vue` beside `nuxt`, `svelte` beside `sveltekit`), so no layer is composed twice. Every load
-goes through `withPeer`: when Node reports `Cannot find package`, the error names the key, the package and the
-install command of the package manager in `npm_config_user_agent`, npm when none ran ESLint (an editor). The
-peer is never installed for the user.
+`linteljs()` takes the answers `@linteljs/create` asks (`framework`, `islands`, `testing`, `e2e`, `stories`,
+`router`, `data`, `styling`), so `@linteljs/create` writes what a standalone user would type and one `framework`
+brings the UI rules it runs on (`next` the React layer, `nuxt` the Vue layer). Only `astro` and `wxt` host other
+frameworks, through `islands`, so no layer is composed twice. A config written in JavaScript has no types to
+refuse a misspelling, so every option and enumerated value is checked at runtime and the error names the closest
+match. Every load goes through `withPeer`: when Node reports `Cannot find package`, the error names the option,
+the package and the install command of the package manager in `npm_config_user_agent`, npm when none ran ESLint
+(an editor). The peer is never installed for the user.
 
 ### Rule names and options are generated, and committed
 
 `eslint-typegen` turns each rule's JSON schema into a type, so the configs handed to `linteljs()` after its options
-are checked against every rule `linteljs()` can load: ESLint's own and every plugin with all keys on.
+are checked against every rule `linteljs()` can load: ESLint's own and every plugin, across the fewest option sets that load them all.
 `scripts/typegen/typegenScript.ts` writes `src/typegen.d.ts`, and the gate's `typegen` step fails when that changed
 the file, so a plugin bump that adds or reshapes a rule lands with its types. `Rules` stays open to any other name,
 since a block after the options may add a plugin of its own; a known name still has its options checked.

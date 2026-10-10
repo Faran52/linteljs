@@ -14,9 +14,10 @@ when a version's change lives in a sibling it is described there instead:
   group from its subpath (`import react, { reactGroup } from '@linteljs/eslint-config/react'`).
 - **Node `>=22.0.0`**, up from 18.18. Node below 22 is dropped. ESLint stays `>=9`, flat config only.
 - **`defineConfig` is now `linteljs`, on the root export.** The `./define-config` subpath and
-  `DefineConfigOptions` are gone, and there is no default export. `framework`, `libraries` and
-  `tailwindEntryPoint` become one key per layer (under Added): `{ framework: 'react', libraries: ['tailwind'] }`
-  is `{ react: true, tailwind: true }`, and `react-native` is `expo`.
+  `DefineConfigOptions` are gone, and there is no default export. Its options become the named options under
+  Added, the answers `@linteljs/create` asks: `{ framework: 'react', libraries: ['tailwind'] }` is
+  `{ framework: 'react', styling: 'tailwind' }`, `framework: 'react-native'` is `framework: 'expo'`, and
+  `tailwindEntryPoint` is `tailwind: { entryPoint }`. An unknown option, or a value an option does not take, throws.
 - **`typescript` `>=5 <6.1.0` is a required peer.** The ceiling is the bundled `typescript-eslint`'s, so a fresh
   install no longer resolves a TypeScript 7 that every typed layer would refuse.
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
@@ -88,14 +89,21 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
-- **`linteljs(options?, ...configs)` on the root export**, one flat key per layer: `react`, `next`, `expo`, `vue`,
-  `nuxt`, `svelte`, `sveltekit`, `solid`, `angular`, `typescript`, `vitest`, `jest`, `playwright`, `storybook`,
-  `html`, `astro`, `tanstackQuery`, `tanstackRouter`, `stylex`, and `tailwind` (`true` or `{ entryPoint }`), with
-  `base`'s options beside them. `next` and `expo` imply `react`, `nuxt` implies `vue`, `sveltekit` implies
-  `svelte`. `typescript` is on unless set to `false`; every other key is off unless set. The configs after the
-  options are appended last. A key whose optional peer is missing throws with the command that installs it
-  (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
-  `LinteljsOptions`, `FrameworkKey`, `LayerKey` and `TailwindOptions` join the types.
+- **`linteljs(options?, ...configs)` on the root export**, with named options beside `base`'s:
+  - `framework`: `react`, `vue`, `solid`, `angular`, `svelte`, `next`, `nuxt`, `sveltekit`, `analog`, `expo`, `astro`
+    or `wxt`, each with its UI rules: `next` brings `react`'s, `nuxt` `vue`'s, `sveltekit` `svelte`'s, `analog`
+    `angular`'s, and `expo` `reactNative()` alone.
+  - `islands`: the UI frameworks an `astro` project hosts (several) or a `wxt` one (one, not `angular`); any other
+    `framework` throws.
+  - `testing` (`vitest` | `jest`), `e2e` (`playwright`), `stories` (`storybook`), `router` (`tanstack-router`),
+    `data` (`tanstack-query`), `styling` (`tailwind` | `stylex`), and `tailwind: { entryPoint }` beside
+    `styling: 'tailwind'`.
+  - `typescript` is on unless set to `false`; `html` is off unless set to `true`.
+
+  The configs after the options are appended last. A misspelt option or value throws and names the closest one
+  (`unknown option 'framwork'. Did you mean 'framework'?`). An option whose optional peer is missing throws with
+  the command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
+  `LinteljsOptions`, `Framework`, `Island` and `TailwindOptions` join the types.
 - **Typed `rules` in the configs handed to `linteljs()`**: every rule of ESLint and of every plugin a layer can load,
   with its options, generated from the rule schemas by `eslint-typegen`. Exported as `Rules`.
 - **One test-file table, exported**: `TEST_FILES` (`*.{test,spec}.*`, `__tests__/**`), `E2E_FILES` (`*.e2e.*`,
@@ -104,11 +112,11 @@ when a version's change lives in a sibling it is described there instead:
   and an `*.e2e.*` file of any extension gets Playwright's. `base` turns `@linteljs/comment-delimiter` off in
   `TEST_FILES`.
 
-- New layers, each on its own subpath and behind a `linteljs` key:
-  - `reactNative()` at `./react-native` (`expo`): the hooks and component rules React has,
+- New layers, each on its own subpath and behind a `linteljs` option:
+  - `reactNative()` at `./react-native` (`framework: 'expo'`): the hooks and component rules React has,
     without the DOM accessibility ones, plus the five `@linteljs/native-*` rules.
-  - `nuxt()` at `./nuxt` (`nuxt`).
-  - `tanstackRouter()` at `./tanstack-router` (`tanstackRouter`), over the optional peer
+  - `nuxt()` at `./nuxt` (`framework: 'nuxt'`).
+  - `tanstackRouter()` at `./tanstack-router` (`router: 'tanstack-router'`), over the optional peer
     `@tanstack/eslint-plugin-router`.
   - `stylex()` at `./stylex` (`stylex`), over the optional peer `@stylexjs/eslint-plugin`. It
     validates styles in scripts, `.vue`, `.svelte` and `.astro` files, bans the shorthands StyleX compiles to no
@@ -125,7 +133,7 @@ when a version's change lives in a sibling it is described there instead:
 - `nuxtGroup` and `reactNativeGroup` sit on their layers' subpaths, and `TypescriptOptions` joins the types.
 - `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, and
   takes `aliasExempt` and `enforceRelativeImports` for it, as does `linteljs`.
-- Astro projects lint `.astro` files as scripts. `base({ astro: true })`, which `linteljs` sets from its `astro` key, gives the frontmatter and template every rule a script gets, including the 350-line component
+- Astro projects lint `.astro` files as scripts. `base({ astro: true })`, which `linteljs` sets for `framework: 'astro'`, gives the frontmatter and template every rule a script gets, including the 350-line component
   cap. The Tailwind layer reaches `.astro` class attributes too. `@stylistic/jsx-one-expression-per-line` stays
   off in `.astro`, where a line break in text renders as a space.
 - `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose `project` is a

@@ -229,28 +229,21 @@ export type Framework
     | 'solid'
     | 'angular';
 
-export type FrameworkKey
+export type LinteljsFramework
   = 'react'
-    | 'next'
-    | 'expo'
     | 'vue'
-    | 'nuxt'
-    | 'svelte'
-    | 'sveltekit'
     | 'solid'
-    | 'angular';
+    | 'angular'
+    | 'svelte'
+    | 'next'
+    | 'nuxt'
+    | 'sveltekit'
+    | 'analog'
+    | 'expo'
+    | 'astro'
+    | 'wxt';
 
-export type LayerKey
-  = 'tanstackQuery'
-    | 'tanstackRouter'
-    | 'tailwind'
-    | 'stylex'
-    | 'vitest'
-    | 'jest'
-    | 'playwright'
-    | 'storybook'
-    | 'html'
-    | 'astro';
+export type LinteljsIsland = 'react' | 'vue' | 'solid' | 'svelte' | 'angular';
 
 interface ResolverOptions {
   project?: string;
@@ -262,17 +255,38 @@ interface TailwindOptions {
   entryPoint?: string;
 }
 
-export interface LinteljsOptions extends Partial<Record<FrameworkKey | Exclude<LayerKey, 'tailwind'>, boolean>> {
+type LinteljsWxtIsland = Exclude<LinteljsIsland, 'angular'>;
+
+interface LinteljsAnswerOptions {
   root?: string;
   gitignore?: boolean;
-  typescript?: boolean;
-  tailwind?: boolean | TailwindOptions;
   ignores?: string[];
   naming?: NamingMap;
   folderNaming?: NamingMap;
   resolver?: ResolverOptions;
   aliasExempt?: string[];
   enforceRelativeImports?: boolean;
+  typescript?: boolean;
+  html?: boolean;
+  testing?: 'vitest' | 'jest';
+  e2e?: 'playwright';
+  stories?: 'storybook';
+  router?: 'tanstack-router';
+  data?: 'tanstack-query';
+  styling?: 'tailwind' | 'stylex';
+  tailwind?: TailwindOptions;
 }
+
+interface LinteljsFrameworkOptions {
+  framework?: Exclude<LinteljsFramework, 'wxt'>;
+  islands?: LinteljsIsland[];
+}
+
+interface LinteljsWxtOptions {
+  framework: 'wxt';
+  islands?: LinteljsWxtIsland[];
+}
+
+export type LinteljsOptions = LinteljsAnswerOptions & (LinteljsFrameworkOptions | LinteljsWxtOptions);
 
 // Redeclared, not imported: this package installs before eslint-config publishes. `src/types.test.ts` pins them equal.

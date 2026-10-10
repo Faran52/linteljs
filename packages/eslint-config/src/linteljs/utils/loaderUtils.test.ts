@@ -32,13 +32,13 @@ import {
 } from './loaderUtils';
 
 import type {
-  FrameworkKey,
   Layer,
   LayerKey,
+  UiFramework,
 } from '../../types';
 
 // Each layer the framework spreads, in order, and its import group.
-const FRAMEWORK_PARTS: [FrameworkKey, (() => Layer)[], string[]][] = [
+const FRAMEWORK_PARTS: [UiFramework, (() => Layer)[], string[]][] = [
   [
     'react',
     [react],
@@ -81,6 +81,11 @@ const FRAMEWORK_PARTS: [FrameworkKey, (() => Layer)[], string[]][] = [
   ],
   [
     'angular',
+    [angular],
+    angularGroup,
+  ],
+  [
+    'analog',
     [angular],
     angularGroup,
   ],
@@ -142,7 +147,7 @@ describe('LAYERS', () => {
     const withEntryPoint = await LAYERS.tailwind({ tailwind: { entryPoint: 'src/styles/app.css' } });
     expect(withEntryPoint).toEqual(tailwind('src/styles/app.css'));
 
-    const withoutEntryPoint = await LAYERS.tailwind({ tailwind: true });
+    const withoutEntryPoint = await LAYERS.tailwind({ styling: 'tailwind' });
     expect(withoutEntryPoint).toEqual(tailwind());
   });
 });
@@ -157,13 +162,13 @@ describe('withPeer', () => {
     ['yarn/4.9.0 npm/? node/v26.0.0 darwin arm64', 'yarn add -D eslint-plugin-playwright'],
     ['bun/1.3.0 npm/? node/v26.0.0 darwin arm64', 'bun add -d eslint-plugin-playwright'],
     ['npm/11.0.0 node/v26.0.0 darwin arm64', 'npm install -D eslint-plugin-playwright'],
-  ])('names the key, the peer and the command under %s', async (agent, command) => {
+  ])('names the option, the peer and the command under %s', async (agent, command) => {
     vi.stubEnv('npm_config_user_agent', agent);
 
-    const missing = withPeer('playwright', notFound);
+    const missing = withPeer('e2e: "playwright"', notFound);
 
     await expect(missing).rejects.toThrow(
-      `@linteljs/eslint-config: playwright needs eslint-plugin-playwright. Install it with: ${command}`,
+      `@linteljs/eslint-config: e2e: "playwright" needs eslint-plugin-playwright. Install it with: ${command}`,
     );
   });
 

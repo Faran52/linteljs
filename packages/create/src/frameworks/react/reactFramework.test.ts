@@ -195,10 +195,9 @@ describe('reactFramework', () => {
         },
       },
       eslint: {
-        react: true,
+        framework: 'react',
         typescript: true,
         ignores: ['dist/**', 'coverage/**'],
-        aliases: ALIASES,
         naming: NAMING,
         folderNaming: FOLDER_NAMING,
         html: true,
@@ -268,10 +267,9 @@ describe('reactFramework', () => {
         },
       },
       eslint: {
-        react: true,
+        framework: 'react',
         typescript: true,
         ignores: ['dist/**', 'coverage/**'],
-        aliases: ALIASES,
         naming: NAMING,
         folderNaming: FOLDER_NAMING,
       },
@@ -372,9 +370,12 @@ describe('reactFramework', () => {
       target: 'react',
       [key]: value,
     }, HOST);
-    const { eslint } = framed.share;
+    const tsconfig = framed.files
+      .find((file) => {
+        return file.path === 'tsconfig.json';
+      });
 
-    expect(eslint).toHaveProperty(['aliases', '@apis/*'], './src/lib/apis/*');
+    expect(tsconfig).toHaveProperty('text', expect.stringContaining('"@apis/*"'));
   });
 
   it('aliases no @apis when no drawer writes src/lib/apis', () => {
@@ -383,9 +384,12 @@ describe('reactFramework', () => {
       data: 'none',
       store: 'zustand',
     }, HOST);
-    const { eslint } = framed.share;
+    const tsconfig = framed.files
+      .find((file) => {
+        return file.path === 'tsconfig.json';
+      });
 
-    expect(eslint).not.toHaveProperty(['aliases', '@apis/*']);
+    expect(tsconfig).toHaveProperty('text', expect.not.stringContaining('"@apis/*"'));
   });
 
   it.each(RECORD_PARITY)('writes the old record from the merged scripts for %o', (picked) => {

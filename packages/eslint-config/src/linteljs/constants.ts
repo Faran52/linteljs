@@ -1,43 +1,129 @@
-import type { FrameworkKey, LayerKey } from '../types';
+import type {
+  Framework,
+  LayerKey,
+  LinteljsOptions,
+  WxtIsland,
+} from '../types';
 
-export const FRAMEWORK_KEYS: FrameworkKey[] = [
-  'react',
-  'next',
-  'expo',
-  'vue',
-  'nuxt',
-  'svelte',
-  'sveltekit',
-  'solid',
-  'angular',
+// Each layer, the option that asks for it and the value that does; composed in this order, after the frameworks.
+export const LAYER_OPTIONS: [LayerKey, keyof LinteljsOptions, string | boolean][] = [
+  [
+    'tanstackQuery',
+    'data',
+    'tanstack-query',
+  ],
+  [
+    'tanstackRouter',
+    'router',
+    'tanstack-router',
+  ],
+  [
+    'tailwind',
+    'styling',
+    'tailwind',
+  ],
+  [
+    'stylex',
+    'styling',
+    'stylex',
+  ],
+  [
+    'vitest',
+    'testing',
+    'vitest',
+  ],
+  [
+    'jest',
+    'testing',
+    'jest',
+  ],
+  [
+    'playwright',
+    'e2e',
+    'playwright',
+  ],
+  [
+    'storybook',
+    'stories',
+    'storybook',
+  ],
+  [
+    'html',
+    'html',
+    true,
+  ],
+  [
+    'astro',
+    'framework',
+    'astro',
+  ],
 ];
 
-// The keys whose layer already loads this one beneath its own.
-export const IMPLIED_BY: Record<FrameworkKey, FrameworkKey[]> = {
-  react: ['next', 'expo'],
-  next: [],
-  expo: [],
-  vue: ['nuxt'],
-  nuxt: [],
-  svelte: ['sveltekit'],
-  sveltekit: [],
-  solid: [],
-  angular: [],
+export const HOSTS: Framework[] = ['astro', 'wxt'];
+
+// Every option, so a misspelt one is caught rather than ignored.
+export const OPTION_NAMES: Record<keyof LinteljsOptions, true> = {
+  root: true,
+  gitignore: true,
+  ignores: true,
+  naming: true,
+  folderNaming: true,
+  resolver: true,
+  aliasExempt: true,
+  enforceRelativeImports: true,
+  framework: true,
+  islands: true,
+  typescript: true,
+  html: true,
+  testing: true,
+  e2e: true,
+  stories: true,
+  router: true,
+  data: true,
+  styling: true,
+  tailwind: true,
 };
 
-// Composed in this order, after the frameworks.
-export const LAYER_KEYS: LayerKey[] = [
-  'tanstackQuery',
-  'tanstackRouter',
-  'tailwind',
-  'stylex',
-  'vitest',
-  'jest',
-  'playwright',
-  'storybook',
-  'html',
-  'astro',
+// The values each enumerated option takes; for `islands`, each entry's.
+export const OPTION_VALUES: Partial<Record<keyof LinteljsOptions, string[]>> = {
+  framework: [
+    'react',
+    'vue',
+    'solid',
+    'angular',
+    'svelte',
+    'next',
+    'nuxt',
+    'sveltekit',
+    'analog',
+    'expo',
+    'astro',
+    'wxt',
+  ],
+  islands: [
+    'react',
+    'vue',
+    'solid',
+    'svelte',
+    'angular',
+  ],
+  testing: ['vitest', 'jest'],
+  e2e: ['playwright'],
+  stories: ['storybook'],
+  router: ['tanstack-router'],
+  data: ['tanstack-query'],
+  styling: ['tailwind', 'stylex'],
+};
+
+export const WXT_ISLANDS: WxtIsland[] = [
+  'react',
+  'vue',
+  'solid',
+  'svelte',
 ];
+
+// The farthest a misspelling sits from the name it is told to try.
+export const SUGGESTION_DISTANCE = 3;
 
 export const MISSING_PACKAGE = /Cannot find package '([^']+)'/u;
 

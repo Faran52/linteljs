@@ -41,16 +41,26 @@ export interface TypescriptOptions {
   enforceRelativeImports?: boolean;
 }
 
-export type FrameworkKey
+// Each brings its UI rules: next brings react, nuxt vue, sveltekit svelte, analog angular, expo reactNative alone.
+export type Framework
   = 'react'
-    | 'next'
-    | 'expo'
     | 'vue'
-    | 'nuxt'
-    | 'svelte'
-    | 'sveltekit'
     | 'solid'
-    | 'angular';
+    | 'angular'
+    | 'svelte'
+    | 'next'
+    | 'nuxt'
+    | 'sveltekit'
+    | 'analog'
+    | 'expo'
+    | 'astro'
+    | 'wxt';
+
+// The UI frameworks an `astro` or `wxt` project hosts.
+export type Island = 'react' | 'vue' | 'solid' | 'svelte' | 'angular';
+
+// The frameworks with UI rules of their own; `astro` and `wxt` bring theirs through `islands`.
+export type UiFramework = Exclude<Framework, 'astro' | 'wxt'>;
 
 export type LayerKey
   = 'tanstackQuery'
@@ -68,11 +78,34 @@ export interface TailwindOptions {
   entryPoint?: string;
 }
 
-// One key per layer; `next` and `expo` imply `react`, `nuxt` implies `vue`, `sveltekit` implies `svelte`.
-export interface LinteljsOptions
-  extends Omit<BaseOptions, 'frameworkGroup'>,
-  TypescriptOptions,
-  Partial<Record<FrameworkKey | Exclude<LayerKey, 'tailwind'>, boolean>> {
+// WXT has no angular module.
+export type WxtIsland = Exclude<Island, 'angular'>;
+
+interface AnswerOptions
+  extends Omit<BaseOptions, 'frameworkGroup' | 'astro'>,
+  TypescriptOptions {
   typescript?: boolean;
-  tailwind?: boolean | TailwindOptions;
+  html?: boolean;
+  testing?: 'vitest' | 'jest';
+  e2e?: 'playwright';
+  stories?: 'storybook';
+  router?: 'tanstack-router';
+  data?: 'tanstack-query';
+  styling?: 'tailwind' | 'stylex';
+  tailwind?: TailwindOptions;
 }
+
+interface FrameworkOptions {
+  framework?: Exclude<Framework, 'wxt'>;
+  // Several under `astro`; any framework but `astro` and `wxt` throws.
+  islands?: Island[];
+}
+
+interface WxtOptions {
+  framework: 'wxt';
+  // One at most.
+  islands?: WxtIsland[];
+}
+
+// Named after the answers `@linteljs/create` asks.
+export type LinteljsOptions = AnswerOptions & (FrameworkOptions | WxtOptions);

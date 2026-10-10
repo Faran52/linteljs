@@ -1,6 +1,6 @@
 import {
-  type FrameworkKey as UpstreamFrameworkKey,
-  type LayerKey as UpstreamLayerKey,
+  type Framework as UpstreamFramework,
+  type Island as UpstreamIsland,
   type LinteljsOptions as UpstreamLinteljsOptions,
   type NamingMap as UpstreamNamingMap,
 } from '@linteljs/eslint-config';
@@ -21,16 +21,16 @@ import {
 import { FRAMEWORK_GROUPS } from '@config/constants';
 
 import type {
-  FrameworkKey,
-  LayerKey,
+  LinteljsFramework,
+  LinteljsIsland,
   LinteljsOptions,
   NamingMap,
 } from '@config/types';
 
 it('mirrors eslint-config exactly', () => {
   expectTypeOf<NamingMap>().toEqualTypeOf<UpstreamNamingMap>();
-  expectTypeOf<FrameworkKey>().toEqualTypeOf<UpstreamFrameworkKey>();
-  expectTypeOf<LayerKey>().toEqualTypeOf<UpstreamLayerKey>();
+  expectTypeOf<LinteljsFramework>().toEqualTypeOf<UpstreamFramework>();
+  expectTypeOf<LinteljsIsland>().toEqualTypeOf<UpstreamIsland>();
   expectTypeOf<LinteljsOptions>().toEqualTypeOf<UpstreamLinteljsOptions>();
 });
 

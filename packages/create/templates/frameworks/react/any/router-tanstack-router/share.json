@@ -8,7 +8,7 @@
     }
   },
   "eslint": {
-    "tanstackRouter": true
+    "router": "tanstack-router"
   },
   "routesFile": "src/router/router.tsx"
 }
