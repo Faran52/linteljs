@@ -10,6 +10,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Breaking
 
+- **The root export carries `linteljs`, the file globs and the types, and no layer.** Import a layer and its
+  group from its subpath (`import react, { reactGroup } from '@linteljs/eslint-config/react'`).
 - **Node `>=22.0.0`**, up from 18.18. Node below 22 is dropped. ESLint stays `>=9`, flat config only.
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
   subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the

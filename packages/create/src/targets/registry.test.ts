@@ -1,7 +1,7 @@
 import { access, constants } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { composeConfig } from '@linteljs/eslint-config/compose-config';
+import { linteljs } from '@linteljs/eslint-config';
 import { byName } from '@mocks/byName';
 import { ESLint } from 'eslint';
 import {
@@ -528,7 +528,7 @@ describe('the emitted naming map on a utils file', () => {
 
   const findingsOn = async (answers: Answers, path: string): Promise<string[]> => {
     const { naming, folderNaming } = targetFor(answers);
-    const config = await composeConfig({
+    const config = await linteljs({
       naming,
       folderNaming,
     });

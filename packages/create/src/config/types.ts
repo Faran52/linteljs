@@ -229,7 +229,28 @@ export type Framework
     | 'solid'
     | 'angular';
 
-export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | 'stylex';
+export type FrameworkKey
+  = 'react'
+    | 'next'
+    | 'expo'
+    | 'vue'
+    | 'nuxt'
+    | 'svelte'
+    | 'sveltekit'
+    | 'solid'
+    | 'angular';
+
+export type LayerKey
+  = 'tanstackQuery'
+    | 'tanstackRouter'
+    | 'tailwind'
+    | 'stylex'
+    | 'vitest'
+    | 'jest'
+    | 'playwright'
+    | 'storybook'
+    | 'html'
+    | 'astro';
 
 interface ResolverOptions {
   project?: string;
@@ -237,18 +258,15 @@ interface ResolverOptions {
   noWarnOnMultipleProjects?: boolean;
 }
 
-export interface ComposeConfigOptions {
+interface TailwindOptions {
+  entryPoint?: string;
+}
+
+export interface LinteljsOptions extends Partial<Record<FrameworkKey | Exclude<LayerKey, 'tailwind'>, boolean>> {
   root?: string;
   gitignore?: boolean;
-  framework?: Framework;
   typescript?: boolean;
-  testing?: TestRunner;
-  e2e?: E2e;
-  stories?: Stories;
-  html?: boolean;
-  astro?: boolean;
-  libraries?: LibraryLayer[];
-  tailwindEntryPoint?: string;
+  tailwind?: boolean | TailwindOptions;
   ignores?: string[];
   naming?: NamingMap;
   folderNaming?: NamingMap;

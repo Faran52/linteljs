@@ -2,8 +2,7 @@ import { ESLINT_CONFIG_PATH } from '@config/constants';
 import {
   type Answers,
   type Artifact,
-  type ComposeConfigOptions,
-  type LibraryLayer,
+  type LinteljsOptions,
 } from '@config/types';
 
 import { targetFor } from '@targets';
@@ -15,27 +14,12 @@ import { testRunnerOf } from '../../utils/runnerUtils';
 
 import {
   BASE_IGNORES,
-  LIBRARY_LAYERS,
-  PACKAGE,
+  FRAMEWORK_KEYS,
+  IDENTIFIER,
 } from './constants';
 
 // A renamed option fails to compile here rather than in a project.
-type OptionRow = [keyof ComposeConfigOptions, string];
-
-const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
-  'tanstack-query': (answers) => {
-    return answers.data === 'tanstack-query';
-  },
-  'tanstack-router': (answers) => {
-    return answers.router === 'tanstack-router';
-  },
-  'tailwind': (answers) => {
-    return answers.styling === 'tailwind';
-  },
-  'stylex': (answers) => {
-    return answers.styling === 'stylex';
-  },
-};
+type OptionRow = [keyof LinteljsOptions, string];
 
 const indentOf = (level: number): string => {
   return '  '.repeat(level);
@@ -65,10 +49,15 @@ const arrayRow = (key: OptionRow[0], values: string[]): OptionRow => {
   return row;
 };
 
+// Keys are quoted all or none, as `quote-props` has them.
 export const objectLiteral = (entries: [string, string][], level: number): string => {
+  const bare = entries
+    .every(([key]) => {
+      return IDENTIFIER.test(key);
+    });
   const inner = entries
     .map(([key, value]) => {
-      return `${indentOf(level + 1)}${quote(key)}: ${quote(value)},`;
+      return `${indentOf(level + 1)}${bare ? key : quote(key)}: ${quote(value)},`;
     })
     .join('\n');
 
@@ -80,7 +69,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
   const rows: OptionRow[] = [['root', 'import.meta.dirname']];
 
   if (target.framework !== undefined) {
-    rows.push(['framework', quote(target.framework)]);
+    rows.push([FRAMEWORK_KEYS[target.framework], 'true']);
   }
 
   // This CLI generates TypeScript only.
@@ -90,15 +79,16 @@ const optionRows = (answers: Answers): OptionRow[] => {
   const runner = testRunnerOf(answers);
 
   if (runner !== undefined) {
-    rows.push(['testing', quote(runner)]);
+    rows.push([runner, 'true']);
   }
 
-  if (answers.e2e !== undefined) {
-    rows.push(['e2e', quote(answers.e2e)]);
+  // Maestro flows are YAML, so no layer lints them.
+  if (answers.e2e === 'playwright') {
+    rows.push(['playwright', 'true']);
   }
 
-  if (answers.stories !== undefined) {
-    rows.push(['stories', quote(answers.stories)]);
+  if (answers.stories === 'storybook') {
+    rows.push(['storybook', 'true']);
   }
 
   if (target.html) {
@@ -110,18 +100,24 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['astro', 'true']);
   }
 
-  const layers = LIBRARY_LAYERS
-    .filter((layer) => {
-      return LAYER_ANSWERS[layer](answers);
-    });
+  if (answers.data === 'tanstack-query') {
+    rows.push(['tanstackQuery', 'true']);
+  }
 
-  if (layers.length > 0) {
-    rows.push(arrayRow('libraries', layers));
+  if (answers.router === 'tanstack-router') {
+    rows.push(['tanstackRouter', 'true']);
   }
 
   // Without the entry point `better-tailwindcss` warns once per class string: 63 on one real project.
-  if (answers.styling === 'tailwind' && target.styleEntry !== undefined) {
-    rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
+  if (answers.styling === 'tailwind') {
+    const { styleEntry } = target;
+    const tailwind = styleEntry === undefined ? 'true' : objectLiteral([['entryPoint', `./${styleEntry}`]], 1);
+
+    rows.push(['tailwind', tailwind]);
+  }
+
+  if (answers.styling === 'stylex') {
+    rows.push(['stylex', 'true']);
   }
 
   // A block: inline, the closing ` }` runs past `max-len`.
@@ -164,9 +160,9 @@ export const configSource = (rows: readonly (readonly [string, string])[]): stri
 
   // import/no-anonymous-default-export reports a bare array.
   const source = [
-    `import { composeConfig } from '${PACKAGE}';`,
+    "import { linteljs } from '@linteljs/eslint-config';",
     '',
-    `const config = await composeConfig({\n${options}\n});`,
+    `const config = await linteljs({\n${options}\n});`,
     '',
     'export default config;',
     '',

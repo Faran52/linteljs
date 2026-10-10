@@ -68,13 +68,6 @@ const GROUP_EXPORTS = {
   './angular': 'angularGroup',
 };
 
-const camel = (name: string): string => {
-  return name
-    .replace(/-([a-z])/gu, (_match, letter: string) => {
-      return letter.toUpperCase();
-    });
-};
-
 const layerDirs = [
   'src/layers',
   'src/frameworks',
@@ -98,8 +91,6 @@ for (const dir of layerDirs) {
   assert.ok(subpaths.includes(`./${dir}`), `src/**/${dir}/ has no "./${dir}" entry in exports`);
 }
 
-const layerNames = layerDirs.map(camel);
-
 const specifiers = subpaths
   .map((subpath) => {
     const specifier = {
@@ -115,18 +106,14 @@ import assert from 'node:assert/strict';
 
 const GROUP_EXPORTS = ${JSON.stringify(GROUP_EXPORTS)};
 
-const LAYER_NAMES = ${JSON.stringify(layerNames)};
-
 export const check = async (subpath, namespace) => {
   const label = subpath;
 
   if (subpath === '.') {
-    // The barrel has no default export; it re-exports every layer by name.
-    assert.equal(typeof namespace.base, 'function', label + ': barrel does not export base');
+    // The root carries no layer, so importing it loads no optional peer.
+    const configs = await namespace.linteljs();
 
-    for (const name of LAYER_NAMES) {
-      assert.equal(typeof namespace[name], 'function', label + ': barrel does not export ' + name);
-    }
+    assert.ok(configs.length > 0, label + ': linteljs() returned an empty array');
 
     return;
   }

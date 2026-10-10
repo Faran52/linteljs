@@ -154,11 +154,7 @@ export const nextTarget: TargetBuilder = () => {
     // The App Router owns the document.
     html: false,
     stores: STORES,
-    ignores: [
-      '.next/**',
-      'out/**',
-      'next-env.d.ts',
-    ],
+    ignores: [],
     gitignore: [
       '/.next/',
       '/out/',

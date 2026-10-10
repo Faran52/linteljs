@@ -195,7 +195,7 @@ describe('reactFramework', () => {
         },
       },
       eslint: {
-        framework: 'react',
+        react: true,
         typescript: true,
         ignores: ['dist/**', 'coverage/**'],
         aliases: ALIASES,
@@ -268,7 +268,7 @@ describe('reactFramework', () => {
         },
       },
       eslint: {
-        framework: 'react',
+        react: true,
         typescript: true,
         ignores: ['dist/**', 'coverage/**'],
         aliases: ALIASES,

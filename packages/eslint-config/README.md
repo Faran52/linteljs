@@ -121,8 +121,8 @@ export default [
 ];
 ```
 
-Apply the same order yourself. The root export carries `linteljs` and also re-exports every layer, so importing
-anything from it loads every layer and needs every optional peer installed.
+Apply the same order yourself. The root export carries `linteljs`, the shared file globs and the types, no
+layer, so importing it loads no optional peer.
 
 ## Layers
 

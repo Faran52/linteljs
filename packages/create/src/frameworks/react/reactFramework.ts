@@ -206,7 +206,7 @@ export const reactFramework: FrameworkModule = (name, answers, host) => {
   };
 
   const eslint = {
-    framework: 'react',
+    react: true,
     typescript: true,
     ignores: IGNORES,
     aliases,

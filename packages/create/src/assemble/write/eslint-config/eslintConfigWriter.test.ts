@@ -11,9 +11,9 @@ it('writes each option as source', () => {
     aliases: { '@/*': './src/*' },
   });
   const expected = [
-    "import { composeConfig } from '@linteljs/eslint-config/compose-config';",
+    "import { linteljs } from '@linteljs/eslint-config';",
     '',
-    'const config = await composeConfig({',
+    'const config = await linteljs({',
     "  target: 'react',",
     '  strict: true,',
     '  width: 120,',

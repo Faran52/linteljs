@@ -73,7 +73,7 @@ It asks the questions below, then runs five stages, each skippable with `--skip 
 4. **install:** the project's package manager.
 5. **fix:** ESLint and Stylelint with `--fix`.
 
-The generated `eslint.config.ts` calls `composeConfig` from `@linteljs/eslint-config/compose-config`, which fixes
+The generated `eslint.config.ts` calls `linteljs` from `@linteljs/eslint-config`, one key per layer, which fixes
 the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typecheck, coverage at 100% (unless
 `--testing none`), and the build.
 

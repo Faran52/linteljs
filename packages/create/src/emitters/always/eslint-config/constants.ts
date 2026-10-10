@@ -1,15 +1,17 @@
-import type { LibraryLayer } from '@config/types';
+import type { Framework, FrameworkKey } from '@config/types';
 
-// `as const`: annotating it `readonly LibraryLayer[]` would widen the members away.
-export const LIBRARY_LAYERS = [
-  'tanstack-query',
-  'tanstack-router',
-  'tailwind',
-  'stylex',
-] as const satisfies readonly LibraryLayer[];
+export const FRAMEWORK_KEYS: Record<Framework, FrameworkKey> = {
+  'react': 'react',
+  'next': 'next',
+  'react-native': 'expo',
+  'vue': 'vue',
+  'nuxt': 'nuxt',
+  'svelte': 'svelte',
+  'solid': 'solid',
+  'angular': 'angular',
+};
 
-// The subpath, not the barrel, which loads all six framework layers.
-export const PACKAGE = '@linteljs/eslint-config/compose-config';
+export const IDENTIFIER = /^[$A-Z_a-z][\w$]*$/u;
 
 // `.agents/` is the codex half of `.claude/`, so both are ignored.
 export const BASE_IGNORES = [

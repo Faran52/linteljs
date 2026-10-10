@@ -78,7 +78,7 @@ export const nuxtTarget: TargetBuilder = () => {
     sfcExtension: 'vue',
     // Installed with no counter module: Nuxt's starter has no store demo.
     stores: ['pinia', 'tanstack-store'],
-    ignores: ['.nuxt/**', '.output/**'],
+    ignores: [],
     gitignore: [
       '.output',
       '.data',

@@ -11,7 +11,11 @@ import { keysOf } from '@utils/objectUtils';
 import { ANSWERS } from '@answers';
 import { FOLDER_ROUTED } from '@targets';
 
-import { emitEslintConfig, eslintConfigEmitter } from './eslintConfigEmitter';
+import {
+  emitEslintConfig,
+  eslintConfigEmitter,
+  objectLiteral,
+} from './eslintConfigEmitter';
 
 import type {
   Answers,
@@ -36,13 +40,13 @@ interface AnswerOverrides {
 
 const TARGET_IDS = keysOf(ANSWERS.target.values);
 
-const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
+const CANONICAL_REACT = `import { linteljs } from '@linteljs/eslint-config';
 
-const config = await composeConfig({
+const config = await linteljs({
   root: import.meta.dirname,
-  framework: 'react',
+  react: true,
   typescript: true,
-  testing: 'vitest',
+  vitest: true,
   html: true,
   ignores: [
     'dist/**',
@@ -76,36 +80,43 @@ describe('emitEslintConfig', () => {
     expect(config).toBe(CANONICAL_REACT);
   });
 
-  it('imports the composer from its subpath, once, and nothing else', () => {
+  it('imports the composer from the root, once, and nothing else', () => {
     const output = emitEslintConfig(answersFor({ target: 'vue' }));
 
-    expect(output).not.toContain("from '@linteljs/eslint-config'");
+    expect(output).not.toContain("from '@linteljs/eslint-config/");
     const actual = output.match(/^import /gm);
     expect(actual).toHaveLength(1);
-    expect(output).toContain("import { composeConfig } from '@linteljs/eslint-config/compose-config';");
+    expect(output).toContain("import { linteljs } from '@linteljs/eslint-config';");
   });
 
   it('names next as one framework rather than composing react beneath it here', () => {
     const output = emitEslintConfig(answersFor({ target: 'next' }));
 
-    expect(output).toContain("framework: 'next',");
+    expect(output).toContain('next: true,');
     expect(output).not.toContain('react');
     expect(output).not.toContain('Group');
   });
 
   it('names the framework rather than an order for every target that has one', () => {
     const svelteConfig = emitEslintConfig(answersFor({ target: 'svelte' }));
-    expect(svelteConfig).toContain("framework: 'svelte',");
+    expect(svelteConfig).toContain('svelte: true,');
     const angularConfig = emitEslintConfig(answersFor({ target: 'angular' }));
-    expect(angularConfig).toContain("framework: 'angular',");
+    expect(angularConfig).toContain('angular: true,');
     const solidConfig = emitEslintConfig(answersFor({ target: 'solid' }));
-    expect(solidConfig).toContain("framework: 'solid',");
+    expect(solidConfig).toContain('solid: true,');
   });
 
   it('names no framework at all for plain TypeScript', () => {
     const output = emitEslintConfig(answersFor({ target: 'webextension' }));
 
-    expect(output).not.toContain('framework:');
+    const rows = output.match(/^ {2}\w+: true,$/gmu);
+
+    expect(rows).toStrictEqual([
+      '  typescript: true,',
+      '  vitest: true,',
+      '  html: true,',
+    ]);
+
     expect(output).not.toContain('Group');
   });
 
@@ -119,18 +130,29 @@ describe('emitEslintConfig', () => {
 
   it('asks for the vitest layer only where a suite was chosen', () => {
     const withVitest = emitEslintConfig(answersFor({ testing: 'vitest' }));
-    expect(withVitest).toContain("testing: 'vitest',");
+    expect(withVitest).toContain('vitest: true,');
     const withoutTesting = emitEslintConfig(answersFor({ testing: 'none' }));
     expect(withoutTesting).not.toContain('vitest');
   });
 
-  it('names jest as the runner on react-native', () => {
+  it('names expo and jest on react-native', () => {
     const output = emitEslintConfig(answersFor({
       target: 'react-native',
       testing: 'jest',
     }));
 
-    expect(output).toContain("testing: 'jest',");
+    expect(output).toContain('expo: true,');
+    expect(output).toContain('jest: true,');
+  });
+
+  it('asks for no layer for maestro, whose flows are YAML', () => {
+    const output = emitEslintConfig(answersFor({
+      target: 'react-native',
+      e2e: 'maestro',
+    }));
+
+    expect(output).not.toContain('maestro');
+    expect(output).not.toContain('playwright');
   });
 
   it('names the e2e runner and the story workshop only when they were answered', () => {
@@ -138,11 +160,11 @@ describe('emitEslintConfig', () => {
       e2e: 'playwright',
       stories: 'storybook',
     }));
-    expect(answered).toContain("e2e: 'playwright',");
-    expect(answered).toContain("stories: 'storybook',");
+    expect(answered).toContain('playwright: true,');
+    expect(answered).toContain('storybook: true,');
     const unanswered = emitEslintConfig(answersFor({}));
-    expect(unanswered).not.toContain('e2e:');
-    expect(unanswered).not.toContain('stories:');
+    expect(unanswered).not.toContain('playwright');
+    expect(unanswered).not.toContain('storybook');
   });
 
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
@@ -172,31 +194,23 @@ describe('emitEslintConfig', () => {
       data: 'tanstack-query',
     }));
 
-    expect(withQuery).toContain("libraries: ['tanstack-query'],");
+    expect(withQuery).toContain('tanstackQuery: true,');
 
-    const withTailwind = emitEslintConfig(answersFor({
+    const withRouter = emitEslintConfig(answersFor({
       libraries: [],
-      styling: 'tailwind',
+      router: 'tanstack-router',
     }));
 
-    expect(withTailwind).toContain("libraries: ['tailwind'],");
-
-    const withBoth = emitEslintConfig(answersFor({
-      libraries: [],
-      styling: 'tailwind',
-      data: 'tanstack-query',
-    }));
-
-    expect(withBoth).toContain("libraries: ['tanstack-query', 'tailwind'],");
+    expect(withRouter).toContain('tanstackRouter: true,');
 
     const withStylex = emitEslintConfig(answersFor({
       libraries: [],
       styling: 'stylex',
     }));
 
-    expect(withStylex).toContain("libraries: ['stylex'],");
+    expect(withStylex).toContain('stylex: true,');
     const eslintConfig = emitEslintConfig(answersFor({ libraries: ['zod'] }));
-    expect(eslintConfig).not.toContain('libraries:');
+    expect(eslintConfig).not.toMatch(/tanstack|tailwind|stylex/u);
   });
 
   it('asks for no layer for the other value of the answer that gates it', () => {
@@ -206,7 +220,7 @@ describe('emitEslintConfig', () => {
       router: 'react-router',
     }));
 
-    expect(config).not.toContain('libraries:');
+    expect(config).not.toContain('tanstack');
   });
 
   it.each<[TargetId, string]>([
@@ -225,7 +239,7 @@ describe('emitEslintConfig', () => {
       styling: 'tailwind',
     }));
 
-    expect(config).toContain(`tailwindEntryPoint: '${entry}',`);
+    expect(config).toContain(`  tailwind: {\n    entryPoint: '${entry}',\n  },`);
   });
 
   it('emits the resolver conditions a project recorded', () => {
@@ -291,22 +305,22 @@ describe('emitEslintConfig', () => {
     expect(eslintConfig).not.toContain('resolver');
   });
 
-  it('names no tailwind entry point when tailwind was not selected', () => {
+  it('asks for no tailwind layer when tailwind was not selected', () => {
     const config = emitEslintConfig(answersFor({
       libraries: [],
       data: 'tanstack-query',
     }));
 
-    expect(config).not.toContain('tailwindEntryPoint');
+    expect(config).not.toContain('tailwind');
   });
 
-  it('names no tailwind entry point for a target with no stylesheet', () => {
+  it('turns tailwind on bare for a target with no stylesheet', () => {
     const config = emitEslintConfig(answersFor({
       target: 'typescript',
       styling: 'tailwind',
     }));
 
-    expect(config).not.toContain('tailwindEntryPoint');
+    expect(config).toContain('  tailwind: true,');
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
@@ -319,7 +333,7 @@ describe('emitEslintConfig', () => {
   });
 
   it('carries the target ignores on top of the shared ones', () => {
-    const eslintConfig = emitEslintConfig(answersFor({ target: 'next' }));
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'svelte' }));
 
     const lines = [
       '  ignores: [',
@@ -328,9 +342,8 @@ describe('emitEslintConfig', () => {
       "    '.claude/**',",
       "    '.agents/**',",
       "    'plugins/linteljs/**',",
-      "    '.next/**',",
-      "    'out/**',",
-      "    'next-env.d.ts',",
+      "    '.svelte-kit/**',",
+      "    'src/app.html',",
       '  ],',
     ];
     const ignores = lines.join('\n');
@@ -706,6 +719,20 @@ describe('the naming policy', () => {
   });
 });
 
+describe('objectLiteral', () => {
+  it('leaves identifier keys bare', () => {
+    const literal = objectLiteral([['entryPoint', './a.css']], 0);
+
+    expect(literal).toBe("{\n  entryPoint: './a.css',\n}");
+  });
+
+  it('quotes every key once one is not an identifier', () => {
+    const literal = objectLiteral([['entryPoint', 'a'], ['src/**', 'b']], 0);
+
+    expect(literal).toBe("{\n  'entryPoint': 'a',\n  'src/**': 'b',\n}");
+  });
+});
+
 describe('folderNaming', () => {
   it('emits the glob raw, so the file parses back to the pattern it declared', () => {
     const emitted = emitEslintConfig(answersFor({ target: 'react-native' }));
@@ -729,13 +756,9 @@ describe('ignores', () => {
 
   it.each<[TargetId, string[]]>([
     ['react', []],
-    ['next', [
-      '.next/**',
-      'out/**',
-      'next-env.d.ts',
-    ]],
+    ['next', []],
     ['vue', []],
-    ['nuxt', ['.nuxt/**', '.output/**']],
+    ['nuxt', []],
     ['svelte', ['.svelte-kit/**', 'src/app.html']],
     ['solid', []],
     ['angular', ['.angular/**']],
@@ -817,7 +840,7 @@ describe('the router', () => {
       router: 'tanstack-router',
     }));
 
-    expect(config).toContain("'tanstack-router'");
+    expect(config).toContain('tanstackRouter: true,');
     expect(config).not.toContain('routeTree.gen.ts');
   });
 

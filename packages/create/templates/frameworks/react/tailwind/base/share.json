@@ -8,8 +8,7 @@
     }
   },
   "eslint": {
-    "libraries": ["tailwind"],
-    "tailwindEntryPoint": "./src/index.css"
+    "tailwind": { "entryPoint": "./src/index.css" }
   },
   "css": [
     "tailwindcss",

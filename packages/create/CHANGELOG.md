@@ -26,12 +26,14 @@ when a version's change lives in a sibling it is described there instead:
   does not. A v1 file is migrated on read, as one unnamed project: the form library, `tailwind` and
   `tanstack-query` move out of `libraries` into `form`, `styling` and `data`, and `store: true` becomes the
   target's first store.
-- **The generated ESLint config is `eslint.config.ts`, importing `composeConfig` from
-  `@linteljs/eslint-config/compose-config`.** `jiti` is a new dev dependency, which ESLint loads a TypeScript
-  config through. `sync` offers to move the old `eslint.config.js` to `.bak` and write the new file, and offers
-  `jiti` with the `@linteljs/eslint-config` peers. It names the test runner as `testing: 'vitest'` or
-  `testing: 'jest'`, the testing answer, and sets `e2e` and `stories` from theirs, with
-  `eslint-plugin-playwright` or `eslint-plugin-storybook` as a dev dependency.
+- **The generated ESLint config is `eslint.config.ts`, calling `linteljs` from `@linteljs/eslint-config`.**
+  `jiti` is a new dev dependency, which ESLint loads a TypeScript config through. `sync` offers to move the old
+  `eslint.config.js` to `.bak` and write the new file, and offers `jiti` with the `@linteljs/eslint-config`
+  peers. It turns on one key per layer: the framework (`expo` on React Native), the test runner (`vitest` or
+  `jest`), `playwright` and `storybook` from their answers, with `eslint-plugin-playwright` or
+  `eslint-plugin-storybook` as a dev dependency, and `tanstackQuery`, `tanstackRouter`, `stylex` and
+  `tailwind` (`{ entryPoint }` where the target has a stylesheet). Next and Nuxt no longer list their build
+  output in `ignores`: their layers ignore it.
 - **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.

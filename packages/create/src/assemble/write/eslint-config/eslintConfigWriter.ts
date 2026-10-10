@@ -38,7 +38,7 @@ const sourceOf = (options: Share, key: string, value: ShareValue): string => {
   throw new Error(`eslint option ${key} cannot be null`);
 };
 
-// The `eslint` share is the options `composeConfig` takes, each written as source.
+// The `eslint` share is the options `linteljs` takes, each written as source.
 export const eslintConfigWriter = (options: Share): string => {
   const rows = Object.entries(options)
     .map(([key, value]) => {

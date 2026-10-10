@@ -1,17 +1,17 @@
 import {
-  angularGroup,
-  type ComposeConfigOptions as UpstreamComposeConfigOptions,
-  type Framework as UpstreamFramework,
-  type LibraryLayer as UpstreamLibraryLayer,
+  type FrameworkKey as UpstreamFrameworkKey,
+  type LayerKey as UpstreamLayerKey,
+  type LinteljsOptions as UpstreamLinteljsOptions,
   type NamingMap as UpstreamNamingMap,
-  nextGroup,
-  nuxtGroup,
-  reactGroup,
-  reactNativeGroup,
-  solidGroup,
-  svelteGroup,
-  vueGroup,
 } from '@linteljs/eslint-config';
+import { angularGroup } from '@linteljs/eslint-config/angular';
+import { nextGroup } from '@linteljs/eslint-config/next';
+import { nuxtGroup } from '@linteljs/eslint-config/nuxt';
+import { reactGroup } from '@linteljs/eslint-config/react';
+import { reactNativeGroup } from '@linteljs/eslint-config/react-native';
+import { solidGroup } from '@linteljs/eslint-config/solid';
+import { svelteGroup } from '@linteljs/eslint-config/svelte';
+import { vueGroup } from '@linteljs/eslint-config/vue';
 import {
   expect,
   expectTypeOf,
@@ -20,21 +20,18 @@ import {
 
 import { FRAMEWORK_GROUPS } from '@config/constants';
 
-import { LIBRARY_LAYERS } from '@emitters/always/eslint-config/constants';
-
 import type {
-  ComposeConfigOptions,
-  Framework,
-  LibraryLayer,
+  FrameworkKey,
+  LayerKey,
+  LinteljsOptions,
   NamingMap,
 } from '@config/types';
 
 it('mirrors eslint-config exactly', () => {
   expectTypeOf<NamingMap>().toEqualTypeOf<UpstreamNamingMap>();
-  expectTypeOf<Framework>().toEqualTypeOf<UpstreamFramework>();
-  expectTypeOf<LibraryLayer>().toEqualTypeOf<UpstreamLibraryLayer>();
-  expectTypeOf<ComposeConfigOptions>().toEqualTypeOf<UpstreamComposeConfigOptions>();
-  expectTypeOf<(typeof LIBRARY_LAYERS)[number]>().toEqualTypeOf<LibraryLayer>();
+  expectTypeOf<FrameworkKey>().toEqualTypeOf<UpstreamFrameworkKey>();
+  expectTypeOf<LayerKey>().toEqualTypeOf<UpstreamLayerKey>();
+  expectTypeOf<LinteljsOptions>().toEqualTypeOf<UpstreamLinteljsOptions>();
 });
 
 it('sorts each framework group first as eslint-config does', () => {
