@@ -184,8 +184,10 @@ interface BaseOptions {
 Pass `root: import.meta.dirname`. `base` reads two files there and nowhere else, never `process.cwd()`: the
 `.gitignore`, whose entries become ESLint ignores (`gitignore: false` skips it), and `tsconfig.json`, whose
 `paths` (followed through `extends` and `references`) name the alias import-sort groups. `tsconfig` names another
-file to start from, resolved against `root` (`tsconfig: 'tsconfig.app.json'`). Without `root` it reads neither. Set
-`resolver.project` when the relevant tsconfig is not the one the resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
+file to start from, resolved against `root` (`tsconfig: 'tsconfig.app.json'`), and the import resolver reads it too;
+`tsconfig` without `root` throws. Without `root` it reads neither file. Set `resolver.project` when the resolver should
+read another tsconfig than that one, or than the one it finds from the working directory when `tsconfig` is unset;
+it wins over `tsconfig`. Set `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
 rule a script gets; the composer sets it for `framework: 'astro'`, and a hand-composed config sets it beside

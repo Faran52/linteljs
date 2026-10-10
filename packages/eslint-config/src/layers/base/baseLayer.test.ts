@@ -6,7 +6,11 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import {
+  dirname,
+  join,
+  resolve,
+} from 'node:path';
 import process from 'node:process';
 
 import { rules as lintelRules } from '@linteljs/eslint-plugin';
@@ -843,6 +847,55 @@ describe('base: resolver options', () => {
     expect(settings?.['import-x/resolver']).toEqual(expected);
 
     expect(settings).toHaveProperty('import-x/parsers');
+  });
+
+  it('points the resolver at the tsconfig option, resolved against root', () => {
+    const config = base({
+      root: '/project',
+      tsconfig: 'tsconfig.app.json',
+    });
+    const settings = settingsOf(config);
+
+    const project = resolve('/project', 'tsconfig.app.json');
+    const expected = {
+      typescript: {
+        ...RESOLVER_DEFAULTS,
+        project,
+      },
+    };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
+  });
+
+  it('lets an explicit resolver project win over the tsconfig option', () => {
+    const config = base({
+      root: '/project',
+      tsconfig: 'tsconfig.app.json',
+      resolver: { project: 'packages/*/tsconfig.json' },
+    });
+    const settings = settingsOf(config);
+
+    const expected = {
+      typescript: {
+        ...RESOLVER_DEFAULTS,
+        project: 'packages/*/tsconfig.json',
+      },
+    };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
+  });
+
+  it('leaves the resolver project unset with a root but no tsconfig option', () => {
+    const settings = settingsOf(base({ root: '/project' }));
+
+    const expected = { typescript: RESOLVER_DEFAULTS };
+    expect(settings?.['import-x/resolver']).toEqual(expected);
+  });
+
+  it('throws on a tsconfig option without root', () => {
+    const build = () => {
+      return base({ tsconfig: 'tsconfig.app.json' });
+    };
+
+    expect(build).toThrow('@linteljs/eslint-config: tsconfig needs root.');
   });
 
   it('passes through the conditions a project asks for', () => {

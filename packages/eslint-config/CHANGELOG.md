@@ -93,7 +93,8 @@ when a version's change lives in a sibling it is described there instead:
 
 - **`tsconfig` names the tsconfig `base` starts from**, resolved against `root` (default `tsconfig.json`). The
   alias import-sort groups follow its `extends` and its `references`, so a solution-style tsconfig whose `paths`
-  sit in the referenced projects groups them.
+  sit in the referenced projects groups them. A `tsconfig` given also becomes the import resolver's `project`
+  unless `resolver.project` is set, and one given without `root` throws.
 - **`linteljs(options?, ...configs)` on the root export**, with named options beside `base`'s:
   - `framework`: `react`, `vue`, `solid`, `angular`, `svelte`, `next`, `nuxt`, `sveltekit`, `analog`, `expo`, `astro`
     or `wxt`, each with its UI rules: `next` brings `react`'s, `nuxt` `vue`'s, `sveltekit` `svelte`'s, `analog`

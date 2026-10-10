@@ -120,18 +120,26 @@ export const base = (options: BaseOptions = {}): Layer => {
   const scriptFiles = reaching(SCRIPT_AND_SFC_FILES);
   const stylisticPreset = stylistic.configs.customize({ jsx: false });
 
+  const tsconfigPath = root === undefined ? undefined : resolve(root, tsconfig);
+
+  if (options.tsconfig !== undefined && tsconfigPath === undefined) {
+    throw new Error('@linteljs/eslint-config: tsconfig needs root.');
+  }
+
+  const project = resolver?.project ?? (options.tsconfig === undefined ? undefined : tsconfigPath);
+
   // No default `conditionNames`: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
   // Measured: 127 findings on a clean React Native project.
   const importResolver: Linter.Config['settings'] = {
     typescript: {
       alwaysTryTypes: true,
-      ...(resolver?.project === undefined ? {} : { project: resolver.project }),
+      ...(project === undefined ? {} : { project }),
       ...(resolver?.conditionNames === undefined ? {} : { conditionNames: resolver.conditionNames }),
       ...(resolver?.noWarnOnMultipleProjects === true ? { noWarnOnMultipleProjects: true } : {}),
     },
   };
 
-  const aliases = root === undefined ? [] : aliasesIn(resolve(root, tsconfig));
+  const aliases = tsconfigPath === undefined ? [] : aliasesIn(tsconfigPath);
 
   const layer: Layer = [
     ...(root !== undefined && gitignore ? gitignored(root) : []),
