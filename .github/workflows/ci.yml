@@ -32,9 +32,6 @@ jobs:
 
       - run: pnpm lint:starters --all
 
-      # For `check`'s `test:band`, which is skipped where `claude` is missing.
-      - run: npm install --global @anthropic-ai/claude-code@2.1.296
-
       # Build first: the packages typecheck against each other's built declarations.
       - run: pnpm check
         env:

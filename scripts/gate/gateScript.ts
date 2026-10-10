@@ -11,7 +11,6 @@ import { resolve } from 'node:path';
 import process, { env } from 'node:process';
 
 import { signalOf } from '@e2e/starter-cover/utils/failureUtils';
-import { resolvedBinary } from '@spawns/utils/binaryUtils';
 
 import {
   isCached,
@@ -42,8 +41,6 @@ interface Result {
   seconds: string;
   path: string;
   cached: boolean;
-  // The engine it needs, when that is not on PATH.
-  missing: string | undefined;
 }
 
 // pnpm's own binary, by absolute path, rather than a lookup on PATH.
@@ -66,21 +63,13 @@ const steps = STEPS
     return !skipped.includes(step);
   });
 
-const versionOf = (name: string): string | undefined => {
-  const binary = resolvedBinary(name);
-
-  if (binary === undefined) {
-    return undefined;
-  }
-
-  return execFileSync(binary, ['--version'], { encoding: 'utf8' });
-};
-
-const engineVersions = new Map<string, string | undefined>();
+const engineVersions = new Map<string, string>();
 
 for (const [step, name] of ENGINES) {
   if (steps.includes(step)) {
-    engineVersions.set(step, versionOf(name));
+    const version = execFileSync(name, ['--version'], { encoding: 'utf8' });
+
+    engineVersions.set(step, version);
   }
 }
 
@@ -103,22 +92,6 @@ const keyOf = (step: string): string | undefined => {
 
 const runStep = async (step: string): Promise<Result> => {
   const path = resolve(LOG_DIR, `${step.replaceAll(':', '-')}.log`);
-  const engine = ENGINES.get(step);
-
-  if (engine !== undefined && engineVersions.get(step) === undefined) {
-    const missingEngine: Result = {
-      step,
-      code: 0,
-      signal: undefined,
-      seconds: SKIPPED_SECONDS,
-      path,
-      cached: false,
-      missing: engine,
-    };
-
-    return missingEngine;
-  }
-
   const key = keyOf(step);
 
   if (key !== undefined && env[NO_CACHE_ENV] === undefined && isCached(LOG_DIR, step, key)) {
@@ -129,7 +102,6 @@ const runStep = async (step: string): Promise<Result> => {
       seconds: SKIPPED_SECONDS,
       path,
       cached: true,
-      missing: undefined,
     };
 
     return skippedStep;
@@ -172,7 +144,6 @@ const runStep = async (step: string): Promise<Result> => {
           seconds,
           path,
           cached: false,
-          missing: undefined,
         });
       });
   });
@@ -226,11 +197,7 @@ for (const result of results) {
   const ran = result.cached
     ? `${result.step}: ok, inputs unchanged since it last passed`
     : `${result.step}: ${status} in ${result.seconds}s`;
-  const line = result.missing === undefined
-    ? ran
-    : `${result.step}: skipped, \`${result.missing}\` is not on PATH`;
-
-  log(line);
+  log(ran);
 }
 
 for (const result of failed) {

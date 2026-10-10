@@ -103,7 +103,7 @@ tsconfig checks, and ignores them where the types are missing, as in CI. `.fallo
   change the shipped file, then copy it. Its suite, `checkBand.test.tsx`, lives only beside the shipped band. `claude
   plugin test` runs every `*.test.ts(x)` under the folder it is given and cannot select files, and the Node hook
   suites fail there, so the gate's `test:band` (`scripts/test-band/`) runs it on a temp copy of the shipped folder
-  without its `*.test.ts`, skipped where `claude` is not on PATH. `checkStatusHook.ts` runs the
+  without its `*.test.ts`, with the root devDependency `@anthropic-ai/claude-code`. `checkStatusHook.ts` runs the
   shipped script. `register.tsx` takes only its refresh (`registerCheckRefresh`): the CI band draws the check state
   on its line.
 - **CI band** (`ciBand.tsx`): main's latest `ci`, `e2e` and `audit` runs from `gh run list` and the GitHub

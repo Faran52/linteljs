@@ -1119,9 +1119,9 @@ The steps are independent only because none writes what another reads: the gate 
 
 Under `CI` they run in series: a 4-core runner is saturated by `test:coverage` alone.
 
-`test:band` needs the `claude` binary, which the workspace does not install: where it is not on PATH the gate
-reports the step skipped, not passed, and stores nothing. `ci.yml` installs `@anthropic-ai/claude-code` at an exact
-version before `check`, so it runs there; the suite needs no login or network.
+`test:band` runs the `claude` binary of the root devDependency `@anthropic-ai/claude-code`, pinned exactly in the
+catalog, so `ci.yml` and every checkout run the same engine and its `--version` joins the step's cache key; the suite
+needs no login or network. Its postinstall puts the native binary in place, hence its `allowBuilds` entry.
 
 Tried and left out:
 

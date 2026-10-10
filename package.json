@@ -30,6 +30,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-code": "catalog:",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@types/node": "catalog:",

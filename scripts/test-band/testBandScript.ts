@@ -10,18 +10,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { resolvedBinary } from '@spawns/utils/binaryUtils';
-
-import { logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
-
-import { NODE_SUITE, PLUGIN_DIR } from './constants.ts';
-
-const claude = resolvedBinary('claude');
-
-if (claude === undefined) {
-  logError('`claude` is not on PATH: install Claude Code to run the band suite.');
-  process.exit(1);
-}
+import {
+  CLAUDE,
+  NODE_SUITE,
+  PLUGIN_DIR,
+} from './constants.ts';
 
 const prefix = join(tmpdir(), 'linteljs-band-');
 const temp = mkdtempSync(prefix);
@@ -34,7 +27,7 @@ cpSync(PLUGIN_DIR, copy, {
   },
 });
 
-const { status } = spawnSync(claude, [
+const { status } = spawnSync(CLAUDE, [
   'plugin',
   'test',
   copy,
