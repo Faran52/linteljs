@@ -10,7 +10,7 @@ Three or more members go one per line, with the braces on lines of their own. Tw
 on one line, or go one per line; what they may not be is half-split, broken in some places and not
 others, so `const { alpha,\n  bravo } = source` is fixed to the fully expanded form. That is the
 threshold [`@linteljs/array-newline`](../array-newline) holds an array to and
-[`@linteljs/import-newlines`](../import-newlines) an import, so the declaration of an object, the
+[`@linteljs/specifier-newline`](../specifier-newline) an import, so the declaration of an object, the
 object itself and the destructuring of it all read the same way. A rest or spread element counts
 like any other member.
 

@@ -169,7 +169,7 @@ control that announces the wrong thing.
 Every list layout splits at three or more items, one per line, delimiters on their own lines; two or fewer sit on
 one line or go fully one per line, and a half-split list is fixed to the second. No rule joins lines. One node, one
 owner, one threshold: `member-newline` (objects, patterns, interfaces, type literals), `array-newline`,
-`import-newlines`, `export-specifier-newline`. Exceptions: `union-newline` splits on what a union holds, and
+`specifier-newline` (import and export lists). Exceptions: `union-newline` splits on what a union holds, and
 `chain-call-newline` splits at two calls or one callback with a body. Three rather than two keeps a pair like
 `const [value, setValue] = useState(0)` on one line.
 

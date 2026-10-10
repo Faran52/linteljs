@@ -26,9 +26,8 @@ interface BuiltPlugin {
 }
 
 const EXPECTED = [
-  'import-newlines',
+  'specifier-newline',
   'prefer-arrow-functions',
-  'export-specifier-newline',
 ];
 
 const FIXTURE = [

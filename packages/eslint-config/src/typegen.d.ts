@@ -1511,16 +1511,6 @@ export interface RuleOptions {
    */
   '@linteljs/comment-delimiter'?: Linter.RuleEntry<[]>
   /**
-   * Put each specifier of an export list with three or more on its own line.
-   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/export-specifier-newline
-   */
-  '@linteljs/export-specifier-newline'?: Linter.RuleEntry<[]>
-  /**
-   * Put each named import of an import with three or more on its own line.
-   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines
-   */
-  '@linteljs/import-newlines'?: Linter.RuleEntry<LinteljsImportNewlines>
-  /**
    * Keep top-level interfaces and type aliases together, after imports and before runtime code.
    * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/interface-order
    */
@@ -1620,6 +1610,11 @@ export interface RuleOptions {
    * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies
    */
   '@linteljs/sort-hook-dependencies'?: Linter.RuleEntry<LinteljsSortHookDependencies>
+  /**
+   * Put each specifier of an import or export list with three or more on its own line.
+   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/specifier-newline
+   */
+  '@linteljs/specifier-newline'?: Linter.RuleEntry<LinteljsSpecifierNewline>
   /**
    * Split union types when object or function members make them hard to read.
    * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/union-newline
@@ -10583,10 +10578,6 @@ type HtmlEslintUseBaseline = []|[{
 type LinteljsChainCallNewline = []|[{
   maxLineLength?: number
 }]
-// ----- @linteljs/import-newlines -----
-type LinteljsImportNewlines = []|[{
-  maxItems?: number
-}]
 // ----- @linteljs/interface-order -----
 type LinteljsInterfaceOrder = []|[{
   trimBlankLines?: boolean
@@ -10634,6 +10625,10 @@ type LinteljsSortHookDependencies = []|[{
   order?: ("asc" | "desc")
   
   hooks?: [string, ...(string)[]]
+}]
+// ----- @linteljs/specifier-newline -----
+type LinteljsSpecifierNewline = []|[{
+  maxItems?: number
 }]
 // ----- @linteljs/union-newline -----
 type LinteljsUnionNewline = []|[{

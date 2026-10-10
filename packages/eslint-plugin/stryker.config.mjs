@@ -11,7 +11,7 @@ const PARTS = {
   'rules-a': ['src/rules/{prefer-arrow-functions,react-no-global-namespace,interface-order}/**/*.ts'],
   'rules-b': ['src/rules/chain-call-newline/**/*.ts', 'src/utils/**/*.ts'],
   'rules-c': [
-    'src/rules/{member-newline,comment-delimiter,import-newlines}/**/*.ts',
+    'src/rules/{member-newline,comment-delimiter,specifier-newline}/**/*.ts',
     'src/rules/{native-valid-accessibility-role,native-valid-accessibility-actions}/**/*.ts',
   ],
   'rest': MUTATED,

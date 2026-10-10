@@ -24,14 +24,14 @@ when a version's change lives in a sibling it is described there instead:
   for `comma-dangle`. Remove both options from your config.
 - **`destructuring-property-newline` is removed.** `member-newline` now reports a half-split object pattern,
   and `array-newline` an array pattern. Remove the id from your config.
-- **`export-specifier-newline` splits at three or more specifiers**, not two, so `export { alpha, bravo }` is
-  allowed. A half-split pair is fixed to one per line, never joined. It reports once per statement, with a new
-  message, and its fix runs past a comment inside the braces.
-- **`import-newlines` never joins lines and loses `maxLineLength`.** A split pair stays split, a half-split pair
-  is fixed to one per line, and a long import under the count is left alone, so the `mustSplitLong` and
-  `mustNotSplit` messages are gone. Only named imports count, and a single named import is never reported. The
-  fix is whitespace only, so a comment inside the braces no longer blocks it and a trailing comma or a redundant
-  `as` is left as written. Remove `maxLineLength` from your config.
+- **`import-newlines` and `export-specifier-newline` merge into `specifier-newline`.** Replace both ids with
+  the new one. Its `maxItems` option (`2` by default) counts import and export lists alike, and a blank line
+  inside either list's braces is removed. Exports split at three or more specifiers, not two, so
+  `export { alpha, bravo }` is allowed. A split pair stays split, a half-split pair is fixed to one per line,
+  and a long list under the count is left alone; nothing is joined. Only named imports count, and a single
+  specifier is never reported. `maxLineLength` is gone, and the messages are now `mustSplitMany`,
+  `limitLineCount` and `noBlankBetween`, for imports and exports alike. The fix is whitespace only, so a
+  comment inside the braces no longer blocks it and a trailing comma or a redundant `as` is left as written.
 - **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises`, and
   their `flat/` forms, give way to `configs.all` and `configs['flat/all']`, which carry every rule.
   `configs.recommended` stays.
@@ -98,7 +98,8 @@ when a version's change lives in a sibling it is described there instead:
   lines into CRLF.
 - `comment-delimiter` no longer merges a `//# sourceMappingURL=` or `//# sourceURL=` line into a JSDoc block,
   and reports a run of `//` lines carrying a JSDoc tag without a fix, since a block would make the tag live.
-- `export-specifier-newline` keeps a trailing comma on the last specifier's line instead of pushing it to column 0.
+- `specifier-newline` keeps a trailing comma in an export list on the last specifier's line, where
+  `export-specifier-newline` pushed it to column 0.
 - `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
   In a Vue file its fix no longer moves a type from `<script setup>` into the `<script>` above it.
 - `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later

@@ -57,38 +57,6 @@ export const SHAPES: Record<string, Shape[]> = {
       shape: 'array pattern, last gap closed',
     },
   ],
-  'export-specifier-newline': [
-    {
-      build: exportJoinedCase,
-      shape: 'specifiers joined onto one line',
-    },
-    {
-      build: exportTripleCase('local'),
-      shape: 'two specifiers added to a local export',
-    },
-    {
-      build: exportTripleCase('from'),
-      shape: 'two specifiers added to a re-export',
-    },
-    {
-      build: exportTripleCase('type'),
-      shape: 'two specifiers added to a type-only export',
-    },
-  ],
-  'import-newlines': [
-    {
-      build: importJoinedCase,
-      shape: 'joined onto one line, over the item limit',
-    },
-    {
-      build: importTailJoinedCase,
-      shape: 'two members left sharing a line',
-    },
-    {
-      build: importBlankLineCase,
-      shape: 'blank line between two members',
-    },
-  ],
   'interface-order': [
     {
       build: typeBelowRuntimeCase('imports'),
@@ -230,6 +198,36 @@ export const SHAPES: Record<string, Shape[]> = {
       build: hookOrderCase(EXTRA_HOOKS, 'desc'),
       options: { hooks: EXTRA_HOOKS },
       shape: 'dependencies of a hook named by the hooks option',
+    },
+  ],
+  'specifier-newline': [
+    {
+      build: importJoinedCase,
+      shape: 'joined onto one line, over the item limit',
+    },
+    {
+      build: importTailJoinedCase,
+      shape: 'two members left sharing a line',
+    },
+    {
+      build: importBlankLineCase,
+      shape: 'blank line between two members',
+    },
+    {
+      build: exportJoinedCase,
+      shape: 'specifiers joined onto one line',
+    },
+    {
+      build: exportTripleCase('local'),
+      shape: 'two specifiers added to a local export',
+    },
+    {
+      build: exportTripleCase('from'),
+      shape: 'two specifiers added to a re-export',
+    },
+    {
+      build: exportTripleCase('type'),
+      shape: 'two specifiers added to a type-only export',
     },
   ],
   'union-newline': [

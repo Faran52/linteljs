@@ -57,50 +57,6 @@
       "description": "Use `//` for short comments and JSDoc blocks for longer prose."
     }
   },
-  "export-specifier-newline": {
-    "messages": {
-      "specifiersOnNewline": "Put each export specifier on its own line, with the braces on their own lines."
-    },
-    "schema": [],
-    "type": "layout",
-    "fixable": "whitespace",
-    "docs": {
-      "fixShape": "whitespace",
-      "language": "universal",
-      "recommended": true,
-      "requiresTypeChecking": false,
-      "description": "Put each specifier of an export list with three or more on its own line."
-    }
-  },
-  "import-newlines": {
-    "messages": {
-      "mustSplitMany": "Imports must be broken into multiple lines if there are more than {{maxItems}} elements.",
-      "limitLineCount": "Import lines must have one element per line.",
-      "noBlankBetween": "Import lines cannot have blank lines between them."
-    },
-    "schema": [
-      {
-        "type": "object",
-        "properties": {
-          "maxItems": {
-            "type": "integer",
-            "minimum": 0,
-            "default": 2
-          }
-        },
-        "additionalProperties": false
-      }
-    ],
-    "type": "layout",
-    "fixable": "whitespace",
-    "docs": {
-      "fixShape": "whitespace",
-      "language": "universal",
-      "recommended": true,
-      "requiresTypeChecking": false,
-      "description": "Put each named import of an import with three or more on its own line."
-    }
-  },
   "interface-order": {
     "messages": {
       "moveAfterImports": "Top-level type/interface declarations must be placed after imports, before runtime code."
@@ -580,6 +536,35 @@
       "recommended": false,
       "requiresTypeChecking": false,
       "description": "Keep hook dependency arrays in a consistent order."
+    }
+  },
+  "specifier-newline": {
+    "messages": {
+      "mustSplitMany": "Put each specifier on its own line when there are more than {{maxItems}}.",
+      "limitLineCount": "Put each specifier on its own line.",
+      "noBlankBetween": "Remove the blank lines between specifiers."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "maxItems": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 2
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "layout",
+    "fixable": "whitespace",
+    "docs": {
+      "fixShape": "whitespace",
+      "language": "universal",
+      "recommended": true,
+      "requiresTypeChecking": false,
+      "description": "Put each specifier of an import or export list with three or more on its own line."
     }
   },
   "union-newline": {

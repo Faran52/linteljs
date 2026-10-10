@@ -189,10 +189,10 @@ describe('resolveVariable', () => {
 
 describe('docsUrl', () => {
   it('builds the rule directory url from the rule id', () => {
-    const actual = docsUrl('import-newlines');
+    const actual = docsUrl('specifier-newline');
 
     expect(actual)
-      .toBe('https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines');
+      .toBe('https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/specifier-newline');
   });
 
   it('points at a tree url rather than a blob url', () => {

@@ -1,8 +1,6 @@
 import { arrayNewline } from './array-newline/arrayNewlineRule.ts';
 import { chainCallNewline } from './chain-call-newline/chainCallNewlineRule.ts';
 import { commentDelimiter } from './comment-delimiter/commentDelimiterRule.ts';
-import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifierNewlineRule.ts';
-import { importNewlines } from './import-newlines/importNewlinesRule.ts';
 import { interfaceOrder } from './interface-order/interfaceOrderRule.ts';
 import { memberNewline } from './member-newline/memberNewlineRule.ts';
 import { nameBeforeUse } from './name-before-use/nameBeforeUseRule.ts';
@@ -25,6 +23,7 @@ import { preferDestructuredProps } from './prefer-destructured-props/preferDestr
 import { preferTryCatch } from './prefer-try-catch/preferTryCatchRule.ts';
 import { reactNoGlobalNamespace } from './react-no-global-namespace/reactNoGlobalNamespaceRule.ts';
 import { sortHookDependencies } from './sort-hook-dependencies/sortHookDependenciesRule.ts';
+import { specifierNewline } from './specifier-newline/specifierNewlineRule.ts';
 import { unionNewline } from './union-newline/unionNewlineRule.ts';
 
 import type { LintelRuleModule } from '../types.ts';
@@ -35,8 +34,6 @@ export const rules = {
   'array-newline': arrayNewline,
   'chain-call-newline': chainCallNewline,
   'comment-delimiter': commentDelimiter,
-  'export-specifier-newline': exportSpecifierNewline,
-  'import-newlines': importNewlines,
   'interface-order': interfaceOrder,
   'member-newline': memberNewline,
   'name-before-use': nameBeforeUse,
@@ -57,5 +54,6 @@ export const rules = {
   'prefer-try-catch': preferTryCatch,
   'react-no-global-namespace': reactNoGlobalNamespace,
   'sort-hook-dependencies': sortHookDependencies,
+  'specifier-newline': specifierNewline,
   'union-newline': unionNewline,
 } satisfies Record<string, LintelRuleModule>;

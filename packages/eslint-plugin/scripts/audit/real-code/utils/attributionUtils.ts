@@ -40,9 +40,8 @@ interface Evaluation {
 }
 
 const ORDERED_RULES = [
-  'export-specifier-newline',
-  'import-newlines',
   'member-newline',
+  'specifier-newline',
   'union-newline',
 ];
 

@@ -9,7 +9,7 @@ Put each element of an array or array pattern with three or more on its own line
 An array with three or more elements goes one element per line, with the opening and closing
 brackets on lines of their own, and an array destructuring pattern is held to the same shape. It is
 the threshold [`member-newline`](../member-newline) holds an object, an object pattern, an interface
-and a type literal to, and [`import-newlines`](../import-newlines) an import: three or more items,
+and a type literal to, and [`specifier-newline`](../specifier-newline) an import or export list: three or more items,
 one per line.
 
 An array of two or fewer may sit on one line or go one per line, so

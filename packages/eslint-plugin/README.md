@@ -80,7 +80,7 @@ To enable a single rule:
 export default [
   {
     plugins: { '@linteljs': linteljs },
-    rules: { '@linteljs/import-newlines': 'error' },
+    rules: { '@linteljs/specifier-newline': 'error' },
   },
 ];
 ```
@@ -136,8 +136,6 @@ Each rule link has examples, options, and cases it declines to fix. Fixable is t
 | [`@linteljs/array-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/array-newline) | Put each element of an array or array pattern with three or more on its own line. | yes | whitespace | | |
 | [`@linteljs/chain-call-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/chain-call-newline) | Put each call on its own line once a chain has two calls or a callback with a body. | yes | whitespace | | `maxLineLength` |
 | [`@linteljs/comment-delimiter`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/comment-delimiter) | Use `//` for short comments and JSDoc blocks for longer prose. | yes | code | | |
-| [`@linteljs/export-specifier-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/export-specifier-newline) | Put each specifier of an export list with three or more on its own line. | yes | whitespace | | |
-| [`@linteljs/import-newlines`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines) | Put each named import of an import with three or more on its own line. | yes | whitespace | | `maxItems` |
 | [`@linteljs/interface-order`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/interface-order) | Keep top-level interfaces and type aliases together, after imports and before runtime code. | yes | code | yes | `trimBlankLines` |
 | [`@linteljs/member-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/member-newline) | Put each member of an object, object pattern, interface, or type literal with three or more on its own line. | yes | whitespace | | `maxProperties` |
 | [`@linteljs/name-before-use`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/name-before-use) | Name an await, a call that takes a call, or an inline array or object in a const before using it. | | | | `ignoreEmptyLiterals`, `ignoreLiteralArguments` |
@@ -158,6 +156,7 @@ Each rule link has examples, options, and cases it declines to fix. Fixable is t
 | [`@linteljs/prefer-try-catch`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch) | Prefer `try`/`catch` around an awaited rejection path instead of a promise callback. | yes | | | |
 | [`@linteljs/react-no-global-namespace`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace) | Import the React names a file uses instead of reaching them through the global namespace. | | code | | |
 | [`@linteljs/sort-hook-dependencies`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies) | Keep hook dependency arrays in a consistent order. | | code | | `order`, `hooks` |
+| [`@linteljs/specifier-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/specifier-newline) | Put each specifier of an import or export list with three or more on its own line. | yes | whitespace | | `maxItems` |
 | [`@linteljs/union-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/union-newline) | Split union types when object or function members make them hard to read. | yes | whitespace | yes | `maxGenericMembers` |
 
 `prefer-await-to-then` and `prefer-try-catch` overlap by design. Where they divide the cases is in the Notes on

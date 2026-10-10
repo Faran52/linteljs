@@ -81,9 +81,8 @@ const fixture = [
 ].join('\n');
 
 const expectedRuleIds = [
-  '@linteljs/import-newlines',
+  '@linteljs/specifier-newline',
   '@linteljs/prefer-arrow-functions',
-  '@linteljs/export-specifier-newline',
 ];
 
 // Written out, so a rename fails here.

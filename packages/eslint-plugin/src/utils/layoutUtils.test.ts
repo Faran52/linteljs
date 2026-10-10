@@ -8,7 +8,7 @@ import {
   it,
 } from 'vitest';
 
-import { importNewlines } from '../rules/import-newlines/importNewlinesRule.ts';
+import { specifierNewline } from '../rules/specifier-newline/specifierNewlineRule.ts';
 
 import {
   adjacentPairs,
@@ -373,12 +373,12 @@ const linter = new Linter();
 const fixWith = (code: string): string => {
   const { output } = linter.verifyAndFix(code, [
     {
-      plugins: { '@linteljs': { rules: { 'import-newlines': importNewlines } } },
+      plugins: { '@linteljs': { rules: { 'specifier-newline': specifierNewline } } },
       languageOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
-      rules: { '@linteljs/import-newlines': 'error' },
+      rules: { '@linteljs/specifier-newline': 'error' },
     },
   ]);
 
