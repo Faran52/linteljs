@@ -40,7 +40,7 @@ cannot, such as a package that installs but is never imported.
 carry every starter text into real projects under `~/.cache/linteljs/typed/`, installs them against this
 checkout's packed config and plugin, and runs each project's own `eslint . --max-warnings 0`, type-aware rules
 included, and its `typecheck`, since a type error is no lint finding. It lints only the cases whose generated tree
-changed since their last clean lint; `--all` lints every one, as CI does. The first run installs everything and takes several minutes; a run with nothing changed takes
+changed since their last clean lint; `--all` lints every one, as CI and `LINTELJS_GATE_NO_CACHE=1` do. The first run installs everything and takes several minutes; a run with nothing changed takes
 under one. It needs the network. `pnpm lint:starters:fix` writes autofixes back to the templates.
 
 ## The three packages

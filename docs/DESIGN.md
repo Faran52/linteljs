@@ -1083,10 +1083,16 @@ passed `test` at 95% branches), and the StyleX cases run `build`, since StyleX r
 compiles.
 
 A case whose generated tree hashes as it did at its last clean lint is skipped; `check` runs that changed mode and
-CI runs `--all`. A missing cache runs cold rather than skip. Every checkout and worktree shares the one cache, so a
-second run waits on `typed.lock` beside it: a cache each would cost a cold run (about 600s) per worktree, and two
-runs at once only split the cores lint is bound by. `lint:starters:fix` writes a fix back only to a template
-copied whole and only when every case writing it fixed it the same way.
+CI runs `--all`, as does `LINTELJS_GATE_NO_CACHE=1`. The tree is the key, since it holds exactly what the case
+reads: the template files it copies, the versions it pins, the node and pnpm versions it records, and the packed
+config and plugin, whose paths are named by their hash. So a changed starter file reruns only the cases writing it
+(one TypeScript starter file: 3 of 99 cases, 57s), and a change to either package reruns every case. With nothing
+changed the run generates and hashes all 99 and skips them in about 30s. What the registry resolves past the pins is
+no part of it, so CI's `--all` is what catches a drifted transitive dependency. A missing cache runs cold rather
+than skip. Every checkout and worktree shares the one cache, so a second run waits on `typed.lock` beside it: a
+cache each would cost a cold run (about 600s) per worktree, and two runs at once only split the cores lint is bound
+by. `lint:starters:fix` writes a fix back only to a template copied whole and only when every case writing it fixed
+it the same way.
 
 A changed case installs, runs `prepare` and its typecheck in turn (a typecheck regenerates the framework types the
 others read), then lint, `test:coverage` and a monorepo's root lint at once, then a StyleX build alone, since Next's
@@ -1122,13 +1128,13 @@ Tried and left out:
 
 Outside `CI`, a step is skipped whole when its key matches the one stored after its last pass. The key hashes every
 file `git ls-files -co --exclude-standard` lists (so the whole program, every config and `pnpm-lock.yaml`), the
-gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_modules/.pnpm/lock.yaml`), the
-node and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env. Only `lint` and `typecheck` leave out
+gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_modules/.pnpm/lock.yaml`), the node
+and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env. Only `lint` and `typecheck` leave out
 `*.md`, which neither reads. Never per file, unlike ESLint `--cache`: a type changed in one file reruns the step
-that fails in another. Only a pass is stored, and
-only when no input moved while the step ran. `lint:starters` keeps its own per-case cache. `CI` neither reads nor
-writes it; `LINTELJS_GATE_NO_CACHE=1` reruns every step. The commit gate still holds: a skipped step passed on
-inputs identical to this tree's.
+that fails in another. Only a pass is stored, and only when no input moved while the step ran. `lint:starters` is
+never skipped whole: it keeps a cache per case instead (above). `CI` neither reads nor writes the gate's, and runs
+every case; `LINTELJS_GATE_NO_CACHE=1` reruns every step and every case. The commit gate still holds: a skipped step
+passed on inputs identical to this tree's.
 
 ### Coverage runs in shards in CI
 

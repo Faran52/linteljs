@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
-import process from 'node:process';
+import process, { env } from 'node:process';
 import { parseArgs } from 'node:util';
 
 import { once, Semaphore } from 'es-toolkit';
@@ -22,6 +22,7 @@ import {
   logError,
   logWarn,
 } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
+import { NO_CACHE_ENV } from '../gate/constants.ts';
 import { run } from '../utils/processUtils.ts';
 
 import {
@@ -71,7 +72,7 @@ const flags = {
   fix: { type: 'boolean' },
 } as const;
 const { values } = parseArgs({ options: flags });
-const every = values.all === true;
+const every = values.all === true || env[NO_CACHE_ENV] !== undefined;
 const fixing = values.fix === true;
 
 const caseCount = STARTER_CASES.length + STARTER_MIXES.length;
