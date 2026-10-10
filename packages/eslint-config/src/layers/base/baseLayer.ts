@@ -13,9 +13,12 @@ import tseslint from 'typescript-eslint';
 
 import {
   E2E_FILES,
+  MARKUP_FILES,
+  MARKUP_SIZE_RULES,
   MOCK_FILES,
   SCRIPT_AND_SFC_FILES,
   SCRIPT_EXTENSIONS,
+  STORY_FILES,
   TEST_FILES,
   TYPESCRIPT_EXTENSIONS,
 } from '../../config/constants';
@@ -29,8 +32,6 @@ import type { BaseOptions, Layer } from '../../types';
 
 // `<script lang="ts">` blocks in SFCs are TypeScript the TypeScript globs miss.
 const TYPED_FILES = [`**/*.{${TYPESCRIPT_EXTENSIONS},vue,svelte}`];
-
-const COMPONENT_FILES = ['**/*.{tsx,jsx,vue,svelte}'];
 
 // Only on request: naming `.astro` would pull it into a project that has no parser for it.
 const ASTRO_FILES = ['**/*.astro'];
@@ -339,15 +340,10 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
 
     {
-      name: '@linteljs/base/component-size',
-      files: reaching(COMPONENT_FILES),
-      rules: {
-        'max-lines': ['error', {
-          max: 350,
-          skipBlankLines: true,
-          skipComments: true,
-        }],
-      },
+      name: '@linteljs/base/markup-size',
+      files: reaching(MARKUP_FILES),
+      ignores: [...TEST_FILES, ...STORY_FILES],
+      rules: MARKUP_SIZE_RULES,
     },
 
     // A `utils/` module is a drawer of small helpers, so it may run longer than a subject's entry.

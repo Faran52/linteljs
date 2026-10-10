@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  codeLines,
   ownBlockNames,
   ruleEntryFor,
   ruleIdsFor,
@@ -121,7 +122,37 @@ describe('reactNative', () => {
       '@linteljs/react',
       '@linteljs/react/javascript',
       '@linteljs/react-native/accessibility',
+      '@linteljs/react-native/markup-size',
     ];
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('reactNative: markup size', () => {
+  const config = [...base(), ...reactNative()];
+
+  it.each([
+    ['src/components/button/Button.jsx', 350],
+    ['src/components/button/Button.js', 350],
+    ['src/components/button/Button.tsx', 350],
+    ['src/lib/utils/formatUtils.js', 800],
+    ['src/app/format.ts', 500],
+  ])('caps %s at %i lines of code', async (path, max) => {
+    const atLimit = await ruleIdsFor(config, codeLines(max), path);
+    const overLimit = await ruleIdsFor(config, codeLines(max + 1), path);
+
+    expect(atLimit).not.toContain('max-lines');
+    expect(overLimit).toContain('max-lines');
+  });
+
+  it.each([
+    'src/components/button/Button.test.js',
+    'src/components/button/Button.stories.jsx',
+    'e2e/checkout.js',
+    '__mocks__/handlers.js',
+  ])('holds no markup cap on %s', async (path) => {
+    const ruleIds = await ruleIdsFor(config, codeLines(351), path);
+
+    expect(ruleIds).not.toContain('max-lines');
   });
 });

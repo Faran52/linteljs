@@ -116,6 +116,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- The 350-line cap is a markup-file policy: `base` holds `.tsx`, `.vue`, `.svelte` (and `.astro` on request) to
+  it, story files excepted, and no longer `.jsx`. `reactNative()` adds `.js` and `.jsx`, where React Native keeps
+  its markup, outside suites, stories and `utils/`.
 - The React layers run `@linteljs/no-duplicate-jsx-props` over `.js`, `.jsx`, `.mjs` and `.cjs` only: TypeScript
   reports a duplicate JSX prop in `.tsx` itself (TS17001). `solid()` keeps it on every script file.
 - `base({ astro: true })` leaves `@linteljs/prefer-alias` off in `.astro` files.
