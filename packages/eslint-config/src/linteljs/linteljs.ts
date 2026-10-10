@@ -40,7 +40,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
 
   const frameworks = await Promise.all(uiFrameworksOf(options)
     .map(([label, key]) => {
-      return withPeer(label, FRAMEWORKS[key]);
+      return withPeer(label, FRAMEWORKS[key], options.root);
     }));
   const layers = await Promise.all(LAYER_OPTIONS
     .filter(([
@@ -57,7 +57,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
     ]) => {
       return withPeer(`${option}: ${JSON.stringify(value)}`, () => {
         return LAYERS[key](options);
-      });
+      }, options.root);
     }));
 
   const {

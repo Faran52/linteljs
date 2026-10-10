@@ -107,7 +107,8 @@ when a version's change lives in a sibling it is described there instead:
 
   The configs after the options are appended last. A misspelt option or value throws and names the closest one
   (`unknown option 'framwork'. Did you mean 'framework'?`). An option whose optional peer is missing throws with
-  the command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager that ran ESLint.
+  the command that installs it (`pnpm add -D eslint-plugin-solid`), for the package manager `packageManager` in
+  `root`'s `package.json` names, else the one whose lockfile sits in `root`, else the one that ran ESLint, else npm.
   `LinteljsOptions`, `Framework`, `Island` and `TailwindOptions` join the types.
 - **Typed `rules` in the configs handed to `linteljs()`**: every rule of ESLint and of every plugin a layer can load,
   with its options, generated from the rule schemas by `eslint-typegen`. Exported as `Rules`.

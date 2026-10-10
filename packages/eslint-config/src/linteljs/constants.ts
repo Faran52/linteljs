@@ -150,11 +150,21 @@ export const SUGGESTION_DISTANCE = 3;
 
 export const MISSING_PACKAGE = /Cannot find package '([^']+)'/u;
 
-// Keyed by the name `npm_config_user_agent` starts with; npm when none matches.
+export const NPM_INSTALL = 'npm install -D';
+
+// Keyed by package manager name, as `packageManager` and `npm_config_user_agent` spell it.
 export const INSTALL_COMMANDS: Record<string, string> = {
+  npm: NPM_INSTALL,
   pnpm: 'pnpm add -D',
   yarn: 'yarn add -D',
   bun: 'bun add -d',
 };
 
-export const NPM_INSTALL = 'npm install -D';
+export const LOCKFILES: [string, string][] = [
+  ['pnpm-lock.yaml', 'pnpm'],
+  ['yarn.lock', 'yarn'],
+  ['bun.lock', 'bun'],
+  ['bun.lockb', 'bun'],
+  ['package-lock.json', 'npm'],
+  ['npm-shrinkwrap.json', 'npm'],
+];

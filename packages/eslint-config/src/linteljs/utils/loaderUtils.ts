@@ -1,8 +1,11 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import process from 'node:process';
 
 import {
   EXPO_LAYER,
   INSTALL_COMMANDS,
+  LOCKFILES,
   MISSING_PACKAGE,
   NPM_INSTALL,
   WXT_LAYER,
@@ -177,18 +180,60 @@ export const LAYERS: Record<LayerKey, (options: LinteljsOptions) => Promise<Laye
   },
 };
 
-const installCommand = (): string => {
-  const agent = process.env['npm_config_user_agent'];
-  const match = Object.entries(INSTALL_COMMANDS)
-    .find(([manager]) => {
-      return agent?.startsWith(`${manager}/`) === true;
+// Sync, as `base` reads root: this runs once, on the way to a thrown error.
+const declaredManager = (root: string): string | undefined => {
+  const path = join(root, 'package.json');
+
+  if (!existsSync(path)) {
+    return undefined;
+  }
+
+  const text = readFileSync(path, 'utf8');
+  const manifest: unknown = JSON.parse(text);
+
+  if (typeof manifest !== 'object' || manifest === null || !('packageManager' in manifest)) {
+    return undefined;
+  }
+
+  const { packageManager } = manifest;
+
+  return typeof packageManager === 'string' ? packageManager.split('@')[0] : undefined;
+};
+
+const lockedManager = (root: string): string | undefined => {
+  const lockfile = LOCKFILES
+    .find(([file]) => {
+      const path = join(root, file);
+
+      return existsSync(path);
     });
 
-  return match === undefined ? NPM_INSTALL : match[1];
+  return lockfile?.[1];
+};
+
+// `packageManager` in root, then a lockfile in root, then whatever ran ESLint, then npm. Never the working directory.
+const installCommand = (root: string | undefined): string => {
+  const agent = process.env['npm_config_user_agent']?.split('/')[0];
+  const managers = root === undefined
+    ? [agent]
+    : [
+        declaredManager(root),
+        lockedManager(root),
+        agent,
+      ];
+  const command = managers
+    .map((manager) => {
+      return manager === undefined ? undefined : INSTALL_COMMANDS[manager];
+    })
+    .find((known) => {
+      return known !== undefined;
+    });
+
+  return command ?? NPM_INSTALL;
 };
 
 // Names the option and the command that installs its peer, where Node would only name the package it could not find.
-export const withPeer = async <T>(option: string, load: () => Promise<T>): Promise<T> => {
+export const withPeer = async <T>(option: string, load: () => Promise<T>, root?: string): Promise<T> => {
   try {
     return await load();
   }
@@ -200,7 +245,8 @@ export const withPeer = async <T>(option: string, load: () => Promise<T>): Promi
       throw error;
     }
 
-    const message = `@linteljs/eslint-config: ${option} needs ${peer}. Install it with: ${installCommand()} ${peer}`;
+    const command = installCommand(root);
+    const message = `@linteljs/eslint-config: ${option} needs ${peer}. Install it with: ${command} ${peer}`;
 
     throw new Error(message, { cause: error });
   }

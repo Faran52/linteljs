@@ -76,7 +76,8 @@ The options are named after the answers `@linteljs/create` asks. Each is off unl
 `typescript`, which is on unless you set it to `false`. An unknown option, or a value an option does not take,
 throws and names the closest one (`unknown option 'framwork'. Did you mean 'framework'?`). An option whose layer
 needs an optional peer that is not installed throws, naming the option, the package and the command that installs
-it with the package manager that ran ESLint (`pnpm add -D eslint-plugin-solid`).
+it (`pnpm add -D eslint-plugin-solid`). The package manager is the one `packageManager` in `root`'s `package.json`
+names, else the one whose lockfile sits in `root`, else the one that ran ESLint, else npm.
 
 | Option | Effect |
 | --- | --- |

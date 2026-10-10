@@ -1,4 +1,12 @@
 import {
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import {
   afterEach,
   describe,
   expect,
@@ -178,8 +186,15 @@ describe('LAYERS', () => {
 });
 
 describe('withPeer', () => {
-  afterEach(() => {
+  const PNPM_AGENT = 'pnpm/12.9.0 npm/? node/v26.0.0 darwin arm64';
+  const roots: string[] = [];
+
+  afterEach(async () => {
     vi.unstubAllEnvs();
+
+    for (const root of roots.splice(0)) {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it.each([
@@ -203,6 +218,70 @@ describe('withPeer', () => {
     const missing = withPeer('playwright', notFound);
 
     await expect(missing).rejects.toThrow(/Install it with: npm install -D eslint-plugin-playwright$/);
+  });
+
+  const rootWith = async (files: Record<string, string>, agent: string | undefined): Promise<string> => {
+    const prefix = join(tmpdir(), 'linteljs-manager-');
+    const root = await mkdtemp(prefix);
+    roots.push(root);
+
+    for (const [name, text] of Object.entries(files)) {
+      await writeFile(join(root, name), text);
+    }
+
+    vi.stubEnv('npm_config_user_agent', agent);
+
+    return root;
+  };
+
+  it('takes the manager root package.json declares first', async () => {
+    const files = {
+      'package.json': JSON.stringify({ packageManager: 'yarn@4.9.0' }),
+      'pnpm-lock.yaml': '',
+    };
+
+    const root = await rootWith(files, PNPM_AGENT);
+    const missing = withPeer('playwright', notFound, root);
+
+    await expect(missing).rejects.toThrow('Install it with: yarn add -D eslint-plugin-playwright');
+  });
+
+  it('takes the lockfile in root when package.json declares no known manager', async () => {
+    const files = {
+      'package.json': JSON.stringify({ packageManager: 'deno@2.0.0' }),
+      'bun.lock': '',
+    };
+
+    const root = await rootWith(files, PNPM_AGENT);
+    const missing = withPeer('playwright', notFound, root);
+
+    await expect(missing).rejects.toThrow('Install it with: bun add -d eslint-plugin-playwright');
+  });
+
+  it('takes an npm lockfile over the user agent', async () => {
+    const root = await rootWith({ 'package-lock.json': '{}' }, PNPM_AGENT);
+    const missing = withPeer('playwright', notFound, root);
+
+    await expect(missing).rejects.toThrow('Install it with: npm install -D eslint-plugin-playwright');
+  });
+
+  it.each([
+    '[]',
+    'null',
+    '1',
+    '{"packageManager":1}',
+  ])('takes the user agent when root has no lockfile and package.json %s', async (manifest) => {
+    const root = await rootWith({ 'package.json': manifest }, PNPM_AGENT);
+    const missing = withPeer('playwright', notFound, root);
+
+    await expect(missing).rejects.toThrow('Install it with: pnpm add -D eslint-plugin-playwright');
+  });
+
+  it('falls back to npm when root has neither and no package manager ran it', async () => {
+    const root = await rootWith({ 'package.json': '{}' }, undefined);
+    const missing = withPeer('playwright', notFound, root);
+
+    await expect(missing).rejects.toThrow('Install it with: npm install -D eslint-plugin-playwright');
   });
 
   it('passes any other failure through untouched', async () => {
