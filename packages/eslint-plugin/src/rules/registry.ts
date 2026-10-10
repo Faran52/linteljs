@@ -18,9 +18,8 @@ import { noImportNamespaceDestructure } from './no-import-namespace-destructure/
 import { noInlineObjectTypes } from './no-inline-object-types/noInlineObjectTypesRule.ts';
 import { preferAlias } from './prefer-alias/preferAliasRule.ts';
 import { preferArrowFunctions } from './prefer-arrow-functions/preferArrowFunctionsRule.ts';
-import { preferAwaitToThen } from './prefer-await-to-then/preferAwaitToThenRule.ts';
+import { preferAsyncAwait } from './prefer-async-await/preferAsyncAwaitRule.ts';
 import { preferDestructuredProps } from './prefer-destructured-props/preferDestructuredPropsRule.ts';
-import { preferTryCatch } from './prefer-try-catch/preferTryCatchRule.ts';
 import { reactNoGlobalNamespace } from './react-no-global-namespace/reactNoGlobalNamespaceRule.ts';
 import { sortHookDependencies } from './sort-hook-dependencies/sortHookDependenciesRule.ts';
 import { specifierNewline } from './specifier-newline/specifierNewlineRule.ts';
@@ -49,9 +48,8 @@ export const rules = {
   'no-import-namespace-destructure': noImportNamespaceDestructure,
   'prefer-alias': preferAlias,
   'prefer-arrow-functions': preferArrowFunctions,
-  'prefer-await-to-then': preferAwaitToThen,
+  'prefer-async-await': preferAsyncAwait,
   'prefer-destructured-props': preferDestructuredProps,
-  'prefer-try-catch': preferTryCatch,
   'react-no-global-namespace': reactNoGlobalNamespace,
   'sort-hook-dependencies': sortHookDependencies,
   'specifier-newline': specifierNewline,

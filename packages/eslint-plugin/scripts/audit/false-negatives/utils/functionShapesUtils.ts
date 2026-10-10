@@ -310,7 +310,7 @@ const awaitGapIsClean = (state: State, node: AstNode, argument: AstNode): boolea
   return false;
 };
 
-// Nothing awaits or returns it, so this rule rather than `prefer-try-catch` is on the hook.
+// Nothing awaits or returns it, so `preferAwait` rather than `preferTryCatch` is on the hook.
 export const detachedHandlerCase = (method: string): Build => {
   return (state) => {
     const expressionStatements = nodesOf(state, 'ExpressionStatement');

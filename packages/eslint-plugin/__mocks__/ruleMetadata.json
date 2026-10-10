@@ -423,9 +423,10 @@
       "description": "Prefer arrow functions when the conversion keeps behaviour the same."
     }
   },
-  "prefer-await-to-then": {
+  "prefer-async-await": {
     "messages": {
-      "preferAwait": "Prefer await to then()/catch()/finally()."
+      "preferAwait": "Prefer await to then()/catch()/finally().",
+      "preferTryCatch": "Wrap the await in `try`/`catch` instead of passing a rejection handler."
     },
     "schema": [
       {
@@ -446,7 +447,7 @@
       "language": "universal",
       "recommended": true,
       "requiresTypeChecking": false,
-      "description": "Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values."
+      "description": "Prefer `await` to `.then()`/`.catch()`/`.finally()`, and `try`/`catch` to a rejection handler."
     }
   },
   "prefer-destructured-props": {
@@ -462,22 +463,6 @@
       "recommended": false,
       "requiresTypeChecking": false,
       "description": "Destructure component props in the function signature instead of reading them one field at a time."
-    }
-  },
-  "prefer-try-catch": {
-    "messages": {
-      "preferTryCatchOverCatch": "Wrap the await in `try`/`catch` instead of handling the rejection with `.catch()`.",
-      "preferTryCatchOverThenHandler": "Wrap the await in `try`/`catch` instead of passing a rejection handler to `then`."
-    },
-    "schema": [],
-    "type": "suggestion",
-    "fixable": null,
-    "docs": {
-      "fixShape": null,
-      "language": "universal",
-      "recommended": true,
-      "requiresTypeChecking": false,
-      "description": "Prefer `try`/`catch` around an awaited rejection path instead of a promise callback."
     }
   },
   "react-no-global-namespace": {

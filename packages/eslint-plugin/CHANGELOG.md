@@ -32,6 +32,10 @@ when a version's change lives in a sibling it is described there instead:
   specifier is never reported. `maxLineLength` is gone, and the messages are now `mustSplitMany`,
   `limitLineCount` and `noBlankBetween`, for imports and exports alike. The fix is whitespace only, so a
   comment inside the braces no longer blocks it and a trailing comma or a redundant `as` is left as written.
+- **`prefer-await-to-then` and `prefer-try-catch` merge into `prefer-async-await`.** Replace both ids with the
+  new one; `strict` carries over. The messages are now `preferAwait` and `preferTryCatch`, which replaces
+  `preferTryCatchOverCatch` and `preferTryCatchOverThenHandler`. A call gets one report at most, so under
+  `strict` an awaited `.catch(handle)` reports `preferTryCatch` alone, where both rules fired.
 - **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises`, and
   their `flat/` forms, give way to `configs.all` and `configs['flat/all']`, which carry every rule.
   `configs.recommended` stays.
@@ -106,13 +110,12 @@ when a version's change lives in a sibling it is described there instead:
   `case` of its `switch`, both of which threw `ReferenceError`. It no longer asks for a block body in a StyleX
   dynamic style inside `stylex.create()`, which the compiler refuses, and a fix inside a converted function's
   body now lands in the same `--fix` run.
-- `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or
-  `for` body, which no function encloses and so none could make async.
+- `prefer-async-await` no longer reports a chain in a block at the top level of a file, such as an `if` or
+  `for` body, which no function encloses and so none could make async. It reports a rejection handler on an
+  awaited or async-returned chain behind a type wrapper, such as `await (fetch(url).catch(handle) as Promise<Data>)`,
+  which both promise rules skipped.
 - `prefer-destructured-props` no longer reports a props parameter written through, as in `props.alpha = 1`,
   `props.count++`, `delete props.alpha` or a destructuring target, since a destructured copy cannot write back.
-- `prefer-try-catch` reports an awaited or async-returned chain behind a type wrapper, such as
-  `await (fetch(url).catch(handle) as Promise<Data>)`, which both promise rules skipped.
-  `prefer-await-to-then` hands `return p.then(x) as Promise<T>` in an async function off to it.
 - `sort-hook-dependencies` swaps the names in place, keeping a trailing comma and an array laid out one name a
   line, where its fix rewrote the array onto one line.
 - `union-newline` reports a union with a comment before any of its pipes without a fix, where it split the gaps

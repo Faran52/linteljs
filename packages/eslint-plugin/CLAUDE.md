@@ -34,8 +34,7 @@ the plugin's alone and wins inside the package.
 - One rule's helper: that rule's `utils/<name>Utils.ts`.
 - Shared between rules, `src/utils/`, one module each: `ruleUtils.ts` (ESLint's rule API: `createRule`,
   node aliases, `mustFind`, `optionsOf`, `resolveVariable`), `layoutUtils.ts` (reading or writing
-  whitespace), `promiseChainUtils.ts` (the fluent-chain walk), `jsxUtils.ts` (JSX elements and attributes,
-  typed structurally because ESTree has no JSX).
+  whitespace), `jsxUtils.ts` (JSX elements and attributes, typed structurally because ESTree has no JSX).
 - Types in `src/types.ts`, data tables in `src/constants.ts`.
 - Scripts: `scripts/<group>/<subject>/<subject><Group>.ts`, run through tsx and reporting through
   `create/templates/project/scripts/utils/loggerUtils.ts`. `build/` runs inside `pnpm build`,

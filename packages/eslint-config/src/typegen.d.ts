@@ -1586,20 +1586,15 @@ export interface RuleOptions {
    */
   '@linteljs/prefer-arrow-functions'?: Linter.RuleEntry<LinteljsPreferArrowFunctions>
   /**
-   * Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values.
-   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then
+   * Prefer `await` to `.then()`/`.catch()`/`.finally()`, and `try`/`catch` to a rejection handler.
+   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-async-await
    */
-  '@linteljs/prefer-await-to-then'?: Linter.RuleEntry<LinteljsPreferAwaitToThen>
+  '@linteljs/prefer-async-await'?: Linter.RuleEntry<LinteljsPreferAsyncAwait>
   /**
    * Destructure component props in the function signature instead of reading them one field at a time.
    * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-destructured-props
    */
   '@linteljs/prefer-destructured-props'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer `try`/`catch` around an awaited rejection path instead of a promise callback.
-   * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch
-   */
-  '@linteljs/prefer-try-catch'?: Linter.RuleEntry<[]>
   /**
    * Import the React names a file uses instead of reaching them through the global namespace.
    * @see https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace
@@ -10616,8 +10611,8 @@ type LinteljsPreferAlias = []|[{
 type LinteljsPreferArrowFunctions = []|[{
   forceHoisted?: boolean
 }]
-// ----- @linteljs/prefer-await-to-then -----
-type LinteljsPreferAwaitToThen = []|[{
+// ----- @linteljs/prefer-async-await -----
+type LinteljsPreferAsyncAwait = []|[{
   strict?: boolean
 }]
 // ----- @linteljs/sort-hook-dependencies -----

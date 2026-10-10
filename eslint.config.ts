@@ -244,7 +244,7 @@ const config = [
     files: [
       'packages/eslint-plugin/src/rules/prefer-arrow-functions/preferArrowFunctionsRule.ts',
       'packages/eslint-plugin/src/rules/prefer-arrow-functions/utils/safetyUtils.ts',
-      'packages/eslint-plugin/src/utils/promiseChainUtils.ts',
+      'packages/eslint-plugin/src/rules/prefer-async-await/utils/promiseChainUtils.ts',
     ],
     rules: {
       'sonarjs/different-types-comparison': 'off',

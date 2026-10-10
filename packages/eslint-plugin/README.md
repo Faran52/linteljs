@@ -151,17 +151,12 @@ Each rule link has examples, options, and cases it declines to fix. Fixable is t
 | [`@linteljs/no-inline-object-types`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-inline-object-types) | Give an object type a name instead of writing its shape inline. | yes | | yes | `allowIn` |
 | [`@linteljs/prefer-alias`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-alias) | Import across aliased directories through the tsconfig alias, and within one relatively. | yes | code | yes | `aliasExempt`, `enforceRelativeImports` |
 | [`@linteljs/prefer-arrow-functions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-arrow-functions) | Prefer arrow functions when the conversion keeps behaviour the same. | yes | code | | `forceHoisted` |
-| [`@linteljs/prefer-await-to-then`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then) | Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values. | yes | | | `strict` |
+| [`@linteljs/prefer-async-await`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-async-await) | Prefer `await` to `.then()`/`.catch()`/`.finally()`, and `try`/`catch` to a rejection handler. | yes | | | `strict` |
 | [`@linteljs/prefer-destructured-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-destructured-props) | Destructure component props in the function signature instead of reading them one field at a time. | | | | |
-| [`@linteljs/prefer-try-catch`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch) | Prefer `try`/`catch` around an awaited rejection path instead of a promise callback. | yes | | | |
 | [`@linteljs/react-no-global-namespace`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace) | Import the React names a file uses instead of reaching them through the global namespace. | | code | | |
 | [`@linteljs/sort-hook-dependencies`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies) | Keep hook dependency arrays in a consistent order. | | code | | `order`, `hooks` |
 | [`@linteljs/specifier-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/specifier-newline) | Put each specifier of an import or export list with three or more on its own line. | yes | whitespace | | `maxItems` |
 | [`@linteljs/union-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/union-newline) | Split union types when object or function members make them hard to read. | yes | whitespace | yes | `maxGenericMembers` |
-
-`prefer-await-to-then` and `prefer-try-catch` overlap by design. Where they divide the cases is in the Notes on
-the [prefer-await-to-then](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then)
-and [prefer-try-catch](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch) pages.
 
 ## Compatibility
 

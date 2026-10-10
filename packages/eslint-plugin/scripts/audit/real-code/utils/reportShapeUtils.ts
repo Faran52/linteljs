@@ -22,15 +22,10 @@ export interface Shapes {
 export const AUDIT_RULES = [
   'no-import-namespace-destructure',
   'prefer-arrow-functions',
-  'prefer-await-to-then',
-  'prefer-try-catch',
+  'prefer-async-await',
 ];
 
-const REPORT_ONLY_RULES = new Set([
-  '@linteljs/no-import-namespace-destructure',
-  '@linteljs/prefer-await-to-then',
-  '@linteljs/prefer-try-catch',
-]);
+const REPORT_ONLY_RULES = new Set(['@linteljs/no-import-namespace-destructure', '@linteljs/prefer-async-await']);
 
 const PROMISE_METHODS = new Set([
   'catch',

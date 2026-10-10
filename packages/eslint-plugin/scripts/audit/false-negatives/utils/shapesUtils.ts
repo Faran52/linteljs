@@ -137,7 +137,7 @@ export const SHAPES: Record<string, Shape[]> = {
       shape: 'block body collapsed to an expression body',
     },
   ],
-  'prefer-await-to-then': [
+  'prefer-async-await': [
     {
       build: detachedHandlerCase('then'),
       shape: 'detached .then() in statement position',
@@ -155,18 +155,6 @@ export const SHAPES: Record<string, Shape[]> = {
       options: { strict: true },
       shape: 'awaited .then() under strict',
     },
-  ],
-  'prefer-destructured-props': [
-    {
-      build: arrowComponentCase,
-      shape: 'arrow assigned to an uppercase const, rewritten to a props parameter',
-    },
-    {
-      build: functionDeclarationComponentCase,
-      shape: 'function declaration, rewritten to a props parameter',
-    },
-  ],
-  'prefer-try-catch': [
     {
       build: awaitedHandlerCase(`.catch(${PROBE_HANDLER})`),
       shape: 'rejection handler on an await',
@@ -182,6 +170,16 @@ export const SHAPES: Record<string, Shape[]> = {
     {
       build: asyncReturnHandlerCase,
       shape: 'rejection handler on an async return',
+    },
+  ],
+  'prefer-destructured-props': [
+    {
+      build: arrowComponentCase,
+      shape: 'arrow assigned to an uppercase const, rewritten to a props parameter',
+    },
+    {
+      build: functionDeclarationComponentCase,
+      shape: 'function declaration, rewritten to a props parameter',
     },
   ],
   'sort-hook-dependencies': [

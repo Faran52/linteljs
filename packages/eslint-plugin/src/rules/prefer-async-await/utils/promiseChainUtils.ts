@@ -1,5 +1,4 @@
-import { TRANSPARENT_WRAPPER_TYPES } from '../constants.ts';
-
+import { TRANSPARENT_WRAPPER_TYPES } from '../../../constants.ts';
 import {
   type Ancestor,
   type AncestorReader,
@@ -7,7 +6,7 @@ import {
   type MemberExpressionNode,
   mustFind,
   type RuleNode,
-} from './ruleUtils.ts';
+} from '../../../utils/ruleUtils.ts';
 
 // The `in` check narrows the union; both callers already know the node is a function.
 const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
@@ -39,7 +38,6 @@ export const outermostCall = (node: RuleNode): RuleNode => {
   return climbChain(isCalledMember(node) ? node.parent : node);
 };
 
-// Shared by prefer-await-to-then and prefer-try-catch so neither double-reports a line.
 export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): boolean => {
   const outer = outermostCall(node);
   const parent = mustFind(outer.parent);

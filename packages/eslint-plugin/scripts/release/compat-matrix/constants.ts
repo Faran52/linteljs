@@ -64,8 +64,7 @@ export const EXPECTED = [
   '@linteljs/no-import-namespace-destructure',
   '@linteljs/prefer-arrow-functions',
   '@linteljs/prefer-destructured-props',
-  '@linteljs/prefer-await-to-then',
-  '@linteljs/prefer-try-catch',
+  '@linteljs/prefer-async-await',
 ];
 
 export const legacyConfig = JSON.stringify({
