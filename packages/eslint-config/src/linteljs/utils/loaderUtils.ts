@@ -5,6 +5,7 @@ import {
   INSTALL_COMMANDS,
   MISSING_PACKAGE,
   NPM_INSTALL,
+  WXT_LAYER,
 } from '../constants';
 
 import type {
@@ -170,6 +171,9 @@ export const LAYERS: Record<LayerKey, (options: LinteljsOptions) => Promise<Laye
     const { astro } = await import('../../frameworks/astro/astroFramework');
 
     return astro();
+  },
+  wxt: () => {
+    return Promise.resolve(WXT_LAYER);
   },
 };
 

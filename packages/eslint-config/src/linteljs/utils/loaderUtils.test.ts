@@ -44,6 +44,13 @@ const EXPO_IGNORES: Layer = [
   },
 ];
 
+const WXT_IGNORES: Layer = [
+  {
+    name: 'linteljs/wxt/ignores',
+    ignores: ['.output/**', '.wxt/**'],
+  },
+];
+
 // Each layer the framework spreads, in order, and its import group.
 const FRAMEWORK_PARTS: [UiFramework, (() => Layer)[], string[]][] = [
   [
@@ -113,6 +120,12 @@ const LAYER_BUILDERS: [LayerKey, () => Layer][] = [
   ['storybook', storybook],
   ['html', html],
   ['astro', astro],
+  [
+    'wxt',
+    () => {
+      return WXT_IGNORES;
+    },
+  ],
 ];
 
 const notFound = (): Promise<never> => {

@@ -40,6 +40,7 @@ when a version's change lives in a sibling it is described there instead:
   `solid()` each add a `linteljs/<layer>/ignores` block with what the framework's own config ignores (README,
   Layers), so a config that linted `dist/` or `.next/` under one of them no longer does. Expo's `dist/*` is a
   `linteljs/expo/ignores` block the `expo` framework adds; `reactNative()` alone ignores `android/app/build/**`.
+  `framework: 'wxt'` adds a `linteljs/wxt/ignores` block with `.output/**` and `.wxt/**`.
 - **`base` lays out lists at three or more.** `@linteljs/member-newline` owns object literals, object patterns,
   interfaces and type literals, and `@linteljs/array-newline` arrays: three or more items go one per line, two or
   fewer stay as written unless half split. `@stylistic/object-property-newline`, which split at two, is off, and
@@ -147,7 +148,7 @@ when a version's change lives in a sibling it is described there instead:
   its markup, outside suites, stories and `utils/`.
 - `react()`, `solid()` and `reactNative()` run `@linteljs/no-duplicate-jsx-props` over `.js` and `.jsx` only:
   TypeScript reports a duplicate JSX prop in `.tsx` itself (TS17001).
-- `react()` and `reactNative()` parse JSX in `.js` and `.jsx` files, so a project no longer sets
+- `react()`, `reactNative()` and `solid()` parse JSX in `.js` and `.jsx` files, so a project no longer sets
   `ecmaFeatures.jsx` itself.
 - `base({ astro: true })` leaves `@linteljs/prefer-alias` off in `.astro` files.
 - `svelte()` sorts SvelteKit 3's `#lib` into its framework group and resolves it through `package.json` `imports`,

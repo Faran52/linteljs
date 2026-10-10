@@ -1,6 +1,5 @@
 import {
   isIgnored,
-  JSX_IN_JS,
   LEAKED_RENDER_FIXTURE,
   ownBlockNames,
   ruleEntryFor,
@@ -57,11 +56,7 @@ describe('solid', () => {
     ['src/pages/Chip.tsx', false],
   ])('reports a JSX prop named twice on one element in %s: %s, tsc covering .tsx', async (path, reported) => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
-    const config = [
-      ...base(),
-      ...solid(),
-      ...JSX_IN_JS,
-    ];
+    const config = [...base(), ...solid()];
     const ruleIds = await ruleIdsFor(config, code, path);
     const hasDuplicate = ruleIds.includes('@linteljs/no-duplicate-jsx-props');
 
@@ -71,11 +66,7 @@ describe('solid', () => {
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span class="a" {...props} class="b" />;\n};\n';
-    const config = [
-      ...base(),
-      ...solid(),
-      ...JSX_IN_JS,
-    ];
+    const config = [...base(), ...solid()];
     const ruleIds = await ruleIdsFor(config, code, 'src/pages/Chip.jsx');
 
     expect(ruleIds).not.toContain(null);
@@ -107,7 +98,18 @@ describe('solid', () => {
   it('runs its linteljs rule without base', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
 
-    const ruleIds = await ruleIdsFor([...solid(), ...JSX_IN_JS], code, 'src/pages/Chip.jsx');
+    const ruleIds = await ruleIdsFor(solid(), code, 'src/pages/Chip.jsx');
+    expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  it('parses JSX in .js itself, not through the jsx-a11y preset', async () => {
+    const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
+    const withoutA11y = solid()
+      .filter((block) => {
+        return block.name !== 'jsx-a11y-x/recommended';
+      });
+
+    const ruleIds = await ruleIdsFor(withoutA11y, code, 'src/pages/Chip.js');
     expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
 

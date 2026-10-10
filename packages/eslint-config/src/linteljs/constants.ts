@@ -58,6 +58,11 @@ export const LAYER_OPTIONS: [LayerKey, keyof LinteljsOptions, string | boolean][
     'framework',
     'astro',
   ],
+  [
+    'wxt',
+    'framework',
+    'wxt',
+  ],
 ];
 
 export const HOSTS: Framework[] = ['astro', 'wxt'];
@@ -67,6 +72,14 @@ export const EXPO_LAYER: Layer = [
   {
     name: 'linteljs/expo/ignores',
     ignores: ['dist/*'],
+  },
+];
+
+// WXT's build output and generated types.
+export const WXT_LAYER: Layer = [
+  {
+    name: 'linteljs/wxt/ignores',
+    ignores: ['.output/**', '.wxt/**'],
   },
 ];
 

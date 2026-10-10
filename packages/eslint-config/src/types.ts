@@ -72,7 +72,8 @@ export type LayerKey
     | 'playwright'
     | 'storybook'
     | 'html'
-    | 'astro';
+    | 'astro'
+    | 'wxt';
 
 export interface TailwindOptions {
   entryPoint?: string;

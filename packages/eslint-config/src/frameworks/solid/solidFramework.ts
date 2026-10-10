@@ -41,6 +41,7 @@ export const solid = (): Layer => {
     {
       name: 'linteljs/solid/javascript',
       files: JS_MARKUP_FILES,
+      languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
       rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },
     {

@@ -555,18 +555,22 @@ describe('linteljs', () => {
     expect(hasSolid).toBe(true);
   });
 
-  it('composes the one island wxt hosts, and no framework without one', async () => {
+  it('composes the one island wxt hosts and its ignores, and no framework without one', async () => {
+    const wxtIgnores = {
+      name: 'linteljs/wxt/ignores',
+      ignores: ['.output/**', '.wxt/**'],
+    };
     const hosted = await linteljs({
       framework: 'wxt',
       islands: ['solid'],
       typescript: false,
     });
     const solidAlone = await linteljs({ framework: 'solid', typescript: false });
-    expect(hosted).toEqual(solidAlone);
+    expect(hosted).toEqual([...solidAlone, wxtIgnores]);
 
     const bare = await linteljs({ framework: 'wxt', typescript: false });
     const plain = await linteljs({ typescript: false });
-    expect(bare).toEqual(plain);
+    expect(bare).toEqual([...plain, wxtIgnores]);
   });
 
   it('checks its options before it loads anything', async () => {

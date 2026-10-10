@@ -158,7 +158,7 @@ layer, so importing it loads no optional peer.
 A framework layer ignores the build output its framework's own config ignores: `next()` `.next/**`, `out/**`,
 `build/**` and `next-env.d.ts`; `nuxt()` `.nuxt/**`, `.output/**` and `dist/**`; `reactNative()`
 `android/app/build/**`, and `linteljs({ framework: 'expo' })` `dist/*` on top; `react()`, `vue()` and `solid()`
-`dist/**`.
+`dist/**`. `linteljs({ framework: 'wxt' })` ignores `.output/**` and `.wxt/**`.
 
 ## Base options
 
