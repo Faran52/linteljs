@@ -2,12 +2,12 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import process, { env, execPath } from 'node:process';
+import process, { execPath } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { rankOf } from '@utils/versionUtils';
 
-import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
+import { logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
 import {
   MIN_ENGINE,
@@ -55,20 +55,6 @@ const fails = (dir: string): boolean => {
   return status !== 0;
 };
 
-// CI has no Claude Code to write the types; the gate runs where one does.
-const { CI: ci } = env;
-const absent = MOD_DIRS
-  .some((dir) => {
-    const written = existsSync(join(dir, TYPES_FILE));
+const failed = MOD_DIRS.filter(fails);
 
-    return !written;
-  });
-
-if (ci !== undefined && absent) {
-  log('Mod typecheck skipped: CI has no Claude Code to write the mod types (`pnpm mod-types`).');
-}
-else {
-  const failed = MOD_DIRS.filter(fails);
-
-  process.exitCode = failed.length > 0 ? 1 : 0;
-}
+process.exitCode = failed.length > 0 ? 1 : 0;

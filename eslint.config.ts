@@ -68,7 +68,7 @@ const modModules = (dir: string): string[] => {
 
 const MOD_MODULES = MOD_DIRS.flatMap(modModules);
 
-// CI has no engine to write the types, so `pnpm typecheck:mods` skips there and so does this.
+// Skipped until `pnpm mod-types` has written their types; `pnpm typecheck:mods` fails without them.
 const UNTYPED_MODS = MOD_DIRS
   .filter((dir) => {
     const written = existsSync(join(import.meta.dirname, dir, TYPES_FILE));

@@ -13,12 +13,15 @@ pnpm mod-types
 pnpm check
 ```
 
-`pnpm mod-types` has Claude Code write its plugin API declarations beside the two mods (the shipped
-check band and `.claude/skills/linteljs/`); it loads each with `claude -p /cost --plugin-dir <dir>`,
-a local command, so no model is called. `typecheck` checks the mods against them and fails when they
-are missing or older than the engine `scripts/typecheck-mods/constants.ts` pins; rerun it after
-updating Claude Code. `lint` lints the mods through the same declarations. In CI, where no Claude Code
-runs, the mods' typecheck and lint are skipped.
+Claude Code is a root devDependency, pinned in `pnpm-workspace.yaml`'s catalog, so `pnpm install` brings it
+here and in CI. `pnpm mod-types` has it write its plugin API declarations beside the two mods (the shipped
+check band and `.claude/skills/linteljs/`): it loads each with
+`CLAUDE_CODE_PLUGIN_DIR_WATCH=1 claude -p /cost --plugin-dir <dir>`. `/cost` is a local command, so no
+model is called and no sign-in is needed. Since 2.1.295 a `-p` run writes the declarations only for a mod it
+watches, which that variable turns on. `typecheck` checks the mods against them and fails when they are
+missing or older than the floor `MIN_ENGINE` in `scripts/typecheck-mods/constants.ts`; rerun `pnpm mod-types`
+after the pin moves. `lint` lints the mods through the same declarations, and skips them while they are
+missing. CI runs `pnpm mod-types` before `pnpm check`, so both run there too.
 
 `pnpm check` is the gate: `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck`,
 `test:coverage`, `typegen` and `test:band` (the check band's suite, skipped without Claude Code) at once. A project

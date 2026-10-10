@@ -32,6 +32,9 @@ jobs:
 
       - run: pnpm lint:starters --all
 
+      # The mods' types, so `typecheck:mods` and their lint run here too. docs/DESIGN.md: Ignores
+      - run: pnpm mod-types
+
       # Build first: the packages typecheck against each other's built declarations.
       - run: pnpm check
         env:

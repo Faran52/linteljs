@@ -1273,10 +1273,13 @@ suite. Measured on `setupTests.mswJest.ts` without its entry: 9 errors, all `no-
 `templates/frameworks/**` with `--no-ignore`: 170 findings in 62 files, 114 of them `no-unsafe-*` or unresolved.
 
 The two Claude Code mods (the shipped check band under `packages/create/templates/project/plugins/linteljs/` and
-`.claude/skills/linteljs/`) import `claude-code`, which only the engine provides. Locally `pnpm mod-types` writes
-the declarations, `pnpm typecheck:mods` checks both, and `modModules()` lints what those tsconfigs check. In CI no
-engine writes them, so `UNTYPED_MODS` ignores a mod whose `index.d.ts` is missing, until the types are published
-(`claude plugin validate` and `test` strip types without checking, anthropics/claude-code#99771).
+`.claude/skills/linteljs/`) import `claude-code`, which only the engine provides. `pnpm mod-types` has the pinned
+engine write the declarations, here and in CI before `pnpm check`, with `CLAUDE_CODE_PLUGIN_DIR_WATCH=1`: since
+2.1.295 a `claude -p` run writes them only for a mod it watches. No other headless route was found: no npm package
+ships them, and `claude plugin validate` and `test` strip types without checking (anthropics/claude-code#99771).
+`pnpm typecheck:mods` checks both and `modModules()` lints what those tsconfigs check; `UNTYPED_MODS` ignores a
+mod whose `index.d.ts` is missing, so a checkout that has not run `pnpm mod-types` still lints, while
+`typecheck:mods` fails it.
 `.fallowrc.json` ignores `.claude/**`: without it `fallow` fails on 12 unused files (the engine loads
 `register.tsx` by name and `claude plugin test` runs the suites), the band copy as a clone group, and 20 health
 findings scored without coverage.

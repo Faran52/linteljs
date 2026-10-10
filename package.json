@@ -16,7 +16,7 @@
     "lint:starters:fix": "tsx scripts/lint-starters/lintStartersScript.ts --fix",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && pnpm -r typecheck && pnpm typecheck:mods",
     "typecheck:mods": "tsx scripts/typecheck-mods/typecheckModsScript.ts",
-    "mod-types": "claude -p /cost --plugin-dir .claude/skills/linteljs > /dev/null && claude -p /cost --plugin-dir packages/create/templates/project/plugins/linteljs > /dev/null",
+    "mod-types": "CLAUDE_CODE_PLUGIN_DIR_WATCH=1 claude -p /cost --plugin-dir .claude/skills/linteljs > /dev/null && CLAUDE_CODE_PLUGIN_DIR_WATCH=1 claude -p /cost --plugin-dir packages/create/templates/project/plugins/linteljs > /dev/null",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

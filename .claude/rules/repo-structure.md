@@ -92,10 +92,10 @@ named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its
 `claude plugin validate .claude/skills/linteljs`, plus `pnpm typecheck` and `pnpm lint`:
 each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
 extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsconfig.mod.json`'s strict flags.
-`pnpm mod-types` has the engine write those types (gitignored, never packed); `scripts/typecheck-mods/` runs
-`tsc` on both, failing without them locally and skipping in CI. `hooks/checkStatusHook.ts` is a classic hook
+`pnpm mod-types` has the pinned engine write those types (gitignored, never packed), and CI runs it before
+`pnpm check`; `scripts/typecheck-mods/` runs `tsc` on both, failing without them. `hooks/checkStatusHook.ts` is a classic hook
 command, checked as Node code by `tsconfig.root.json`. The root `eslint.config.ts` lints the files each mod's
-tsconfig checks, and ignores them where the types are missing, as in CI. `.fallowrc.json` ignores `.claude/**`
+tsconfig checks, and ignores them where the types are missing. `.fallowrc.json` ignores `.claude/**`
 (`docs/DESIGN.md`).
 
 - **Check band**: `checkBand.tsx` is a byte copy of the shipped band under
