@@ -1,3 +1,9 @@
+import {
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
@@ -597,6 +603,23 @@ describe('linteljs', () => {
 
     const filtered = ignored.filter(Boolean);
     expect(filtered).toEqual([]);
+  });
+
+  it('passes the tsconfig option through to base', async () => {
+    const prefix = join(tmpdir(), 'linteljs-tsconfig-');
+    const root = await mkdtemp(prefix);
+    const paths = { compilerOptions: { paths: { '@widgets/*': ['./src/widgets/*'] } } };
+    await writeFile(join(root, 'tsconfig.app.json'), JSON.stringify(paths));
+    const config = await linteljs({
+      typescript: false,
+      root,
+      tsconfig: 'tsconfig.app.json',
+    });
+    const code = "import { b } from 'zod';\n\nimport { a } from '@widgets/card';\n\nexport const value = [a, b];\n";
+
+    const ruleIds = await ruleIdsFor(config, code, 'src/lib/sample.ts');
+    await rm(root, { recursive: true, force: true });
+    expect(ruleIds).not.toContain(SORT_RULE);
   });
 
   it.each(SAME_RULES)('composes %s as %s', async (framework, same) => {

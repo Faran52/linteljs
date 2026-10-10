@@ -91,7 +91,7 @@ it with the package manager that ran ESLint (`pnpm add -D eslint-plugin-solid`).
 | `styling` | `tailwind` or `stylex`: that library's layer. |
 | `tailwind` | `{ entryPoint }`, beside `styling: 'tailwind'`: the path to the CSS file that contains `@import "tailwindcss"`. |
 | `aliasExempt`, `enforceRelativeImports` | Options of `@linteljs/prefer-alias`, passed to the TypeScript layer. Ignored unless `typescript` is on. |
-| `root`, `gitignore`, `ignores`, `naming`, `folderNaming`, `resolver` | Passed through to `base` under the same names. |
+| `root`, `tsconfig`, `gitignore`, `ignores`, `naming`, `folderNaming`, `resolver` | Passed through to `base` under the same names. |
 
 Without an `entryPoint`, the Tailwind rules only reason about Tailwind's default theme. Point it at the
 project stylesheet so the project's own tokens sort into the right group.
@@ -165,6 +165,7 @@ A framework layer ignores the build output its framework's own config ignores: `
 ```ts
 interface BaseOptions {
   root?: string;
+  tsconfig?: string;
   gitignore?: boolean;
   ignores?: string[];
   naming?: NamingMap;
@@ -181,7 +182,8 @@ interface BaseOptions {
 
 Pass `root: import.meta.dirname`. `base` reads two files there and nowhere else, never `process.cwd()`: the
 `.gitignore`, whose entries become ESLint ignores (`gitignore: false` skips it), and `tsconfig.json`, whose
-`paths` (followed through `extends`) name the alias import-sort groups. Without `root` it reads neither. Set
+`paths` (followed through `extends` and `references`) name the alias import-sort groups. `tsconfig` names another
+file to start from, resolved against `root` (`tsconfig: 'tsconfig.app.json'`). Without `root` it reads neither. Set
 `resolver.project` when the relevant tsconfig is not the one the resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every

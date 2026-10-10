@@ -25,6 +25,8 @@ export interface ResolverOptions {
 export interface BaseOptions {
   // The project directory: its `.gitignore` is ignored and its tsconfig `paths` name the alias import groups.
   root?: string;
+  // The tsconfig to start from, resolved against `root`; its `extends` and `references` are followed.
+  tsconfig?: string;
   gitignore?: boolean;
   ignores?: string[];
   naming?: NamingMap;

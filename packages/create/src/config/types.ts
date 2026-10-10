@@ -259,6 +259,7 @@ type LinteljsWxtIsland = Exclude<LinteljsIsland, 'angular'>;
 
 interface LinteljsAnswerOptions {
   root?: string;
+  tsconfig?: string;
   gitignore?: boolean;
   ignores?: string[];
   naming?: NamingMap;

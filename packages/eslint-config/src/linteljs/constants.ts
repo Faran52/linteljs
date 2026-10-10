@@ -86,6 +86,7 @@ export const WXT_LAYER: Layer = [
 // Every option, so a misspelt one is caught rather than ignored.
 export const OPTION_NAMES: Record<keyof LinteljsOptions, true> = {
   root: true,
+  tsconfig: true,
   gitignore: true,
   ignores: true,
   naming: true,

@@ -1,11 +1,12 @@
 import {
+  mkdir,
   mkdtemp,
   realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import process from 'node:process';
 
 import { rules as lintelRules } from '@linteljs/eslint-plugin';
@@ -306,7 +307,9 @@ const withProject = async (files: Record<string, string>, run: ProjectRun): Prom
 
   try {
     for (const [name, text] of Object.entries(files)) {
-      await writeFile(join(root, name), text);
+      const path = join(root, name);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, text);
     }
 
     await run(root);
@@ -439,6 +442,35 @@ describe('base: aliases', () => {
     await withProject(files, async (root) => {
       const actual = await groupsAfterPackages(base({ root }));
       expect(actual).toBe(true);
+    });
+  });
+
+  it('reads the paths of every tsconfig root references, cycles included', async () => {
+    const files = {
+      'tsconfig.json': JSON.stringify({ files: [], references: [{ path: './app' }] }),
+      'app/tsconfig.json': JSON.stringify({
+        references: [{ path: '../tsconfig.json' }, { path: './tsconfig.lib.json' }],
+      }),
+      'app/tsconfig.lib.json': tsconfig,
+    };
+
+    await withProject(files, async (root) => {
+      const actual = await groupsAfterPackages(base({ root }));
+      expect(actual).toBe(true);
+    });
+  });
+
+  it('starts from the tsconfig named by the tsconfig option', async () => {
+    const files = {
+      'tsconfig.json': '{}',
+      'tsconfig.app.json': tsconfig,
+    };
+
+    await withProject(files, async (root) => {
+      const named = await groupsAfterPackages(base({ root, tsconfig: 'tsconfig.app.json' }));
+      expect(named).toBe(true);
+      const unnamed = await groupsAfterPackages(base({ root }));
+      expect(unnamed).toBe(false);
     });
   });
 

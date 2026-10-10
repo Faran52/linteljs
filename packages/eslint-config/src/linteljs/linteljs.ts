@@ -62,6 +62,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
 
   const {
     root,
+    tsconfig,
     gitignore,
     ignores,
     naming,
@@ -76,6 +77,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
   const config: Layer = [
     ...base({
       root,
+      tsconfig,
       gitignore,
       ignores,
       naming,

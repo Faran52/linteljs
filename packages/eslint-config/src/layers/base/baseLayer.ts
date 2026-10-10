@@ -1,5 +1,9 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  dirname,
+  join,
+  resolve,
+} from 'node:path';
 
 import linteljs from '@linteljs/eslint-plugin';
 import stylistic from '@stylistic/eslint-plugin';
@@ -57,26 +61,43 @@ const gitignored = (root: string): Layer => {
   return gitignoreLayer;
 };
 
-// No directory walk: only `paths` is read. A missing tsconfig parses as empty.
-const aliasesIn = (root: string): string[] => {
-  const tsconfig = ts.readConfigFile(join(root, 'tsconfig.json'), (path) => {
-    return ts.sys.readFile(path);
-  });
-  const host = {
-    ...ts.sys,
-    readDirectory: (): string[] => {
-      return [];
-    },
-  };
-  const { paths } = ts.parseJsonConfigFileContent(tsconfig.config, host, root).options;
+const tsconfigHost = {
+  ...ts.sys,
+  readDirectory: (): string[] => {
+    return [];
+  },
+};
 
-  return paths ? Object.keys(paths) : [];
+// No directory walk: only `paths` is read, through `extends` and `references`. A missing tsconfig parses as empty.
+const aliasesIn = (path: string, seen = new Set<string>()): string[] => {
+  if (seen.has(path)) {
+    return [];
+  }
+
+  seen.add(path);
+  const tsconfig = ts.readConfigFile(path, (file) => {
+    return ts.sys.readFile(file);
+  });
+  const { options, projectReferences } = ts.parseJsonConfigFileContent(tsconfig.config, tsconfigHost, dirname(path));
+  const own = options.paths ? Object.keys(options.paths) : [];
+  const referenced = projectReferences
+    ? projectReferences
+        .flatMap((reference) => {
+          const referencePath = ts.resolveProjectReferencePath(reference);
+
+          return aliasesIn(referencePath, seen);
+        })
+    : [];
+  const aliases = [...own, ...referenced];
+
+  return aliases;
 };
 
 // Nothing here is type-aware, so `base` alone works on plain JavaScript.
 export const base = (options: BaseOptions = {}): Layer => {
   const {
     root,
+    tsconfig = 'tsconfig.json',
     gitignore = true,
     ignores,
     naming,
@@ -110,7 +131,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
   };
 
-  const aliases = root === undefined ? [] : aliasesIn(root);
+  const aliases = root === undefined ? [] : aliasesIn(resolve(root, tsconfig));
 
   const layer: Layer = [
     ...(root !== undefined && gitignore ? gitignored(root) : []),
