@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyStyles } from './elementUtils';
+import { applyStyles, attributesOf } from './elementUtils';
 
 describe('applyStyles', () => {
   it('sets each attribute the entry carries', () => {
@@ -20,5 +20,19 @@ describe('applyStyles', () => {
 
     const hasStyle = element.hasAttribute('style');
     expect(hasStyle).toBe(false);
+  });
+});
+
+describe('attributesOf', () => {
+  it('writes each attribute the entry carries', () => {
+    const text = attributesOf({ class: 'mark', style: 'color: red' });
+
+    expect(text).toBe('class="mark" style="color: red"');
+  });
+
+  it('skips an attribute the entry lacks', () => {
+    const text = attributesOf({ class: 'mark', style: undefined });
+
+    expect(text).toBe('class="mark"');
   });
 });
