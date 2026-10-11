@@ -35,7 +35,7 @@ const AboutPage = (): ReactNode => {
             .map(({ command, runs }) => {
               return (
                 <li key={command} {...styles.row}>
-                  <code {...styles.key}>{command}</code>
+                  <code {...styles.keyCode}>{command}</code>
                   <span {...styles.value}>{runs}</span>
                 </li>
               );
@@ -57,8 +57,8 @@ const AboutPage = (): ReactNode => {
             .map(({ path, holds }) => {
               return (
                 <div key={path} {...styles.row}>
-                  <dt><code>{path}</code></dt>
-                  <dd>{t(holds)}</dd>
+                  <dt {...styles.key}><code>{path}</code></dt>
+                  <dd {...styles.value}>{t(holds)}</dd>
                 </div>
               );
             })}

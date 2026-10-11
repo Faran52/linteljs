@@ -1,0 +1,12 @@
+export const styles = {
+  page: { className: 'mx-auto my-0 max-w-108 px-5 pt-13 pb-16' },
+  pageTitle: { className: 'mx-0 mt-0 mb-1.25 text-metric font-[620] tracking-[-0.015em]' },
+  pageLede: { className: 'mx-0 mt-0 mb-9 text-value text-muted-foreground' },
+  section: { className: 'mb-9 last:mb-0' },
+  sectionTitle: { className: 'mx-0 mt-0 mb-3 text-eyebrow font-[620] tracking-[0.08em] text-faint uppercase' },
+  rows: { className: 'm-0 list-none p-0' },
+  row: { className: 'flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-hair px-0 py-1.75 first:border-t-0 first:pt-0' },
+  key: { className: 'min-w-32 flex-none text-ui font-[540]' },
+  value: { className: 'm-0 min-w-0 flex-1 text-body text-muted-foreground' },
+  note: { className: 'note' },
+};

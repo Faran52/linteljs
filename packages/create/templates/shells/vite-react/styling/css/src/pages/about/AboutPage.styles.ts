@@ -6,5 +6,8 @@ export const styles = {
   sectionTitle: { className: 'section-title' },
   rows: { className: 'rows' },
   row: { className: 'row' },
+  keyCode: { className: 'key-code' },
+  value: { className: 'value' },
   note: { className: 'note' },
+  key: { className: 'key' },
 };

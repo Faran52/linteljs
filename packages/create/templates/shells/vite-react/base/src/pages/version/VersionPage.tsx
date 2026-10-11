@@ -29,8 +29,8 @@ export const VersionPage: FC = () => {
             .map(({ name, version }) => {
               return (
                 <div key={name} {...styles.row}>
-                  <dt>{name}</dt>
-                  <dd>{version}</dd>
+                  <dt {...styles.key}>{name}</dt>
+                  <dd {...styles.value}>{version}</dd>
                 </div>
               );
             })}
@@ -44,8 +44,8 @@ export const VersionPage: FC = () => {
             .map(({ label, value }) => {
               return (
                 <div key={label} {...styles.row}>
-                  <dt>{t(label)}</dt>
-                  <dd>{value}</dd>
+                  <dt {...styles.key}>{t(label)}</dt>
+                  <dd {...styles.value}>{value}</dd>
                 </div>
               );
             })}

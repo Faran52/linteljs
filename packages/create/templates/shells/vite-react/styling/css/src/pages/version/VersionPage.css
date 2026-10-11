@@ -1,0 +1,71 @@
+.page {
+  max-width: 27rem;
+  padding: 3.25rem 1.25rem 4rem;
+  margin: 0 auto;
+}
+
+.page-title {
+  margin: 0 0 0.3125rem;
+  font-size: var(--text-metric);
+  font-weight: 620;
+  letter-spacing: -0.015em;
+}
+
+.page-lede {
+  margin: 0 0 2.25rem;
+  font-size: var(--text-value);
+  color: var(--muted-foreground);
+}
+
+.section {
+  margin-bottom: 2.25rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: var(--text-eyebrow);
+  font-weight: 620;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rows {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* --hair rather than --border: a full rule between every row divides too hard. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding: 0.4375rem 0;
+  border-top: 1px solid var(--hair);
+}
+
+.row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.key {
+  flex: none;
+  min-width: 8rem;
+  font-size: var(--text-ui);
+  font-weight: 540;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--muted-foreground);
+}

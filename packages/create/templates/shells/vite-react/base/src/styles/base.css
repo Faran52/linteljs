@@ -50,17 +50,6 @@ app-status-page {
   flex-direction: column;
 }
 
-/* The 360px floor is what an extension popup gives you. */
-.hero {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.25rem 4rem;
-  text-align: center;
-}
-
 .starter-label {
   flex: none;
   margin: 0;
@@ -70,60 +59,6 @@ app-status-page {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
-}
-
-/* A name is whatever was typed, so it wraps rather than overflowing. */
-.title {
-  max-width: 100%;
-  margin: 1.625rem 0 0.375rem;
-  font-size: 1.875rem;
-  font-weight: 620;
-  letter-spacing: -0.025em;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-}
-
-/* An extension page has no header, so the label sits over the title and takes the mark's gap. */
-.hero > .mark + .starter-label {
-  margin-top: 1.625rem;
-}
-
-.hero > .starter-label + .title {
-  margin-top: 0.375rem;
-}
-
-.lede {
-  max-width: 23rem;
-  margin: 0;
-  font-size: var(--text-value);
-  color: var(--muted-foreground);
-}
-
-.counter {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  align-items: center;
-  margin: 2rem 0 0.625rem;
-}
-
-/* Tabular with a floor on the width, so counting past nine does not move the button under the pointer. */
-.count {
-  min-width: 2ch;
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  color: var(--primary);
-  text-align: center;
-}
-
-/* A control with no label is a puzzle: this says what the count is for. */
-.caption {
-  margin: 0;
-  font-size: var(--text-body);
-  color: var(--faint);
 }
 
 .hint {
@@ -137,112 +72,10 @@ app-status-page {
   color: var(--primary);
 }
 
-/* The extension popup's language select sits under the hint, drawn as every web header's `.tab` select. */
-.hint + select {
-  min-height: 2.75rem;
-  padding: 0.3125rem 0.625rem;
-  margin-top: 1rem;
-  font-size: var(--text-ui);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  background: none;
-  border: 0;
-  border-radius: var(--radius-md);
-  transition:
-    color var(--motion-fast) var(--motion-ease),
-    background-color var(--motion-fast) var(--motion-ease);
-}
-
-.hint + select:hover {
-  color: var(--foreground);
-  background: var(--muted);
-}
-
-.sent {
-  padding: 1rem;
-  margin: 0;
-  font-size: var(--text-value);
-  color: var(--ok);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.page {
-  max-width: 27rem;
-  padding: 3.25rem 1.25rem 4rem;
-  margin: 0 auto;
-}
-
-.page-title {
-  margin: 0 0 0.3125rem;
-  font-size: var(--text-metric);
-  font-weight: 620;
-  letter-spacing: -0.015em;
-}
-
-.page-lede {
-  margin: 0 0 2.25rem;
-  font-size: var(--text-value);
-  color: var(--muted-foreground);
-}
-
-.section {
-  margin-bottom: 2.25rem;
-}
-
-.section:last-child {
-  margin-bottom: 0;
-}
-
-.section-title {
-  margin: 0 0 0.75rem;
-  font-size: var(--text-eyebrow);
-  font-weight: 620;
-  color: var(--faint);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.rows {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-/* --hair rather than --border: a full rule between every row divides too hard. */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  align-items: baseline;
-  padding: 0.4375rem 0;
-  border-top: 1px solid var(--hair);
-}
-
-.row:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.row dt,
-.row .key {
+.key-code {
   flex: none;
   min-width: 8rem;
   font-size: var(--text-ui);
-  font-weight: 540;
-}
-
-.row dd,
-.row .value {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  font-size: var(--text-body);
-  color: var(--muted-foreground);
-}
-
-.row code.key {
   font-weight: 400;
   color: var(--primary);
 }
@@ -257,31 +90,6 @@ app-status-page {
   color: var(--primary);
 }
 
-/* The status pages: a crash, a refusal and a path nothing routes. */
-.status {
-  display: grid;
-  flex: 1;
-  place-content: center;
-  justify-items: center;
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.status-code {
-  margin: 0;
-  font-size: clamp(3.5rem, 12vw, 5.5rem);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--foreground);
-  letter-spacing: -0.03em;
-}
-
-.status-message {
-  margin: 0.875rem 0 0;
-  font-size: 1.125rem;
-  color: var(--muted-foreground);
-}
-
 .status-actions {
   display: flex;
   flex-wrap: wrap;
@@ -291,26 +99,6 @@ app-status-page {
 }
 
 /* The retry is the shared button, so this sets its height too. */
-.status-actions button,
-.status-action {
+.status-actions button {
   height: 38px;
-}
-
-.status-action {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 0.9375rem;
-  font-size: var(--text-ui);
-  font-weight: 540;
-  color: var(--primary-foreground);
-  text-decoration: none;
-  background: var(--primary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-}
-
-.status-action-outline {
-  color: var(--foreground);
-  background: transparent;
-  border-color: var(--border);
 }
