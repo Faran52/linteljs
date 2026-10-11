@@ -41,7 +41,6 @@ import {
 
 import type { Answers, ProjectConfig } from '@config/types';
 
-// `list` and `map` carry no `prompt`, so neither reaches `askAnswer`.
 type PromptableRecord
   = ChoiceRecord
     | MultiRecord
@@ -344,6 +343,11 @@ const askIfNeeded = async (
 ): Promise<JsonValue | undefined> => {
   const record: AnswerRecord = ANSWERS[key];
 
+  // Recorded only, never asked.
+  if (record.kind === 'list' || record.kind === 'map' || record.kind === 'text') {
+    return undefined;
+  }
+
   const soFar = soFarAnswered(answered);
   const target = targetFor(soFar);
   const message = promptOf(record, target);
@@ -361,8 +365,7 @@ const askIfNeeded = async (
     return [];
   }
 
-  // The check above already refused `list` and `map`.
-  return await askAnswer(prompter, record as PromptableRecord, message, target, soFar, targets);
+  return await askAnswer(prompter, record, message, target, soFar, targets);
 };
 
 // `exactOptionalPropertyTypes` bans setting an optional property to `undefined`.
