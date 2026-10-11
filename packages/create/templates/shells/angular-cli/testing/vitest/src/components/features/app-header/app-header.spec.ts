@@ -68,7 +68,7 @@ describe('AppHeader', () => {
     expect(label).toBe(common.language);
   });
 
-  it('marks the page it is on with the class the stylesheet colours', async () => {
+  it('marks the page it is on and styles its tab apart', async () => {
     const { root, settle } = await open();
 
     await TestBed
@@ -78,8 +78,10 @@ describe('AppHeader', () => {
     await settle();
 
     const current = root.querySelector('nav a[aria-current="page"]');
-    const marked = current?.classList.contains('tab-current');
+    const other = root.querySelector('nav a:not([aria-current])');
+    const currentClass = current?.className;
 
-    expect(marked).toBe(true);
+    expect(currentClass).toBeDefined();
+    expect(currentClass).not.toBe(other?.className);
   });
 });

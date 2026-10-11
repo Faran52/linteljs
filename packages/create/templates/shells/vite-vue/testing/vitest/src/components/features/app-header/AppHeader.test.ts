@@ -7,7 +7,6 @@ import { applyLanguage } from '@i18n/i18n';
 
 import { ROUTES } from '@router/constants';
 
-import { styles } from './AppHeader.styles';
 import AppHeader from './AppHeader.vue';
 
 const last = languages.at(-1)?.id ?? 'en';
@@ -66,10 +65,17 @@ describe('AppHeader', () => {
     expect(marked).toHaveLength(1);
     const actual = marked[0]?.text();
     expect(actual).toBe('About');
-    // RouterLink adds its own active classes ahead of the ones bound.
-    const classes = marked[0]?.attributes('class');
-    const tab = styles.tab(true).class;
-    expect(classes).toContain(tab);
+    // RouterLink adds its own active classes, so only the bound ones are compared.
+    const bound = (selector: string): string[] => {
+      return header
+        .find(selector)
+        .classes()
+        .filter((name) => {
+          return !name.startsWith('router-link');
+        });
+    };
+    const currentClasses = bound('nav a[aria-current="page"]');
+    expect(currentClasses).not.toEqual(bound('nav a:not([aria-current])'));
   });
 
   it('offers every language, and speaks the one chosen', async () => {

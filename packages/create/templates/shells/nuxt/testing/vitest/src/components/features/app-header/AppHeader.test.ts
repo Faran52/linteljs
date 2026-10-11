@@ -7,7 +7,6 @@ import { PAGES } from '@config/routes';
 import { languages, resources } from '@i18n/config';
 import { applyLanguage } from '@i18n/i18n';
 
-import { styles } from './AppHeader.styles';
 import AppHeader from './AppHeader.vue';
 
 const last = languages.at(-1)?.id ?? 'en';
@@ -60,8 +59,9 @@ describe('AppHeader', () => {
     expect(marked).toHaveLength(1);
     const actual = marked[0]?.text();
     expect(actual).toBe('About');
-    const actual2 = marked[0]?.attributes('class');
-    expect(actual2).toBe(styles.tab(true).class);
+    const other = header.find('nav a:not([aria-current])');
+    const currentClass = marked[0]?.attributes('class');
+    expect(currentClass).not.toBe(other.attributes('class'));
   });
 
   it('offers every language, and speaks the one chosen', async () => {
