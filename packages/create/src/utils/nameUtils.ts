@@ -5,7 +5,7 @@ export const unscopedName = (name: string): string => {
   return name.replace(/^@[^/]*\//, '');
 };
 
-// A monorepo's project name, which is also its directory under apps/.
+// A monorepo's project name, which is also its directory under apps/ or packages/.
 export const projectNameOf = (name: string): string => {
   const unscoped = unscopedName(name);
 
