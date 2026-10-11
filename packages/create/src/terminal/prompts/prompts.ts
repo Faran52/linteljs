@@ -38,6 +38,7 @@ import {
   PROJECT_KINDS,
   RUN_CANCELLED_MESSAGE,
 } from './constants';
+import { offeredValuesOf } from './utils/valueUtils';
 
 import type { Answers, ProjectConfig } from '@config/types';
 
@@ -258,18 +259,6 @@ const askName = async (prompter: Prompter): Promise<string> => {
   return unwrap(prompter, answer);
 };
 
-// The parser refuses the same values through the same predicate.
-const offeredValuesOf = <V extends string>(
-  values: Record<V, ValueRecord>,
-  target: TargetRecord,
-  answered: Answers,
-): V[] => {
-  return keysOf(values)
-    .filter((value) => {
-      return values[value].only === undefined || values[value].only(target, answered);
-    });
-};
-
 const describeFrom = <V extends string>(values: Record<V, ValueRecord>) => {
   return (value: V): Described => {
     return values[value];
@@ -286,16 +275,15 @@ const askAnswer = async (
 ): Promise<JsonValue | undefined> => {
   switch (record.kind) {
     case 'choice': {
-      const offered = offeredValuesOf(record.values, target, answered);
+      const offered = offeredValuesOf(record, target, answered);
       // React Native refuses the `vitest` default, so it starts on the first value it offers.
-      const [first = record.default] = offered;
-      const initial = offered.includes(record.default) ? record.default : first;
+      const initial = offered.includes(record.default) ? record.default : offered[0];
 
       return await askChoice(prompter, message, offered, initial, describeFrom(record.values));
     }
 
     case 'optionalChoice': {
-      const offered = ['none', ...offeredValuesOf(record.values, target, answered)];
+      const offered = ['none', ...offeredValuesOf(record, target, answered)];
       const describeValue = describeFrom(record.values);
       const picked = await askChoice(prompter, message, offered, 'none', (choice) => {
         return choice === 'none' ? record.none : describeValue(choice);
@@ -305,7 +293,7 @@ const askAnswer = async (
     }
 
     case 'multi': {
-      const offered = offeredValuesOf(record.values, target, answered);
+      const offered = offeredValuesOf(record, target, answered);
 
       const preselected = record.targetDefault?.(targets) ?? record.default;
 
@@ -313,7 +301,7 @@ const askAnswer = async (
     }
 
     case 'optionalMulti': {
-      const offered = offeredValuesOf(record.values, target, answered);
+      const offered = offeredValuesOf(record, target, answered);
 
       // Required unless skippable: an extension with no surface has a manifest naming nothing.
       const required = record.skippable !== true;
