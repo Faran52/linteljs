@@ -24,7 +24,7 @@ const { code, message } = Astro.props;
     </p>
     <div {...styles.statusActions}>
       <a
-        {...styles.statusAction}
+        {...styles.action(false)}
         href="/"
         data-i18n="statusHome"
       >{t('statusHome')}

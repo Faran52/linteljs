@@ -19,4 +19,11 @@ describe('CodeText', () => {
 
     expect(html).toBe('No code here');
   });
+
+  it('leaves the code uncoloured without a tone', async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(CodeText, { props: { text: '<code>pnpm check</code>' } });
+
+    expect(html).not.toMatch(/class=/u);
+  });
 });

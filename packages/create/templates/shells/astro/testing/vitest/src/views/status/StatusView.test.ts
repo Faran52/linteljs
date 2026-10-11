@@ -13,7 +13,7 @@ describe('StatusView', () => {
     const html = await container.renderToString(StatusView, { props: status });
 
     expect(html).toContain(String(status.code));
-    expect(html).toContain('class="status-action" href="/"');
+    expect(html).toContain('href="/"');
   });
 
   it('announces the line under the code', async () => {

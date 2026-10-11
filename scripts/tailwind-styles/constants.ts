@@ -22,6 +22,8 @@ const STORE_DRAWER = 'store/redux-toolkit,tanstack-store,zustand/styling/tailwin
 
 const FORM_DRAWER = 'form/react-hook-form,tanstack-form/styling/tailwind/src';
 
+const ISLAND_DRAWER = 'form/tanstack-form/hostedFramework/solid,svelte,vue/styling/tailwind/src';
+
 export const TARGETS: readonly Target[] = [
   {
     shell: 'vite-react',
@@ -56,5 +58,26 @@ export const TARGETS: readonly Target[] = [
       },
       { table: homePage, path: `${STORE_DRAWER}/app/page.styles.ts` },
     ],
+  },
+  {
+    shell: 'astro',
+    attribute: 'class',
+    files: [
+      { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
+      { table: statusPage, path: 'styling/tailwind/src/views/status/StatusView.styles.ts' },
+      { table: aboutPage, path: 'styling/tailwind/src/views/about/AboutView.styles.ts' },
+      { table: versionPage, path: 'styling/tailwind/src/views/version/VersionView.styles.ts' },
+      {
+        table: homePage,
+        path: 'styling/tailwind/src/views/home/HomeView.styles.ts',
+        keys: HOME_DATA_KEYS,
+      },
+      { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactPage.styles.ts` },
+    ],
+  },
+  {
+    shell: 'astro',
+    attribute: 'className',
+    files: [{ table: contactPage, path: `${FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
   },
 ];

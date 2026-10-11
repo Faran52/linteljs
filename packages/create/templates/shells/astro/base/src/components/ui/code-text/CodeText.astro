@@ -1,14 +1,18 @@
 ---
 import { partsOf } from '@i18n/i18n';
 
+import { styles } from './CodeText.styles';
+
 interface Props {
   text: string;
+  tone?: keyof typeof styles;
 }
 
-const { text } = Astro.props;
+const { text, tone } = Astro.props;
+const toneStyle = tone === undefined ? undefined : styles[tone];
 ---
 
 {partsOf(text)
   .map((part, index) => {
-    return index % 2 === 0 ? part : <code>{part}</code>;
+    return index % 2 === 0 ? part : <code {...toneStyle}>{part}</code>;
   })}

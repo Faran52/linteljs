@@ -28,8 +28,8 @@ const RECORDED = {
           .map((entry) => {
             return (
               <div {...styles.row}>
-                <dt>{entry.name}</dt>
-                <dd>{entry.version}</dd>
+                <dt {...styles.key}>{entry.name}</dt>
+                <dd {...styles.value}>{entry.version}</dd>
               </div>
             );
           })}
@@ -43,8 +43,8 @@ const RECORDED = {
           .map((entry) => {
             return (
               <div {...styles.row}>
-                <dt data-i18n={entry.label}>{t(entry.label)}</dt>
-                <dd>{entry.value}</dd>
+                <dt {...styles.key} data-i18n={entry.label}>{t(entry.label)}</dt>
+                <dd {...styles.value}>{entry.value}</dd>
               </div>
             );
           })}
@@ -55,7 +55,7 @@ const RECORDED = {
         data-file={RECORDED.file}
         data-command={RECORDED.command}
       >
-        <CodeText text={t('versionRecorded', RECORDED)} />
+        <CodeText text={t('versionRecorded', RECORDED)} tone="primary" />
       </p>
     </section>
   </main>

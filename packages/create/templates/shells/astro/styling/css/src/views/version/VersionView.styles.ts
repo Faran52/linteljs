@@ -1,10 +1,12 @@
 export const styles = {
+  page: { class: 'page' },
   pageTitle: { class: 'page-title' },
   pageLede: { class: 'page-lede' },
-  sectionTitle: { class: 'section-title' },
-  row: { class: 'row' },
-  rows: { class: 'rows' },
   section: { class: 'section' },
+  sectionTitle: { class: 'section-title' },
+  rows: { class: 'rows' },
+  row: { class: 'row' },
+  key: { class: 'key' },
+  value: { class: 'value' },
   note: { class: 'note' },
-  page: { class: 'page' },
 };

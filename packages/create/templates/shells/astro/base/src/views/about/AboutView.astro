@@ -27,7 +27,7 @@ import { styles } from './AboutView.styles';
           .map((leg) => {
             return (
               <li {...styles.row}>
-                <code {...styles.key}>{leg.command}</code>
+                <code {...styles.keyCode}>{leg.command}</code>
                 <span {...styles.value}>{leg.runs}</span>
               </li>
             );
@@ -38,7 +38,7 @@ import { styles } from './AboutView.styles';
         data-i18n="aboutCheck"
         data-command={CHECK}
       >
-        <CodeText text={t('aboutCheck', { command: CHECK })} />
+        <CodeText text={t('aboutCheck', { command: CHECK })} tone="primary" />
       </p>
     </section>
 
@@ -49,8 +49,8 @@ import { styles } from './AboutView.styles';
           .map((entry) => {
             return (
               <div {...styles.row}>
-                <dt><code>{entry.path}</code></dt>
-                <dd data-i18n={entry.holds}>{t(entry.holds)}</dd>
+                <dt {...styles.key}><code>{entry.path}</code></dt>
+                <dd {...styles.value} data-i18n={entry.holds}>{t(entry.holds)}</dd>
               </div>
             );
           })}
@@ -64,7 +64,7 @@ import { styles } from './AboutView.styles';
         data-i18n="aboutSync"
         data-command={SYNC}
       >
-        <CodeText text={t('aboutSync', { command: SYNC })} />
+        <CodeText text={t('aboutSync', { command: SYNC })} tone="primary" />
       </p>
     </section>
   </main>
