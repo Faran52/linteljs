@@ -26,9 +26,8 @@ const engineOf = (dir: string): string | undefined => {
   }
 
   const text = readFileSync(path, 'utf8');
-  const engine = WRITTEN_BY.exec(text)?.[1];
 
-  return engine ?? '0.0.0';
+  return WRITTEN_BY.exec(text)?.[1];
 };
 
 const fails = (dir: string): boolean => {

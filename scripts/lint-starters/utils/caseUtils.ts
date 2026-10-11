@@ -153,10 +153,6 @@ const clear = (dir: string): void => {
 
   for (const entry of generated) {
     const path = join(dir, entry);
-    const options = {
-      recursive: true,
-      force: true,
-    };
 
     if (PROJECT_PARENTS.has(entry)) {
       for (const app of readdirSync(path)) {
@@ -164,7 +160,10 @@ const clear = (dir: string): void => {
       }
     }
     else {
-      rmSync(path, options);
+      rmSync(path, {
+        recursive: true,
+        force: true,
+      });
     }
   }
 };
@@ -228,9 +227,7 @@ export const generate = async (item: E2eCase, dir: string, tarballs: Tarballs): 
 
 // Into a cleared tree, so a monorepo's apps keep the node_modules the clear left in them.
 const merge = (from: string, to: string): void => {
-  const options = { withFileTypes: true } as const;
-
-  for (const entry of readdirSync(from, options)) {
+  for (const entry of readdirSync(from, { withFileTypes: true })) {
     const source = join(from, entry.name);
     const target = join(to, entry.name);
 
@@ -296,14 +293,11 @@ const isSpawnError = (error: unknown): error is SpawnError => {
 };
 
 export const spawnIn = async (dir: string, args: string[]): Promise<Spawned> => {
-  const options = {
-    cwd: dir,
-    encoding: 'utf8' as const,
-    maxBuffer: MAX_BUFFER,
-  };
-
   try {
-    await execFileAsync('pnpm', args, options);
+    await execFileAsync('pnpm', args, {
+      cwd: dir,
+      maxBuffer: MAX_BUFFER,
+    });
 
     const spawned: Spawned = {
       ok: true,
@@ -381,7 +375,7 @@ export const fixedCopies = ({ answers, dir }: ProjectDir): Map<string, string> =
     .flatMap((artifact) => {
       const text = readFileSync(join(dir, artifact.target), 'utf8');
       const source = templateOf(artifact, text);
-      const copies = source === undefined ? [] : [[source, text] as const];
+      const copies: [string, string][] = source === undefined ? [] : [[source, text]];
 
       return copies;
     });

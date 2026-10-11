@@ -67,11 +67,12 @@ type Step = [string, () => Promise<Spawned>];
 // A step's name and output.
 type Failure = [string, string];
 
-const flags = {
-  all: { type: 'boolean' },
-  fix: { type: 'boolean' },
-} as const;
-const { values } = parseArgs({ options: flags });
+const { values } = parseArgs({
+  options: {
+    all: { type: 'boolean' },
+    fix: { type: 'boolean' },
+  },
+});
 const every = values.all === true || env[NO_CACHE_ENV] !== undefined;
 const fixing = values.fix === true;
 
