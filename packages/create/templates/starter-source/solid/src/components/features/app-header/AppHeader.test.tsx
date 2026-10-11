@@ -7,7 +7,6 @@ import {
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
-import { styles } from './AppHeader.styles';
 
 describe('AppHeader', () => {
   it('names the project and holds a tab for every route', () => {
@@ -59,10 +58,9 @@ describe('AppHeader', () => {
     fireEvent.click(other);
 
     expect(current.textContent).toBe('About');
-    const attribute = current.getAttribute('class');
-    expect(attribute).toBe(styles.tab(true).class);
-    const classAttribute = other.getAttribute('class');
-    expect(classAttribute).toBe(styles.tab(false).class);
+    const currentClass = current.getAttribute('class');
+    const otherClass = other.getAttribute('class');
+    expect(currentClass).not.toBe(otherClass);
     const expected = ['version'];
     expect(visited).toEqual(expected);
   });

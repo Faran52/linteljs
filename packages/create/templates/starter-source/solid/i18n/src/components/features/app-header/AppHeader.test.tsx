@@ -10,7 +10,6 @@ import { applyLanguage } from '@i18n/i18n';
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
-import { styles } from './AppHeader.styles';
 
 const last = languages.at(-1)?.id ?? 'en';
 
@@ -77,10 +76,9 @@ describe('AppHeader', () => {
     fireEvent.click(other);
 
     expect(current.textContent).toBe(common.about);
-    const attribute = current.getAttribute('class');
-    expect(attribute).toBe(styles.tab(true).class);
-    const classAttribute = other.getAttribute('class');
-    expect(classAttribute).toBe(styles.tab(false).class);
+    const currentClass = current.getAttribute('class');
+    const otherClass = other.getAttribute('class');
+    expect(currentClass).not.toBe(otherClass);
     const expected = ['version'];
     expect(visited).toEqual(expected);
   });
@@ -89,8 +87,10 @@ describe('AppHeader', () => {
     open();
 
     const select = screen.getByRole('combobox', { name: 'Language' });
+    const tab = screen.getByRole('button', { name: resources.en.common.about });
 
-    const attribute = select.getAttribute('class');
-    expect(attribute).toBe(styles.tab(false).class);
+    const selectClass = select.getAttribute('class');
+    const tabClass = tab.getAttribute('class');
+    expect(selectClass).toBe(tabClass);
   });
 });

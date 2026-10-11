@@ -65,6 +65,7 @@ describe('AppHeader', () => {
     expect(marked).toHaveLength(1);
     const actual = marked[0]?.text();
     expect(actual).toBe('About');
+
     // RouterLink adds its own active classes, so only the bound ones are compared.
     const bound = (selector: string): string[] => {
       return header
@@ -74,6 +75,7 @@ describe('AppHeader', () => {
           return !name.startsWith('router-link');
         });
     };
+
     const currentClasses = bound('nav a[aria-current="page"]');
     const otherClasses = bound('nav a:not([aria-current])');
     expect(currentClasses).not.toEqual(otherClasses);

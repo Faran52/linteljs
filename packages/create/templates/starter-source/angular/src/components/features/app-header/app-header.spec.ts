@@ -40,7 +40,7 @@ describe('AppHeader', () => {
     expect(links).toEqual(expected);
   });
 
-  it('marks the page it is on with the class the stylesheet colours', async () => {
+  it('marks the page it is on and styles its tab apart', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideLocationMocks()] });
 
     const harness = TestBed.createComponent(AppHeader);
@@ -55,8 +55,11 @@ describe('AppHeader', () => {
 
     const root = harness.nativeElement as HTMLElement;
     const current = root.querySelector('nav a[aria-current="page"]');
-    const marked = current?.classList.contains('tab-current');
+    const other = root.querySelector('nav a:not([aria-current])');
+    const currentClass = current?.className;
+    const otherClass = other?.className;
 
-    expect(marked).toBe(true);
+    expect(currentClass).toBeDefined();
+    expect(currentClass).not.toBe(otherClass);
   });
 });

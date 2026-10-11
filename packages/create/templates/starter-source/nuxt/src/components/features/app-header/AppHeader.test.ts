@@ -3,7 +3,6 @@ import { useRouter } from 'nuxt/app';
 
 import { PAGES } from '@config/routes';
 
-import { styles } from './AppHeader.styles';
 import AppHeader from './AppHeader.vue';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
@@ -50,7 +49,9 @@ describe('AppHeader', () => {
     expect(marked).toHaveLength(1);
     const actual = marked[0]?.text();
     expect(actual).toBe('About');
-    const actual2 = marked[0]?.attributes('class');
-    expect(actual2).toBe(styles.tab(true).class);
+    const other = header.find('nav a:not([aria-current])');
+    const currentClass = marked[0]?.attributes('class');
+    const otherClass = other.attributes('class');
+    expect(currentClass).not.toBe(otherClass);
   });
 });

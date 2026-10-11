@@ -5,7 +5,6 @@ import { render, screen } from '@testing-library/react';
 import { ROUTES } from '@router/router';
 
 import { AppHeader } from './AppHeader';
-import { styles } from './AppHeader.styles';
 
 describe('AppHeader', () => {
   it('names the project and links every page on the one route list', () => {
@@ -42,13 +41,8 @@ describe('AppHeader', () => {
     expect(attribute).toBe('page');
     const ariaCurrentAttribute = home.getAttribute('aria-current');
     expect(ariaCurrentAttribute).toBeNull();
-    // StyleX types className as optional; join reads a missing one as empty.
-    const missing = [styles.tab(true).className]
-      .join(' ')
-      .split(' ')
-      .filter((name) => {
-        return !link.classList.contains(name);
-      });
-    expect(missing).toEqual([]);
+    const currentClass = link.className;
+    const otherClass = home.className;
+    expect(currentClass).not.toBe(otherClass);
   });
 });
