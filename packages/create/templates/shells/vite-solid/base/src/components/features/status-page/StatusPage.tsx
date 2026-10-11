@@ -1,5 +1,4 @@
 import {
-  createMemo,
   type JSX,
   Show,
 } from 'solid-js';
@@ -7,6 +6,8 @@ import {
 import { type MessageKey, t } from '@i18n/i18n';
 
 import { Button } from '@ui';
+
+import { styles } from './StatusPage.styles';
 
 export interface StatusPageProps {
   readonly code: number;
@@ -17,17 +18,11 @@ export interface StatusPageProps {
 
 // Home is a full load, so a crash leaves no state behind.
 export const StatusPage = (props: StatusPageProps): JSX.Element => {
-  const actionClasses = createMemo(() => {
-    const classList = { 'status-action-outline': props.onRetry !== undefined };
-
-    return classList;
-  });
-
   return (
-    <main class="status">
-      <h1 class="status-code">{props.code}</h1>
-      <p class="status-message" role="alert">{t(props.message)}</p>
-      <div class="status-actions">
+    <main {...styles.status}>
+      <h1 {...styles.statusCode}>{props.code}</h1>
+      <p {...styles.statusMessage} role="alert">{t(props.message)}</p>
+      <div {...styles.statusActions}>
         <Show when={props.onRetry}>
           {(retry) => {
             return <Button onClick={retry()}>{t('statusRetry')}</Button>;
@@ -36,8 +31,7 @@ export const StatusPage = (props: StatusPageProps): JSX.Element => {
         {/* `href` first: Solid writes the template unquoted, and happy-dom reads a closing `href=/>` as empty. */}
         <a
           href="/"
-          class="status-action"
-          classList={actionClasses()}
+          {...styles.action(props.onRetry !== undefined)}
         >
           {t('statusHome')}
         </a>

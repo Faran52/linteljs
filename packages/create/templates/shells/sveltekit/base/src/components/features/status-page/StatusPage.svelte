@@ -5,6 +5,8 @@
 
   import Button from '@ui/button/Button.svelte';
 
+  import { styles } from './StatusPage.styles';
+
   import type { STATUSES } from '@config/statuses';
 
   interface Props {
@@ -18,20 +20,18 @@
     message,
     onretry,
   }: Props = $props();
-
-  const actionClasses = $derived(['status-action', onretry && 'status-action-outline']);
 </script>
 
 <!-- Home is a full load, so a crash leaves no state behind. -->
-<main class="status">
-  <h1 class="status-code">{code}</h1>
-  <p class="status-message" role="alert">{m[message]()}</p>
-  <div class="status-actions">
+<main {...styles.status}>
+  <h1 {...styles.statusCode}>{code}</h1>
+  <p {...styles.statusMessage} role="alert">{m[message]()}</p>
+  <div {...styles.statusActions}>
     {#if onretry}
       <Button onclick={onretry}>{m.statusRetry()}</Button>
     {/if}
     <a
-      class={actionClasses}
+      {...styles.action(onretry !== undefined)}
       href={resolve('/')}
       data-sveltekit-reload
     >

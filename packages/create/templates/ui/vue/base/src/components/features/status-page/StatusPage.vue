@@ -3,6 +3,8 @@ import { useI18n } from 'vue-i18n';
 
 import AppButton from '@ui/app-button/AppButton.vue';
 
+import { styles } from './StatusPage.styles';
+
 interface Props {
   code: number;
   message: string;
@@ -17,17 +19,17 @@ const { t } = useI18n();
 
 <!-- Home is a full load, so a crash leaves no state behind. -->
 <template>
-  <main class="status">
-    <h1 class="status-code">
+  <main v-bind="styles.status">
+    <h1 v-bind="styles.statusCode">
       {{ code }}
     </h1>
     <p
-      class="status-message"
+      v-bind="styles.statusMessage"
       role="alert"
     >
       {{ t(message) }}
     </p>
-    <div class="status-actions">
+    <div v-bind="styles.statusActions">
       <AppButton
         v-if="onRetry"
         @click="onRetry"
@@ -35,7 +37,7 @@ const { t } = useI18n();
         {{ t('statusRetry') }}
       </AppButton>
       <a
-        :class="['status-action', { 'status-action-outline': onRetry }]"
+        v-bind="styles.action(onRetry !== undefined)"
         href="/"
       >
         {{ t('statusHome') }}

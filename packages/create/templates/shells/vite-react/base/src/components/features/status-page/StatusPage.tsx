@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@ui';
 
+import { styles } from './StatusPage.styles';
+
 import type { FC } from 'react';
 
 export interface StatusPageProps {
@@ -20,15 +22,13 @@ export const StatusPage: FC<StatusPageProps> = ({
   const { t } = useTranslation();
 
   return (
-    <main className="status">
-      <h1 className="status-code">{code}</h1>
-      <p className="status-message" role="alert">{t(message)}</p>
-      <div className="status-actions">
+    <main {...styles.status}>
+      <h1 {...styles.statusCode}>{code}</h1>
+      <p {...styles.statusMessage} role="alert">{t(message)}</p>
+      <div {...styles.statusActions}>
         {onRetry === undefined ? null : <Button onClick={onRetry}>{t('statusRetry')}</Button>}
         <a
-          className={onRetry === undefined
-            ? 'status-action'
-            : 'status-action status-action-outline'}
+          {...styles.action(onRetry !== undefined)}
           href="/"
         >
           {t('statusHome')}
