@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "providerless": [
+      "fetch",
+      "rtk-query"
+    ],
+    "redux-free": [
+      "fetch",
+      "tanstack-query"
+    ]
+  }
+}

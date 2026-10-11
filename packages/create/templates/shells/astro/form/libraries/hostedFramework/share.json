@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../../schemas/share.schema.json",
+  "groups": {
+    "islands": [
+      "react",
+      "solid",
+      "svelte",
+      "vue"
+    ]
+  }
+}

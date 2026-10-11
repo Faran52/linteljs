@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "non-react": [
+      "off",
+      "solid",
+      "svelte",
+      "vue"
+    ]
+  }
+}

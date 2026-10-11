@@ -73,7 +73,8 @@ fails when that changed a committed file. `scripts/utils/codegenUtils.ts` holds 
 
 Outside `src/`, laid out as the destination: `project/` is the tree a project receives, `starter-source/` the
 per-target starters, `frameworks/<name>/<dir>/<drawer>/` the rewrite's drawers (files under their real names,
-copies held equal by `src/frameworks/registry.test.ts`), `common/` the manifest and the locale namespaces,
+copies held equal by `src/frameworks/registry.test.ts`), `common/` the manifest and the locale namespaces, `shells/`, `shared/` and `ui/` the question/value trees (a folder
+serving several values of one question takes a group name, listed under `groups` in that question folder's `share.json`),
 `fragments/` the pieces joined into one file (kept as an explicit list, since they have no
 destination), `schemas/` the mirror of the root `schemas/` published by raw URL
 (`answers/utils/schemaUtils.test.ts` holds them equal), `shared/tailwind-sources/` one tailwind strings table per

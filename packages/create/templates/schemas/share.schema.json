@@ -26,6 +26,14 @@
         "type": "array", "items": { "$ref": "#/$defs/value" }, "minItems": 1, "uniqueItems": true
       }
     },
+    "groups": {
+      "description": "Question folder only: group folder name -> the values it serves. A group folder is picked when the answer is any listed value; adding a value edits its list, never a path.",
+      "type": "object",
+      "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": {
+        "type": "array", "items": { "$ref": "#/$defs/value" }, "minItems": 2, "uniqueItems": true
+      }
+    },
     "dependencies": { "$ref": "#/$defs/packageNames" },
     "devDependencies": { "$ref": "#/$defs/packageNames" },
     "providers": {

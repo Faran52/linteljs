@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "libraries": [
+      "pinia",
+      "tanstack-store"
+    ],
+    "providerless": [
+      "tanstack-store",
+      "vue-reactivity"
+    ]
+  }
+}

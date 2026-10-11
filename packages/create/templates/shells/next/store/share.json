@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "libraries": [
+      "redux-toolkit",
+      "tanstack-store",
+      "zustand"
+    ]
+  }
+}

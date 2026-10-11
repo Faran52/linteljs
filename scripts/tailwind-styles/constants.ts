@@ -22,14 +22,14 @@ const HOME_DATA_KEYS = [
   'hint',
 ];
 
-const DATA_DRAWER = 'data/fetch,tanstack-query/store/react-state/styling/tailwind/src';
+const DATA_DRAWER = 'data/redux-free/store/react-state/styling/tailwind/src';
 
-const STORE_DRAWER = 'store/redux-toolkit,tanstack-store,zustand/styling/tailwind/src';
+const STORE_DRAWER = 'store/libraries/styling/tailwind/src';
 
-const FORM_DRAWER = 'form/react-hook-form,tanstack-form/styling/tailwind/src';
-const ASTRO_FORM_DRAWER = 'form/react-hook-form,tanstack-form/hostedFramework/react/styling/tailwind/src';
+const FORM_DRAWER = 'form/libraries/styling/tailwind/src';
+const ASTRO_FORM_DRAWER = 'form/libraries/hostedFramework/react/styling/tailwind/src';
 
-const ISLAND_DRAWER = 'form/tanstack-form/hostedFramework/solid,svelte,vue/styling/tailwind/src';
+const ISLAND_DRAWER = 'form/tanstack-form/hostedFramework/non-react-islands/styling/tailwind/src';
 
 export const TARGETS: readonly Target[] = [
   {
@@ -92,7 +92,7 @@ export const TARGETS: readonly Target[] = [
       { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactPage.styles.ts` },
       {
         table: textInput,
-        path: 'hostedFramework/off,solid,svelte,vue/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
+        path: 'hostedFramework/non-react/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
       },
     ],
   },
@@ -127,7 +127,7 @@ export const TARGETS: readonly Target[] = [
         path: 'store/vue-reactivity/styling/tailwind/src/views/home/HomeView.styles.ts',
         keys: HOME_DATA_KEYS,
       },
-      { table: homePage, path: 'store/pinia,tanstack-store/styling/tailwind/src/views/home/HomeView.styles.ts' },
+      { table: homePage, path: 'store/libraries/styling/tailwind/src/views/home/HomeView.styles.ts' },
     ],
   },
   {
@@ -182,7 +182,7 @@ export const TARGETS: readonly Target[] = [
       },
       {
         table: contactPage,
-        path: 'form/reactive-forms,tanstack-form/styling/tailwind/src/app/contact/contact.styles.ts',
+        path: 'form/models/styling/tailwind/src/app/contact/contact.styles.ts',
       },
     ],
   },

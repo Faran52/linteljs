@@ -13,11 +13,11 @@ import type { Target } from './utils/cssMarkupUtils.ts';
 
 export const TEMPLATES_DIR = 'packages/create/templates';
 
-const DATA_DRAWER = 'data/fetch,tanstack-query/store/react-state/src';
+const DATA_DRAWER = 'data/redux-free/store/react-state/src';
 
-const STORE_DRAWER = 'store/redux-toolkit,tanstack-store,zustand/src';
+const STORE_DRAWER = 'store/libraries/src';
 
-const FORM_DRAWER = 'form/react-hook-form,tanstack-form/src';
+const FORM_DRAWER = 'form/libraries/src';
 
 export const TARGETS: readonly Target[] = [
   {
@@ -35,7 +35,7 @@ export const TARGETS: readonly Target[] = [
       { map: contactPage, markup: `${FORM_DRAWER}/pages/contact/ContactPage.tsx` },
       {
         map: appHeader,
-        markup: 'router/react-router,react-router-framework/src/components/features/app-header/AppHeader.tsx',
+        markup: 'router/react-routers/src/components/features/app-header/AppHeader.tsx',
       },
       { map: appHeader, markup: 'router/single-page/src/components/features/app-header/AppHeader.tsx' },
       { map: appHeader, markup: 'router/tanstack-router/src/components/features/app-header/AppHeader.tsx' },

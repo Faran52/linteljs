@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "client-side": [
+      "react-router",
+      "single-page",
+      "tanstack-router"
+    ],
+    "libraries": [
+      "react-router",
+      "tanstack-router"
+    ],
+    "react-routers": [
+      "react-router",
+      "react-router-framework"
+    ]
+  }
+}

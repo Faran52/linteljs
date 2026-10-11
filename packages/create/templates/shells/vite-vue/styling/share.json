@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "classes": [
+      "css",
+      "tailwind"
+    ]
+  }
+}

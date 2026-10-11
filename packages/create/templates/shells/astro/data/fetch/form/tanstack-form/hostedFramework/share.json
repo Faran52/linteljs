@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../../../../../schemas/share.schema.json",
+  "groups": {
+    "single-file": [
+      "svelte",
+      "vue"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../schemas/share.schema.json",
+  "groups": {
+    "models": [
+      "reactive-forms",
+      "tanstack-form"
+    ]
+  }
+}
