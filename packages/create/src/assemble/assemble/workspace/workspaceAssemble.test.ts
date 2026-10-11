@@ -36,6 +36,7 @@ import { projectWriter } from '@io/write/project/projectWriter';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
 
+import { FACTS } from './constants';
 import {
   type AssembledProject,
   type Workspace,
@@ -633,6 +634,16 @@ describe('workspaceAssemble', () => {
     });
 
     await expect(assembling).rejects.toThrow('package.json is written twice');
+  });
+
+  it('keeps every fact key apart from the question keys', async () => {
+    const questions = await manifestReader();
+    const clashing = questions
+      .filter(({ key }) => {
+        return FACTS.includes(key);
+      });
+
+    expect(clashing).toEqual([]);
   });
 
   describe('with a drawer listing layers', () => {
