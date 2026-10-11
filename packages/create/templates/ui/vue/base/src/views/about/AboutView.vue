@@ -34,12 +34,15 @@ const { t } = useI18n();
           :key="leg.command"
           v-bind="styles.row"
         >
-          <code v-bind="styles.key">{{ leg.command }}</code>
+          <code v-bind="styles.keyCode">{{ leg.command }}</code>
           <span v-bind="styles.value">{{ leg.runs }}</span>
         </li>
       </ul>
       <p v-bind="styles.note">
-        <CodeText :text="t('aboutCheck', { command: CHECK })" />
+        <CodeText
+          :text="t('aboutCheck', { command: CHECK })"
+          tone="primary"
+        />
       </p>
     </section>
 
@@ -53,8 +56,8 @@ const { t } = useI18n();
           :key="entry.path"
           v-bind="styles.row"
         >
-          <dt><code>{{ entry.path }}</code></dt>
-          <dd>{{ t(entry.holds) }}</dd>
+          <dt v-bind="styles.key"><code>{{ entry.path }}</code></dt>
+          <dd v-bind="styles.value">{{ t(entry.holds) }}</dd>
         </div>
       </dl>
     </section>
@@ -64,7 +67,10 @@ const { t } = useI18n();
         {{ t('aboutCurrent') }}
       </h2>
       <p v-bind="styles.note">
-        <CodeText :text="t('aboutSync', { command: SYNC })" />
+        <CodeText
+          :text="t('aboutSync', { command: SYNC })"
+          tone="primary"
+        />
       </p>
     </section>
   </main>

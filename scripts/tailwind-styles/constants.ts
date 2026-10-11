@@ -7,7 +7,7 @@ import { versionPage } from '../../packages/create/templates/shared/tailwind-sou
 
 import type { Target } from './utils/tailwindStylesUtils.ts';
 
-export const SHELLS_DIR = 'packages/create/templates/shells';
+export const TEMPLATES_DIR = 'packages/create/templates';
 
 const HOME_DATA_KEYS = [
   'hero',
@@ -26,7 +26,7 @@ const ISLAND_DRAWER = 'form/tanstack-form/hostedFramework/solid,svelte,vue/styli
 
 export const TARGETS: readonly Target[] = [
   {
-    shell: 'vite-react',
+    root: 'shells/vite-react',
     attribute: 'className',
     files: [
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
@@ -43,7 +43,7 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
-    shell: 'next',
+    root: 'shells/next',
     attribute: 'className',
     files: [
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
@@ -60,7 +60,7 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
-    shell: 'astro',
+    root: 'shells/astro',
     attribute: 'class',
     files: [
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
@@ -76,8 +76,42 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
-    shell: 'astro',
+    root: 'shells/astro',
     attribute: 'className',
     files: [{ table: contactPage, path: `${FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
+  },
+  {
+    root: 'ui/vue',
+    attribute: 'class',
+    files: [
+      { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
+      { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
+      { table: aboutPage, path: 'styling/tailwind/src/views/about/AboutView.styles.ts' },
+      { table: versionPage, path: 'styling/tailwind/src/views/version/VersionView.styles.ts' },
+      { table: contactPage, path: 'form/tanstack-form/styling/tailwind/src/views/contact/ContactView.styles.ts' },
+    ],
+  },
+  {
+    root: 'shells/vite-vue',
+    attribute: 'class',
+    files: [
+      {
+        table: homePage,
+        path: 'store/vue-reactivity/styling/tailwind/src/views/home/HomeView.styles.ts',
+        keys: HOME_DATA_KEYS,
+      },
+      { table: homePage, path: 'store/pinia,tanstack-store/styling/tailwind/src/views/home/HomeView.styles.ts' },
+    ],
+  },
+  {
+    root: 'shells/nuxt',
+    attribute: 'class',
+    files: [
+      {
+        table: homePage,
+        path: 'styling/tailwind/src/views/home/HomeView.styles.ts',
+        keys: HOME_DATA_KEYS,
+      },
+    ],
   },
 ];

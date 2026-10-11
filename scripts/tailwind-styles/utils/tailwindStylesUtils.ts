@@ -14,7 +14,7 @@ export interface StylesFile {
 }
 
 export interface Target {
-  readonly shell: string;
+  readonly root: string;
   readonly attribute: string;
   readonly files: readonly StylesFile[];
 }

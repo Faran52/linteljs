@@ -30,4 +30,13 @@ describe('CodeText', () => {
     const actual2 = text.text();
     expect(actual2).toBe('<b>plain</b>');
   });
+
+  it('leaves the code uncoloured without a tone', () => {
+    const text = mount(CodeText, { props: { text: '<code>pnpm check</code>' } });
+
+    const className = text
+      .find('code')
+      .attributes('class');
+    expect(className).toBeUndefined();
+  });
 });

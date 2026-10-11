@@ -23,3 +23,7 @@
 .button:hover:not(:disabled) {
   opacity: 0.88;
 }
+
+.button-lg {
+  height: 38px;
+}

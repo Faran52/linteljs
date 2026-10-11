@@ -9,7 +9,7 @@ import HomeView from './HomeView.vue';
 describe('HomeView', () => {
   it('carries the project name as its heading', () => {
     const title = mount(HomeView, { global: { plugins: [storeProvider] } })
-      .find('.title')
+      .find('h1')
       .text();
 
     expect(title).toBe(NAME);
@@ -17,7 +17,7 @@ describe('HomeView', () => {
 
   it('adds one to the stored count on each press', async () => {
     const home = mount(HomeView, { global: { plugins: [storeProvider] } });
-    const count = home.find('.count');
+    const count = home.find('[aria-live]');
     const before = Number(count.text());
 
     await home

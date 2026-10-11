@@ -7,7 +7,7 @@ import HomeView from './HomeView.vue';
 describe('HomeView', () => {
   it('carries the project name as its heading', () => {
     const title = mount(HomeView)
-      .find('.title')
+      .find('h1')
       .text();
 
     expect(title).toBe(NAME);

@@ -17,7 +17,7 @@ describe('HomeView', () => {
 
   it('carries the project name as its heading', () => {
     const title = mount(HomeView)
-      .find('.title')
+      .find('h1')
       .text();
 
     expect(title).toBe(NAME);
@@ -33,7 +33,7 @@ describe('HomeView', () => {
 
   it('names the one command that runs the whole gate', () => {
     const command = mount(HomeView)
-      .find('.hint code')
+      .find('code')
       .text();
 
     expect(command).toBe(CHECK);
@@ -46,7 +46,7 @@ describe('HomeView', () => {
     await nextTick();
 
     const lede = view
-      .find('.lede')
+      .find('main h1 + p')
       .text();
     expect(lede).toBe(resources[last].common.homeLedeNuxt);
   });

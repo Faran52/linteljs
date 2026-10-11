@@ -73,13 +73,13 @@ describe('App', () => {
   it('routes to the other pages', async () => {
     const about = await open('/about');
     const aboutTitle = about
-      .find('.page-title')
+      .find('main h1')
       .text();
     expect(aboutTitle).toBe('About');
 
     const version = await open('/version');
     const versionTitle = version
-      .find('.page-title')
+      .find('main h1')
       .text();
     expect(versionTitle).toBe('Version');
   });
@@ -98,7 +98,7 @@ describe('App', () => {
       await nextTick();
 
       headings.push(app
-        .find('.page-title')
+        .find('main h1')
         .text());
     }
 
@@ -122,7 +122,7 @@ describe('App', () => {
       .setValue(last);
 
     const lede = app
-      .find('.lede')
+      .find('main h1 + p')
       .text();
     expect(lede).toBe(chosen.homeLedeVue);
   });

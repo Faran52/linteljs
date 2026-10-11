@@ -30,8 +30,8 @@ const { t } = useI18n();
           :key="entry.name"
           v-bind="styles.row"
         >
-          <dt>{{ entry.name }}</dt>
-          <dd>{{ entry.version }}</dd>
+          <dt v-bind="styles.key">{{ entry.name }}</dt>
+          <dd v-bind="styles.value">{{ entry.version }}</dd>
         </div>
       </dl>
     </section>
@@ -46,12 +46,15 @@ const { t } = useI18n();
           :key="entry.label"
           v-bind="styles.row"
         >
-          <dt>{{ t(entry.label) }}</dt>
-          <dd>{{ entry.value }}</dd>
+          <dt v-bind="styles.key">{{ t(entry.label) }}</dt>
+          <dd v-bind="styles.value">{{ entry.value }}</dd>
         </div>
       </dl>
       <p v-bind="styles.note">
-        <CodeText :text="t('versionRecorded', { file: 'linteljs.config.json', command: 'sync' })" />
+        <CodeText
+          :text="t('versionRecorded', { file: 'linteljs.config.json', command: 'sync' })"
+          tone="primary"
+        />
       </p>
     </section>
   </main>

@@ -1,4 +1,4 @@
-// Writes each shell's tailwind `X.styles.ts` from the shared tables, and fails when that changed a committed file.
+// Writes each tree's tailwind `X.styles.ts` from the shared tables, and fails when that changed a committed file.
 import {
   existsSync,
   readFileSync,
@@ -9,14 +9,14 @@ import process from 'node:process';
 
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
-import { SHELLS_DIR, TARGETS } from './constants.ts';
+import { TARGETS, TEMPLATES_DIR } from './constants.ts';
 import { stylesText } from './utils/tailwindStylesUtils.ts';
 
 const stale: string[] = [];
 
 for (const target of TARGETS) {
   for (const file of target.files) {
-    const path = join(SHELLS_DIR, target.shell, file.path);
+    const path = join(TEMPLATES_DIR, target.root, file.path);
     const text = stylesText(file, target.attribute);
     const previous = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 

@@ -39,7 +39,10 @@ const counter = useCounter();
     </p>
 
     <p v-bind="styles.hint">
-      <CodeText :text="t('gateHint', { command: CHECK })" />
+      <CodeText
+        :text="t('gateHint', { command: CHECK })"
+        tone="primary"
+      />
     </p>
   </main>
 </template>

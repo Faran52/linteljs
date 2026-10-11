@@ -32,6 +32,7 @@ const { t } = useI18n();
     <div v-bind="styles.statusActions">
       <AppButton
         v-if="onRetry"
+        size="lg"
         @click="onRetry"
       >
         {{ t('statusRetry') }}

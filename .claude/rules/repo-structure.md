@@ -61,8 +61,8 @@ Every script reports through the shipped `packages/create/templates/project/scri
 in the working directory.
 `scripts/checkBannedPatterns.ts` stays flat and on plain `node`: the banned-pattern hook looks for it at the path
 a generated project has, and it runs the shipped checker less this workspace's `SKIPPED` list.
-`scripts/tailwind-styles/` writes each shell's `styling/tailwind/**/X.styles.ts` from the tables in
-`templates/shared/tailwind-sources/`, one shell per `TARGETS` entry in its `constants.ts`; the gate's
+`scripts/tailwind-styles/` writes each shell's and `ui/` tree's `styling/tailwind/**/X.styles.ts` from the tables in
+`templates/shared/tailwind-sources/`, one tree per `TARGETS` entry in its `constants.ts`; the gate's
 `tailwind-styles` step fails when that changed a committed file.
 
 ## `packages/create/templates/`
