@@ -7,6 +7,8 @@ import CodeText from '@ui/code-text/CodeText.astro';
 
 import Layout from '@layouts/Layout.astro';
 
+import { styles } from './VersionView.styles';
+
 const RECORDED = {
   file: 'linteljs.config.json',
   command: 'sync',
@@ -15,17 +17,17 @@ const RECORDED = {
 
 <!-- Recorded when the project was generated: a page rendered on the server cannot read that machine. -->
 <Layout titleKey="version">
-  <main class="page">
-    <h1 class="page-title" data-i18n="version">{t('version')}</h1>
-    <p class="page-lede" data-i18n="versionLede">{t('versionLede')}</p>
+  <main {...styles.page}>
+    <h1 {...styles.pageTitle} data-i18n="version">{t('version')}</h1>
+    <p {...styles.pageLede} data-i18n="versionLede">{t('versionLede')}</p>
 
-    <section class="section">
-      <h2 class="section-title" data-i18n="versionStack">{t('versionStack')}</h2>
-      <dl class="rows">
+    <section {...styles.section}>
+      <h2 {...styles.sectionTitle} data-i18n="versionStack">{t('versionStack')}</h2>
+      <dl {...styles.rows}>
         {STACK
           .map((entry) => {
             return (
-              <div class="row">
+              <div {...styles.row}>
                 <dt>{entry.name}</dt>
                 <dd>{entry.version}</dd>
               </div>
@@ -34,13 +36,13 @@ const RECORDED = {
       </dl>
     </section>
 
-    <section class="section">
-      <h2 class="section-title" data-i18n="versionAnswers">{t('versionAnswers')}</h2>
-      <dl class="rows">
+    <section {...styles.section}>
+      <h2 {...styles.sectionTitle} data-i18n="versionAnswers">{t('versionAnswers')}</h2>
+      <dl {...styles.rows}>
         {ANSWERS
           .map((entry) => {
             return (
-              <div class="row">
+              <div {...styles.row}>
                 <dt data-i18n={entry.label}>{t(entry.label)}</dt>
                 <dd>{entry.value}</dd>
               </div>
@@ -48,7 +50,7 @@ const RECORDED = {
           })}
       </dl>
       <p
-        class="note"
+        {...styles.note}
         data-i18n="versionRecorded"
         data-file={RECORDED.file}
         data-command={RECORDED.command}

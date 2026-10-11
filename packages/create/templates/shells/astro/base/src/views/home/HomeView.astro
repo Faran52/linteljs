@@ -7,15 +7,17 @@ import CodeText from '@ui/code-text/CodeText.astro';
 import Mark from '@ui/mark/Mark.astro';
 
 import Layout from '@layouts/Layout.astro';
+
+import { styles } from './HomeView.styles';
 ---
 
 <Layout>
-  <main class="hero">
+  <main {...styles.hero}>
     <Mark />
-    <h1 class="title">{NAME}</h1>
-    <p class="lede" data-i18n="homeLedeAstro">{t('homeLedeAstro')}</p>
+    <h1 {...styles.title}>{NAME}</h1>
+    <p {...styles.lede} data-i18n="homeLedeAstro">{t('homeLedeAstro')}</p>
     <p
-      class="hint"
+      {...styles.hint}
       data-i18n="gateHint"
       data-command={CHECK}
     >

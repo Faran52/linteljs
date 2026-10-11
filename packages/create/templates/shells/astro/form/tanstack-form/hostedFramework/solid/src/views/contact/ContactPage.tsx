@@ -1,6 +1,7 @@
 import { Button, TextInput } from '@ui';
 
 import { createContactForm } from './create-contact-form/createContactForm';
+import { styles } from './ContactPage.styles';
 
 import type { JSX } from 'solid-js';
 import type { ContactCopyKey } from './utils/contactCopyUtils';
@@ -16,12 +17,12 @@ export const ContactPage = (props: ContactPageProps): JSX.Element => {
   });
 
   return (
-    <main class="page">
-      <h1 class="page-title">{props.translate('contact')}</h1>
-      <p class="page-lede">{props.translate('contactLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{props.translate('contact')}</h1>
+      <p {...styles.pageLede}>{props.translate('contactLede')}</p>
 
       {form.sent()
-        ? <p class="sent" role="status">{props.translate('contactSent')}</p>
+        ? <p {...styles.sent} role="status">{props.translate('contactSent')}</p>
         : (
             <form novalidate onSubmit={form.onSubmit}>
               <TextInput {...form.fields.email} />

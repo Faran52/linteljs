@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './use-contact-form/useContactForm';
+import { styles } from './page.styles';
 
 import type { ReactNode } from 'react';
 
@@ -22,13 +23,13 @@ const ContactPage = (): ReactNode => {
   });
 
   return (
-    <main className="page">
-      <h1 className="page-title">{t('contact')}</h1>
-      <p className="page-lede">{t('contactLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{t('contact')}</h1>
+      <p {...styles.pageLede}>{t('contactLede')}</p>
 
       {sent
         ? (
-            <p className="sent" role="status">{t('contactSent')}</p>
+            <p {...styles.sent} role="status">{t('contactSent')}</p>
           )
         : (
             <form noValidate onSubmit={onSubmit}>

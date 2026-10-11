@@ -7,6 +7,8 @@ import { useCounter } from '@store/counter/counterStore';
 import { Button, Mark } from '@ui';
 import { CodeText } from '@ui/code-text/CodeText';
 
+import { styles } from './HomePage.styles';
+
 import type { FC } from 'react';
 
 export interface HomePageProps {
@@ -20,19 +22,19 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
   const { count, add } = useCounter();
 
   return (
-    <main className="hero">
+    <main {...styles.hero}>
       <Mark />
-      <h1 className="title">{name}</h1>
-      <p className="lede">{t('homeLedeReact')}</p>
+      <h1 {...styles.title}>{name}</h1>
+      <p {...styles.lede}>{t('homeLedeReact')}</p>
 
       {/* State that outlives the page: switch tabs and come back, and the count is still here. */}
-      <div className="counter">
-        <span className="count" aria-live="polite">{count}</span>
+      <div {...styles.counter}>
+        <span {...styles.count} aria-live="polite">{count}</span>
         <Button onClick={add}>{t('homeAdd')}</Button>
       </div>
-      <p className="caption">{t('homeCaption')}</p>
+      <p {...styles.caption}>{t('homeCaption')}</p>
 
-      <p className="hint">
+      <p {...styles.hint}>
         <CodeText text={t('gateHint', CHECK_VALUES)} />
       </p>
     </main>

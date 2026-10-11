@@ -9,34 +9,36 @@ import AppButton from '@ui/app-button/AppButton.vue';
 import AppMark from '@ui/app-mark/AppMark.vue';
 import CodeText from '@ui/code-text/CodeText.vue';
 
+import { styles } from './HomeView.styles';
+
 const { t } = useI18n();
 const counter = useCounter();
 </script>
 
 <template>
-  <main class="hero">
+  <main v-bind="styles.hero">
     <AppMark />
-    <h1 class="title">
+    <h1 v-bind="styles.title">
       {{ NAME }}
     </h1>
-    <p class="lede">
+    <p v-bind="styles.lede">
       {{ t('homeLedeVue') }}
     </p>
 
-    <div class="counter">
+    <div v-bind="styles.counter">
       <span
-        class="count"
+        v-bind="styles.count"
         aria-live="polite"
       >{{ counter.count }}</span>
       <AppButton @click="counter.add">
         {{ t('homeAdd') }}
       </AppButton>
     </div>
-    <p class="caption">
+    <p v-bind="styles.caption">
       {{ t('homeCaption') }}
     </p>
 
-    <p class="hint">
+    <p v-bind="styles.hint">
       <CodeText :text="t('gateHint', { command: CHECK })" />
     </p>
   </main>

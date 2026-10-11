@@ -3,6 +3,7 @@ import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';
 
 import { useContactForm } from './use-contact-form/useContactForm';
+import { styles } from './ContactPage.styles';
 
 import type { ContactCopyKey } from './utils/contactCopyUtils';
 
@@ -18,17 +19,17 @@ const form = useContactForm((key) => {
 </script>
 
 <template>
-  <main class="page">
-    <h1 class="page-title">
+  <main v-bind="styles.page">
+    <h1 v-bind="styles.pageTitle">
       {{ phrase('contact') }}
     </h1>
-    <p class="page-lede">
+    <p v-bind="styles.pageLede">
       {{ phrase('contactLede') }}
     </p>
 
     <p
       v-if="form.sent"
-      class="sent"
+      v-bind="styles.sent"
       role="status"
     >
       {{ phrase('contactSent') }}

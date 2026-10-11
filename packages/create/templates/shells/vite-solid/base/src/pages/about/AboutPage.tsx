@@ -11,38 +11,40 @@ import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/CodeText';
 
+import { styles } from './AboutPage.styles';
+
 export const AboutPage = (): JSX.Element => {
   return (
-    <main class="page">
-      <h1 class="page-title">{t('about')}</h1>
-      <p class="page-lede">{t('aboutLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{t('about')}</h1>
+      <p {...styles.pageLede}>{t('aboutLede')}</p>
 
-      <section class="section">
-        <h2 class="section-title">{t('aboutGate')}</h2>
-        <ul class="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('aboutGate')}</h2>
+        <ul {...styles.rows}>
           <For each={GATE}>
             {(leg) => {
               return (
-                <li class="row">
-                  <code class="key">{leg.command}</code>
-                  <span class="value">{leg.runs}</span>
+                <li {...styles.row}>
+                  <code {...styles.key}>{leg.command}</code>
+                  <span {...styles.value}>{leg.runs}</span>
                 </li>
               );
             }}
           </For>
         </ul>
-        <p class="note">
+        <p {...styles.note}>
           <CodeText text={t('aboutCheck', { command: CHECK })} />
         </p>
       </section>
 
-      <section class="section">
-        <h2 class="section-title">{t('aboutStandard')}</h2>
-        <dl class="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('aboutStandard')}</h2>
+        <dl {...styles.rows}>
           <For each={STANDARD_PATHS}>
             {(entry) => {
               return (
-                <div class="row">
+                <div {...styles.row}>
                   <dt><code>{entry.path}</code></dt>
                   <dd>{t(entry.holds)}</dd>
                 </div>
@@ -52,9 +54,9 @@ export const AboutPage = (): JSX.Element => {
         </dl>
       </section>
 
-      <section class="section">
-        <h2 class="section-title">{t('aboutCurrent')}</h2>
-        <p class="note">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('aboutCurrent')}</h2>
+        <p {...styles.note}>
           <CodeText text={t('aboutSync', { command: SYNC })} />
         </p>
       </section>

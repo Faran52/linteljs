@@ -5,28 +5,30 @@ import { ANSWERS, STACK } from '@config/linteljs';
 
 import CodeText from '@ui/code-text/CodeText.vue';
 
+import { styles } from './VersionView.styles';
+
 const { t } = useI18n();
 </script>
 
 <template>
   <!-- Recorded when the project was generated: a browser cannot read its machine's Node or package manager. -->
-  <main class="page">
-    <h1 class="page-title">
+  <main v-bind="styles.page">
+    <h1 v-bind="styles.pageTitle">
       {{ t('version') }}
     </h1>
-    <p class="page-lede">
+    <p v-bind="styles.pageLede">
       {{ t('versionLede') }}
     </p>
 
-    <section class="section">
-      <h2 class="section-title">
+    <section v-bind="styles.section">
+      <h2 v-bind="styles.sectionTitle">
         {{ t('versionStack') }}
       </h2>
-      <dl class="rows">
+      <dl v-bind="styles.rows">
         <div
           v-for="entry in STACK"
           :key="entry.name"
-          class="row"
+          v-bind="styles.row"
         >
           <dt>{{ entry.name }}</dt>
           <dd>{{ entry.version }}</dd>
@@ -34,21 +36,21 @@ const { t } = useI18n();
       </dl>
     </section>
 
-    <section class="section">
-      <h2 class="section-title">
+    <section v-bind="styles.section">
+      <h2 v-bind="styles.sectionTitle">
         {{ t('versionAnswers') }}
       </h2>
-      <dl class="rows">
+      <dl v-bind="styles.rows">
         <div
           v-for="entry in ANSWERS"
           :key="entry.label"
-          class="row"
+          v-bind="styles.row"
         >
           <dt>{{ t(entry.label) }}</dt>
           <dd>{{ entry.value }}</dd>
         </div>
       </dl>
-      <p class="note">
+      <p v-bind="styles.note">
         <CodeText :text="t('versionRecorded', { file: 'linteljs.config.json', command: 'sync' })" />
       </p>
     </section>

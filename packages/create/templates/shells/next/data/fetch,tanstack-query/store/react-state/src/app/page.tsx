@@ -7,6 +7,8 @@ import { CHECK, NAME } from '@config/linteljs';
 import { Mark } from '@ui';
 import { CodeText } from '@ui/code-text/CodeText';
 
+import { styles } from './page.styles';
+
 import type { ReactNode } from 'react';
 
 const code = (chunks: string): string => {
@@ -18,11 +20,11 @@ const HomePage = (): ReactNode => {
   const t = useTranslations();
 
   return (
-    <main className="hero">
+    <main {...styles.hero}>
       <Mark />
-      <h1 className="title">{NAME}</h1>
-      <p className="lede">{t('homeLedeNext')}</p>
-      <p className="hint">
+      <h1 {...styles.title}>{NAME}</h1>
+      <p {...styles.lede}>{t('homeLedeNext')}</p>
+      <p {...styles.hint}>
         <CodeText text={t.markup('gateHint', {
           command: CHECK,
           code,

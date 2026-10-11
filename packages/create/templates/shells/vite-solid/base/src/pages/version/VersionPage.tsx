@@ -6,20 +6,22 @@ import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/CodeText';
 
+import { styles } from './VersionPage.styles';
+
 // Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
 export const VersionPage = (): JSX.Element => {
   return (
-    <main class="page">
-      <h1 class="page-title">{t('version')}</h1>
-      <p class="page-lede">{t('versionLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{t('version')}</h1>
+      <p {...styles.pageLede}>{t('versionLede')}</p>
 
-      <section class="section">
-        <h2 class="section-title">{t('versionStack')}</h2>
-        <dl class="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('versionStack')}</h2>
+        <dl {...styles.rows}>
           <For each={STACK}>
             {(entry) => {
               return (
-                <div class="row">
+                <div {...styles.row}>
                   <dt>{entry.name}</dt>
                   <dd>{entry.version}</dd>
                 </div>
@@ -29,13 +31,13 @@ export const VersionPage = (): JSX.Element => {
         </dl>
       </section>
 
-      <section class="section">
-        <h2 class="section-title">{t('versionAnswers')}</h2>
-        <dl class="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('versionAnswers')}</h2>
+        <dl {...styles.rows}>
           <For each={ANSWERS}>
             {(entry) => {
               return (
-                <div class="row">
+                <div {...styles.row}>
                   <dt>{t(entry.label)}</dt>
                   <dd>{entry.value}</dd>
                 </div>
@@ -43,7 +45,7 @@ export const VersionPage = (): JSX.Element => {
             }}
           </For>
         </dl>
-        <p class="note">
+        <p {...styles.note}>
           <CodeText
             text={t('versionRecorded', {
               file: 'linteljs.config.json',

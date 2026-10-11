@@ -4,6 +4,8 @@ import { ANSWERS, STACK } from '@config/linteljs';
 
 import { CodeText } from '@ui/code-text/CodeText';
 
+import { styles } from './VersionPage.styles';
+
 import type { FC } from 'react';
 
 const RECORDED_VALUES = {
@@ -16,17 +18,17 @@ export const VersionPage: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <main className="page">
-      <h1 className="page-title">{t('version')}</h1>
-      <p className="page-lede">{t('versionLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{t('version')}</h1>
+      <p {...styles.pageLede}>{t('versionLede')}</p>
 
-      <section className="section">
-        <h2 className="section-title">{t('versionStack')}</h2>
-        <dl className="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('versionStack')}</h2>
+        <dl {...styles.rows}>
           {STACK
             .map(({ name, version }) => {
               return (
-                <div key={name} className="row">
+                <div key={name} {...styles.row}>
                   <dt>{name}</dt>
                   <dd>{version}</dd>
                 </div>
@@ -35,20 +37,20 @@ export const VersionPage: FC = () => {
         </dl>
       </section>
 
-      <section className="section">
-        <h2 className="section-title">{t('versionAnswers')}</h2>
-        <dl className="rows">
+      <section {...styles.section}>
+        <h2 {...styles.sectionTitle}>{t('versionAnswers')}</h2>
+        <dl {...styles.rows}>
           {ANSWERS
             .map(({ label, value }) => {
               return (
-                <div key={label} className="row">
+                <div key={label} {...styles.row}>
                   <dt>{t(label)}</dt>
                   <dd>{value}</dd>
                 </div>
               );
             })}
         </dl>
-        <p className="note">
+        <p {...styles.note}>
           <CodeText text={t('versionRecorded', RECORDED_VALUES)} />
         </p>
       </section>

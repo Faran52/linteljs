@@ -3,6 +3,8 @@ import { type MessageKey, t } from '@i18n/i18n';
 
 import Layout from '@layouts/Layout.astro';
 
+import { styles } from './StatusView.styles';
+
 interface Props {
   code: number;
   message: MessageKey;
@@ -12,17 +14,17 @@ const { code, message } = Astro.props;
 ---
 
 <Layout titleKey={message}>
-  <main class="status">
-    <h1 class="status-code">{code}</h1>
+  <main {...styles.status}>
+    <h1 {...styles.statusCode}>{code}</h1>
     <p
-      class="status-message"
+      {...styles.statusMessage}
       role="alert"
       data-i18n={message}
     >{t(message)}
     </p>
-    <div class="status-actions">
+    <div {...styles.statusActions}>
       <a
-        class="status-action"
+        {...styles.statusAction}
         href="/"
         data-i18n="statusHome"
       >{t('statusHome')}

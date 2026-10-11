@@ -1,6 +1,7 @@
 import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './use-contact-form/useContactForm';
+import { styles } from './ContactPage.styles';
 
 import type { FC } from 'react';
 import type { ContactCopyKey } from './utils/contactCopyUtils';
@@ -19,13 +20,13 @@ export const ContactPage: FC<ContactPageProps> = ({ translate }) => {
   } = useContactForm(translate);
 
   return (
-    <main className="page">
-      <h1 className="page-title">{translate('contact')}</h1>
-      <p className="page-lede">{translate('contactLede')}</p>
+    <main {...styles.page}>
+      <h1 {...styles.pageTitle}>{translate('contact')}</h1>
+      <p {...styles.pageLede}>{translate('contactLede')}</p>
 
       {sent
         ? (
-            <p className="sent" role="status">{translate('contactSent')}</p>
+            <p {...styles.sent} role="status">{translate('contactSent')}</p>
           )
         : (
             <form noValidate onSubmit={onSubmit}>

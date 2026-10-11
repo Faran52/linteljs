@@ -10,46 +10,48 @@ import { STANDARD_PATHS } from '@config/standard';
 
 import CodeText from '@ui/code-text/CodeText.vue';
 
+import { styles } from './AboutView.styles';
+
 const { t } = useI18n();
 </script>
 
 <template>
-  <main class="page">
-    <h1 class="page-title">
+  <main v-bind="styles.page">
+    <h1 v-bind="styles.pageTitle">
       {{ t('about') }}
     </h1>
-    <p class="page-lede">
+    <p v-bind="styles.pageLede">
       {{ t('aboutLede') }}
     </p>
 
-    <section class="section">
-      <h2 class="section-title">
+    <section v-bind="styles.section">
+      <h2 v-bind="styles.sectionTitle">
         {{ t('aboutGate') }}
       </h2>
-      <ul class="rows">
+      <ul v-bind="styles.rows">
         <li
           v-for="leg in GATE"
           :key="leg.command"
-          class="row"
+          v-bind="styles.row"
         >
-          <code class="key">{{ leg.command }}</code>
-          <span class="value">{{ leg.runs }}</span>
+          <code v-bind="styles.key">{{ leg.command }}</code>
+          <span v-bind="styles.value">{{ leg.runs }}</span>
         </li>
       </ul>
-      <p class="note">
+      <p v-bind="styles.note">
         <CodeText :text="t('aboutCheck', { command: CHECK })" />
       </p>
     </section>
 
-    <section class="section">
-      <h2 class="section-title">
+    <section v-bind="styles.section">
+      <h2 v-bind="styles.sectionTitle">
         {{ t('aboutStandard') }}
       </h2>
-      <dl class="rows">
+      <dl v-bind="styles.rows">
         <div
           v-for="entry in STANDARD_PATHS"
           :key="entry.path"
-          class="row"
+          v-bind="styles.row"
         >
           <dt><code>{{ entry.path }}</code></dt>
           <dd>{{ t(entry.holds) }}</dd>
@@ -57,11 +59,11 @@ const { t } = useI18n();
       </dl>
     </section>
 
-    <section class="section">
-      <h2 class="section-title">
+    <section v-bind="styles.section">
+      <h2 v-bind="styles.sectionTitle">
         {{ t('aboutCurrent') }}
       </h2>
-      <p class="note">
+      <p v-bind="styles.note">
         <CodeText :text="t('aboutSync', { command: SYNC })" />
       </p>
     </section>

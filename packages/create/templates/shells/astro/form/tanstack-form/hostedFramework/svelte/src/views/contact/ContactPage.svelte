@@ -3,6 +3,7 @@
   import TextInput from '@ui/text-input/TextInput.svelte';
 
   import { useContactForm } from './use-contact-form/useContactForm';
+  import { styles } from './ContactPage.styles';
 
   import type { ContactCopyKey } from './utils/contactCopyUtils';
 
@@ -17,12 +18,12 @@
   });
 </script>
 
-<main class="page">
-  <h1 class="page-title">{phrase('contact')}</h1>
-  <p class="page-lede">{phrase('contactLede')}</p>
+<main {...styles.page}>
+  <h1 {...styles.pageTitle}>{phrase('contact')}</h1>
+  <p {...styles.pageLede}>{phrase('contactLede')}</p>
 
   {#if form.sent}
-    <p class="sent" role="status">{phrase('contactSent')}</p>
+    <p {...styles.sent} role="status">{phrase('contactSent')}</p>
   {:else}
     <form novalidate onsubmit={form.onSubmit}>
       <TextInput {...form.fields.email} />
