@@ -28,6 +28,8 @@ describe('configOf', () => {
   it('lifts the workspace answers above one unnamed project in a single layout', () => {
     const actual = configOf({ ...DEFAULT_ANSWERS }, '@acme/web');
     const expected = {
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...pick(DEFAULT_ANSWERS, WORKSPACE_KEYS),
       projects: [omit(DEFAULT_ANSWERS, WORKSPACE_KEYS)],
     };

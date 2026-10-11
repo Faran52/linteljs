@@ -2,7 +2,11 @@ import { omit, pick } from 'es-toolkit';
 
 import { projectNameOf } from '@utils/nameUtils';
 
-import { WORKSPACE_KEYS } from '../constants';
+import {
+  CONFIG_SCHEMA_URL,
+  CURRENT_SCHEMA_VERSION,
+  WORKSPACE_KEYS,
+} from '../constants';
 
 import type { Answers, ProjectConfig } from '@config/types';
 import type { LinteljsConfig } from '../registry';
@@ -24,11 +28,13 @@ const projectConfigOf = ([flat, name]: ConfigEntry): FlatConfig => {
   return named;
 };
 
-// Flat answers per project in the v2 shape, the first project's workspace answers on top; a monorepo's project is
+// A v2 config: the first project's workspace answers on top, then flat answers per project; a monorepo's project is
 // named for its directory.
-export const workspaceConfigOf = (entries: readonly ConfigEntry[]): FlatConfig => {
-  const [[workspace] = [{}, '']] = entries;
+export const workspaceConfigOf = (entries: readonly [ConfigEntry, ...ConfigEntry[]]): FlatConfig => {
+  const [[workspace]] = entries;
   const body: FlatConfig = {
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     ...pick(workspace, WORKSPACE_KEYS),
     projects: entries.map(projectConfigOf),
   };

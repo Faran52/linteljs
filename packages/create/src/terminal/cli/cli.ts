@@ -11,9 +11,7 @@ import { unscopedName } from '@utils/nameUtils';
 import {
   ANSWERS,
   CONFIG_PATH,
-  CONFIG_SCHEMA_URL,
   configOf,
-  CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
   type LinteljsConfig,
@@ -106,16 +104,12 @@ interface HostedAsk {
 const EXIT_CANCELLED = 130;
 
 const flaggedAnswers = (name: string, flags: AnswerFlags = {}): Answers => {
-  const configText = JSON.stringify({
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...configOf({
-      ...DEFAULT_ANSWERS,
-      // `none` fits every target; an unflagged answer takes the target's runner below.
-      testing: 'none',
-      ...flags,
-    }, name),
-  });
+  const configText = JSON.stringify(configOf({
+    ...DEFAULT_ANSWERS,
+    // `none` fits every target; an unflagged answer takes the target's runner below.
+    testing: 'none',
+    ...flags,
+  }, name));
 
   const config = parseLinteljsConfig(configText);
   const parsed = projectAnswersOf(config, config.projects[0]);

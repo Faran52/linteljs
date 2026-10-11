@@ -13,8 +13,7 @@ import {
   type AnswerRecord,
   ANSWERS,
   CONFIG_PATH,
-  CONFIG_SCHEMA_URL,
-  CURRENT_SCHEMA_VERSION,
+  type ConfigEntry,
   workspaceConfigOf,
 } from '@answers';
 import { targetFor } from '@targets';
@@ -38,20 +37,17 @@ const unaskedKeys = (answers: Answers): AnswerKey[] => {
     });
 };
 
-// Several projects record the workspace answers once, from the first, and each project's own under `projects`.
-export const emitWorkspaceConfig = (projects: readonly NamedAnswers[]): string => {
-  const entries = projects
-    .map(({ name, answers }) => {
-      const asked = omit(answers, unaskedKeys(answers));
-      const entry = [asked, name] as const;
+const entryOf = ({ name, answers }: NamedAnswers): ConfigEntry => {
+  const asked = omit(answers, unaskedKeys(answers));
+  const entry: ConfigEntry = [asked, name];
 
-      return entry;
-    });
-  const config = {
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...workspaceConfigOf(entries),
-  };
+  return entry;
+};
+
+// Several projects record the workspace answers once, from the first, and each project's own under `projects`.
+export const emitWorkspaceConfig = (projects: readonly [NamedAnswers, ...NamedAnswers[]]): string => {
+  const [first, ...rest] = projects;
+  const config = workspaceConfigOf([entryOf(first), ...rest.map(entryOf)]);
   const json = JSON.stringify(config, null, 2);
 
   return `${json}\n`;

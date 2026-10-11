@@ -41,13 +41,7 @@ interface ConfigOverrides {
 }
 
 const v2 = (fields: object): object => {
-  const body: object = {
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...configOf({ ...fields }, 'app'),
-  };
-
-  return body;
+  return configOf({ ...fields }, 'app');
 };
 
 const answersOf = (text: string): Answers => {

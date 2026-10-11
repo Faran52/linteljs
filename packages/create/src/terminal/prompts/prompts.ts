@@ -12,8 +12,7 @@ import {
   type AnswerRecord,
   ANSWERS,
   type ChoiceRecord,
-  CONFIG_SCHEMA_URL,
-  CURRENT_SCHEMA_VERSION,
+  type ConfigEntry,
   DEFAULT_ANSWERS,
   type JsonValue,
   type MultiRecord,
@@ -99,6 +98,8 @@ export interface Asked {
 type Answered = Partial<Record<AnswerKey, JsonValue>>;
 
 type AnsweredEntry = readonly [Answered, string];
+
+type AnsweredEntries = readonly [AnsweredEntry, ...AnsweredEntry[]];
 
 interface Described {
   label: string;
@@ -488,21 +489,19 @@ const askProject = async (
   return await askApp(prompter, workspace);
 };
 
-const parsedAsked = (name: string, entries: readonly AnsweredEntry[]): Asked => {
-  const workspaceConfig = workspaceConfigOf(entries
-    .map(([answered, projectName]) => {
-      const entry = [{
-        ...DEFAULT_ANSWERS,
-        ...answered,
-      }, projectName] as const;
+const configEntryOf = ([answered, projectName]: AnsweredEntry): ConfigEntry => {
+  const entry: ConfigEntry = [{
+    ...DEFAULT_ANSWERS,
+    ...answered,
+  }, projectName];
 
-      return entry;
-    }));
-  const config = parseLinteljsConfig(JSON.stringify({
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...workspaceConfig,
-  }));
+  return entry;
+};
+
+const parsedAsked = (name: string, entries: AnsweredEntries): Asked => {
+  const [firstEntry, ...otherEntries] = entries;
+  const workspaceConfig = workspaceConfigOf([configEntryOf(firstEntry), ...otherEntries.map(configEntryOf)]);
+  const config = parseLinteljsConfig(JSON.stringify(workspaceConfig));
 
   // A single layout's one project goes unnamed and takes the repository's.
   const projectOf = (project: ProjectConfig): AskedProject => {
@@ -529,17 +528,26 @@ const askMonorepo = async (
   workspace: Partial<Record<AnswerKey, JsonValue>>,
 ): Promise<Asked> => {
   const count = await askCount(prompter);
-  const entries: AnsweredEntry[] = [];
 
-  for (let position = 1; position <= count; position++) {
-    const taken = entries
+  const askEntry = async (position: number, taken: readonly AnsweredEntry[]): Promise<AnsweredEntry> => {
+    const takenNames = taken
       .map(([, projectName]) => {
         return projectName;
       });
-    const projectName = await askProjectName(prompter, position, name, taken);
+    const projectName = await askProjectName(prompter, position, name, takenNames);
     const project = await askProject(prompter, position, workspace);
+    const entry: AnsweredEntry = [project, projectName];
 
-    entries.push([project, projectName]);
+    return entry;
+  };
+
+  const firstEntry = await askEntry(1, []);
+  const entries: [AnsweredEntry, ...AnsweredEntry[]] = [firstEntry];
+
+  for (let position = 2; position <= count; position++) {
+    const entry = await askEntry(position, entries);
+
+    entries.push(entry);
   }
 
   const targets = entries
@@ -551,9 +559,9 @@ const askMonorepo = async (
 
       return targetFor(soFar);
     });
-  const [[firstProject] = [{}]] = entries;
+  const [first, ...rest] = entries;
   const answered = {
-    ...firstProject,
+    ...first[0],
     ...workspace,
   };
 
@@ -561,15 +569,17 @@ const askMonorepo = async (
   await askKeys(prompter, answered, WORKSPACE_KEYS, targets);
 
   const shared = pick(answered, WORKSPACE_KEYS);
-  const projects = entries
-    .map(([project, projectName]): AnsweredEntry => {
-      const entry: AnsweredEntry = [{
-        ...project,
-        ...shared,
-      }, projectName];
 
-      return entry;
-    });
+  const withShared = ([project, projectName]: AnsweredEntry): AnsweredEntry => {
+    const entry: AnsweredEntry = [{
+      ...project,
+      ...shared,
+    }, projectName];
+
+    return entry;
+  };
+
+  const projects: AnsweredEntries = [withShared(first), ...rest.map(withShared)];
 
   return parsedAsked(name, projects);
 };
