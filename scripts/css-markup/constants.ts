@@ -6,6 +6,7 @@ import { contactPage } from '../../packages/create/templates/shared/css-sources/
 import { homePage } from '../../packages/create/templates/shared/css-sources/HomePage.ts';
 import { mark } from '../../packages/create/templates/shared/css-sources/Mark.ts';
 import { statusPage } from '../../packages/create/templates/shared/css-sources/StatusPage.ts';
+import { textInput } from '../../packages/create/templates/shared/css-sources/TextInput.ts';
 import { versionPage } from '../../packages/create/templates/shared/css-sources/VersionPage.ts';
 
 import type { Target } from './utils/cssMarkupUtils.ts';
@@ -55,5 +56,10 @@ export const TARGETS: readonly Target[] = [
       { map: homePage, markup: `${STORE_DRAWER}/app/page.tsx` },
       { map: contactPage, markup: `${FORM_DRAWER}/app/contact/page.tsx` },
     ],
+  },
+  {
+    root: 'ui/react-dom',
+    attribute: 'className',
+    files: [{ map: textInput, markup: 'base/src/components/ui/text-input/TextInput.tsx' }],
   },
 ];

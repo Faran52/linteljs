@@ -8,6 +8,7 @@ import { mark } from '../../packages/create/templates/shared/tailwind-sources/Ma
 import { panel } from '../../packages/create/templates/shared/tailwind-sources/Panel.ts';
 import { popup } from '../../packages/create/templates/shared/tailwind-sources/Popup.ts';
 import { statusPage } from '../../packages/create/templates/shared/tailwind-sources/StatusPage.ts';
+import { textInput } from '../../packages/create/templates/shared/tailwind-sources/TextInput.ts';
 import { versionPage } from '../../packages/create/templates/shared/tailwind-sources/VersionPage.ts';
 
 import type { Target } from './utils/tailwindStylesUtils.ts';
@@ -94,6 +95,11 @@ export const TARGETS: readonly Target[] = [
     root: 'shells/astro',
     attribute: 'className',
     files: [{ table: contactPage, path: `${FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
+  },
+  {
+    root: 'ui/react-dom',
+    attribute: 'className',
+    files: [{ table: textInput, path: 'styling/tailwind/src/components/ui/text-input/TextInput.styles.ts' }],
   },
   {
     root: 'ui/vue',
