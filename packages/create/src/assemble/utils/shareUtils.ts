@@ -1,14 +1,14 @@
-import { isEqual, uniqWith } from 'es-toolkit';
+import {
+  isEqual,
+  isString,
+  uniqWith,
+} from 'es-toolkit';
 
 export type ShareValue = string | number | boolean | null | ShareValue[] | Share;
 
 // A drawer's `share.json`: what it adds to the files the assembler generates. A mapped type, since a `Record`
 // alias cannot refer to itself.
 export type Share = { [key in string]: ShareValue };
-
-const isString = (value: unknown): value is string => {
-  return typeof value === 'string';
-};
 
 export const isShare = (value: unknown): value is Share => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
