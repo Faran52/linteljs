@@ -64,6 +64,14 @@ const sheet = stylex.create({
     fontSize: tokens.textBody,
     color: tokens.faint,
   },
+
+  hint: {
+    marginTop: '1.625rem',
+    marginInline: 0,
+    marginBottom: 0,
+    fontSize: tokens.textBody,
+    color: tokens.faint,
+  },
 });
 
 export const styles = {
@@ -73,5 +81,5 @@ export const styles = {
   counter: stylex.props(sheet.counter),
   count: stylex.props(sheet.count),
   caption: stylex.props(sheet.caption),
-  hint: { className: 'hint' },
+  hint: stylex.props(sheet.hint),
 };

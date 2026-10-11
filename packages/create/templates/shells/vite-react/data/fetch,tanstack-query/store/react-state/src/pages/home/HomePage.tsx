@@ -24,7 +24,7 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
       <h1 {...styles.title}>{name}</h1>
       <p {...styles.lede}>{t('homeLedeReact')}</p>
       <p {...styles.hint}>
-        <CodeText text={t('gateHint', CHECK_VALUES)} />
+        <CodeText text={t('gateHint', CHECK_VALUES)} tone="primary" />
       </p>
     </main>
   );

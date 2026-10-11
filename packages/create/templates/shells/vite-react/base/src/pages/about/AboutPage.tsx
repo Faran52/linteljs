@@ -38,7 +38,7 @@ export const AboutPage: FC = () => {
             })}
         </ul>
         <p {...styles.note}>
-          <CodeText text={t('aboutCheck', CHECK_VALUES)} />
+          <CodeText text={t('aboutCheck', CHECK_VALUES)} tone="primary" />
         </p>
       </section>
 
@@ -60,7 +60,7 @@ export const AboutPage: FC = () => {
       <section {...styles.section}>
         <h2 {...styles.sectionTitle}>{t('aboutCurrent')}</h2>
         <p {...styles.note}>
-          <CodeText text={t('aboutSync', SYNC_VALUES)} />
+          <CodeText text={t('aboutSync', SYNC_VALUES)} tone="primary" />
         </p>
       </section>
     </main>

@@ -42,10 +42,12 @@ const AboutPage = (): ReactNode => {
             })}
         </ul>
         <p {...styles.note}>
-          <CodeText text={t.markup('aboutCheck', {
-            command: CHECK,
-            code,
-          })}
+          <CodeText
+            text={t.markup('aboutCheck', {
+              command: CHECK,
+              code,
+            })}
+            tone="primary"
           />
         </p>
       </section>
@@ -68,10 +70,12 @@ const AboutPage = (): ReactNode => {
       <section {...styles.section}>
         <h2 {...styles.sectionTitle}>{t('aboutCurrent')}</h2>
         <p {...styles.note}>
-          <CodeText text={t.markup('aboutSync', {
-            command: SYNC,
-            code,
-          })}
+          <CodeText
+            text={t.markup('aboutSync', {
+              command: SYNC,
+              code,
+            })}
+            tone="primary"
           />
         </p>
       </section>

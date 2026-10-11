@@ -26,3 +26,9 @@
   font-size: var(--text-value);
   color: var(--muted-foreground);
 }
+
+.hint {
+  margin: 1.625rem 0 0;
+  font-size: var(--text-body);
+  color: var(--faint);
+}

@@ -53,11 +53,13 @@ const VersionPage = (): ReactNode => {
             })}
         </dl>
         <p {...styles.note}>
-          <CodeText text={t.markup('versionRecorded', {
-            file: 'linteljs.config.json',
-            command: 'sync',
-            code,
-          })}
+          <CodeText
+            text={t.markup('versionRecorded', {
+              file: 'linteljs.config.json',
+              command: 'sync',
+              code,
+            })}
+            tone="primary"
           />
         </p>
       </section>

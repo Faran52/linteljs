@@ -42,8 +42,13 @@ const sheet = stylex.create({
     },
     outlineOffset: '2px',
   },
+
+  lg: {
+    height: '38px',
+  },
 });
 
 export const styles = {
-  button: stylex.props(sheet.button),
+  md: stylex.props(sheet.button),
+  lg: stylex.props(sheet.button, sheet.lg),
 };

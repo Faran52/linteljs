@@ -35,11 +35,19 @@ const sheet = stylex.create({
     fontSize: tokens.textValue,
     color: tokens.mutedForeground,
   },
+
+  hint: {
+    marginTop: '1.625rem',
+    marginInline: 0,
+    marginBottom: 0,
+    fontSize: tokens.textBody,
+    color: tokens.faint,
+  },
 });
 
 export const styles = {
   hero: stylex.props(sheet.hero),
   title: stylex.props(sheet.title),
   lede: stylex.props(sheet.lede),
-  hint: { className: 'hint' },
+  hint: stylex.props(sheet.hint),
 };

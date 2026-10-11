@@ -30,6 +30,14 @@ const sheet = stylex.create({
     color: tokens.mutedForeground,
   },
 
+  statusActions: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '12px',
+    justifyContent: 'center',
+    marginTop: '1.5rem',
+  },
+
   statusAction: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -58,7 +66,7 @@ export const styles = {
   status: stylex.props(sheet.status),
   statusCode: stylex.props(sheet.statusCode),
   statusMessage: stylex.props(sheet.statusMessage),
-  statusActions: { className: 'status-actions' },
+  statusActions: stylex.props(sheet.statusActions),
 
   action: (outlined: boolean): ReturnType<typeof stylex.props> => {
     return stylex.props(sheet.statusAction, outlined && sheet.statusActionOutline);

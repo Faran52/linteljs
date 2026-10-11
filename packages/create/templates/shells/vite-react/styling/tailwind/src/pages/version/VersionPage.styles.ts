@@ -8,5 +8,5 @@ export const styles = {
   row: { className: 'flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-hair px-0 py-1.75 first:border-t-0 first:pt-0' },
   key: { className: 'min-w-32 flex-none text-ui font-[540]' },
   value: { className: 'm-0 min-w-0 flex-1 text-body text-muted-foreground' },
-  note: { className: 'note' },
+  note: { className: 'mx-0 mt-3.5 mb-0 text-body text-faint' },
 };

@@ -25,10 +25,12 @@ const HomePage = (): ReactNode => {
       <h1 {...styles.title}>{NAME}</h1>
       <p {...styles.lede}>{t('homeLedeNext')}</p>
       <p {...styles.hint}>
-        <CodeText text={t.markup('gateHint', {
-          command: CHECK,
-          code,
-        })}
+        <CodeText
+          text={t.markup('gateHint', {
+            command: CHECK,
+            code,
+          })}
+          tone="primary"
         />
       </p>
     </main>

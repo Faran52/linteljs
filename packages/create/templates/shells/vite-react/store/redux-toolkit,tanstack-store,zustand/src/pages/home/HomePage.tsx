@@ -35,7 +35,7 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
       <p {...styles.caption}>{t('homeCaption')}</p>
 
       <p {...styles.hint}>
-        <CodeText text={t('gateHint', CHECK_VALUES)} />
+        <CodeText text={t('gateHint', CHECK_VALUES)} tone="primary" />
       </p>
     </main>
   );

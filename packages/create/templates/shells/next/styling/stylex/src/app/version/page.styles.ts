@@ -88,6 +88,14 @@ const sheet = stylex.create({
     fontSize: tokens.textBody,
     color: tokens.mutedForeground,
   },
+
+  note: {
+    marginTop: '0.875rem',
+    marginInline: 0,
+    marginBottom: 0,
+    fontSize: tokens.textBody,
+    color: tokens.faint,
+  },
 });
 
 export const styles = {
@@ -100,5 +108,5 @@ export const styles = {
   row: stylex.props(sheet.row),
   key: stylex.props(sheet.key),
   value: stylex.props(sheet.value),
-  note: { className: 'note' },
+  note: stylex.props(sheet.note),
 };

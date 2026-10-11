@@ -51,7 +51,7 @@ export const VersionPage: FC = () => {
             })}
         </dl>
         <p {...styles.note}>
-          <CodeText text={t('versionRecorded', RECORDED_VALUES)} />
+          <CodeText text={t('versionRecorded', RECORDED_VALUES)} tone="primary" />
         </p>
       </section>
     </main>

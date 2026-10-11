@@ -35,10 +35,12 @@ const HomePage = (): ReactNode => {
       <p {...styles.caption}>{t('homeCaption')}</p>
 
       <p {...styles.hint}>
-        <CodeText text={t.markup('gateHint', {
-          command: CHECK,
-          code,
-        })}
+        <CodeText
+          text={t.markup('gateHint', {
+            command: CHECK,
+            code,
+          })}
+          tone="primary"
         />
       </p>
     </main>

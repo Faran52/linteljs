@@ -69,3 +69,17 @@
   font-size: var(--text-body);
   color: var(--muted-foreground);
 }
+
+.key-code {
+  flex: none;
+  min-width: 8rem;
+  font-size: var(--text-ui);
+  font-weight: 400;
+  color: var(--primary);
+}
+
+.note {
+  margin: 0.875rem 0 0;
+  font-size: var(--text-body);
+  color: var(--faint);
+}

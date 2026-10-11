@@ -4,7 +4,7 @@ import { CodeText } from './CodeText';
 
 describe('CodeText', () => {
   it('sets each marked part as code and the rest as text', () => {
-    const { container } = render(<CodeText text="<code>pnpm check</code> runs <code>lint</code> first" />);
+    const { container } = render(<CodeText text="<code>pnpm check</code> runs <code>lint</code> first" tone="primary" />);
 
     const codes = [...container.querySelectorAll('code')]
       .map((code) => {
@@ -17,7 +17,7 @@ describe('CodeText', () => {
   });
 
   it('renders markup it does not mark as text', () => {
-    const { container } = render(<CodeText text="<b>bold</b>" />);
+    const { container } = render(<CodeText text="<b>bold</b>" tone="primary" />);
 
     const element = container.querySelector('b');
     expect(element).toBeNull();

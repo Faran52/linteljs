@@ -31,7 +31,7 @@ export const StatusPage: FC<StatusPageProps> = ({
       <h1 {...styles.statusCode}>{code}</h1>
       <p {...styles.statusMessage} role="alert">{t(message)}</p>
       <div {...styles.statusActions}>
-        {onRetry === undefined ? null : <Button onClick={onRetry}>{t('statusRetry')}</Button>}
+        {onRetry === undefined ? null : <Button onClick={onRetry} size="lg">{t('statusRetry')}</Button>}
         <Link
           {...styles.action(onRetry !== undefined)}
           href="/"

@@ -88,6 +88,22 @@ const sheet = stylex.create({
     fontSize: tokens.textUi,
     fontWeight: 540,
   },
+
+  keyCode: {
+    flex: 'none',
+    minWidth: '8rem',
+    fontSize: tokens.textUi,
+    fontWeight: 400,
+    color: tokens.primary,
+  },
+
+  note: {
+    marginTop: '0.875rem',
+    marginInline: 0,
+    marginBottom: 0,
+    fontSize: tokens.textBody,
+    color: tokens.faint,
+  },
 });
 
 export const styles = {
@@ -98,8 +114,8 @@ export const styles = {
   sectionTitle: stylex.props(sheet.sectionTitle),
   rows: stylex.props(sheet.rows),
   row: stylex.props(sheet.row),
-  keyCode: { className: 'key-code' },
+  keyCode: stylex.props(sheet.keyCode),
   value: stylex.props(sheet.value),
-  note: { className: 'note' },
+  note: stylex.props(sheet.note),
   key: stylex.props(sheet.key),
 };
