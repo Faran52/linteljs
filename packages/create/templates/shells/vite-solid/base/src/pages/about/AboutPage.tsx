@@ -26,7 +26,7 @@ export const AboutPage = (): JSX.Element => {
             {(leg) => {
               return (
                 <li {...styles.row}>
-                  <code {...styles.key}>{leg.command}</code>
+                  <code {...styles.keyCode}>{leg.command}</code>
                   <span {...styles.value}>{leg.runs}</span>
                 </li>
               );
@@ -34,7 +34,7 @@ export const AboutPage = (): JSX.Element => {
           </For>
         </ul>
         <p {...styles.note}>
-          <CodeText text={t('aboutCheck', { command: CHECK })} />
+          <CodeText text={t('aboutCheck', { command: CHECK })} tone="primary" />
         </p>
       </section>
 
@@ -45,8 +45,8 @@ export const AboutPage = (): JSX.Element => {
             {(entry) => {
               return (
                 <div {...styles.row}>
-                  <dt><code>{entry.path}</code></dt>
-                  <dd>{t(entry.holds)}</dd>
+                  <dt {...styles.key}><code>{entry.path}</code></dt>
+                  <dd {...styles.value}>{t(entry.holds)}</dd>
                 </div>
               );
             }}
@@ -57,7 +57,7 @@ export const AboutPage = (): JSX.Element => {
       <section {...styles.section}>
         <h2 {...styles.sectionTitle}>{t('aboutCurrent')}</h2>
         <p {...styles.note}>
-          <CodeText text={t('aboutSync', { command: SYNC })} />
+          <CodeText text={t('aboutSync', { command: SYNC })} tone="primary" />
         </p>
       </section>
     </main>

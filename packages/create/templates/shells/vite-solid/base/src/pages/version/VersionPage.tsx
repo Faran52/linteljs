@@ -22,8 +22,8 @@ export const VersionPage = (): JSX.Element => {
             {(entry) => {
               return (
                 <div {...styles.row}>
-                  <dt>{entry.name}</dt>
-                  <dd>{entry.version}</dd>
+                  <dt {...styles.key}>{entry.name}</dt>
+                  <dd {...styles.value}>{entry.version}</dd>
                 </div>
               );
             }}
@@ -38,8 +38,8 @@ export const VersionPage = (): JSX.Element => {
             {(entry) => {
               return (
                 <div {...styles.row}>
-                  <dt>{t(entry.label)}</dt>
-                  <dd>{entry.value}</dd>
+                  <dt {...styles.key}>{t(entry.label)}</dt>
+                  <dd {...styles.value}>{entry.value}</dd>
                 </div>
               );
             }}
@@ -51,6 +51,7 @@ export const VersionPage = (): JSX.Element => {
               file: 'linteljs.config.json',
               command: 'sync',
             })}
+            tone="primary"
           />
         </p>
       </section>

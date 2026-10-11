@@ -25,7 +25,7 @@ export const StatusPage = (props: StatusPageProps): JSX.Element => {
       <div {...styles.statusActions}>
         <Show when={props.onRetry}>
           {(retry) => {
-            return <Button onClick={retry()}>{t('statusRetry')}</Button>;
+            return <Button onClick={retry()} size="lg">{t('statusRetry')}</Button>;
           }}
         </Show>
         {/* `href` first: Solid writes the template unquoted, and happy-dom reads a closing `href=/>` as empty. */}

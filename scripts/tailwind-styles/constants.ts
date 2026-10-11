@@ -121,6 +121,23 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
+    root: 'shells/vite-solid',
+    attribute: 'class',
+    files: [
+      { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
+      { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
+      { table: aboutPage, path: 'styling/tailwind/src/pages/about/AboutPage.styles.ts' },
+      { table: versionPage, path: 'styling/tailwind/src/pages/version/VersionPage.styles.ts' },
+      { table: contactPage, path: 'form/tanstack-form/styling/tailwind/src/pages/contact/ContactPage.styles.ts' },
+      {
+        table: homePage,
+        path: 'store/signals/styling/tailwind/src/pages/home/HomePage.styles.ts',
+        keys: HOME_DATA_KEYS,
+      },
+      { table: homePage, path: 'store/tanstack-store/styling/tailwind/src/pages/home/HomePage.styles.ts' },
+    ],
+  },
+  {
     root: 'shells/nuxt',
     attribute: 'class',
     files: [

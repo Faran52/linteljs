@@ -27,4 +27,15 @@ describe('CodeText', () => {
     expect(element).toBeNull();
     expect(container.textContent).toBe('<b>bold</b>');
   });
+
+  it('leaves the code uncoloured without a tone', () => {
+    const { container } = render(() => {
+      return <CodeText text="<code>pnpm check</code>" />;
+    });
+
+    const className = container
+      .querySelector('code')
+      ?.getAttribute('class');
+    expect(className).toBeNull();
+  });
 });

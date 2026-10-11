@@ -20,7 +20,7 @@ export const HomePage = (props: HomePageProps): JSX.Element => {
       <h1 {...styles.title}>{props.name}</h1>
       <p {...styles.lede}>{t('homeLedeSolid')}</p>
       <p {...styles.hint}>
-        <CodeText text={t('gateHint', { command: CHECK })} />
+        <CodeText text={t('gateHint', { command: CHECK })} tone="primary" />
       </p>
     </main>
   );

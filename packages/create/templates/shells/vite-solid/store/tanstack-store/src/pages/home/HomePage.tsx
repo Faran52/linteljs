@@ -31,7 +31,7 @@ export const HomePage = (props: HomePageProps): JSX.Element => {
       <p {...styles.caption}>{t('homeCaption')}</p>
 
       <p {...styles.hint}>
-        <CodeText text={t('gateHint', { command: CHECK })} />
+        <CodeText text={t('gateHint', { command: CHECK })} tone="primary" />
       </p>
     </main>
   );

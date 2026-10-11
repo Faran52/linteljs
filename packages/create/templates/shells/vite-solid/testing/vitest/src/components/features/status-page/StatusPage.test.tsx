@@ -21,8 +21,6 @@ describe('StatusPage', () => {
     expect(screen.getByRole('alert').textContent).toBe('Page not found');
     const attribute = home.getAttribute('href');
     expect(attribute).toBe('/');
-    const statusActionOutlineContains = home.classList.contains('status-action-outline');
-    expect(statusActionOutlineContains).toBe(false);
     const buttonElement = screen.queryByRole('button', { name: 'Try again' });
     expect(buttonElement).toBeNull();
   });
@@ -43,11 +41,7 @@ describe('StatusPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    const home = screen.getByRole('link', { name: 'Go home' });
-
     const expected = ['retry'];
     expect(retried).toEqual(expected);
-    const statusActionOutlineContains = home.classList.contains('status-action-outline');
-    expect(statusActionOutlineContains).toBe(true);
   });
 });
