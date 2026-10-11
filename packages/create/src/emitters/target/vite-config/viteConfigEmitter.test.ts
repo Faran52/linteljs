@@ -315,7 +315,7 @@ const stylexAliases = { '@styles/*': [\`\${import.meta.dirname}/src/styles/*\`] 
 
 export default defineConfig({
   plugins: [
-    stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } }),
+    stylex({ aliases: stylexAliases, useCSSLayers: { before: ['base'] } }),
     vue(),
   ],
   resolve: { tsconfigPaths: true },

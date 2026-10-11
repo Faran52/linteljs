@@ -6,7 +6,7 @@ export interface StylingPlugin {
   call?: string;
 }
 
-const STYLEX_CALL = "stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })";
+const STYLEX_CALL = "stylex({ aliases: stylexAliases, useCSSLayers: { before: ['base'] } })";
 
 // The path expression a config resolves `src/styles/*` with; Nuxt's passes its own `join`.
 const STYLES_DIR = '`${import.meta.dirname}/src/styles/*`';

@@ -197,7 +197,7 @@ const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 const stylexAliases = { '@styles/*': [\`\${import.meta.dirname}/src/styles/*\`] };
 
 export default defineConfig({
-  plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })],
+  plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['base'] } })],
 `);
   });
 

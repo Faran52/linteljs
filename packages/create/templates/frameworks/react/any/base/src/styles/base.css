@@ -1,53 +1,53 @@
 /* Delete this with the pages it styles. Nothing else reads it. */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Tailwind's `base`, so every styling's classes outrank these element rules: utilities, StyleX and plain css. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
-  font-family: var(--font-sans);
-  line-height: 1.5;
-  color: var(--foreground);
-  background: var(--background);
-  transition:
-    color var(--motion-fast) var(--motion-ease),
-    background-color var(--motion-fast) var(--motion-ease);
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    color: var(--foreground);
+    background: var(--background);
+    transition:
+      color var(--motion-fast) var(--motion-ease),
+      background-color var(--motion-fast) var(--motion-ease);
+    -webkit-font-smoothing: antialiased;
+  }
 
-/* Layered, so a StyleX font rule on a control outranks it: StyleX puts `reset` below its own layers. */
-@layer reset {
   button,
   input,
   select,
   textarea {
     font: inherit;
   }
-}
 
-code {
-  font-family: var(--font-mono);
-  font-size: var(--text-body);
+  code {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
 
-  /* A path or command keeps its own direction in an rtl page, so `.husky/` does not read `/husky.`. */
-  unicode-bidi: plaintext;
-}
+    /* A path or command keeps its own direction in an rtl page, so `.husky/` does not read `/husky.`. */
+    unicode-bidi: plaintext;
+  }
 
-/* Each framework's mount point, so the page under the header takes the height left. */
-#root,
-#app,
-[id="__nuxt"],
-app-root,
-app-status-page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
+  /* Each framework's mount point, so the page under the header takes the height left. */
+  #root,
+  #app,
+  [id="__nuxt"],
+  app-root,
+  app-status-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
 }
 
 /* The 360px floor is what an extension popup gives you. */

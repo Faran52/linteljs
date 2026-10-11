@@ -249,10 +249,11 @@ describe('starter files for a router', () => {
   // A `select` left out keeps the user agent's font, so the language picker renders in Arial.
   it('resets the font of every form control the starters render', async () => {
     const text = await textOf({}, 'src/styles/base.css');
-    const match = /@layer reset \{(?<rules>[^\}]*)\}/v.exec(text);
-    const reset = match?.groups?.['rules'] ?? '';
-    const flat = reset.replaceAll(/\s+/gv, ' ');
+    const start = text.indexOf('@layer base {');
+    const layer = text.slice(start, text.indexOf('\n}\n', start));
+    const flat = layer.replaceAll(/\s+/gv, ' ');
 
+    expect(start).toBeGreaterThan(-1);
     expect(flat).toContain('button, input, select, textarea { font: inherit;');
   });
 

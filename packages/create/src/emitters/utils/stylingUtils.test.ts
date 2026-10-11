@@ -6,7 +6,7 @@ import {
 
 import { stylingPlugin } from './stylingUtils';
 
-const STYLEX_CALL = "stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })";
+const STYLEX_CALL = "stylex({ aliases: stylexAliases, useCSSLayers: { before: ['base'] } })";
 
 describe('stylingPlugin', () => {
   it('runs tailwind through its own vite plugin', () => {
