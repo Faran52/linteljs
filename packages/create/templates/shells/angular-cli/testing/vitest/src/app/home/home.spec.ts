@@ -23,9 +23,9 @@ describe('Home', () => {
 
     const root = harness.nativeElement as HTMLElement;
     const { common } = resources[last];
-    const title = root.querySelector('.title')?.textContent;
-    const lede = root.querySelector('.lede')?.textContent;
-    const command = root.querySelector('.hint code')?.textContent;
+    const title = root.querySelector('h1')?.textContent;
+    const lede = root.querySelector('h1 + p')?.textContent;
+    const command = root.querySelector('code')?.textContent;
 
     expect(title).toBe(NAME);
     expect(lede).toBe(common.homeLedeAngular);

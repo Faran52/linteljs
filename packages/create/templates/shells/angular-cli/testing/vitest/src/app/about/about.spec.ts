@@ -37,12 +37,12 @@ describe('About', () => {
       .map((entry) => {
         return common[entry.holds];
       });
-    const sectionTitles = textsOf(root, '.section-title');
+    const sectionTitles = textsOf(root, 'h2');
     const shownHolds = textsOf(root, 'dd');
-    const noteCommands = textsOf(root, '.note code');
+    const noteCommands = textsOf(root, 'section > p code');
 
-    expect(root.querySelector('.page-title')?.textContent).toBe(common.about);
-    expect(root.querySelector('.page-lede')?.textContent).toBe(common.aboutLede);
+    expect(root.querySelector('h1')?.textContent).toBe(common.about);
+    expect(root.querySelector('h1 + p')?.textContent).toBe(common.aboutLede);
 
     expect(sectionTitles).toEqual([
       common.aboutGate,

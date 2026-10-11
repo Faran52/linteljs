@@ -7,13 +7,13 @@
     <ul [class]="styles.rows.class">
       @for (leg of gate; track leg.command) {
         <li [class]="styles.row.class">
-          <code [class]="styles.key.class">{{ leg.command }}</code>
+          <code [class]="styles.keyCode.class">{{ leg.command }}</code>
           <span [class]="styles.value.class">{{ leg.runs }}</span>
         </li>
       }
     </ul>
     <p [class]="styles.note.class">
-      <app-code-text [text]="t('aboutCheck', { command: check })" />
+      <app-code-text [text]="t('aboutCheck', { command: check })" tone="primary" />
     </p>
   </section>
 
@@ -22,8 +22,8 @@
     <dl [class]="styles.rows.class">
       @for (entry of standardPaths; track entry.path) {
         <div [class]="styles.row.class">
-          <dt><code>{{ entry.path }}</code></dt>
-          <dd>{{ t(entry.holds) }}</dd>
+          <dt [class]="styles.key.class"><code>{{ entry.path }}</code></dt>
+          <dd [class]="styles.value.class">{{ t(entry.holds) }}</dd>
         </div>
       }
     </dl>
@@ -32,7 +32,7 @@
   <section [class]="styles.section.class">
     <h2 [class]="styles.sectionTitle.class">{{ t('aboutCurrent') }}</h2>
     <p [class]="styles.note.class">
-      <app-code-text [text]="t('aboutSync', { command: sync })" />
+      <app-code-text [text]="t('aboutSync', { command: sync })" tone="primary" />
     </p>
   </section>
 </main>

@@ -61,8 +61,8 @@ describe('Contact', () => {
     const opened = harness.nativeElement as HTMLElement;
     const sendLabel = opened.querySelector('button[type="submit"]')?.textContent;
 
-    expect(opened.querySelector('.page-title')?.textContent).toBe(common.contact);
-    expect(opened.querySelector('.page-lede')?.textContent).toBe(common.contactLede);
+    expect(opened.querySelector('h1')?.textContent).toBe(common.contact);
+    expect(opened.querySelector('h1 + p')?.textContent).toBe(common.contactLede);
     expect(sendLabel?.trim()).toBe(common.contactSend);
 
     await fill(harness, '#email', 'someone@example.com');

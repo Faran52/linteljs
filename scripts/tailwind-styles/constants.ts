@@ -138,6 +138,25 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
+    root: 'shells/angular-cli',
+    attribute: 'class',
+    files: [
+      { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/code-text.styles.ts' },
+      { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/status-page.styles.ts' },
+      { table: aboutPage, path: 'styling/tailwind/src/app/about/about.styles.ts' },
+      { table: versionPage, path: 'styling/tailwind/src/app/version/version.styles.ts' },
+      {
+        table: homePage,
+        path: 'styling/tailwind/src/app/home/home.styles.ts',
+        keys: HOME_DATA_KEYS,
+      },
+      {
+        table: contactPage,
+        path: 'form/reactive-forms,tanstack-form/styling/tailwind/src/app/contact/contact.styles.ts',
+      },
+    ],
+  },
+  {
     root: 'shells/nuxt',
     attribute: 'class',
     files: [

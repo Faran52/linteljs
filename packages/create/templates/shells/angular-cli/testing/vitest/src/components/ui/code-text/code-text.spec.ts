@@ -30,4 +30,11 @@ describe('CodeText', () => {
     expect(bold).toBeNull();
     expect(root.textContent).toBe('<b>bold</b>');
   });
+
+  it('leaves the code uncoloured without a tone', async () => {
+    const root = await render('<code>pnpm check</code>');
+    const classes = root.querySelector('code')?.classList.length;
+
+    expect(classes).toBe(0);
+  });
 });

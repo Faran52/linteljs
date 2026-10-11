@@ -7,8 +7,8 @@
     <dl [class]="styles.rows.class">
       @for (entry of stack; track entry.name) {
         <div [class]="styles.row.class">
-          <dt>{{ entry.name }}</dt>
-          <dd>{{ entry.version }}</dd>
+          <dt [class]="styles.key.class">{{ entry.name }}</dt>
+          <dd [class]="styles.value.class">{{ entry.version }}</dd>
         </div>
       }
     </dl>
@@ -19,13 +19,13 @@
     <dl [class]="styles.rows.class">
       @for (entry of answers; track entry.label) {
         <div [class]="styles.row.class">
-          <dt>{{ t(entry.label) }}</dt>
-          <dd>{{ entry.value }}</dd>
+          <dt [class]="styles.key.class">{{ t(entry.label) }}</dt>
+          <dd [class]="styles.value.class">{{ entry.value }}</dd>
         </div>
       }
     </dl>
     <p [class]="styles.note.class">
-      <app-code-text [text]="t('versionRecorded', recorded)" />
+      <app-code-text [text]="t('versionRecorded', recorded)" tone="primary" />
     </p>
   </section>
 </main>

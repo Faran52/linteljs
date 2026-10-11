@@ -53,13 +53,13 @@ describe('App', () => {
     const mark = root.querySelector('.mark');
 
     expect(mark).not.toBeNull();
-    expect(root.querySelector('.title')?.textContent).toContain(NAME);
+    expect(root.querySelector('h1')?.textContent).toContain(NAME);
   });
 
   it('routes to the about page', async () => {
     const root = await open('/about');
 
-    expect(root.querySelector('.page-title')?.textContent).toContain('About');
+    expect(root.querySelector('h1')?.textContent).toContain('About');
 
     for (const { command } of GATE) {
       expect(root.textContent).toContain(command);
@@ -69,7 +69,7 @@ describe('App', () => {
   it('routes to the version page, which renders what was recorded', async () => {
     const root = await open('/version');
 
-    expect(root.querySelector('.page-title')?.textContent).toContain('Version');
+    expect(root.querySelector('h1')?.textContent).toContain('Version');
     expect(root.querySelectorAll('dt').length).toBeGreaterThanOrEqual(ANSWERS.length);
   });
 

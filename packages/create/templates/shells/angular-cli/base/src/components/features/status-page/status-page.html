@@ -3,7 +3,7 @@
   <p [class]="styles.statusMessage.class" role="alert">{{ translateId(message()) }}</p>
   <div [class]="styles.statusActions.class">
     @if (onRetry(); as retry) {
-      <app-button (click)="retry()">{{ t('statusRetry') }}</app-button>
+      <app-button (click)="retry()" size="lg">{{ t('statusRetry') }}</app-button>
     }
     <a [class]="styles.action(onRetry() !== undefined).class" href="/">{{ t('statusHome') }}</a>
   </div>

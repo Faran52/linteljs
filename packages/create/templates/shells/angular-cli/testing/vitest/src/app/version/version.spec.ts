@@ -33,11 +33,11 @@ describe('Version', () => {
     const root = harness.nativeElement as HTMLElement;
     const { common } = resources[last];
 
-    const sectionTitles = textsOf(root, '.section-title');
-    const noteCode = textsOf(root, '.note code');
+    const sectionTitles = textsOf(root, 'h2');
+    const noteCode = textsOf(root, 'section > p code');
 
-    expect(root.querySelector('.page-title')?.textContent).toBe(common.version);
-    expect(root.querySelector('.page-lede')?.textContent).toBe(common.versionLede);
+    expect(root.querySelector('h1')?.textContent).toBe(common.version);
+    expect(root.querySelector('h1 + p')?.textContent).toBe(common.versionLede);
     expect(sectionTitles).toEqual([common.versionStack, common.versionAnswers]);
     expect(noteCode).toEqual(['linteljs.config.json', 'sync']);
     expect(root.textContent).not.toMatch(/[{}<>]/u);
