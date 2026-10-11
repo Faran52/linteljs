@@ -65,3 +65,5 @@ export const JSX_STYLE_RULES = {
   '@stylistic/jsx-self-closing-comp': 'error',
   '@stylistic/jsx-pascal-case': 'error',
 } satisfies Linter.RulesRecord;
+
+export const ERROR_PREFIX = '@linteljs/eslint-config:';

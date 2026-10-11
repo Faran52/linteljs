@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { ERROR_PREFIX } from '../../config/constants';
 import {
-  ERROR_PREFIX,
   EXPO_LAYER,
   INSTALL_COMMANDS,
   LOCKFILES,

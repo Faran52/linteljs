@@ -1,5 +1,5 @@
+import { ERROR_PREFIX } from '../../config/constants';
 import {
-  ERROR_PREFIX,
   HOSTS,
   OPTION_NAMES,
   OPTION_VALUES,

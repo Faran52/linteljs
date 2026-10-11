@@ -1,5 +1,7 @@
 import sonarjs from 'eslint-plugin-sonarjs';
 
+import { ERROR_PREFIX } from '../config/constants';
+
 import type { ESLint, Linter } from 'eslint';
 
 type PluginConfigs = NonNullable<ESLint.Plugin['configs']>;
@@ -36,7 +38,7 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
 
 export const presetOf = (config: PluginConfig | undefined, label: string, files?: string[]): Linter.Config[] => {
   if (!config) {
-    throw new Error(`@linteljs/eslint-config: ${label} is not published by its plugin`);
+    throw new Error(`${ERROR_PREFIX} ${label} is not published by its plugin`);
   }
 
   if (Array.isArray(config)) {
@@ -44,7 +46,7 @@ export const presetOf = (config: PluginConfig | undefined, label: string, files?
   }
 
   if (!isFlatConfig(config)) {
-    throw new Error(`@linteljs/eslint-config: ${label} is an eslintrc config, not a flat one`);
+    throw new Error(`${ERROR_PREFIX} ${label} is an eslintrc config, not a flat one`);
   }
 
   return scopedTo([config], files);

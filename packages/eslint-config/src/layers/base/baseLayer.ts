@@ -18,6 +18,7 @@ import tseslint from 'typescript-eslint';
 
 import {
   E2E_FILES,
+  ERROR_PREFIX,
   MOCK_FILES,
   SCRIPT_AND_SFC_FILES,
   SCRIPT_EXTENSIONS,
@@ -123,7 +124,7 @@ export const base = (options: BaseOptions = {}): Layer => {
   const tsconfigPath = root === undefined ? undefined : resolve(root, tsconfig);
 
   if (options.tsconfig !== undefined && root === undefined) {
-    throw new Error('@linteljs/eslint-config: tsconfig needs root.');
+    throw new Error(`${ERROR_PREFIX} tsconfig needs root.`);
   }
 
   const project = resolver?.project ?? (options.tsconfig === undefined ? undefined : tsconfigPath);
