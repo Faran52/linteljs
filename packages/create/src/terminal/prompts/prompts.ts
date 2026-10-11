@@ -82,7 +82,7 @@ export interface Prompter {
 
 export interface AskInput {
   name?: string | undefined;
-  fixed?: Partial<Record<AnswerKey, JsonValue>>;
+  fixed?: Answered;
 }
 
 export interface AskedProject {
@@ -192,14 +192,8 @@ const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value:
   return value;
 };
 
-const askChoice = async <T extends string>(
-  prompter: Prompter,
-  message: string,
-  choices: readonly T[],
-  initialValue: T,
-  describe: (choice: T) => Described,
-): Promise<T> => {
-  const options: PromptOption[] = choices
+const optionsOf = <T extends string>(choices: readonly T[], describe: (choice: T) => Described): PromptOption[] => {
+  return choices
     .map((choice) => {
       const option: PromptOption = {
         value: choice,
@@ -208,6 +202,16 @@ const askChoice = async <T extends string>(
 
       return option;
     });
+};
+
+const askChoice = async <T extends string>(
+  prompter: Prompter,
+  message: string,
+  choices: readonly T[],
+  initialValue: T,
+  describe: (choice: T) => Described,
+): Promise<T> => {
+  const options = optionsOf(choices, describe);
 
   const answer = await prompter.select({
     message,
@@ -227,15 +231,7 @@ const askMulti = async <T extends string>(
   required: boolean,
   describe: (choice: T) => Described,
 ): Promise<T[]> => {
-  const options: PromptOption[] = choices
-    .map((choice) => {
-      const option: PromptOption = {
-        value: choice,
-        ...describe(choice),
-      };
-
-      return option;
-    });
+  const options = optionsOf(choices, describe);
 
   const answer = await prompter.multiselect({
     message,
@@ -330,7 +326,7 @@ const askAnswer = async (
   }
 };
 
-const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers => {
+const soFarAnswered = (answered: Answered): Answers => {
   const answers = {
     ...DEFAULT_ANSWERS,
     ...answered,
@@ -342,7 +338,7 @@ const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers
 // `targetFor` is recomputed per call, so `hostedFramework` reaches the builders by the time `form` reads it.
 const askIfNeeded = async (
   prompter: Prompter,
-  answered: Partial<Record<AnswerKey, JsonValue>>,
+  answered: Answered,
   key: AnswerKey,
   targets?: readonly TargetRecord[],
 ): Promise<JsonValue | undefined> => {
@@ -371,7 +367,7 @@ const askIfNeeded = async (
 
 // `exactOptionalPropertyTypes` bans setting an optional property to `undefined`.
 const writeIfPresent = (
-  answered: Partial<Record<AnswerKey, JsonValue>>,
+  answered: Answered,
   key: AnswerKey,
   value: JsonValue | undefined,
 ): void => {
@@ -402,7 +398,7 @@ export const confirm = async (prompter: Prompter, message: string): Promise<bool
 
 const askKeys = async (
   prompter: Prompter,
-  answered: Partial<Record<AnswerKey, JsonValue>>,
+  answered: Answered,
   keys: readonly AnswerKey[],
   targets?: readonly TargetRecord[],
 ): Promise<void> => {
@@ -453,9 +449,9 @@ const askProjectName = async (
 // The App questions, also asked by `sync --add --kind app`.
 export const askApp = async (
   prompter: Prompter,
-  workspace: Partial<Record<AnswerKey, JsonValue>>,
-): Promise<Partial<Record<AnswerKey, JsonValue>>> => {
-  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...workspace };
+  workspace: Answered,
+): Promise<Answered> => {
+  const answered: Answered = { ...workspace };
   const appTarget: ChoiceRecord = {
     ...ANSWERS.target,
     values: omit(ANSWERS.target.values, ['typescript']),
@@ -474,14 +470,14 @@ export const askApp = async (
 const askProject = async (
   prompter: Prompter,
   position: number,
-  workspace: Partial<Record<AnswerKey, JsonValue>>,
-): Promise<Partial<Record<AnswerKey, JsonValue>>> => {
+  workspace: Answered,
+): Promise<Answered> => {
   const kind = await askChoice(prompter, `Project ${String(position)} kind`, keysOf(PROJECT_KINDS), 'app', (choice) => {
     return PROJECT_KINDS[choice];
   });
 
   if (kind === 'package') {
-    const typescript: Partial<Record<AnswerKey, JsonValue>> = { target: 'typescript' };
+    const typescript: Answered = { target: 'typescript' };
 
     return typescript;
   }
@@ -525,7 +521,7 @@ const parsedAsked = (name: string, entries: AnsweredEntries): Asked => {
 const askMonorepo = async (
   prompter: Prompter,
   name: string,
-  workspace: Partial<Record<AnswerKey, JsonValue>>,
+  workspace: Answered,
 ): Promise<Asked> => {
   const count = await askCount(prompter);
 
@@ -587,7 +583,7 @@ const askMonorepo = async (
 // Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
-  const answered: Partial<Record<AnswerKey, JsonValue>> = { ...input.fixed };
+  const answered: Answered = { ...input.fixed };
 
   await askKeys(prompter, answered, ['layout']);
 
