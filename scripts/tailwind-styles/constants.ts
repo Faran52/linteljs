@@ -2,6 +2,8 @@ import { aboutPage } from '../../packages/create/templates/shared/tailwind-sourc
 import { codeText } from '../../packages/create/templates/shared/tailwind-sources/CodeText.ts';
 import { contactPage } from '../../packages/create/templates/shared/tailwind-sources/ContactPage.ts';
 import { homePage } from '../../packages/create/templates/shared/tailwind-sources/HomePage.ts';
+import { panel } from '../../packages/create/templates/shared/tailwind-sources/Panel.ts';
+import { popup } from '../../packages/create/templates/shared/tailwind-sources/Popup.ts';
 import { statusPage } from '../../packages/create/templates/shared/tailwind-sources/StatusPage.ts';
 import { versionPage } from '../../packages/create/templates/shared/tailwind-sources/VersionPage.ts';
 
@@ -165,6 +167,14 @@ export const TARGETS: readonly Target[] = [
         path: 'styling/tailwind/src/views/home/HomeView.styles.ts',
         keys: HOME_DATA_KEYS,
       },
+    ],
+  },
+  {
+    root: 'shells/wxt',
+    attribute: 'class',
+    files: [
+      { table: popup, path: 'styling/tailwind/src/popup/popup.styles.ts' },
+      { table: panel, path: 'surfaces/devtools-panel/styling/tailwind/src/panel/panel.styles.ts' },
     ],
   },
 ];

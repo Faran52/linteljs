@@ -1,0 +1,10 @@
+// A styles entry is the attributes it sets: `class` in every styling, and StyleX's `style` where it emits one.
+export type ElementStyles = Readonly<Record<string, string | undefined>>;
+
+export const applyStyles = (element: Element, styles: ElementStyles): void => {
+  for (const [name, value] of Object.entries(styles)) {
+    if (value !== undefined) {
+      element.setAttribute(name, value);
+    }
+  }
+};

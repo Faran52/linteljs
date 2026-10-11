@@ -11,7 +11,7 @@ describe('markSvg', () => {
 
     const lines = paths
       .filter(([path]) => {
-        return path.includes('class="mark-line');
+        return path.includes(' class="');
       });
     expect(lines).toHaveLength(3);
   });

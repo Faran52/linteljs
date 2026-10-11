@@ -7,6 +7,7 @@ import {
 } from '@i18n/config';
 
 import { renderPopup } from './popup';
+import { styles } from './popup.styles';
 
 const last = languages.at(-1)?.id ?? 'en';
 
@@ -49,7 +50,7 @@ describe('renderPopup', () => {
     const element = root.querySelector('svg[role="img"]');
     expect(element).not.toBeNull();
     const landmark = root.querySelector('main')?.className;
-    expect(landmark).toBe('hero');
+    expect(landmark).toBe(styles.hero.class);
   });
 
   it('labels the title as a LintelJS starter in the chosen language', () => {
@@ -60,15 +61,15 @@ describe('renderPopup', () => {
     picker.dispatchEvent(new Event('change'));
 
     const label = root.querySelector('h1')?.previousElementSibling;
-    expect(label?.className).toBe('starter-label');
+    expect(label?.className).toBe(styles.starterLabel.class);
     expect(label?.textContent).toBe(resources[last].common.starterLabel);
   });
 
   it('points at the gate, as every home page does', () => {
     const root = open();
 
-    const hint = root.querySelector('.hint')?.textContent;
-    const command = root.querySelector('.hint code')?.textContent;
+    const hint = root.querySelector('main > h1 + p + p')?.textContent;
+    const command = root.querySelector('main > h1 + p + p > code')?.textContent;
 
     const expected = `Run ${CHECK} for the full gate.`;
 
@@ -120,19 +121,19 @@ describe('renderPopup', () => {
   it('stores a choice and renders the popup in it', () => {
     const root = open();
     const picker = pickerOf(root);
-    const english = root.querySelector('.lede')?.textContent;
-    const englishHint = root.querySelector('.hint')?.textContent;
+    const english = root.querySelector('main > h1 + p')?.textContent;
+    const englishHint = root.querySelector('main > h1 + p + p')?.textContent;
 
     picker.value = last;
     picker.dispatchEvent(new Event('change'));
 
-    const lede = root.querySelector('.lede')?.textContent;
-    const hint = root.querySelector('.hint')?.textContent;
+    const lede = root.querySelector('main > h1 + p')?.textContent;
+    const hint = root.querySelector('main > h1 + p + p')?.textContent;
 
     const item = localStorage.getItem(languageStorageKey);
     expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
-    expect(root.querySelector('.hint code')?.textContent).toBe(CHECK);
+    expect(root.querySelector('main > h1 + p + p > code')?.textContent).toBe(CHECK);
     expect(lede === english).toBe(last === 'en');
     expect(hint === englishHint).toBe(last === 'en');
   });

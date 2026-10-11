@@ -1,6 +1,7 @@
 import { CHECK, NAME } from '@config/linteljs';
 
 import { markSvg } from '@lib/mark/mark';
+import { applyStyles } from '@lib/utils/elementUtils';
 import { languages } from '@i18n/config';
 import {
   chooseLanguage,
@@ -11,6 +12,8 @@ import {
   t,
 } from '@i18n/i18n';
 
+import { styles } from './popup.styles';
+
 // The odd parts of a message sit inside `<code>`.
 const nodeOf = (part: string, index: number): Node => {
   if (index % 2 === 0) {
@@ -19,6 +22,7 @@ const nodeOf = (part: string, index: number): Node => {
 
   const code = document.createElement('code');
 
+  applyStyles(code, styles.hintCode);
   code.textContent = part;
 
   return code;
@@ -49,11 +53,12 @@ export const renderPopup = (root: HTMLElement): void => {
     picker.setAttribute('aria-label', t('language', language));
   };
 
-  label.className = 'starter-label';
-  title.className = 'title';
+  applyStyles(label, styles.starterLabel);
+  applyStyles(title, styles.title);
   title.textContent = NAME;
-  lede.className = 'lede';
-  hint.className = 'hint';
+  applyStyles(lede, styles.lede);
+  applyStyles(hint, styles.hint);
+  applyStyles(picker, styles.picker);
 
   picker.append(...languages
     .map((option) => {
@@ -72,7 +77,7 @@ export const renderPopup = (root: HTMLElement): void => {
       paint(detectLanguage());
     });
 
-  main.className = 'hero';
+  applyStyles(main, styles.hero);
   main.innerHTML = markSvg;
   main.append(label, title, lede, hint, picker);
   root.append(main);

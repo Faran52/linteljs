@@ -3,6 +3,9 @@ import {
   directionOf,
   t,
 } from '@i18n/i18n';
+import { applyStyles } from '@lib/utils/elementUtils';
+
+import { styles } from './panel.styles';
 
 // Also the DevTools tab's title.
 export const panelTitle = (): string => {
@@ -21,11 +24,11 @@ export const renderPanel = (root: HTMLElement): void => {
 
   document.documentElement.lang = language;
   document.documentElement.dir = directionOf(language);
-  label.className = 'starter-label';
+  applyStyles(label, styles.starterLabel);
   label.textContent = t('starterLabel', language);
-  main.className = 'hero';
-  title.className = 'title';
-  status.className = 'lede';
+  applyStyles(main, styles.hero);
+  applyStyles(title, styles.title);
+  applyStyles(status, styles.lede);
   title.textContent = panelTitle();
   status.textContent = t('panelReady', language);
   main.append(label, title, status);
