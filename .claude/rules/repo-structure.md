@@ -61,6 +61,9 @@ Every script reports through the shipped `packages/create/templates/project/scri
 in the working directory.
 `scripts/checkBannedPatterns.ts` stays flat and on plain `node`: the banned-pattern hook looks for it at the path
 a generated project has, and it runs the shipped checker less this workspace's `SKIPPED` list.
+`scripts/tailwind-styles/` writes each shell's `styling/tailwind/**/X.styles.ts` from the tables in
+`templates/shared/tailwind-sources/`, one shell per `TARGETS` entry in its `constants.ts`; the gate's
+`tailwind-styles` step fails when that changed a committed file.
 
 ## `packages/create/templates/`
 
@@ -69,7 +72,8 @@ per-target starters, `frameworks/<name>/<dir>/<drawer>/` the rewrite's drawers (
 copies held equal by `src/frameworks/registry.test.ts`), `common/` the manifest and the locale namespaces,
 `fragments/` the pieces joined into one file (kept as an explicit list, since they have no
 destination), `schemas/` the mirror of the root `schemas/` published by raw URL
-(`answers/utils/schemaUtils.test.ts` holds them equal). It cannot live under `src/`: it holds TypeScript for
+(`answers/utils/schemaUtils.test.ts` holds them equal), `shared/tailwind-sources/` one tailwind strings table per
+component, repo-only: the engine never reads it and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
 frameworks this workspace does not install and files named `*.test.ts`.
 
 ## `__mocks__/` and suites with no source
