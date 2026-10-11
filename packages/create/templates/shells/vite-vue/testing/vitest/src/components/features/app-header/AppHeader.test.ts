@@ -75,7 +75,8 @@ describe('AppHeader', () => {
         });
     };
     const currentClasses = bound('nav a[aria-current="page"]');
-    expect(currentClasses).not.toEqual(bound('nav a:not([aria-current])'));
+    const otherClasses = bound('nav a:not([aria-current])');
+    expect(currentClasses).not.toEqual(otherClasses);
   });
 
   it('offers every language, and speaks the one chosen', async () => {

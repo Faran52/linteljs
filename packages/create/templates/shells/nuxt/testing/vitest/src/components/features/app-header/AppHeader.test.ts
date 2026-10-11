@@ -61,7 +61,8 @@ describe('AppHeader', () => {
     expect(actual).toBe('About');
     const other = header.find('nav a:not([aria-current])');
     const currentClass = marked[0]?.attributes('class');
-    expect(currentClass).not.toBe(other.attributes('class'));
+    const otherClass = other.attributes('class');
+    expect(currentClass).not.toBe(otherClass);
   });
 
   it('offers every language, and speaks the one chosen', async () => {

@@ -77,7 +77,8 @@ describe('AppHeader', () => {
 
     expect(current.textContent).toBe(common.about);
     const currentClass = current.getAttribute('class');
-    expect(currentClass).not.toBe(other.getAttribute('class'));
+    const otherClass = other.getAttribute('class');
+    expect(currentClass).not.toBe(otherClass);
     const expected = ['version'];
     expect(visited).toEqual(expected);
   });
@@ -89,6 +90,7 @@ describe('AppHeader', () => {
     const tab = screen.getByRole('button', { name: resources.en.common.about });
 
     const selectClass = select.getAttribute('class');
-    expect(selectClass).toBe(tab.getAttribute('class'));
+    const tabClass = tab.getAttribute('class');
+    expect(selectClass).toBe(tabClass);
   });
 });
