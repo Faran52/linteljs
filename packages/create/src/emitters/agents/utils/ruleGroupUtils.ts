@@ -144,7 +144,6 @@ export const forAnswers = (
     .split('\n')
     .forEach((line) => {
       const name = conditionOf(line);
-      const last = pieces.at(-1);
 
       if (name === undefined) {
         fenced = fenced !== line
@@ -152,19 +151,23 @@ export const forAnswers = (
           .startsWith('```');
 
         pieces.push(line);
+
+        return;
       }
-      else if (typeof last === 'object' && last.name === name) {
-        last.lines.push(line
-          .replace(WHEN, '')
-          .trimEnd());
+
+      const last = pieces.at(-1);
+      const unmarked = line
+        .replace(WHEN, '')
+        .trimEnd();
+
+      if (typeof last === 'object' && last.name === name) {
+        last.lines.push(unmarked);
       }
       else {
         pieces.push({
           name,
           fenced,
-          lines: [line
-            .replace(WHEN, '')
-            .trimEnd()],
+          lines: [unmarked],
         });
       }
     });

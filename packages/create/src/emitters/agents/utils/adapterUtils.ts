@@ -79,7 +79,7 @@ export const adapterArtifact = (target: string, workspace: Workspace, header = '
     }
 
     // A function, so a `$` in a project name is never read as a replacement pattern.
-    return BLOCK.test(current)
+    return hasProjectsBlock(current)
       ? current
           .replace(BLOCK, () => {
             return block;

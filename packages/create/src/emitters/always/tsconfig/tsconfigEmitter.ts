@@ -169,7 +169,7 @@ const compilerOptionsFor = (parts: TsconfigParts): CompilerOptions => {
   return compilerOptions;
 };
 
-export const tsconfigOf = (parts: TsconfigParts): TsconfigFile => {
+const tsconfigOf = (parts: TsconfigParts): TsconfigFile => {
   const { delta } = parts;
 
   const tsconfig: TsconfigFile = {
