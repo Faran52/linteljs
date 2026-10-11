@@ -35,4 +35,16 @@ describe('attributesOf', () => {
 
     expect(text).toBe('class="mark"');
   });
+
+  it('escapes an ampersand in a value', () => {
+    const text = attributesOf({ style: 'a&b' });
+
+    expect(text).toBe('style="a&amp;b"');
+  });
+
+  it('escapes a double quote in a value', () => {
+    const text = attributesOf({ class: 'a"b' });
+
+    expect(text).toBe('class="a&quot;b"');
+  });
 });

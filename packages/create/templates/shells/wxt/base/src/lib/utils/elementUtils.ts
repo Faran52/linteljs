@@ -12,7 +12,13 @@ export const applyStyles = (element: Element, styles: ElementStyles): void => {
 export const attributesOf = (styles: ElementStyles): string => {
   return Object.entries(styles)
     .flatMap(([name, value]) => {
-      return value === undefined ? [] : [`${name}="${value}"`];
+      if (value === undefined) {
+        return [];
+      }
+
+      const escaped = value.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+
+      return [`${name}="${escaped}"`];
     })
     .join(' ');
 };
