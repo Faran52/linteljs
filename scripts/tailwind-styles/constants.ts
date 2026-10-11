@@ -1,7 +1,10 @@
 import { aboutPage } from '../../packages/create/templates/shared/tailwind-sources/AboutPage.ts';
+import { appHeader } from '../../packages/create/templates/shared/tailwind-sources/AppHeader.ts';
+import { button } from '../../packages/create/templates/shared/tailwind-sources/Button.ts';
 import { codeText } from '../../packages/create/templates/shared/tailwind-sources/CodeText.ts';
 import { contactPage } from '../../packages/create/templates/shared/tailwind-sources/ContactPage.ts';
 import { homePage } from '../../packages/create/templates/shared/tailwind-sources/HomePage.ts';
+import { mark } from '../../packages/create/templates/shared/tailwind-sources/Mark.ts';
 import { panel } from '../../packages/create/templates/shared/tailwind-sources/Panel.ts';
 import { popup } from '../../packages/create/templates/shared/tailwind-sources/Popup.ts';
 import { statusPage } from '../../packages/create/templates/shared/tailwind-sources/StatusPage.ts';
@@ -31,6 +34,13 @@ export const TARGETS: readonly Target[] = [
     root: 'shells/vite-react',
     attribute: 'className',
     files: [
+      {
+        table: appHeader,
+        path: 'styling/tailwind/src/components/features/app-header/AppHeader.styles.ts',
+        style: true,
+      },
+      { table: button, path: 'styling/tailwind/src/components/ui/button/Button.styles.ts' },
+      { table: mark, path: 'styling/tailwind/src/components/ui/mark/Mark.styles.ts' },
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
       { table: aboutPage, path: 'styling/tailwind/src/pages/about/AboutPage.styles.ts' },
@@ -48,6 +58,9 @@ export const TARGETS: readonly Target[] = [
     root: 'shells/next',
     attribute: 'className',
     files: [
+      { table: appHeader, path: 'styling/tailwind/src/components/features/app-header/AppHeader.styles.ts' },
+      { table: button, path: 'styling/tailwind/src/components/ui/button/Button.styles.ts' },
+      { table: mark, path: 'styling/tailwind/src/components/ui/mark/Mark.styles.ts' },
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
       { table: aboutPage, path: 'styling/tailwind/src/app/about/page.styles.ts' },

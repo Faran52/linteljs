@@ -15,6 +15,7 @@
   --color-border: var(--border);
   --color-hair: var(--hair);
   --color-input: var(--input);
+  --color-ring: var(--ring);
 
   /* The brand, and the three states that answer back. */
   --color-primary: var(--primary);
@@ -37,6 +38,46 @@
   --text-ui: var(--text-ui);
   --text-value: var(--text-value);
   --text-metric: var(--text-metric);
+  --text-display: 1.875rem;
+
+  /* The weights and tracking the pages repeat, named by role. */
+  --font-weight-title: 620;
+  --font-weight-label: 540;
+  --tracking-title: -0.015em;
+  --tracking-display: -0.025em;
+  --tracking-eyebrow: 0.08em;
+
+  /* Slow apart and fast back: decay reads as drift and correction as the fix. */
+  --animate-cascade: cascade 5s infinite;
+
+  @keyframes cascade {
+    0% {
+      transform: translateX(0);
+      animation-timing-function: ease-in-out;
+    }
+
+    32% {
+      transform: translateX(0);
+      animation-timing-function: ease-in-out;
+    }
+
+    58% {
+      transform: translateX(var(--drift));
+    }
+
+    70% {
+      transform: translateX(var(--drift));
+      animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1);
+    }
+
+    82% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(0);
+    }
+  }
 }
 
 /* The condition the tokens switch on: the system, unless a `.light` or `.dark` class pins it. */
