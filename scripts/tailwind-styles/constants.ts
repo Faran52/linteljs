@@ -201,6 +201,7 @@ export const TARGETS: readonly Target[] = [
     attribute: 'class',
     files: [
       { table: popup, path: 'styling/tailwind/src/popup/popup.styles.ts' },
+      { table: textInput, path: 'styling/tailwind/src/lib/text-input/textInput.styles.ts' },
       { table: panel, path: 'surfaces/devtools-panel/styling/tailwind/src/panel/panel.styles.ts' },
     ],
   },
