@@ -1,10 +1,10 @@
-<header class="header">
-  <p class="starter-label">{{ t('starterLabel') }}</p>
-  <p class="brand">{{ name() }}</p>
-  <nav class="tabs" aria-label="Main">
+<header [class]="styles.header.class">
+  <p [class]="styles.starterLabel.class">{{ t('starterLabel') }}</p>
+  <p [class]="styles.brand.class">{{ name() }}</p>
+  <nav [class]="styles.tabs.class" aria-label="Main">
     @for (page of pages; track page.id) {
       <a
-        class="tab"
+        [class]="styles.tab.class"
         [routerLink]="page.path"
         routerLinkActive="tab-current"
         [routerLinkActiveOptions]="{ exact: page.path === '/' }"

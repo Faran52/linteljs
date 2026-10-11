@@ -1,10 +1,9 @@
-<div class="field">
-  <label class="label" [for]="name()">{{ label() }}</label>
+<div [class]="styles.field.class">
+  <label [class]="styles.label.class" [for]="name()">{{ label() }}</label>
   @if (multiline()) {
     <textarea
       #field
-      class="textarea"
-      [class.textarea-invalid]="error() !== undefined"
+      [class]="styles.textarea(error() !== undefined).class"
       [id]="name()"
       [name]="name()"
       [value]="value()"
@@ -16,8 +15,7 @@
   } @else {
     <input
       #field
-      class="input"
-      [class.input-invalid]="error() !== undefined"
+      [class]="styles.input(error() !== undefined).class"
       [id]="name()"
       [name]="name()"
       [type]="type()"
@@ -29,6 +27,6 @@
     />
   }
   @if (error() !== undefined) {
-    <p class="error" [id]="name() + '-error'">{{ error() }}</p>
+    <p [class]="styles.error.class" [id]="name() + '-error'">{{ error() }}</p>
   }
 </div>

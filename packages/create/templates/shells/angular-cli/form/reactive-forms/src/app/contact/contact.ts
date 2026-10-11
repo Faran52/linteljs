@@ -16,6 +16,8 @@ import { t } from '@i18n/i18n';
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';
 
+import { styles } from './contact.styles';
+
 @Component({
   imports: [
     ReactiveFormsModule,
@@ -40,6 +42,8 @@ export class Contact {
   private readonly attempted = signal(false);
 
   private readonly submit = useSubmitContact();
+
+  protected readonly styles = styles;
 
   // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
   protected errorOf(name: keyof ContactValues): string | undefined {

@@ -1,12 +1,12 @@
-<main class="page">
-  <h1 class="page-title">{{ t('version') }}</h1>
-  <p class="page-lede">{{ t('versionLede') }}</p>
+<main [class]="styles.page.class">
+  <h1 [class]="styles.pageTitle.class">{{ t('version') }}</h1>
+  <p [class]="styles.pageLede.class">{{ t('versionLede') }}</p>
 
-  <section class="section">
-    <h2 class="section-title">{{ t('versionStack') }}</h2>
-    <dl class="rows">
+  <section [class]="styles.section.class">
+    <h2 [class]="styles.sectionTitle.class">{{ t('versionStack') }}</h2>
+    <dl [class]="styles.rows.class">
       @for (entry of stack; track entry.name) {
-        <div class="row">
+        <div [class]="styles.row.class">
           <dt>{{ entry.name }}</dt>
           <dd>{{ entry.version }}</dd>
         </div>
@@ -14,17 +14,17 @@
     </dl>
   </section>
 
-  <section class="section">
-    <h2 class="section-title">{{ t('versionAnswers') }}</h2>
-    <dl class="rows">
+  <section [class]="styles.section.class">
+    <h2 [class]="styles.sectionTitle.class">{{ t('versionAnswers') }}</h2>
+    <dl [class]="styles.rows.class">
       @for (entry of answers; track entry.label) {
-        <div class="row">
+        <div [class]="styles.row.class">
           <dt>{{ t(entry.label) }}</dt>
           <dd>{{ entry.value }}</dd>
         </div>
       }
     </dl>
-    <p class="note">
+    <p [class]="styles.note.class">
       <app-code-text [text]="t('versionRecorded', recorded)" />
     </p>
   </section>

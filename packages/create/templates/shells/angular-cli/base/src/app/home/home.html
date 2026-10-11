@@ -1,8 +1,8 @@
-<main class="hero">
+<main [class]="styles.hero.class">
   <app-mark />
-  <h1 class="title">{{ name }}</h1>
-  <p class="lede">{{ t('homeLedeAngular') }}</p>
-  <p class="hint">
+  <h1 [class]="styles.title.class">{{ name }}</h1>
+  <p [class]="styles.lede.class">{{ t('homeLedeAngular') }}</p>
+  <p [class]="styles.hint.class">
     <app-code-text [text]="t('gateHint', { command: check })" />
   </p>
 </main>

@@ -13,6 +13,8 @@ import { t } from '@i18n/i18n';
 import { Button } from '@ui/button/button';
 import { TextInput } from '@ui/text-input/text-input';
 
+import { styles } from './contact.styles';
+
 @Component({
   imports: [Button, TextInput],
   selector: 'app-contact',
@@ -44,6 +46,8 @@ export class Contact {
   protected readonly state = injectStore(this.form, (current) => {
     return current;
   });
+
+  protected readonly styles = styles;
 
   protected errorOf(name: keyof ContactValues): string | undefined {
     const meta = this.state().fieldMeta[name];

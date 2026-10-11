@@ -7,6 +7,8 @@ import { t } from '@i18n/i18n';
 import { CodeText } from '@ui/code-text/code-text';
 import { Mark } from '@ui/mark/mark';
 
+import { styles } from './home.styles';
+
 @Component({
   imports: [CodeText, Mark],
   selector: 'app-home',
@@ -18,4 +20,6 @@ export class Home {
   protected readonly name = NAME;
 
   protected readonly t = t;
+
+  protected readonly styles = styles;
 }

@@ -11,6 +11,8 @@ import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/code-text';
 
+import { styles } from './about.styles';
+
 @Component({
   imports: [CodeText],
   selector: 'app-about',
@@ -26,4 +28,6 @@ export class About {
   protected readonly sync = SYNC;
 
   protected readonly t = t;
+
+  protected readonly styles = styles;
 }

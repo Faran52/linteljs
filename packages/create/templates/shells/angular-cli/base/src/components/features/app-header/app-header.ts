@@ -6,6 +6,7 @@ import { PAGES } from '@config/routes';
 import { t, translateId } from '@i18n/i18n';
 
 import { LanguageSelect } from '../language-select/language-select';
+import { styles } from './app-header.styles';
 
 @Component({
   imports: [
@@ -24,4 +25,6 @@ export class AppHeader {
   protected readonly t = t;
 
   protected readonly translateId = translateId;
+
+  protected readonly styles = styles;
 }

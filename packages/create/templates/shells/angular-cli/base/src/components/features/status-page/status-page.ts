@@ -4,6 +4,8 @@ import { t, translateId } from '@i18n/i18n';
 
 import { Button } from '@ui/button/button';
 
+import { styles } from './status-page.styles';
+
 // Home is a full load, so a crash leaves no state behind. The message is a key into the locales.
 @Component({
   imports: [Button],
@@ -20,4 +22,6 @@ export class StatusPage {
   protected readonly t = t;
 
   protected readonly translateId = translateId;
+
+  protected readonly styles = styles;
 }

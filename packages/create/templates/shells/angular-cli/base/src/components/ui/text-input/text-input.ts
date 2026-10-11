@@ -5,6 +5,8 @@ import {
   output,
 } from '@angular/core';
 
+import { styles } from './text-input.styles';
+
 // A dense tool pane can get away with `aria-label` alone; a form cannot.
 @Component({
   selector: 'app-text-input',
@@ -30,4 +32,6 @@ export class TextInput {
   protected readonly describedBy = computed(() => {
     return this.error() === undefined ? undefined : `${this.name()}-error`;
   });
+
+  protected readonly styles = styles;
 }

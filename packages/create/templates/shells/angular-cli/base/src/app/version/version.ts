@@ -6,6 +6,8 @@ import { t } from '@i18n/i18n';
 
 import { CodeText } from '@ui/code-text/code-text';
 
+import { styles } from './version.styles';
+
 // Recorded when the project was generated: a browser cannot read its machine's Node or package manager.
 @Component({
   imports: [CodeText],
@@ -23,4 +25,6 @@ export class Version {
   };
 
   protected readonly t = t;
+
+  protected readonly styles = styles;
 }

@@ -1,9 +1,9 @@
-<main class="page">
-  <h1 class="page-title">{{ t('contact') }}</h1>
-  <p class="page-lede">{{ t('contactLede') }}</p>
+<main [class]="styles.page.class">
+  <h1 [class]="styles.pageTitle.class">{{ t('contact') }}</h1>
+  <p [class]="styles.pageLede.class">{{ t('contactLede') }}</p>
 
   @if (sent()) {
-    <p class="sent" role="status">{{ t('contactSent') }}</p>
+    <p [class]="styles.sent.class" role="status">{{ t('contactSent') }}</p>
   } @else {
     <form novalidate (submit)="send($event)">
       <app-text-input
