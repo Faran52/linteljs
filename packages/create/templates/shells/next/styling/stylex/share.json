@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@stylexjs/stylex",
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@stylexjs/babel-plugin",
+    "@stylexjs/eslint-plugin",
+    "@stylexjs/postcss-plugin",
+    "@stylexjs/unplugin",
+    "postcss",
+    "unplugin"
+  ]
+}

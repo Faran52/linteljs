@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@types/chrome",
+    "@vitest/coverage-v8",
+    "@vitest/eslint-plugin",
+    "happy-dom",
+    "vitest"
+  ]
+}

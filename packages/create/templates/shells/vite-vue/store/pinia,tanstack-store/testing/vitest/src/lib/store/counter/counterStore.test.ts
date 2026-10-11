@@ -1,0 +1,49 @@
+import {
+  defineComponent,
+  h,
+  unref,
+} from 'vue';
+import { mount } from '@vue/test-utils';
+
+import { storeProvider } from '@lib/providers/store/storeProvider';
+
+import { useCounter } from './counterStore';
+
+const Probe = defineComponent({
+  setup: () => {
+    const one = useCounter();
+    const two = useCounter();
+
+    return () => {
+      const oneCount = unref(one.count);
+      const twoCount = unref(two.count);
+      const oneLabel = `one ${String(oneCount)}`;
+      const twoLabel = `two ${String(twoCount)}`;
+
+      return h('div', [
+        h('button', {
+          type: 'button',
+          onClick: one.add,
+        }, oneLabel),
+        h('button', { type: 'button' }, twoLabel),
+      ]);
+    };
+  },
+});
+
+describe('useCounter', () => {
+  it('counts up, and every reader sees the same count', async () => {
+    const app = mount(Probe, { global: { plugins: [storeProvider] } });
+    const [first, second] = app.findAll('button');
+
+    const actual = first?.text();
+    expect(actual).toBe('one 0');
+
+    await first?.trigger('click');
+
+    const actual2 = first?.text();
+    expect(actual2).toBe('one 1');
+    const actual3 = second?.text();
+    expect(actual3).toBe('two 1');
+  });
+});

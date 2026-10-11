@@ -1,0 +1,22 @@
+---
+import { languages } from '@i18n/config';
+import { t } from '@i18n/i18n';
+
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = Pick<HTMLAttributes<'select'>, 'class' | 'style'>;
+
+const attributes = Astro.props;
+---
+
+<!-- Styled by the header that holds it; the i18n client script finds it by `data-language`. -->
+<select
+  {...attributes}
+  aria-label={t('language')}
+  data-language
+>
+  {languages
+    .map((option) => {
+      return <option value={option.id} lang={option.id}>{option.label}</option>;
+    })}
+</select>

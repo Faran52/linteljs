@@ -1,0 +1,34 @@
+import { useReducedMotion } from 'react-native-reanimated';
+
+import { screen } from '@testing-library/react-native';
+
+import { renderScreen } from '@mocks/renderScreen';
+
+import { Mark } from './Mark';
+
+describe('Mark', () => {
+  it('renders as a single labelled image', async () => {
+    await renderScreen(<Mark />);
+
+    const element = screen.getByLabelText('linteljs');
+    expect(element).toBeTruthy();
+  });
+
+  it('drifts its lines on a loop', async () => {
+    await renderScreen(<Mark />);
+
+    const tree = JSON.stringify(screen.toJSON());
+
+    expect(tree).toContain('"animationIterationCount":"infinite"');
+  });
+
+  it('holds still when the reader asks for reduced motion', async () => {
+    jest.mocked(useReducedMotion).mockReturnValueOnce(true);
+
+    await renderScreen(<Mark />);
+
+    const tree = JSON.stringify(screen.toJSON());
+
+    expect(tree).not.toContain('animationName');
+  });
+});

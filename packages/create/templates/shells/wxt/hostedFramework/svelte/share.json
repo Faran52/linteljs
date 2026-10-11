@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "svelte"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@sveltejs/vite-plugin-svelte",
+    "@types/chrome",
+    "eslint-plugin-svelte",
+    "postcss",
+    "postcss-html",
+    "svelte-check",
+    "svelte-eslint-parser"
+  ]
+}

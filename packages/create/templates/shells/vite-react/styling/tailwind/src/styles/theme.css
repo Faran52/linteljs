@@ -1,0 +1,53 @@
+/* `inline` because the values are already custom properties: without it Tailwind wraps each again. */
+
+@theme inline {
+  --default-transition-duration: var(--motion-fast);
+  --default-transition-timing-function: var(--motion-ease);
+
+  /* Surfaces and the text on them. */
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-foreground-2: var(--foreground-2);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-hair: var(--hair);
+  --color-input: var(--input);
+
+  /* The brand, and the three states that answer back. */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ok: var(--ok);
+  --color-destructive: var(--destructive);
+
+  /* Radii, by role rather than by size. */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Typefaces, and the scale in rem. */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --text-eyebrow: var(--text-eyebrow);
+  --text-body: var(--text-body);
+  --text-ui: var(--text-ui);
+  --text-value: var(--text-value);
+  --text-metric: var(--text-metric);
+}
+
+/* The condition the tokens switch on: the system, unless a `.light` or `.dark` class pins it. */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:not(:where(.light, .light *)) {
+      @slot;
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@t3-oss/env-core"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "oxc-transform-react"
+  ]
+}

@@ -1,0 +1,7 @@
+<select #picker class="tab tab-button" [attr.aria-label]="t('language')" (change)="chooseLanguage(picker.value)">
+  @for (option of languages; track option.id) {
+    <option [value]="option.id" [attr.lang]="option.id" [selected]="option.id === language()">
+      {{ option.label }}
+    </option>
+  }
+</select>

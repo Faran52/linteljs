@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "solid-js"
+  ],
+  "devDependencies": [
+    "@astrojs/solid-js",
+    "eslint-plugin-jsx-a11y-x",
+    "eslint-plugin-solid",
+    "vite-plugin-solid"
+  ]
+}

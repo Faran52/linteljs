@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@tanstack/solid-store",
+    "es-toolkit"
+  ]
+}

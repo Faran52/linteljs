@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "msw"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "solid"
+  ],
+  "defaults": {
+    "testing": "vitest",
+    "e2e": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "solid-actions",
+    "store": "signals",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "@solid-primitives/i18n",
+    "qs",
+    "solid-js"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "@types/qs",
+    "eslint",
+    "eslint-plugin-jsx-a11y-x",
+    "eslint-plugin-solid",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript",
+    "vite",
+    "vite-plugin-solid"
+  ],
+  "pages": {
+    "home": "src/pages/home",
+    "about": "src/pages/about",
+    "version": "src/pages/version",
+    "contact": "src/pages/contact"
+  }
+}

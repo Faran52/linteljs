@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "requires": {
+    "store": [
+      "redux-toolkit"
+    ]
+  },
+  "dependencies": [
+    "@reduxjs/toolkit",
+    "es-toolkit",
+    "react-redux"
+  ]
+}

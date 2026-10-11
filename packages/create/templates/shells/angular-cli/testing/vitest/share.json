@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@analogjs/vite-plugin-angular",
+    "@vitest/coverage-v8",
+    "@vitest/eslint-plugin",
+    "happy-dom",
+    "vitest"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@tailwindcss/vite",
+    "eslint-plugin-better-tailwindcss",
+    "stylelint-config-tailwindcss",
+    "tailwindcss"
+  ]
+}

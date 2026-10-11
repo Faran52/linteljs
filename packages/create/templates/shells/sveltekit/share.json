@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "svelte"
+  ],
+  "defaults": {
+    "testing": "vitest",
+    "e2e": "off",
+    "stories": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "form-actions",
+    "store": "runes",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "qs",
+    "svelte"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@inlang/paraglide-js",
+    "@inlang/plugin-message-format",
+    "@linteljs/eslint-config",
+    "@sveltejs/adapter-auto",
+    "@sveltejs/kit",
+    "@sveltejs/vite-plugin-svelte",
+    "@types/node",
+    "@types/qs",
+    "eslint",
+    "eslint-plugin-svelte",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "postcss",
+    "postcss-html",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "svelte-check",
+    "svelte-eslint-parser",
+    "typescript",
+    "vite"
+  ],
+  "pages": {
+    "home": "src/routes",
+    "about": "src/routes/about",
+    "version": "src/routes/version",
+    "contact": "src/routes/contact"
+  }
+}

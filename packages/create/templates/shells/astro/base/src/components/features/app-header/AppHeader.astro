@@ -1,0 +1,41 @@
+---
+import { PAGES } from '@config/routes';
+
+import { isCurrentPath } from '@utils/currentPathUtils';
+import { t, translateId } from '@i18n/i18n';
+
+import LanguageSelect from '@features/language-select/LanguageSelect.astro';
+
+import { styles } from './AppHeader.styles';
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const here = Astro.url.pathname;
+---
+
+<!-- Real links: Astro renders each page on the server. Each `data-i18n` element follows the select. -->
+<header {...styles.header}>
+  <p {...styles.starterLabel} data-i18n="starterLabel">{t('starterLabel')}</p>
+  <p {...styles.brand}>{name}</p>
+  <nav {...styles.tabs} aria-label="Main">
+    {PAGES
+      .map((page) => {
+        const isCurrent = isCurrentPath(here, page.path);
+
+        return (
+          <a
+            {...styles.tab(isCurrent)}
+            href={page.path}
+            aria-current={isCurrent ? 'page' : undefined}
+            data-i18n={page.id}
+          >
+            {translateId(page.id)}
+          </a>
+        );
+      })}
+  </nav>
+  <LanguageSelect {...styles.tab(false)} />
+</header>

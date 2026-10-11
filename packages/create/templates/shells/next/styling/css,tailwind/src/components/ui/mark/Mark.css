@@ -1,0 +1,58 @@
+/* Slow apart and fast back: decay reads as drift and correction as the fix. */
+.mark {
+  width: 148px;
+  height: 148px;
+  color: var(--primary);
+}
+
+/* Here, not in the base sheet: a later rule of the same weight would win over it. */
+@media (prefers-reduced-motion: no-preference) {
+  .mark-line {
+    animation: cascade 5s infinite;
+  }
+}
+
+.mark-line-1 {
+  --drift: 22px;
+}
+
+.mark-line-2 {
+  --drift: 9px;
+
+  animation-delay: 0.1s;
+}
+
+.mark-line-3 {
+  --drift: 32px;
+
+  animation-delay: 0.2s;
+}
+
+@keyframes cascade {
+  0% {
+    transform: translateX(0);
+    animation-timing-function: ease-in-out;
+  }
+
+  32% {
+    transform: translateX(0);
+    animation-timing-function: ease-in-out;
+  }
+
+  58% {
+    transform: translateX(var(--drift));
+  }
+
+  70% {
+    transform: translateX(var(--drift));
+    animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  82% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}

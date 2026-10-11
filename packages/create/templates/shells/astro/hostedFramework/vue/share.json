@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "vue"
+  ],
+  "devDependencies": [
+    "@astrojs/vue",
+    "@vitejs/plugin-vue",
+    "eslint-plugin-vue",
+    "eslint-plugin-vuejs-accessibility",
+    "postcss",
+    "postcss-html",
+    "vue-eslint-parser",
+    "vue-tsc"
+  ]
+}

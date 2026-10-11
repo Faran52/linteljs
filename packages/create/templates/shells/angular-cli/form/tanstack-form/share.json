@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@tanstack/angular-form",
+    "es-toolkit"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "react",
+    "react-dom"
+  ],
+  "devDependencies": [
+    "@eslint-react/eslint-plugin",
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@types/chrome",
+    "@types/react",
+    "@types/react-dom",
+    "@vitejs/plugin-react",
+    "eslint-plugin-jsx-a11y-x",
+    "eslint-plugin-react-hooks",
+    "oxc-transform-react"
+  ]
+}

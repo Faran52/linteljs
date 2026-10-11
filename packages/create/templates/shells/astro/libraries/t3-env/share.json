@@ -1,0 +1,6 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@t3-oss/env-core"
+  ]
+}

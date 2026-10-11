@@ -1,0 +1,6 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "zod"
+  ]
+}

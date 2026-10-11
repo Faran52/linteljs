@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@tanstack/react-router",
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@tanstack/eslint-plugin-router",
+    "oxc-transform-react"
+  ]
+}

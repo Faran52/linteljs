@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@reduxjs/toolkit",
+    "es-toolkit",
+    "react-redux"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "oxc-transform-react"
+  ]
+}

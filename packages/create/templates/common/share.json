@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/share.schema.json",
+  "defaults": {
+    "layout": "single",
+    "typeSafety": "strict",
+    "agents": [
+      "claude-code"
+    ],
+    "plugins": [
+      "ponytail",
+      "context7",
+      "frontend-design"
+    ],
+    "languages": [
+      "en"
+    ]
+  }
+}

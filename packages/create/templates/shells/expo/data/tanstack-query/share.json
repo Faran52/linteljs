@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@tanstack/react-query",
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@tanstack/eslint-plugin-query"
+  ]
+}

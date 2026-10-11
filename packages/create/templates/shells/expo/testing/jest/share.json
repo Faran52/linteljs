@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@react-native/jest-preset",
+    "@testing-library/react-native",
+    "@types/jest",
+    "@types/react-dom",
+    "eslint-plugin-jest",
+    "jest",
+    "jest-expo",
+    "test-renderer"
+  ]
+}

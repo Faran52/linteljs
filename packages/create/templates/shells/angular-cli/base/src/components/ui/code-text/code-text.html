@@ -1,0 +1,5 @@
+<span>
+  @for (part of parts(); track $index) {
+    @if ($odd) {<code>{{ part }}</code>} @else {<ng-container>{{ part }}</ng-container>}
+  }
+</span>

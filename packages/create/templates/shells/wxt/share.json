@@ -1,0 +1,40 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "defaults": {
+    "browser": "chrome",
+    "hostedFramework": "off",
+    "testing": "vitest",
+    "e2e": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css"
+  },
+  "dependencies": [
+    "qs"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@crxjs/vite-plugin",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "@types/qs",
+    "eslint",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript",
+    "vite"
+  ],
+  "pages": {
+    "surface:popup": "src/popup",
+    "surface:background": "src/background",
+    "surface:devtools": "src/devtools",
+    "surface:panel": "src/panel"
+  }
+}

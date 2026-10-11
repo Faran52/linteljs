@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "vue"
+  ],
+  "defaults": {
+    "testing": "vitest",
+    "e2e": "off",
+    "stories": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "v-model",
+    "store": "vue-reactivity",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "qs",
+    "vue",
+    "vue-i18n",
+    "vue-router"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "@types/qs",
+    "@vitejs/plugin-vue",
+    "eslint",
+    "eslint-plugin-vue",
+    "eslint-plugin-vuejs-accessibility",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "postcss",
+    "postcss-html",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript",
+    "vite",
+    "vue-eslint-parser",
+    "vue-tsc"
+  ],
+  "pages": {
+    "home": "src/views/home",
+    "about": "src/views/about",
+    "version": "src/views/version",
+    "contact": "src/views/contact"
+  }
+}

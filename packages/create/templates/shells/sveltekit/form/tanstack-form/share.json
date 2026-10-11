@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@tanstack/svelte-form",
+    "es-toolkit"
+  ]
+}

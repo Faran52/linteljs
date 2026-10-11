@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "react",
+    "react-dom"
+  ],
+  "defaults": {
+    "hostedFramework": "off",
+    "testing": "vitest",
+    "e2e": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "astro-actions",
+    "store": "nanostores",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "astro",
+    "qs"
+  ],
+  "devDependencies": [
+    "@astrojs/check",
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "@types/qs",
+    "astro-eslint-parser",
+    "eslint",
+    "eslint-plugin-astro",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript"
+  ],
+  "pages": {
+    "home": "src/views/home",
+    "about": "src/views/about",
+    "version": "src/views/version",
+    "contact": "src/views/contact"
+  }
+}

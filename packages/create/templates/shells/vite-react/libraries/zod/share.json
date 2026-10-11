@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "zod"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "oxc-transform-react"
+  ]
+}

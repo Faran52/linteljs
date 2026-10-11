@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@stylexjs/stylex",
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@stylexjs/eslint-plugin",
+    "@stylexjs/unplugin",
+    "oxc-transform-react",
+    "unplugin"
+  ]
+}

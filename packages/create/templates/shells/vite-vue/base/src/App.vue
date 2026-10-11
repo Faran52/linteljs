@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { NAME } from '@config/linteljs';
+
+import AppHeader from '@features/app-header/AppHeader.vue';
+import ErrorBoundary from '@features/error-boundary/ErrorBoundary.vue';
+</script>
+
+<!-- Keyed by path, so leaving a page that crashed clears the fallback. -->
+<template>
+  <AppHeader :name="NAME" />
+  <ErrorBoundary :key="$route.path">
+    <RouterView />
+  </ErrorBoundary>
+</template>

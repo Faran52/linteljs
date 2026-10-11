@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "solid-js"
+  ],
+  "devDependencies": [
+    "@html-eslint/eslint-plugin",
+    "@html-eslint/parser",
+    "@types/chrome",
+    "eslint-plugin-jsx-a11y-x",
+    "eslint-plugin-solid",
+    "vite-plugin-solid"
+  ]
+}

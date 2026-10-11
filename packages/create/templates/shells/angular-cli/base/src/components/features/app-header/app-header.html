@@ -1,0 +1,18 @@
+<header class="header">
+  <p class="starter-label">{{ t('starterLabel') }}</p>
+  <p class="brand">{{ name() }}</p>
+  <nav class="tabs" aria-label="Main">
+    @for (page of pages; track page.id) {
+      <a
+        class="tab"
+        [routerLink]="page.path"
+        routerLinkActive="tab-current"
+        [routerLinkActiveOptions]="{ exact: page.path === '/' }"
+        ariaCurrentWhenActive="page"
+      >
+        {{ translateId(page.id) }}
+      </a>
+    }
+  </nav>
+  <app-language-select />
+</header>

@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "@stylexjs/stylex",
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@stylexjs/eslint-plugin",
+    "@stylexjs/unplugin",
+    "unplugin"
+  ]
+}

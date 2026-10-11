@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit"
+  ],
+  "devDependencies": [
+    "@vitest/coverage-v8",
+    "@vitest/eslint-plugin",
+    "vitest"
+  ]
+}

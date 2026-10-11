@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "angular"
+  ],
+  "defaults": {
+    "testing": "vitest",
+    "e2e": "off",
+    "stories": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "reactive-forms",
+    "store": "signals",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "@angular/common",
+    "@angular/compiler",
+    "@angular/core",
+    "@angular/forms",
+    "@angular/platform-browser",
+    "@angular/router",
+    "qs",
+    "rxjs",
+    "tslib"
+  ],
+  "devDependencies": [
+    "@angular/build",
+    "@angular/cli",
+    "@angular/compiler-cli",
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "@types/qs",
+    "angular-eslint",
+    "eslint",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript",
+    "vite"
+  ],
+  "pages": {
+    "home": "src/app/home",
+    "about": "src/app/about",
+    "version": "src/app/version",
+    "contact": "src/app/contact"
+  }
+}

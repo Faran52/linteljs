@@ -1,0 +1,25 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "defaults": {
+    "testing": "vitest",
+    "libraries": [
+      "es-toolkit"
+    ]
+  },
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@linteljs/eslint-config",
+    "@types/node",
+    "eslint",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "tsdown",
+    "typescript"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "dependencies": [
+    "es-toolkit",
+    "nativewind",
+    "react-native-css"
+  ],
+  "devDependencies": [
+    "@tailwindcss/postcss",
+    "eslint-plugin-better-tailwindcss",
+    "postcss",
+    "stylelint-config-tailwindcss",
+    "tailwindcss"
+  ]
+}

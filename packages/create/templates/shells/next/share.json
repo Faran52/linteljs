@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "react",
+    "react-dom"
+  ],
+  "defaults": {
+    "testing": "vitest",
+    "e2e": "off",
+    "stories": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "server-actions",
+    "store": "react-state",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "next",
+    "next-intl",
+    "qs",
+    "react",
+    "react-dom"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@eslint-react/eslint-plugin",
+    "@linteljs/eslint-config",
+    "@next/eslint-plugin-next",
+    "@types/node",
+    "@types/qs",
+    "@types/react",
+    "@types/react-dom",
+    "eslint",
+    "eslint-plugin-jsx-a11y-x",
+    "eslint-plugin-react-hooks",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript"
+  ],
+  "pages": {
+    "home": "src/app",
+    "about": "src/app/about",
+    "version": "src/app/version",
+    "contact": "src/app/contact"
+  }
+}

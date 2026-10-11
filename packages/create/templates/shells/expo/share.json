@@ -1,0 +1,68 @@
+{
+  "$schema": "../../schemas/share.schema.json",
+  "ui": [
+    "react",
+    "react-native"
+  ],
+  "defaults": {
+    "testing": "jest",
+    "e2e": "off",
+    "libraries": [
+      "es-toolkit"
+    ],
+    "styling": "css",
+    "form": "react-actions",
+    "store": "react-state",
+    "data": "fetch",
+    "mocking": "local"
+  },
+  "dependencies": [
+    "@react-native-async-storage/async-storage",
+    "expo",
+    "expo-build-properties",
+    "expo-constants",
+    "expo-linking",
+    "expo-localization",
+    "expo-router",
+    "expo-splash-screen",
+    "expo-status-bar",
+    "i18next",
+    "qs",
+    "react",
+    "react-dom",
+    "react-i18next",
+    "react-native",
+    "react-native-gesture-handler",
+    "react-native-reanimated",
+    "react-native-safe-area-context",
+    "react-native-screens",
+    "react-native-web",
+    "react-native-worklets"
+  ],
+  "devDependencies": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@eslint-react/eslint-plugin",
+    "@linteljs/eslint-config",
+    "@react-native/metro-config",
+    "@types/node",
+    "@types/qs",
+    "@types/react",
+    "eslint",
+    "eslint-plugin-react-hooks",
+    "husky",
+    "jiti",
+    "lint-staged",
+    "stylelint",
+    "stylelint-config-recess-order",
+    "stylelint-config-standard",
+    "stylelint-order",
+    "typescript"
+  ],
+  "pages": {
+    "home": "src/app/(tabs)",
+    "about": "src/app/(tabs)",
+    "version": "src/app/(tabs)",
+    "contact": "src/app/(tabs)"
+  }
+}
