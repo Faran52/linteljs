@@ -1,3 +1,4 @@
 export const styles = {
-  button: { className: 'button' },
+  md: { className: 'button' },
+  lg: { className: 'button button-lg' },
 };
