@@ -200,8 +200,7 @@ const existingName = async (cwd: string): Promise<string> => {
 // Only the questionnaire can supply a missing name.
 const askedFrom = async (
   options: CliOptions,
-  prompter: Prompter,
-  hasTerminal: boolean,
+  asker: Asker,
   host: Host,
 ): Promise<HostedAsk> => {
   const named = (answers: Answers): HostedAsk => {
@@ -266,14 +265,14 @@ const askedFrom = async (
   }
 
   // Measured: four of seven agents piped `/dev/null` and silently took the default target.
-  if (!hasTerminal) {
+  if (!asker.hasTerminal) {
     throw new Error(NOTHING_ANSWERED_MESSAGE);
   }
 
   const known = options.existing ? await existingName(options.cwd) : options.name;
   const prefilled = known === '' ? {} : { name: known };
   const fixed = options.existing ? { layout: 'single' } : {};
-  const asked = await ask(prompter, {
+  const asked = await ask(asker.prompter, {
     ...prefilled,
     fixed,
   });
@@ -366,8 +365,7 @@ const runAdd = async (
 const runSync = async (
   options: CliOptions,
   projects: [SyncProject, ...SyncProject[]],
-  prompter: Prompter,
-  hasTerminal: boolean,
+  asker: Asker,
 ): Promise<number> => {
   const { cwd } = options;
   const workspace = syncWorkspaceOf(cwd, projects);
@@ -426,11 +424,6 @@ const runSync = async (
     return 0;
   }
 
-  const asker: Asker = {
-    isYes: options.yes,
-    prompter,
-    hasTerminal,
-  };
   const blocked: boolean[] = [];
 
   for (const project of synced) {
@@ -464,7 +457,11 @@ const parsedOptions = (argv: string[]): CliOptions | undefined => {
 };
 
 const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter): Promise<number> => {
-  const hasTerminal = prompter !== undefined || stdin.isTTY;
+  const asker: Asker = {
+    isYes: options.yes,
+    prompter: prompter ?? inquirerPrompter,
+    hasTerminal: prompter !== undefined || stdin.isTTY,
+  };
 
   if (options.command === 'create') {
     say(`@linteljs/create ${packageJson.version}`);
@@ -476,20 +473,14 @@ const runCommand = async (options: CliOptions, host: Host, prompter?: Prompter):
       answers,
       projects,
       synced,
-    } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
+    } = await askedFrom(options, asker, host);
 
     if (synced !== undefined && options.add !== undefined) {
-      const asker: Asker = {
-        isYes: options.yes,
-        prompter: prompter ?? inquirerPrompter,
-        hasTerminal,
-      };
-
       return await runAdd(options, options.add, synced, asker, host);
     }
 
     if (synced !== undefined) {
-      return await runSync(options, synced, prompter ?? inquirerPrompter, hasTerminal);
+      return await runSync(options, synced, asker);
     }
 
     if (options.existing && answers.layout === 'monorepo') {
