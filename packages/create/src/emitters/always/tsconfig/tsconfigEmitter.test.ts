@@ -15,7 +15,6 @@ import { buildAliases } from '../../utils/aliasUtils';
 
 import {
   buildTsconfig,
-  emitTsconfig,
   tsconfigEmitter,
 } from './tsconfigEmitter';
 
@@ -123,8 +122,6 @@ describe('buildTsconfig', () => {
 
     const tsconfig = buildTsconfig(answersFor({ target: 'react' }));
     expect(tsconfig).toStrictEqual(expected);
-    const emitted = emitTsconfig(answersFor({ target: 'react' }));
-    expect(emitted).toBe(`${JSON.stringify(expected, null, 2)}\n`);
   });
 
   it('adds no include of its own for tailwind on a target that declares none', () => {
@@ -142,10 +139,11 @@ describe('buildTsconfig', () => {
   });
 
   it('leaves unused-locals to the unused-imports rule', () => {
-    const text = emitTsconfig(answersFor({}));
+    const { compilerOptions } = buildTsconfig(answersFor({}));
+    const keys = Object.keys(compilerOptions);
 
-    expect(text).not.toContain('noUnusedLocals');
-    expect(text).not.toContain('noUnusedParameters');
+    expect(keys).not.toContain('noUnusedLocals');
+    expect(keys).not.toContain('noUnusedParameters');
   });
 
   it('flips useDefineForClassFields and keeps erasableSyntaxOnly for Angular', () => {
@@ -647,7 +645,9 @@ describe('the vendored plugin', () => {
 describe('tsconfigEmitter', () => {
   it('writes the emitted text to tsconfig.json at the package stage', () => {
     const tsconfig = tsconfigEmitter(answersFor({}));
-    const text = emitTsconfig(answersFor({}));
+    const built = buildTsconfig(answersFor({}));
+    const json = JSON.stringify(built, null, 2);
+    const text = `${json}\n`;
     const expected = [{
       stage: 'package',
       target: 'tsconfig.json',

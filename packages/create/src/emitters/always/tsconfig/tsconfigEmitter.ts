@@ -213,14 +213,9 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
   return tsconfigOf(parts);
 };
 
-export const emitTsconfig = (answers: Answers): string => {
-  const parts = partsOf(answers);
-
-  return tsconfigSource(parts);
-};
-
 export const tsconfigEmitter = (answers: Answers): Artifact[] => {
-  const tsconfig = emitTsconfig(answers);
+  const parts = partsOf(answers);
+  const tsconfig = tsconfigSource(parts);
   const artifacts = [emitted('package', 'tsconfig.json', tsconfig)];
 
   return artifacts;
