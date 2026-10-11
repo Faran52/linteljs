@@ -52,7 +52,7 @@
       "type": "object",
       "propertyNames": {
         "anyOf": [
-          { "enum": ["home", "about", "version", "contact", "list"] },
+          { "enum": ["home", "about", "version", "contact"] },
           { "pattern": "^surface:[a-z][a-z0-9-]*$" }
         ]
       },

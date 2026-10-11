@@ -6,13 +6,21 @@ import {
   waitFor,
 } from '@testing-library/react';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 import { languages, resources } from '@i18n/config';
 import { initI18n } from '@i18n/i18n';
 
 import { ContactPage } from './ContactPage';
 
 const renderPage = (): void => {
-  render(<ContactPage />);
+  render(
+    <StoreProvider>
+      <DataProvider>
+        <ContactPage />
+      </DataProvider>
+    </StoreProvider>,
+  );
 };
 
 const fill = (label: string, value: string): void => {

@@ -15,12 +15,6 @@ export const PAGES = [
     href: resolve('/contact'),
   },
   {
-    id: 'list',
-    label: 'List',
-    path: '/list',
-    href: resolve('/list'),
-  },
-  {
     id: 'about',
     label: 'About',
     path: '/about',

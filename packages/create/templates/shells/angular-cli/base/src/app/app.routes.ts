@@ -24,14 +24,6 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'list',
-    loadComponent: async () => {
-      const { List } = await import('./list/list');
-
-      return List;
-    },
-  },
-  {
     path: 'about',
     component: About,
   },

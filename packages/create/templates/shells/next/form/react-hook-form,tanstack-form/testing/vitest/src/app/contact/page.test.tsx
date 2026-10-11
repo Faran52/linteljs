@@ -6,7 +6,9 @@ import {
   waitFor,
 } from '@testing-library/react';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 import {
   languages,
   languageStorageKey,
@@ -20,7 +22,11 @@ const last = languages.at(-1)?.id ?? 'en';
 
 const open = (): void => {
   render(
-    <ContactPage />,
+    <StoreProvider>
+      <DataProvider>
+        <ContactPage />
+      </DataProvider>
+    </StoreProvider>,
     { wrapper: I18nProvider },
   );
 };

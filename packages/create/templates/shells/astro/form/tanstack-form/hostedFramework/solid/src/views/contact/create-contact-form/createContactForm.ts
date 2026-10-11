@@ -10,6 +10,7 @@ import {
   type Translate,
   validateContactForm,
 } from '@services/contact-form/contactFormService';
+import { createSubmitContact } from '@apis/contact';
 
 import type { TextInputProps } from '@ui';
 
@@ -29,6 +30,7 @@ export interface ContactForm {
 // `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
 export const createContactForm = (translate: Translate): ContactForm => {
   const [sent, setSent] = createSignal(false);
+  const submit = createSubmitContact();
   const form = createForm(() => {
     const options = {
       defaultValues: {
@@ -39,7 +41,8 @@ export const createContactForm = (translate: Translate): ContactForm => {
         // Every change re-runs the rules; a field shows its result only once it is left.
         onChange: validateContactForm,
       },
-      onSubmit: () => {
+      onSubmit: async ({ value }: ContactSubmission) => {
+        await submit(value);
         setSent(true);
       },
     };

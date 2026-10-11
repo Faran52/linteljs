@@ -7,6 +7,7 @@ import {
   errorText,
   validateContactForm,
 } from '@services/contact-form/contact-form-service';
+import { useSubmitContact } from '@apis/contact/contact-api';
 import { t } from '@i18n/i18n';
 
 import { Button } from '@ui/button/button';
@@ -22,6 +23,8 @@ export class Contact {
 
   protected readonly sent = signal(false);
 
+  private readonly submit = useSubmitContact();
+
   protected readonly form = injectForm({
     defaultValues: {
       email: '',
@@ -31,7 +34,8 @@ export class Contact {
       // Every change re-runs the rules; a field shows its result only once it is left.
       onChange: validateContactForm,
     },
-    onSubmit: () => {
+    onSubmit: async ({ value }) => {
+      await this.submit(value);
       this.sent.set(true);
     },
   });

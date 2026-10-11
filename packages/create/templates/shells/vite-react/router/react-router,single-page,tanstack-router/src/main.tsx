@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 import { applyDocumentDirection, initI18n } from '@i18n/i18n';
 
 import { App } from './App';
@@ -18,6 +20,10 @@ applyDocumentDirection(initI18n().language);
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <StoreProvider>
+      <DataProvider>
+        <App />
+      </DataProvider>
+    </StoreProvider>
   </StrictMode>,
 );

@@ -6,6 +6,8 @@ import {
 
 import { type ContactKey } from '@services/contact-form/contactFormService';
 
+import { WithProviders } from '@mocks/WithProviders';
+
 import { type ContactForm, useContactForm } from './useContactForm';
 
 interface FormResult {
@@ -19,7 +21,7 @@ const translate = (key: ContactKey): string => {
 const renderForm = (): FormResult => {
   const { result } = renderHook(() => {
     return useContactForm(translate);
-  });
+  }, { wrapper: WithProviders });
 
   return result;
 };

@@ -16,11 +16,6 @@ export const PAGES: readonly Page[] = [
     path: '/contact',
   },
   {
-    id: 'list',
-    label: 'List',
-    path: '/list',
-  },
-  {
     id: 'about',
     label: 'About',
     path: '/about',

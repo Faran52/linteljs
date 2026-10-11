@@ -3,7 +3,6 @@ import { NAME } from '@config/linteljs';
 import { AboutPage } from '@pages/about/AboutPage';
 import { ContactPage } from '@pages/contact/ContactPage';
 import { HomePage } from '@pages/home/HomePage';
-import { ListPage } from '@pages/list/ListPage';
 import { VersionPage } from '@pages/version/VersionPage';
 
 import type { JSX } from 'solid-js';
@@ -32,14 +31,6 @@ export const ROUTES: readonly [Route, ...Route[]] = [
     path: '/contact',
     element: () => {
       return <ContactPage />;
-    },
-  },
-  {
-    id: 'list',
-    label: 'List',
-    path: '/list',
-    element: () => {
-      return <ListPage />;
     },
   },
   {

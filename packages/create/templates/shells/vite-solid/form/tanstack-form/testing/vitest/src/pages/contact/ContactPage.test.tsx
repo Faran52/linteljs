@@ -5,6 +5,7 @@ import {
   waitFor,
 } from '@solidjs/testing-library';
 
+import { DataProvider } from '@lib/providers/data/DataProvider';
 import { CONTACT_COPY } from '@services/contact-form/constants';
 
 import { ContactPage } from './ContactPage';
@@ -12,7 +13,9 @@ import { ContactPage } from './ContactPage';
 const renderPage = (): void => {
   render(() => {
     return (
-      <ContactPage />
+      <DataProvider>
+        <ContactPage />
+      </DataProvider>
     );
   });
 };

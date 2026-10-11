@@ -1,3 +1,4 @@
+import { useSubmitContact } from '#lib/apis/contact/index.ts';
 import {
   type ContactKey,
   type ContactSubmission,
@@ -26,6 +27,7 @@ export interface ContactForm {
 // Every read is a getter over one `useSelector`, the only read of this library Svelte tracks. `translate` names the
 // labels and rules: the page's own `m`, or the English beside the rules.
 export const useContactForm = (translate: Translate): ContactForm => {
+  const submit = useSubmitContact();
   const form = createForm(() => {
     const options = {
       defaultValues: {
@@ -36,7 +38,8 @@ export const useContactForm = (translate: Translate): ContactForm => {
         // Every change re-runs the rules; a field shows its result only once it is left.
         onChange: validateContactForm,
       },
-      onSubmit: () => {
+      onSubmit: async ({ value }: ContactSubmission) => {
+        await submit(value);
       },
     };
 

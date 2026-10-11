@@ -3,7 +3,6 @@ import { NAME } from '@config/linteljs';
 import { AboutPage } from '@pages/about/AboutPage';
 import { ContactPage } from '@pages/contact/ContactPage';
 import { HomePage } from '@pages/home/HomePage';
-import { ListPage } from '@pages/list/ListPage';
 import { VersionPage } from '@pages/version/VersionPage';
 
 import type { ReactNode } from 'react';
@@ -28,12 +27,6 @@ export const ROUTES: readonly [Route, ...Route[]] = [
     label: 'Contact',
     path: '/contact',
     element: <ContactPage />,
-  },
-  {
-    id: 'list',
-    label: 'List',
-    path: '/list',
-    element: <ListPage />,
   },
   {
     id: 'about',

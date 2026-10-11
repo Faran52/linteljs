@@ -11,4 +11,6 @@
   const { page: Page }: Props = $props();
 </script>
 
-<Page />
+<DataProvider>
+  <Page />
+</DataProvider>

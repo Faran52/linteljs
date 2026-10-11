@@ -1,0 +1,51 @@
+import { configureStore } from '@reduxjs/toolkit';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { baseApi } from '../base/baseApi';
+
+import { contactEndpoints } from './contactEndpoints';
+
+import type { ContactValues } from '@services/contact-form/contactFormService';
+
+const submit = async (values: ContactValues) => {
+  const store = configureStore({
+    reducer: { [baseApi.reducerPath]: baseApi.reducer },
+    middleware: (getDefaultMiddleware) => {
+      // The checks still run; only their timing hint, 32ms by default, trips on a loaded run.
+      const checks = { warnAfter: 1000 };
+
+      return getDefaultMiddleware({ immutableCheck: checks, serializableCheck: checks }).concat(baseApi.middleware);
+    },
+  });
+
+  return await store.dispatch(contactEndpoints.endpoints.submitContact.initiate(values));
+};
+
+describe('contactEndpoints', () => {
+  it('answers 200 for details the rules accept', async () => {
+    const { data } = await submit({
+      email: 'someone@example.com',
+      message: 'Ten characters, at least.',
+    });
+
+    const expected = { status: 200 };
+    expect(data).toEqual(expected);
+  });
+
+  it('answers a custom error for details the rules refuse', async () => {
+    const { error } = await submit({
+      email: 'not-an-address',
+      message: 'short',
+    });
+
+    const expected = {
+      status: 'CUSTOM_ERROR',
+      error: 'Contact details are not valid',
+    };
+    expect(error).toEqual(expected);
+  });
+});

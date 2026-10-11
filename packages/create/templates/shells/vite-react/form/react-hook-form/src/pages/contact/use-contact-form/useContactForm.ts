@@ -12,6 +12,7 @@ import {
   type Translate,
   validateContact,
 } from '@services/contact-form/contactFormService';
+import { useSubmitContact } from '@apis/contact';
 
 import type { TextInputProps } from '@ui';
 
@@ -73,6 +74,7 @@ const useField = ({
 // `translate` names the labels and rules: the page's own `t`, or the English beside the rules.
 export const useContactForm = (translate: Translate): ContactForm => {
   const [sent, setSent] = useState(false);
+  const submit = useSubmitContact();
   const {
     control,
     handleSubmit,
@@ -125,10 +127,12 @@ export const useContactForm = (translate: Translate): ContactForm => {
     sent,
     submitting: formState.isSubmitting,
     canSubmit: !formState.isSubmitted || formState.isValid,
+    // Wrapped: `handleSubmit` answers a promise-returning handler, which `no-misused-promises` refuses.
     onSubmit: (event) => {
       event.preventDefault();
 
-      void handleSubmit(() => {
+      void handleSubmit(async (values) => {
+        await submit(values);
         setSent(true);
       })();
     },

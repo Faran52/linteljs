@@ -10,6 +10,7 @@ import {
   errorText,
   validateContact,
 } from '@services/contact-form/contact-form-service';
+import { useSubmitContact } from '@apis/contact/contact-api';
 import { t } from '@i18n/i18n';
 
 import { Button } from '@ui/button/button';
@@ -37,6 +38,8 @@ export class Contact {
   protected readonly sending = signal(false);
 
   private readonly attempted = signal(false);
+
+  private readonly submit = useSubmitContact();
 
   // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
   protected errorOf(name: keyof ContactValues): string | undefined {
@@ -80,6 +83,7 @@ export class Contact {
     }
 
     this.sending.set(true);
+    await this.submit(values);
     this.sent.set(true);
   }
 }

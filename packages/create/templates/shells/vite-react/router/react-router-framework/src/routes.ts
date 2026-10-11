@@ -8,7 +8,6 @@ import {
 export default [
   index('routes/home/HomeRoute.tsx'),
   route('contact', 'routes/contact/ContactRoute.tsx'),
-  route('list', 'routes/list/ListRoute.tsx'),
   route('about', 'routes/about/AboutRoute.tsx'),
   route('version', 'routes/version/VersionRoute.tsx'),
   route('*', 'routes/not-found/NotFoundRoute.tsx'),

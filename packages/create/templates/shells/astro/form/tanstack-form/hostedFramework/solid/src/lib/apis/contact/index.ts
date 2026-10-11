@@ -1,0 +1,1 @@
+export { createSubmitContact } from './contactApi';
