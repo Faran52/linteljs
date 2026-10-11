@@ -89,6 +89,10 @@ export const TARGETS: readonly Target[] = [
         keys: HOME_DATA_KEYS,
       },
       { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactPage.styles.ts` },
+      {
+        table: textInput,
+        path: 'hostedFramework/solid,svelte,vue/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
+      },
     ],
   },
   {
