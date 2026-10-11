@@ -139,9 +139,7 @@ const editOf = (map: Table, attribute: string, access: ts.PropertyAccessExpressi
 };
 
 const referencesStyles = (node: ts.Node): boolean => {
-  return ts.isIdentifier(node) && node.text === 'styles'
-    ? true
-    : ts.forEachChild(node, referencesStyles) === true;
+  return (ts.isIdentifier(node) && node.text === 'styles') || ts.forEachChild(node, referencesStyles) === true;
 };
 
 const holdsLookup = (initializer: ts.Expression | undefined): boolean => {
