@@ -32,6 +32,7 @@ export {
   workspaceConfigOf,
 } from './utils/projectUtils';
 export {
+  isJsonArray,
   type JsonValue,
   unaskedValueOf,
 } from './utils/readUtils';

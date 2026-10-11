@@ -38,7 +38,7 @@ import {
   PROJECT_KINDS,
   RUN_CANCELLED_MESSAGE,
 } from './constants';
-import { offeredValuesOf } from './utils/valueUtils';
+import { assertAnswers, offeredValuesOf } from './utils/valueUtils';
 
 import type { Answers, ProjectConfig } from '@config/types';
 
@@ -317,7 +317,9 @@ const soFarAnswered = (answered: Answered): Answers => {
   const answers = {
     ...DEFAULT_ANSWERS,
     ...answered,
-  } as Answers;
+  };
+
+  assertAnswers(answers);
 
   return answers;
 };

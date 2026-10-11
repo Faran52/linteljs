@@ -570,6 +570,12 @@ describe('ask', () => {
       expect(result.projects[0].answers.testing).toBe('none');
       expect(recorded.calls).not.toContain('Repository layout');
     });
+
+    it('throws before the next question when it fits no value its record allows', async () => {
+      const asking = askWith(['demo-app'], { fixed: { layout: 'triple' } });
+
+      await expect(asking).rejects.toThrow(new Error('layout is not a value its record allows: "triple"'));
+    });
   });
 
   describe('a name already resolved', () => {
