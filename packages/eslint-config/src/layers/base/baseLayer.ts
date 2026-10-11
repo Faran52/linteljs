@@ -122,7 +122,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
   const tsconfigPath = root === undefined ? undefined : resolve(root, tsconfig);
 
-  if (options.tsconfig !== undefined && tsconfigPath === undefined) {
+  if (options.tsconfig !== undefined && root === undefined) {
     throw new Error('@linteljs/eslint-config: tsconfig needs root.');
   }
 

@@ -1,4 +1,5 @@
 import {
+  ERROR_PREFIX,
   HOSTS,
   OPTION_NAMES,
   OPTION_VALUES,
@@ -9,8 +10,6 @@ import {
 import type { LinteljsOptions } from '../../types';
 
 type OptionValue = LinteljsOptions[keyof LinteljsOptions];
-
-const PREFIX = '@linteljs/eslint-config:';
 
 const VALUES = new Map(Object.entries(OPTION_VALUES));
 
@@ -67,7 +66,7 @@ const checkValue = (name: string, value: OptionValue, allowed: string[]): void =
   const shown = JSON.stringify(value);
   const suggestion = hint(typeof value === 'string' ? value : shown, allowed);
 
-  throw new Error(`${PREFIX} ${name} cannot be ${shown}.${suggestion}`);
+  throw new Error(`${ERROR_PREFIX} ${name} cannot be ${shown}.${suggestion}`);
 };
 
 const checkNames = (options: LinteljsOptions): void => {
@@ -75,7 +74,7 @@ const checkNames = (options: LinteljsOptions): void => {
 
   for (const name of Object.keys(options)) {
     if (!isOptionName(name)) {
-      throw new Error(`${PREFIX} unknown option '${name}'.${hint(name, names)}`);
+      throw new Error(`${ERROR_PREFIX} unknown option '${name}'.${hint(name, names)}`);
     }
 
     const value = options[name];
@@ -102,14 +101,14 @@ export const checkOptions = (options: LinteljsOptions): void => {
   } = options;
 
   if (islands !== undefined && (framework === undefined || !HOSTS.includes(framework))) {
-    throw new Error(`${PREFIX} islands needs framework 'astro' or 'wxt', not ${JSON.stringify(framework)}.`);
+    throw new Error(`${ERROR_PREFIX} islands needs framework 'astro' or 'wxt', not ${JSON.stringify(framework)}.`);
   }
 
   if (framework === 'wxt' && islands !== undefined) {
     if (islands.length > 1) {
       const count = String(islands.length);
 
-      throw new Error(`${PREFIX} framework 'wxt' hosts one island, not ${count}.`);
+      throw new Error(`${ERROR_PREFIX} framework 'wxt' hosts one island, not ${count}.`);
     }
 
     for (const island of islands) {
@@ -118,6 +117,6 @@ export const checkOptions = (options: LinteljsOptions): void => {
   }
 
   if (tailwind !== undefined && styling !== 'tailwind') {
-    throw new Error(`${PREFIX} tailwind needs styling 'tailwind'.`);
+    throw new Error(`${ERROR_PREFIX} tailwind needs styling 'tailwind'.`);
   }
 };

@@ -145,6 +145,8 @@ export const WXT_ISLANDS: WxtIsland[] = [
   'svelte',
 ];
 
+export const ERROR_PREFIX = '@linteljs/eslint-config:';
+
 // The farthest a misspelling sits from the name it is told to try.
 export const SUGGESTION_DISTANCE = 3;
 

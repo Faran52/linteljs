@@ -38,9 +38,20 @@ const uiFrameworksOf = (options: LinteljsOptions): [string, UiFramework][] => {
 export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter.Config<Rules>[]): Promise<Layer> => {
   checkOptions(options);
 
+  const {
+    root,
+    tsconfig,
+    gitignore,
+    ignores,
+    naming,
+    folderNaming,
+    resolver,
+    framework,
+  } = options;
+
   const frameworks = await Promise.all(uiFrameworksOf(options)
     .map(([label, key]) => {
-      return withPeer(label, FRAMEWORKS[key], options.root);
+      return withPeer(label, FRAMEWORKS[key], root);
     }));
   const layers = await Promise.all(LAYER_OPTIONS
     .filter(([
@@ -57,18 +68,8 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
     ]) => {
       return withPeer(`${option}: ${JSON.stringify(value)}`, () => {
         return LAYERS[key](options);
-      }, options.root);
+      }, root);
     }));
-
-  const {
-    root,
-    tsconfig,
-    gitignore,
-    ignores,
-    naming,
-    folderNaming,
-    resolver,
-  } = options;
   const frameworkGroup = frameworks
     .flatMap(({ group }) => {
       return group;
@@ -83,7 +84,7 @@ export const linteljs = async (options: LinteljsOptions = {}, ...configs: Linter
       naming,
       folderNaming,
       resolver,
-      astro: options.framework === 'astro',
+      astro: framework === 'astro',
       frameworkGroup,
     }),
     ...(options.typescript === false ? [] : typescript(options)),

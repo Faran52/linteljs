@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import {
+  ERROR_PREFIX,
   EXPO_LAYER,
   INSTALL_COMMANDS,
   LOCKFILES,
@@ -138,6 +139,7 @@ export const LAYERS: Record<LayerKey, (options: LinteljsOptions) => Promise<Laye
   },
   tailwind: async (options) => {
     const { tailwind } = await import('../../libraries/tailwind/tailwindLibrary');
+
     return tailwind(options.tailwind?.entryPoint);
   },
   stylex: async () => {
@@ -246,7 +248,7 @@ export const withPeer = async <T>(option: string, load: () => Promise<T>, root?:
     }
 
     const command = installCommand(root);
-    const message = `@linteljs/eslint-config: ${option} needs ${peer}. Install it with: ${command} ${peer}`;
+    const message = `${ERROR_PREFIX} ${option} needs ${peer}. Install it with: ${command} ${peer}`;
 
     throw new Error(message, { cause: error });
   }
