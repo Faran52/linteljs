@@ -1,10 +1,4 @@
-export interface Toggle {
-  readonly when: string;
-  readonly on: string;
-  readonly off: string;
-}
-
-export type Table = Readonly<Record<string, string | Toggle>>;
+import type { Table, Toggle } from '../../utils/codegenUtils.ts';
 
 export interface StylesFile {
   readonly table: Table;

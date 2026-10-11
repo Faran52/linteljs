@@ -27,6 +27,7 @@
     "build": "pnpm -r build",
     "typegen": "pnpm --filter @linteljs/eslint-config typegen",
     "tailwind-styles": "tsx scripts/tailwind-styles/tailwindStylesScript.ts",
+    "css-markup": "tsx scripts/css-markup/cssMarkupScript.ts",
     "check": "pnpm build && tsx scripts/gate/gateScript.ts",
     "prepare": "husky"
   },

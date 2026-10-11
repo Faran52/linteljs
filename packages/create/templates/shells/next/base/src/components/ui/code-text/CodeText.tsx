@@ -20,7 +20,9 @@ export const CodeText: FC<CodeTextProps> = ({ text, tone }) => {
         .map((part, index) => {
           const key = `${String(index)}:${part}`;
 
-          return index % 2 === 1 ? <code key={key} {...toneStyle}>{part}</code> : <Fragment key={key}>{part}</Fragment>;
+          return index % 2 === 1
+            ? <code key={key} {...toneStyle}>{part}</code>
+            : <Fragment key={key}>{part}</Fragment>;
         })}
     </span>
   );

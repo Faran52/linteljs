@@ -1,0 +1,68 @@
+import { useTranslation } from 'react-i18next';
+
+import {
+  CHECK,
+  GATE,
+  SYNC,
+} from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
+
+import { CodeText } from '@ui/code-text/CodeText';
+
+import type { FC } from 'react';
+
+import './AboutPage.css';
+
+const CHECK_VALUES = { command: CHECK };
+const SYNC_VALUES = { command: SYNC };
+
+export const AboutPage: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <main className="page">
+      <h1 className="page-title">{t('about')}</h1>
+      <p className="page-lede">{t('aboutLede')}</p>
+
+      <section className="section">
+        <h2 className="section-title">{t('aboutGate')}</h2>
+        <ul className="rows">
+          {GATE
+            .map(({ command, runs }) => {
+              return (
+                <li key={command} className="row">
+                  <code className="key-code">{command}</code>
+                  <span className="value">{runs}</span>
+                </li>
+              );
+            })}
+        </ul>
+        <p className="note">
+          <CodeText text={t('aboutCheck', CHECK_VALUES)} tone="primary" />
+        </p>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">{t('aboutStandard')}</h2>
+        <dl className="rows">
+          {STANDARD_PATHS
+            .map(({ path, holds }) => {
+              return (
+                <div key={path} className="row">
+                  <dt className="key"><code>{path}</code></dt>
+                  <dd className="value">{t(holds)}</dd>
+                </div>
+              );
+            })}
+        </dl>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">{t('aboutCurrent')}</h2>
+        <p className="note">
+          <CodeText text={t('aboutSync', SYNC_VALUES)} tone="primary" />
+        </p>
+      </section>
+    </main>
+  );
+};

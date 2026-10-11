@@ -54,6 +54,7 @@
     "!templates/project/plugins/linteljs/.claude-plugin/types",
     "!templates/**/node_modules",
     "!templates/shared/tailwind-sources",
+    "!templates/shared/css-sources",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"

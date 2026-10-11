@@ -8,6 +8,7 @@ export const STEPS = [
   'test:coverage',
   'typegen',
   'tailwind-styles',
+  'css-markup',
   'test:band',
 ];
 

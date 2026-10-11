@@ -28,7 +28,8 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
   one global 100% block over the root `coverage.include`.
 - `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck`,
   `test:coverage`, `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it),
-  `tailwind-styles` (rewrites each shell's tailwind `X.styles.ts` from the shared tables, failing when that changed one) and
+  `tailwind-styles` (rewrites each shell's tailwind `X.styles.ts` from the shared tables, failing when that changed one),
+  `css-markup` (rewrites each shell's css markup from the shared markup and class maps, failing when that changed one) and
   `test:band` (`claude plugin test` on the shipped check band, with the `@anthropic-ai/claude-code` devDependency) at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;
   a failed step prints a short excerpt and its log's path, so read that, not the whole run. `build` goes first
   because the packages typecheck against each other's built declarations. `lint:css` passes on an empty glob:
