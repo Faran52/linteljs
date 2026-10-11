@@ -27,6 +27,7 @@ const DATA_DRAWER = 'data/fetch,tanstack-query/store/react-state/styling/tailwin
 const STORE_DRAWER = 'store/redux-toolkit,tanstack-store,zustand/styling/tailwind/src';
 
 const FORM_DRAWER = 'form/react-hook-form,tanstack-form/styling/tailwind/src';
+const ASTRO_FORM_DRAWER = 'form/react-hook-form,tanstack-form/hostedFramework/react/styling/tailwind/src';
 
 const ISLAND_DRAWER = 'form/tanstack-form/hostedFramework/solid,svelte,vue/styling/tailwind/src';
 
@@ -91,14 +92,14 @@ export const TARGETS: readonly Target[] = [
       { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactPage.styles.ts` },
       {
         table: textInput,
-        path: 'hostedFramework/solid,svelte,vue/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
+        path: 'hostedFramework/off,solid,svelte,vue/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
       },
     ],
   },
   {
     root: 'shells/astro',
     attribute: 'className',
-    files: [{ table: contactPage, path: `${FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
+    files: [{ table: contactPage, path: `${ASTRO_FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
   },
   {
     root: 'ui/react-dom',

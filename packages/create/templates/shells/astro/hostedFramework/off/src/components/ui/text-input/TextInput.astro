@@ -1,0 +1,42 @@
+---
+import { styles } from './TextInput.styles';
+
+interface Props {
+  id: string;
+  label: string;
+  value?: string;
+  error?: string;
+  multiline?: boolean;
+  type?: 'text' | 'email';
+}
+
+const { id, label, value, error, multiline = false, type = 'text' } = Astro.props;
+const invalid = error !== undefined;
+const describedBy = invalid ? `${id}-error` : undefined;
+---
+
+<div {...styles.field}>
+  <label {...styles.label} for={id}>{label}</label>
+  {multiline
+    ? (
+        <textarea
+          {...styles.textarea(invalid)}
+          id={id}
+          name={id}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
+        >{value}</textarea>
+      )
+    : (
+        <input
+          {...styles.input(invalid)}
+          id={id}
+          name={id}
+          type={type}
+          value={value}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
+        />
+      )}
+  {invalid ? <p {...styles.error} id={describedBy}>{error}</p> : null}
+</div>

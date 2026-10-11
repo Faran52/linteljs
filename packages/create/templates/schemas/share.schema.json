@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://linteljs.dev/schemas/share.schema.json",
   "title": "linteljs choice folder share.json",
-  "description": "Package versions live in the central versions catalog, never here. `ui` and `pages` belong to a shell's share.json only; `defaults` to a shell's or common/share.json.",
+  "description": "Package versions live in the central versions catalog, never here. `pages` belongs to a shell's share.json only, `ui` to a shell's or one of its values'; `defaults` to a shell's or common/share.json.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -42,7 +42,7 @@
       }
     },
     "ui": {
-      "description": "Shell only: the ui layers it uses, in layering order.",
+      "description": "Shell or shell value only: the ui layers it adds, in layering order.",
       "type": "array",
       "items": { "enum": ["react", "react-dom", "react-native", "vue", "svelte", "solid", "angular"] },
       "uniqueItems": true

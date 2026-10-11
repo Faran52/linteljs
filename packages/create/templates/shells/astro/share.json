@@ -1,9 +1,5 @@
 {
   "$schema": "../../schemas/share.schema.json",
-  "ui": [
-    "react",
-    "react-dom"
-  ],
   "defaults": {
     "hostedFramework": "off",
     "testing": "vitest",

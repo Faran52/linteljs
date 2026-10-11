@@ -1,5 +1,9 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "ui": [
+    "react",
+    "react-dom"
+  ],
   "dependencies": [
     "es-toolkit",
     "react",
