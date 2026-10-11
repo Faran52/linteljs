@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://linteljs.dev/schemas/share.schema.json",
+  "title": "linteljs choice folder share.json",
+  "description": "Package versions live in the central versions catalog, never here. `ui` and `pages` belong to a shell's share.json only; `defaults` to a shell's or common/share.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "defaults": {
+      "description": "Question key -> default value (a list for multi questions).",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/questionKey" },
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/$defs/value" },
+          { "type": "array", "items": { "$ref": "#/$defs/value" }, "uniqueItems": true }
+        ]
+      }
+    },
+    "requires": {
+      "description": "Picking this folder's value requires another question to hold one of these values.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/questionKey" },
+      "additionalProperties": {
+        "type": "array", "items": { "$ref": "#/$defs/value" }, "minItems": 1, "uniqueItems": true
+      }
+    },
+    "dependencies": { "$ref": "#/$defs/packageNames" },
+    "devDependencies": { "$ref": "#/$defs/packageNames" },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "name", "order"],
+        "properties": {
+          "from": { "description": "Import specifier of the provider module.", "type": "string", "minLength": 1 },
+          "name": { "description": "Exported provider name.", "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$" },
+          "order": { "description": "Nesting order, outermost first.", "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "ui": {
+      "description": "Shell only: the ui layers it uses, in layering order.",
+      "type": "array",
+      "items": { "enum": ["react", "react-dom", "react-native", "vue", "svelte", "solid", "angular"] },
+      "uniqueItems": true
+    },
+    "pages": {
+      "description": "Shell only: page id, or `surface:<name>` for an extension surface -> its directory in the generated project, where shared per-page files (e2e specs) are placed.",
+      "type": "object",
+      "propertyNames": {
+        "anyOf": [
+          { "enum": ["home", "about", "version", "contact", "list"] },
+          { "pattern": "^surface:[a-z][a-z0-9-]*$" }
+        ]
+      },
+      "additionalProperties": { "type": "string", "pattern": "^[^/].*[^/]$" }
+    }
+  },
+  "$defs": {
+    "questionKey": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" },
+    "value": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$|^[a-z]{2}(-[A-Z]{2})?$" },
+    "packageNames": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^(@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*$" },
+      "uniqueItems": true
+    }
+  }
+}

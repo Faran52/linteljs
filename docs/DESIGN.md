@@ -1074,7 +1074,7 @@ package-wide suites are named in `.claude/rules/repo-structure.md`.
 ## The shipped starter source, and the gate that reads it
 
 `templates/starter-source/**`, like the rewrite's drawers in `templates/frameworks/**` (each file under its real
-name), is outside every tsconfig, the root ESLint config and vitest: it imports ten targets'
+name) and its converted layers in `templates/{shared,ui,shells}/**`, is outside every tsconfig, the root ESLint config and vitest: it imports ten targets'
 runtimes, which this workspace does not install, and outside a project the type-aware rules have no program
 (6,261 findings, almost all `no-unsafe-*`).
 
@@ -1266,11 +1266,14 @@ committed") and rewritten on every gate run, so a fix to it is overwritten. Lint
 `@stylistic/member-delimiter-style` and `quotes`) and 2,279 `@linteljs/no-inline-object-types`.
 
 The shipped `templates/fragments/test-setup/setupTests.*.ts` files listed in the config,
-`templates/starter-source/**` and the rewrite's drawers under `templates/frameworks/**` are shipped source, never imported here. Each imports a framework this workspace does
+`templates/starter-source/**`, the rewrite's drawers under `templates/frameworks/**` and its converted layers under
+`templates/{shared,ui,shells}/**` are shipped source, never imported here. Each imports a framework this workspace does
 not install, or a path or alias (`./msw/node`, `@i18n`) only the generated project has, so every import is
 unresolvable. A generated project's own `eslint .` judges them, proven by `pnpm lint:starters` and the end-to-end
 suite. Measured on `setupTests.mswJest.ts` without its entry: 9 errors, all `no-unsafe-*`; on
 `templates/frameworks/**` with `--no-ignore`: 170 findings in 62 files, 114 of them `no-unsafe-*` or unresolved.
+On `templates/{shared,ui,shells}/**`: 8,961 findings in 638 of 731 linted files, 8,377 of them `no-unsafe-*` or
+unresolved.
 
 The two Claude Code mods (the shipped check band under `packages/create/templates/project/plugins/linteljs/` and
 `.claude/skills/linteljs/`) import `claude-code`, which only the engine provides. `pnpm mod-types` has the pinned
