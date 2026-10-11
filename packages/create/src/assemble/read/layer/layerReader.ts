@@ -28,8 +28,8 @@ const groupsOf = async (root: string, question: string): Promise<Share> => {
 
 const isPicked = (option: string, values: string[], groups: Share): boolean => {
   const served = Object.hasOwn(groups, option) ? stringsOf(groups, option) : [option];
-  const value = option.slice(0, -'-off'.length);
-  const absent = option.endsWith('-off') && !values.includes(value);
+  const offValue = option.slice(0, -'-off'.length);
+  const absent = option.endsWith('-off') && !values.includes(offValue);
 
   return absent || served
     .some((value) => {
