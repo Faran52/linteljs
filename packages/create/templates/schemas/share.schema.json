@@ -62,7 +62,7 @@
       "uniqueItems": true
     },
     "place": {
-      "description": "Shell only: logical root (ui, features, apis, i18n, styles, public) -> its directory; `pages` -> a page file template with {page} and {Page}, the source extension kept; `naming` the file name casing; `tests` the test suffix.",
+      "description": "Shell only: logical root (ui, features, apis, i18n, styles, public) -> its directory; `pages` -> a page file template with {dir} (the page's directory from the shell's `pages` map), {page} and {Page}, the source extension kept; `naming` the file name casing; `tests` the test suffix.",
       "type": "object",
       "required": ["naming", "tests"],
       "properties": {

@@ -20,6 +20,7 @@ export interface PlacedFile extends DrawnFile {
 
 interface Placement {
   roots: Record<string, string>;
+  dirs: Record<string, string>;
   kebab: boolean;
   tests: string;
 }
@@ -63,6 +64,7 @@ const placementOf = (share: Share): Placement => {
 
   const placement: Placement = {
     roots,
+    dirs: stringRecordOf(share, 'pages'),
     kebab: naming === 'kebab',
     tests: stringOf(roots, 'tests'),
   };
@@ -72,6 +74,7 @@ const placementOf = (share: Share): Placement => {
 
 const placedPathOf = (path: string, {
   roots,
+  dirs,
   kebab,
   tests,
 }: Placement): string => {
@@ -93,6 +96,15 @@ const placedPathOf = (path: string, {
     }
 
     const named = target
+      .replaceAll('{dir}', () => {
+        const dir = dirs[page];
+
+        if (dir === undefined) {
+          throw new Error(`${path} is a page the shell's pages map lacks`);
+        }
+
+        return dir;
+      })
       .replaceAll('{page}', page)
       .replaceAll('{Page}', pascalCase(page));
 

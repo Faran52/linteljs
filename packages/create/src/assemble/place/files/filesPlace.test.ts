@@ -22,9 +22,13 @@ const NEXT: Share = {
   place: {
     ui: 'src/components/ui',
     apis: 'src/lib/apis',
-    pages: 'src/app/{page}/page',
+    pages: '{dir}/page',
     naming: 'camel',
     tests: '.test',
+  },
+  pages: {
+    home: 'src/app',
+    contact: 'src/app/contact',
   },
 };
 
@@ -52,6 +56,7 @@ describe('filesPlace', () => {
       fileOf('ui/button/Button.styles.ts'),
       fileOf('apis/contact/contactEndpoints.test.ts'),
       fileOf('pages/contact/contact.css'),
+      fileOf('pages/home/home.css'),
     ];
     const paths = pathsOf(files, NEXT);
 
@@ -59,6 +64,7 @@ describe('filesPlace', () => {
       'src/components/ui/button/Button.styles.ts',
       'src/lib/apis/contact/contactEndpoints.test.ts',
       'src/app/contact/page.css',
+      'src/app/page.css',
     ]);
   });
 
@@ -139,6 +145,14 @@ describe('filesPlace', () => {
     expect(() => {
       return filesPlace(files, NEXT);
     }).toThrow('pages/contact/parts/form.css is nested below its page');
+  });
+
+  it('refuses a page the shell\'s pages map lacks', () => {
+    const files = [fileOf('pages/about/about.css')];
+
+    expect(() => {
+      return filesPlace(files, NEXT);
+    }).toThrow('pages/about/about.css is a page the shell\'s pages map lacks');
   });
 
   it('refuses a naming that is neither camel nor kebab', () => {
