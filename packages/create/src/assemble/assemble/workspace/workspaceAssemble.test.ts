@@ -7,7 +7,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { answersFor, hostedAnswersFor } from '@mocks/answersFor';
 import { DRAWERS_ROOT } from '@mocks/drawersRoot';
@@ -633,6 +633,84 @@ describe('workspaceAssemble', () => {
     });
 
     await expect(assembling).rejects.toThrow('package.json is written twice');
+  });
+
+  describe('with a drawer listing layers', () => {
+    const plant = async (root: string, tree: Record<string, string>): Promise<void> => {
+      const writes = Object.entries(tree)
+        .map(async ([path, text]) => {
+          const file = join(root, path);
+
+          await mkdir(dirname(file), { recursive: true });
+          await writeFile(file, text, 'utf8');
+        });
+
+      await Promise.all(writes);
+    };
+
+    const LAYERED = {
+      'frameworks/react/any/base/share.json': JSON.stringify({
+        layers: ['kit/react'],
+        platform: 'web',
+        place: {
+          apis: 'src/lib/apis',
+          public: 'public',
+          naming: 'kebab',
+          tests: '.spec',
+        },
+      }),
+      'kit/react/base/apis/contactApi.ts': "import { endpoints } from './contactEndpoints';\n",
+      'kit/react/base/apis/contactEndpoints.ts': 'export const endpoints = [];\n',
+      'kit/react/platform/web/share.json': '{ "gitignore": ["kit-cache"] }',
+      'kit/react/platform/web/public/robots.txt': 'User-agent: *\n',
+      'kit/react/platform/native/public/app.json': '{}',
+    };
+
+    const assembledFrom = async (tree: Record<string, string>): Promise<void> => {
+      const root = join(cwd, 'root');
+
+      await plant(root, tree);
+
+      const project: AssembledProject = {
+        name: 'web',
+        answers: { target: 'react' },
+      };
+      const workspace = await workspaceOf([project]);
+
+      await workspaceAssemble({
+        ...workspace,
+        root,
+        cwd: join(cwd, 'out'),
+      });
+    };
+
+    it('places the layer files its share and facts pick, imports rewritten', async () => {
+      await assembledFrom(LAYERED);
+
+      const out = join(cwd, 'out');
+      const written = await filesUnder(out);
+      const api = await readFile(join(out, 'src/lib/apis/contact-api.ts'), 'utf8');
+      const gitignore = await readFile(join(out, '.gitignore'), 'utf8');
+
+      expect(written).toEqual(expect.arrayContaining([
+        'public/robots.txt',
+        'src/lib/apis/contact-api.ts',
+        'src/lib/apis/contact-endpoints.ts',
+      ]));
+
+      expect(written).not.toContain('public/app.json');
+      expect(api).toBe("import { endpoints } from './contact-endpoints';\n");
+      expect(gitignore).toContain('kit-cache');
+    });
+
+    it('refuses a placed layer file at a drawer file path', async () => {
+      const assembling = assembledFrom({
+        ...LAYERED,
+        'frameworks/react/any/base/public/robots.txt': '',
+      });
+
+      await expect(assembling).rejects.toThrow('public/robots.txt is written twice');
+    });
   });
 
   it('refuses a directory with anything in it', async () => {

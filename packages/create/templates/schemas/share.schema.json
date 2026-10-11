@@ -55,6 +55,31 @@
       "items": { "enum": ["react", "react-dom", "react-native", "vue", "svelte", "solid", "angular"] },
       "uniqueItems": true
     },
+    "layers": {
+      "description": "Shell or shell value only: the layer roots it takes (kit/react, app/react, shared), each walked by question and fact folders.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)*$" },
+      "uniqueItems": true
+    },
+    "place": {
+      "description": "Shell only: logical root (ui, features, apis, i18n, styles, public) -> its directory; `pages` -> a page file template with {page} and {Page}, the source extension kept; `naming` the file name casing; `tests` the test suffix.",
+      "type": "object",
+      "required": ["naming", "tests"],
+      "properties": {
+        "naming": { "enum": ["camel", "kebab"] },
+        "tests": { "enum": [".test", ".spec"] }
+      },
+      "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9]*$" },
+      "additionalProperties": { "type": "string", "pattern": "^[^/].*[^/]$" }
+    },
+    "platform": {
+      "description": "Shell only, a fact: usable as a `platform/<value>/` folder in any layer.",
+      "enum": ["web", "native"]
+    },
+    "localeStore": {
+      "description": "Shell only, a fact: usable as a `localeStore/<value>/` folder in any layer.",
+      "enum": ["cookie"]
+    },
     "pages": {
       "description": "Shell only: page id, or `surface:<name>` for an extension surface -> its directory in the generated project, where shared per-page files (e2e specs) are placed.",
       "type": "object",

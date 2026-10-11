@@ -9,8 +9,12 @@ import { drawersPick } from '@choices/pick/drawers/drawersPick';
 import { catalogReader } from '@choices/read/catalog/catalogReader';
 import { type Answered, type Question } from '@choices/read/manifest/manifestReader';
 import { configRecord } from '@choices/record/config/configRecord';
-import { answeredValues } from '@choices/utils/drawerUtils';
-import { filesUnder, TEMPLATES_ROOT } from '@disk';
+import { answeredValues, givenValues } from '@choices/utils/drawerUtils';
+import {
+  filesUnder,
+  readFile,
+  TEMPLATES_ROOT,
+} from '@disk';
 import {
   atRoot,
   bannedPatternsOf,
@@ -34,7 +38,17 @@ import { projectWriter } from '@io/write/project/projectWriter';
 
 import { WriteFailed } from '../../errors/write-failed/writeFailedError';
 import { drawersMerge } from '../../merge/drawers/drawersMerge';
-import { drawerReader, type Drawn } from '../../read/drawer/drawerReader';
+import {
+  filesPlace,
+  type PlacedFile,
+  type TextFile,
+} from '../../place/files/filesPlace';
+import {
+  drawerReader,
+  type Drawn,
+  type DrawnFile,
+} from '../../read/drawer/drawerReader';
+import { type Given, layerReader } from '../../read/layer/layerReader';
 import {
   mergedShare,
   type Share,
@@ -48,6 +62,8 @@ import { eslintConfigWriter } from '../../write/eslint-config/eslintConfigWriter
 import { localesWriter } from '../../write/locales/localesWriter';
 import { packageJsonWriter } from '../../write/package-json/packageJsonWriter';
 import { routesWriter } from '../../write/routes/routesWriter';
+
+import { FACTS } from './constants';
 
 import type { Artifact, Host } from '@config/types';
 import type { Framed, Generated } from '@frameworks/types';
@@ -292,6 +308,53 @@ const generatedOf = async (workspace: Workspace, share: Share, unit: Unit): Prom
   return generated;
 };
 
+// The layers the merged share lists, walked by every question key and the facts the share sets.
+const layersOf = async (workspace: Workspace, unit: Unit, share: Share, withTests: boolean): Promise<Drawn[]> => {
+  const questions = workspace.questions
+    .map(({ key }) => {
+      const entry: [string, string[]] = [key, givenValues(unit.answers, key)];
+
+      return entry;
+    });
+  const facts = FACTS
+    .filter((fact) => {
+      return Object.hasOwn(share, fact);
+    })
+    .map((fact) => {
+      const entry: [string, string[]] = [fact, [stringOf(share, fact)]];
+
+      return entry;
+    });
+  const given: Given = Object.fromEntries([...questions, ...facts]);
+  const reads = stringsOf(share, 'layers')
+    .map(async (layer) => {
+      return await layerReader(workspace.root, layer, given, withTests);
+    });
+  const layers = await Promise.all(reads);
+
+  return layers.flat();
+};
+
+const placedOf = async (files: readonly DrawnFile[], share: Share): Promise<PlacedFile[]> => {
+  if (files.length === 0) {
+    return [];
+  }
+
+  const reads = files
+    .map(async (file) => {
+      const text = await readFile(file.source, 'utf8');
+      const read: TextFile = {
+        ...file,
+        text,
+      };
+
+      return read;
+    });
+  const texts = await Promise.all(reads);
+
+  return filesPlace(texts, share);
+};
+
 const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Written[]> => {
   const withTests = unit.answers.testing !== 'none';
   const reads = unit.drawers
@@ -315,11 +378,15 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
       return module;
     });
   const drawn = await Promise.all(reads);
-  const { files, share } = drawersMerge([
+  const drawers = drawersMerge([
     own,
     ...framed,
     ...drawn,
   ]);
+  const layers = await layersOf(workspace, unit, drawers.share, withTests);
+  const layered = drawersMerge(layers);
+  const share = mergedShare(drawers.share, layered.share);
+  const placed = await placedOf(layered.files, share);
   const shared = await generatedOf(workspace, share, unit);
   const generated = [
     ...shared,
@@ -329,11 +396,11 @@ const unitArtifactsOf = async (workspace: Workspace, unit: Unit): Promise<Writte
       }),
   ];
 
-  const copied = files
-    .map((file) => {
+  const copied = [...drawers.files, ...placed]
+    .map((file: PlacedFile) => {
       const artifact: Written = {
         target: posix.join(unit.directory, file.path),
-        content: { bytes: relative(TEMPLATES_ROOT, file.source) },
+        content: file.text === undefined ? { bytes: relative(TEMPLATES_ROOT, file.source) } : { text: file.text },
       };
 
       return artifact;
