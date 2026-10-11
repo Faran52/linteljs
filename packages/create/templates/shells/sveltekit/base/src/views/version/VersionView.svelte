@@ -18,8 +18,8 @@
     <dl {...styles.rows}>
       {#each STACK as entry (entry.name)}
         <div {...styles.row}>
-          <dt>{entry.name}</dt>
-          <dd>{entry.version}</dd>
+          <dt {...styles.key}>{entry.name}</dt>
+          <dd {...styles.value}>{entry.version}</dd>
         </div>
       {/each}
     </dl>
@@ -30,13 +30,16 @@
     <dl {...styles.rows}>
       {#each ANSWERS as entry (entry.label)}
         <div {...styles.row}>
-          <dt>{m[entry.label]()}</dt>
-          <dd>{entry.value}</dd>
+          <dt {...styles.key}>{m[entry.label]()}</dt>
+          <dd {...styles.value}>{entry.value}</dd>
         </div>
       {/each}
     </dl>
     <p {...styles.note}>
-      <CodeText text={m.versionRecorded({ file: 'linteljs.config.json', command: 'sync' })} />
+      <CodeText
+        text={m.versionRecorded({ file: 'linteljs.config.json', command: 'sync' })}
+        tone="primary"
+      />
     </p>
   </section>
 </main>

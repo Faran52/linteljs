@@ -28,7 +28,7 @@
   <p {...styles.statusMessage} role="alert">{m[message]()}</p>
   <div {...styles.statusActions}>
     {#if onretry}
-      <Button onclick={onretry}>{m.statusRetry()}</Button>
+      <Button onclick={onretry} size="lg">{m.statusRetry()}</Button>
     {/if}
     <a
       {...styles.action(onretry !== undefined)}

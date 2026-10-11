@@ -1,0 +1,28 @@
+.sent {
+  padding: 1rem;
+  margin: 0;
+  font-size: var(--text-value);
+  color: var(--ok);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.page {
+  max-width: 27rem;
+  padding: 3.25rem 1.25rem 4rem;
+  margin: 0 auto;
+}
+
+.page-title {
+  margin: 0 0 0.3125rem;
+  font-size: var(--text-metric);
+  font-weight: 620;
+  letter-spacing: -0.015em;
+}
+
+.page-lede {
+  margin: 0 0 2.25rem;
+  font-size: var(--text-value);
+  color: var(--muted-foreground);
+}

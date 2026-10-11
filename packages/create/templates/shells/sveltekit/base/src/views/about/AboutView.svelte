@@ -22,13 +22,13 @@
     <ul {...styles.rows}>
       {#each GATE as leg (leg.command)}
         <li {...styles.row}>
-          <code {...styles.key}>{leg.command}</code>
+          <code {...styles.keyCode}>{leg.command}</code>
           <span {...styles.value}>{leg.runs}</span>
         </li>
       {/each}
     </ul>
     <p {...styles.note}>
-      <CodeText text={m.aboutCheck({ command: CHECK })} />
+      <CodeText text={m.aboutCheck({ command: CHECK })} tone="primary" />
     </p>
   </section>
 
@@ -37,8 +37,8 @@
     <dl {...styles.rows}>
       {#each STANDARD_PATHS as entry (entry.path)}
         <div {...styles.row}>
-          <dt><code>{entry.path}</code></dt>
-          <dd>{m[entry.holds]()}</dd>
+          <dt {...styles.key}><code>{entry.path}</code></dt>
+          <dd {...styles.value}>{m[entry.holds]()}</dd>
         </div>
       {/each}
     </dl>
@@ -47,7 +47,7 @@
   <section {...styles.section}>
     <h2 {...styles.sectionTitle}>{m.aboutCurrent()}</h2>
     <p {...styles.note}>
-      <CodeText text={m.aboutSync({ command: SYNC })} />
+      <CodeText text={m.aboutSync({ command: SYNC })} tone="primary" />
     </p>
   </section>
 </main>

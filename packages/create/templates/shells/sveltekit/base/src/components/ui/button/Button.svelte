@@ -8,6 +8,7 @@
     onclick?: () => void;
     type?: 'button' | 'submit';
     disabled?: boolean;
+    size?: keyof typeof styles;
   }
 
   const {
@@ -15,9 +16,10 @@
     onclick,
     type = 'button',
     disabled = false,
+    size = 'md',
   }: Props = $props();
 </script>
 
-<button {...styles.button} {type} {disabled} {onclick}>
+<button {...styles[size]} {type} {disabled} {onclick}>
   {@render children()}
 </button>

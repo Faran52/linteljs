@@ -26,6 +26,6 @@
   <p {...styles.caption}>{m.homeCaption()}</p>
 
   <p {...styles.hint}>
-    <CodeText text={m.gateHint({ command: CHECK })} />
+    <CodeText text={m.gateHint({ command: CHECK })} tone="primary" />
   </p>
 </main>

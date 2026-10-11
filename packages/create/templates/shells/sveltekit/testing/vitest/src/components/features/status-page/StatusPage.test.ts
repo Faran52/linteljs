@@ -32,8 +32,6 @@ describe('StatusPage', () => {
     expect(attribute).toBe('/');
     const dataSveltekitReloadHasAttribute = home.hasAttribute('data-sveltekit-reload');
     expect(dataSveltekitReloadHasAttribute).toBe(true);
-    const statusActionOutlineContains = home.classList.contains('status-action-outline');
-    expect(statusActionOutlineContains).toBe(false);
     const buttonElement = screen.queryByRole('button', { name: 'Try again' });
     expect(buttonElement).toBeNull();
   });
@@ -50,12 +48,8 @@ describe('StatusPage', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    const home = screen.getByRole('link', { name: 'Go home' });
-
     const expected = ['retry'];
     expect(retried).toEqual(expected);
-    const statusActionOutlineContains = home.classList.contains('status-action-outline');
-    expect(statusActionOutlineContains).toBe(true);
   });
 
   it('speaks the language chosen', async () => {

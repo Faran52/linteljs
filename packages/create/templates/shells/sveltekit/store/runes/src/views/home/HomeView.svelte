@@ -14,6 +14,6 @@
   <h1 {...styles.title}>{NAME}</h1>
   <p {...styles.lede}>{m.homeLedeSvelte()}</p>
   <p {...styles.hint}>
-    <CodeText text={m.gateHint({ command: CHECK })} />
+    <CodeText text={m.gateHint({ command: CHECK })} tone="primary" />
   </p>
 </main>
