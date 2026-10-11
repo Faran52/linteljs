@@ -9,9 +9,20 @@ import { DEFAULT_ANSWERS, type LinteljsConfig } from '../registry';
 
 import {
   configOf,
+  isWorkspaceKey,
   projectAnswersOf,
   workspaceConfigOf,
 } from './projectUtils';
+
+describe('isWorkspaceKey', () => {
+  it('answers whether a key is recorded once for the workspace', () => {
+    const isLayout = isWorkspaceKey('layout');
+    const isTarget = isWorkspaceKey('target');
+
+    expect(isLayout).toBe(true);
+    expect(isTarget).toBe(false);
+  });
+});
 
 describe('configOf', () => {
   it('lifts the workspace answers above one unnamed project in a single layout', () => {

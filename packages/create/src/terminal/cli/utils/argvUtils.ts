@@ -6,8 +6,8 @@ import { type Stage } from '@config/types';
 
 import {
   type AnswerKey,
+  isWorkspaceKey,
   type JsonValue,
-  WORKSPACE_KEYS,
 } from '@answers';
 
 import { PROJECT_DIR_NAME_RULE, PROJECT_NAME_RULE } from '../../constants';
@@ -98,13 +98,6 @@ const answerFlagsFrom = (flagged: readonly FlaggedAnswer[], values: Record<strin
   }
 
   return flags;
-};
-
-const isWorkspaceKey = (key: AnswerKey): boolean => {
-  return WORKSPACE_KEYS
-    .some((workspaceKey) => {
-      return workspaceKey === key;
-    });
 };
 
 // `parseArgs` keeps no order, so the tokens are walked: each `--project` opens a group the per-project flags join.

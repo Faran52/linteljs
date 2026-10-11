@@ -27,6 +27,7 @@ export { parseLinteljsConfig } from './utils/configUtils';
 export {
   type ConfigEntry,
   configOf,
+  isWorkspaceKey,
   projectAnswersOf,
   workspaceConfigOf,
 } from './utils/projectUtils';

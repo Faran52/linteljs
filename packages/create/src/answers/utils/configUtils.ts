@@ -25,6 +25,7 @@ import {
 } from '../registry';
 
 import { migratedStore, migrateLifted } from './migrationUtils';
+import { isWorkspaceKey } from './projectUtils';
 import {
   isJsonArray,
   type JsonValue,
@@ -241,10 +242,7 @@ const flatProjectOf = (top: RawConfig, item: JsonValue): FlatProject => {
   const { name, ...fields } = item;
   const shared = Object.keys(fields)
     .find((key) => {
-      return WORKSPACE_KEYS
-        .some((workspaceKey) => {
-          return workspaceKey === key;
-        });
+      return isWorkspaceKey(key);
     });
 
   if (shared !== undefined) {

@@ -36,6 +36,13 @@ export const workspaceConfigOf = (entries: readonly ConfigEntry[]): FlatConfig =
   return body;
 };
 
+export const isWorkspaceKey = (key: string): boolean => {
+  return WORKSPACE_KEYS
+    .some((workspaceKey) => {
+      return workspaceKey === key;
+    });
+};
+
 export const configOf = (flat: FlatConfig, name: string): FlatConfig => {
   return workspaceConfigOf([[flat, name]]);
 };

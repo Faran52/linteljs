@@ -7,7 +7,6 @@ import {
   CURRENT_SCHEMA_VERSION,
   PROJECT_NAME_PATTERN,
   TARGET_BOUND_KEYS,
-  WORKSPACE_KEYS,
 } from '../constants';
 import {
   type AnswerKey,
@@ -15,6 +14,7 @@ import {
   DEFAULT_ANSWERS,
 } from '../registry';
 
+import { isWorkspaceKey } from './projectUtils';
 import { refusedValue } from './recordUtils';
 
 import type {
@@ -208,13 +208,6 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
       return enumProperty(record);
     }
   }
-};
-
-const isWorkspaceKey = (key: AnswerKey): boolean => {
-  return WORKSPACE_KEYS
-    .some((workspaceKey) => {
-      return workspaceKey === key;
-    });
 };
 
 const requiredOf = (answers: Record<AnswerKey, AnswerRecord>, keys: AnswerKey[]): AnswerKey[] => {
