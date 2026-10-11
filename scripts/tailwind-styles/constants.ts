@@ -170,6 +170,7 @@ export const TARGETS: readonly Target[] = [
     attribute: 'class',
     files: [
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/code-text.styles.ts' },
+      { table: textInput, path: 'styling/tailwind/src/components/ui/text-input/text-input.styles.ts' },
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/status-page.styles.ts' },
       { table: aboutPage, path: 'styling/tailwind/src/app/about/about.styles.ts' },
       { table: versionPage, path: 'styling/tailwind/src/app/version/version.styles.ts' },
