@@ -663,6 +663,9 @@ describe('workspaceAssemble', () => {
       'frameworks/react/any/base/share.json': JSON.stringify({
         layers: ['kit/react'],
         platform: 'web',
+        localeStore: 'cookie',
+        pageKind: 'routes',
+        framework: 'react',
         place: {
           apis: 'src/lib/apis',
           public: 'public',
@@ -712,6 +715,21 @@ describe('workspaceAssemble', () => {
       expect(written).not.toContain('public/app.json');
       expect(api).toBe("import { endpoints } from './contact-endpoints';\n");
       expect(gitignore).toContain('kit-cache');
+    });
+
+    it('refuses a shell listing layers that leaves a fact unset', async () => {
+      const share = JSON.stringify({
+        layers: ['kit/react'],
+        platform: 'web',
+        localeStore: 'cookie',
+        framework: 'react',
+      });
+      const assembling = assembledFrom({
+        ...LAYERED,
+        'frameworks/react/any/base/share.json': share,
+      });
+
+      await expect(assembling).rejects.toThrow('the react shell lists layers but sets no pageKind');
     });
 
     it('refuses a placed layer file at a drawer file path', async () => {

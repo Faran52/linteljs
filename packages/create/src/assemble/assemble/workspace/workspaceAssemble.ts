@@ -308,8 +308,14 @@ const generatedOf = async (workspace: Workspace, share: Share, unit: Unit): Prom
   return generated;
 };
 
-// The layers the merged share lists, walked by every question key and the facts the share sets.
+// The layers the merged share lists, walked by every question key and every fact, which the share must set.
 const layersOf = async (workspace: Workspace, unit: Unit, share: Share, withTests: boolean): Promise<Drawn[]> => {
+  const layers = stringsOf(share, 'layers');
+
+  if (layers.length === 0) {
+    return [];
+  }
+
   const questions = workspace.questions
     .map(({ key }) => {
       const entry: [string, string[]] = [key, givenValues(unit.answers, key)];
@@ -317,22 +323,25 @@ const layersOf = async (workspace: Workspace, unit: Unit, share: Share, withTest
       return entry;
     });
   const facts = FACTS
-    .filter((fact) => {
-      return Object.hasOwn(share, fact);
-    })
     .map((fact) => {
+      if (!Object.hasOwn(share, fact)) {
+        const shell = answeredValues(unit.answers, 'target').join(', ');
+
+        throw new Error(`the ${shell} shell lists layers but sets no ${fact}`);
+      }
+
       const entry: [string, string[]] = [fact, [stringOf(share, fact)]];
 
       return entry;
     });
   const given: Given = Object.fromEntries([...questions, ...facts]);
-  const reads = stringsOf(share, 'layers')
+  const reads = layers
     .map(async (layer) => {
       return await layerReader(workspace.root, layer, given, withTests);
     });
-  const layers = await Promise.all(reads);
+  const read = await Promise.all(reads);
 
-  return layers.flat();
+  return read.flat();
 };
 
 const placedOf = async (files: readonly DrawnFile[], share: Share): Promise<PlacedFile[]> => {
