@@ -108,6 +108,13 @@ const placedPathOf = (path: string, {
 
   if (root === 'pages') {
     const [page, file] = headOf(rest);
+    const nested = file.includes('/');
+
+    // The template replaces a page file's stem, so a second stem would land on the same name.
+    if (!nested && stem !== page) {
+      throw new Error(`${path} is not named for its page ${page}`);
+    }
+
     const template = target
       .replaceAll('{dir}', () => {
         const dir = dirs[page];
@@ -121,7 +128,7 @@ const placedPathOf = (path: string, {
       .replaceAll('{page}', page)
       .replaceAll('{Page}', pascalCase(page));
     // A file below the page keeps its own name in the page's placed directory.
-    const to = file.includes('/')
+    const to = nested
       ? posix.join(posix.dirname(template), posix.dirname(file), `${named}${suffixed}`)
       : `${template}${suffixed}`;
     const placed: Placed = { to };

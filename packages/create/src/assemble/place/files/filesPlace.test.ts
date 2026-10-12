@@ -227,6 +227,14 @@ describe('filesPlace', () => {
     ]);
   });
 
+  it('refuses a page file named for something other than its page', () => {
+    const files = [fileOf('pages/contact/ContactPage.css')];
+
+    expect(() => {
+      return filesPlace(files, ANGULAR);
+    }).toThrow('pages/contact/ContactPage.css is not named for its page contact');
+  });
+
   it('refuses a page the shell\'s pages map lacks', () => {
     const files = [fileOf('pages/about/about.css')];
 
