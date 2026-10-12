@@ -679,7 +679,6 @@ describe('workspaceAssemble', () => {
       'frameworks/react/any/base/share.json': JSON.stringify({
         layers: ['kit/react'],
         platform: 'web',
-        localeStore: 'cookie',
         pageKind: 'routes',
         framework: 'react',
         place: {
@@ -737,7 +736,6 @@ describe('workspaceAssemble', () => {
       const share = JSON.stringify({
         layers: ['kit/react'],
         platform: 'web',
-        localeStore: 'cookie',
         framework: 'react',
       });
       const assembling = assembledFrom({
