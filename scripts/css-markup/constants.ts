@@ -1,13 +1,13 @@
-import { aboutPage } from '../../packages/create/templates/shared/css-sources/AboutPage.ts';
-import { appHeader } from '../../packages/create/templates/shared/css-sources/AppHeader.ts';
-import { button } from '../../packages/create/templates/shared/css-sources/Button.ts';
-import { codeText } from '../../packages/create/templates/shared/css-sources/CodeText.ts';
-import { contactPage } from '../../packages/create/templates/shared/css-sources/ContactPage.ts';
-import { homePage } from '../../packages/create/templates/shared/css-sources/HomePage.ts';
-import { mark } from '../../packages/create/templates/shared/css-sources/Mark.ts';
-import { statusPage } from '../../packages/create/templates/shared/css-sources/StatusPage.ts';
-import { textInput } from '../../packages/create/templates/shared/css-sources/TextInput.ts';
-import { versionPage } from '../../packages/create/templates/shared/css-sources/VersionPage.ts';
+import { aboutPage } from '../../packages/create/templates/codegen/css-sources/AboutPage.ts';
+import { appHeader } from '../../packages/create/templates/codegen/css-sources/AppHeader.ts';
+import { button } from '../../packages/create/templates/codegen/css-sources/Button.ts';
+import { codeText } from '../../packages/create/templates/codegen/css-sources/CodeText.ts';
+import { contactPage } from '../../packages/create/templates/codegen/css-sources/ContactPage.ts';
+import { homePage } from '../../packages/create/templates/codegen/css-sources/HomePage.ts';
+import { mark } from '../../packages/create/templates/codegen/css-sources/Mark.ts';
+import { statusPage } from '../../packages/create/templates/codegen/css-sources/StatusPage.ts';
+import { textInput } from '../../packages/create/templates/codegen/css-sources/TextInput.ts';
+import { versionPage } from '../../packages/create/templates/codegen/css-sources/VersionPage.ts';
 
 import type { Target } from './utils/cssMarkupUtils.ts';
 

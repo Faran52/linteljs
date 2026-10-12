@@ -1,15 +1,15 @@
-import { aboutPage } from '../../packages/create/templates/shared/tailwind-sources/AboutPage.ts';
-import { appHeader } from '../../packages/create/templates/shared/tailwind-sources/AppHeader.ts';
-import { button } from '../../packages/create/templates/shared/tailwind-sources/Button.ts';
-import { codeText } from '../../packages/create/templates/shared/tailwind-sources/CodeText.ts';
-import { contactPage } from '../../packages/create/templates/shared/tailwind-sources/ContactPage.ts';
-import { homePage } from '../../packages/create/templates/shared/tailwind-sources/HomePage.ts';
-import { mark } from '../../packages/create/templates/shared/tailwind-sources/Mark.ts';
-import { panel } from '../../packages/create/templates/shared/tailwind-sources/Panel.ts';
-import { popup } from '../../packages/create/templates/shared/tailwind-sources/Popup.ts';
-import { statusPage } from '../../packages/create/templates/shared/tailwind-sources/StatusPage.ts';
-import { textInput } from '../../packages/create/templates/shared/tailwind-sources/TextInput.ts';
-import { versionPage } from '../../packages/create/templates/shared/tailwind-sources/VersionPage.ts';
+import { aboutPage } from '../../packages/create/templates/codegen/tailwind-sources/AboutPage.ts';
+import { appHeader } from '../../packages/create/templates/codegen/tailwind-sources/AppHeader.ts';
+import { button } from '../../packages/create/templates/codegen/tailwind-sources/Button.ts';
+import { codeText } from '../../packages/create/templates/codegen/tailwind-sources/CodeText.ts';
+import { contactPage } from '../../packages/create/templates/codegen/tailwind-sources/ContactPage.ts';
+import { homePage } from '../../packages/create/templates/codegen/tailwind-sources/HomePage.ts';
+import { mark } from '../../packages/create/templates/codegen/tailwind-sources/Mark.ts';
+import { panel } from '../../packages/create/templates/codegen/tailwind-sources/Panel.ts';
+import { popup } from '../../packages/create/templates/codegen/tailwind-sources/Popup.ts';
+import { statusPage } from '../../packages/create/templates/codegen/tailwind-sources/StatusPage.ts';
+import { textInput } from '../../packages/create/templates/codegen/tailwind-sources/TextInput.ts';
+import { versionPage } from '../../packages/create/templates/codegen/tailwind-sources/VersionPage.ts';
 
 import type { Target } from './utils/tailwindStylesUtils.ts';
 

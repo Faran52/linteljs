@@ -53,8 +53,7 @@
     "!templates/project/plugins/linteljs/tsconfig.json",
     "!templates/project/plugins/linteljs/.claude-plugin/types",
     "!templates/**/node_modules",
-    "!templates/shared/tailwind-sources",
-    "!templates/shared/css-sources",
+    "!templates/codegen",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"

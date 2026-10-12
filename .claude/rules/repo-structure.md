@@ -62,10 +62,10 @@ in the working directory.
 `scripts/checkBannedPatterns.ts` stays flat and on plain `node`: the banned-pattern hook looks for it at the path
 a generated project has, and it runs the shipped checker less this workspace's `SKIPPED` list.
 `scripts/tailwind-styles/` writes each shell's and `ui/` tree's `styling/tailwind/**/X.styles.ts` from the tables in
-`templates/shared/tailwind-sources/`, one tree per `TARGETS` entry in its `constants.ts`; the gate's
+`templates/codegen/tailwind-sources/`, one tree per `TARGETS` entry in its `constants.ts`; the gate's
 `tailwind-styles` step fails when that changed a committed file.
 `scripts/css-markup/` writes each css copy of a shared markup file (`base/src/X.tsx` to `styling/css/src/X.tsx`,
-`<drawer>/src/X.tsx` to `<drawer>/styling/css/src/X.tsx`) from the class maps in `templates/shared/css-sources/`,
+`<drawer>/src/X.tsx` to `<drawer>/styling/css/src/X.tsx`) from the class maps in `templates/codegen/css-sources/`,
 one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. The gate's `css-markup` step
 fails when that changed a committed file. `scripts/utils/codegenUtils.ts` holds what both share.
 
@@ -78,8 +78,8 @@ copies held equal by `src/frameworks/registry.test.ts`), `common/` the manifest 
 group name, listed under `groups` in that question folder's `share.json`),
 `fragments/` the pieces joined into one file (kept as an explicit list, since they have no
 destination), `schemas/` the mirror of the root `schemas/` published by raw URL
-(`answers/utils/schemaUtils.test.ts` holds them equal), `shared/tailwind-sources/` one tailwind strings table per
-component, and `shared/css-sources/` one css class map per component, both repo-only: the engine never reads them and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
+(`answers/utils/schemaUtils.test.ts` holds them equal), `codegen/tailwind-sources/` one tailwind strings table per
+component, and `codegen/css-sources/` one css class map per component, both repo-only: the engine never reads `codegen/` and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
 frameworks this workspace does not install and files named `*.test.ts`.
 
 ## `__mocks__/` and suites with no source

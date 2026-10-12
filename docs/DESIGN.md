@@ -1273,7 +1273,8 @@ unresolvable. A generated project's own `eslint .` judges them, proven by `pnpm 
 suite. Measured on `setupTests.mswJest.ts` without its entry: 9 errors, all `no-unsafe-*`; on
 `templates/frameworks/**` with `--no-ignore`: 170 findings in 62 files, 114 of them `no-unsafe-*` or unresolved.
 On `templates/{shared,ui,shells}/**`: 8,961 findings in 638 of 731 linted files, 8,377 of them `no-unsafe-*` or
-unresolved.
+unresolved. `templates/codegen/**` holds the `tailwind-styles` and `css-markup` input tables, whose class strings are
+copied verbatim into the generated files: linted, 13 findings in 5 of 22 files, all `@stylistic/max-len`.
 
 The two Claude Code mods (the shipped check band under `packages/create/templates/project/plugins/linteljs/` and
 `.claude/skills/linteljs/`) import `claude-code`, which only the engine provides. `pnpm mod-types` has the pinned
