@@ -70,6 +70,15 @@ describe('drawerReader', () => {
     expect(drawn.share).toEqual({});
   });
 
+  it('leaves the editor $schema out of the share', async () => {
+    await mkdir(join(root, 'schema'));
+    await writeFile(join(root, 'schema', 'share.json'), '{ "$schema": "../share.schema.json", "eslint": {} }', 'utf8');
+
+    const drawn = await drawerReader(root, 'schema', true);
+
+    expect(drawn.share).toEqual({ eslint: {} });
+  });
+
   it('refuses a share that is not an object', async () => {
     await mkdir(join(root, 'bad'));
     await writeFile(join(root, 'bad', 'share.json'), '[]', 'utf8');

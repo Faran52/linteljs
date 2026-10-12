@@ -1,5 +1,7 @@
 import { basename, join } from 'node:path';
 
+import { omit } from 'es-toolkit';
+
 import { parsedAs } from '@utils/objectUtils';
 
 import { filesUnder, readIfPresent } from '@disk';
@@ -24,11 +26,14 @@ export const drawerReader = async (root: string, drawer: string, withTests: bool
   const directory = join(root, drawer);
   const paths = await filesUnder(directory);
   const text = await readIfPresent(join(directory, SHARE_FILE));
-  const share = text === null ? {} : parsedAs(text, isShare);
+  const parsed = text === null ? {} : parsedAs(text, isShare);
 
-  if (share === null) {
+  if (parsed === null) {
     throw new Error(`${drawer}/${SHARE_FILE} is not an object`);
   }
+
+  // `$schema` is for the editor; relative to its file, it differs per depth and would clash on merge.
+  const share = omit(parsed, ['$schema']);
 
   const files = paths
     .filter((path) => {
