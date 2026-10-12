@@ -36,5 +36,47 @@
     "surface:background": "src/background",
     "surface:devtools": "src/devtools",
     "surface:panel": "src/panel"
+  },
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@components/*": [
+          "./src/components/*"
+        ],
+        "@ui/*": [
+          "./src/components/ui/*"
+        ],
+        "@features/*": [
+          "./src/components/features/*"
+        ],
+        "@lib/*": [
+          "./src/lib/*"
+        ],
+        "@utils/*": [
+          "./src/lib/utils/*"
+        ],
+        "@services/*": [
+          "./src/lib/services/*"
+        ],
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ],
+        "@model/*": [
+          "./src/lib/model/*"
+        ],
+        "@styles/*": [
+          "./src/styles/*"
+        ],
+        "@config/*": [
+          "./src/config/*"
+        ],
+        "@i18n/*": [
+          "./src/i18n/*"
+        ],
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
   }
 }

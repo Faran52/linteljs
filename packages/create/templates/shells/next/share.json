@@ -51,5 +51,59 @@
     "about": "src/app/about",
     "version": "src/app/version",
     "contact": "src/app/contact"
+  },
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@components/*": [
+          "./src/components/*"
+        ],
+        "@ui": [
+          "./src/components/ui"
+        ],
+        "@ui/*": [
+          "./src/components/ui/*"
+        ],
+        "@features/*": [
+          "./src/components/features/*"
+        ],
+        "@lib/*": [
+          "./src/lib/*"
+        ],
+        "@store/*": [
+          "./src/lib/store/*"
+        ],
+        "@hooks/*": [
+          "./src/lib/hooks/*"
+        ],
+        "@utils/*": [
+          "./src/lib/utils/*"
+        ],
+        "@services/*": [
+          "./src/lib/services/*"
+        ],
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ],
+        "@server/*": [
+          "./src/lib/server/*"
+        ],
+        "@content/*": [
+          "./src/content/*"
+        ],
+        "@styles/*": [
+          "./src/styles/*"
+        ],
+        "@config/*": [
+          "./src/config/*"
+        ],
+        "@i18n/*": [
+          "./src/i18n/*"
+        ],
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
   }
 }

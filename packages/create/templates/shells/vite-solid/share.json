@@ -47,5 +47,59 @@
     "about": "src/pages/about",
     "version": "src/pages/version",
     "contact": "src/pages/contact"
+  },
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@router/*": [
+          "./src/router/*"
+        ],
+        "@pages/*": [
+          "./src/pages/*"
+        ],
+        "@components/*": [
+          "./src/components/*"
+        ],
+        "@ui": [
+          "./src/components/ui"
+        ],
+        "@ui/*": [
+          "./src/components/ui/*"
+        ],
+        "@features/*": [
+          "./src/components/features/*"
+        ],
+        "@lib/*": [
+          "./src/lib/*"
+        ],
+        "@store/*": [
+          "./src/lib/store/*"
+        ],
+        "@primitives/*": [
+          "./src/lib/primitives/*"
+        ],
+        "@utils/*": [
+          "./src/lib/utils/*"
+        ],
+        "@services/*": [
+          "./src/lib/services/*"
+        ],
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ],
+        "@styles/*": [
+          "./src/styles/*"
+        ],
+        "@config/*": [
+          "./src/config/*"
+        ],
+        "@i18n/*": [
+          "./src/i18n/*"
+        ],
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
   }
 }

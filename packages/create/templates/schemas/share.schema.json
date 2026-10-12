@@ -84,6 +84,26 @@
       "description": "Shell or shell value, a fact: usable as a `framework/<value>/` folder in any layer.",
       "enum": ["react", "vue", "svelte", "solid", "angular", "none"]
     },
+    "tsconfig": {
+      "description": "Shell or shell value: what it adds to the generated tsconfig.json.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "compilerOptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "paths": {
+              "description": "Alias -> its directory, the one alias source: placement resolves layer imports through it.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "array", "items": { "type": "string", "pattern": "^\\./" }, "minItems": 1, "uniqueItems": true
+              }
+            }
+          }
+        }
+      }
+    },
     "pages": {
       "description": "Shell only: page id, or `surface:<name>` for an extension surface -> its directory in the generated project, where shared per-page files (e2e specs) are placed.",
       "type": "object",
