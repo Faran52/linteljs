@@ -13,45 +13,44 @@ import type { Target } from './utils/cssMarkupUtils.ts';
 
 export const TEMPLATES_DIR = 'packages/create/templates';
 
-const DATA_DRAWER = 'data/redux-free/store/react-state/src';
+const DATA_DRAWER = 'data/redux-free/store/react-state/styling/atomic/src';
 
-const STORE_DRAWER = 'store/libraries/src';
+const STORE_DRAWER = 'store/libraries/styling/atomic/src';
 
-const FORM_DRAWER = 'form/libraries/src';
+const FORM_DRAWER = 'form/libraries/styling/atomic/src';
+
+const APP_HEADER = 'styling/atomic/src/components/features/app-header/AppHeader.tsx';
 
 export const TARGETS: readonly Target[] = [
   {
     root: 'shells/vite-react',
     attribute: 'className',
     files: [
-      { map: button, markup: 'base/src/components/ui/button/Button.tsx' },
-      { map: codeText, markup: 'base/src/components/ui/code-text/CodeText.tsx' },
-      { map: mark, markup: 'base/src/components/ui/mark/Mark.tsx' },
-      { map: statusPage, markup: 'base/src/components/features/status-page/StatusPage.tsx' },
-      { map: aboutPage, markup: 'base/src/pages/about/AboutPage.tsx' },
-      { map: versionPage, markup: 'base/src/pages/version/VersionPage.tsx' },
+      { map: button, markup: 'styling/atomic/src/components/ui/button/Button.tsx' },
+      { map: codeText, markup: 'styling/atomic/src/components/ui/code-text/CodeText.tsx' },
+      { map: mark, markup: 'styling/atomic/src/components/ui/mark/Mark.tsx' },
+      { map: statusPage, markup: 'styling/atomic/src/components/features/status-page/StatusPage.tsx' },
+      { map: aboutPage, markup: 'styling/atomic/src/pages/about/AboutPage.tsx' },
+      { map: versionPage, markup: 'styling/atomic/src/pages/version/VersionPage.tsx' },
       { map: homePage, markup: `${DATA_DRAWER}/pages/home/HomePage.tsx` },
       { map: homePage, markup: `${STORE_DRAWER}/pages/home/HomePage.tsx` },
       { map: contactPage, markup: `${FORM_DRAWER}/pages/contact/ContactPage.tsx` },
-      {
-        map: appHeader,
-        markup: 'router/react-routers/src/components/features/app-header/AppHeader.tsx',
-      },
-      { map: appHeader, markup: 'router/single-page/src/components/features/app-header/AppHeader.tsx' },
-      { map: appHeader, markup: 'router/tanstack-router/src/components/features/app-header/AppHeader.tsx' },
+      { map: appHeader, markup: `router/react-routers/${APP_HEADER}` },
+      { map: appHeader, markup: `router/single-page/${APP_HEADER}` },
+      { map: appHeader, markup: `router/tanstack-router/${APP_HEADER}` },
     ],
   },
   {
     root: 'shells/next',
     attribute: 'className',
     files: [
-      { map: button, markup: 'base/src/components/ui/button/Button.tsx' },
-      { map: codeText, markup: 'base/src/components/ui/code-text/CodeText.tsx' },
-      { map: mark, markup: 'base/src/components/ui/mark/Mark.tsx' },
-      { map: statusPage, markup: 'base/src/components/features/status-page/StatusPage.tsx' },
-      { map: appHeader, markup: 'base/src/components/features/app-header/AppHeader.tsx' },
-      { map: aboutPage, markup: 'base/src/app/about/page.tsx' },
-      { map: versionPage, markup: 'base/src/app/version/page.tsx' },
+      { map: button, markup: 'styling/atomic/src/components/ui/button/Button.tsx' },
+      { map: codeText, markup: 'styling/atomic/src/components/ui/code-text/CodeText.tsx' },
+      { map: mark, markup: 'styling/atomic/src/components/ui/mark/Mark.tsx' },
+      { map: statusPage, markup: 'styling/atomic/src/components/features/status-page/StatusPage.tsx' },
+      { map: appHeader, markup: APP_HEADER },
+      { map: aboutPage, markup: 'styling/atomic/src/app/about/page.tsx' },
+      { map: versionPage, markup: 'styling/atomic/src/app/version/page.tsx' },
       { map: homePage, markup: `${DATA_DRAWER}/app/page.tsx` },
       { map: homePage, markup: `${STORE_DRAWER}/app/page.tsx` },
       { map: contactPage, markup: `${FORM_DRAWER}/app/contact/page.tsx` },
@@ -60,6 +59,6 @@ export const TARGETS: readonly Target[] = [
   {
     root: 'ui/react-dom',
     attribute: 'className',
-    files: [{ map: textInput, markup: 'base/src/components/ui/text-input/TextInput.tsx' }],
+    files: [{ map: textInput, markup: 'styling/atomic/src/components/ui/text-input/TextInput.tsx' }],
   },
 ];

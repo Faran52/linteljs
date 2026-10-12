@@ -6,7 +6,7 @@ import type { Table } from '../../utils/codegenUtils.ts';
 
 export interface MarkupFile {
   readonly map: Table;
-  // The shared markup, from the shell root: `base/src/...` or `<drawer>/src/...`.
+  // The shared markup, from the shell root: `styling/atomic/src/...` or `<drawer>/styling/atomic/src/...`.
   readonly markup: string;
 }
 
@@ -35,9 +35,9 @@ interface Lookup {
 
 const MAP_NAME = 'classNames';
 
-// The css styling's copy sits in the drawer's `styling/css/`, at the markup's own path.
+// The css styling's copy sits beside the markup's `styling/atomic/`, in `styling/css/`.
 export const cssPathOf = (markup: string): string => {
-  return markup.replace(/^(?:base\/)?(?<drawer>.*?)src\//u, '$<drawer>styling/css/src/');
+  return markup.replace('styling/atomic/', 'styling/css/');
 };
 
 const quoted = (value: string): string => {

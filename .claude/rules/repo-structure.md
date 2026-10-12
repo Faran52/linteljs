@@ -64,8 +64,8 @@ a generated project has, and it runs the shipped checker less this workspace's `
 `scripts/tailwind-styles/` writes each shell's and `ui/` tree's `styling/tailwind/**/X.styles.ts` from the tables in
 `templates/codegen/tailwind-sources/`, one tree per `TARGETS` entry in its `constants.ts`; the gate's
 `tailwind-styles` step fails when that changed a committed file.
-`scripts/css-markup/` writes each css copy of a shared markup file (`base/src/X.tsx` to `styling/css/src/X.tsx`,
-`<drawer>/src/X.tsx` to `<drawer>/styling/css/src/X.tsx`) from the class maps in `templates/codegen/css-sources/`,
+`scripts/css-markup/` writes each css copy of a markup file (`[<drawer>/]styling/atomic/src/X.tsx`, the stylex and
+tailwind group, to `[<drawer>/]styling/css/src/X.tsx`) from the class maps in `templates/codegen/css-sources/`,
 one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. The gate's `css-markup` step
 fails when that changed a committed file. `scripts/utils/codegenUtils.ts` holds what both share.
 
