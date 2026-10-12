@@ -73,12 +73,20 @@
       "additionalProperties": { "type": "string", "pattern": "^[^/].*[^/]$" }
     },
     "platform": {
-      "description": "Shell only, a fact: usable as a `platform/<value>/` folder in any layer.",
+      "description": "Shell or shell value, a fact: usable as a `platform/<value>/` folder in any layer.",
       "enum": ["web", "native"]
     },
     "localeStore": {
-      "description": "Shell only, a fact: usable as a `localeStore/<value>/` folder in any layer.",
+      "description": "Shell or shell value, a fact: usable as a `localeStore/<value>/` folder in any layer.",
       "enum": ["cookie"]
+    },
+    "pageKind": {
+      "description": "Shell or shell value, a fact: usable as a `pageKind/<value>/` folder in any layer.",
+      "enum": ["routes", "surfaces"]
+    },
+    "framework": {
+      "description": "Shell or shell value, a fact: usable as a `framework/<value>/` folder in any layer.",
+      "enum": ["react", "vue", "svelte", "solid", "angular"]
     },
     "pages": {
       "description": "Shell only: page id, or `surface:<name>` for an extension surface -> its directory in the generated project, where shared per-page files (e2e specs) are placed.",
