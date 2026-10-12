@@ -205,12 +205,26 @@ describe('filesPlace', () => {
     }).toThrow(message);
   });
 
-  it('refuses a file nested below its page', () => {
-    const files = [fileOf('pages/contact/parts/form.css')];
+  it('lands a file below its page in the page\'s placed directory, its name kept', () => {
+    const files = [
+      fileOf('pages/home/use-counter/useCounter.ts'),
+      fileOf('pages/contact/use-contact-form/useContactForm.test.ts'),
+      fileOf('pages/contact/utils/deep/contactCopyUtils.ts'),
+    ];
+    const nextPaths = pathsOf(files, NEXT);
+    const angularPaths = pathsOf(files, ANGULAR);
 
-    expect(() => {
-      return filesPlace(files, NEXT);
-    }).toThrow('pages/contact/parts/form.css is nested below its page');
+    expect(nextPaths).toEqual([
+      'src/app/use-counter/useCounter.ts',
+      'src/app/contact/use-contact-form/useContactForm.test.ts',
+      'src/app/contact/utils/deep/contactCopyUtils.ts',
+    ]);
+
+    expect(angularPaths).toEqual([
+      'src/views/home/use-counter/use-counter.ts',
+      'src/views/contact/use-contact-form/use-contact-form.spec.ts',
+      'src/views/contact/utils/deep/contact-copy-utils.ts',
+    ]);
   });
 
   it('refuses a page the shell\'s pages map lacks', () => {

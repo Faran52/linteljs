@@ -100,15 +100,15 @@ const placedPathOf = (path: string, {
 
   const [stem, extension] = stemOf(posix.basename(rest));
   const suffixed = extension.replace(/^\.test\./, `${tests}.`);
+  const named = kebab
+    ? stem
+        .replaceAll(/([\da-z])([A-Z])/g, '$1-$2')
+        .toLowerCase()
+    : stem;
 
   if (root === 'pages') {
     const [page, file] = headOf(rest);
-
-    if (file.includes('/')) {
-      throw new Error(`${path} is nested below its page`);
-    }
-
-    const named = target
+    const template = target
       .replaceAll('{dir}', () => {
         const dir = dirs[page];
 
@@ -120,17 +120,14 @@ const placedPathOf = (path: string, {
       })
       .replaceAll('{page}', page)
       .replaceAll('{Page}', pascalCase(page));
-
-    const placed: Placed = { to: `${named}${suffixed}` };
+    // A file below the page keeps its own name in the page's placed directory.
+    const to = file.includes('/')
+      ? posix.join(posix.dirname(template), posix.dirname(file), `${named}${suffixed}`)
+      : `${template}${suffixed}`;
+    const placed: Placed = { to };
 
     return placed;
   }
-
-  const named = kebab
-    ? stem
-        .replaceAll(/([\da-z])([A-Z])/g, '$1-$2')
-        .toLowerCase()
-    : stem;
 
   const to = posix.join(target, posix.dirname(rest), `${named}${suffixed}`);
   const placed: Placed = {
