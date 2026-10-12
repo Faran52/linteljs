@@ -688,9 +688,16 @@ describe('workspaceAssemble', () => {
           tests: '.spec',
         },
       }),
-      'kit/react/base/apis/contactApi.ts': "import { endpoints } from './contactEndpoints';\n",
+      'kit/react/base/apis/contactApi.ts': [
+        "import { endpoints } from './contactEndpoints';",
+        "import { urls } from '@apis/contactEndpoints';",
+        '',
+      ].join('\n'),
       'kit/react/base/apis/contactEndpoints.ts': 'export const endpoints = [];\n',
-      'kit/react/platform/web/share.json': '{ "gitignore": ["kit-cache"] }',
+      'kit/react/platform/web/share.json': JSON.stringify({
+        gitignore: ['kit-cache'],
+        tsconfig: { compilerOptions: { paths: { '@apis/*': ['./src/lib/apis/*'] } } },
+      }),
       'kit/react/platform/web/public/robots.txt': 'User-agent: *\n',
       'kit/react/platform/native/public/app.json': '{}',
     };
@@ -720,6 +727,11 @@ describe('workspaceAssemble', () => {
       const written = await filesUnder(out);
       const api = await readFile(join(out, 'src/lib/apis/contact-api.ts'), 'utf8');
       const gitignore = await readFile(join(out, '.gitignore'), 'utf8');
+      const expectedApi = [
+        "import { endpoints } from './contact-endpoints';",
+        "import { urls } from '@apis/contact-endpoints';",
+        '',
+      ].join('\n');
 
       expect(written).toEqual(expect.arrayContaining([
         'public/robots.txt',
@@ -728,7 +740,8 @@ describe('workspaceAssemble', () => {
       ]));
 
       expect(written).not.toContain('public/app.json');
-      expect(api).toBe("import { endpoints } from './contact-endpoints';\n");
+      expect(api).toBe(expectedApi);
+
       expect(gitignore).toContain('kit-cache');
     });
 

@@ -36,6 +36,7 @@ const ANGULAR: Share = {
   place: {
     ui: 'src/app/ui',
     apis: 'src/lib/apis',
+    utils: 'src/lib/utils',
     i18n: 'src/i18n',
     pages: 'src/views/{page}/{Page}View',
     naming: 'kebab',
@@ -124,6 +125,71 @@ describe('filesPlace', () => {
     expect(api?.source).toBe('/templates/apis/contact/contactApi.ts');
     expect(endpoints?.text).toBeUndefined();
     expect(barrel?.text).toBe("export { Button } from './button.styles';");
+  });
+
+  it('points alias specifiers at the placed files through the unit\'s tsconfig paths', () => {
+    const share: Share = {
+      ...ANGULAR,
+      tsconfig: {
+        compilerOptions: {
+          paths: {
+            '@ui': ['./src/app/ui/index.ts'],
+            '@ui/*': ['./src/old-ui/*', './src/app/ui/*'],
+            '@lib/*': ['./src/lib/*'],
+            '@lib/legacy/*': ['./src/lib/utils/*'],
+            '@utils/*': ['./src/lib/utils/*'],
+            '@utils/fetchExtendedUtils': ['./src/lib/utils/fetch-extended-utils.ts'],
+          },
+        },
+      },
+    };
+    const importer = [
+      "import { ForbiddenError } from '@utils/statusUtils';",
+      'import { styles } from "@ui/text-input/TextInput.styles";',
+      "import { TextInput } from '@ui/text-input';",
+      "import { status } from '@lib/utils/statusUtils';",
+      "import { legacy } from '@lib/legacy/statusUtils';",
+      "import { request } from '@utils/fetchExtendedUtils';",
+      "import { missing } from '@utils/missing';",
+      "import { useQuery } from '@tanstack/angular-query';",
+      "import { Ui5Button } from '@ui5/webcomponents';",
+      "vi.mock('@utils/statusUtils');",
+    ].join('\n');
+    const files = [
+      fileOf('apis/contact/contactApi.ts', importer),
+      fileOf('ui/text-input/TextInput.styles.ts'),
+      fileOf('ui/text-input/index.ts'),
+      fileOf('utils/statusUtils.ts'),
+      fileOf('utils/fetchExtendedUtils.ts'),
+      fileOf('pages/about/about.css'),
+    ];
+    const api = filesPlace(files, share).at(0);
+    const expected = [
+      "import { ForbiddenError } from '@utils/status-utils';",
+      'import { styles } from "@ui/text-input/text-input.styles";',
+      "import { TextInput } from '@ui/text-input';",
+      "import { status } from '@lib/utils/status-utils';",
+      "import { legacy } from '@lib/legacy/status-utils';",
+      "import { request } from '@utils/fetchExtendedUtils';",
+      "import { missing } from '@utils/missing';",
+      "import { useQuery } from '@tanstack/angular-query';",
+      "import { Ui5Button } from '@ui5/webcomponents';",
+      "vi.mock('@utils/status-utils');",
+    ].join('\n');
+
+    expect(api?.text).toBe(expected);
+  });
+
+  it('refuses a layer file importing through an alias outside the core names', () => {
+    const share: Share = {
+      ...NEXT,
+      tsconfig: { compilerOptions: { paths: { '@store/*': ['./src/lib/store/*'] } } },
+    };
+    const files = [fileOf('apis/contact/contactApi.ts', "import { store } from '@store/counter';")];
+
+    expect(() => {
+      return filesPlace(files, share);
+    }).toThrow('apis/contact/contactApi.ts imports @store/counter through @store, which is not a core alias');
   });
 
   it.each([
