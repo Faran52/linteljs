@@ -636,11 +636,27 @@ describe('workspaceAssemble', () => {
     await expect(assembling).rejects.toThrow('package.json is written twice');
   });
 
-  it('keeps every fact key apart from the question keys', async () => {
+  it('keeps every fact key apart from the question keys, the place roots and base', async () => {
     const questions = await manifestReader();
-    const clashing = questions
-      .filter(({ key }) => {
-        return FACTS.includes(key);
+    const keys = questions
+      .map(({ key }) => {
+        return key;
+      });
+    // The logical roots share.schema.json's `place` names: a fact folder named like one would swallow it.
+    const taken = [
+      'base',
+      'pages',
+      'ui',
+      'features',
+      'apis',
+      'i18n',
+      'styles',
+      'public',
+      ...keys,
+    ];
+    const clashing = FACTS
+      .filter((fact) => {
+        return taken.includes(fact);
       });
 
     expect(clashing).toEqual([]);
