@@ -4,5 +4,14 @@
     "@reduxjs/toolkit",
     "es-toolkit",
     "react-redux"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ]
+      }
+    }
+  }
 }

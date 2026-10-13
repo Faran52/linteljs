@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../../schemas/share.schema.json",
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
+}

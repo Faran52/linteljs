@@ -12,5 +12,14 @@
     "jest",
     "jest-expo",
     "test-renderer"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
 }

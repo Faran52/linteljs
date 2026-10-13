@@ -76,9 +76,6 @@
         "@components/*": [
           "./src/components/*"
         ],
-        "@ui": [
-          "./src/components/ui"
-        ],
         "@ui/*": [
           "./src/components/ui/*"
         ],
@@ -100,9 +97,6 @@
         "@services/*": [
           "./src/lib/services/*"
         ],
-        "@apis/*": [
-          "./src/lib/apis/*"
-        ],
         "@/assets/*": [
           "./assets/*"
         ],
@@ -117,9 +111,6 @@
         ],
         "@i18n/*": [
           "./src/i18n/*"
-        ],
-        "@mocks/*": [
-          "./__mocks__/*"
         ]
       }
     }

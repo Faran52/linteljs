@@ -8,5 +8,14 @@
     "@html-eslint/parser",
     "msw",
     "oxc-transform-react"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
 }

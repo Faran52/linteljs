@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/share.schema.json",
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ],
+        "@ui": [
+          "./src/components/ui"
+        ]
+      }
+    }
+  }
+}

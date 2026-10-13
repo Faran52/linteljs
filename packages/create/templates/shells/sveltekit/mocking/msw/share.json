@@ -5,5 +5,14 @@
   ],
   "devDependencies": [
     "msw"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
 }

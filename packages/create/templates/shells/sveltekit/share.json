@@ -86,9 +86,6 @@
         "@services/*": [
           "./src/lib/services/*"
         ],
-        "@apis/*": [
-          "./src/lib/apis/*"
-        ],
         "@styles/*": [
           "./src/styles/*"
         ],
@@ -97,9 +94,6 @@
         ],
         "@i18n/*": [
           "./src/i18n/*"
-        ],
-        "@mocks/*": [
-          "./__mocks__/*"
         ]
       }
     }

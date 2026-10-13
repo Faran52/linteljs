@@ -3,5 +3,14 @@
   "dependencies": [
     "@tanstack/svelte-form",
     "es-toolkit"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ]
+      }
+    }
+  }
 }

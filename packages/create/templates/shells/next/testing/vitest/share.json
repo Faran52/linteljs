@@ -10,5 +10,14 @@
     "@vitest/eslint-plugin",
     "happy-dom",
     "vitest"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
 }
