@@ -4,7 +4,7 @@ import { injectMutation, QueryClient } from '@tanstack/angular-query-experimenta
 
 import { type ExtendedMutationOptions, extendedMutationOptions } from '@utils/query-options-utils';
 
-import type { ApiError } from '@utils/fetchExtendedUtils';
+import type { ApiError } from '@utils/fetch-extended-utils';
 
 // Signals come back rather than values, which is what a template reads.
 export const injectExtendedMutation = <TResponse, TBody extends object>(

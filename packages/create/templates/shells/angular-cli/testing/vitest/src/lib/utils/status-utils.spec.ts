@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { ForbiddenError } from './statusUtils';
+import { ForbiddenError } from './status-utils';
 
 describe('ForbiddenError', () => {
   it('is an error a boundary can tell apart by its class and its name', () => {

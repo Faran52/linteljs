@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 
 import { server } from '@mocks/msw/node';
 
-import { submitContact } from './contactEndpoints';
+import { submitContact } from './contact-endpoints';
 
 describe('submitContact', () => {
   it('posts details the rules accept and answers the reply', async () => {

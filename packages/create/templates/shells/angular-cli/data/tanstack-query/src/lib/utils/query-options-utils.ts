@@ -1,4 +1,4 @@
-import { type QueryValue, request } from './fetchExtendedUtils';
+import { type QueryValue, request } from './fetch-extended-utils';
 
 export interface ExtendedQueryOptions {
   readonly query?: Readonly<Record<string, QueryValue>>;

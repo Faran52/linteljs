@@ -2,7 +2,7 @@ import { injectQuery } from '@tanstack/angular-query-experimental';
 
 import { type ExtendedQueryOptions, extendedQueryOptions } from '@utils/query-options-utils';
 
-import type { ApiError } from '@utils/fetchExtendedUtils';
+import type { ApiError } from '@utils/fetch-extended-utils';
 
 // Call it from a field initialiser or another injectable: anywhere else Angular throws.
 export const injectExtendedQuery = <TResponse>(

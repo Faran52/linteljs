@@ -84,12 +84,6 @@
         "@apis/*": [
           "./src/lib/apis/*"
         ],
-        "@utils/fetchExtendedUtils": [
-          "./src/lib/utils/fetch-extended-utils.ts"
-        ],
-        "@utils/statusUtils": [
-          "./src/lib/utils/status-utils.ts"
-        ],
         "@services/contact-form/contactFormService": [
           "./src/lib/services/contact-form/contact-form-service.ts"
         ],

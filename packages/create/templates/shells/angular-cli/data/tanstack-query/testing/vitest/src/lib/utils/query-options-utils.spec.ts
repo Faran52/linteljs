@@ -7,7 +7,7 @@ import {
   vi,
 } from 'vitest';
 
-import { extendedMutationOptions, extendedQueryOptions } from './queryOptionsUtils';
+import { extendedMutationOptions, extendedQueryOptions } from './query-options-utils';
 
 const fetchMock = vi.fn();
 
