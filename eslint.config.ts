@@ -122,7 +122,7 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.nuxtMsw.ts',
       'packages/create/templates/starter-source/**',
       'packages/create/templates/frameworks/**',
-      'packages/create/templates/{codegen,shared,ui,shells}/**',
+      'packages/create/templates/{bindings,codegen,shared,ui,shells}/**',
       ...UNTYPED_MODS,
     ],
     naming: {

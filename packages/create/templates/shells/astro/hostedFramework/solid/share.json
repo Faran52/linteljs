@@ -1,6 +1,8 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
-  "layers": [],
+  "layers": [
+    "bindings/solid"
+  ],
   "dependencies": [
     "es-toolkit",
     "solid-js"

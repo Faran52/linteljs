@@ -1,1 +1,0 @@
-export { createSubmitContact } from './contactApi';
