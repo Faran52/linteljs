@@ -3,7 +3,7 @@ import AppButton from '@ui/app-button/AppButton.vue';
 import TextInput from '@ui/text-input/TextInput.vue';
 
 import { useContactForm } from './use-contact-form/useContactForm';
-import { styles } from './ContactPage.styles';
+import { styles } from './ContactView.styles';
 
 import type { ContactCopyKey } from './utils/contactCopyUtils';
 

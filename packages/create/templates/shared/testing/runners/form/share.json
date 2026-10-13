@@ -1,0 +1,13 @@
+{
+  "groups": {
+    "libraries": [
+      "react-hook-form",
+      "tanstack-form"
+    ],
+    "models": [
+      "react-hook-form",
+      "reactive-forms",
+      "tanstack-form"
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "place": {
     "ui": "src/components/ui"
   },
@@ -17,5 +18,6 @@
     "postcss-html",
     "svelte-check",
     "svelte-eslint-parser"
-  ]
+  ],
+  "framework": "svelte"
 }

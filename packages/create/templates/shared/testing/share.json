@@ -1,0 +1,8 @@
+{
+  "groups": {
+    "runners": [
+      "jest",
+      "vitest"
+    ]
+  }
+}

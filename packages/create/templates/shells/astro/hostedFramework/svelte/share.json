@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "dependencies": [
     "es-toolkit",
     "svelte"
@@ -12,5 +13,6 @@
     "postcss-html",
     "svelte-check",
     "svelte-eslint-parser"
-  ]
+  ],
+  "framework": "svelte"
 }

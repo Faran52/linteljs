@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "dependencies": [
     "es-toolkit"
   ],
@@ -7,5 +8,6 @@
     "@html-eslint/eslint-plugin",
     "@html-eslint/parser",
     "@types/chrome"
-  ]
+  ],
+  "framework": "none"
 }

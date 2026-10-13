@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "place": {
     "ui": "src/components/ui"
   },
@@ -18,5 +19,6 @@
     "postcss-html",
     "vue-eslint-parser",
     "vue-tsc"
-  ]
+  ],
+  "framework": "vue"
 }

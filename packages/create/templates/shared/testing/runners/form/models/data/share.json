@@ -1,0 +1,8 @@
+{
+  "groups": {
+    "redux-free": [
+      "fetch",
+      "tanstack-query"
+    ]
+  }
+}

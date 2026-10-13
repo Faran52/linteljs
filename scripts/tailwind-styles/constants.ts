@@ -89,7 +89,7 @@ export const TARGETS: readonly Target[] = [
         path: 'styling/tailwind/src/views/home/HomeView.styles.ts',
         keys: HOME_DATA_KEYS,
       },
-      { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactPage.styles.ts` },
+      { table: contactPage, path: `${ISLAND_DRAWER}/views/contact/ContactView.styles.ts` },
       {
         table: textInput,
         path: 'hostedFramework/non-react/styling/tailwind/src/components/ui/text-input/TextInput.styles.ts',
@@ -99,7 +99,7 @@ export const TARGETS: readonly Target[] = [
   {
     root: 'shells/astro',
     attribute: 'className',
-    files: [{ table: contactPage, path: `${ASTRO_FORM_DRAWER}/views/contact/ContactPage.styles.ts` }],
+    files: [{ table: contactPage, path: `${ASTRO_FORM_DRAWER}/views/contact/ContactView.styles.ts` }],
   },
   {
     root: 'ui/react-dom',

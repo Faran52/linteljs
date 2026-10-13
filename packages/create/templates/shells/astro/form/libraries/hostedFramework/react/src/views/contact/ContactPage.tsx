@@ -1,7 +1,7 @@
 import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './use-contact-form/useContactForm';
-import { styles } from './ContactPage.styles';
+import { styles } from './ContactView.styles';
 
 import type { FC } from 'react';
 import type { ContactCopyKey } from './utils/contactCopyUtils';

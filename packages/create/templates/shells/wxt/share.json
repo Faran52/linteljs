@@ -1,5 +1,8 @@
 {
   "$schema": "../../schemas/share.schema.json",
+  "layers": [
+    "shared"
+  ],
   "defaults": {
     "browser": "chrome",
     "hostedFramework": "off",
@@ -78,5 +81,20 @@
         ]
       }
     }
-  }
+  },
+  "place": {
+    "naming": "camel",
+    "tests": ".test",
+    "ui": "src/components/ui",
+    "features": "src/components/features",
+    "lib": "src/lib",
+    "i18n": "src/i18n",
+    "config": "src/config",
+    "styles": "src/styles",
+    "typings": "src/typings",
+    "public": "public",
+    "mocks": "__mocks__"
+  },
+  "platform": "web",
+  "pageKind": "surfaces"
 }

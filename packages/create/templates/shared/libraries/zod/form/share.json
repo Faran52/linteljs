@@ -1,0 +1,8 @@
+{
+  "groups": {
+    "libraries": [
+      "react-hook-form",
+      "tanstack-form"
+    ]
+  }
+}

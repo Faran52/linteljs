@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "dependencies": [
     "es-toolkit",
     "vue"
@@ -13,5 +14,6 @@
     "postcss-html",
     "vue-eslint-parser",
     "vue-tsc"
-  ]
+  ],
+  "framework": "vue"
 }

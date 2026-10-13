@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "dependencies": [
     "es-toolkit",
     "solid-js"
@@ -9,5 +10,6 @@
     "eslint-plugin-jsx-a11y-x",
     "eslint-plugin-solid",
     "vite-plugin-solid"
-  ]
+  ],
+  "framework": "solid"
 }

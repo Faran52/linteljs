@@ -1,7 +1,7 @@
 import { Button, TextInput } from '@ui';
 
 import { createContactForm } from './create-contact-form/createContactForm';
-import { styles } from './ContactPage.styles';
+import { styles } from './ContactView.styles';
 
 import type { JSX } from 'solid-js';
 import type { ContactCopyKey } from './utils/contactCopyUtils';

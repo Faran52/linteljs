@@ -1,6 +1,8 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "dependencies": [
     "es-toolkit"
-  ]
+  ],
+  "framework": "none"
 }

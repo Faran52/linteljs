@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "place": {
     "ui": "src/components/ui"
   },
@@ -14,5 +15,6 @@
     "eslint-plugin-jsx-a11y-x",
     "eslint-plugin-solid",
     "vite-plugin-solid"
-  ]
+  ],
+  "framework": "solid"
 }

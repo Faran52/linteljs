@@ -1,5 +1,8 @@
 {
   "$schema": "../../schemas/share.schema.json",
+  "layers": [
+    "shared"
+  ],
   "ui": [
     "angular"
   ],
@@ -104,5 +107,22 @@
         ]
       }
     }
-  }
+  },
+  "place": {
+    "naming": "kebab",
+    "tests": ".spec",
+    "ui": "src/components/ui",
+    "features": "src/components/features",
+    "lib": "src/lib",
+    "i18n": "src/i18n",
+    "config": "src/config",
+    "styles": "src/styles",
+    "typings": "src/typings",
+    "public": "public",
+    "mocks": "__mocks__",
+    "pages": "{dir}/{page}"
+  },
+  "platform": "web",
+  "pageKind": "routes",
+  "framework": "angular"
 }

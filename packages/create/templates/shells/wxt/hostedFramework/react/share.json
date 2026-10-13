@@ -1,5 +1,6 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
+  "layers": [],
   "place": {
     "ui": "src/components/ui"
   },
@@ -19,5 +20,6 @@
     "eslint-plugin-jsx-a11y-x",
     "eslint-plugin-react-hooks",
     "oxc-transform-react"
-  ]
+  ],
+  "framework": "react"
 }
