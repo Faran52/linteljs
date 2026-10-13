@@ -3,7 +3,8 @@
   "layers": [
     "shared",
     "bindings/react",
-    "app/react"
+    "app/react",
+    "kit/react"
   ],
   "ui": [
     "react",

@@ -26,9 +26,6 @@ export const TARGETS: readonly Target[] = [
     root: 'shells/vite-react',
     attribute: 'className',
     files: [
-      { map: button, markup: 'styling/atomic/src/components/ui/button/Button.tsx' },
-      { map: codeText, markup: 'styling/atomic/src/components/ui/code-text/CodeText.tsx' },
-      { map: mark, markup: 'styling/atomic/src/components/ui/mark/Mark.tsx' },
       { map: statusPage, markup: 'styling/atomic/src/components/features/status-page/StatusPage.tsx' },
       { map: aboutPage, markup: 'styling/atomic/src/pages/about/AboutPage.tsx' },
       { map: versionPage, markup: 'styling/atomic/src/pages/version/VersionPage.tsx' },
@@ -44,9 +41,6 @@ export const TARGETS: readonly Target[] = [
     root: 'shells/next',
     attribute: 'className',
     files: [
-      { map: button, markup: 'styling/atomic/src/components/ui/button/Button.tsx' },
-      { map: codeText, markup: 'styling/atomic/src/components/ui/code-text/CodeText.tsx' },
-      { map: mark, markup: 'styling/atomic/src/components/ui/mark/Mark.tsx' },
       { map: statusPage, markup: 'styling/atomic/src/components/features/status-page/StatusPage.tsx' },
       { map: appHeader, markup: APP_HEADER },
       { map: aboutPage, markup: 'styling/atomic/src/app/about/page.tsx' },
@@ -57,8 +51,13 @@ export const TARGETS: readonly Target[] = [
     ],
   },
   {
-    root: 'ui/react-dom',
+    root: 'kit/react',
     attribute: 'className',
-    files: [{ map: textInput, markup: 'styling/atomic/src/components/ui/text-input/TextInput.tsx' }],
+    files: [
+      { map: button, markup: 'styling/atomic/ui/button/Button.tsx' },
+      { map: codeText, markup: 'styling/atomic/ui/code-text/CodeText.tsx' },
+      { map: mark, markup: 'styling/atomic/ui/mark/Mark.tsx' },
+      { map: textInput, markup: 'styling/atomic/ui/text-input/TextInput.tsx' },
+    ],
   },
 ];

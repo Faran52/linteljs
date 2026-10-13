@@ -6,6 +6,17 @@
       "solid",
       "svelte",
       "vue"
+    ],
+    "non-react": [
+      "off",
+      "solid",
+      "svelte",
+      "vue"
+    ],
+    "non-react-islands": [
+      "solid",
+      "svelte",
+      "vue"
     ]
   }
 }

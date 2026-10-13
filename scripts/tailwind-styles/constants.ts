@@ -41,7 +41,6 @@ export const TARGETS: readonly Target[] = [
         path: 'styling/tailwind/src/components/features/app-header/AppHeader.styles.ts',
         style: true,
       },
-      { table: button, path: 'styling/tailwind/src/components/ui/button/Button.styles.ts' },
       { table: mark, path: 'styling/tailwind/src/components/ui/mark/Mark.styles.ts' },
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
@@ -61,7 +60,6 @@ export const TARGETS: readonly Target[] = [
     attribute: 'className',
     files: [
       { table: appHeader, path: 'styling/tailwind/src/components/features/app-header/AppHeader.styles.ts' },
-      { table: button, path: 'styling/tailwind/src/components/ui/button/Button.styles.ts' },
       { table: mark, path: 'styling/tailwind/src/components/ui/mark/Mark.styles.ts' },
       { table: codeText, path: 'styling/tailwind/src/components/ui/code-text/CodeText.styles.ts' },
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
@@ -102,9 +100,12 @@ export const TARGETS: readonly Target[] = [
     files: [{ table: contactPage, path: `${ASTRO_FORM_DRAWER}/views/contact/ContactView.styles.ts` }],
   },
   {
-    root: 'ui/react-dom',
+    root: 'kit/react',
     attribute: 'className',
-    files: [{ table: textInput, path: 'styling/tailwind/src/components/ui/text-input/TextInput.styles.ts' }],
+    files: [
+      { table: button, path: 'styling/tailwind/ui/button/Button.styles.ts' },
+      { table: textInput, path: 'styling/tailwind/ui/text-input/TextInput.styles.ts' },
+    ],
   },
   {
     root: 'ui/vue',

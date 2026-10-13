@@ -1,7 +1,8 @@
 {
   "$schema": "../../../../schemas/share.schema.json",
   "layers": [
-    "bindings/react"
+    "bindings/react",
+    "kit/react"
   ],
   "ui": [
     "react",
