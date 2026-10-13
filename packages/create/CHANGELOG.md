@@ -235,6 +235,9 @@ when a version's change lives in a sibling it is described there instead:
   one, as Yarn's already did not.
 - Angular with `--store ngrx-signals` gets an NgRx Signals `CounterStore` in `src/lib/store/counter/` and a home
   page that counts up through it.
+- Every MSW project with a contact page gets the `/api/contact` handler in `__mocks__/msw/handlers.ts`, whatever
+  its form answer, and every project with a contact page gets `validateContact` in
+  `src/lib/services/contact-form/` with its suite.
 
 ### Changed
 

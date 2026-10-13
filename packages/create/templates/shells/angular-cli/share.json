@@ -84,9 +84,6 @@
         "@apis/*": [
           "./src/lib/apis/*"
         ],
-        "@services/contact-form/contactFormService": [
-          "./src/lib/services/contact-form/contact-form-service.ts"
-        ],
         "@styles/*": [
           "./src/styles/*"
         ],
