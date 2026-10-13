@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { NAME } from '@config/linteljs';
 import { STATUSES } from '@config/statuses';
+import { knownStatus } from '@utils/statusUtils';
 
 import type { NuxtError } from 'nuxt/app';
 
@@ -11,15 +12,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Any other status is a crash, and clearing it renders the route again.
-const knownStatuses = [STATUSES.forbidden, STATUSES.notFound];
 const known = computed(() => {
-  return knownStatuses
-    .find(({ code }) => {
-      return code === props.error.status;
-    });
+  return knownStatus(props.error.status);
 });
 
+// Clearing a crash renders the route again.
 const retry = async (): Promise<void> => {
   await clearError();
 };

@@ -3,15 +3,12 @@
   import { page } from '$app/state';
 
   import { STATUSES } from '@config/statuses';
+  import { knownStatus } from '@utils/statusUtils';
 
   import StatusPage from '@features/status-page/StatusPage.svelte';
 
-  // Any other status is a crash, and invalidating runs what failed again.
-  const knownStatuses = [STATUSES.forbidden, STATUSES.notFound];
-  const known = $derived(knownStatuses
-    .find(({ code }) => {
-      return code === page.status;
-    }));
+  // Invalidating a crash runs what failed again.
+  const known = $derived(knownStatus(page.status));
 </script>
 
 {#if known}
