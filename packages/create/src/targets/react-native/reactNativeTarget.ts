@@ -386,6 +386,8 @@ export const reactNativeTarget: TargetBuilder = (answers) => {
       'react': '19.2.3',
       'react-dom': '19.2.3',
       '@types/react': '~19.2.2',
+      // 19.3 peers `@types/react ^19.3.0`, past the pin above.
+      '@types/react-dom': '~19.2.3',
     },
     i18n: REACT_NATIVE_I18N,
     stateRules: ['react-state.md', 'hooks-order.md'],

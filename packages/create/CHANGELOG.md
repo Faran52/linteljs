@@ -298,6 +298,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **A React Native project installs with plain `npm install`.** `@types/react-dom` follows Expo SDK 57's
+  `@types/react ~19.2.2` at `~19.2.3`, where `^19.3.0` peered `@types/react ^19.3.0` and npm stopped on ERESOLVE.
+
 - **React Native with languages mirrors its layout for a right-to-left language in a build.** A switch or a
   cold launch whose language runs the other way forces the new direction and reloads the app, and an iOS build
   keeps the chosen direction across launches. Expo Go resets a

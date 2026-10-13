@@ -499,6 +499,7 @@ describe('buildDependencies', () => {
     const nativeDevDependencies = buildDevDependencies(native);
     const webDependencies = buildDependencies(answersFor({}));
     expect(nativeDevDependencies['@types/react']).toBe('~19.2.2');
+    expect(nativeDevDependencies['@types/react-dom']).toBe('~19.2.3');
     expect(webDependencies['react']).toBe(VERSIONS['react']);
   });
 
