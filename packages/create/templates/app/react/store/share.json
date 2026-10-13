@@ -1,0 +1,9 @@
+{
+  "groups": {
+    "providerless": [
+      "react-state",
+      "tanstack-store",
+      "zustand"
+    ]
+  }
+}

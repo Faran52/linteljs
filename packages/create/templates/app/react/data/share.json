@@ -1,0 +1,8 @@
+{
+  "groups": {
+    "providerless": [
+      "fetch",
+      "rtk-query"
+    ]
+  }
+}

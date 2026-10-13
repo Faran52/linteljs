@@ -1,0 +1,9 @@
+{
+  "groups": {
+    "libraries": [
+      "redux-toolkit",
+      "tanstack-store",
+      "zustand"
+    ]
+  }
+}
