@@ -1,0 +1,61 @@
+/* The 360px floor is what an extension popup gives you. */
+.hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.25rem 4rem;
+  text-align: center;
+}
+
+/* A name is whatever was typed, so it wraps rather than overflowing. */
+.title {
+  max-width: 100%;
+  margin: 1.625rem 0 0.375rem;
+  font-size: 1.875rem;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.lede {
+  max-width: 23rem;
+  margin: 0;
+  font-size: var(--text-value);
+  color: var(--muted-foreground);
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  align-items: center;
+  margin: 2rem 0 0.625rem;
+}
+
+/* Tabular with a floor on the width, so counting past nine does not move the button under the pointer. */
+.count {
+  min-width: 2ch;
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--primary);
+  text-align: center;
+}
+
+/* A control with no label is a puzzle: this says what the count is for. */
+.caption {
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--faint);
+}
+
+.hint {
+  margin: 1.625rem 0 0;
+  font-size: var(--text-body);
+  color: var(--faint);
+}

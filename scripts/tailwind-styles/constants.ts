@@ -177,9 +177,10 @@ export const TARGETS: readonly Target[] = [
       { table: versionPage, path: 'styling/tailwind/src/app/version/version.styles.ts' },
       {
         table: homePage,
-        path: 'styling/tailwind/src/app/home/home.styles.ts',
+        path: 'store/signals/styling/tailwind/src/app/home/home.styles.ts',
         keys: HOME_DATA_KEYS,
       },
+      { table: homePage, path: 'store/ngrx-signals/styling/tailwind/src/app/home/home.styles.ts' },
       {
         table: contactPage,
         path: 'form/models/styling/tailwind/src/app/contact/contact.styles.ts',

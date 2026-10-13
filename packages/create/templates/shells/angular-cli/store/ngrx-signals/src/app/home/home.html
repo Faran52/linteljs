@@ -1,0 +1,14 @@
+<main [class]="styles.hero.class">
+  <app-mark />
+  <h1 [class]="styles.title.class">{{ name }}</h1>
+  <p [class]="styles.lede.class">{{ t('homeLedeAngular') }}</p>
+  <!-- State that outlives the page: switch tabs and come back, and the count is still here. -->
+  <div [class]="styles.counter.class">
+    <span [class]="styles.count.class" aria-live="polite">{{ counter.count() }}</span>
+    <app-button (click)="counter.add()">{{ t('homeAdd') }}</app-button>
+  </div>
+  <p [class]="styles.caption.class">{{ t('homeCaption') }}</p>
+  <p [class]="styles.hint.class">
+    <app-code-text [text]="t('gateHint', { command: check })" tone="primary" />
+  </p>
+</main>

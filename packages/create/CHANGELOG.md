@@ -233,6 +233,8 @@ when a version's change lives in a sibling it is described there instead:
   `packages/` already holds.
 - An install `create` or `sync --add` runs under `CI` no longer fails on pnpm's frozen lockfile when it changes
   one, as Yarn's already did not.
+- Angular with `--store ngrx-signals` gets an NgRx Signals `CounterStore` in `src/lib/store/counter/` and a home
+  page that counts up through it.
 
 ### Changed
 
