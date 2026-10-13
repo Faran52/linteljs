@@ -82,6 +82,8 @@ destination), `schemas/` the mirror of the root `schemas/` published by raw URL
 component, and `codegen/css-sources/` one css class map per component, both repo-only: the engine never reads `codegen/` and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
 frameworks this workspace does not install and files named `*.test.ts`.
 
+How a template file is authored once and placed per shell, with no copies: `template-authoring.md`.
+
 ## `__mocks__/` and suites with no source
 
 - `__mocks__/` sits at each package root, aliased `@mocks/*` in that package's tsconfig.
