@@ -22,6 +22,7 @@ import {
   badgeOf,
   contextOf,
   contextWarningOf,
+  elapsedOf,
   mainContextOf,
   subagentRowsOf,
   subagentTranscriptOf,
@@ -202,6 +203,19 @@ describe('badgeOf', () => {
   });
 });
 
+describe('elapsedOf', () => {
+  it('prints minutes under an hour, hours and minutes after, and never below zero', () => {
+    const underAMinute = elapsedOf(59_999);
+    expect(underAMinute).toBe('0m');
+    const minutes = elapsedOf(12 * 60_000);
+    expect(minutes).toBe('12m');
+    const hours = elapsedOf(125 * 60_000);
+    expect(hours).toBe('2h5m');
+    const negative = elapsedOf(-5);
+    expect(negative).toBe('0m');
+  });
+});
+
 describe('mainContextOf', () => {
   it('reads the context window Claude Code sends', () => {
     const path = transcriptOf([assistant(1, 0, 0)]);
@@ -288,6 +302,26 @@ describe('subagentRowsOf', () => {
       tokenCount: 7,
     }] });
     const expected = [{ id: 'a1', content: badgeOf(7) }];
+    expect(rows).toEqual(expected);
+  });
+
+  it('shows how long each subagent has run, from its transcript\'s first timestamp', () => {
+    const main = transcriptOf([assistant(1, 0, 0)]);
+    mkdirSync(join(directory, 'main', 'subagents'), { recursive: true });
+    const first = JSON.stringify({ type: 'user', timestamp: '2026-10-14T07:00:00.000Z' });
+    transcriptOf([first, assistant(0, 84_000, 0)], join('main', 'subagents', 'agent-a1.jsonl'));
+    const now = Date.parse('2026-10-14T08:12:30.000Z');
+
+    const rows = subagentRowsOf({
+      transcript_path: main,
+      tasks: [{
+        id: 'a1',
+        type: 'local_agent',
+        label: 'Run 6',
+      }],
+    }, now);
+
+    const expected = [{ id: 'a1', content: `${badgeOf(84_000)} 1h12m Run 6` }];
     expect(rows).toEqual(expected);
   });
 

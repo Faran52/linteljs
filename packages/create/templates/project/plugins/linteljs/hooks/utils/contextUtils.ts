@@ -13,7 +13,10 @@ import {
   BADGE_COLOURS,
   CONTEXT_CEILING_TOKENS,
   CONTEXT_WARN_TOKENS,
+  MINUTES_PER_HOUR,
+  MS_PER_MINUTE,
   TOKENS_PER_K,
+  TRANSCRIPT_HEAD_BYTES,
   TRANSCRIPT_TAIL_BYTES,
 } from '../constants.ts';
 
@@ -107,6 +110,39 @@ export const contextOf = (transcript: string, tailBytes = TRANSCRIPT_TAIL_BYTES)
   return 0;
 };
 
+const headOf = (path: string, headBytes: number): string => {
+  const descriptor = openSync(path, 'r');
+
+  try {
+    const buffer = Buffer.alloc(headBytes);
+    const read = readSync(descriptor, buffer, 0, headBytes, 0);
+    return buffer.toString('utf8', 0, read);
+  }
+  finally {
+    closeSync(descriptor);
+  }
+};
+
+// A transcript starts when its first entry was written.
+export const startedAtOf = (transcript: string, headBytes = TRANSCRIPT_HEAD_BYTES): number | undefined => {
+  try {
+    const head = headOf(transcript, headBytes);
+    const stamp = /"timestamp":"([^"]+)"/u.exec(head)?.[1];
+    const time = stamp === undefined ? Number.NaN : Date.parse(stamp);
+    return Number.isNaN(time) ? undefined : time;
+  }
+  catch {
+    return undefined;
+  }
+};
+
+export const elapsedOf = (milliseconds: number): string => {
+  const minutes = Math.max(0, Math.floor(milliseconds / MS_PER_MINUTE));
+  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+
+  return hours === 0 ? `${String(minutes)}m` : `${String(hours)}h${String(minutes % MINUTES_PER_HOUR)}m`;
+};
+
 export const subagentTranscriptOf = (transcript: string, agentId: string): string => {
   const sessionDirectory = transcript.replace(/\.jsonl$/u, '');
 
@@ -156,8 +192,9 @@ export const mainContextOf = (payload: object): number => {
 };
 
 // Only `local_agent` rows are subagents; any other row keeps Claude Code's own rendering.
-export const subagentRowsOf = (payload: object): SubagentRow[] => {
+export const subagentRowsOf = (payload: object, now = Date.now()): SubagentRow[] => {
   const tasks = objectAt(payload, 'tasks') ?? {};
+  const transcript = stringAt(payload, 'transcript_path');
 
   return Object.keys(tasks)
     .flatMap((key) => {
@@ -168,15 +205,27 @@ export const subagentRowsOf = (payload: object): SubagentRow[] => {
         return [];
       }
 
-      const read = namedContextOf(payload, (transcript) => {
-        return subagentTranscriptOf(transcript, id);
+      const read = namedContextOf(payload, (path) => {
+        return subagentTranscriptOf(path, id);
       });
       const tokens = read === 0 ? numberAt(task, 'tokenCount') ?? 0 : read;
       const label = stringAt(task, 'label') ?? stringAt(task, 'description');
+      const startedAt = transcript === undefined ? undefined : startedAtOf(subagentTranscriptOf(transcript, id));
+      const elapsed = startedAt === undefined ? undefined : elapsedOf(now - startedAt);
+      const badge = badgeOf(tokens);
+      const content = [
+        badge,
+        elapsed,
+        label,
+      ]
+        .filter((part) => {
+          return part !== undefined;
+        })
+        .join(' ');
       const rows = [
         {
           id,
-          content: label === undefined ? badgeOf(tokens) : `${badgeOf(tokens)} ${label}`,
+          content,
         },
       ];
 
