@@ -478,6 +478,20 @@ describe('base: aliases', () => {
     });
   });
 
+  it.each([
+    [['node_modules/zod/v4'], false],
+    [['../node_modules/zod/v4', './src/zod'], true],
+  ])('takes a path mapped to %j for an alias: %s', async (targets, alias) => {
+    const files = { 'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { 'zod/v4': targets } } }) };
+    const packages = "import { a } from 'es-toolkit';\nimport { b } from 'zod/v4';\n\nexport const value = [a, b];\n";
+
+    await withProject(files, async (root) => {
+      const ruleIds = await ruleIdsFor(base({ root }), packages, 'src/lib/sample.ts');
+      const regrouped = ruleIds.includes('simple-import-sort/imports');
+      expect(regrouped).toBe(alias);
+    });
+  });
+
   it('sorts the same import with the packages without a root', async () => {
     const actual = await groupsAfterPackages(base());
     expect(actual).toBe(false);

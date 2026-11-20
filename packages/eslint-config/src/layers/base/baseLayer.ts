@@ -69,6 +69,16 @@ const tsconfigHost = {
   },
 };
 
+const NODE_MODULES = /(?:^|\/)node_modules\//;
+
+// A path into node_modules redirects a package (Nuxt maps `nuxt/app`), which sorts with the packages.
+const isProjectAlias = ([, targets]: [string, string[]]): boolean => {
+  return !targets
+    .every((target) => {
+      return NODE_MODULES.test(target);
+    });
+};
+
 // No directory walk: only `paths` is read, through `extends` and `references`. A missing tsconfig parses as empty.
 const aliasesIn = (path: string, seen = new Set<string>()): string[] => {
   if (seen.has(path)) {
@@ -80,7 +90,13 @@ const aliasesIn = (path: string, seen = new Set<string>()): string[] => {
     return ts.sys.readFile(file);
   });
   const { options, projectReferences } = ts.parseJsonConfigFileContent(tsconfig.config, tsconfigHost, dirname(path));
-  const own = options.paths ? Object.keys(options.paths) : [];
+  const own = options.paths
+    ? Object.entries(options.paths)
+        .filter(isProjectAlias)
+        .map(([alias]) => {
+          return alias;
+        })
+    : [];
   const referenced = projectReferences
     ? projectReferences
         .flatMap((reference) => {
