@@ -342,7 +342,7 @@ describe('extra rollup inputs', () => {
       surfaces: ['devtools-panel'],
     });
 
-    expect(output).toContain("build: { rollupOptions: { input: { panel: 'panel.html' } } },");
+    expect(output).toContain("build: { rolldownOptions: { input: { panel: 'panel.html' } } },");
     expect(output).not.toContain('"panel"');
   });
 
@@ -352,7 +352,7 @@ describe('extra rollup inputs', () => {
       target: 'webextension',
     });
 
-    expect(output).not.toContain('rollupOptions');
+    expect(output).not.toContain('rolldownOptions');
   });
 });
 

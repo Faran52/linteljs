@@ -10,5 +10,5 @@ export const rollupInputs = (inputs: Record<string, string> | undefined): string
     })
     .join(', ');
 
-  return `  build: { rollupOptions: { input: { ${entries} } } },\n`;
+  return `  build: { rolldownOptions: { input: { ${entries} } } },\n`;
 };

@@ -11,6 +11,6 @@ describe('rollupInputs', () => {
       panel: 'panel.html',
       options: 'options.html',
     });
-    expect(actual).toBe("  build: { rollupOptions: { input: { panel: 'panel.html', options: 'options.html' } } },\n");
+    expect(actual).toBe("  build: { rolldownOptions: { input: { panel: 'panel.html', options: 'options.html' } } },\n");
   });
 });
