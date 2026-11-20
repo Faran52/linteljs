@@ -2,7 +2,6 @@
 export const STEPS = [
   'lint',
   'lint:types',
-  'lint:starters',
   'lint:css',
   'typecheck',
   'test:coverage',
@@ -31,9 +30,6 @@ export const MS_PER_SECOND = 1000;
 export const NO_CACHE_ENV = 'LINTELJS_GATE_NO_CACHE';
 
 export const SKIPPED_SECONDS = '0.0';
-
-// It keeps its own per-case cache, and its installs read the registry, which no key here covers.
-export const UNCACHED = new Set(['lint:starters']);
 
 // Neither ESLint nor tsc reads Markdown; the suites do.
 export const UNREAD = new Map([

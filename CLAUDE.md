@@ -26,7 +26,7 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
 - `pnpm test` inside a package runs that package's suite alone (every package declares `test`, since pnpm's
   shorthand exits 0 where the script is missing). Coverage is a root-only gate:
   one global 100% block over the root `coverage.include`.
-- `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:starters`, `lint:css`, `typecheck`,
+- `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:css`, `typecheck`,
   `test:coverage`, `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it),
   `tailwind-styles` (rewrites each shell's tailwind `X.styles.ts` from the shared tables, failing when that changed one),
   `css-markup` (rewrites each shell's css markup from the shared markup and class maps, failing when that changed one) and

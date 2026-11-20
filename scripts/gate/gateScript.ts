@@ -30,7 +30,6 @@ import {
   SKIPPED_SECONDS,
   STEPS,
   TAIL_LINES,
-  UNCACHED,
   UNREAD,
 } from './constants.ts';
 
@@ -75,7 +74,7 @@ for (const [step, name] of ENGINES) {
 
 // CI never reads or writes the cache: each run there starts clean.
 const keyOf = (step: string): string | undefined => {
-  if (ci !== undefined || UNCACHED.has(step)) {
+  if (ci !== undefined) {
     return undefined;
   }
 

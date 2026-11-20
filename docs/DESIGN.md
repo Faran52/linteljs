@@ -1138,7 +1138,7 @@ gitignored inputs read all the same (both mods' `.claude-plugin/types/`, `node_m
 and pnpm versions, and the `LINTELJS_*`, `NODE_*`, locale and `TZ` env; `test:band`'s adds `claude --version`. Only `lint` and `typecheck` leave out
 `*.md`, which neither reads. Never per file, unlike ESLint `--cache`: a type changed in one file reruns the step
 that fails in another. Only a pass is stored, and only when no input moved while the step ran. `lint:starters` is
-never skipped whole: it keeps a cache per case instead (above). `CI` neither reads nor writes the gate's, and runs
+no gate step: CI runs it on its own, and it keeps a cache per case (above). `CI` neither reads nor writes the gate's, and runs
 every case; `LINTELJS_GATE_NO_CACHE=1` reruns every step and every case. The commit gate still holds: a skipped step
 passed on inputs identical to this tree's.
 
