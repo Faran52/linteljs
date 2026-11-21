@@ -8,8 +8,10 @@ paths:
 # The end-to-end suite
 
 `pnpm --filter @linteljs/create test:e2e` runs the matrix, each case a real generate, install and `check`, and is
-outside `pnpm check` because every case hits the network. `docs/DESIGN.md`, "The end-to-end matrix", carries the
-why of everything below.
+outside `pnpm check` because every case hits the network. It runs in cloud CI only: `.github/workflows/e2e.yml`
+starts it on a push to main or a `v*` branch, daily at noon UTC, and on `gh workflow run e2e.yml`, and
+`globalSetup` throws when `CI` is unset. Read results with `gh run list --workflow e2e.yml` and
+`gh run view <id> --log-failed`. `docs/DESIGN.md`, "The end-to-end matrix", carries the why of everything below.
 
 - **Layout**: the harness is `packages/create/e2e/`, beside `__mocks__/` and outside `src/`, so it never ships
   and is held to lint as source (`@linteljs/workspace/e2e-source`) and to typecheck, but not to coverage,
@@ -31,15 +33,12 @@ why of everything below.
   case on npm, and adds a 404 from its catch-all. With `languages`, a server-rendered pass holds that the raw HTML
   carries the chosen `lang` and `dir`. Skipped on webextension (its pages are loaded from `dist/`, not served),
   React Native (its web build is not what ships) and typescript (a library has no page).
-- **It installs the checkout, never npm**: a local Verdaccio on one fixed port publishes the three packages and
-  installs the CLI from them. `E2E_UPSTREAM` replaces npmjs as its uplink; start such a run on an empty
-  `.e2e-cache/registry`.
-- **Knobs**: `E2E_PM` runs one manager's cases on whatever binary of it is on PATH (a yarn of the wrong major
-  fails the run; unset, it runs every manager the machine has). `E2E_CONCURRENCY` sets the width (default two).
-  `E2E_FULL=1` runs the whole cross product. `E2E_SHARD=2/4` runs every fourth case from the second, which CI
-  uses to split pnpm four ways. `-t '<label>$'` runs one case.
-- **It never skips**: a registry that fails to start throws in `globalSetup`. A count shown as skipped is what a
-  `-t` filter excluded.
+- **It installs the checkout, never npm**: a Verdaccio on the runner, on one fixed port, publishes the three
+  packages and installs the CLI from them. Its storage, `.e2e-cache/registry`, is cached per ISO week.
+- **Knobs**, each set per job by `e2e.yml`: `E2E_PM` runs one manager's cases on whatever binary of it is on PATH
+  (a yarn of the wrong major fails the run). `E2E_CONCURRENCY` sets the width (default two). `E2E_SHARD=2/4` runs
+  every fourth case from the second, which splits pnpm four ways.
+- **It never skips**: a registry that fails to start throws in `globalSetup`.
 - **Async spawns only**: cases in a file run together under `maxConcurrency`, so a `spawnSync` install would
   serialise the file. `oneAtATime` holds one install per binary at a time, pnpm excepted.
 - **Each case removes its own tree** as it ends, pass or fail (`removedAfter` in `utils/cleanupUtils.ts`), so the

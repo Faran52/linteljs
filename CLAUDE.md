@@ -22,7 +22,7 @@ so everything in it is outward-facing.
 | every suite alone | `pnpm test:isolated` |
 | build | `pnpm build` |
 | full gate | `pnpm check` |
-| end to end | `pnpm --filter @linteljs/create test:e2e` (rule: `.claude/rules/e2e.md`) |
+| end to end | cloud CI only: `gh workflow run e2e.yml`, or a push to main (rule: `.claude/rules/e2e.md`) |
 
 - `pnpm test` inside a package runs that package's suite alone (every package declares `test`, since pnpm's
   shorthand exits 0 where the script is missing). Coverage is a root-only gate:

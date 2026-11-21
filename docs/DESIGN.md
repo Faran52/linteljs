@@ -760,8 +760,8 @@ naming both; rewriting its lint and tsconfig for Jest would strand suites `sync`
 
 **No test file under `src/app/`, ever.** expo-router collects every `.ts`/`.tsx` there as a route, and its `ignore`
 option cannot be written in `app.json`; a suite there breaks the web and ios exports. Route suites sit in `src/`,
-named for the route flattened (`app-tabs-index.test.tsx`). Change `build` or this layout only with
-`pnpm --filter @linteljs/create test:e2e -t react-native`.
+named for the route flattened (`app-tabs-index.test.tsx`). Change `build` or this layout only with a green `e2e`
+run behind it.
 
 ### It follows the Expo SDK's pins, not react-native's latest
 
@@ -1232,8 +1232,14 @@ Server-rendered targets with `languages` check the next route's raw HTML already
 
 ### One registry on a fixed port
 
-One local Verdaccio per run on port 48730: Yarn's metadata cache stores tarball URLs with the port, so a fixed
+One Verdaccio per run on port 48730: Yarn's metadata cache stores tarball URLs with the port, so a fixed
 port keeps it valid. One process publishes once, so there is no publish lock.
+
+### Cloud CI only
+
+The suite runs only in `e2e.yml`, on a push to `main` or a `v*` branch, daily, and on `gh workflow run e2e.yml`.
+`globalSetup` throws when `CI` is unset, before the registry starts, and there is no opt-out. pnpm alone is 154
+cases in 82 minutes on one runner, and the runners carry every manager at the version `e2e.yml` pins.
 
 ### The split is by package manager, not vitest's `--shard`
 
