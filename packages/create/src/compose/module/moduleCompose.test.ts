@@ -402,6 +402,14 @@ const ORDERED: OrderedCase[] = [
     pureCalls: [],
     expected: 'export const B = () => {\n  const t = \'x\';\n\n  return <a title={t}>{f()}</a>;\n};\n',
   },
+  {
+    name: 'a template of values proven primitive',
+    base: passing('X, s', '', ''),
+    option: rendering('title={`${s.a}-${1 + s.b}`}', 'export const s = { a: \'x\', b: 2 };\n'),
+    plainData: [],
+    pureCalls: [],
+    expected: 'export const B = () => {\n  return <a title={`${\'x\'}-${1 + 2}`}>{f()}</a>;\n};\n',
+  },
 ];
 
 const MAY_ACT = 'An argument with an effect must run first, and "children" is read after this, which may act: ';
@@ -481,6 +489,22 @@ const DISORDERED: DisorderedCase[] = [
     plainData: [],
     pureCalls: [],
     message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'a template of a value not proven primitive',
+    base: passing('X', '', ''),
+    option: rendering('title={`${location}`}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}\`\${location}\``,
+  },
+  {
+    name: 'a sum with a value of a module declared plain data, which may be an object',
+    base: passing('X', '', ''),
+    option: rendering('title={st.a + 1}', STYLES),
+    plainData: ['./*.styles'],
+    pureCalls: [],
+    message: `${MAY_ACT}st.a + 1`,
   },
   {
     name: 'children read twice',

@@ -601,9 +601,95 @@ const TAB = 'import { s } from \'./t.styles\';\n\ny = s.tab(k);';
 describe('actsIn', () => {
   it.each([
     [
-      'y = [1, a + b, c ? d : e, `t${f}`, () => g(), <a b={c} />];',
+      'y = [1, c ? d : e, () => g(), <a b={c} />, a === b, a !== b, a && b, a || b, a ?? b, !a, typeof a, (a, b)];',
       NONE,
       [],
+    ],
+    [
+      'y = [a + b, a - b, a * b, a < b, a == b, a | b, a << b, +a, -a, ~a, `t${f}`, { [a]: 1 }];',
+      NONE,
+      [
+        'a + b',
+        'a - b',
+        'a * b',
+        'a < b',
+        'a == b',
+        'a | b',
+        'a << b',
+        '+a',
+        '-a',
+        '~a',
+        '`t${f}`',
+        '[a]',
+      ],
+    ],
+    [
+      [
+        'const k = 1;',
+        'const t = { a: \'s\' };',
+        'y = [k + 2, `t${t.a}`, -k, ~k, k < 2, k == null, { [k]: true }, t[\'a\'] + `${false}`];',
+      ].join('\n'),
+      NONE,
+      [],
+    ],
+    [
+      'const k = 1;\ny = [k + a, a + k, `${k}${a}`];',
+      NONE,
+      [
+        'k + a',
+        'a + k',
+        '`${k}${a}`',
+      ],
+    ],
+    [
+      'const k = \'a\';\nconst t = { a: 1 };\ny = [k in t, t instanceof k];',
+      NONE,
+      ['k in t', 't instanceof k'],
+    ],
+    [
+      'const a = b + 1;\nconst b = a + 1;\ny = `${a}`;',
+      NONE,
+      ['`${a}`'],
+    ],
+    [
+      'const a = 1 + 2;\nconst b = a * 3;\ny = `${b}${(a < b) + 1}`;',
+      NONE,
+      [],
+    ],
+    [
+      'y = [1n + 2, -1n];',
+      NONE,
+      ['1n + 2', '-1n'],
+    ],
+    [
+      'const k = c ? 1 : u;\ny = k + 1;',
+      NONE,
+      ['k + 1'],
+    ],
+    [
+      'y = x as { [k]: number };',
+      NONE,
+      [],
+    ],
+    [
+      'import { s } from \'./t.styles\';\n\ny = [s[k], s[\'a\']];',
+      STYLES_PLAIN,
+      ['s[k]'],
+    ],
+    [
+      'import { s } from \'./t.styles\';\n\ny = [s[k](1), s[\'tab\'](1)];',
+      STYLES_PURE,
+      ['s[k]'],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => `${n}` + !n + (n < 2) + -1 + +n + void n;\n'),
+      [],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => 1 + -n;\n'),
+      ['f(1)'],
     ],
     [
       'y = f(u.b);',
@@ -694,7 +780,11 @@ describe('actsIn', () => {
     [
       'import { s } from \'./t.styles\';\n\ny = s[g()](h());',
       STYLES_PURE,
-      ['g()', 'h()'],
+      [
+        's[g()]',
+        'g()',
+        'h()',
+      ],
     ],
     [
       'import { g } from \'./p\';\n\ny = g().tab(1);',

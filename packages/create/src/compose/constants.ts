@@ -239,3 +239,65 @@ export const SIMPLIFIED_KINDS = new Set([
   ts.SyntaxKind.SpreadAssignment,
   ts.SyntaxKind.JsxFragment,
 ]);
+
+// The binary operators that convert an operand, which may run its `valueOf`, `toString` or `Symbol.toPrimitive`.
+export const COERCING_OPERATORS = new Set([
+  ts.SyntaxKind.BarToken,
+  ts.SyntaxKind.CaretToken,
+  ts.SyntaxKind.AmpersandToken,
+  ts.SyntaxKind.EqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsToken,
+  ts.SyntaxKind.LessThanToken,
+  ts.SyntaxKind.LessThanEqualsToken,
+  ts.SyntaxKind.GreaterThanToken,
+  ts.SyntaxKind.GreaterThanEqualsToken,
+  ts.SyntaxKind.LessThanLessThanToken,
+  ts.SyntaxKind.GreaterThanGreaterThanToken,
+  ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken,
+  ts.SyntaxKind.PlusToken,
+  ts.SyntaxKind.MinusToken,
+  ts.SyntaxKind.AsteriskToken,
+  ts.SyntaxKind.SlashToken,
+  ts.SyntaxKind.PercentToken,
+  ts.SyntaxKind.AsteriskAsteriskToken,
+]);
+
+// `in` and `instanceof` look into their right operand, which must be an object, so they may run its code or throw.
+export const LOOKING_OPERATORS = new Set([ts.SyntaxKind.InKeyword, ts.SyntaxKind.InstanceOfKeyword]);
+
+export const COERCING_UNARY = new Set([
+  ts.SyntaxKind.PlusToken,
+  ts.SyntaxKind.MinusToken,
+  ts.SyntaxKind.TildeToken,
+]);
+
+// The literals of a primitive a coercion takes as it is; a bigint is left out, as mixing one with a number throws.
+export const PRIMITIVE_LITERALS = new Set([
+  ts.SyntaxKind.StringLiteral,
+  ts.SyntaxKind.NumericLiteral,
+  ts.SyntaxKind.NoSubstitutionTemplateLiteral,
+  ts.SyntaxKind.TrueKeyword,
+  ts.SyntaxKind.FalseKeyword,
+  ts.SyntaxKind.NullKeyword,
+]);
+
+// The operators whose answer is a boolean whatever they are given.
+export const BOOLEAN_OPERATORS = new Set([
+  ts.SyntaxKind.EqualsEqualsToken,
+  ts.SyntaxKind.EqualsEqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsEqualsToken,
+  ts.SyntaxKind.LessThanToken,
+  ts.SyntaxKind.LessThanEqualsToken,
+  ts.SyntaxKind.GreaterThanToken,
+  ts.SyntaxKind.GreaterThanEqualsToken,
+  ts.SyntaxKind.InKeyword,
+  ts.SyntaxKind.InstanceOfKeyword,
+]);
+
+// Expressions whose answer is a string or a boolean whatever they are given: `typeof`, `void`, a template.
+export const PRIMITIVE_ANSWERS = new Set([
+  ts.SyntaxKind.TypeOfExpression,
+  ts.SyntaxKind.VoidExpression,
+  ts.SyntaxKind.TemplateExpression,
+]);

@@ -2,7 +2,13 @@ import ts from 'typescript';
 
 import {
   BINARY_LEVELS,
+  BOOLEAN_OPERATORS,
+  COERCING_OPERATORS,
+  COERCING_UNARY,
   EFFECT_KINDS,
+  LOOKING_OPERATORS,
+  PRIMITIVE_ANSWERS,
+  PRIMITIVE_LITERALS,
   UPDATES,
 } from '../constants';
 
@@ -530,10 +536,101 @@ const isProvenCall = (context: Context, call: ts.CallExpression): boolean => {
   });
 };
 
+// A value that is a primitive however it was computed, never a bigint, which a number beside it would make throw. The
+// operands of arithmetic are followed in turn; `checking` holds those on the way, so values that refer round fail.
+const isPrimitiveValue = (context: Context, value: ts.Expression, checking: Set<ts.Node>): boolean => {
+  if (ts.isPrefixUnaryExpression(value)) {
+    const isNegated = value.operator !== ts.SyntaxKind.PlusToken && ts.isNumericLiteral(value.operand);
+
+    return value.operator === ts.SyntaxKind.ExclamationToken || value.operator === ts.SyntaxKind.PlusToken || isNegated;
+  }
+
+  if (ts.isBinaryExpression(value) && !checking.has(value)) {
+    const operator = value.operatorToken.kind;
+
+    checking.add(value);
+
+    const isOfPrimitives = COERCING_OPERATORS.has(operator)
+      && isPrimitiveIn(context, value.left, checking)
+      && isPrimitiveIn(context, value.right, checking);
+
+    checking.delete(value);
+
+    return BOOLEAN_OPERATORS.has(operator) || isOfPrimitives;
+  }
+
+  return PRIMITIVE_LITERALS.has(value.kind) || PRIMITIVE_ANSWERS.has(value.kind);
+};
+
+// Whether every value an operand can hold is proven a primitive, so converting it runs nothing.
+const isPrimitiveIn = (context: Context, operand: ts.Expression, checking: Set<ts.Node>): boolean => {
+  const walk = readWalkOf(context);
+  const origin = nameOrigin(textOf(operand));
+  const { fault, values } = reach(walk, operand, [], origin);
+  const isEvery = values
+    .every((value) => {
+      return isPrimitiveValue(context, value, checking);
+    });
+
+  return fault === undefined && values.length > 0 && isEvery;
+};
+
+const isPrimitive = (context: Context, operand: ts.Expression): boolean => {
+  const checking = new Set<ts.Node>();
+
+  return isPrimitiveIn(context, operand, checking);
+};
+
+// The operands a node converts, or undefined when it converts none.
+const coercedOf = (node: ts.Node): readonly ts.Expression[] | undefined => {
+  if (ts.isBinaryExpression(node) && COERCING_OPERATORS.has(node.operatorToken.kind)) {
+    const operands = [node.left, node.right];
+
+    return operands;
+  }
+
+  if (ts.isPrefixUnaryExpression(node) && COERCING_UNARY.has(node.operator)) {
+    const operands = [node.operand];
+
+    return operands;
+  }
+
+  if (ts.isTemplateExpression(node)) {
+    return node.templateSpans
+      .map((span) => {
+        return span.expression;
+      });
+  }
+
+  if (ts.isElementAccessExpression(node)) {
+    const key = [node.argumentExpression];
+
+    return key;
+  }
+
+  if (ts.isComputedPropertyName(node) && !ts.isTypeElement(node.parent)) {
+    const key = [node.expression];
+
+    return key;
+  }
+
+  return undefined;
+};
+
 // Whether evaluating a node may run code the author wrote or write a binding, its parts aside.
 const isActing = (context: Context, node: ts.Node): boolean => {
   if (ts.isCallExpression(node)) {
     return !isProvenCall(context, node);
+  }
+
+  const coerced = coercedOf(node);
+  const isCoercing = coerced
+    ?.some((operand) => {
+      return !isPrimitive(context, operand);
+    });
+
+  if (isCoercing === true) {
+    return true;
   }
 
   if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
@@ -545,7 +642,7 @@ const isActing = (context: Context, node: ts.Node): boolean => {
   }
 
   if (ts.isBinaryExpression(node)) {
-    return !BINARY_LEVELS.has(node.operatorToken.kind);
+    return LOOKING_OPERATORS.has(node.operatorToken.kind) || !BINARY_LEVELS.has(node.operatorToken.kind);
   }
 
   const isUpdate = ts.isPrefixUnaryExpression(node) && UPDATES.has(node.operator);
@@ -564,7 +661,12 @@ const calleeActing = (context: Context, callee: ts.Expression): ts.Node[] => {
   if (ts.isElementAccessExpression(value)) {
     const owner = calleeActing(context, value.expression);
     const key = actingIn(context, value.argumentExpression);
-    const acting = [...owner, ...key];
+    const converted = isPrimitive(context, value.argumentExpression) ? [] : [value];
+    const acting = [
+      ...converted,
+      ...owner,
+      ...key,
+    ];
 
     return acting;
   }
