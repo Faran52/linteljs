@@ -107,8 +107,7 @@ extending the engine's `.claude-plugin/types/tsconfig.json`, then the root `tsco
 `pnpm mod-types` has the pinned engine write those types (gitignored, never packed), and CI runs it before
 `pnpm check`; `scripts/typecheck-mods/` runs `tsc` on both, failing without them. `hooks/checkStatusHook.ts` is a classic hook
 command, checked as Node code by `tsconfig.root.json`. The root `eslint.config.ts` lints the files each mod's
-tsconfig checks, and ignores them where the types are missing. `.fallowrc.json` ignores `.claude/**`
-(`docs/DESIGN.md`).
+tsconfig checks, and ignores them where the types are missing.
 
 - **Check band**: `checkBand.tsx` is a byte copy of the shipped band under
   `packages/create/templates/project/plugins/linteljs/hooks/`, held equal to it by that folder's `hooks.test.ts`;
@@ -141,7 +140,4 @@ tsconfig checks, and ignores them where the types are missing. `.fallowrc.json` 
   (one project per package, the coverage thresholds), `tsconfig.json` and `tsconfig.root.json`,
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,
   `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
-  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split),
-  `.fallowrc.json` (for `npx fallow`: the entry points no import reaches, the template text, fixtures and repo
-  mod left out, and the dependencies loaded by name rather than imported; `health.coverage` reads `pnpm test:coverage`'s
-  `coverage/coverage-final.json`, so CRAP scores use measured coverage, not Fallow's estimate).
+  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split).

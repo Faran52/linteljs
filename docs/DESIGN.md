@@ -1284,9 +1284,6 @@ ships them, and `claude plugin validate` and `test` strip types without checking
 `pnpm typecheck:mods` checks both and `modModules()` lints what those tsconfigs check; `UNTYPED_MODS` ignores a
 mod whose `index.d.ts` is missing, so a checkout that has not run `pnpm mod-types` still lints, while
 `typecheck:mods` fails it.
-`.fallowrc.json` ignores `.claude/**`: without it `fallow` fails on 12 unused files (the engine loads
-`register.tsx` by name and `claude plugin test` runs the suites), the band copy as a clone group, and 20 health
-findings scored without coverage.
 
 The decisions the mod's code cannot show:
 
