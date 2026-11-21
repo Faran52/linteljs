@@ -62,6 +62,15 @@ export const BINARY_LEVELS = new Map<ts.SyntaxKind, number>([
 
 export const UPDATES = new Set([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken]);
 
+// What a destructuring assignment writes through to the names inside it.
+export const PATTERN_PARTS = new Set([
+  ts.SyntaxKind.ArrayLiteralExpression,
+  ts.SyntaxKind.ObjectLiteralExpression,
+  ts.SyntaxKind.SpreadElement,
+  ts.SyntaxKind.SpreadAssignment,
+  ts.SyntaxKind.ParenthesizedExpression,
+]);
+
 // The operators that may skip their right side.
 export const LOGICAL = new Set([
   ts.SyntaxKind.AmpersandAmpersandToken,

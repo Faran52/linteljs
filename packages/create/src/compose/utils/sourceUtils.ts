@@ -6,6 +6,7 @@ import {
   INTRINSIC_TAG,
   LEVEL,
   LINE_BREAKS,
+  PATTERN_PARTS,
   PURE_KEYWORDS,
   STRING_TOKENS,
   UNARY_OPERATORS,
@@ -351,17 +352,29 @@ export const isPure = (node: ts.Expression, isPlain: ((read: MemberRead) => bool
     });
 };
 
-// Assigned to, updated or deleted rather than read.
-export const isWritten = (node: ts.Expression): boolean => {
+// The target of an assignment, `for ... of` or `for ... in`, or a part of one a destructuring writes into.
+const isTarget = (node: ts.Node): boolean => {
   const { parent } = node;
 
   if (ts.isBinaryExpression(parent)) {
     return parent.left === node && !BINARY_LEVELS.has(parent.operatorToken.kind);
   }
 
+  if (ts.isForOfStatement(parent) || ts.isForInStatement(parent)) {
+    return parent.initializer === node;
+  }
+
+  // A shorthand's default is read; a property's name is never a read, so its node here is the value.
+  const isMember = ts.isShorthandPropertyAssignment(parent) ? parent.name === node : ts.isPropertyAssignment(parent);
+  return (isMember || PATTERN_PARTS.has(parent.kind)) && isTarget(parent);
+};
+
+// Assigned to, destructured into, updated or deleted rather than read.
+export const isWritten = (node: ts.Expression): boolean => {
+  const { parent } = node;
   const isUpdate = ts.isPrefixUnaryExpression(parent) || ts.isPostfixUnaryExpression(parent);
 
-  return ts.isDeleteExpression(parent) || (isUpdate && UPDATES.has(parent.operator));
+  return isTarget(node) || ts.isDeleteExpression(parent) || (isUpdate && UPDATES.has(parent.operator));
 };
 
 // What a read, a non-null assertion or a tag continues: the chain before it.

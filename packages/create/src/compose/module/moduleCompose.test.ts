@@ -1393,6 +1393,12 @@ const MORE_CASES: Case[] = [
 
 const MORE_REFUSALS: Refusal[] = [
   {
+    name: 'an option export a destructuring assignment writes',
+    base: 'import { v } from \'./p\';\n\nexport const f = () => {\n  [v] = [2];\n  ({ v } = { v: 3 });\n};\n',
+    option: 'export const v = 1;\n',
+    message: /must be a constant with no effect, never written: \[v\]/u,
+  },
+  {
     name: 'a comment directive whose note holds a line feed',
     base: 'import { v } from \'./p\';\n\n// @lintel:comment ./p#note\nexport const x = v;\n',
     option: 'export const v = 1;\nexport const note = \'hi\\nprocess.exit(1);\';\n',
