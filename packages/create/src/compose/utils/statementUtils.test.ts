@@ -268,6 +268,30 @@ describe('spliceStatements', () => {
       lines('run = () => {', '  const k = f;', '  log(k);', '  (k)();', '};'),
     ],
     [
+      'a last statement written without a semicolon, its line comment kept after the semicolon',
+      lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1 // why', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1; // why', '  [k].forEach(log);', '};'),
+    ],
+    [
+      'a last statement written without a semicolon, its block comment kept after the semicolon',
+      lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1 /* why */', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1; /* why */', '  [k].forEach(log);', '};'),
+    ],
+    [
+      'a last statement ending in a semicolon, its line comment kept',
+      lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1; // why', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1; // why', '  [k].forEach(log);', '};'),
+    ],
+    [
+      'a last statement\'s comment left out where base code follows on the line it lands on',
+      lines('run = () => {', '  const y = x(); log(y.k);', '};'),
+      lines('export const x = () => {', '  const k = 1 // why', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1; log(k);', '};'),
+    ],
+    [
       'statements that end in a block, which takes no semicolon',
       lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
       lines('export const x = () => {', '  const k = 1;', ...IF_K, '', '  return { k };', '};'),

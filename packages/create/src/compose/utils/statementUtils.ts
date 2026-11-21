@@ -23,6 +23,7 @@ import {
   isReference,
   isWithin,
   leadingIndent,
+  lineEnd,
   linesGone,
   ownsLines,
   reindent,
@@ -67,10 +68,10 @@ const nameOf = (member: ts.TypeElement): string | undefined => {
 };
 
 // Where a member ends with the comments after it on its own line.
-const commentedEnd = (member: ts.TypeElement): number => {
-  const trailing = ts.getTrailingCommentRanges(member.getSourceFile().text, member.getEnd());
+const commentedEnd = (node: ts.Node): number => {
+  const trailing = ts.getTrailingCommentRanges(node.getSourceFile().text, node.getEnd());
 
-  return trailing?.at(-1)?.end ?? member.getEnd();
+  return trailing?.at(-1)?.end ?? node.getEnd();
 };
 
 // A member with its comments: those on the lines above it, and those after it on its own line.
@@ -346,8 +347,12 @@ const readsOf = (
   return [];
 };
 
-// The kept statements as one block of text, moved to the indentation of the statement they replace.
-const blockOf = (kept: readonly ts.Statement[], indent: string): string => {
+/**
+ * The kept statements as one block of text, moved to the indentation of the statement they replace.
+ * The comments after the last statement on its line are kept only where nothing follows on the line they land on, which
+ * a line comment would swallow.
+ */
+const blockOf = (kept: readonly ts.Statement[], indent: string, isLineEnd: boolean): string => {
   const first = kept.at(0);
   const last = kept.at(-1);
 
@@ -356,18 +361,17 @@ const blockOf = (kept: readonly ts.Statement[], indent: string): string => {
   }
 
   const source = first.getSourceFile().text;
-  const start = first.getFullStart();
   const end = last.getEnd();
-  const block = source
-    .slice(start, end)
-    .replace(LEADING_BLANK_LINES, '');
-  const from = leadingIndent(block);
-  const body = block.slice(from.length);
   // Base code follows the block, so a semicolon left to insertion could join the next line to it.
   const isOpen = SEMICOLON_STATEMENTS.has(last.kind) && last.getLastToken()?.kind !== ts.SyntaxKind.SemicolonToken;
   const closing = isOpen ? ';' : '';
+  const statements = source.slice(first.getFullStart(), end);
+  const comments = isLineEnd ? source.slice(end, commentedEnd(last)) : '';
+  const block = (statements + closing + comments).replace(LEADING_BLANK_LINES, '');
+  const from = leadingIndent(block);
+  const body = block.slice(from.length);
 
-  return reindent(body, from, indent) + closing;
+  return reindent(body, from, indent);
 };
 
 // `const y = f();`: the option's statements replace the statement, and `y.k` becomes `k`.
@@ -410,8 +414,9 @@ export const spliceStatements = (
   const answered = answeredNames(returned);
   const reads = readsOf(checker, sources, arrow, holder, answered);
   const indent = indentOf(text, statement);
-  const block = blockOf(kept, indent);
   const span = spanOf(statement);
+  const after = text.slice(span.end, lineEnd(text, span.end));
+  const block = blockOf(kept, indent, after.trim() === '');
   const gone = block === '' && ownsLines(text, span) ? linesGone(text, span) : span;
   const replaced: Edit = {
     ...gone,
