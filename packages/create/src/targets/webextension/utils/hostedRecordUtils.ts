@@ -5,8 +5,7 @@ import { type BrowserParts, CRX } from '../constants';
 
 import type { FrameworkParts, TargetRecord } from '../../types';
 
-type HostedRecordParts = Pick<TargetRecord,
-  | 'naming'
+type HostedRecordParts = Pick<TargetRecord, | 'naming'
   | 'vitePlugin'
   | 'tsconfig'
   | 'devDependencies'
@@ -16,8 +15,7 @@ type HostedRecordParts = Pick<TargetRecord,
   | 'sfcExtension'
   | 'testConditions'
   | 'dependencies'
-  | 'testDevDependencies'
->;
+  | 'testDevDependencies'>;
 
 const CRX_DEV_DEPENDENCIES = ['@crxjs/vite-plugin', 'vite'];
 

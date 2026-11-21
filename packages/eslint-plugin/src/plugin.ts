@@ -18,9 +18,9 @@ export interface LegacyPreset {
   overrides: LegacyOverride[];
 }
 
-export type LintelConfigs
-  = & Record<PresetName, LegacyPreset>
-    & Record<`flat/${PresetName}`, Linter.Config[]>;
+export type LintelConfigs =
+  & Record<PresetName, LegacyPreset>
+  & Record<`flat/${PresetName}`, Linter.Config[]>;
 
 interface WithConfigs {
   configs: LintelConfigs;

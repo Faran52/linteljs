@@ -28,18 +28,18 @@ export interface RuleGroup extends RuleSource {
   answers: Answers[];
 }
 
-type Condition
-  = | 'store'
-    | 'no-store'
-    | 'languages'
-    | 'popup'
-    | 'background'
-    | 'devtools-panel'
-    | 'tailwind'
-    | 'es-toolkit'
-    | Mocking
-    | Data
-    | Router;
+type Condition =
+  | 'store'
+  | 'no-store'
+  | 'languages'
+  | 'popup'
+  | 'background'
+  | 'devtools-panel'
+  | 'tailwind'
+  | 'es-toolkit'
+  | Mocking
+  | Data
+  | Router;
 
 interface Run {
   name: Condition;

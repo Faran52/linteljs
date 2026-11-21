@@ -48,30 +48,30 @@ export const mockFiles = (
     // Passed in: reading the registry back from here would close a cycle.
     ...servesAWorker
       ? [{
-        target: '__mocks__/msw/browser.ts',
-        when: hasMsw,
-        shared: true,
-      } satisfies StarterFile]
+          target: '__mocks__/msw/browser.ts',
+          when: hasMsw,
+          shared: true,
+        } satisfies StarterFile]
       : [],
     ...hasContact === always
       ? []
       : [{
-        target: '__mocks__/msw/handlers.ts',
-        when: (answers) => {
-          return hasMsw(answers) && hasContact?.(answers) !== true;
-        },
-        shared: true,
-      } satisfies StarterFile],
+          target: '__mocks__/msw/handlers.ts',
+          when: (answers) => {
+            return hasMsw(answers) && hasContact?.(answers) !== true;
+          },
+          shared: true,
+        } satisfies StarterFile],
     ...hasContact === undefined
       ? []
       : [{
-        target: '__mocks__/msw/handlers.ts',
-        when: (answers) => {
-          return hasMsw(answers) && hasContact(answers);
-        },
-        variant: 'with-form',
-        shared: true,
-      } satisfies StarterFile],
+          target: '__mocks__/msw/handlers.ts',
+          when: (answers) => {
+            return hasMsw(answers) && hasContact(answers);
+          },
+          variant: 'with-form',
+          shared: true,
+        } satisfies StarterFile],
   ];
 
   return files;

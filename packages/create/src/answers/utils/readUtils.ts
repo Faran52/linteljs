@@ -23,12 +23,12 @@ export type JsonValue = null | boolean | number | string | object;
 type ReadResult<R extends AnswerRecord>
   = R extends ListRecord ? string[] | undefined
     : R extends MapRecord ? AliasMap | undefined
-      : R extends TextRecord ? string | undefined
-        : R extends MultiRecord<infer V> ? V[]
-          : R extends OptionalMultiRecord<infer V> ? V[] | undefined
-            : R extends ChoiceRecord<infer V> ? V
-              : R extends OptionalChoiceRecord<infer V> ? V | undefined
-                : never;
+    : R extends TextRecord ? string | undefined
+    : R extends MultiRecord<infer V> ? V[]
+    : R extends OptionalMultiRecord<infer V> ? V[] | undefined
+    : R extends ChoiceRecord<infer V> ? V
+    : R extends OptionalChoiceRecord<infer V> ? V | undefined
+    : never;
 
 export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] => {
   return Array.isArray(value);

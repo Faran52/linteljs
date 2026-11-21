@@ -14,9 +14,9 @@ export type SourceCode = Rule.RuleContext['sourceCode'];
 export type RuleContext = Rule.RuleContext;
 
 // ESLint 10 added `JSXIdentifier` to a reference's identifier, which its types will not admit.
-export type Ancestor
-  = | ReturnType<SourceCode['getAncestors']>[number]
-    | Scope.Reference['identifier'];
+export type Ancestor =
+  | ReturnType<SourceCode['getAncestors']>[number]
+  | Scope.Reference['identifier'];
 
 export interface AncestorReader {
   getAncestors(node: Ancestor): Ancestor[];

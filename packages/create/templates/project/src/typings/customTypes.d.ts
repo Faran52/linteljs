@@ -1,12 +1,12 @@
 // `declare namespace` carries no runtime code, so it survives `erasableSyntaxOnly`.
 declare namespace CustomTypes {
-  type JsonValue
-    = | string
-      | number
-      | boolean
-      | null
-      | JsonObject
-      | JsonValue[];
+  type JsonValue =
+    | string
+    | number
+    | boolean
+    | null
+    | JsonObject
+    | JsonValue[];
 
   interface JsonObject {
     [key: string]: JsonValue;

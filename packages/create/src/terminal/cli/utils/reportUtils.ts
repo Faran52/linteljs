@@ -25,12 +25,10 @@ import type { Upgrade } from '@emitters';
 import type { PipelineOptions } from '@pipeline';
 import type { CliOptions } from './argvUtils';
 
-export interface StageReport extends Required<Pick<PipelineOptions,
-  'onNotice'
+export interface StageReport extends Required<Pick<PipelineOptions, 'onNotice'
   | 'onStage'
   | 'onStageDone'
-  | 'onWrite'
->> {
+  | 'onWrite'>> {
   output: RunOutput;
 }
 
