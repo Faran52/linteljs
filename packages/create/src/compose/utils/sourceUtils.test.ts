@@ -1,0 +1,667 @@
+import ts from 'typescript';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import {
+  boundIn,
+  collect,
+  declaredIn,
+  expressionOf,
+  fitted,
+  indentAt,
+  indentOf,
+  isPlainElement,
+  isPure,
+  isReference,
+  isWritten,
+  leadingIndent,
+  lineEnd,
+  linesOf,
+  lineStart,
+  ownsLines,
+  parse,
+  patternOf,
+  referencesIn,
+  reindent,
+  spanOf,
+  splice,
+  swapped,
+  textOf,
+  unparen,
+  valueOf,
+  walk,
+  withoutLines,
+} from './sourceUtils';
+
+// The node of a host that spells `spelled`, standing in for what a rewrite replaces.
+const nodeIn = (host: string, spelled: string): ts.Node => {
+  const file = parse(host);
+  const [found] = collect(file, ts.isIdentifier)
+    .filter((identifier) => {
+      return identifier.text === spelled;
+    });
+
+  if (found === undefined) {
+    throw new Error(`No ${spelled} in ${host}`);
+  }
+
+  return found;
+};
+
+describe('spanOf, textOf, splice and swapped', () => {
+  it('answers a node\'s span and text without the space before it', () => {
+    const node = nodeIn('  const a = 1;', 'a');
+
+    const span = spanOf(node);
+    const text = textOf(node);
+
+    expect(span).toStrictEqual({
+      start: 8,
+      end: 9,
+    });
+
+    expect(text).toBe('a');
+  });
+
+  it('replaces a span, and a node, leaving the rest as written', () => {
+    const node = nodeIn('const a = 1;', 'a');
+    const spliced = splice('abcd', {
+      start: 1,
+      end: 3,
+    }, 'X');
+    const written = swapped('const a = 1;', node, 'bb');
+
+    expect(spliced).toBe('aXd');
+    expect(written).toBe('const bb = 1;');
+  });
+});
+
+describe('lineStart and lineEnd', () => {
+  it.each([
+    [0, 0],
+    [4, 3],
+    [3, 3],
+  ])('answers where the line of position %i starts', (position, expected) => {
+    const start = lineStart('ab\ncd', position);
+
+    expect(start).toBe(expected);
+  });
+
+  it('answers the end of a line, and of a text with no line break', () => {
+    const broken = lineEnd('ab\ncd', 0);
+    const whole = lineEnd('ab', 0);
+
+    expect(broken).toBe(2);
+    expect(whole).toBe(2);
+  });
+});
+
+describe('indentAt, indentOf and leadingIndent', () => {
+  it.each([
+    [
+      'a\n  x',
+      4,
+      '  ',
+    ],
+    [
+      'a\n\t x',
+      4,
+      '\t ',
+    ],
+    [
+      'a\n  x = y',
+      8,
+      '  ',
+    ],
+    [
+      'x',
+      0,
+      '',
+    ],
+  ])('answers the whitespace the line of %j opens with at %i', (text, position, expected) => {
+    const indent = indentAt(text, position);
+
+    expect(indent).toBe(expected);
+  });
+
+  it('answers the indentation of a node\'s line', () => {
+    const text = '{\n    a;\n}';
+    const indent = indentOf(text, nodeIn(text, 'a'));
+
+    expect(indent).toBe('    ');
+  });
+
+  it('skips blank lines to the first written one', () => {
+    const indent = leadingIndent('\n\n   x');
+
+    expect(indent).toBe('   ');
+  });
+});
+
+describe('ownsLines and linesOf', () => {
+  it.each([
+    [
+      'a\n  bc  \nd',
+      4,
+      6,
+      true,
+    ],
+    [
+      'a\n  bc; e\nd',
+      4,
+      6,
+      false,
+    ],
+    [
+      'a\nx bc\nd',
+      4,
+      6,
+      false,
+    ],
+  ])('answers for %j from %i to %i whether the span stands alone', (text, start, end, expected) => {
+    const owns = ownsLines(text, {
+      start,
+      end,
+    });
+
+    expect(owns).toBe(expected);
+  });
+
+  it('answers whole lines with their break, and stops at the end of the text', () => {
+    const middle = linesOf('a\n  bc\nd', {
+      start: 4,
+      end: 6,
+    });
+    const last = linesOf('a\nbc', {
+      start: 2,
+      end: 4,
+    });
+
+    expect(middle).toStrictEqual({
+      start: 2,
+      end: 7,
+    });
+
+    expect(last).toStrictEqual({
+      start: 2,
+      end: 4,
+    });
+  });
+});
+
+describe('withoutLines', () => {
+  it.each([
+    ['a\nb\nc', 'a\nc'],
+    ['a\nb\n\nc', 'a\n\nc'],
+    ['a\n\nb\n\nc', 'a\n\nc'],
+    ['a\n\nb\nc', 'a\n\nc'],
+    ['{\n  b\n\nc', '{\nc'],
+    ['b\n\nc', 'c'],
+    ['a\nb', 'a\n'],
+    ['{\nb', '{\n'],
+  ])('takes the line of b out of %j, leaving no blank line doubled or first in a block', (text, expected) => {
+    const start = text.indexOf('b');
+    const written = withoutLines(text, {
+      start,
+      end: start + 1,
+    });
+
+    expect(written).toBe(expected);
+  });
+});
+
+describe('reindent', () => {
+  it('moves each later line, leaving a blank line and one indented otherwise as they are', () => {
+    const moved = reindent('a\n\n    b\n c', '    ', '  ');
+
+    expect(moved).toBe('a\n\n  b\n c');
+  });
+
+  it('answers an empty text as it is', () => {
+    const moved = reindent('', '  ', '');
+
+    expect(moved).toBe('');
+  });
+});
+
+describe('unparen and valueOf', () => {
+  it('sees through parentheses only', () => {
+    const wrapped = expressionOf('((a satisfies T))');
+    const inner = unparen(wrapped).getText();
+
+    expect(inner).toBe('a satisfies T');
+  });
+
+  it('sees through parentheses and satisfies to the value', () => {
+    const wrapped = expressionOf('(({ a: 1 }) satisfies T)');
+    const inner = valueOf(wrapped).getText();
+
+    expect(inner).toBe('{ a: 1 }');
+  });
+});
+
+describe('walk and collect', () => {
+  it('visits a node and everything under it, outermost first', () => {
+    const kinds: string[] = [];
+
+    walk(expressionOf('a.b'), (node) => {
+      kinds.push(textOf(node));
+    });
+
+    expect(kinds).toStrictEqual([
+      'a.b',
+      'a',
+      'b',
+    ]);
+  });
+});
+
+describe('isReference and referencesIn', () => {
+  it.each([
+    ['const { a: b } = c;', ['c']],
+    ['x = a.b.c;', ['x', 'a']],
+    ['type T = N.M;', ['N']],
+    ['x = { a, b: c };', [
+      'x',
+      'a',
+      'c',
+    ]],
+    ['export { a as b, c };', ['a', 'c']],
+    ['x = <label title={title}>{label}</label>;', [
+      'x',
+      'title',
+      'label',
+    ]],
+    ['x = <Item><br /></Item>;', [
+      'x',
+      'Item',
+      'Item',
+    ]],
+    ['const f = (p: T): U => p;', [
+      'T',
+      'U',
+      'p',
+    ]],
+    ['interface I { m: T }', ['T']],
+  ])('lists the reads of %s', (source, expected) => {
+    const file = parse(source);
+    const reads = collect(file, ts.isIdentifier)
+      .filter(isReference)
+      .map(textOf);
+
+    expect(reads).toStrictEqual(expected);
+  });
+
+  it('lists the reads of one name', () => {
+    const file = parse('const a = b; x = { b: 1, c: b };');
+    const reads = referencesIn(file, 'b');
+
+    expect(reads).toHaveLength(2);
+  });
+});
+
+describe('boundIn', () => {
+  it('lists every name a subtree binds', () => {
+    const values = 'const { a } = b; const f = (c) => c;';
+    const file = parse(`${values} function g() {} class K {} x = function h() {}; y = class L {};`);
+    const bound = boundIn(file);
+
+    expect([...bound]).toStrictEqual([
+      'a',
+      'f',
+      'c',
+      'g',
+      'K',
+      'h',
+      'L',
+    ]);
+  });
+
+  it('leaves out the part it is told to', () => {
+    const file = parse('const a = 1; const b = 2; const c = 3;');
+    const [, second] = file.statements;
+    const bound = boundIn(file, second);
+
+    expect([...bound]).toStrictEqual(['a', 'c']);
+  });
+});
+
+describe('declaredIn', () => {
+  it('lists what a module declares at its top level, values and types, and no import', () => {
+    const source = [
+      'import { i } from \'m\';',
+      'export const a = 1, { b } = c;',
+      'function f() { const inner = 1; }',
+      'export default function () {}',
+      'class K {}',
+      'interface I {}',
+      'type T = 1;',
+      'enum E {}',
+      'log();',
+    ].join('\n');
+    const file = parse(source);
+    const declared = declaredIn(file);
+
+    expect([...declared]).toStrictEqual([
+      'f',
+      'K',
+      'I',
+      'T',
+      'E',
+      'a',
+      'b',
+    ]);
+  });
+});
+
+describe('isPure', () => {
+  it.each([
+    ['a.b', true],
+    ['c ? 1 : 2', true],
+    ['true', true],
+    ['false', true],
+    ['null', true],
+    ['{ a, b: 1 }', true],
+    ['a + 1', true],
+    ['(a, b)', true],
+    ['-a', true],
+    ['!a', true],
+    ['a[0]', true],
+    ['`a${b}c`', true],
+    ['`a`', true],
+    ['() => f()', true],
+    ['(a as T)!', true],
+    ['a satisfies T', true],
+    ['f()', false],
+    ['f().a', false],
+    ['a[f()]', false],
+    ['f()[0]', false],
+    ['`a${f()}`', false],
+    ['f() ? 1 : 2', false],
+    ['a ? f() : 2', false],
+    ['a ? 1 : f()', false],
+    ['f() + 1', false],
+    ['1 + f()', false],
+    ['a = 1', false],
+    ['a += 1', false],
+    ['++a', false],
+    ['--a', false],
+    ['-f()', false],
+    ['{ [k]: 1 }', false],
+    ['{ a() {} }', false],
+    ['{ a: f() }', false],
+    ['{ ...a }', false],
+    ['[a]', false],
+    ['a++', false],
+  ])('answers for %s', (source, expected) => {
+    const expression = expressionOf(source);
+    const pure = isPure(expression);
+
+    expect(pure).toBe(expected);
+  });
+});
+
+describe('isWritten', () => {
+  it.each([
+    ['A = 1;', true],
+    ['A += 1;', true],
+    ['A++;', true],
+    ['--A;', true],
+    ['delete A;', true],
+    ['x = A;', false],
+    ['x = A + 1;', false],
+    ['x = -A;', false],
+    ['x = A!;', false],
+    ['f(A);', false],
+  ])('answers for A in %s', (host, expected) => {
+    const node = nodeIn(host, 'A');
+    const written = ts.isIdentifier(node) && isWritten(node);
+
+    expect(written).toBe(expected);
+  });
+});
+
+describe('fitted', () => {
+  it.each([
+    [
+      'x = !A;',
+      'typeof b',
+      '(typeof b)',
+    ],
+    [
+      'x = -A;',
+      '-1',
+      '(-1)',
+    ],
+    [
+      'x = !A;',
+      'b.c',
+      'b.c',
+    ],
+    [
+      'x = A ?? 1;',
+      'b || c',
+      '(b || c)',
+    ],
+    [
+      'x = A ?? 1;',
+      'b | c',
+      'b | c',
+    ],
+    [
+      'x = 1 || A;',
+      'b ?? c',
+      '(b ?? c)',
+    ],
+    [
+      'x = A.toFixed();',
+      '4',
+      '(4)',
+    ],
+    [
+      'x = [A];',
+      '4',
+      '4',
+    ],
+    [
+      'x = A ? 1 : 2;',
+      'b ?? c',
+      'b ?? c',
+    ],
+    [
+      'x = { A };',
+      'b + c',
+      'A: b + c',
+    ],
+    [
+      'x = () => A;',
+      '{ y: 1 }',
+      '({ y: 1 })',
+    ],
+    [
+      'x = () => A;',
+      'b ? c : d',
+      'b ? c : d',
+    ],
+    [
+      'x = 1 - A;',
+      'b - c',
+      '(b - c)',
+    ],
+    [
+      'x = A;',
+      'function () {}',
+      'function () {}',
+    ],
+    [
+      'A;',
+      '{}',
+      '({})',
+    ],
+    [
+      'x = A;',
+      'b ? c : d',
+      'b ? c : d',
+    ],
+    [
+      'x = A;',
+      'b, c',
+      '(b, c)',
+    ],
+    [
+      'x = A.y;',
+      'b[0]',
+      'b[0]',
+    ],
+    [
+      'x = A satisfies T;',
+      'b satisfies U',
+      '(b satisfies U)',
+    ],
+    [
+      'x = !A;',
+      'b + c',
+      '(b + c)',
+    ],
+    [
+      'x = A ? 1 : 2;',
+      'b as c',
+      'b as c',
+    ],
+    [
+      'x = A ? 1 : 2;',
+      'b = c',
+      '(b = c)',
+    ],
+    [
+      'x = c ? A : 2;',
+      'd ? 1 : 2',
+      'd ? 1 : 2',
+    ],
+    [
+      'A = 1;',
+      'b ? c : d',
+      '(b ? c : d)',
+    ],
+    [
+      'x = A + 1;',
+      'b * c',
+      'b * c',
+    ],
+    [
+      'x = A * 1;',
+      'b + c',
+      '(b + c)',
+    ],
+    [
+      'x = A.y;',
+      '{ y: 1 }',
+      '({ y: 1 })',
+    ],
+    [
+      'x = [A];',
+      'b, c',
+      '(b, c)',
+    ],
+    [
+      'x = f(A);',
+      'b ? c : d',
+      'b ? c : d',
+    ],
+    [
+      'x = A(1);',
+      '() => 1',
+      '(() => 1)',
+    ],
+    [
+      'x = () => A;',
+      'b, c',
+      '(b, c)',
+    ],
+    [
+      'x = A;',
+      'await b',
+      'await b',
+    ],
+  ])('puts %s with %s in place as %s', (host, source, expected) => {
+    const replaced = nodeIn(host, 'A');
+    const expression = expressionOf(source);
+    const written = fitted(replaced, expression);
+
+    expect(written).toBe(expected);
+  });
+});
+
+describe('fitted, for a yield', () => {
+  it('keeps a yield in parentheses where a member is read from it', () => {
+    const file = parse('function* g() { x = A.y; yield b; }');
+    const [expression] = collect(file, ts.isYieldExpression);
+    const [replaced] = referencesIn(file, 'A');
+    const written = expression !== undefined && replaced !== undefined && fitted(replaced, expression);
+
+    expect(written).toBe('(yield b)');
+  });
+});
+
+describe('expressionOf', () => {
+  it('answers the expression a text spells', () => {
+    const expression = expressionOf(' a + 1 ').getText();
+
+    expect(expression).toBe('a + 1');
+  });
+
+  it.each([
+    '}',
+    'a; b',
+    '',
+  ])('refuses %j, which is not one expression', (text) => {
+    const run = (): ts.Expression => {
+      return expressionOf(text);
+    };
+
+    expect(run).toThrow(/Not an expression/u);
+  });
+});
+
+describe('isPlainElement', () => {
+  it.each([
+    ['a', true],
+    ['a: b', false],
+    ['...a', false],
+    ['a = 1', false],
+    ['a: { b }', false],
+  ])('answers for the pattern member %s', (member, expected) => {
+    const file = parse(`const { ${member} } = x;`);
+    const [element] = collect(file, ts.isBindingElement);
+    const plain = element !== undefined && isPlainElement(element);
+
+    expect(plain).toBe(expected);
+  });
+});
+
+describe('patternOf', () => {
+  it('writes no name as an empty pattern', () => {
+    const pattern = patternOf([], '  ');
+
+    expect(pattern).toBe('{}');
+  });
+
+  it('keeps up to two names on one line', () => {
+    const pattern = patternOf(['a', 'b'], '  ');
+
+    expect(pattern).toBe('{ a, b }');
+  });
+
+  it('breaks more than two, one per line', () => {
+    const pattern = patternOf([
+      'a',
+      'b',
+      'c',
+    ], '  ');
+
+    expect(pattern).toBe('{\n    a,\n    b,\n    c,\n  }');
+  });
+});

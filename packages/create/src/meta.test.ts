@@ -60,6 +60,7 @@ const SHARED = new Set(['utils']);
 const BARRELLESS = new Set<Ring>([
   'assemble',
   'choices',
+  'compose',
   'frameworks',
   'io',
   'prompt',
@@ -107,6 +108,10 @@ const SHAPES: RingShape[] = [
       read: 'Reader',
       record: 'Record',
     },
+  },
+  {
+    name: 'compose',
+    suffixes: { '': 'Compose' },
   },
   {
     name: 'config',
