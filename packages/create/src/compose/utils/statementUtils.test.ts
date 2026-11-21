@@ -7,9 +7,11 @@ import {
 
 import { sourcesOf, type Trust } from './bindingUtils';
 import { applied } from './editUtils';
+import { filledOnce } from './inlineUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
+import { settled } from './stepUtils';
 
 const NO_TRUST: Trust = {
   plainData: [],
@@ -719,5 +721,109 @@ describe('spliceStatements, on a case called as a statement', () => {
     };
 
     expect(run).toThrow(message);
+  });
+});
+
+// The base's body with every read of its options filled, as the composition fills it.
+const composed = (base: string, options: Readonly<Record<string, string>>): string => {
+  const sources = sourcesOf(base, options, {}, NO_TRUST);
+  const start = parse(sources.body);
+  const { text } = settled(start, (current, file) => {
+    return filledOnce(current, file, sources);
+  });
+
+  return text;
+};
+
+const HELPER_CASE = lines('export const h = (): void => {', '  const helper = 1;', '};');
+const READER_CASE = lines('export const c = (): void => {', '  log(helper);', '};');
+const SHARED = `${HELPER_CASE}\n${READER_CASE}`;
+const IMPORTS = 'import { c, h } from \'./p\';\n\n';
+const UNSPLICED = /"helper" is declared by another case of its option, not spliced at the top level before it: c\(\);/u;
+const OTHER_OPTION = '"helper" would read what another option\'s case declares, where the option\'s code lands: c();';
+const ELSEWHERE = /"helper" does not read, where the case lands, what another case of its option declares: c\(\);/u;
+
+describe('spliceStatements, on a case reading what another case of its option declares', () => {
+  it.each([
+    [
+      'in a script',
+      lines('h();', '', 'describe(\'s\', () => {', '  c();', '});'),
+      SHARED,
+      lines('const helper = 1;', '', 'describe(\'s\', () => {', '  log(helper);', '});'),
+    ],
+    [
+      'in a module, beside exports that are not cases',
+      lines('h();', '', 'export const run = () => {', '  c();', '};'),
+      lines(
+        SHARED,
+        'export const n = 1;',
+        'export const m = (): number => 2;',
+        'export interface I {}',
+      ),
+      lines('const helper = 1;', '', 'export const run = () => {', '  log(helper);', '};'),
+    ],
+  ])('splices it %s', (_name, body, option, expected) => {
+    const written = composed(IMPORTS + body, { './p': option });
+
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    [
+      'a case spliced after it',
+      lines('describe(\'s\', () => {', '  c();', '});', '', 'h();'),
+      SHARED,
+      UNSPLICED,
+    ],
+    [
+      'a case spliced only into a block',
+      lines('describe(\'s\', () => {', '  h();', '  c();', '});'),
+      SHARED,
+      UNSPLICED,
+    ],
+    [
+      'a name the landing site binds again',
+      lines('h();', '', 'run = (helper) => {', '  c();', '};'),
+      SHARED,
+      ELSEWHERE,
+    ],
+    [
+      'a name read in another meaning',
+      lines('h();', '', '{', '  c();', '}'),
+      `${HELPER_CASE}\n${lines('export const c = (): void => {', '  let a: helper;', '};')}`,
+      ELSEWHERE,
+    ],
+    [
+      'a name its own module also declares',
+      lines('h();', '', '{', '  c();', '}'),
+      `const helper = 2;\n\n${SHARED}`,
+      /"helper" would read the base's own binding of that name where the option's code lands: c\(\);/u,
+    ],
+    [
+      'a name two cases declare',
+      lines('h();', '', '{', '  c();', '}'),
+      `${HELPER_CASE}\n${lines('export const c = (): void => {', '  const helper = 2;', '};')}`,
+      /Two cases of one option declare "helper": h\(\)/u,
+    ],
+  ])('refuses %s', (_name, body, option, message) => {
+    const run = (): string => {
+      return composed(IMPORTS + body, { './p': option });
+    };
+
+    expect(run).toThrow(message);
+  });
+
+  it('refuses a read of what another option\'s case declares', () => {
+    const base = lines('import { h } from \'./p\';', 'import { c } from \'./q\';', '', 'h();', '', '{', '  c();', '}');
+    const options = {
+      './p': HELPER_CASE,
+      './q': READER_CASE,
+    };
+
+    const run = (): string => {
+      return composed(base, options);
+    };
+
+    expect(run).toThrow(OTHER_OPTION);
   });
 });

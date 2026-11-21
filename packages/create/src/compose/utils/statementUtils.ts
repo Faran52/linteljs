@@ -3,6 +3,7 @@ import ts from 'typescript';
 import { SEMICOLON_STATEMENTS } from '../constants';
 
 import {
+  exportsOf,
   localsOf,
   resolved,
   type Sources,
@@ -46,7 +47,11 @@ import {
   textOf,
   unparen,
 } from './sourceUtils';
-import { landedCheck } from './stepUtils';
+import {
+  landedCheck,
+  outsideReads,
+  readsCheck,
+} from './stepUtils';
 
 // Where spliced statements land: the statement they replace, and the block or file holding it.
 interface Landing {
@@ -523,22 +528,94 @@ const splicedOver = (text: string, kept: readonly ts.Statement[], statement: ts.
   return editOf(gone, spliced);
 };
 
-// Option code moved to where it lands may not change what it or the base reads there.
+// Option code moved to where it lands may not change what it or the base reads there; `readsOf` answers the reads of
+// each statement that must read the same there.
 const landingCheck = (
   checker: ts.TypeChecker,
   sources: Sources,
   kept: readonly ts.Statement[],
   arrow: ts.ArrowFunction,
   landing: Landing,
+  readsOf: (moved: ts.Statement) => ts.Identifier[],
 ): void => {
   varCheck(kept, arrow);
   clashCheck(sources, kept, landing);
 
   for (const moved of kept) {
-    landedCheck(checker, sources, arrow, moved, landing.statement);
+    readsCheck(checker, sources, moved, readsOf(moved), landing.statement);
   }
 
   takenOverCheck(checker, kept, landing);
+};
+
+// The names the other cases of a case's option module declare in their own bodies.
+const declaredByOthers = (arrow: ts.ArrowFunction): Set<string> => {
+  const module = arrow.getSourceFile();
+  const bodies = exportsOf(module)
+    .flatMap((exported) => {
+      const value = ts.isVariableDeclaration(exported) ? exported.initializer : undefined;
+      const isOther = value !== undefined && value !== arrow && ts.isArrowFunction(value);
+      const body = isOther && ts.isBlock(value.body) ? [value.body.statements] : [];
+
+      return body;
+    });
+
+  const statements = bodies.flat();
+
+  return declaredBy(statements);
+};
+
+// Two cases of one option may not declare one name, so a name a case declares has one binding wherever it is read.
+const twiceCheck = (kept: readonly ts.Statement[], others: ReadonlySet<string>, call: ts.CallExpression): void => {
+  const [twice] = declaredBy(kept)
+    .intersection(others);
+
+  if (twice !== undefined) {
+    throw refusal(call, `Two cases of one option declare "${twice}"`);
+  }
+};
+
+// The case's reads of names from outside it, less those of a name another case of its option declares: each of those
+// must resolve, where it lands, to that case's binding at the top level, spliced before it.
+const unsharedReads = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  arrow: ts.ArrowFunction,
+  landing: Landing,
+  others: ReadonlySet<string>,
+): (moved: ts.Statement) => ts.Identifier[] => {
+  const module = arrow.getSourceFile();
+  const file = landing.statement.getSourceFile();
+
+  return (moved) => {
+    return outsideReads(checker, arrow, moved)
+      .filter((read) => {
+        const name = read.text;
+        const origin = declarationOf(checker, read);
+
+        // A name its own module binds is not shared. A base with no import or export is a script, whose top-level
+        // names its option modules see as globals.
+        if (!others.has(name) || origin?.getSourceFile() === module) {
+          return true;
+        }
+
+        if (sources.spliced.get(name) !== module) {
+          const reason = `"${name}" is declared by another case of its option, not spliced at the top level before it`;
+
+          throw refusal(landing.statement, reason);
+        }
+
+        const top = resolvedAt(checker, read, file);
+
+        if (top === undefined || resolvedAt(checker, read, landing.statement) !== top) {
+          const reason = `"${name}" does not read, where the case lands, what another case of its option declares`;
+
+          throw refusal(landing.statement, reason);
+        }
+
+        return false;
+      });
+  };
 };
 
 // `cases(a);`: the case's statements replace the statement, each parameter read as the argument of its name.
@@ -554,9 +631,22 @@ const spliceCase = (
     throw refusal(arrow, 'A case called as a statement may not return');
   }
 
+  const others = declaredByOthers(arrow);
+  const readsOf = unsharedReads(checker, sources, arrow, landing, others);
+
   argumentsCheck(kept, arrow, call);
   awaitCheck(kept, arrow, call);
-  landingCheck(checker, sources, kept, arrow, landing);
+  twiceCheck(kept, others, call);
+
+  landingCheck(checker, sources, kept, arrow, landing, readsOf);
+
+  // A top-level case is filled alone, so these edits are the ones applied; clashCheck keeps each name there one
+  // binding.
+  if (ts.isSourceFile(landing.container)) {
+    for (const name of declaredBy(kept)) {
+      sources.spliced.set(name, arrow.getSourceFile());
+    }
+  }
 
   const edits = [splicedOver(text, kept, landing.statement)];
 
@@ -599,7 +689,10 @@ export const spliceStatements = (
   const kept = returned === undefined ? arrow.body.statements : arrow.body.statements.slice(0, -1);
 
   returnCheck(kept, arrow);
-  landingCheck(checker, sources, kept, arrow, holder);
+
+  landingCheck(checker, sources, kept, arrow, holder, (moved) => {
+    return outsideReads(checker, arrow, moved);
+  });
 
   const answered = answeredNames(returned);
   const reads = readsOf(checker, sources, arrow, holder, answered);

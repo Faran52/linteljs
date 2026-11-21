@@ -7,6 +7,7 @@ import {
 
 import {
   exportOf,
+  exportsOf,
   resolved,
   type Sources,
   sourcesOf,
@@ -42,6 +43,22 @@ describe('exportOf', () => {
     const found = exportOf(module, name);
 
     expect(found !== undefined).toBe(expected);
+  });
+});
+
+describe('exportsOf', () => {
+  it('answers every value and type a module exports, in order', () => {
+    const module = parse(MODULE);
+    const names = exportsOf(module)
+      .map((declaration) => {
+        return declaration.name.getText();
+      });
+
+    expect(names).toStrictEqual([
+      'shown',
+      'Shape',
+      'Alias',
+    ]);
   });
 });
 

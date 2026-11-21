@@ -151,7 +151,14 @@ const faultOf = (
   const found = resolvedAt(checker, read, landing);
 
   if (found !== undefined) {
-    return `"${read.text}" would read the base's own binding of that name where the option's code lands`;
+    const from = sources.spliced.get(read.text);
+    const module = read.getSourceFile();
+    const file = landing.getSourceFile();
+    const isOther = from !== undefined && from !== module && found === resolvedAt(checker, read, file);
+
+    return isOther
+      ? `"${read.text}" would read what another option's case declares, where the option's code lands`
+      : `"${read.text}" would read the base's own binding of that name where the option's code lands`;
   }
 
   if (origin === undefined) {
@@ -174,13 +181,23 @@ const isContextRead = (node: ts.Node): node is ts.Node => {
   return isNamed || isKeyword || ts.isMetaProperty(node);
 };
 
-// Option code moved to a landing site must read there what it read in its own module. A name declared outside
-// `owner` may be a global, an import or an export the base binds, and nothing at the landing site may bind it.
-export const landedCheck = (
+// The reads in moved option code of a name declared outside `owner`: a global, an import or an export the base binds.
+export const outsideReads = (checker: ts.TypeChecker, owner: ts.Node, moved: ts.Node): ts.Identifier[] => {
+  return collect(moved, ts.isIdentifier)
+    .filter((read) => {
+      const origin = declarationOf(checker, read);
+
+      return isReference(read) && (origin === undefined || !isWithin(origin, owner));
+    });
+};
+
+// Option code moved to a landing site must read there what `reads`, its reads from outside it, read in its own module:
+// nothing at the landing site may bind them.
+export const readsCheck = (
   checker: ts.TypeChecker,
   sources: Sources,
-  owner: ts.Node,
   moved: ts.Node,
+  reads: readonly ts.Identifier[],
   landing: ts.Node,
 ): void => {
   const [context] = collect(moved, isContextRead);
@@ -190,16 +207,10 @@ export const landedCheck = (
   }
 
   const imported = new Set(sources.imports.flatMap(localsOf));
-  const faults = collect(moved, ts.isIdentifier)
-    .filter((read) => {
-      const origin = declarationOf(checker, read);
-
-      return isReference(read) && (origin === undefined || !isWithin(origin, owner));
-    })
+  const [fault] = reads
     .map((read) => {
       return faultOf(checker, sources, imported, read, landing);
-    });
-  const [fault] = faults
+    })
     .filter((found) => {
       return found !== undefined;
     });
@@ -207,6 +218,19 @@ export const landedCheck = (
   if (fault !== undefined) {
     throw refusal(landing, fault);
   }
+};
+
+// Option code moved to a landing site must read there what it read in its own module.
+export const landedCheck = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  owner: ts.Node,
+  moved: ts.Node,
+  landing: ts.Node,
+): void => {
+  const reads = outsideReads(checker, owner, moved);
+
+  readsCheck(checker, sources, moved, reads, landing);
 };
 
 // What names a module outside the import block: `import()`, `typeof import()`, a re-export or `import x = require()`.

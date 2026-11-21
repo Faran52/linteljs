@@ -38,6 +38,8 @@ export interface Sources {
   pureCalls: readonly string[];
   bindings: Map<string, Binding>;
   imports: ImportEntry[];
+  // Each name a case spliced at the top level declares, to the option module of that case; written by the splice.
+  spliced: Map<string, ts.SourceFile>;
 }
 
 // What the request declares the engine may take without seeing the source.
@@ -76,11 +78,16 @@ const declarationsOf = (statement: ts.Statement): Exported[] => {
   return own;
 };
 
-// An option module's export by name, or undefined: an optional export is the option's to leave out.
-export const exportOf = (module: ts.SourceFile, name: string): Exported | undefined => {
+// Every declaration a module exports, values and types.
+export const exportsOf = (module: ts.SourceFile): Exported[] => {
   return module.statements
     .filter(isExported)
-    .flatMap(declarationsOf)
+    .flatMap(declarationsOf);
+};
+
+// An option module's export by name, or undefined: an optional export is the option's to leave out.
+export const exportOf = (module: ts.SourceFile, name: string): Exported | undefined => {
+  return exportsOf(module)
     .find((declaration) => {
       return ts.isIdentifier(declaration.name) && declaration.name.text === name;
     });
@@ -343,6 +350,7 @@ export const sourcesOf = (
     pureCalls,
     bindings,
     imports,
+    spliced: new Map(),
   };
 
   return sources;

@@ -478,6 +478,53 @@ describe('landedCheck', () => {
 
   it.each([
     [
+      'the top level, by another option\'s case',
+      'export const y = v;\n',
+      'other',
+      '"helper" would read what another option\'s case declares, where the option\'s code lands: v',
+    ],
+    [
+      'the top level, by a case of its own option',
+      'export const y = v;\n',
+      'own',
+      '"helper" would read the base\'s own binding of that name where the option\'s code lands: v',
+    ],
+    [
+      'the top level by another option\'s case, under a parameter of its name',
+      'export const f = (helper: number) => v + helper;\n',
+      'other',
+      '"helper" would read the base\'s own binding of that name where the option\'s code lands: v',
+    ],
+    [
+      'no case, at the top level',
+      'export const y = v;\n',
+      'none',
+      '"helper" would read the base\'s own binding of that name where the option\'s code lands: v',
+    ],
+  ])('refuses a read of a name declared at %s', (_name, use, splicer, message) => {
+    const base = `import { v } from './p';\n\nconst helper = 1;\n\n${use}`;
+    const {
+      checker,
+      sources,
+      owner,
+      moved,
+      landing,
+    } = landingOf(base, 'export const v = helper;\n');
+    const from = splicer === 'own' ? owner.getSourceFile() : parse('');
+
+    if (splicer !== 'none') {
+      sources.spliced.set('helper', from);
+    }
+
+    const run = (): void => {
+      landedCheck(checker, sources, owner, moved, landing);
+    };
+
+    expect(run).toThrow(message);
+  });
+
+  it.each([
+    [
       'import fs from \'node:fs\';\nimport { v } from \'./p\';\n\nexport const y = [fs, v];\n',
       'export const v = fs;\n',
       '"fs" is a global in the option module, and the base imports that name: v',
