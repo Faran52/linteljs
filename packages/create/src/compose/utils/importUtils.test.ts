@@ -287,3 +287,46 @@ describe('importBlock', () => {
     expect(block).toBe(expected);
   });
 });
+
+// Each block below is what eslint-plugin-simple-import-sort 14 writes for these imports.
+describe('importBlock, on ties simple-import-sort breaks', () => {
+  it.each([
+    [
+      'a capital before the same letter small, as code units order them',
+      ['import { b } from \'./a\';', 'import { a } from \'./A\';'],
+      'import { a } from \'./A\';\nimport { b } from \'./a\';',
+    ],
+    [
+      'a plain letter before the same letter accented',
+      ['import { b } from \'./é\';', 'import { a } from \'./e\';'],
+      'import { a } from \'./e\';\nimport { b } from \'./é\';',
+    ],
+    [
+      'a type import before a value import of one module in one group',
+      ['import { a } from \'./x\';', 'import type { T } from \'./x\';'],
+      'import type { T } from \'./x\';\nimport { a } from \'./x\';',
+    ],
+    [
+      'a namespace import before named imports of one module',
+      ['import { a } from \'./x\';', 'import * as N from \'./x\';'],
+      'import * as N from \'./x\';\nimport { a } from \'./x\';',
+    ],
+    [
+      'a side-effect import first in its group, before what sorts before it',
+      ['import styles from \'./a.css\';', 'import \'./b.css\';'],
+      'import \'./b.css\';\nimport styles from \'./a.css\';',
+    ],
+  ])('orders %s', (_tie, lines, expected) => {
+    const { imports: entries } = sourcesOf(`${lines.join('\n')}\n`, {}, {}, NO_TRUST);
+    const read = new Set([
+      'a',
+      'b',
+      'T',
+      'N',
+      'styles',
+    ]);
+    const block = importBlock(entries, read, [[String.raw`^\u0000?\./`]]);
+
+    expect(block).toBe(expected);
+  });
+});

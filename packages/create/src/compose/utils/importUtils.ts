@@ -1,4 +1,6 @@
 import {
+  IMPORT_STYLES,
+  SORT_COLLATION,
   SORT_MARK,
   SORT_SWAPPED,
   SORT_SWAPS,
@@ -8,6 +10,8 @@ import { type ImportEntry, localsOf } from './bindingUtils';
 
 // Groups of regular expression sources, as `simple-import-sort` takes them: the longest match places an import.
 export type ImportGroups = readonly (readonly string[])[];
+
+type ImportStyle = 'namespace' | 'default' | 'named';
 
 // Where an import sorts: its group, then the pattern of that group that took it.
 interface Place {
@@ -225,15 +229,41 @@ const lineOf = (entry: ImportEntry): string => {
   return `${keyword} ${clause} from '${entry.specifier}'${attributes};`;
 };
 
-const byPlace = (left: Placed, right: Placed): number => {
-  const leftKey = sortKeyOf(left.entry);
-  const rightKey = sortKeyOf(right.entry);
-  const byKey = leftKey.localeCompare(rightKey, 'en', {
-    sensitivity: 'base',
-    numeric: true,
-  });
+// The plugin's compare: the collator, then code units for keys it takes as equal.
+const compared = (left: string, right: string): number => {
+  const byCode = left < right ? -1 : Number(left > right);
 
-  return left.place.group - right.place.group || left.place.pattern - right.place.pattern || byKey;
+  return left.localeCompare(right, 'en', SORT_COLLATION) || byCode;
+};
+
+// The plugin's style of a line, read off its first specifier; a side-effect import is placed before.
+const styleOf = (entry: ImportEntry): ImportStyle => {
+  if (entry.defaultName !== undefined) {
+    return 'default';
+  }
+
+  return entry.namespaceName === undefined ? 'named' : 'namespace';
+};
+
+// Two lines of one group: their modules, then type before value, then namespace, default and named.
+const byLine = (left: ImportEntry, right: ImportEntry): number => {
+  const leftKey = sortKeyOf(left);
+  const rightKey = sortKeyOf(right);
+  const byKey = compared(leftKey, rightKey);
+  const byKind = Number(right.isType) - Number(left.isType);
+  const leftStyle = styleOf(left);
+  const rightStyle = styleOf(right);
+  const byStyle = IMPORT_STYLES.indexOf(leftStyle) - IMPORT_STYLES.indexOf(rightStyle);
+
+  return byKey || byKind || byStyle;
+};
+
+// A side-effect import goes first in its group.
+const byPlace = (left: Placed, right: Placed): number => {
+  const byGroup = left.place.group - right.place.group || left.place.pattern - right.place.pattern;
+  const isEffect = Number(right.entry.isBare) - Number(left.entry.isBare);
+
+  return byGroup || isEffect || byLine(left.entry, right.entry);
 };
 
 // The import block of a composed file: derived, grouped and ordered as the project's lint sorts it.

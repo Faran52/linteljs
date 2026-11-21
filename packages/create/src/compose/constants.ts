@@ -162,6 +162,19 @@ export const PLAIN_STRING = /^[^"\n{}<>&\\]*$/u;
 export const SORT_MARK = '\u0000';
 
 // The characters `simple-import-sort` swaps in its sort key, so `vite` sorts before `vite-plugin-solid`.
+// The collation `simple-import-sort` compares modules with.
+export const SORT_COLLATION: Intl.CollatorOptions = {
+  sensitivity: 'base',
+  numeric: true,
+};
+
+// The plugin's order of import styles for one module, as its `getStyle` ranks them past a side effect.
+export const IMPORT_STYLES: readonly string[] = [
+  'namespace',
+  'default',
+  'named',
+];
+
 export const SORT_SWAPPED = './_-';
 
 export const SORT_SWAPS = '_-./';
