@@ -221,3 +221,43 @@ jobs:
             mutation.log
             packages/create/reports/mutation/mutation.json
           retention-days: 30
+
+  compose:
+    name: compose mutants
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Not yet measured cold; the create job's bound until a run sizes the parts.
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [utils-a, utils-b, utils-c, rest]
+    env:
+      STRYKER_PART: ${{ matrix.part }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.10.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Tests still kill the mutants
+        shell: bash
+        run: pnpm --filter @linteljs/compose run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      # Names every mutant not killed, so a timeout is fixable from the run page without the artifact.
+      - name: List the mutants not killed
+        if: always()
+        run: pnpm --filter @linteljs/eslint-plugin run audit:mutants "$GITHUB_WORKSPACE/packages/compose/reports/mutation/mutation.json" "compose ${{ matrix.part }}"
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: compose-${{ matrix.part }}-logs
+          path: |
+            mutation.log
+            packages/compose/reports/mutation/mutation.json
+          retention-days: 30
