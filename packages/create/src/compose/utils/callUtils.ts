@@ -1,12 +1,23 @@
 import ts from 'typescript';
 
+import {
+  BINARY_LEVELS,
+  EFFECT_KINDS,
+  LOGICAL,
+  UPDATES,
+} from '../constants';
+
 import { resolved, type Sources } from './bindingUtils';
 import {
   applied,
   type Edit,
   refusal,
 } from './editUtils';
-import { referencesTo, resolvedAt } from './scopeUtils';
+import {
+  declarationOf,
+  referencesTo,
+  resolvedAt,
+} from './scopeUtils';
 import {
   collect,
   expressionOf,
@@ -32,6 +43,20 @@ import { landedCheck } from './stepUtils';
 interface Inlined {
   value: string;
   from: string;
+}
+
+type ArgumentKind = 'effect' | 'stable' | 'mutable';
+
+// What the option's code receives in place of a parameter, in the order the base passes it.
+export interface Passed {
+  declaration: ts.ParameterDeclaration | ts.BindingElement;
+  kind: ArgumentKind;
+  shown: ts.Node;
+}
+
+interface EffectRead {
+  index: number;
+  read: ts.Identifier;
 }
 
 // The value an option exports under a binding, undefined for a type or a declaration with none.
@@ -110,48 +135,167 @@ export const captureCheck = (
   }
 };
 
-const LOGICAL = new Set([
-  ts.SyntaxKind.AmpersandAmpersandToken,
-  ts.SyntaxKind.BarBarToken,
-  ts.SyntaxKind.QuestionQuestionToken,
-]);
+// Whether evaluating a node may run code the author wrote, or write a binding: its parts aside.
+const isEffect = (node: ts.Node): boolean => {
+  if (ts.isBinaryExpression(node)) {
+    return !BINARY_LEVELS.has(node.operatorToken.kind);
+  }
 
-// Whether the option's code may run a read later, more than once or not at all.
-const isDeferred = (read: ts.Node, inner: ts.Node): boolean => {
-  const { parent } = read;
-  const isBranch = ts.isConditionalExpression(parent) && parent.condition !== read;
-  const isRight = ts.isBinaryExpression(parent) && parent.right === read && LOGICAL.has(parent.operatorToken.kind);
+  const isUpdate = ts.isPrefixUnaryExpression(node) && UPDATES.has(node.operator);
 
-  if (ts.isFunctionLike(parent) || isBranch || isRight) {
+  return isUpdate || EFFECT_KINDS.has(node.kind);
+};
+
+// The nodes under a node that pass a test, without looking into a function, which runs only when called.
+const heldIn = (node: ts.Node, test: (node: ts.Node) => boolean): ts.Node[] => {
+  const held = test(node) ? [node] : [];
+
+  if (!ts.isFunctionLike(node)) {
+    node
+      .forEachChild((child) => {
+        held.push(...heldIn(child, test));
+      });
+  }
+
+  return held;
+};
+
+// A `let` or `var`, or a parameter something assigns to.
+const isWritable = (checker: ts.TypeChecker, read: ts.Node): boolean => {
+  const declaration = ts.isIdentifier(read) && isReference(read) ? declarationOf(checker, read) : undefined;
+  const holder = declaration !== undefined && ts.isBindingElement(declaration)
+    ? ts.walkUpBindingElementsAndPatterns(declaration)
+    : declaration;
+
+  if (holder !== undefined && ts.isVariableDeclaration(holder)) {
+    return (ts.getCombinedNodeFlags(holder) & ts.NodeFlags.Const) === 0;
+  }
+
+  if (declaration === undefined || holder === undefined || !ts.isParameter(holder)) {
+    return false;
+  }
+
+  const reads = referencesTo(checker, declaration, declaration.getSourceFile());
+
+  return reads.some(isWritten);
+};
+
+// How an argument can change by moving: by running its effect, or by reading what other code may write.
+export const kindOf = (checker: ts.TypeChecker, argument: ts.Expression): ArgumentKind => {
+  if (!isPure(argument)) {
+    return 'effect';
+  }
+
+  const isRead = heldIn(argument, isEffect).length > 0 || heldIn(argument, (node) => {
+    return isWritable(checker, node);
+  }).length > 0;
+
+  return isRead ? 'mutable' : 'stable';
+};
+
+// Whether the option's code may run a read later, or more than once; with `isSkippable`, or not at all.
+const isDeferred = (node: ts.Node, inner: ts.Node, isSkippable: boolean): boolean => {
+  if (node === inner) {
+    return false;
+  }
+
+  const { parent } = node;
+  const isBranch = ts.isConditionalExpression(parent) && parent.condition !== node;
+  const isRight = ts.isBinaryExpression(parent) && parent.right === node && LOGICAL.has(parent.operatorToken.kind);
+  const isTail = ts.isOptionalChain(parent) && parent.expression !== node;
+
+  const isEnclosed = ts.isFunctionLike(parent) || ts.isClassLike(parent);
+  const isSkipped = isBranch || isRight || isTail;
+
+  if (isEnclosed || (isSkippable && isSkipped)) {
     return true;
   }
 
-  return parent !== inner && isDeferred(parent, inner);
+  return isDeferred(parent, inner, isSkippable);
 };
 
-// Arguments with an effect run in the order they were written, so their reads must come in that order too.
-export const orderCheck = (
-  checker: ts.TypeChecker,
-  inner: ts.Node,
-  given: ReadonlyMap<ts.Declaration, ts.Expression>,
-): void => {
-  const positions = [...given.entries()]
-    .filter(([, argument]) => {
-      return !isPure(argument);
-    })
-    .flatMap(([declaration]) => {
-      return referencesTo(checker, declaration, inner);
-    })
-    .map((read) => {
-      return read.getStart();
+// The first thing of the option's code with an effect that runs before a read, as code runs left to right.
+const effectBefore = (read: ts.Node, inner: ts.Node): ts.Node | undefined => {
+  const start = read.getStart();
+
+  return heldIn(inner, isEffect)
+    .find((effect) => {
+      return effect.getEnd() <= start;
     });
-  const ordered = positions
-    .toSorted((left, right) => {
-      return left - right;
+};
+
+// An argument with an effect runs where the call did only when its one read is the first thing the code runs.
+const effectRead = (checker: ts.TypeChecker, inner: ts.Node, passed: Passed): ts.Identifier => {
+  const reads = referencesTo(checker, passed.declaration, inner);
+  const name = textOf(passed.declaration.name);
+  const [only] = reads;
+
+  if (only === undefined || reads.length > 1) {
+    const count = String(reads.length);
+
+    throw refusal(passed.shown, `An argument with an effect must be read once, and "${name}" is read ${count} times`);
+  }
+
+  if (isDeferred(only, inner, true)) {
+    throw refusal(passed.shown, `An argument with an effect must run where the call did, and "${name}" is read later`);
+  }
+
+  const before = effectBefore(only, inner);
+
+  if (before !== undefined) {
+    throw refusal(before, `An argument with an effect must run first, and "${name}" is read after this, which may act`);
+  }
+
+  return only;
+};
+
+// Arguments run before the option's code, in the order passed. One with an effect is inlined only as the first
+// thing that code runs, once; one that reads what may be written, only where nothing could have written it yet.
+export const effectCheck = (checker: ts.TypeChecker, inner: ts.Node, passed: readonly Passed[]): void => {
+  const effects = passed
+    .flatMap((each, index): EffectRead[] => {
+      if (each.kind !== 'effect') {
+        return [];
+      }
+
+      const found: EffectRead[] = [
+        {
+          index,
+          read: effectRead(checker, inner, each),
+        },
+      ];
+
+      return found;
+    });
+  const isOrdered = effects
+    .every((effect, at) => {
+      const previous = effects[at - 1];
+
+      return previous === undefined || previous.read.getStart() < effect.read.getStart();
     });
 
-  if (positions.join(',') !== ordered.join(',')) {
+  if (!isOrdered) {
     throw refusal(inner, 'Arguments with an effect are read in another order than they are passed');
+  }
+
+  for (const [index, each] of passed.entries()) {
+    const reads = each.kind === 'mutable' ? referencesTo(checker, each.declaration, inner) : [];
+    const isMoved = reads
+      .some((read) => {
+        const isPast = effects
+          .some((effect) => {
+            return (effect.index < index) !== (effect.read.getStart() < read.getStart());
+          });
+
+        return isPast || isDeferred(read, inner, false) || effectBefore(read, inner) !== undefined;
+      });
+
+    if (isMoved) {
+      const name = textOf(each.declaration.name);
+      const reason = `An argument that may be written must be read before anything can write it, and "${name}" is not`;
+
+      throw refusal(each.shown, reason);
+    }
   }
 };
 
@@ -163,20 +307,8 @@ export const substitutions = (
   argument: ts.Expression,
 ): Edit[] => {
   const reads = referencesTo(checker, declaration, inner);
-  const count = String(reads.length);
-  const name = textOf(declaration.name);
 
-  if (!isPure(argument) && reads.length !== 1) {
-    throw refusal(argument, `An argument with an effect must be read once, and "${name}" is read ${count} times`);
-  }
-
-  const [only] = reads;
-
-  if (!isPure(argument) && only !== undefined && only !== inner && isDeferred(only, inner)) {
-    throw refusal(argument, `An argument with an effect must run where the call did, and "${name}" is read later`);
-  }
-
-  if (ts.isIdentifier(argument) && argument.text === name) {
+  if (ts.isIdentifier(argument) && argument.text === textOf(declaration.name)) {
     return [];
   }
 
@@ -227,9 +359,19 @@ const calledWith = (
       return pair;
     });
   const given = new Map<ts.Declaration, ts.Expression>(pairs);
+  const passed = pairs
+    .map(([parameter, argument]) => {
+      const each: Passed = {
+        declaration: parameter,
+        kind: kindOf(checker, argument),
+        shown: argument,
+      };
+
+      return each;
+    });
 
   captureCheck(checker, returned, given);
-  orderCheck(checker, returned, given);
+  effectCheck(checker, returned, passed);
 
   const edits = pairs
     .flatMap(([parameter, argument]) => {

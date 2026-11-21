@@ -3,7 +3,9 @@ import ts from 'typescript';
 import {
   arrowOf,
   captureCheck,
-  orderCheck,
+  effectCheck,
+  kindOf,
+  type Passed,
   returnedOf,
   substitutions,
 } from './callUtils';
@@ -507,6 +509,42 @@ const restEdit = (
   return before;
 };
 
+// What the component receives from the attributes, in the order the base writes them.
+const passedOf = (checker: ts.TypeChecker, wanted: readonly ts.BindingElement[], site: Site): Passed[] => {
+  const names = [...site.given.keys()];
+
+  const placeOf = (each: Passed): number => {
+    const name = textOf(each.declaration.name);
+
+    return names.indexOf(name);
+  };
+
+  return wanted
+    .flatMap((element): Passed[] => {
+      const argument = site.given.get(textOf(element.name));
+
+      if (argument === undefined) {
+        return [];
+      }
+
+      const each: Passed[] = [
+        {
+          declaration: element,
+          kind: kindOf(checker, argument),
+          shown: argument,
+        },
+      ];
+
+      return each;
+    })
+    .toSorted((left, right) => {
+      const before = placeOf(left);
+      const after = placeOf(right);
+
+      return before - after;
+    });
+};
+
 // `<X ...>children</X>`: the option component's returned element replaces the element that renders it.
 export const inlineElement = (
   text: string,
@@ -531,7 +569,7 @@ export const inlineElement = (
   ignoredCheck(wanted, site);
   landedCheck(checker, sources, arrow, root, site.element);
   captureCheck(checker, root, given);
-  orderCheck(checker, root, given);
+  effectCheck(checker, root, passedOf(checker, wanted, site));
 
   const placement = new Placement(root);
   const needs = placeProps(checker, placement, root, wanted, site);

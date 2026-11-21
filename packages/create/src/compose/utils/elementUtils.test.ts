@@ -343,6 +343,11 @@ describe('inlineElement', () => {
       /read in another order/u,
     ],
     [
+      'y = <X b={g()} a={f()} />;',
+      'export const X = ({ a, b }: P) => <i>{a}{b}</i>;\n',
+      /read in another order/u,
+    ],
+    [
       'y = <X a={f()} />;',
       'export const X = ({ a }: P) => <i>{a}{a}</i>;\n',
       /must be read once, and "a" is read 2 times/u,

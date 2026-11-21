@@ -9,11 +9,12 @@ import { sourcesOf } from './bindingUtils';
 import {
   arrowOf,
   captureCheck,
+  effectCheck,
   exportedValue,
   inlineCall,
   inlineMember,
   inlineValue,
-  orderCheck,
+  type Passed,
   returnedOf,
   substitutions,
 } from './callUtils';
@@ -385,6 +386,167 @@ describe('inlineCall', () => {
   });
 });
 
+describe('inlineCall, for arguments that run or may be written', () => {
+  it('refuses an argument with an effect that the option\'s own call would run after (F9a)', () => {
+    const run = (): string => {
+      return inlined('export const y = x(h());', 'export const x = (a: number) => g() + a;\n');
+    };
+
+    expect(run).toThrow('An argument with an effect must run first, and "a" is read after this, which may act: g()');
+  });
+
+  it('refuses an argument with an effect that an optional chain may skip (F9b)', () => {
+    const run = (): string => {
+      return inlined('export const y = x(h());', 'export const x = (a: number) => o?.m(a);\n');
+    };
+
+    expect(run).toThrow('An argument with an effect must run where the call did, and "a" is read later: h()');
+  });
+
+  it('refuses a let a closure would read after the base writes it (F9c)', () => {
+    const base = 'let n = 0;\nexport const get = x(n);\nn += 1;';
+
+    const run = (): string => {
+      return inlined(base, 'export const x = (v: number) => () => v;\n');
+    };
+
+    const message = 'An argument that may be written must be read before anything can write it, and "v" is not: n';
+
+    expect(run).toThrow(message);
+  });
+
+  it.each([
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [b, a, g()];\n',
+      'y = [b, h(), g()];',
+    ],
+    [
+      'y = x(h(), k());',
+      'export const x = (a: number, b: number) => a + b;\n',
+      'y = h() + k();',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [() => g(), a];\n',
+      'y = [() => g(), h()];',
+    ],
+    [
+      'const n = 0;\ny = x(n);',
+      'export const x = (v: number) => () => v;\n',
+      'const n = 0;\ny = () => n;',
+    ],
+    [
+      'y = (n: number) => x(n);',
+      'export const x = (v: number) => () => v;\n',
+      'y = (n: number) => () => n;',
+    ],
+    [
+      'let n = 0;\ny = x(n);',
+      'export const x = (v: number) => (c ? v : 0);\n',
+      'let n = 0;\ny = c ? n : 0;',
+    ],
+    [
+      'y = x(h(), a.b);',
+      'export const x = (m: number, n: number) => [m, n];\n',
+      'y = [h(), a.b];',
+    ],
+  ])('fills %s from %j', (body, option, expected) => {
+    const written = inlined(body, option);
+
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    [
+      'y = x(h());',
+      'export const x = (a: number) => b.c + a;\n',
+      'and "a" is read after this, which may act: b.c',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [b = 1, a];\n',
+      'and "a" is read after this, which may act: b = 1',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => ({ ...o, k: a });\n',
+      'and "a" is read after this, which may act: ...o',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [new C(), a];\n',
+      'and "a" is read after this, which may act: new C()',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [t`s`, a];\n',
+      'and "a" is read after this, which may act: t`s`',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [i++, a];\n',
+      'and "a" is read after this, which may act: i++',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => [--i, a];\n',
+      'and "a" is read after this, which may act: --i',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => o?.[a];\n',
+      '"a" is read later',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => (o ||= a);\n',
+      '"a" is read later',
+    ],
+    [
+      'y = x(h());',
+      'export const x = (a: number) => class { k = a; };\n',
+      '"a" is read later',
+    ],
+    [
+      'y = x(a.b, h());',
+      'export const x = (m: number, n: number) => [n, m];\n',
+      'An argument that may be written must be read before anything can write it, and "m" is not: a.b',
+    ],
+    [
+      'y = x(h(), a.b);',
+      'export const x = (m: number, n: number) => [n, m];\n',
+      'and "n" is not: a.b',
+    ],
+    [
+      'let n = 0;\ny = x(n);',
+      'export const x = (v: number) => [g(), v];\n',
+      'and "v" is not: n',
+    ],
+    [
+      'let { n } = o;\ny = x(n);',
+      'export const x = (v: number) => () => v;\n',
+      'and "v" is not: n',
+    ],
+    [
+      'y = (n: number) => {\n  n += 1;\n\n  return x(n);\n};',
+      'export const x = (v: number) => () => v;\n',
+      'and "v" is not: n',
+    ],
+    [
+      'y = ({ n }: P) => {\n  n = 1;\n\n  return x(n);\n};',
+      'export const x = (v: number) => () => v;\n',
+      'and "v" is not: n',
+    ],
+  ])('refuses %s from %j', (body, option, message) => {
+    const run = (): string => {
+      return inlined(body, option);
+    };
+
+    expect(run).toThrow(message);
+  });
+});
+
 describe('inlineValue', () => {
   it.each([
     [
@@ -469,7 +631,7 @@ const calledOf = (option: string): Called => {
   return called;
 };
 
-describe('captureCheck, orderCheck and substitutions', () => {
+describe('captureCheck, effectCheck and substitutions', () => {
   it('lets an argument through that reads nothing the option code binds around the parameter', () => {
     const {
       checker,
@@ -512,16 +674,19 @@ describe('captureCheck, orderCheck and substitutions', () => {
       arrow,
       returned,
     } = calledOf('export const f = (a: number, b: number) => [b, a];\n');
-    const pairs = arrow.parameters
-      .map((parameter, index) => {
-        const pair: [ts.Declaration, ts.Expression] = [parameter, expressionOf(index === 0 ? 'c' : 'd')];
+    const passed = arrow.parameters
+      .map((parameter) => {
+        const each: Passed = {
+          declaration: parameter,
+          kind: 'stable',
+          shown: parameter,
+        };
 
-        return pair;
+        return each;
       });
-    const given = new Map(pairs);
 
     const run = (): void => {
-      orderCheck(checker, returned, given);
+      effectCheck(checker, returned, passed);
     };
 
     expect(run).not.toThrow();

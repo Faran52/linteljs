@@ -62,6 +62,34 @@ export const BINARY_LEVELS = new Map<ts.SyntaxKind, number>([
 
 export const UPDATES = new Set([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken]);
 
+// The operators that may skip their right side.
+export const LOGICAL = new Set([
+  ts.SyntaxKind.AmpersandAmpersandToken,
+  ts.SyntaxKind.BarBarToken,
+  ts.SyntaxKind.QuestionQuestionToken,
+  ts.SyntaxKind.AmpersandAmpersandEqualsToken,
+  ts.SyntaxKind.BarBarEqualsToken,
+  ts.SyntaxKind.QuestionQuestionEqualsToken,
+]);
+
+// The expressions that may run code the author wrote, or write a binding: a call in any form, a read that may be a
+// getter, a spread that iterates or reads getters, a class with static code, and an update or a delete.
+export const EFFECT_KINDS = new Set([
+  ts.SyntaxKind.CallExpression,
+  ts.SyntaxKind.NewExpression,
+  ts.SyntaxKind.TaggedTemplateExpression,
+  ts.SyntaxKind.AwaitExpression,
+  ts.SyntaxKind.YieldExpression,
+  ts.SyntaxKind.DeleteExpression,
+  ts.SyntaxKind.PostfixUnaryExpression,
+  ts.SyntaxKind.PropertyAccessExpression,
+  ts.SyntaxKind.ElementAccessExpression,
+  ts.SyntaxKind.SpreadElement,
+  ts.SyntaxKind.SpreadAssignment,
+  ts.SyntaxKind.JsxSpreadAttribute,
+  ts.SyntaxKind.ClassExpression,
+]);
+
 export const PURE_KEYWORDS = new Set([
   ts.SyntaxKind.TrueKeyword,
   ts.SyntaxKind.FalseKeyword,
