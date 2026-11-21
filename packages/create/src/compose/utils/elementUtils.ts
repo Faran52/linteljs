@@ -74,6 +74,8 @@ interface Site {
   given: Map<string, ts.Expression>;
   key: ts.JsxAttribute | undefined;
   rest: Rest | undefined;
+  // Attributes the rest spread after them may override.
+  overridden: Set<string>;
   children: string;
 }
 
@@ -231,12 +233,21 @@ const siteOf = (checker: ts.TypeChecker, text: string, head: JsxHead): Site => {
   const children = ts.isJsxElement(element)
     ? text.slice(element.openingElement.getEnd(), element.closingElement.getStart())
     : '';
+  const spread = head.attributes.properties.find(ts.isJsxSpreadAttribute);
+  const overridden = attributes
+    .filter((attribute) => {
+      return spread !== undefined && attribute.getStart() < spread.getStart();
+    })
+    .map((attribute) => {
+      return textOf(attribute.name);
+    });
   const site: Site = {
     head,
     element,
     given: new Map(pairs),
     key,
     rest: restOf(checker, head),
+    overridden: new Set(overridden),
     children,
   };
 
@@ -288,6 +299,10 @@ const placeProps = (
 
     if (argument === undefined && site.rest === undefined && name !== 'children') {
       throw refusal(site.head, `The option's component needs "${name}", which the base does not pass`);
+    }
+
+    if (site.overridden.has(name)) {
+      throw refusal(site.head, `"${name}" is written before the rest spread, which may give the component its own`);
     }
 
     if (argument !== undefined) {

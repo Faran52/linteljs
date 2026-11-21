@@ -33,10 +33,10 @@ export const AppHeader: FC<AppHeaderProps> = ({ name, ...routerProps }) => {
             return (
               <NavItem
                 key={id}
+                {...routerProps}
                 id={id}
                 path={path}
                 setup={setup}
-                {...routerProps}
               >
                 {/* Keyed by route id, so a page added to `ROUTES` needs its own key in every locale. */}
                 {t(id)}

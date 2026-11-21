@@ -215,7 +215,7 @@ describe('inlineElement', () => {
   });
 
   it('binds what a component reads from the rest binding the base spreads, once per name', () => {
-    const body = 'y = ({ ...rest }) => <ul><X id="a" {...rest} /><X id="b" {...rest} /></ul>;\n';
+    const body = 'y = ({ ...rest }) => <ul><X {...rest} id="a" /><X {...rest} id="b" /></ul>;\n';
     const option = 'export const X = ({ id, current, on }: P) => <li id={id} hidden={current} onClick={on} />;\n';
     const { written } = filled(body, option);
 
@@ -224,6 +224,24 @@ describe('inlineElement', () => {
     };
 
     expect(written).toBe(`y = ({ current, on }) => <ul>${item('a')}${item('b')}</ul>;\n`);
+  });
+
+  it.each([
+    ['y = ({ ...rest }) => <X id="a" {...rest} />;'],
+    ['y = ({ ...rest }) => <ul><X id="a" title="t" {...rest} /></ul>;'],
+  ])('refuses a prop the component reads, written before the rest spread, in %j (F15)', (body) => {
+    const run = (): Filled => {
+      return filled(`${body}\n`, 'export const X = ({ id }: P) => <li id={id} />;\n');
+    };
+
+    expect(run).toThrow('"id" is written before the rest spread, which may give the component its own');
+  });
+
+  it('takes a key written before the rest spread', () => {
+    const body = 'y = ({ ...rest }) => [1].map((id) => <X key={id} {...rest} id={id} />);\n';
+    const { written } = filled(body, 'export const X = ({ id, on }: P) => <li id={id} onClick={on} />;\n');
+
+    expect(written).toBe('y = ({ on }) => [1].map((id) => <li key={id} id={id} onClick={on} />);\n');
   });
 
   it('refuses children that read a name the option binds around {children}', () => {

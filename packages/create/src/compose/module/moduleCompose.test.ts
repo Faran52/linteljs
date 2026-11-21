@@ -1378,7 +1378,7 @@ const MORE_CASES: Case[] = [
     base: [
       'import { Item } from \'./p\';',
       '',
-      'export const List = ({ name, ...rest }: Props) => <Item title={name} {...rest} />;',
+      'export const List = ({ name, ...rest }: Props) => <Item {...rest} title={name} />;',
       '',
     ].join('\n'),
     option: [
@@ -1405,6 +1405,13 @@ const MORE_CASES: Case[] = [
 ];
 
 const MORE_REFUSALS: Refusal[] = [
+  {
+    name: 'an attribute written before a rest spread (F15)',
+    base: 'import { Card } from \'./p\';\n\nexport const A = ({ id, ...rest }: Props) => '
+      + '<Card title="mine" {...rest}>{id}</Card>;\n',
+    option: 'export const Card = ({ title, children }: P) => <h1 title={title}>{children}</h1>;\n',
+    message: /"title" is written before the rest spread, which may give the component its own/u,
+  },
   {
     name: 'an attribute string holding entities (F14)',
     base: 'import { Card } from \'./p\';\n\nexport const A = () => {\n'
