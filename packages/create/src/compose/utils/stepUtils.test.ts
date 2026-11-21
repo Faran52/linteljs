@@ -105,6 +105,23 @@ describe('settled', () => {
 
     expect(run).toThrow(/did not settle/u);
   });
+
+  it('asks for ten thousand rewrites before it refuses', () => {
+    const asked: string[] = [];
+
+    const run = (): ts.SourceFile => {
+      const start = parse('a');
+
+      return settled(start, (text) => {
+        asked.push(text);
+
+        return firstA(text, 'a');
+      });
+    };
+
+    expect(run).toThrow(/did not settle/u);
+    expect(asked).toHaveLength(10_000);
+  });
 });
 
 const upper: Answer = (identifier) => {

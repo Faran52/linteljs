@@ -174,6 +174,55 @@ describe('importBlock', () => {
     expect(run).toThrow('react is imported whole as "React" and as "R"; import it under one name.');
   });
 
+  it.each([
+    [
+      'numbers by their value',
+      ['./a10', './a9'],
+      ['./a9', './a10'],
+    ],
+    [
+      '`.` and `/` before `_` and `-`',
+      [
+        'lib-a',
+        'lib/a',
+        'lib_a',
+        'lib.a',
+      ],
+      [
+        'lib.a',
+        'lib/a',
+        'lib_a',
+        'lib-a',
+      ],
+    ],
+    [
+      'a capital before the same letter small, when it comes first',
+      ['./A', './a'],
+      ['./A', './a'],
+    ],
+  ])('orders %s, as the sort does', (_order, specifiers, expected) => {
+    const lines = specifiers
+      .map((specifier, index) => {
+        return `import { n${String(index)} } from '${specifier}';`;
+      });
+    const block = blockOf(lines, [
+      'n0',
+      'n1',
+      'n2',
+      'n3',
+    ]);
+    const order = block
+      .split('\n')
+      .map((line) => {
+        const from = line.indexOf('\'') + 1;
+        const to = line.lastIndexOf('\'');
+
+        return line.slice(from, to);
+      });
+
+    expect(order).toStrictEqual(expected);
+  });
+
   it('writes a module imported whole under one name by two files once, beside a type import of it', () => {
     const block = blockOf([
       'import * as stylex from \'@stylexjs/stylex\';',

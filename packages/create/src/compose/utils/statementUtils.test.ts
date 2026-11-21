@@ -104,6 +104,11 @@ describe('flattenHeritage', () => {
       lines('interface Props {', '  readonly name: string;', '}'),
     ],
     [
+      lines('interface Props extends x {', '  readonly name: string;', '}'),
+      'export type x = Record<never,never>;\n',
+      lines('interface Props {', '  readonly name: string;', '}'),
+    ],
+    [
       lines('interface Props extends x {', '  [key: string]: unknown;', '}'),
       lines('export interface x {', '  (): void;', '  readonly more: number;', '}'),
       lines('interface Props {', '  [key: string]: unknown;', '  (): void;', '  readonly more: number;', '}'),

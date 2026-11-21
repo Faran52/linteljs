@@ -96,6 +96,12 @@ describe('inlineElement', () => {
       'y = <hr key="k" />;\n',
     ],
     [
+      'a key whose value has an effect, which the root still takes',
+      'y = <X key={next()} />;\n',
+      'export const X = () => <hr />;\n',
+      'y = <hr key={next()} />;\n',
+    ],
+    [
       'a fragment',
       'y = <X />;\n',
       'export const X = () => <><a /><b /></>;\n',

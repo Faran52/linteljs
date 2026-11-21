@@ -374,6 +374,12 @@ describe('inlineCall', () => {
     expect(written).toBe('export const y = new (pick())();');
   });
 
+  it('keeps a shorthand member whose parameter takes a name of its own spelling', () => {
+    const written = inlined('y = x(n);', 'export const x = (n: number) => ({ n });\n');
+
+    expect(written).toBe('y = { n };');
+  });
+
   it('puts a negative number that lands as the base of a power in parentheses (F23)', () => {
     const written = inlined('y = x(-1);', 'export const x = (n: number) => n ** 2;\n');
 
@@ -391,6 +397,14 @@ describe('inlineCall', () => {
     };
 
     expect(run).toThrow(/An option export called or rendered here must be an arrow function: x/u);
+  });
+
+  it('refuses a block that does more than return', () => {
+    const run = (): string => {
+      return inlined('y = x();', 'export const x = () => {\n  return 1;\n  f();\n};\n');
+    };
+
+    expect(run).toThrow('A function inlined as an expression must only return one');
   });
 
   it('refuses an async arrow, whose call answers a promise (F4)', () => {

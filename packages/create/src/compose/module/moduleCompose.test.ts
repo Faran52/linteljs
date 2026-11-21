@@ -1819,6 +1819,48 @@ describe('moduleCompose, one rule at a time', () => {
   });
 });
 
+describe('moduleCompose, with no import groups given', () => {
+  it('groups the imports as the base layer does for a project with no alias', () => {
+    const base = [
+      'import styles from \'./a.module.css\';',
+      'import { y } from \'pkg\';',
+      'import { p } from \'path\';',
+      'import { f } from \'fs\';',
+      'import { u } from \'node:url\';',
+      'import { s } from \'./s\';',
+      'import { q } from \'../q\';',
+      '',
+      'export const x = [y, p, f, u, s, q, styles];',
+      '',
+    ].join('\n');
+    const composed = moduleCompose({
+      base,
+      options: {},
+      modules: {},
+      plainData: [],
+      pureCalls: [],
+    });
+    const expected = [
+      'import { u } from \'node:url\';',
+      'import { f } from \'fs\';',
+      'import { p } from \'path\';',
+      '',
+      'import { y } from \'pkg\';',
+      '',
+      'import { q } from \'../q\';',
+      '',
+      'import { s } from \'./s\';',
+      '',
+      'import styles from \'./a.module.css\';',
+      '',
+      'export const x = [y, p, f, u, s, q, styles];',
+      '',
+    ].join('\n');
+
+    expect(composed).toBe(expected);
+  });
+});
+
 describe('moduleCompose, on option modules that import each other', () => {
   it('refuses them, naming the ring, before it fills anything', () => {
     const run = (): string => {

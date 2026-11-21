@@ -160,6 +160,21 @@ describe('simplifiedOnce', () => {
       'x = <a t={\'a"b\'} />;',
     ],
     [
+      'a string holding an entity, which a quoted attribute would decode',
+      'x = <a {...{ t: \'a&amp;b\' }} />;',
+      'x = <a t={\'a&amp;b\'} />;',
+    ],
+    [
+      'a string holding braces',
+      'x = <a {...{ t: \'a{b}\' }} />;',
+      'x = <a t={\'a{b}\'} />;',
+    ],
+    [
+      'a string holding angle brackets',
+      'x = <a {...{ t: \'a<b>\' }} />;',
+      'x = <a t={\'a<b>\'} />;',
+    ],
+    [
       'a key that is no attribute name, left alone',
       'x = <a {...{ \'1a\': 1 }} />;',
       'x = <a {...{ \'1a\': 1 }} />;',

@@ -72,8 +72,7 @@ export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources):
   const checker = scopeOf(file, sources.modules, sources.held);
   const candidates = collect(file, ts.isIdentifier)
     .filter((identifier) => {
-      const isClosing = ts.isJsxClosingElement(identifier.parent);
-      const isRead = bindings.has(identifier.text) && isReference(identifier) && !isClosing;
+      const isRead = bindings.has(identifier.text) && isReference(identifier);
 
       return isRead && declarationOf(checker, identifier) === undefined;
     })

@@ -397,16 +397,19 @@ describe('isWithin', () => {
     const isInside = inner !== undefined && statement !== undefined && isWithin(inner, statement);
     const isOutside = statement !== undefined && inner !== undefined && isWithin(statement, inner);
     const isForeign = inner !== undefined && elsewhere !== undefined && isWithin(inner, elsewhere);
+    const isItself = statement !== undefined && isWithin(statement, statement);
     const found = [
       isInside,
       isOutside,
       isForeign,
+      isItself,
     ];
 
     expect(found).toStrictEqual([
       true,
       false,
       false,
+      true,
     ]);
   });
 });
@@ -717,6 +720,8 @@ describe('isWritten', () => {
     ['for (x of A) {}', false],
     ['[A] + [2];', false],
     ['f([A]);', false],
+    ['A in o;', false],
+    ['A instanceof C;', false],
   ])('answers for A in %s', (host, expected) => {
     const node = nodeIn(host, 'A');
     const written = ts.isIdentifier(node) && isWritten(node);
@@ -1084,12 +1089,131 @@ describe('fittingOf', () => {
       '() => 1',
       '(() => 1)',
     ],
+    [
+      'x = A.b;',
+      'void c',
+      '(void c)',
+    ],
+    [
+      'A;',
+      'function () {}',
+      '(function () {})',
+    ],
+    [
+      '<a {...A} />;',
+      'b ? c : d',
+      'b ? c : d',
+    ],
   ])('puts %s with %s in place as %s', (host, source, expected) => {
     const replaced = nodeIn(host, 'A');
     const expression = expressionOf(source);
     const written = fittedText(replaced, expression);
 
     expect(written).toBe(expected);
+  });
+});
+
+// The grouping the parser gives an expression, parentheses aside.
+const shapeOf = (node: ts.Expression): string => {
+  if (ts.isParenthesizedExpression(node)) {
+    return shapeOf(node.expression);
+  }
+
+  if (ts.isBinaryExpression(node)) {
+    return `(${shapeOf(node.left)} ${node.operatorToken.getText()} ${shapeOf(node.right)})`;
+  }
+
+  return node.getText();
+};
+
+const shapeIn = (written: string): string => {
+  const file = parse(`x = (${written});`);
+  const [outer] = collect(file, ts.isParenthesizedExpression);
+
+  return outer === undefined ? '' : shapeOf(outer.expression);
+};
+
+// `??` beside `||` or `&&` is a syntax error the parser reads past.
+const isMixed = (outer: string, inner: string): boolean => {
+  const pair = new Set([outer, inner]);
+  const isLogical = pair.has('||') || pair.has('&&');
+
+  return pair.has('??') && isLogical;
+};
+
+// Every binary operator but an assignment, as JavaScript spells it.
+const OPERATORS = [
+  ',',
+  '??',
+  '||',
+  '&&',
+  '|',
+  '^',
+  '&',
+  '==',
+  '===',
+  '!=',
+  '!==',
+  '<',
+  '<=',
+  '>',
+  '>=',
+  'instanceof',
+  'in',
+  '<<',
+  '>>',
+  '>>>',
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+  '**',
+];
+
+const ASSIGNMENTS = [
+  '=',
+  '+=',
+  '**=',
+  '??=',
+];
+
+const INNER_OPERATORS = [...OPERATORS, ...ASSIGNMENTS];
+
+const fittedBeside = (host: string, inner: string): string => {
+  const replaced = nodeIn(host, 'A');
+  const expression = expressionOf(`b ${inner} c`);
+
+  return fittedText(replaced, expression);
+};
+
+describe('fittingOf, for every pair of binary operators', () => {
+  it.each(OPERATORS)('puts each on the right of %s bare exactly where it parses so', (outer) => {
+    const wrong = INNER_OPERATORS
+      .filter((inner) => {
+        const written = fittedBeside(`x = (1 ${outer} A);`, inner);
+        const isSame = shapeIn(`1 ${outer} b ${inner} c`) === `(1 ${outer} (b ${inner} c))`;
+        // A power takes another on its right bare, which the engine wraps all the same.
+        const isTaken = isSame && !isMixed(outer, inner) && !(outer === '**' && inner === '**');
+        const expected = isTaken ? `b ${inner} c` : `(b ${inner} c)`;
+
+        return written !== expected;
+      });
+
+    expect(wrong).toStrictEqual([]);
+  });
+
+  it.each(OPERATORS)('puts each on the left of %s so it parses as one operand', (outer) => {
+    const wrong = INNER_OPERATORS
+      .filter((inner) => {
+        const written = fittedBeside(`x = (A ${outer} 1);`, inner);
+        const isSame = shapeIn(`${written} ${outer} 1`) === `((b ${inner} c) ${outer} 1)`;
+        const isBare = !written.startsWith('(');
+
+        return !isSame || (isBare && isMixed(outer, inner));
+      });
+
+    expect(wrong).toStrictEqual([]);
   });
 });
 
