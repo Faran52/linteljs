@@ -392,6 +392,8 @@ const REACT = [
 
 const CONTACT = 'testing/vitest/src/lib/apis/contact';
 
+const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteError.test.tsx';
+
 const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
 
 // The five shells whose contact suite is one file, by where each keeps the mocking option.
@@ -486,6 +488,15 @@ const TEST_PAIRS: TestPair[] = [
     options: [
       ['router.single-page.tsx', 'vite-react/router/single-page/testing/vitest/src/App.test.tsx'],
       ['router.libraries.tsx', 'vite-react/router/libraries/testing/vitest/src/App.test.tsx'],
+    ],
+  },
+  {
+    base: 'vite-react/route-error/RouteError.test.tsx',
+    specifier: './router',
+    groups: groupsWith(REACT, [aliasGroup('@router')]),
+    options: [
+      ['router.react-routers.tsx', `vite-react/router/react-routers/${ROUTE_ERROR}`],
+      ['router.tanstack-router.tsx', `vite-react/router/tanstack-router/${ROUTE_ERROR}`],
     ],
   },
   {
