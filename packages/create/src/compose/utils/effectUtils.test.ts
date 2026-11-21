@@ -573,6 +573,31 @@ describe('pureCheck', () => {
     expect(run).not.toThrow();
   });
 
+  it.each([
+    ['const o = { a: 1 };\ny = o + 1;'],
+    ['y = `${o}`;'],
+    ['y = -o;'],
+    ['y = a in b;'],
+  ])('throws the caller\'s refusal for %j, which may run an operand\'s code converting it', (base) => {
+    const { proof, value } = subjectOf(base, NONE);
+
+    const run = (): void => {
+      pureCheck(proof, value, new Error('refused'));
+    };
+
+    expect(run).toThrow('refused');
+  });
+
+  it.each(['const n = 1;\ny = n + 1;', 'const n = 1;\ny = `${n}`;'])('passes %j, which converts primitives', (base) => {
+    const { proof, value } = subjectOf(base, NONE);
+
+    const run = (): void => {
+      pureCheck(proof, value, new Error('refused'));
+    };
+
+    expect(run).not.toThrow();
+  });
+
   it('says which read stands in the way when only reads do', () => {
     const { proof, value } = subjectOf('y = u.b + 1;', NONE);
 

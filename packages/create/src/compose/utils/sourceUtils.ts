@@ -3,10 +3,14 @@ import ts from 'typescript';
 import {
   BINARY_LEVELS,
   CALLED_FROM,
+  COERCING_OPERATORS,
+  COERCING_UNARY,
   INTRINSIC_TAG,
   LEVEL,
   LINE_BREAKS,
+  LOOKING_OPERATORS,
   PATTERN_PARTS,
+  PRIMITIVE_LITERALS,
   PURE_KEYWORDS,
   STRING_TOKENS,
   UNARY_OPERATORS,
@@ -27,6 +31,12 @@ export type MemberRead = ts.PropertyAccessExpression | ts.ElementAccessExpressio
 export interface Fitting {
   before: string;
   after: string;
+}
+
+// What proves a value pure past names, literals and arrows: a member read plain, an operand a primitive.
+export interface Purity {
+  isPlain: (read: MemberRead) => boolean;
+  isPrimitive: (operand: ts.Expression) => boolean;
 }
 
 // TSX for every module, so one parser reads a base and its option modules alike.
@@ -306,15 +316,85 @@ export const unwrapped = (node: ts.Expression): ts.Expression => {
   return isWrapper ? unwrapped(node.expression) : node;
 };
 
-// Evaluating it twice, or not at all, changes nothing. A name is read with no effect; a member only when `isPlain`
-// proves it, so with no test no member read is.
-export const isPure = (node: ts.Expression, isPlain: ((read: MemberRead) => boolean)
-  | undefined): boolean => {
+// The operands a node converts, or undefined when it converts none.
+const coercedOf = (node: ts.Node): readonly ts.Expression[] | undefined => {
+  if (ts.isBinaryExpression(node) && COERCING_OPERATORS.has(node.operatorToken.kind)) {
+    const operands = [node.left, node.right];
+
+    return operands;
+  }
+
+  if (ts.isPrefixUnaryExpression(node) && COERCING_UNARY.has(node.operator)) {
+    const operands = [node.operand];
+
+    return operands;
+  }
+
+  if (ts.isTemplateExpression(node)) {
+    return node.templateSpans
+      .map((span) => {
+        return span.expression;
+      });
+  }
+
+  if (ts.isElementAccessExpression(node)) {
+    const key = [node.argumentExpression];
+
+    return key;
+  }
+
+  if (ts.isComputedPropertyName(node) && !ts.isTypeElement(node.parent)) {
+    const key = [node.expression];
+
+    return key;
+  }
+
+  return undefined;
+};
+
+// Whether a node converts an operand not proven a primitive, which runs the operand's own code when it is an object.
+export const isConverting = (node: ts.Node, isPrimitive: (operand: ts.Expression) => boolean): boolean => {
+  const coerced = coercedOf(node);
+
+  return coerced !== undefined && !coerced.every(isPrimitive);
+};
+
+// An operator that runs nothing of its operands but what converting them runs: `in` and `instanceof` look inside one.
+export const isQuietOperator = (operator: ts.SyntaxKind): boolean => {
+  return BINARY_LEVELS.has(operator) && !LOOKING_OPERATORS.has(operator);
+};
+
+// A literal a conversion takes as it is.
+export const isPrimitiveLiteral = (operand: ts.Expression): boolean => {
+  return PRIMITIVE_LITERALS.has(unwrapped(operand).kind);
+};
+
+const isUnproven = (): boolean => {
+  return false;
+};
+
+const provenBy = (purity: Purity | undefined): Purity => {
+  const none: Purity = {
+    isPlain: isUnproven,
+    isPrimitive: isPrimitiveLiteral,
+  };
+
+  return purity ?? none;
+};
+
+// Evaluating it twice, or not at all, changes nothing. A name is read with no effect; a member read or a conversion
+// only when `purity` proves it, so with none no member read is, and only a conversion of literals.
+export const isPure = (node: ts.Expression, purity: Purity | undefined): boolean => {
   const value = unwrapped(node);
+  const { isPlain, isPrimitive } = provenBy(purity);
 
   const isPureIn = (inner: ts.Expression): boolean => {
-    return isPure(inner, isPlain);
+    return isPure(inner, purity);
   };
+
+  if (isConverting(value, isPrimitive)) {
+    return false;
+  }
 
   if (ts.isIdentifier(value) || ts.isLiteralExpression(value) || ts.isArrowFunction(value)) {
     return true;
@@ -325,7 +405,7 @@ export const isPure = (node: ts.Expression, isPlain: ((read: MemberRead) => bool
   }
 
   if (ts.isPropertyAccessExpression(value) || ts.isElementAccessExpression(value)) {
-    const isRead = isPlain !== undefined && isPlain(value) && isPureIn(value.expression);
+    const isRead = isPlain(value) && isPureIn(value.expression);
 
     return isRead && (ts.isPropertyAccessExpression(value) || isPureIn(value.argumentExpression));
   }
@@ -339,7 +419,7 @@ export const isPure = (node: ts.Expression, isPlain: ((read: MemberRead) => bool
   }
 
   if (ts.isBinaryExpression(value)) {
-    return BINARY_LEVELS.has(value.operatorToken.kind) && isPureIn(value.left) && isPureIn(value.right);
+    return isQuietOperator(value.operatorToken.kind) && isPureIn(value.left) && isPureIn(value.right);
   }
 
   if (ts.isTemplateExpression(value)) {

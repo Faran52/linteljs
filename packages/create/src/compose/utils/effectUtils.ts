@@ -1,14 +1,10 @@
 import ts from 'typescript';
 
 import {
-  BINARY_LEVELS,
   BOOLEAN_OPERATORS,
   COERCING_OPERATORS,
-  COERCING_UNARY,
   EFFECT_KINDS,
-  LOOKING_OPERATORS,
   PRIMITIVE_ANSWERS,
-  PRIMITIVE_LITERALS,
   UPDATES,
 } from '../constants';
 
@@ -22,13 +18,17 @@ import { refusal } from './editUtils';
 import { aliasedOf, declarationOf } from './scopeUtils';
 import {
   collect,
+  isConverting,
+  isPrimitiveLiteral,
   isPrototype,
   isPure,
+  isQuietOperator,
   isValueMember,
   isWritten,
   keyOf,
   memberIn,
   type MemberRead,
+  type Purity,
   textOf,
   unwrapped,
 } from './sourceUtils';
@@ -563,7 +563,7 @@ const isPrimitiveValue = (context: Context, value: ts.Expression, checking: Set<
     return BOOLEAN_OPERATORS.has(operator) || isOfPrimitives;
   }
 
-  return PRIMITIVE_LITERALS.has(value.kind) || PRIMITIVE_ANSWERS.has(value.kind);
+  return isPrimitiveLiteral(value) || PRIMITIVE_ANSWERS.has(value.kind);
 };
 
 // Whether every value an operand can hold is proven a primitive, so converting it runs nothing.
@@ -585,55 +585,17 @@ const isPrimitive = (context: Context, operand: ts.Expression): boolean => {
   return isPrimitiveIn(context, operand, checking);
 };
 
-// The operands a node converts, or undefined when it converts none.
-const coercedOf = (node: ts.Node): readonly ts.Expression[] | undefined => {
-  if (ts.isBinaryExpression(node) && COERCING_OPERATORS.has(node.operatorToken.kind)) {
-    const operands = [node.left, node.right];
-
-    return operands;
-  }
-
-  if (ts.isPrefixUnaryExpression(node) && COERCING_UNARY.has(node.operator)) {
-    const operands = [node.operand];
-
-    return operands;
-  }
-
-  if (ts.isTemplateExpression(node)) {
-    return node.templateSpans
-      .map((span) => {
-        return span.expression;
-      });
-  }
-
-  if (ts.isElementAccessExpression(node)) {
-    const key = [node.argumentExpression];
-
-    return key;
-  }
-
-  if (ts.isComputedPropertyName(node) && !ts.isTypeElement(node.parent)) {
-    const key = [node.expression];
-
-    return key;
-  }
-
-  return undefined;
-};
-
 // Whether evaluating a node may run code the author wrote or write a binding, its parts aside.
 const isActing = (context: Context, node: ts.Node): boolean => {
   if (ts.isCallExpression(node)) {
     return !isProvenCall(context, node);
   }
 
-  const coerced = coercedOf(node);
-  const isCoercing = coerced
-    ?.some((operand) => {
-      return !isPrimitive(context, operand);
-    });
+  const isCoercing = isConverting(node, (operand) => {
+    return isPrimitive(context, operand);
+  });
 
-  if (isCoercing === true) {
+  if (isCoercing) {
     return true;
   }
 
@@ -646,7 +608,7 @@ const isActing = (context: Context, node: ts.Node): boolean => {
   }
 
   if (ts.isBinaryExpression(node)) {
-    return LOOKING_OPERATORS.has(node.operatorToken.kind) || !BINARY_LEVELS.has(node.operatorToken.kind);
+    return !isQuietOperator(node.operatorToken.kind);
   }
 
   const isUpdate = ts.isPrefixUnaryExpression(node) && UPDATES.has(node.operator);
@@ -736,11 +698,19 @@ export const actsIn = (proof: Proof, node: ts.Node): ts.Node[] => {
   return actingIn(context, node);
 };
 
-// The test `isPure` takes for a member read.
-const plainReadOf = (proof: Proof): ((read: MemberRead) => boolean) => {
-  return (read) => {
-    return readFault(proof, read) === undefined;
+// What `isPure` takes as proven: a member read no fault stops, an operand every value of which is a primitive.
+const purityOf = (proof: Proof): Purity => {
+  const context = contextOf(proof);
+  const purity: Purity = {
+    isPlain: (read) => {
+      return readFault(proof, read) === undefined;
+    },
+    isPrimitive: (operand) => {
+      return isPrimitive(context, operand);
+    },
   };
+
+  return purity;
 };
 
 const readRefusal = (node: ts.Node, { member, origin }: Fault): Error => {
@@ -783,19 +753,25 @@ export const plainCheck = (proof: Proof, node: ts.Node): void => {
   }
 };
 
-const isAnyRead = (): boolean => {
+const isAny = (): boolean => {
   return true;
+};
+
+// Every member read and conversion taken as proven, to tell whether only member reads may stand in the way.
+const ANY_READ: Purity = {
+  isPlain: isAny,
+  isPrimitive: isAny,
 };
 
 // A value the engine moves, repeats or drops must be pure; when only member reads stand in the way, it says which.
 export const pureCheck = (proof: Proof, value: ts.Expression, refused: Error): void => {
-  const isPlain = plainReadOf(proof);
+  const proven = purityOf(proof);
 
-  if (isPure(value, isPlain)) {
+  if (isPure(value, proven)) {
     return;
   }
 
-  if (isPure(value, isAnyRead)) {
+  if (isPure(value, ANY_READ)) {
     plainCheck(proof, value);
   }
 

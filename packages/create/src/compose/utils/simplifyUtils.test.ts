@@ -105,6 +105,21 @@ describe('simplifiedOnce', () => {
       'x = ({ a: f(), b: 2 }).b;',
     ],
     [
+      'a member beside a conversion of literals',
+      'x = ({ a: -1, b: `${1}`, c: \'a\' + 1, d: 2 }).d;',
+      'x = 2;',
+    ],
+    [
+      'no member beside a conversion that may run an operand\'s code',
+      'x = ({ a: `${o}`, b: 2 }).b;',
+      'x = ({ a: `${o}`, b: 2 }).b;',
+    ],
+    [
+      'no member beside a lookup into an operand',
+      'x = ({ a: k in o, b: 2 }).b;',
+      'x = ({ a: k in o, b: 2 }).b;',
+    ],
+    [
       'a condition that is true',
       'x = true ? a : b;',
       'x = a;',

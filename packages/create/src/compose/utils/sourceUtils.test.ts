@@ -12,9 +12,12 @@ import {
   fittingOf,
   indentAt,
   indentOf,
+  isConverting,
   isPlainElement,
+  isPrimitiveLiteral,
   isPrototype,
   isPure,
+  isQuietOperator,
   isReference,
   isValueMember,
   isWithin,
@@ -28,6 +31,7 @@ import {
   memberIn,
   ownsLines,
   parse,
+  type Purity,
   referencesIn,
   reindent,
   spanOf,
@@ -407,6 +411,100 @@ describe('isWithin', () => {
   });
 });
 
+const isProven = (): boolean => {
+  return true;
+};
+
+const isNever = (): boolean => {
+  return false;
+};
+
+describe('isConverting', () => {
+  it.each([
+    ['a + b', true],
+    ['a == b', true],
+    ['a ** b', true],
+    ['a && b', false],
+    ['a === b', false],
+    ['-a', true],
+    ['~a', true],
+    ['!a', false],
+    ['`a${b}`', true],
+    ['`a`', false],
+    ['a[k]', true],
+    ['a.k', false],
+  ])('answers for %s with no operand proven', (source, expected) => {
+    const expression = expressionOf(source);
+    const converting = isConverting(expression, isNever);
+
+    expect(converting).toBe(expected);
+  });
+
+  it('answers false for a node whose every converted operand is proven', () => {
+    const expression = expressionOf('`${a}${b}`');
+    const converting = isConverting(expression, isProven);
+
+    expect(converting).toBe(false);
+  });
+
+  it.each([
+    ['x = { [k]: 1 };', true],
+    ['type T = { [k]: 1 };', false],
+  ])('answers for the computed name in %s', (source, expected) => {
+    const file = parse(source);
+    const names = collect(file, ts.isComputedPropertyName);
+    const converting = names
+      .some((name) => {
+        return isConverting(name, isNever);
+      });
+
+    expect(converting).toBe(expected);
+  });
+});
+
+describe('isPrimitiveLiteral', () => {
+  it.each([
+    ['1', true],
+    ['\'a\'', true],
+    ['(true)', true],
+    ['null', true],
+    ['`a`', true],
+    ['1n', false],
+    ['a', false],
+    ['{}', false],
+  ])('answers for %s', (source, expected) => {
+    const expression = expressionOf(source);
+    const literal = isPrimitiveLiteral(expression);
+
+    expect(literal).toBe(expected);
+  });
+
+  it.each([
+    '-1',
+    '`${1}`',
+    '\'a\' + 1',
+  ])('takes %s, a conversion of literals, as pure with no proof', (source) => {
+    const expression = expressionOf(source);
+    const pure = isPure(expression, undefined);
+
+    expect(pure).toBe(true);
+  });
+});
+
+describe('isQuietOperator', () => {
+  it.each([
+    [ts.SyntaxKind.PlusToken, true],
+    [ts.SyntaxKind.LessThanToken, true],
+    [ts.SyntaxKind.InKeyword, false],
+    [ts.SyntaxKind.InstanceOfKeyword, false],
+    [ts.SyntaxKind.EqualsToken, false],
+  ])('answers for operator %i', (operator, expected) => {
+    const quiet = isQuietOperator(operator);
+
+    expect(quiet).toBe(expected);
+  });
+});
+
 describe('isPure', () => {
   it.each([
     ['a.b', true],
@@ -446,11 +544,97 @@ describe('isPure', () => {
     ['{ ...a }', false],
     ['[a]', false],
     ['a++', false],
-  ])('answers for %s, every member read proven', (source, expected) => {
+    ['a in b', false],
+    ['a instanceof B', false],
+  ])('answers for %s, every member read and converted operand proven', (source, expected) => {
     const expression = expressionOf(source);
-    const pure = isPure(expression, () => {
-      return true;
-    });
+    const purity: Purity = {
+      isPlain: isProven,
+      isPrimitive: isProven,
+    };
+    const pure = isPure(expression, purity);
+
+    expect(pure).toBe(expected);
+  });
+
+  it.each([
+    [
+      'a + 1',
+      'a 1',
+      true,
+    ],
+    [
+      'a + 1',
+      '1',
+      false,
+    ],
+    [
+      'a < b',
+      'a b',
+      true,
+    ],
+    [
+      'a < b',
+      'a',
+      false,
+    ],
+    [
+      '-a',
+      'a',
+      true,
+    ],
+    [
+      '~a',
+      '',
+      false,
+    ],
+    [
+      '+a',
+      '',
+      false,
+    ],
+    [
+      '!a',
+      '',
+      true,
+    ],
+    [
+      '`a${b}c`',
+      'b',
+      true,
+    ],
+    [
+      '`a${b}c`',
+      '',
+      false,
+    ],
+    [
+      'a[k]',
+      'k',
+      true,
+    ],
+    [
+      'a[k]',
+      '',
+      false,
+    ],
+    [
+      'a && b',
+      '',
+      true,
+    ],
+  ])('takes %s as pure only when each operand it converts is proven, here %j', (source, proven, expected) => {
+    const expression = expressionOf(source);
+    const primitives = proven.split(' ');
+    const purity: Purity = {
+      isPlain: isProven,
+      isPrimitive: (operand) => {
+        const shown = textOf(operand);
+
+        return primitives.includes(shown);
+      },
+    };
+    const pure = isPure(expression, purity);
 
     expect(pure).toBe(expected);
   });
@@ -478,14 +662,23 @@ describe('isPure', () => {
     ],
   ])('takes %s as pure only when the test proves each member read, here %s', (source, proven, expected) => {
     const expression = expressionOf(source);
-    const pure = isPure(expression, (read) => {
-      return textOf(read) === proven;
-    });
+    const purity: Purity = {
+      isPlain: (read) => {
+        return textOf(read) === proven;
+      },
+      isPrimitive: isProven,
+    };
+    const pure = isPure(expression, purity);
 
     expect(pure).toBe(expected);
   });
 
-  it.each(['a.b', 'a[0]'])('takes no member read in %s as pure with no test', (source) => {
+  it.each([
+    'a.b',
+    'a[0]',
+    'a + 1',
+    '`${a}`',
+  ])('takes no member read or conversion of a name in %s as pure with no proof', (source) => {
     const expression = expressionOf(source);
     const pure = isPure(expression, undefined);
 
