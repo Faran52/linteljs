@@ -1118,6 +1118,13 @@ const REFUSALS: Refusal[] = [
 
 const MORE_CASES: Case[] = [
   {
+    name: 'an option interface\'s member comments, kept where its members join (F22)',
+    base: 'import type { Extra } from \'./p\';\n\nexport interface Mine extends Extra {\n  own: string;\n}\n',
+    option: 'export interface Extra {\n  /** The label shown. */\n  label: string;\n  // why\n  other: number;\n}\n',
+    expected: 'export interface Mine {\n  own: string;\n  /** The label shown. */\n  label: string;\n  // why\n'
+      + '  other: number;\n}\n',
+  },
+  {
     name: 'option statements written without semicolons, spliced before base code (F21)',
     base: 'import { useK } from \'./p\';\n\nexport const C = () => {\n  const y = useK();\n  [y.k].forEach(log);\n};\n',
     option: 'export const useK = () => {\n  const k = 1\n\n  return { k }\n}\n',

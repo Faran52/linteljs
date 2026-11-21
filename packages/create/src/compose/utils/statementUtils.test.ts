@@ -59,6 +59,27 @@ const COMMENTED = lines(
   CLOSE,
 );
 
+const LABEL_COMMENTED = [
+  '  /** The label shown. */',
+  '  label: string;',
+  '  // why',
+  '  other: number;',
+];
+
+const LABEL_DOCUMENTED = [
+  '  /**',
+  '   * Shown.',
+  '   */',
+  '  label: string; // tail',
+];
+
+const LABEL_DEEPER = [
+  '    /**',
+  '     * Shown.',
+  '     */',
+  '    label: string; // tail',
+];
+
 const MEMBER = lines('export interface x {', '  readonly more: number;', '}');
 const HOOK = lines('export const x = () => {', '  const value = 1;', '', '  return { value };', '};');
 
@@ -83,6 +104,21 @@ describe('flattenHeritage', () => {
       lines('interface Props extends x {', '  [key: string]: unknown;', '}'),
       lines('export interface x {', '  (): void;', '  readonly more: number;', '}'),
       lines('interface Props {', '  [key: string]: unknown;', '  (): void;', '  readonly more: number;', '}'),
+    ],
+    [
+      lines('interface Props extends x {', '  own: string;', '}'),
+      lines('export interface x { // not a member\'s', ...LABEL_COMMENTED, '}'),
+      lines('interface Props {', '  own: string;', ...LABEL_COMMENTED, '}'),
+    ],
+    [
+      lines('interface Props extends x {', '  own: string; // mine', '}'),
+      MEMBER,
+      lines('interface Props {', '  own: string; // mine', '  readonly more: number;', '}'),
+    ],
+    [
+      lines('{', '  interface Props extends x {', '    own: string;', '  }', '}'),
+      lines('export interface x {', '', ...LABEL_DOCUMENTED, '}'),
+      lines('{', '  interface Props {', '    own: string;', ...LABEL_DEEPER, '  }', '}'),
     ],
   ])('fills %j from %j', (body, option, expected) => {
     const written = filled(body, option);

@@ -66,6 +66,23 @@ const nameOf = (member: ts.TypeElement): string | undefined => {
   return member.name === undefined ? undefined : textOf(member.name);
 };
 
+// Where a member ends with the comments after it on its own line.
+const commentedEnd = (member: ts.TypeElement): number => {
+  const trailing = ts.getTrailingCommentRanges(member.getSourceFile().text, member.getEnd());
+
+  return trailing?.at(-1)?.end ?? member.getEnd();
+};
+
+// A member with its comments: those on the lines above it, and those after it on its own line.
+const commentedOf = (member: ts.TypeElement): string => {
+  const source = member.getSourceFile().text;
+  const leading = ts.getLeadingCommentRanges(source, member.getFullStart());
+  const start = leading?.at(0)?.pos ?? member.getStart();
+  const end = commentedEnd(member);
+
+  return source.slice(start, end);
+};
+
 // `interface I extends X`: the option's members join I's own, and the clause goes.
 export const flattenHeritage = (
   text: string,
@@ -111,12 +128,12 @@ export const flattenHeritage = (
   const members = joining
     .map((member) => {
       const from = indentOf(member.getSourceFile().text, member);
-      const moved = reindent(textOf(member), from, indent);
+      const moved = reindent(commentedOf(member), from, indent);
 
       return `\n${indent}${moved}`;
     });
   const open = text.indexOf('{', clause.getEnd());
-  const at = last === undefined ? open + 1 : last.getEnd();
+  const at = last === undefined ? open + 1 : commentedEnd(last);
   const others = clause.types
     .filter((type) => {
       return type !== reference;
