@@ -54,6 +54,8 @@ const config = {
   tsconfigFile: 'none',
   // Its `@ts-nocheck` header breaks the band's byte-equal copy, and vitest never typechecks a mutant anyway.
   disableTypeChecks: false,
+  // The runner defaults to threads, where the cli suite's `process.chdir` throws.
+  vitest: { pool: 'forks' },
 
   // Locally every covering test runs, so a test that only repeats another's shows; CI bails to stay in hours.
   coverageAnalysis: 'perTest',

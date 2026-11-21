@@ -15,6 +15,8 @@ const {
 
 const config = {
   ...STRYKER_BASE,
+  // The runner defaults to threads; this suite runs on vitest's forks.
+  vitest: { pool: 'forks' },
 
   // Measured against `all`: identical verdicts, same wall time, and `perTest` names the killing test.
   coverageAnalysis: 'perTest',
