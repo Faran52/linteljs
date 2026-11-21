@@ -96,8 +96,8 @@ export const linesOf = (text: string, span: Span): Span => {
   return lines;
 };
 
-// Whole lines gone, without leaving two blank lines, or one at the top of a block.
-export const withoutLines = (text: string, span: Span): string => {
+// The whole lines to take out, without leaving two blank lines, or one at the top of a block.
+export const linesGone = (text: string, span: Span): Span => {
   const lines = linesOf(text, span);
   const previous = lineStart(text, lines.start - 1);
   const before = text
@@ -112,7 +112,7 @@ export const withoutLines = (text: string, span: Span): string => {
     end,
   };
 
-  return splice(text, gone, '');
+  return gone;
 };
 
 // Every line after the first moves from one indentation to another; a blank line stays blank.

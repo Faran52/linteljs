@@ -21,12 +21,12 @@ import {
   isReference,
   isWithin,
   leadingIndent,
+  linesGone,
+  ownsLines,
   reindent,
   spanOf,
-  swapped,
   textOf,
   unparen,
-  withoutLines,
 } from './sourceUtils';
 import { landedCheck } from './stepUtils';
 
@@ -328,12 +328,12 @@ const readsOf = (
 };
 
 // The kept statements as one block of text, moved to the indentation of the statement they replace.
-const blockOf = (kept: readonly ts.Statement[], indent: string): string | undefined => {
+const blockOf = (kept: readonly ts.Statement[], indent: string): string => {
   const first = kept.at(0);
   const last = kept.at(-1);
 
   if (first === undefined || last === undefined) {
-    return undefined;
+    return '';
   }
 
   const source = first.getSourceFile().text;
@@ -387,11 +387,14 @@ export const spliceStatements = (
 
   const answered = answeredNames(returned);
   const reads = readsOf(checker, sources, arrow, holder, answered);
-  const renamed = applied(text, reads);
   const indent = indentOf(text, statement);
   const block = blockOf(kept, indent);
-
   const span = spanOf(statement);
+  const gone = block === '' && ownsLines(text, span) ? linesGone(text, span) : span;
+  const replaced: Edit = {
+    ...gone,
+    insert: block,
+  };
 
-  return block === undefined ? withoutLines(renamed, span) : swapped(renamed, statement, block);
+  return applied(text, [...reads, replaced]);
 };

@@ -13,6 +13,7 @@ import {
   isPure,
   isWritten,
   leadingIndent,
+  linesGone,
   linesOf,
   ownsLines,
   type Span,
@@ -21,7 +22,6 @@ import {
   swapped,
   textOf,
   unparen,
-  withoutLines,
 } from './sourceUtils';
 
 type Rule = (text: string, node: ts.Node) => string | undefined;
@@ -180,7 +180,9 @@ const withoutProperty = (text: string, node: ts.SpreadAssignment): string => {
   }
 
   if (ownsLines(text, span)) {
-    return withoutLines(text, span);
+    const gone = linesGone(text, span);
+
+    return splice(text, gone, '');
   }
 
   const inline: Span = isFollowed

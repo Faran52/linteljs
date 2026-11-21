@@ -18,6 +18,7 @@ import {
   isWritten,
   leadingIndent,
   lineEnd,
+  linesGone,
   linesOf,
   lineStart,
   ownsLines,
@@ -32,7 +33,6 @@ import {
   unparen,
   valueOf,
   walk,
-  withoutLines,
 } from './sourceUtils';
 
 // The node of a host that spells `spelled`, standing in for what a rewrite replaces.
@@ -191,7 +191,7 @@ describe('ownsLines and linesOf', () => {
   });
 });
 
-describe('withoutLines', () => {
+describe('linesGone', () => {
   it.each([
     ['a\nb\nc', 'a\nc'],
     ['a\nb\n\nc', 'a\n\nc'],
@@ -203,10 +203,11 @@ describe('withoutLines', () => {
     ['{\nb', '{\n'],
   ])('takes the line of b out of %j, leaving no blank line doubled or first in a block', (text, expected) => {
     const start = text.indexOf('b');
-    const written = withoutLines(text, {
+    const gone = linesGone(text, {
       start,
       end: start + 1,
     });
+    const written = splice(text, gone, '');
 
     expect(written).toBe(expected);
   });

@@ -235,6 +235,38 @@ describe('spliceStatements', () => {
     expect(written).toBe(expected);
   });
 
+  it('splices statements for a holder read before its declaration (F1)', () => {
+    const body = lines(
+      'export const C = () => {',
+      '  const later = () => y.kk + y.kk;',
+      '  const y = x();',
+      '',
+      '  return later();',
+      '};',
+    );
+    const option = lines('export const x = () => {', '  log();', '', '  return { kk };', '};');
+    const written = filled(body, option);
+    const expected = lines(
+      'export const C = () => {',
+      '  const later = () => kk + kk;',
+      '  log();',
+      '',
+      '  return later();',
+      '};',
+    );
+
+    expect(written).toBe(expected);
+  });
+
+  it('takes out only the statement when a read of the holder shares its line', () => {
+    const body = lines('{', '  const thing = x(); log(thing.value);', '}');
+    const option = lines('export const x = () => {', '  return { value };', '};');
+    const written = filled(body, option);
+    const expected = lines('{', '   log(value);', '}');
+
+    expect(written).toBe(expected);
+  });
+
   it('splices a name a nested scope binds again, which keeps its own reads', () => {
     const body = lines(
       'run = () => {',
