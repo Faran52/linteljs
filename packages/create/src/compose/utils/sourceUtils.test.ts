@@ -12,15 +12,19 @@ import {
   indentAt,
   indentOf,
   isPlainElement,
+  isPrototype,
   isPure,
   isReference,
+  isValueMember,
   isWithin,
   isWritten,
+  keyOf,
   leadingIndent,
   lineEnd,
   linesGone,
   linesOf,
   lineStart,
+  memberIn,
   ownsLines,
   parse,
   patternOf,
@@ -286,6 +290,7 @@ describe('isReference and referencesIn', () => {
       'p',
     ]],
     ['interface I { m: T }', ['T']],
+    ['v: for (;;) { if (a) { break v; } continue v; }', ['a']],
   ])('lists the reads of %s', (source, expected) => {
     const file = parse(source);
     const reads = collect(file, ts.isIdentifier)
@@ -300,6 +305,68 @@ describe('isReference and referencesIn', () => {
     const reads = referencesIn(file, 'b');
 
     expect(reads).toHaveLength(2);
+  });
+});
+
+describe('keyOf, memberIn and isPrototype', () => {
+  it.each([
+    ['{ a: 1 }', 'a'],
+    ['{ \'a\': 1 }', 'a'],
+    ['{ 1e3: 1 }', '1000'],
+    ['{ [\'a\']: 1 }', 'a'],
+    ['{ [`a`]: 1 }', 'a'],
+    ['{ [k]: 1 }', undefined],
+    ['{ 1n: 1 }', undefined],
+    ['{ ...k }', undefined],
+    ['{ get a() { return 1; } }', 'a'],
+  ])('names the member of %s', (source, expected) => {
+    const table = expressionOf(source);
+    const [property] = ts.isObjectLiteralExpression(table) ? table.properties : [];
+    const key = property === undefined ? 'none' : keyOf(property);
+
+    expect(key).toBe(expected);
+  });
+
+  it.each([
+    ['{ a: 1, b: 2 }', 'a: 1'],
+    ['{ a: 1, a: 2 }', 'a: 2'],
+    ['{ a: 1, ...b }', '...b'],
+    ['{ a: 1, [k]: 2, b: 3 }', '[k]: 2'],
+    ['{ ...b, a: 1, c: 2 }', 'a: 1'],
+    ['{ b: 1, \'c\': 2 }', undefined],
+  ])('finds what may be the member a of %s', (source, expected) => {
+    const table = expressionOf(source);
+    const member = ts.isObjectLiteralExpression(table) ? memberIn(table, 'a') : undefined;
+    const found = member === undefined ? undefined : textOf(member);
+
+    expect(found).toBe(expected);
+  });
+
+  it.each([
+    ['{ a: 1 }', true],
+    ['{ a }', true],
+    ['{ a() {} }', false],
+    ['{ ...a }', false],
+  ])('tells whether %s holds a value member', (source, expected) => {
+    const table = expressionOf(source);
+    const [property] = ts.isObjectLiteralExpression(table) ? table.properties : [];
+    const isValue = property !== undefined && isValueMember(property);
+
+    expect(isValue).toBe(expected);
+  });
+
+  it.each([
+    ['{ __proto__: p }', true],
+    ['{ \'__proto__\': p }', true],
+    ['{ [\'__proto__\']: p }', false],
+    ['{ __proto__ }', false],
+    ['{ a: p }', false],
+  ])('tells whether %s sets the prototype', (source, expected) => {
+    const table = expressionOf(source);
+    const [property] = ts.isObjectLiteralExpression(table) ? table.properties : [];
+    const isSet = property !== undefined && isPrototype(property);
+
+    expect(isSet).toBe(expected);
   });
 });
 

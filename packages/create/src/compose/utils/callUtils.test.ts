@@ -84,6 +84,16 @@ describe('inlineMember', () => {
       'y = 2;',
     ],
     [
+      'y = x.size;',
+      table('\'size\': 1, 2: 0'),
+      'y = 1;',
+    ],
+    [
+      'y = x.size;',
+      table('...other, size: 1, [\'n\']: 2'),
+      'y = 1;',
+    ],
+    [
       'y = x.size * 2;',
       table('size: 1 + 2'),
       'y = (1 + 2) * 2;',
@@ -178,12 +188,22 @@ describe('inlineMember', () => {
     [
       'y = x.size;',
       table('size() {}'),
-      /has no member "size"/u,
+      /The option's "x" may give "size" through a spread, a computed key, a method or an accessor/u,
     ],
     [
       'y = x.size;',
-      table('\'size\': 1'),
-      /has no member "size"/u,
+      table('get size() { return 1; }'),
+      /may give "size" through/u,
+    ],
+    [
+      'y = x.size;',
+      table('size: 1, ...other'),
+      /may give "size" through/u,
+    ],
+    [
+      'y = x.size;',
+      table('size: 1, [key]: 2'),
+      /may give "size" through/u,
     ],
     [
       'y = x.size();',

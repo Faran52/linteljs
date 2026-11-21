@@ -336,7 +336,7 @@ const placeChildren = (
   const reads = children === undefined ? [] : referencesTo(checker, children, root);
   const slots = reads
     .map((read) => {
-      if (!ts.isJsxExpression(read.parent)) {
+      if (!ts.isJsxExpression(read.parent) || ts.isJsxAttribute(read.parent.parent)) {
         throw refusal(read, 'An option component can only render its children in place');
       }
 
@@ -368,6 +368,15 @@ const placeKey = (placement: Placement, root: JsxRoot, site: Site): void => {
   }
 
   const head = ts.isJsxElement(root) ? root.openingElement : root;
+  const isKeyed = head.attributes.properties
+    .some((attribute) => {
+      return ts.isJsxAttribute(attribute) && textOf(attribute.name) === 'key';
+    });
+
+  if (isKeyed) {
+    throw refusal(site.head, 'The option component\'s root has a key of its own, so the base\'s key has no place');
+  }
+
   const at = head.tagName.getEnd();
   const indent = indentOf(root.getSourceFile().text, root);
   const lead = textOf(head).includes('\n') ? `\n${indent}  ` : ' ';

@@ -14,8 +14,11 @@ import {
   indentOf,
   isPure,
   isReference,
+  isValueMember,
   isWithin,
   isWritten,
+  keyOf,
+  memberIn,
   reindent,
   spanOf,
   swapped,
@@ -24,8 +27,6 @@ import {
   valueOf,
 } from './sourceUtils';
 import { landedCheck } from './stepUtils';
-
-type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment;
 
 // A value's text, and the indentation its first line was written at.
 interface Inlined {
@@ -272,10 +273,6 @@ export const inlineCall = (
   return landed(text, call, value);
 };
 
-const isValueMember = (property: ts.ObjectLiteralElementLike): property is ValueMember => {
-  return ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property);
-};
-
 const memberOf = (sources: Sources, owner: ts.Identifier, access: ts.PropertyAccessExpression): ts.Expression => {
   const table = exportedValue(sources, owner.text);
 
@@ -283,15 +280,17 @@ const memberOf = (sources: Sources, owner: ts.Identifier, access: ts.PropertyAcc
     throw refusal(access, 'An option export read by member must be an object literal');
   }
 
-  // The last of two members with one name is the one an object keeps.
-  const member = table.properties
-    .filter(isValueMember)
-    .findLast((property) => {
-      return ts.isIdentifier(property.name) && property.name.text === access.name.text;
-    });
+  const name = access.name.text;
+  const member = memberIn(table, name);
 
   if (member === undefined) {
-    throw refusal(access, `The option's "${owner.text}" has no member "${access.name.text}"`);
+    throw refusal(access, `The option's "${owner.text}" has no member "${name}"`);
+  }
+
+  if (!isValueMember(member) || keyOf(member) !== name) {
+    const through = 'a spread, a computed key, a method or an accessor';
+
+    throw refusal(access, `The option's "${owner.text}" may give "${name}" through ${through}`);
   }
 
   return ts.isPropertyAssignment(member) ? valueOf(member.initializer) : member.name;

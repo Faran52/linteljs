@@ -15,6 +15,8 @@ export interface Span {
   end: number;
 }
 
+export type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment;
+
 // TSX for every module, so one parser reads a base and its option modules alike.
 export const parse = (text: string): ts.SourceFile => {
   return ts.createSourceFile('module.tsx', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -193,7 +195,9 @@ export const isReference = (node: ts.Identifier): boolean => {
     return (parent.propertyName ?? parent.name) === node;
   }
 
-  if (ts.isBindingElement(parent) && parent.propertyName === node) {
+  const isLabel = ts.isLabeledStatement(parent) || ts.isBreakOrContinueStatement(parent);
+
+  if (isLabel || (ts.isBindingElement(parent) && parent.propertyName === node)) {
     return false;
   }
 
@@ -213,6 +217,44 @@ export const isWithin = (node: ts.Node, outer: ts.Node): boolean => {
   const isSameFile = node.getSourceFile() === outer.getSourceFile();
 
   return isSameFile && node.getStart() >= outer.getStart() && node.getEnd() <= outer.getEnd();
+};
+
+export const isValueMember = (property: ts.ObjectLiteralElementLike): property is ValueMember => {
+  return ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property);
+};
+
+const isKeyLiteral = (key: ts.Node): key is ts.StringLiteral | ts.NumericLiteral | ts.NoSubstitutionTemplateLiteral => {
+  return ts.isStringLiteral(key) || ts.isNumericLiteral(key) || ts.isNoSubstitutionTemplateLiteral(key);
+};
+
+// The name a member's key gives it, undefined for a spread or a key only known when the code runs.
+export const keyOf = (property: ts.ObjectLiteralElementLike): string | undefined => {
+  const { name } = property;
+
+  if (name !== undefined && ts.isIdentifier(name)) {
+    return name.text;
+  }
+
+  const key = name !== undefined && ts.isComputedPropertyName(name) ? name.expression : name;
+
+  return key !== undefined && isKeyLiteral(key) ? key.text : undefined;
+};
+
+// The last member that is, or may be, the literal's member of that name; undefined when none can be.
+export const memberIn = (table: ts.ObjectLiteralExpression, name: string): ts.ObjectLiteralElementLike | undefined => {
+  return table.properties
+    .findLast((property) => {
+      const key = keyOf(property);
+
+      return key === undefined || key === name;
+    });
+};
+
+// `__proto__: p` sets what the object inherits from; written computed or shorthand, it is an own member.
+export const isPrototype = (property: ts.ObjectLiteralElementLike): boolean => {
+  const isSetter = ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name);
+
+  return isSetter && keyOf(property) === '__proto__';
 };
 
 // Through the wrappers that only speak to the type checker.

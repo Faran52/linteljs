@@ -29,6 +29,56 @@ describe('simplifiedOnce', () => {
       'x = undefined;',
     ],
     [
+      'a member under a quoted key (F3)',
+      'x = ({ \'a\': 1 }).a + v;',
+      'x = 1 + v;',
+    ],
+    [
+      'a member beside numeric and quoted keys',
+      'x = ({ 1: 0, a: 2, \'b\': 3 }).a;',
+      'x = 2;',
+    ],
+    [
+      'a member a literal of numeric keys lacks',
+      'x = ({ 1: 0 }).a;',
+      'x = undefined;',
+    ],
+    [
+      'a member under a computed key, left alone',
+      'x = ({ [\'a\']: 1 }).a;',
+      'x = ({ [\'a\']: 1 }).a;',
+    ],
+    [
+      'a member called, an arrow function',
+      'x = ({ run: () => 1 }).run();',
+      'x = (() => 1)();',
+    ],
+    [
+      'a member called, whose `this` would change, left alone',
+      'x = ({ run: obj.method }).run();',
+      'x = ({ run: obj.method }).run();',
+    ],
+    [
+      'a shorthand member called, left alone',
+      'x = ({ run }).run();',
+      'x = ({ run }).run();',
+    ],
+    [
+      'a member used as a tag, left alone',
+      'x = ({ run }).run`a`;',
+      'x = ({ run }).run`a`;',
+    ],
+    [
+      'a missing member of a literal that sets its prototype by a quoted key, left alone',
+      'x = ({ \'__proto__\': p }).b;',
+      'x = ({ \'__proto__\': p }).b;',
+    ],
+    [
+      'a missing member of a literal with a shorthand `__proto__`, which is its own member',
+      'x = ({ __proto__ }).b;',
+      'x = undefined;',
+    ],
+    [
       'a member beside one with an effect, left alone',
       'x = ({ a: f(), b: 2 }).b;',
       'x = ({ a: f(), b: 2 }).b;',

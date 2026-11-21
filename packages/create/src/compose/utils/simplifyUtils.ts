@@ -14,11 +14,15 @@ import {
   collect,
   fitted,
   indentAt,
+  isPrototype,
   isPure,
+  isValueMember,
   isWritten,
+  keyOf,
   leadingIndent,
   linesGone,
   linesOf,
+  memberIn,
   ownsLines,
   parse,
   type Span,
@@ -27,6 +31,7 @@ import {
   swapped,
   textOf,
   unparen,
+  type ValueMember,
 } from './sourceUtils';
 
 type Rule = (text: string, node: ts.Node) => string | undefined;
@@ -54,13 +59,15 @@ const removed = (text: string, node: ts.Node): string => {
   return splice(text, whole, '');
 };
 
-const nameOf = (property: ts.ObjectLiteralElementLike): string | undefined => {
-  return property.name === undefined ? undefined : textOf(property.name);
-};
+// Called, a member runs with the literal as `this`, which only an arrow function does not read.
+const isThisFree = (node: ts.PropertyAccessExpression, member: ValueMember): boolean => {
+  const { parent } = node;
+  const isCallee = (ts.isCallExpression(parent) && parent.expression === node)
+    || (ts.isTaggedTemplateExpression(parent) && parent.tag === node);
 
-// `__proto__` in a literal sets what the object inherits from, so its members are not all written there.
-const isPrototype = (property: ts.ObjectLiteralElementLike): boolean => {
-  return nameOf(property) === '__proto__';
+  const isArrow = ts.isPropertyAssignment(member) && ts.isArrowFunction(unparen(member.initializer));
+
+  return !isCallee || isArrow;
 };
 
 // `({ a: 1 }).a` is `1`, and a member the literal lacks is `undefined` unless every object inherits it.
@@ -71,18 +78,19 @@ const memberRule: Rule = (text, node) => {
     return undefined;
   }
 
-  // The last of two members with one name is the one an object keeps.
-  const member = table.properties
-    .findLast((property) => {
-      return nameOf(property) === node.name.text;
-    });
-  const isInherited = Reflect.has(Object.prototype, node.name.text) || table.properties.some(isPrototype);
+  const name = node.name.text;
+  const member = memberIn(table, name);
+  const isInherited = Reflect.has(Object.prototype, name) || table.properties.some(isPrototype);
 
   if (member === undefined) {
     return isInherited ? undefined : swapped(text, node, 'undefined');
   }
 
-  const value = ts.isPropertyAssignment(member) ? fitted(node, member.initializer) : node.name.text;
+  if (!isValueMember(member) || keyOf(member) !== name || !isThisFree(node, member)) {
+    return undefined;
+  }
+
+  const value = ts.isPropertyAssignment(member) ? fitted(node, member.initializer) : name;
 
   return swapped(text, node, value);
 };

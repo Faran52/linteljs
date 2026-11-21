@@ -298,6 +298,16 @@ describe('inlineElement', () => {
       /A key needs an element/u,
     ],
     [
+      'y = <X>hello</X>;',
+      'export const X = ({ children }: P) => <p title={children} />;\n',
+      /can only render its children in place: children/u,
+    ],
+    [
+      'y = xs.map((x) => <X key={x} />);',
+      'export const X = () => <li key="fixed" />;\n',
+      /The option component's root has a key of its own, so the base's key has no place: <X key=\{x\} \/>/u,
+    ],
+    [
       'y = <X {...props} />;',
       'export const X = () => <li />;\n',
       /Only a rest binding can be spread/u,
