@@ -1,3 +1,5 @@
+import ts from 'typescript';
+
 import {
   type Alias,
   aliasedProjectOf,
@@ -132,11 +134,14 @@ describe('aliasedProjectOf', () => {
   });
 
   it('reads nothing off a project with a baseUrl', () => {
-    const project = aliasedProjectOf({
-      paths: { '@config/*': ['./src/config/*'] },
-      pathsBasePath: '/p',
-      baseUrl: '/p',
-    });
+    const tsconfig = {
+      compilerOptions: {
+        baseUrl: '.',
+        paths: { '@config/*': ['./src/config/*'] },
+      },
+    };
+    const { options } = ts.parseJsonConfigFileContent(tsconfig, ts.sys, '/p');
+    const project = aliasedProjectOf(options);
 
     expect(project).toBeUndefined();
   });

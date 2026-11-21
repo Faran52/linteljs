@@ -705,7 +705,7 @@ describe('buildDevDependencies', () => {
     const expected = {
       '@react-native/jest-preset': VERSIONS['react-native'],
       '@types/jest': '^29.5.14',
-      'eslint-plugin-jest': '^29.16.6',
+      'eslint-plugin-jest': '^29.17.1',
       'jest': '^29.7.0',
       'jest-expo': '~57.0.5',
     };

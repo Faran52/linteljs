@@ -181,9 +181,9 @@ describe('reactFramework', () => {
           typecheck: 'tsc --noEmit',
         },
         devDependencies: {
-          '@eslint-react/eslint-plugin': '^5.24.8',
-          '@html-eslint/eslint-plugin': '^0.66.1',
-          '@html-eslint/parser': '^0.66.1',
+          '@eslint-react/eslint-plugin': '^5.30.4',
+          '@html-eslint/eslint-plugin': '^0.68.0',
+          '@html-eslint/parser': '^0.68.0',
           '@types/react': '^19.3.0',
           '@types/react-dom': '^19.3.0',
           '@vitejs/plugin-react': '6.1.1',
@@ -256,7 +256,7 @@ describe('reactFramework', () => {
       package: {
         scripts: { typecheck: 'react-router typegen && tsc --noEmit' },
         devDependencies: {
-          '@eslint-react/eslint-plugin': '^5.24.8',
+          '@eslint-react/eslint-plugin': '^5.30.4',
           '@types/react': '^19.3.0',
           '@types/react-dom': '^19.3.0',
           '@vitejs/plugin-react': '6.1.1',

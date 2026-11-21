@@ -28,4 +28,6 @@ export default defineConfig({
   deps: {
     neverBundle: ['eslint'],
   },
+  // The CJS entry keeps the named exports beside `default`.
+  outputOptions: { exports: 'named' },
 });

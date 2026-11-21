@@ -46,18 +46,33 @@ describe('react', () => {
   });
 
   it.each([
-    ['@eslint-react/dom-no-missing-button-type', '<button>x</button>'],
-    ['@eslint-react/dom-no-missing-iframe-sandbox', '<iframe src="/a" title="a" />'],
-    ['@eslint-react/dom-no-script-url', '<a href="javascript:void(0)">x</a>'],
-    ['@eslint-react/dom-no-unsafe-target-blank', '<a href="https://a.example" target="_blank">x</a>'],
-  ])('reports %s at error', async (ruleId, element) => {
+    [
+      '@eslint-react/dom-no-missing-button-type',
+      '<button>x</button>',
+      [2],
+    ],
+    [
+      '@eslint-react/dom-no-missing-iframe-sandbox',
+      '<iframe src="/a" title="a" />',
+      [2],
+    ],
+    [
+      '@eslint-react/dom-no-script-url',
+      '<a href="javascript:void(0)">x</a>',
+      [2],
+    ],
+    [
+      '@eslint-react/dom-no-unsafe-target-blank',
+      '<a href="https://a.example" target="_blank">x</a>',
+      [2, {}],
+    ],
+  ])('reports %s at error', async (ruleId, element, expected) => {
     const code = `export const Chip = () => {\n  return ${element};\n};\n`;
     const config = [...base(), ...react()];
     const ruleIds = await ruleIdsFor(config, code, 'src/Chip.tsx');
     const entry = await ruleEntryFor(react(), 'src/Chip.tsx', ruleId);
 
     expect(ruleIds).toContain(ruleId);
-    const expected = [2];
     expect(entry).toEqual(expected);
   });
 

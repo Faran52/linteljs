@@ -80,12 +80,17 @@ export interface RuleOptions {
    * Disallow using code which is marked as experimental
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-experimental.md
    */
-  '@angular-eslint/no-experimental'?: Linter.RuleEntry<[]>
+  '@angular-eslint/no-experimental'?: Linter.RuleEntry<AngularEslintNoExperimental>
   /**
    * Disallows usage of `forwardRef` references for DI
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-forward-ref.md
    */
   '@angular-eslint/no-forward-ref'?: Linter.RuleEntry<[]>
+  /**
+   * Disallows usage of the global `document` inside Angular classes. The global is not available during server-side rendering. Use `inject(DOCUMENT)` instead.
+   * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-global-document.md
+   */
+  '@angular-eslint/no-global-document'?: Linter.RuleEntry<AngularEslintNoGlobalDocument>
   /**
    * Ensures that `takeUntilDestroyed()` is called with an explicit `DestroyRef` when used outside of an injection context
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-implicit-take-until-destroyed.md
@@ -195,7 +200,7 @@ export interface RuleOptions {
    * Ensures Components, Directives and Pipes do not opt out of standalone.
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/prefer-standalone.md
    */
-  '@angular-eslint/prefer-standalone'?: Linter.RuleEntry<[]>
+  '@angular-eslint/prefer-standalone'?: Linter.RuleEntry<AngularEslintPreferStandalone>
   /**
    * Ensures that reactive contexts such as computed(), linkedSignal() and effect() read at least one reactive value (a signal). A reactive context with no reactive dependencies never re-runs, which is almost always a mistake.
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/reactive-context-must-read-signal.md
@@ -337,6 +342,11 @@ export interface RuleOptions {
    */
   '@angular-eslint/template/no-interpolation-in-attributes'?: Linter.RuleEntry<AngularEslintTemplateNoInterpolationInAttributes>
   /**
+   * Disallows whitespace in object keys of `[class]` bindings, which makes Angular silently drop the key or the browser throw
+   * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/no-multi-token-class-key.md
+   */
+  '@angular-eslint/template/no-multi-token-class-key'?: Linter.RuleEntry<[]>
+  /**
    * Ensures that async pipe results, as well as values used with the async pipe, are not negated
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/no-negated-async.md
    */
@@ -392,6 +402,11 @@ export interface RuleOptions {
    */
   '@angular-eslint/template/prefer-control-flow'?: Linter.RuleEntry<[]>
   /**
+   * Prefer using `@let` to reuse the result of an async pipe when the same expression is subscribed to multiple times in a template view.
+   * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/prefer-let-for-async-pipe.md
+   */
+  '@angular-eslint/template/prefer-let-for-async-pipe'?: Linter.RuleEntry<[]>
+  /**
    * Ensures ngSrc is used instead of src for img elements
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/prefer-ngsrc.md
    */
@@ -410,7 +425,7 @@ export interface RuleOptions {
    * Suggests using [style] bindings over ngStyle where applicable
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/prefer-style-binding.md
    */
-  '@angular-eslint/template/prefer-style-binding'?: Linter.RuleEntry<[]>
+  '@angular-eslint/template/prefer-style-binding'?: Linter.RuleEntry<AngularEslintTemplatePreferStyleBinding>
   /**
    * Ensure that template literals are used instead of concatenating strings or expressions.
    * @see https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/prefer-template-literal.md
@@ -532,10 +547,10 @@ export interface RuleOptions {
    */
   '@eslint-react/dom-no-unsafe-iframe-sandbox'?: Linter.RuleEntry<[]>
   /**
-   * Disallows 'target="_blank"' without 'rel="noreferrer noopener"'.
+   * Disallows 'target="_blank"' without 'rel="noreferrer"'.
    * @see https://eslint-react.xyz/docs/rules/dom-no-unsafe-target-blank
    */
-  '@eslint-react/dom-no-unsafe-target-blank'?: Linter.RuleEntry<[]>
+  '@eslint-react/dom-no-unsafe-target-blank'?: Linter.RuleEntry<EslintReactDomNoUnsafeTargetBlank>
   /**
    * Replaces usage of 'useFormState' with 'useActionState'.
    * @see https://eslint-react.xyz/docs/rules/dom-no-use-form-state
@@ -553,7 +568,7 @@ export interface RuleOptions {
   '@eslint-react/error-boundaries'?: Linter.RuleEntry<[]>
   /**
    * Verifies the list of dependencies for Hooks like 'useEffect' and similar.
-   * @see https://github.com/facebook/react/issues/14920
+   * @see https://github.com/react/react/issues/14920
    */
   '@eslint-react/exhaustive-deps'?: Linter.RuleEntry<EslintReactExhaustiveDeps>
   /**
@@ -727,7 +742,7 @@ export interface RuleOptions {
    */
   '@eslint-react/no-leaked-conditional-rendering'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that all components have a 'displayName' that can be used in DevTools.
+   * Enforces that anonymous components wrapped in 'memo' or 'forwardRef' have a 'displayName' that can be used in DevTools.
    * @see https://eslint-react.xyz/docs/rules/no-missing-component-display-name
    */
   '@eslint-react/no-missing-component-display-name'?: Linter.RuleEntry<[]>
@@ -752,7 +767,7 @@ export interface RuleOptions {
    */
   '@eslint-react/no-nested-component-definitions'?: Linter.RuleEntry<[]>
   /**
-   * Disallows nesting lazy component declarations inside other components or hooks.
+   * Disallows declaring lazy components that wrap dynamic imports inside other components or hooks.
    * @see https://eslint-react.xyz/docs/rules/no-nested-lazy-component-declarations
    */
   '@eslint-react/no-nested-lazy-component-declarations'?: Linter.RuleEntry<[]>
@@ -792,7 +807,7 @@ export interface RuleOptions {
    */
   '@eslint-react/no-unsafe-component-will-update'?: Linter.RuleEntry<[]>
   /**
-   * Prevents non-stable values (i.e., object literals) from being used as a value for 'Context.Provider'.
+   * Prevents non-stable values (i.e., object literals) from being used as a value for 'Context.Provider' or the '<Context>' shorthand in React 19 and above.
    * @see https://eslint-react.xyz/docs/rules/no-unstable-context-value
    */
   '@eslint-react/no-unstable-context-value'?: Linter.RuleEntry<[]>
@@ -822,7 +837,7 @@ export interface RuleOptions {
    */
   '@eslint-react/no-use-context'?: Linter.RuleEntry<[]>
   /**
-   * Validates that components and hooks are pure by checking that they do not call known-impure functions during render.
+   * Validates that components and hooks are pure by checking that they do not call known-impure functions or construct known-impure objects during render.
    * @see https://eslint-react.xyz/docs/rules/purity
    */
   '@eslint-react/purity'?: Linter.RuleEntry<[]>
@@ -857,12 +872,17 @@ export interface RuleOptions {
    */
   '@eslint-react/static-components'?: Linter.RuleEntry<[]>
   /**
+   * Verifies the list of dependencies for Hooks like 'useEffect' and similar, with support for custom Hooks and stable Hook results.
+   * @see https://eslint-react.xyz/docs/rules/unstable-exhaustive-deps
+   */
+  '@eslint-react/unstable-exhaustive-deps'?: Linter.RuleEntry<EslintReactUnstableExhaustiveDeps>
+  /**
    * Validates against syntax that React Compiler does not support.
    * @see https://eslint-react.xyz/docs/rules/unsupported-syntax
    */
   '@eslint-react/unsupported-syntax'?: Linter.RuleEntry<[]>
   /**
-   * Validates that 'useMemo' is called with a callback that returns a value.
+   * Validates 'useMemo' usage: the result must be used and the callback must take no parameters, not be async or a generator, not reassign outer variables, and return a value.
    * @see https://eslint-react.xyz/docs/rules/use-memo
    */
   '@eslint-react/use-memo'?: Linter.RuleEntry<[]>
@@ -908,7 +928,7 @@ export interface RuleOptions {
   '@eslint-react/x-error-boundaries'?: Linter.RuleEntry<[]>
   /**
    * Verifies the list of dependencies for Hooks like 'useEffect' and similar.
-   * @see https://github.com/facebook/react/issues/14920
+   * @see https://github.com/react/react/issues/14920
    */
   '@eslint-react/x-exhaustive-deps'?: Linter.RuleEntry<EslintReactXExhaustiveDeps>
   /**
@@ -1027,7 +1047,7 @@ export interface RuleOptions {
    */
   '@eslint-react/x-no-leaked-conditional-rendering'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that all components have a 'displayName' that can be used in DevTools.
+   * Enforces that anonymous components wrapped in 'memo' or 'forwardRef' have a 'displayName' that can be used in DevTools.
    * @see https://eslint-react.xyz/docs/rules/no-missing-component-display-name
    */
   '@eslint-react/x-no-missing-component-display-name'?: Linter.RuleEntry<[]>
@@ -1052,7 +1072,7 @@ export interface RuleOptions {
    */
   '@eslint-react/x-no-nested-component-definitions'?: Linter.RuleEntry<[]>
   /**
-   * Disallows nesting lazy component declarations inside other components or hooks.
+   * Disallows declaring lazy components that wrap dynamic imports inside other components or hooks.
    * @see https://eslint-react.xyz/docs/rules/no-nested-lazy-component-declarations
    */
   '@eslint-react/x-no-nested-lazy-component-declarations'?: Linter.RuleEntry<[]>
@@ -1092,7 +1112,7 @@ export interface RuleOptions {
    */
   '@eslint-react/x-no-unsafe-component-will-update'?: Linter.RuleEntry<[]>
   /**
-   * Prevents non-stable values (i.e., object literals) from being used as a value for 'Context.Provider'.
+   * Prevents non-stable values (i.e., object literals) from being used as a value for 'Context.Provider' or the '<Context>' shorthand in React 19 and above.
    * @see https://eslint-react.xyz/docs/rules/no-unstable-context-value
    */
   '@eslint-react/x-no-unstable-context-value'?: Linter.RuleEntry<[]>
@@ -1122,7 +1142,7 @@ export interface RuleOptions {
    */
   '@eslint-react/x-no-use-context'?: Linter.RuleEntry<[]>
   /**
-   * Validates that components and hooks are pure by checking that they do not call known-impure functions during render.
+   * Validates that components and hooks are pure by checking that they do not call known-impure functions or construct known-impure objects during render.
    * @see https://eslint-react.xyz/docs/rules/purity
    */
   '@eslint-react/x-purity'?: Linter.RuleEntry<[]>
@@ -1157,7 +1177,7 @@ export interface RuleOptions {
    */
   '@eslint-react/x-unsupported-syntax'?: Linter.RuleEntry<[]>
   /**
-   * Validates that 'useMemo' is called with a callback that returns a value.
+   * Validates 'useMemo' usage: the result must be used and the callback must take no parameters, not be async or a generator, not reassign outer variables, and return a value.
    * @see https://eslint-react.xyz/docs/rules/use-memo
    */
   '@eslint-react/x-use-memo'?: Linter.RuleEntry<[]>
@@ -1757,16 +1777,19 @@ export interface RuleOptions {
   /**
    * Enforce linebreaks after opening and before closing array brackets
    * @see https://eslint.style/rules/array-bracket-newline
+   * @deprecated
    */
   '@stylistic/array-bracket-newline'?: Linter.RuleEntry<StylisticArrayBracketNewline>
   /**
    * Enforce consistent spacing inside array brackets
    * @see https://eslint.style/rules/array-bracket-spacing
+   * @deprecated
    */
   '@stylistic/array-bracket-spacing'?: Linter.RuleEntry<StylisticArrayBracketSpacing>
   /**
    * Enforce line breaks after each array element
    * @see https://eslint.style/rules/array-element-newline
+   * @deprecated
    */
   '@stylistic/array-element-newline'?: Linter.RuleEntry<StylisticArrayElementNewline>
   /**
@@ -1830,13 +1853,9 @@ export interface RuleOptions {
    */
   '@stylistic/exp-jsx-props-style'?: Linter.RuleEntry<StylisticExpJsxPropsStyle>
   /**
-   * Enforce consistent spacing and line break styles inside brackets.
-   * @see https://eslint.style/rules/list-style
-   */
-  '@stylistic/exp-list-style'?: Linter.RuleEntry<StylisticExpListStyle>
-  /**
    * Enforce line breaks between arguments of a function call
    * @see https://eslint.style/rules/function-call-argument-newline
+   * @deprecated
    */
   '@stylistic/function-call-argument-newline'?: Linter.RuleEntry<StylisticFunctionCallArgumentNewline>
   /**
@@ -1847,6 +1866,7 @@ export interface RuleOptions {
   /**
    * Enforce consistent line breaks inside function parentheses
    * @see https://eslint.style/rules/function-paren-newline
+   * @deprecated
    */
   '@stylistic/function-paren-newline'?: Linter.RuleEntry<StylisticFunctionParenNewline>
   /**
@@ -1915,12 +1935,6 @@ export interface RuleOptions {
    */
   '@stylistic/jsx-function-call-newline'?: Linter.RuleEntry<StylisticJsxFunctionCallNewline>
   /**
-   * Enforce JSX indentation. Deprecated, use `indent` rule instead.
-   * @see https://eslint.style/rules/jsx-indent
-   * @deprecated
-   */
-  '@stylistic/jsx-indent'?: Linter.RuleEntry<StylisticJsxIndent>
-  /**
    * Enforce props indentation in JSX
    * @see https://eslint.style/rules/jsx-indent-props
    */
@@ -1946,12 +1960,6 @@ export interface RuleOptions {
    */
   '@stylistic/jsx-pascal-case'?: Linter.RuleEntry<StylisticJsxPascalCase>
   /**
-   * Disallow multiple spaces between inline JSX props. Deprecated, use `no-multi-spaces` rule instead.
-   * @see https://eslint.style/rules/jsx-props-no-multi-spaces
-   * @deprecated
-   */
-  '@stylistic/jsx-props-no-multi-spaces'?: Linter.RuleEntry<[]>
-  /**
    * Enforce the consistent use of either double or single quotes in JSX attributes
    * @see https://eslint.style/rules/jsx-quotes
    */
@@ -1962,11 +1970,15 @@ export interface RuleOptions {
    */
   '@stylistic/jsx-self-closing-comp'?: Linter.RuleEntry<StylisticJsxSelfClosingComp>
   /**
-   * Enforce props alphabetical sorting
-   * @see https://eslint.style/rules/jsx-sort-props
-   * @deprecated
+   * Enforce shorthand for boolean JSX attributes.
+   * @see https://eslint.style/rules/jsx-shorthand-boolean
    */
-  '@stylistic/jsx-sort-props'?: Linter.RuleEntry<StylisticJsxSortProps>
+  '@stylistic/jsx-shorthand-boolean'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce shorthand fragment syntax.
+   * @see https://eslint.style/rules/jsx-shorthand-fragment
+   */
+  '@stylistic/jsx-shorthand-fragment'?: Linter.RuleEntry<[]>
   /**
    * Enforce whitespace in and around the JSX opening and closing brackets
    * @see https://eslint.style/rules/jsx-tag-spacing
@@ -2007,6 +2019,11 @@ export interface RuleOptions {
    * @see https://eslint.style/rules/lines-between-class-members
    */
   '@stylistic/lines-between-class-members'?: Linter.RuleEntry<StylisticLinesBetweenClassMembers>
+  /**
+   * Enforce consistent spacing and line break styles inside brackets.
+   * @see https://eslint.style/rules/list-style
+   */
+  '@stylistic/list-style'?: Linter.RuleEntry<StylisticListStyle>
   /**
    * Enforce a maximum line length
    * @see https://eslint.style/rules/max-len
@@ -2105,16 +2122,19 @@ export interface RuleOptions {
   /**
    * Enforce consistent line breaks after opening and before closing braces
    * @see https://eslint.style/rules/object-curly-newline
+   * @deprecated
    */
   '@stylistic/object-curly-newline'?: Linter.RuleEntry<StylisticObjectCurlyNewline>
   /**
    * Enforce consistent spacing inside braces
    * @see https://eslint.style/rules/object-curly-spacing
+   * @deprecated
    */
   '@stylistic/object-curly-spacing'?: Linter.RuleEntry<StylisticObjectCurlySpacing>
   /**
    * Enforce placing object properties on separate lines
    * @see https://eslint.style/rules/object-property-newline
+   * @deprecated
    */
   '@stylistic/object-property-newline'?: Linter.RuleEntry<StylisticObjectPropertyNewline>
   /**
@@ -2221,7 +2241,7 @@ export interface RuleOptions {
    * Enforces consistent spacing inside TypeScript type generics
    * @see https://eslint.style/rules/type-generic-spacing
    */
-  '@stylistic/type-generic-spacing'?: Linter.RuleEntry<[]>
+  '@stylistic/type-generic-spacing'?: Linter.RuleEntry<StylisticTypeGenericSpacing>
   /**
    * Expect space before the type declaration in the named tuple
    * @see https://eslint.style/rules/type-named-tuple-spacing
@@ -2306,7 +2326,7 @@ export interface RuleOptions {
    * Disallow awaiting a value that is not a Thenable
    * @see https://typescript-eslint.io/rules/await-thenable
    */
-  '@typescript-eslint/await-thenable'?: Linter.RuleEntry<[]>
+  '@typescript-eslint/await-thenable'?: Linter.RuleEntry<TypescriptEslintAwaitThenable>
   /**
    * Disallow `@ts-<directive>` comments or require descriptions after directives
    * @see https://typescript-eslint.io/rules/ban-ts-comment
@@ -2702,6 +2722,11 @@ export interface RuleOptions {
    * @see https://typescript-eslint.io/rules/no-unsafe-call
    */
   '@typescript-eslint/no-unsafe-call'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow assigning non-instance values to class instance typed locations
+   * @see https://typescript-eslint.io/rules/no-unsafe-class-instance-assignment
+   */
+  '@typescript-eslint/no-unsafe-class-instance-assignment'?: Linter.RuleEntry<[]>
   /**
    * Disallow unsafe declaration merging
    * @see https://typescript-eslint.io/rules/no-unsafe-declaration-merging
@@ -3631,239 +3656,259 @@ export interface RuleOptions {
    */
   'implicit-arrow-linebreak'?: Linter.RuleEntry<ImplicitArrowLinebreak>
   /**
+   * Forbid authoring of barrel files.
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/avoid-barrel-files.md
+   */
+  'import-x/avoid-barrel-files'?: Linter.RuleEntry<ImportXAvoidBarrelFiles>
+  /**
+   * Forbid importing barrel files.
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/avoid-importing-barrel-files.md
+   */
+  'import-x/avoid-importing-barrel-files'?: Linter.RuleEntry<ImportXAvoidImportingBarrelFiles>
+  /**
+   * Forbid namespace imports.
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/avoid-namespace-import.md
+   */
+  'import-x/avoid-namespace-import'?: Linter.RuleEntry<ImportXAvoidNamespaceImport>
+  /**
+   * Forbid re-exporting * from a module.
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/avoid-re-export-all.md
+   */
+  'import-x/avoid-re-export-all'?: Linter.RuleEntry<[]>
+  /**
    * Enforce or ban the use of inline type-only markers for named imports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/consistent-type-specifier-style.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/consistent-type-specifier-style.md
    */
   'import-x/consistent-type-specifier-style'?: Linter.RuleEntry<ImportXConsistentTypeSpecifierStyle>
   /**
    * Ensure a default export is present, given a default import.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/default.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/default.md
    */
   'import-x/default'?: Linter.RuleEntry<[]>
   /**
    * Enforce a leading comment with the webpackChunkName for dynamic imports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/dynamic-import-chunkname.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/dynamic-import-chunkname.md
    */
   'import-x/dynamic-import-chunkname'?: Linter.RuleEntry<ImportXDynamicImportChunkname>
   /**
    * Forbid any invalid exports, i.e. re-export of the same name.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/export.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/export.md
    */
   'import-x/export'?: Linter.RuleEntry<[]>
   /**
    * Ensure all exports appear after other statements.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/exports-last.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/exports-last.md
    */
   'import-x/exports-last'?: Linter.RuleEntry<[]>
   /**
    * Ensure consistent use of file extension within the import path.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/extensions.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/extensions.md
    */
   'import-x/extensions'?: Linter.RuleEntry<ImportXExtensions>
   /**
    * Ensure all imports appear before other statements.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/first.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/first.md
    */
   'import-x/first'?: Linter.RuleEntry<ImportXFirst>
   /**
    * Prefer named exports to be grouped together in a single export declaration.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/group-exports.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/group-exports.md
    */
   'import-x/group-exports'?: Linter.RuleEntry<[]>
   /**
    * Replaced by `import-x/first`.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/imports-first.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/imports-first.md
    * @deprecated
    */
   'import-x/imports-first'?: Linter.RuleEntry<ImportXImportsFirst>
   /**
    * Enforce the maximum number of dependencies a module can have.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/max-dependencies.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/max-dependencies.md
    */
   'import-x/max-dependencies'?: Linter.RuleEntry<ImportXMaxDependencies>
   /**
    * Ensure named imports correspond to a named export in the remote file.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/named.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/named.md
    */
   'import-x/named'?: Linter.RuleEntry<ImportXNamed>
   /**
    * Ensure imported namespaces contain dereferenced properties as they are dereferenced.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/namespace.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/namespace.md
    */
   'import-x/namespace'?: Linter.RuleEntry<ImportXNamespace>
   /**
    * Enforce a newline after import statements.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/newline-after-import.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/newline-after-import.md
    */
   'import-x/newline-after-import'?: Linter.RuleEntry<ImportXNewlineAfterImport>
   /**
    * Forbid import of modules using absolute paths.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-absolute-path.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-absolute-path.md
    */
   'import-x/no-absolute-path'?: Linter.RuleEntry<ImportXNoAbsolutePath>
   /**
    * Forbid AMD `require` and `define` calls.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-amd.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-amd.md
    */
   'import-x/no-amd'?: Linter.RuleEntry<[]>
   /**
    * Forbid anonymous values as default exports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-anonymous-default-export.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-anonymous-default-export.md
    */
   'import-x/no-anonymous-default-export'?: Linter.RuleEntry<ImportXNoAnonymousDefaultExport>
   /**
    * Forbid CommonJS `require` calls and `module.exports` or `exports.*`.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-commonjs.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-commonjs.md
    */
   'import-x/no-commonjs'?: Linter.RuleEntry<ImportXNoCommonjs>
   /**
    * Forbid a module from importing a module with a dependency path back to itself.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-cycle.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-cycle.md
    */
   'import-x/no-cycle'?: Linter.RuleEntry<ImportXNoCycle>
   /**
    * Forbid default exports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-default-export.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-default-export.md
    */
   'import-x/no-default-export'?: Linter.RuleEntry<[]>
   /**
    * Forbid imported names marked with `@deprecated` documentation tag.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-deprecated.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-deprecated.md
    */
   'import-x/no-deprecated'?: Linter.RuleEntry<[]>
   /**
    * Forbid repeated import of the same module in multiple places.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-duplicates.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-duplicates.md
    */
   'import-x/no-duplicates'?: Linter.RuleEntry<ImportXNoDuplicates>
   /**
    * Forbid `require()` calls with expressions.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-dynamic-require.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-dynamic-require.md
    */
   'import-x/no-dynamic-require'?: Linter.RuleEntry<ImportXNoDynamicRequire>
   /**
    * Forbid empty named import blocks.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-empty-named-blocks.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-empty-named-blocks.md
    */
   'import-x/no-empty-named-blocks'?: Linter.RuleEntry<[]>
   /**
    * Forbid the use of extraneous packages.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-extraneous-dependencies.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-extraneous-dependencies.md
    */
   'import-x/no-extraneous-dependencies'?: Linter.RuleEntry<ImportXNoExtraneousDependencies>
   /**
    * Forbid import statements with CommonJS module.exports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-import-module-exports.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-import-module-exports.md
    */
   'import-x/no-import-module-exports'?: Linter.RuleEntry<ImportXNoImportModuleExports>
   /**
    * Forbid importing the submodules of other modules.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-internal-modules.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-internal-modules.md
    */
   'import-x/no-internal-modules'?: Linter.RuleEntry<ImportXNoInternalModules>
   /**
    * Forbid the use of mutable exports with `var` or `let`.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-mutable-exports.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-mutable-exports.md
    */
   'import-x/no-mutable-exports'?: Linter.RuleEntry<[]>
   /**
    * Forbid use of exported name as identifier of default export.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-named-as-default.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-named-as-default.md
    */
   'import-x/no-named-as-default'?: Linter.RuleEntry<[]>
   /**
    * Forbid use of exported name as property of default export.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-named-as-default-member.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-named-as-default-member.md
    */
   'import-x/no-named-as-default-member'?: Linter.RuleEntry<[]>
   /**
    * Forbid named default exports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-named-default.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-named-default.md
    */
   'import-x/no-named-default'?: Linter.RuleEntry<[]>
   /**
    * Forbid named exports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-named-export.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-named-export.md
    */
   'import-x/no-named-export'?: Linter.RuleEntry<[]>
   /**
    * Forbid namespace (a.k.a. "wildcard" `*`) imports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-namespace.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-namespace.md
    */
   'import-x/no-namespace'?: Linter.RuleEntry<ImportXNoNamespace>
   /**
    * Forbid Node.js builtin modules.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-nodejs-modules.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-nodejs-modules.md
    */
   'import-x/no-nodejs-modules'?: Linter.RuleEntry<ImportXNoNodejsModules>
   /**
    * Forbid importing packages through relative paths.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-relative-packages.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-relative-packages.md
    */
   'import-x/no-relative-packages'?: Linter.RuleEntry<ImportXNoRelativePackages>
   /**
    * Forbid importing modules from parent directories.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-relative-parent-imports.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-relative-parent-imports.md
    */
   'import-x/no-relative-parent-imports'?: Linter.RuleEntry<ImportXNoRelativeParentImports>
   /**
    * Forbid importing a default export by a different name.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-rename-default.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-rename-default.md
    */
   'import-x/no-rename-default'?: Linter.RuleEntry<ImportXNoRenameDefault>
   /**
    * Enforce which files can be imported in a given folder.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-restricted-paths.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-restricted-paths.md
    */
   'import-x/no-restricted-paths'?: Linter.RuleEntry<ImportXNoRestrictedPaths>
   /**
    * Forbid a module from importing itself.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-self-import.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-self-import.md
    */
   'import-x/no-self-import'?: Linter.RuleEntry<[]>
   /**
    * Forbid unassigned imports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-unassigned-import.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-unassigned-import.md
    */
   'import-x/no-unassigned-import'?: Linter.RuleEntry<ImportXNoUnassignedImport>
   /**
    * Ensure imports point to a file/module that can be resolved.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-unresolved.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-unresolved.md
    */
   'import-x/no-unresolved'?: Linter.RuleEntry<ImportXNoUnresolved>
   /**
    * Forbid modules without exports, or exports without matching import in another module.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-unused-modules.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-unused-modules.md
    */
   'import-x/no-unused-modules'?: Linter.RuleEntry<ImportXNoUnusedModules>
   /**
    * Forbid unnecessary path segments in import and require statements.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-useless-path-segments.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-useless-path-segments.md
    */
   'import-x/no-useless-path-segments'?: Linter.RuleEntry<ImportXNoUselessPathSegments>
   /**
    * Forbid webpack loader syntax in imports.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/no-webpack-loader-syntax.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/no-webpack-loader-syntax.md
    */
   'import-x/no-webpack-loader-syntax'?: Linter.RuleEntry<[]>
   /**
    * Enforce a convention in module import order.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/order.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/order.md
    */
   'import-x/order'?: Linter.RuleEntry<ImportXOrder>
   /**
    * Prefer a default export if module exports a single name or multiple names.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/prefer-default-export.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/prefer-default-export.md
    */
   'import-x/prefer-default-export'?: Linter.RuleEntry<ImportXPreferDefaultExport>
   /**
    * Enforce using namespace imports for specific modules, like `react`/`react-dom`, etc.
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/prefer-namespace-import.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/prefer-namespace-import.md
    */
   'import-x/prefer-namespace-import'?: Linter.RuleEntry<ImportXPreferNamespaceImport>
   /**
    * Forbid potentially ambiguous parse goal (`script` vs. `module`).
-   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.17.1/docs/rules/unambiguous.md
+   * @see https://github.com/un-ts/eslint-plugin-import-x/blob/v4.18.1/docs/rules/unambiguous.md
    */
   'import-x/unambiguous'?: Linter.RuleEntry<[]>
   /**
@@ -3885,357 +3930,357 @@ export interface RuleOptions {
   'init-declarations'?: Linter.RuleEntry<InitDeclarations>
   /**
    * Enforce `test` and `it` usage conventions
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/consistent-test-it.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/consistent-test-it.md
    */
   'jest/consistent-test-it'?: Linter.RuleEntry<JestConsistentTestIt>
   /**
    * Enforce assertion to be made in a test body
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/expect-expect.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/expect-expect.md
    */
   'jest/expect-expect'?: Linter.RuleEntry<JestExpectExpect>
   /**
    * Enforces a maximum number assertion calls in a test body
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/max-expects.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/max-expects.md
    */
   'jest/max-expects'?: Linter.RuleEntry<JestMaxExpects>
   /**
    * Enforces a maximum depth to nested describe calls
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/max-nested-describe.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/max-nested-describe.md
    */
   'jest/max-nested-describe'?: Linter.RuleEntry<JestMaxNestedDescribe>
   /**
    * Disallow alias methods
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-alias-methods.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-alias-methods.md
    */
   'jest/no-alias-methods'?: Linter.RuleEntry<[]>
   /**
    * Disallow commented out tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-commented-out-tests.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-commented-out-tests.md
    */
   'jest/no-commented-out-tests'?: Linter.RuleEntry<[]>
   /**
    * Disallow calling `expect` conditionally
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-conditional-expect.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-conditional-expect.md
    */
   'jest/no-conditional-expect'?: Linter.RuleEntry<[]>
   /**
    * Disallow conditional logic in tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-conditional-in-test.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-conditional-in-test.md
    */
   'jest/no-conditional-in-test'?: Linter.RuleEntry<JestNoConditionalInTest>
   /**
    * Disallow confusing usages of jest.setTimeout
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-confusing-set-timeout.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-confusing-set-timeout.md
    */
   'jest/no-confusing-set-timeout'?: Linter.RuleEntry<[]>
   /**
    * Disallow use of deprecated functions
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-deprecated-functions.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-deprecated-functions.md
    */
   'jest/no-deprecated-functions'?: Linter.RuleEntry<[]>
   /**
    * Disallow disabled tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-disabled-tests.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-disabled-tests.md
    */
   'jest/no-disabled-tests'?: Linter.RuleEntry<[]>
   /**
    * Disallow using a callback in asynchronous tests and hooks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-done-callback.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-done-callback.md
    */
   'jest/no-done-callback'?: Linter.RuleEntry<[]>
   /**
    * Disallow duplicate setup and teardown hooks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-duplicate-hooks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-duplicate-hooks.md
    */
   'jest/no-duplicate-hooks'?: Linter.RuleEntry<[]>
   /**
    * Disallow using equality matchers on error types
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-error-equal.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-error-equal.md
    */
   'jest/no-error-equal'?: Linter.RuleEntry<[]>
   /**
    * Disallow using `exports` in files containing tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-export.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-export.md
    */
   'jest/no-export'?: Linter.RuleEntry<[]>
   /**
    * Disallow focused tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-focused-tests.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-focused-tests.md
    */
   'jest/no-focused-tests'?: Linter.RuleEntry<[]>
   /**
    * Disallow setup and teardown hooks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-hooks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-hooks.md
    */
   'jest/no-hooks'?: Linter.RuleEntry<JestNoHooks>
   /**
    * Disallow identical titles
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-identical-title.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-identical-title.md
    */
   'jest/no-identical-title'?: Linter.RuleEntry<[]>
   /**
    * Disallow string interpolation inside snapshots
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-interpolation-in-snapshots.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-interpolation-in-snapshots.md
    */
   'jest/no-interpolation-in-snapshots'?: Linter.RuleEntry<[]>
   /**
    * Disallow Jasmine globals
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-jasmine-globals.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-jasmine-globals.md
    */
   'jest/no-jasmine-globals'?: Linter.RuleEntry<[]>
   /**
    * Disallow large snapshots
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-large-snapshots.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-large-snapshots.md
    */
   'jest/no-large-snapshots'?: Linter.RuleEntry<JestNoLargeSnapshots>
   /**
    * Disallow manually importing from `__mocks__`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-mocks-import.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-mocks-import.md
    */
   'jest/no-mocks-import'?: Linter.RuleEntry<[]>
   /**
    * Disallow specific `jest.` methods
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-restricted-jest-methods.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-restricted-jest-methods.md
    */
   'jest/no-restricted-jest-methods'?: Linter.RuleEntry<JestNoRestrictedJestMethods>
   /**
    * Disallow specific matchers & modifiers
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-restricted-matchers.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-restricted-matchers.md
    */
   'jest/no-restricted-matchers'?: Linter.RuleEntry<JestNoRestrictedMatchers>
   /**
    * Disallow using `expect` outside of `it` or `test` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-standalone-expect.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-standalone-expect.md
    */
   'jest/no-standalone-expect'?: Linter.RuleEntry<JestNoStandaloneExpect>
   /**
    * Require using `.only` and `.skip` over `f` and `x`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-test-prefixes.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-test-prefixes.md
    */
   'jest/no-test-prefixes'?: Linter.RuleEntry<[]>
   /**
    * Disallow explicitly returning from tests
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-test-return-statement.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-test-return-statement.md
    */
   'jest/no-test-return-statement'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary assertions based on types
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-unnecessary-assertion.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-unnecessary-assertion.md
    */
   'jest/no-unnecessary-assertion'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary async function wrapper for expected promises
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-unneeded-async-expect-function.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-unneeded-async-expect-function.md
    */
   'jest/no-unneeded-async-expect-function'?: Linter.RuleEntry<[]>
   /**
    * Disallow using `jest.mock()` factories without an explicit type parameter
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/no-untyped-mock-factory.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/no-untyped-mock-factory.md
    */
   'jest/no-untyped-mock-factory'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `afterAll` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-after-all-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-after-all-blocks.md
    */
   'jest/padding-around-after-all-blocks'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `afterEach` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-after-each-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-after-each-blocks.md
    */
   'jest/padding-around-after-each-blocks'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around Jest functions
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-all.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-all.md
    */
   'jest/padding-around-all'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `beforeAll` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-before-all-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-before-all-blocks.md
    */
   'jest/padding-around-before-all-blocks'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `beforeEach` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-before-each-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-before-each-blocks.md
    */
   'jest/padding-around-before-each-blocks'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `describe` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-describe-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-describe-blocks.md
    */
   'jest/padding-around-describe-blocks'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `expect` groups
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-expect-groups.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-expect-groups.md
    */
   'jest/padding-around-expect-groups'?: Linter.RuleEntry<[]>
   /**
    * Enforce padding around `test` and `it` blocks
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/padding-around-test-blocks.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/padding-around-test-blocks.md
    */
   'jest/padding-around-test-blocks'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toHaveBeenCalledWith()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-called-with.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-called-with.md
    */
   'jest/prefer-called-with'?: Linter.RuleEntry<[]>
   /**
    * Suggest using the built-in comparison matchers
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-comparison-matcher.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-comparison-matcher.md
    */
   'jest/prefer-comparison-matcher'?: Linter.RuleEntry<[]>
   /**
    * Prefer using `.each` rather than manual loops
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-each.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-each.md
    */
   'jest/prefer-each'?: Linter.RuleEntry<[]>
   /**
    * Prefer having the last statement in a test be an assertion
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-ending-with-an-expect.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-ending-with-an-expect.md
    */
   'jest/prefer-ending-with-an-expect'?: Linter.RuleEntry<JestPreferEndingWithAnExpect>
   /**
    * Suggest using the built-in equality matchers
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-equality-matcher.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-equality-matcher.md
    */
   'jest/prefer-equality-matcher'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `expect.assertions()` OR `expect.hasAssertions()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-expect-assertions.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-expect-assertions.md
    */
   'jest/prefer-expect-assertions'?: Linter.RuleEntry<JestPreferExpectAssertions>
   /**
    * Prefer `await expect(...).resolves` over `expect(await ...)` syntax
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-expect-resolves.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-expect-resolves.md
    */
   'jest/prefer-expect-resolves'?: Linter.RuleEntry<[]>
   /**
    * Prefer having hooks in a consistent order
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-hooks-in-order.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-hooks-in-order.md
    */
   'jest/prefer-hooks-in-order'?: Linter.RuleEntry<[]>
   /**
    * Suggest having hooks before any test cases
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-hooks-on-top.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-hooks-on-top.md
    */
   'jest/prefer-hooks-on-top'?: Linter.RuleEntry<[]>
   /**
    * Prefer importing Jest globals
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-importing-jest-globals.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-importing-jest-globals.md
    */
   'jest/prefer-importing-jest-globals'?: Linter.RuleEntry<JestPreferImportingJestGlobals>
   /**
    * Prefer `jest.mocked()` over `fn as jest.Mock`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-jest-mocked.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-jest-mocked.md
    */
   'jest/prefer-jest-mocked'?: Linter.RuleEntry<[]>
   /**
    * Enforce lowercase test names
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-lowercase-title.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-lowercase-title.md
    */
   'jest/prefer-lowercase-title'?: Linter.RuleEntry<JestPreferLowercaseTitle>
   /**
    * Prefer mock resolved/rejected shorthands for promises
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-mock-promise-shorthand.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-mock-promise-shorthand.md
    */
   'jest/prefer-mock-promise-shorthand'?: Linter.RuleEntry<[]>
   /**
    * Prefer mock return shorthands
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-mock-return-shorthand.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-mock-return-shorthand.md
    */
   'jest/prefer-mock-return-shorthand'?: Linter.RuleEntry<[]>
   /**
    * Prefer including a hint with external snapshots
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-snapshot-hint.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-snapshot-hint.md
    */
   'jest/prefer-snapshot-hint'?: Linter.RuleEntry<JestPreferSnapshotHint>
   /**
    * Suggest using `jest.spyOn()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-spy-on.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-spy-on.md
    */
   'jest/prefer-spy-on'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toStrictEqual()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-strict-equal.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-strict-equal.md
    */
   'jest/prefer-strict-equal'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toBe()` for primitive literals
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-to-be.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-to-be.md
    */
   'jest/prefer-to-be'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toContain()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-to-contain.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-to-contain.md
    */
   'jest/prefer-to-contain'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toHaveBeenCalled`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-to-have-been-called.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-to-have-been-called.md
    */
   'jest/prefer-to-have-been-called'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toHaveBeenCalledTimes()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-to-have-been-called-times.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-to-have-been-called-times.md
    */
   'jest/prefer-to-have-been-called-times'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `toHaveLength()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-to-have-length.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-to-have-length.md
    */
   'jest/prefer-to-have-length'?: Linter.RuleEntry<[]>
   /**
    * Suggest using `test.todo`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/prefer-todo.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/prefer-todo.md
    */
   'jest/prefer-todo'?: Linter.RuleEntry<[]>
   /**
    * Require setup and teardown code to be within a hook
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/require-hook.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/require-hook.md
    */
   'jest/require-hook'?: Linter.RuleEntry<JestRequireHook>
   /**
    * Require a message for `toThrow()`
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/require-to-throw-message.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/require-to-throw-message.md
    */
   'jest/require-to-throw-message'?: Linter.RuleEntry<[]>
   /**
    * Require test cases and hooks to be inside a `describe` block
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/require-top-level-describe.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/require-top-level-describe.md
    */
   'jest/require-top-level-describe'?: Linter.RuleEntry<JestRequireTopLevelDescribe>
   /**
    * Enforce unbound methods are called with their expected scope
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/unbound-method.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/unbound-method.md
    */
   'jest/unbound-method'?: Linter.RuleEntry<JestUnboundMethod>
   /**
    * Enforce valid `describe()` callback
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-describe-callback.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-describe-callback.md
    */
   'jest/valid-describe-callback'?: Linter.RuleEntry<[]>
   /**
    * Enforce valid `expect()` usage
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-expect.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-expect.md
    */
   'jest/valid-expect'?: Linter.RuleEntry<JestValidExpect>
   /**
    * Require promises that have expectations in their chain to be valid
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-expect-in-promise.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-expect-in-promise.md
    */
   'jest/valid-expect-in-promise'?: Linter.RuleEntry<[]>
   /**
    * Require that `resolve` and `reject` modifiers are present (and only) for promise-like types
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-expect-with-promise.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-expect-with-promise.md
    */
   'jest/valid-expect-with-promise'?: Linter.RuleEntry<JestValidExpectWithPromise>
   /**
    * Disallow mocking of non-existing module paths
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-mock-module-path.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-mock-module-path.md
    */
   'jest/valid-mock-module-path'?: Linter.RuleEntry<JestValidMockModulePath>
   /**
    * Enforce valid titles
-   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.16.6/docs/rules/valid-title.md
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.17.1/docs/rules/valid-title.md
    */
   'jest/valid-title'?: Linter.RuleEntry<JestValidTitle>
   /**
@@ -6056,6 +6101,11 @@ export interface RuleOptions {
    */
   'simple-import-sort/imports'?: Linter.RuleEntry<SimpleImportSortImports>
   /**
+   * Require a bare yield after await in Solid action generators.
+   * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/action-yield-after-await.md
+   */
+  'solid/action-yield-after-await'?: Linter.RuleEntry<[]>
+  /**
    * Disallow early returns in components. Solid components only run once, and so conditionals should be inside JSX.
    * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/components-return-once.md
    */
@@ -6161,6 +6211,11 @@ export interface RuleOptions {
    */
   'solid/no-store-mutation-outside-setter'?: Linter.RuleEntry<[]>
   /**
+   * Disallow `let` and `var` variables that are read but never assigned, counting `ref={el}` as an assignment. Replaces ESLint's `no-unassigned-vars`.
+   * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/no-unassigned-vars.md
+   */
+  'solid/no-unassigned-vars'?: Linter.RuleEntry<[]>
+  /**
    * Enforce using only Solid-specific namespaced attribute names (i.e. `'on:'` in `<div on:click={...} />`).
    * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/no-unknown-namespaces.md
    */
@@ -6231,6 +6286,11 @@ export interface RuleOptions {
    * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/valid-use-server.md
    */
   'solid/valid-use-server'?: Linter.RuleEntry<SolidValidUseServer>
+  /**
+   * Disallow HTML nesting the browser refuses to keep, like `<p><div /></p>`, which silently renders a different DOM than the JSX describes.
+   * @see https://github.com/solidjs-community/eslint-plugin-solid/blob/main/packages/eslint-plugin-solid/docs/validate-jsx-nesting.md
+   */
+  'solid/validate-jsx-nesting'?: Linter.RuleEntry<[]>
   /**
    * Alternatives in regular expressions should be grouped when used with anchors
    * @see https://sonarsource.github.io/rspec/#/rspec/S5850/javascript
@@ -9079,10 +9139,20 @@ export interface RuleOptions {
    */
   'vue/no-constant-condition'?: Linter.RuleEntry<VueNoConstantCondition>
   /**
+   * disallow content outside of the top-level blocks
+   * @see https://eslint.vuejs.org/rules/no-content-outside-block.html
+   */
+  'vue/no-content-outside-block'?: Linter.RuleEntry<[]>
+  /**
    * disallow custom modifiers on v-model used on the component
    * @see https://eslint.vuejs.org/rules/no-custom-modifiers-on-v-model.html
    */
   'vue/no-custom-modifiers-on-v-model'?: Linter.RuleEntry<[]>
+  /**
+   * disallow default values in `defineModel`
+   * @see https://eslint.vuejs.org/rules/no-define-model-default.html
+   */
+  'vue/no-define-model-default'?: Linter.RuleEntry<[]>
   /**
    * disallow using deprecated object declaration on data (in Vue.js 3.0.0+)
    * @see https://eslint.vuejs.org/rules/no-deprecated-data-object-declaration.html
@@ -9318,6 +9388,11 @@ export interface RuleOptions {
    * @see https://eslint.vuejs.org/rules/no-potential-component-option-typo.html
    */
   'vue/no-potential-component-option-typo'?: Linter.RuleEntry<VueNoPotentialComponentOptionTypo>
+  /**
+   * disallow declarations that shadow props in `<script setup>`
+   * @see https://eslint.vuejs.org/rules/no-props-shadow.html
+   */
+  'vue/no-props-shadow'?: Linter.RuleEntry<[]>
   /**
    * disallow use of value wrapped by `ref()` (Composition API) as an operand
    * @see https://eslint.vuejs.org/rules/no-ref-as-operand.html
@@ -10154,19 +10229,19 @@ type AngularEslintComponentMaxInlineDeclarations = []|[{
 // ----- @angular-eslint/component-selector -----
 type AngularEslintComponentSelector = []|[({
   type: (string | ("element" | "attribute")[])
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 } | [{
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }]|[{
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }, {
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }])]
 // ----- @angular-eslint/consistent-component-styles -----
@@ -10178,25 +10253,35 @@ type AngularEslintDirectiveClassSuffix = []|[{
 // ----- @angular-eslint/directive-selector -----
 type AngularEslintDirectiveSelector = []|[({
   type: (string | ("element" | "attribute")[])
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 } | [{
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }]|[{
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }, {
   type: ("element" | "attribute")
-  prefix?: (string | unknown[])
+  prefix?: (string | string[])
   style: ("camelCase" | "kebab-case")
 }])]
 // ----- @angular-eslint/inject-at-top -----
 type AngularEslintInjectAtTop = []|[{
   
   additionalInjectFunctions?: string[]
+}]
+// ----- @angular-eslint/no-experimental -----
+type AngularEslintNoExperimental = []|[{
+  
+  ignorePackages?: string[]
+}]
+// ----- @angular-eslint/no-global-document -----
+type AngularEslintNoGlobalDocument = []|[{
+  
+  checkServices?: boolean
 }]
 // ----- @angular-eslint/no-input-prefix -----
 type AngularEslintNoInputPrefix = []|[{
@@ -10228,6 +10313,11 @@ type AngularEslintPreferSignals = []|[{
   useTypeChecking?: boolean
   additionalSignalCreationFunctions?: string[]
 }]
+// ----- @angular-eslint/prefer-standalone -----
+type AngularEslintPreferStandalone = []|[{
+  
+  allowExplicitStandalone?: boolean
+}]
 // ----- @angular-eslint/reactive-context-must-read-signal -----
 type AngularEslintReactiveContextMustReadSignal = []|[{
   
@@ -10252,7 +10342,14 @@ type AngularEslintSortKeysInTypeDecorator = []|[{
 type AngularEslintTemplateAttributesOrder = []|[{
   alphabetical?: boolean
   
-  order?: [("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"), ...(("STRUCTURAL_DIRECTIVE" | "TEMPLATE_REFERENCE" | "ATTRIBUTE_BINDING" | "INPUT_BINDING" | "TWO_WAY_BINDING" | "OUTPUT_BINDING"))[]]
+  order?: [string, string, string, string, string, string, ...(string)[]]
+  
+  customGroups?: {
+    
+    groupName: string
+    
+    attributeNamePattern: string
+  }[]
 }]
 // ----- @angular-eslint/template/button-has-type -----
 type AngularEslintTemplateButtonHasType = []|[{
@@ -10367,6 +10464,11 @@ type AngularEslintTemplatePreferStaticStringProperties = []|[{
   
   ignore?: string[]
 }]
+// ----- @angular-eslint/template/prefer-style-binding -----
+type AngularEslintTemplatePreferStyleBinding = []|[{
+  
+  bindUnits?: boolean
+}]
 // ----- @angular-eslint/template/use-track-by-function -----
 type AngularEslintTemplateUseTrackByFunction = []|[{
   alias?: string[]
@@ -10382,6 +10484,11 @@ type EslintReactDomNoUnknownProperty = []|[{
   ignore?: string[]
   
   requireDataLowercase?: boolean
+}]
+// ----- @eslint-react/dom-no-unsafe-target-blank -----
+type EslintReactDomNoUnsafeTargetBlank = []|[{
+  
+  allowReferrer?: boolean
 }]
 // ----- @eslint-react/exhaustive-deps -----
 type EslintReactExhaustiveDeps = []|[{
@@ -10399,16 +10506,33 @@ type EslintReactJsxNoUselessFragment = []|[{
 }]
 // ----- @eslint-react/no-unstable-default-props -----
 type EslintReactNoUnstableDefaultProps = []|[{
+  
   safeDefaultProps?: string[]
 }]
 // ----- @eslint-react/rules-of-hooks -----
 type EslintReactRulesOfHooks = []|[{
   additionalHooks?: string
 }]
+// ----- @eslint-react/unstable-exhaustive-deps -----
+type EslintReactUnstableExhaustiveDeps = []|[{
+  additionalHooks?: string
+  enableDangerousAutofixThisMayCauseInfiniteLoops?: boolean
+  experimental_autoDependenciesHooks?: string[]
+  hooks?: {
+    name: string
+    closureIndex?: number
+    dependenciesIndex?: number
+    stableResult?: (boolean | number | [number, ...(number)[]])
+  }[]
+  requireExplicitEffectDeps?: boolean
+}]
 // ----- @eslint-react/use-state -----
 type EslintReactUseState = []|[{
+  
   enforceAssignment?: boolean
+  
   enforceLazyInitialization?: boolean
+  
   enforceSetterName?: boolean
 }]
 // ----- @eslint-react/x-exhaustive-deps -----
@@ -10420,6 +10544,7 @@ type EslintReactXExhaustiveDeps = []|[{
 }]
 // ----- @eslint-react/x-no-unstable-default-props -----
 type EslintReactXNoUnstableDefaultProps = []|[{
+  
   safeDefaultProps?: string[]
 }]
 // ----- @eslint-react/x-rules-of-hooks -----
@@ -10428,8 +10553,11 @@ type EslintReactXRulesOfHooks = []|[{
 }]
 // ----- @eslint-react/x-use-state -----
 type EslintReactXUseState = []|[{
+  
   enforceAssignment?: boolean
+  
   enforceLazyInitialization?: boolean
+  
   enforceSetterName?: boolean
 }]
 // ----- @html-eslint/attrs-newline -----
@@ -10488,6 +10616,7 @@ type HtmlEslintNoExtraSpacingTags = []|[{
 // ----- @html-eslint/no-extra-spacing-text -----
 type HtmlEslintNoExtraSpacingText = []|[{
   skip?: string[]
+  skipComments?: boolean
 }]
 // ----- @html-eslint/no-inline-styles -----
 type HtmlEslintNoInlineStyles = []|[{
@@ -10905,7 +11034,7 @@ type StylisticCurlyNewline = []|[(("always" | "never") | {
 // ----- @stylistic/dot-location -----
 type StylisticDotLocation = []|[("object" | "property")]
 // ----- @stylistic/eol-last -----
-type StylisticEolLast = []|[("always" | "never" | "unix" | "windows")]
+type StylisticEolLast = []|[("always" | "never")]
 // ----- @stylistic/exp-jsx-props-style -----
 type StylisticExpJsxPropsStyle = []|[{
   singleLine?: {
@@ -10916,51 +11045,6 @@ type StylisticExpJsxPropsStyle = []|[{
     maxItemsPerLine?: number
   }
 }]
-// ----- @stylistic/exp-list-style -----
-type StylisticExpListStyle = []|[{
-  singleLine?: _StylisticExpListStyle_SingleLineConfig
-  multiLine?: _StylisticExpListStyle_MultiLineConfig
-  overrides?: {
-    "()"?: (_StylisticExpListStyle_BaseConfig | "off")
-    "[]"?: (_StylisticExpListStyle_BaseConfig | "off")
-    "{}"?: (_StylisticExpListStyle_BaseConfig | "off")
-    "<>"?: (_StylisticExpListStyle_BaseConfig | "off")
-    ArrayExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    ArrayPattern?: (_StylisticExpListStyle_BaseConfig | "off")
-    ArrowFunctionExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    CallExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    ExportNamedDeclaration?: (_StylisticExpListStyle_BaseConfig | "off")
-    FunctionDeclaration?: (_StylisticExpListStyle_BaseConfig | "off")
-    FunctionExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    IfStatement?: (_StylisticExpListStyle_BaseConfig | "off")
-    ImportAttributes?: (_StylisticExpListStyle_BaseConfig | "off")
-    ImportDeclaration?: (_StylisticExpListStyle_BaseConfig | "off")
-    JSONArrayExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    JSONObjectExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    NewExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    ObjectExpression?: (_StylisticExpListStyle_BaseConfig | "off")
-    ObjectPattern?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSDeclareFunction?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSEnumBody?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSFunctionType?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSInterfaceBody?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSTupleType?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSTypeLiteral?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSTypeParameterDeclaration?: (_StylisticExpListStyle_BaseConfig | "off")
-    TSTypeParameterInstantiation?: (_StylisticExpListStyle_BaseConfig | "off")
-  }
-}]
-interface _StylisticExpListStyle_SingleLineConfig {
-  spacing?: ("always" | "never")
-  maxItems?: number
-}
-interface _StylisticExpListStyle_MultiLineConfig {
-  minItems?: number
-}
-interface _StylisticExpListStyle_BaseConfig {
-  singleLine?: _StylisticExpListStyle_SingleLineConfig
-  multiline?: _StylisticExpListStyle_MultiLineConfig
-}
 // ----- @stylistic/function-call-argument-newline -----
 type StylisticFunctionCallArgumentNewline = []|[("always" | "never" | "consistent")]
 // ----- @stylistic/function-call-spacing -----
@@ -11035,10 +11119,10 @@ type StylisticIndent = []|[("tab" | number)]|[("tab" | number), {
     AwaitExpression?: boolean
     NewExpression?: boolean
   })
-  offsetTernaryExpressionsOffsetCallExpressions?: boolean
   ignoredNodes?: string[]
   ignoreComments?: boolean
   tabLength?: number
+  jsx?: (number | "half")
 }]
 // ----- @stylistic/indent-binary-ops -----
 type StylisticIndentBinaryOps = []|[(number | "tab")]
@@ -11115,11 +11199,6 @@ type StylisticJsxEqualsSpacing = []|[("always" | "never")]
 type StylisticJsxFirstPropNewLine = []|[("always" | "never" | "multiline" | "multiline-multiprop" | "multiprop")]
 // ----- @stylistic/jsx-function-call-newline -----
 type StylisticJsxFunctionCallNewline = []|[("always" | "multiline")]
-// ----- @stylistic/jsx-indent -----
-type StylisticJsxIndent = []|[("tab" | number)]|[("tab" | number), {
-  checkAttributes?: boolean
-  indentLogicalExpressions?: boolean
-}]
 // ----- @stylistic/jsx-indent-props -----
 type StylisticJsxIndentProps = []|[(("tab" | "first") | number | {
   indentMode?: (("tab" | "first") | number)
@@ -11157,18 +11236,6 @@ type StylisticJsxQuotes = []|[("prefer-single" | "prefer-double")]
 type StylisticJsxSelfClosingComp = []|[{
   component?: boolean
   html?: boolean
-}]
-// ----- @stylistic/jsx-sort-props -----
-type StylisticJsxSortProps = []|[{
-  callbacksLast?: boolean
-  shorthandFirst?: boolean
-  shorthandLast?: boolean
-  multiline?: ("ignore" | "first" | "last")
-  ignoreCase?: boolean
-  noSortAlphabetically?: boolean
-  reservedFirst?: (string[] | boolean)
-  reservedLast?: string[]
-  locale?: string
 }]
 // ----- @stylistic/jsx-tag-spacing -----
 type StylisticJsxTagSpacing = []|[{
@@ -11542,7 +11609,6 @@ type StylisticKeywordSpacing = []|[{
 type StylisticLineCommentPosition = []|[(("above" | "beside") | {
   position?: ("above" | "beside")
   ignorePattern?: string
-  applyDefaultPatterns?: boolean
   applyDefaultIgnorePatterns?: boolean
 })]
 // ----- @stylistic/linebreak-style -----
@@ -11600,6 +11666,53 @@ type StylisticLinesBetweenClassMembers = []|[({
   exceptAfterSingleLine?: boolean
   exceptAfterOverload?: boolean
 }]
+// ----- @stylistic/list-style -----
+type StylisticListStyle = []|[{
+  empty?: ("ignore" | "always" | "never")
+  singleLine?: _StylisticListStyle_SingleLineConfig
+  multiLine?: _StylisticListStyle_MultiLineConfig
+  overrides?: {
+    "()"?: (_StylisticListStyle_BaseConfig | "off")
+    "[]"?: (_StylisticListStyle_BaseConfig | "off")
+    "{}"?: (_StylisticListStyle_BaseConfig | "off")
+    "<>"?: (_StylisticListStyle_BaseConfig | "off")
+    ArrayExpression?: (_StylisticListStyle_BaseConfig | "off")
+    ArrayPattern?: (_StylisticListStyle_BaseConfig | "off")
+    ArrowFunctionExpression?: (_StylisticListStyle_BaseConfig | "off")
+    CallExpression?: (_StylisticListStyle_BaseConfig | "off")
+    ExportNamedDeclaration?: (_StylisticListStyle_BaseConfig | "off")
+    FunctionDeclaration?: (_StylisticListStyle_BaseConfig | "off")
+    FunctionExpression?: (_StylisticListStyle_BaseConfig | "off")
+    IfStatement?: (_StylisticListStyle_BaseConfig | "off")
+    ImportAttributes?: (_StylisticListStyle_BaseConfig | "off")
+    ImportDeclaration?: (_StylisticListStyle_BaseConfig | "off")
+    JSONArrayExpression?: (_StylisticListStyle_BaseConfig | "off")
+    JSONObjectExpression?: (_StylisticListStyle_BaseConfig | "off")
+    NewExpression?: (_StylisticListStyle_BaseConfig | "off")
+    ObjectExpression?: (_StylisticListStyle_BaseConfig | "off")
+    ObjectPattern?: (_StylisticListStyle_BaseConfig | "off")
+    TSDeclareFunction?: (_StylisticListStyle_BaseConfig | "off")
+    TSEnumBody?: (_StylisticListStyle_BaseConfig | "off")
+    TSFunctionType?: (_StylisticListStyle_BaseConfig | "off")
+    TSInterfaceBody?: (_StylisticListStyle_BaseConfig | "off")
+    TSTupleType?: (_StylisticListStyle_BaseConfig | "off")
+    TSTypeLiteral?: (_StylisticListStyle_BaseConfig | "off")
+    TSTypeParameterDeclaration?: (_StylisticListStyle_BaseConfig | "off")
+    TSTypeParameterInstantiation?: (_StylisticListStyle_BaseConfig | "off")
+  }
+}]
+interface _StylisticListStyle_SingleLineConfig {
+  spacing?: ("always" | "never")
+  maxItems?: number
+}
+interface _StylisticListStyle_MultiLineConfig {
+  minItems?: number
+}
+interface _StylisticListStyle_BaseConfig {
+  empty?: ("ignore" | "always" | "never")
+  singleLine?: _StylisticListStyle_SingleLineConfig
+  multiLine?: _StylisticListStyle_MultiLineConfig
+}
 // ----- @stylistic/max-len -----
 type StylisticMaxLen = []|[({
   code?: number
@@ -11745,7 +11858,7 @@ type StylisticNoMixedOperators = []|[{
   allowSamePrecedence?: boolean
 }]
 // ----- @stylistic/no-mixed-spaces-and-tabs -----
-type StylisticNoMixedSpacesAndTabs = []|[("smart-tabs" | boolean)]
+type StylisticNoMixedSpacesAndTabs = []|["smart-tabs"]
 // ----- @stylistic/no-multi-spaces -----
 type StylisticNoMultiSpaces = []|[{
   exceptions?: {
@@ -11884,11 +11997,11 @@ type StylisticQuoteProps = ([]|[("always" | "as-needed" | "consistent" | "consis
   numbers?: boolean
 }])
 // ----- @stylistic/quotes -----
-type StylisticQuotes = []|[("single" | "double" | "backtick")]|[("single" | "double" | "backtick"), ("avoid-escape" | {
+type StylisticQuotes = []|[("single" | "double" | "backtick")]|[("single" | "double" | "backtick"), {
   avoidEscape?: boolean
-  allowTemplateLiterals?: (boolean | ("never" | "avoidEscape" | "always"))
+  allowTemplateLiterals?: ("never" | "avoidEscape" | "always")
   ignoreStringLiterals?: boolean
-})]
+}]
 // ----- @stylistic/rest-spread-spacing -----
 type StylisticRestSpreadSpacing = []|[("always" | "never")]
 // ----- @stylistic/semi -----
@@ -11926,6 +12039,7 @@ type StylisticSpaceInParens = []|[("always" | "never")]|[("always" | "never"), {
 // ----- @stylistic/space-infix-ops -----
 type StylisticSpaceInfixOps = []|[{
   int32Hint?: boolean
+  ignoreOperators?: string[]
   ignoreTypes?: boolean
 }]
 // ----- @stylistic/space-unary-ops -----
@@ -11965,17 +12079,22 @@ type StylisticTypeAnnotationSpacing = []|[{
   after?: boolean
   overrides?: {
     colon?: _StylisticTypeAnnotationSpacing_SpacingConfig
-    arrow?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
-    variable?: _StylisticTypeAnnotationSpacing_SpacingConfig
-    parameter?: _StylisticTypeAnnotationSpacing_SpacingConfig
-    property?: _StylisticTypeAnnotationSpacing_SpacingConfig
-    returnType?: _StylisticTypeAnnotationSpacing_SpacingConfig
+    variable?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
+    parameter?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
+    property?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
+    returnType?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
+    questionMark?: ("ignore" | _StylisticTypeAnnotationSpacing_SpacingConfig)
   }
 }]
 interface _StylisticTypeAnnotationSpacing_SpacingConfig {
   before?: boolean
   after?: boolean
 }
+// ----- @stylistic/type-generic-spacing -----
+type StylisticTypeGenericSpacing = []|[{
+  before?: boolean
+  after?: boolean
+}]
 // ----- @stylistic/wrap-iife -----
 type StylisticWrapIife = []|[("outside" | "inside" | "any")]|[("outside" | "inside" | "any"), {
   functionPrototypeMethods?: boolean
@@ -11998,6 +12117,11 @@ type TypescriptEslintArrayType = []|[{
   default?: ("array" | "generic" | "array-simple")
   
   readonly?: ("array" | "generic" | "array-simple")
+}]
+// ----- @typescript-eslint/await-thenable -----
+type TypescriptEslintAwaitThenable = []|[{
+  
+  allowMixedPromiseArrays?: boolean
 }]
 // ----- @typescript-eslint/ban-ts-comment -----
 type TypescriptEslintBanTsComment = []|[{
@@ -13423,7 +13547,7 @@ type AstroSortAttributes = []|[{
 // ----- better-tailwindcss/enforce-canonical-classes -----
 type BetterTailwindcssEnforceCanonicalClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -13671,7 +13795,258 @@ type BetterTailwindcssEnforceCanonicalClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -13756,7 +14131,7 @@ type BetterTailwindcssEnforceCanonicalClasses = []|[{
 // ----- better-tailwindcss/enforce-consistent-class-order -----
 type BetterTailwindcssEnforceConsistentClassOrder = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -14004,7 +14379,258 @@ type BetterTailwindcssEnforceConsistentClassOrder = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -14093,7 +14719,7 @@ type BetterTailwindcssEnforceConsistentClassOrder = []|[{
 // ----- better-tailwindcss/enforce-consistent-important-position -----
 type BetterTailwindcssEnforceConsistentImportantPosition = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -14341,7 +14967,258 @@ type BetterTailwindcssEnforceConsistentImportantPosition = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -14422,7 +15299,7 @@ type BetterTailwindcssEnforceConsistentImportantPosition = []|[{
 // ----- better-tailwindcss/enforce-consistent-line-wrapping -----
 type BetterTailwindcssEnforceConsistentLineWrapping = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -14670,7 +15547,258 @@ type BetterTailwindcssEnforceConsistentLineWrapping = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -14767,7 +15895,7 @@ type BetterTailwindcssEnforceConsistentLineWrapping = []|[{
 // ----- better-tailwindcss/enforce-consistent-variable-syntax -----
 type BetterTailwindcssEnforceConsistentVariableSyntax = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -15015,7 +16143,258 @@ type BetterTailwindcssEnforceConsistentVariableSyntax = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -15096,7 +16475,7 @@ type BetterTailwindcssEnforceConsistentVariableSyntax = []|[{
 // ----- better-tailwindcss/enforce-consistent-variant-order -----
 type BetterTailwindcssEnforceConsistentVariantOrder = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -15344,7 +16723,258 @@ type BetterTailwindcssEnforceConsistentVariantOrder = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -15423,7 +17053,7 @@ type BetterTailwindcssEnforceConsistentVariantOrder = []|[{
 // ----- better-tailwindcss/enforce-logical-properties -----
 type BetterTailwindcssEnforceLogicalProperties = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -15671,7 +17301,258 @@ type BetterTailwindcssEnforceLogicalProperties = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -15752,7 +17633,7 @@ type BetterTailwindcssEnforceLogicalProperties = []|[{
 // ----- better-tailwindcss/enforce-shorthand-classes -----
 type BetterTailwindcssEnforceShorthandClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -16000,7 +17881,258 @@ type BetterTailwindcssEnforceShorthandClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -16079,7 +18211,7 @@ type BetterTailwindcssEnforceShorthandClasses = []|[{
 // ----- better-tailwindcss/no-concatenated-classes -----
 type BetterTailwindcssNoConcatenatedClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -16327,7 +18459,258 @@ type BetterTailwindcssNoConcatenatedClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -16406,7 +18789,7 @@ type BetterTailwindcssNoConcatenatedClasses = []|[{
 // ----- better-tailwindcss/no-conflicting-classes -----
 type BetterTailwindcssNoConflictingClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -16654,7 +19037,258 @@ type BetterTailwindcssNoConflictingClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -16733,7 +19367,7 @@ type BetterTailwindcssNoConflictingClasses = []|[{
 // ----- better-tailwindcss/no-deprecated-classes -----
 type BetterTailwindcssNoDeprecatedClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -16981,7 +19615,258 @@ type BetterTailwindcssNoDeprecatedClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -17060,7 +19945,7 @@ type BetterTailwindcssNoDeprecatedClasses = []|[{
 // ----- better-tailwindcss/no-duplicate-classes -----
 type BetterTailwindcssNoDuplicateClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -17308,7 +20193,258 @@ type BetterTailwindcssNoDuplicateClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -17387,7 +20523,7 @@ type BetterTailwindcssNoDuplicateClasses = []|[{
 // ----- better-tailwindcss/no-restricted-classes -----
 type BetterTailwindcssNoRestrictedClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -17635,7 +20771,258 @@ type BetterTailwindcssNoRestrictedClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -17722,7 +21109,7 @@ type BetterTailwindcssNoRestrictedClasses = []|[{
 // ----- better-tailwindcss/no-unknown-classes -----
 type BetterTailwindcssNoUnknownClasses = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -17970,7 +21357,258 @@ type BetterTailwindcssNoUnknownClasses = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -18051,7 +21689,7 @@ type BetterTailwindcssNoUnknownClasses = []|[{
 // ----- better-tailwindcss/no-unnecessary-whitespace -----
 type BetterTailwindcssNoUnnecessaryWhitespace = []|[{
   
-  selectors?: ({
+  selectors?: (({
     
     kind: "attribute"
     
@@ -18299,7 +21937,258 @@ type BetterTailwindcssNoUnnecessaryWhitespace = []|[{
     })[]
     
     name: string
-  })[]
+  })[] | {
+    
+    extends: ({
+      
+      kind: "attribute"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    } | ({
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    } | {
+      
+      callTarget?: ("all" | "first" | "last" | number)
+      
+      kind: "callee"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+      
+      targetArgument?: ("all" | "first" | "last" | number)
+      
+      targetCall?: ("all" | "first" | "last" | number)
+    }) | ({
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+      
+      path?: string
+    } | {
+      
+      kind: "tag"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name?: string
+      
+      path: string
+    }) | {
+      
+      kind: "variable"
+      
+      match?: ({
+        
+        type: "strings"
+      } | {
+        
+        path?: string
+        
+        type: "objectKeys"
+      } | {
+        
+        path?: string
+        
+        type: "objectValues"
+      } | {
+        
+        match: ({
+          
+          type: "strings"
+        } | {
+          
+          path?: string
+          
+          type: "objectKeys"
+        } | {
+          
+          path?: string
+          
+          type: "objectValues"
+        })[]
+        
+        type: "anonymousFunctionReturn"
+      })[]
+      
+      name: string
+    })[]
+  })
   
   callees?: ([string, ({
     
@@ -18592,6 +22481,25 @@ type IdMatch = []|[string]|[string, {
 }]
 // ----- implicit-arrow-linebreak -----
 type ImplicitArrowLinebreak = []|[("beside" | "below")]
+// ----- import-x/avoid-barrel-files -----
+type ImportXAvoidBarrelFiles = []|[{
+  
+  amountOfExportsToConsiderModuleAsBarrel?: number
+}]
+// ----- import-x/avoid-importing-barrel-files -----
+type ImportXAvoidImportingBarrelFiles = []|[{
+  
+  allowList?: string[]
+  
+  maxModuleGraphSizeAllowed?: number
+  
+  amountOfExportsToConsiderModuleAsBarrel?: number
+}]
+// ----- import-x/avoid-namespace-import -----
+type ImportXAvoidNamespaceImport = []|[{
+  
+  allowList?: string[]
+}]
 // ----- import-x/consistent-type-specifier-style -----
 type ImportXConsistentTypeSpecifierStyle = []|[("prefer-top-level" | "prefer-inline")]
 // ----- import-x/dynamic-import-chunkname -----
@@ -18599,7 +22507,6 @@ type ImportXDynamicImportChunkname = []|[{
   importFunctions?: string[]
   allowEmpty?: boolean
   webpackChunknameFormat?: string
-  [k: string]: unknown | undefined
 }]
 // ----- import-x/extensions -----
 type ImportXExtensions = ([]|[("always" | "ignorePackages" | "never")] | []|[("always" | "ignorePackages" | "never")]|[("always" | "ignorePackages" | "never"), {
@@ -18608,6 +22515,7 @@ type ImportXExtensions = ([]|[("always" | "ignorePackages" | "never")] | []|[("a
   }
   ignorePackages?: boolean
   checkTypeImports?: boolean
+  checkSelfReference?: boolean
   pathGroupOverrides?: {
     pattern: string
     patternOptions?: {
@@ -18616,13 +22524,13 @@ type ImportXExtensions = ([]|[("always" | "ignorePackages" | "never")] | []|[("a
     action: ("enforce" | "ignore")
   }[]
   fix?: boolean
-  [k: string]: unknown | undefined
 }] | []|[{
   pattern?: {
     [k: string]: ("always" | "ignorePackages" | "never")
   }
   ignorePackages?: boolean
   checkTypeImports?: boolean
+  checkSelfReference?: boolean
   pathGroupOverrides?: {
     pattern: string
     patternOptions?: {
@@ -18631,7 +22539,6 @@ type ImportXExtensions = ([]|[("always" | "ignorePackages" | "never")] | []|[("a
     action: ("enforce" | "ignore")
   }[]
   fix?: boolean
-  [k: string]: unknown | undefined
 }] | []|[("always" | "ignorePackages" | "never")]|[("always" | "ignorePackages" | "never"), {
   [k: string]: ("always" | "ignorePackages" | "never")
 }] | []|[{
@@ -18667,7 +22574,11 @@ type ImportXNoAbsolutePath = []|[{
   amd?: boolean
   esmodule?: boolean
   
-  ignore?: [unknown, ...(unknown)[]]
+  ignore?: [(string | {
+    [k: string]: unknown | undefined
+  }), ...((string | {
+    [k: string]: unknown | undefined
+  }))[]]
 }]
 // ----- import-x/no-anonymous-default-export -----
 type ImportXNoAnonymousDefaultExport = []|[{
@@ -18700,7 +22611,11 @@ type ImportXNoCycle = []|[{
   amd?: boolean
   esmodule?: boolean
   
-  ignore?: [unknown, ...(unknown)[]]
+  ignore?: [(string | {
+    [k: string]: unknown | undefined
+  }), ...((string | {
+    [k: string]: unknown | undefined
+  }))[]]
   maxDepth?: (number | "∞")
   
   ignoreExternal?: boolean
@@ -18711,6 +22626,7 @@ type ImportXNoCycle = []|[{
 type ImportXNoDuplicates = []|[{
   considerQueryString?: boolean
   "prefer-inline"?: boolean
+  whitelist?: string[][]
 }]
 // ----- import-x/no-dynamic-require -----
 type ImportXNoDynamicRequire = []|[{
@@ -18740,7 +22656,6 @@ type ImportXNoInternalModules = []|[({
 // ----- import-x/no-namespace -----
 type ImportXNoNamespace = []|[{
   ignore?: string[]
-  [k: string]: unknown | undefined
 }]
 // ----- import-x/no-nodejs-modules -----
 type ImportXNoNodejsModules = []|[{
@@ -18752,7 +22667,11 @@ type ImportXNoRelativePackages = []|[{
   amd?: boolean
   esmodule?: boolean
   
-  ignore?: [unknown, ...(unknown)[]]
+  ignore?: [(string | {
+    [k: string]: unknown | undefined
+  }), ...((string | {
+    [k: string]: unknown | undefined
+  }))[]]
 }]
 // ----- import-x/no-relative-parent-imports -----
 type ImportXNoRelativeParentImports = []|[{
@@ -18760,12 +22679,17 @@ type ImportXNoRelativeParentImports = []|[{
   amd?: boolean
   esmodule?: boolean
   
-  ignore?: [unknown, ...(unknown)[]]
+  ignore?: [(string | {
+    [k: string]: unknown | undefined
+  }), ...((string | {
+    [k: string]: unknown | undefined
+  }))[]]
 }]
 // ----- import-x/no-rename-default -----
 type ImportXNoRenameDefault = []|[{
   commonjs?: boolean
   preventRenamingBindings?: boolean
+  whitelist?: string[]
 }]
 // ----- import-x/no-restricted-paths -----
 type ImportXNoRestrictedPaths = []|[{
@@ -18796,19 +22720,41 @@ type ImportXNoUnresolved = []|[{
   amd?: boolean
   esmodule?: boolean
   
-  ignore?: [unknown, ...(unknown)[]]
+  ignore?: [(string | {
+    [k: string]: unknown | undefined
+  }), ...((string | {
+    [k: string]: unknown | undefined
+  }))[]]
   caseSensitive?: boolean
   caseSensitiveStrict?: boolean
 }]
 // ----- import-x/no-unused-modules -----
 type ImportXNoUnusedModules = []|[({
-  unusedExports: true
   
-  src?: [unknown, ...(unknown)[]]
-  [k: string]: unknown | undefined
+  src?: [string, ...(string)[]]
+  
+  ignoreExports?: string[]
+  
+  missingExports?: boolean
+  
+  unusedExports: boolean
+  
+  ignoreUnusedTypeExports?: boolean
+  
+  suppressMissingFileEnumeratorAPIWarning?: boolean
 } | {
-  missingExports: true
-  [k: string]: unknown | undefined
+  
+  src?: string[]
+  
+  ignoreExports?: string[]
+  
+  missingExports: boolean
+  
+  unusedExports?: boolean
+  
+  ignoreUnusedTypeExports?: boolean
+  
+  suppressMissingFileEnumeratorAPIWarning?: boolean
 })]
 // ----- import-x/no-useless-path-segments -----
 type ImportXNoUselessPathSegments = []|[{
@@ -18845,7 +22791,7 @@ type ImportXOrder = []|[{
     order?: ("ignore" | "asc" | "desc")
     orderImportKind?: ("ignore" | "asc" | "desc")
   }
-  warnOnUnassignedImports?: boolean
+  warnOnUnassignedImports?: (boolean | "top")
 }]
 // ----- import-x/prefer-default-export -----
 type ImportXPreferDefaultExport = []|[{
@@ -21249,6 +25195,7 @@ type VueBlockLang = []|[{
   [k: string]: {
     lang?: (string | string[])
     allowNoLang?: boolean
+    required?: boolean
   }
 }]
 // ----- vue/block-order -----
@@ -22369,6 +26316,7 @@ type VueRequireDirectExport = []|[{
 // ----- vue/require-explicit-emits -----
 type VueRequireExplicitEmits = []|[{
   allowProps?: boolean
+  ignoreMixins?: boolean
 }]
 // ----- vue/require-macro-variable-name -----
 type VueRequireMacroVariableName = []|[{
@@ -22429,6 +26377,7 @@ type VueSpaceInParens = []|[("always" | "never")]|[("always" | "never"), {
 // ----- vue/space-infix-ops -----
 type VueSpaceInfixOps = []|[{
   int32Hint?: boolean
+  ignoreOperators?: string[]
   ignoreTypes?: boolean
 }]
 // ----- vue/space-unary-ops -----

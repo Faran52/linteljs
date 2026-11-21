@@ -33,8 +33,8 @@
   },
   "devDependencies": {
     "@anthropic-ai/claude-code": "catalog:",
-    "@commitlint/cli": "^21.2.3",
-    "@commitlint/config-conventional": "^21.2.3",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vue/compiler-sfc": "catalog:",
@@ -42,16 +42,16 @@
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "jiti": "catalog:",
-    "lint-staged": "^17.6.0",
-    "stylelint": "^17.16.0",
-    "stylelint-config-recess-order": "^7.8.0",
-    "stylelint-config-standard": "^40.0.0",
+    "lint-staged": "^17.6.1",
+    "stylelint": "^18.0.0",
+    "stylelint-config-recess-order": "^7.10.1",
+    "stylelint-config-standard": "^41.0.0",
     "ts-morph": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "verdaccio": "^6.10.5",
+    "verdaccio": "^7.1.1",
     "vitest": "catalog:"
   }
 }
