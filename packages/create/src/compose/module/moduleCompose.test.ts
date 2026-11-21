@@ -392,6 +392,8 @@ const REACT = [
 
 const CONTACT = 'testing/vitest/src/lib/apis/contact';
 
+const APP_HEADER = 'testing/vitest/src/components/features/app-header/AppHeader.test.tsx';
+
 const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteError.test.tsx';
 
 const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
@@ -488,6 +490,16 @@ const TEST_PAIRS: TestPair[] = [
     options: [
       ['router.single-page.tsx', 'vite-react/router/single-page/testing/vitest/src/App.test.tsx'],
       ['router.libraries.tsx', 'vite-react/router/libraries/testing/vitest/src/App.test.tsx'],
+    ],
+  },
+  {
+    base: 'vite-react/app-header-test/AppHeader.test.tsx',
+    specifier: './router',
+    groups: groupsWith(REACT, [aliasGroup('@router')]),
+    options: [
+      ['router.react-routers.tsx', `vite-react/router/react-routers/${APP_HEADER}`],
+      ['router.single-page.tsx', `vite-react/router/single-page/${APP_HEADER}`],
+      ['router.tanstack-router.tsx', `vite-react/router/tanstack-router/${APP_HEADER}`],
     ],
   },
   {
