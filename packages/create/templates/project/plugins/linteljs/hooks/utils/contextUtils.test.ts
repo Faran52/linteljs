@@ -35,6 +35,12 @@ import {
 
 import type { SessionInput } from './hostUtils.ts';
 
+// Hoisted above the import, so the limits a session exports cannot move the module's defaults.
+vi.hoisted(() => {
+  vi.stubEnv('CONTEXT_WARN_TOKENS', undefined);
+  vi.stubEnv('CONTEXT_CEILING_TOKENS', undefined);
+});
+
 const assistant = (input: number, read: number, created: number): string => {
   return JSON.stringify({
     type: 'assistant',

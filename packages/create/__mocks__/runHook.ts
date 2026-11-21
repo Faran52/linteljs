@@ -250,8 +250,11 @@ export const expectDecisionOutput = (name: HookScript, stdout: string, host: Hos
   return text;
 };
 
-// `projectDir` is dropped unless set: the harness exports one, which would point the checker at this workspace.
-// `pluginData` alike: a plugin-run harness exports `CLAUDE_PLUGIN_DATA`, where the context hook keeps its marker.
+/**
+ * `projectDir` is dropped unless set: the harness exports one, which would point the checker at this workspace.
+ * `pluginData` alike: a plugin-run harness exports `CLAUDE_PLUGIN_DATA`, where the context hook keeps its marker.
+ * The context limits a session may export are dropped too, so the hooks run on their defaults.
+ */
 export const spawnHook = (
   name: ContextScript | HookScript,
   input: object | string,
@@ -263,6 +266,8 @@ export const spawnHook = (
 
   delete env['CLAUDE_PROJECT_DIR'];
   delete env['CLAUDE_PLUGIN_DATA'];
+  delete env['CONTEXT_WARN_TOKENS'];
+  delete env['CONTEXT_CEILING_TOKENS'];
   // Each spawn strips and compiles the hook and its checker afresh; the cache keeps that to the first.
   env['NODE_COMPILE_CACHE'] = COMPILE_CACHE;
 
