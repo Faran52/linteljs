@@ -8,12 +8,20 @@ import {
   OTHER_LINE_ENDS,
 } from '../constants';
 import {
+  entryOf,
   exportOf,
+  localsOf,
   type Sources,
   sourcesOf,
 } from '../utils/bindingUtils';
+import { Follower } from '../utils/followUtils';
 import { importBlock, type ImportGroups } from '../utils/importUtils';
 import { filledOnce } from '../utils/inlineUtils';
+import {
+  declarationOf,
+  referencesTo,
+  scopeOf,
+} from '../utils/scopeUtils';
 import { simplifiedOnce } from '../utils/simplifyUtils';
 import {
   collect,
@@ -63,6 +71,13 @@ interface Destructured {
   arrow: ts.ArrowFunction;
   parameter: ts.ParameterDeclaration;
   pattern: ts.ObjectBindingPattern;
+}
+
+interface Before {
+  // The base's destructured names something reads before filling, the only ones pruning may drop.
+  follower: Follower;
+  // The names the base imports and never reads, which stay imported whatever the fills leave.
+  unread: string[];
 }
 
 const DIRECTIVE = /^[\t ]*\/\/ @lintel:comment (?<specifier>\S+)#(?<exported>\w+)\n/gmu;
@@ -174,32 +189,76 @@ const emptied = (text: string, {
   return index === arrow.parameters.length - 1 ? splice(text, gone, '') : swapped(text, pattern, '{}');
 };
 
-// A destructured parameter nothing reads is dropped from its pattern.
-const prunedOnce: Step = (text, file) => {
-  for (const site of destructuredIn(file)) {
-    const { arrow, pattern } = site;
-    const names = pattern.elements
-      .map((element) => {
-        return textOf(element.name);
-      });
-    const read = names
-      .filter((name) => {
-        return referencesIn(arrow, name).length > 0;
-      });
+const beforeOf = (base: string, text: string, sources: Sources): Before => {
+  const file = parse(text);
+  const checker = scopeOf(file, sources.modules, sources.held);
+  const follower = new Follower();
 
-    if (read.length === 0 && names.length > 0) {
-      return emptied(text, site);
-    }
-
-    if (read.length < names.length) {
-      const indent = indentOf(text, pattern);
-      const printed = patternOf(read, indent);
-
-      return swapped(text, pattern, printed);
+  for (const { arrow, pattern } of destructuredIn(file)) {
+    for (const element of pattern.elements) {
+      if (referencesTo(checker, element, arrow).length > 0) {
+        follower.track(element.name.getStart());
+      }
     }
   }
 
-  return undefined;
+  const reads = collect(file, ts.isIdentifier)
+    .filter((identifier) => {
+      return isReference(identifier) && declarationOf(checker, identifier) === undefined;
+    })
+    .map((identifier) => {
+      return identifier.text;
+    });
+  const read = new Set(reads);
+  const unread = parse(base).statements
+    .filter(ts.isImportDeclaration)
+    .map(entryOf)
+    .flatMap(localsOf)
+    .filter((local) => {
+      return !read.has(local) && !sources.bindings.has(local);
+    });
+  const before: Before = {
+    follower,
+    unread,
+  };
+
+  return before;
+};
+
+// A destructured name that filling left unread is dropped from its pattern; one the base never read stays.
+const prunedOnce = (follower: Follower): Step => {
+  return (text, file) => {
+    for (const site of destructuredIn(file)) {
+      const { arrow, pattern } = site;
+      const names = pattern.elements
+        .map((element) => {
+          return textOf(element.name);
+        });
+      const kept = pattern.elements
+        .filter(({ name }) => {
+          const start = name.getStart();
+          const reads = referencesIn(arrow, textOf(name));
+
+          return !follower.has(start) || reads.length > 0;
+        })
+        .map(({ name }) => {
+          return textOf(name);
+        });
+
+      if (kept.length === 0 && names.length > 0) {
+        return emptied(text, site);
+      }
+
+      if (kept.length < names.length) {
+        const indent = indentOf(text, pattern);
+        const printed = patternOf(kept, indent);
+
+        return swapped(text, pattern, printed);
+      }
+    }
+
+    return undefined;
+  };
 };
 
 // A source as the engine reads it: every line ended by LF, no byte order mark.
@@ -217,18 +276,19 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const mark = request.base.startsWith(BYTE_ORDER_MARK) ? BYTE_ORDER_MARK : '';
   const sources = sourcesOf(base, options, modules, request);
   const commented = withComments(sources.body, sources);
+  const { follower, unread } = beforeOf(base, commented, sources);
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);
-  });
-  const simplified = settled(filled, simplifiedOnce);
-  const pruned = settled(simplified, prunedOnce);
+  }, follower.follow);
+  const simplified = settled(filled, simplifiedOnce, follower.follow);
+  const pruned = settled(simplified, prunedOnce(follower), follower.follow);
   const file = checked(pruned, sources);
   const identifiers = collect(file, ts.isIdentifier)
     .filter(isReference)
     .map((identifier) => {
       return identifier.text;
     });
-  const read = new Set(identifiers);
+  const read = new Set([...identifiers, ...unread]);
   const imports = importBlock(sources.imports, read, request.importGroups ?? DEFAULT_IMPORT_GROUPS);
   const body = imports === '' ? pruned : `${imports}\n\n${pruned}`;
 

@@ -91,7 +91,7 @@ const specifierOf = (declaration: ts.ImportDeclaration): string => {
     .slice(1, -1);
 };
 
-const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
+export const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
   const clause = declaration.importClause;
   const bindings = clause?.namedBindings;
   const named = bindings !== undefined && ts.isNamedImports(bindings) ? bindings.elements : [];

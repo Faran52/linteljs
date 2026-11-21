@@ -49,6 +49,18 @@ describe('settled', () => {
     expect(text).toBe('bbb');
   });
 
+  it('shows each rewrite, as the text before and after it, to the watch', () => {
+    const seen: string[] = [];
+
+    settled('aa', (current) => {
+      return current.includes('a') ? current.replace('a', 'b') : undefined;
+    }, (before, after) => {
+      seen.push(`${before.text}>${after.text}`);
+    });
+
+    expect(seen).toStrictEqual(['aa>ba', 'ba>bb']);
+  });
+
   it('refuses a rewrite that never stops', () => {
     const run = (): string => {
       return settled('a', (text) => {

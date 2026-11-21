@@ -21,22 +21,27 @@ import {
 
 export type Step = (text: string, file: ts.SourceFile) => string | undefined;
 
+export type Watch = (before: ts.SourceFile, after: ts.SourceFile) => void;
+
 const MARKER = '@lintel:';
 const STEP_LIMIT = 10_000;
 
-// Until a rewrite answers undefined; a module that never settles is refused rather than looped on.
-export const settled = (text: string, once: Step): string => {
-  let current = text;
+// Until a rewrite answers undefined, each rewrite shown to `watch`; a module that never settles is refused rather than
+// looped on.
+export const settled = (text: string, once: Step, watch?: Watch): string => {
+  let file = parse(text);
 
   for (let steps = 0; steps < STEP_LIMIT; steps += 1) {
-    const file = parse(current);
-    const next = once(current, file);
+    const next = once(file.text, file);
 
     if (next === undefined) {
-      return current;
+      return file.text;
     }
 
-    current = next;
+    const nextFile = parse(next);
+
+    watch?.(file, nextFile);
+    file = nextFile;
   }
 
   throw new Error('The composition did not settle; an option module refers back to itself.');

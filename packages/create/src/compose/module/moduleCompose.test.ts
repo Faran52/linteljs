@@ -1219,6 +1219,7 @@ const MORE_CASES: Case[] = [
     option: 'import { b, a } from \'../up\';\n\nexport const x = 1;\n',
     expected: [
       'import fs, { readFileSync as read } from \'node:fs\';',
+      'import { unused } from \'node:os\';',
       'import * as path from \'node:path\';',
       '',
       'import { scoped } from \'@scope/pkg\';',
@@ -1306,11 +1307,11 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a last parameter nothing reads, dropped whole',
+    name: 'a last parameter filling leaves unread, dropped whole',
     base: [
       'import { Item } from \'./p\';',
       '',
-      'export const List = ({ label }: Props) => <Item />;',
+      'export const List = ({ label }: Props) => <Item label={label} />;',
       '',
     ].join('\n'),
     option: [
@@ -1323,11 +1324,11 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a parameter nothing reads after another, dropped with its comma',
+    name: 'a parameter filling leaves unread after another, dropped with its comma',
     base: [
       'import { Item } from \'./p\';',
       '',
-      'export const List = (ref: Ref, { label }: Props) => <Item />;',
+      'export const List = (ref: Ref, { label }: Props) => <Item label={label} />;',
       '',
     ].join('\n'),
     option: [
@@ -1340,7 +1341,24 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a parameter nothing reads before another, left as an empty pattern',
+    name: 'a parameter filling leaves unread before another, left as an empty pattern',
+    base: [
+      'import { Item } from \'./p\';',
+      '',
+      'export const List = ({ label }: Props, ref: Ref) => <Item label={label} />;',
+      '',
+    ].join('\n'),
+    option: [
+      'export const Item = () => <li />;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const List = ({}: Props, ref: Ref) => <li />;',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'a parameter the base already leaves unread, left as written',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1352,7 +1370,41 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = ({}: Props, ref: Ref) => <li />;',
+      'export const List = ({ label }: Props, ref: Ref) => <li />;',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'of two names, the one filling leaves unread dropped, the one the base leaves unread kept',
+    base: [
+      'import { Item } from \'./p\';',
+      '',
+      'export const List = ({ label, other }: Props) => <Item label={label} />;',
+      '',
+    ].join('\n'),
+    option: [
+      'export const Item = () => <li />;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const List = ({ other }: Props) => <li />;',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'a name the base leaves unread, kept though an inner binding of that name is read',
+    base: [
+      'import { Item } from \'./p\';',
+      '',
+      'export const List = ({ label }: Props) => [1].map((label) => <Item label={label} />);',
+      '',
+    ].join('\n'),
+    option: [
+      'export const Item = () => <li />;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const List = ({ label }: Props) => [1].map((label) => <li />);',
       '',
     ].join('\n'),
   },
@@ -1391,7 +1443,19 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'an import whose name is only spelled as a key, dropped',
+    name: 'an import filling leaves only spelled as a key, dropped',
+    base: [
+      'import { size } from \'pkg\';',
+      'import { Item } from \'./p\';',
+      '',
+      'export const y = { size: <Item size={size} /> };',
+      '',
+    ].join('\n'),
+    option: 'export const Item = () => <li />;\n',
+    expected: 'export const y = { size: <li /> };\n',
+  },
+  {
+    name: 'an import the base never reads, kept',
     base: [
       'import { size } from \'pkg\';',
       'import { x } from \'./p\';',
@@ -1400,7 +1464,7 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     option: 'export const x = 1;\n',
-    expected: 'export const y = { size: 1 };\n',
+    expected: 'import { size } from \'pkg\';\n\nexport const y = { size: 1 };\n',
   },
 ];
 
