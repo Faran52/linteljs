@@ -1118,6 +1118,12 @@ const REFUSALS: Refusal[] = [
 
 const MORE_CASES: Case[] = [
   {
+    name: 'a comment directive as the last line of a block',
+    base: 'import { x } from \'./p\';\n\nexport const run = () => {\n  log(x);\n  // @lintel:comment ./p#note\n};\n',
+    option: 'export const note = \'Why this is so.\';\nexport const x = 1;\n',
+    expected: 'export const run = () => {\n  log(1);\n  // Why this is so.\n};\n',
+  },
+  {
     name: 'a name the base imports as a type and an option as a value, written as a value only',
     base: 'import type { Thing } from \'lib\';\nimport { v } from \'./p\';\n\nexport const a: Thing = v;\n',
     option: 'import { Thing } from \'lib\';\n\nexport const v = Thing;\n',
@@ -1386,6 +1392,37 @@ const MORE_CASES: Case[] = [
 ];
 
 const MORE_REFUSALS: Refusal[] = [
+  {
+    name: 'a comment directive whose note holds a line feed',
+    base: 'import { v } from \'./p\';\n\n// @lintel:comment ./p#note\nexport const x = v;\n',
+    option: 'export const v = 1;\nexport const note = \'hi\\nprocess.exit(1);\';\n',
+    message: /\.\/p#note holds a line break, which would end the comment and write code\./u,
+  },
+  {
+    name: 'a comment directive whose note holds a carriage return',
+    base: 'import { v } from \'./p\';\n\n// @lintel:comment ./p#note\nexport const x = v;\n',
+    option: 'export const v = 1;\nexport const note = \'hi\\rprocess.exit(1);\';\n',
+    message: /holds a line break/u,
+  },
+  {
+    name: 'a comment directive whose note holds a line separator',
+    base: 'import { v } from \'./p\';\n\n// @lintel:comment ./p#note\nexport const x = v;\n',
+    option: 'export const v = 1;\nexport const note = \'hi\\u2028process.exit(1);\';\n',
+    message: /holds a line break/u,
+  },
+  {
+    name: 'a comment directive written inside a template literal',
+    base: 'import { v } from \'./p\';\n\nexport const a = `\n// @lintel:comment ./p#note\n` + v;\n',
+    option: 'export const v = 1;\nexport const note = \'hi\';\n',
+    message: /is left after composing: @lintel:/u,
+  },
+  {
+    name: 'a comment directive written as JSX text',
+    base: 'import { v } from \'./p\';\n\nexport const A = () => {\n  return <p>\n    // @lintel:comment ./p#note\n'
+      + '    {v}\n  </p>;\n};\n',
+    option: 'export const v = 1;\nexport const note = \'hi\';\n',
+    message: /is left after composing: @lintel:/u,
+  },
   {
     name: 'a module the base and an option import whole under two names',
     base: 'import React from \'react\';\nimport { v } from \'./p\';\n\nexport const a = [React, v];\n',

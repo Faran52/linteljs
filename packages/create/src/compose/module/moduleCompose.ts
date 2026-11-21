@@ -3,6 +3,7 @@ import ts from 'typescript';
 
 import {
   BYTE_ORDER_MARK,
+  COMMENT_ENDS,
   DEFAULT_IMPORT_GROUPS,
   OTHER_LINE_ENDS,
 } from '../constants';
@@ -20,6 +21,7 @@ import {
   indentOf,
   isPlainElement,
   isReference,
+  parse,
   patternOf,
   referencesIn,
   type Span,
@@ -85,15 +87,49 @@ const noteOf = (sources: Sources, specifier: string, exported: string): string |
     throw new Error(`${specifier}#${exported} must be a string to become a comment.`);
   }
 
+  if (COMMENT_ENDS.test(value.text)) {
+    throw new Error(`${specifier}#${exported} holds a line break, which would end the comment and write code.`);
+  }
+
   return value.text;
+};
+
+// Where each comment of a text starts, so a directive is read only from a comment, never from a string or a template.
+const commentStartsOf = (text: string): Set<number> => {
+  const file = parse(text);
+  const starts = new Set<number>();
+
+  const visit = (node: ts.Node): void => {
+    const children = node.getChildren(file);
+
+    if (children.length === 0 && !ts.isJsxText(node)) {
+      ts.getLeadingCommentRanges(text, node.pos)
+        ?.forEach((range) => {
+          starts.add(range.pos);
+        });
+    }
+
+    children.forEach(visit);
+  };
+
+  visit(file);
+
+  return starts;
 };
 
 // A comment is not a value: a directive line takes an option's string export, or goes when the option has none.
 const withComments = (text: string, sources: Sources): string => {
+  const starts = commentStartsOf(text);
+
   return text
-    .replaceAll(DIRECTIVE, (line, specifier: string, exported: string) => {
-      const note = noteOf(sources, specifier, exported);
+    .replaceAll(DIRECTIVE, (line, specifier: string, exported: string, offset: number) => {
       const at = line.indexOf('//');
+
+      if (!starts.has(offset + at)) {
+        return line;
+      }
+
+      const note = noteOf(sources, specifier, exported);
       const indent = indentAt(line, at);
 
       return note === undefined ? '' : `${indent}// ${note}\n`;

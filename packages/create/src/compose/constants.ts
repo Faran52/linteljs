@@ -186,6 +186,9 @@ export const STRING_TOKENS = new Set([
 // A line end the engine reads as LF: CRLF and a lone CR.
 export const OTHER_LINE_ENDS = /\r\n?/gu;
 
+// The characters that end a `//` comment: a note holding one would write the rest of it as code.
+export const COMMENT_ENDS = /[\n\r\u2028\u2029]/u;
+
 // The declarations that give a name only a type, and those that give it only a value; the rest give it both.
 export const TYPE_ONLY_DECLARATIONS = new Set([
   ts.SyntaxKind.InterfaceDeclaration,
