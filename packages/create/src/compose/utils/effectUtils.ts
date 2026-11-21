@@ -631,13 +631,13 @@ export const actsIn = (proof: Proof, node: ts.Node): ts.Node[] => {
 };
 
 // The test `isPure` takes for a member read.
-export const plainReadOf = (proof: Proof): ((read: MemberRead) => boolean) => {
+const plainReadOf = (proof: Proof): ((read: MemberRead) => boolean) => {
   return (read) => {
     return readFault(proof, read) === undefined;
   };
 };
 
-export const readRefusal = (node: ts.Node, { member, origin }: Fault): Error => {
+const readRefusal = (node: ts.Node, { member, origin }: Fault): Error => {
   const read = `${member} of ${origin.shown} is not shown to be a plain property`;
   const reason = origin.isModule
     ? `${read}, so reading it may run code: give the engine that module, or declare it plain data`

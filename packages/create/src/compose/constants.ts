@@ -72,8 +72,11 @@ export const LOGICAL = new Set([
   ts.SyntaxKind.QuestionQuestionEqualsToken,
 ]);
 
-// The expressions that may run code the author wrote, or write a binding: a call in any form, a read that may be a
-// getter, a spread that iterates or reads getters, a class with static code, and an update or a delete.
+/**
+ * The expressions that may run code the author wrote, or write a binding: a call in any form, a read that may be a
+ * getter, a spread that iterates or reads getters, a class with static code, and an update or a delete. A call, a
+ * member read or an object spread runs nothing only on the proof effectUtils gives.
+ */
 export const EFFECT_KINDS = new Set([
   ts.SyntaxKind.CallExpression,
   ts.SyntaxKind.NewExpression,

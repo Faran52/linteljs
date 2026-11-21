@@ -1,11 +1,6 @@
 import ts from 'typescript';
 
-import {
-  BINARY_LEVELS,
-  EFFECT_KINDS,
-  LOGICAL,
-  UPDATES,
-} from '../constants';
+import { EFFECT_KINDS, LOGICAL } from '../constants';
 
 import { resolved, type Sources } from './bindingUtils';
 import {
@@ -139,15 +134,9 @@ export const captureCheck = (
   }
 };
 
-// Whether evaluating a node may run code the author wrote, or write a binding: its parts aside.
-const isEffect = (node: ts.Node): boolean => {
-  if (ts.isBinaryExpression(node)) {
-    return !BINARY_LEVELS.has(node.operatorToken.kind);
-  }
-
-  const isUpdate = ts.isPrefixUnaryExpression(node) && UPDATES.has(node.operator);
-
-  return isUpdate || EFFECT_KINDS.has(node.kind);
+// Of code proven to act on nothing, a call, read or spread still reads what other code may write.
+const isRead = (node: ts.Node): boolean => {
+  return EFFECT_KINDS.has(node.kind);
 };
 
 // The nodes under a node that pass a test, without looking into a function, which runs only when called.
@@ -193,11 +182,11 @@ export const kindOf = (proof: Proof, argument: ts.Expression): ArgumentKind => {
     return 'effect';
   }
 
-  const isRead = heldIn(argument, isEffect).length > 0 || heldIn(argument, (node) => {
+  const isMutable = heldIn(argument, isRead).length > 0 || heldIn(argument, (node) => {
     return isWritable(checker, node);
   }).length > 0;
 
-  return isRead ? 'mutable' : 'stable';
+  return isMutable ? 'mutable' : 'stable';
 };
 
 // Whether the option's code may run a read later, or more than once; with `isSkippable`, or not at all.

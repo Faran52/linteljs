@@ -43,8 +43,11 @@ export interface ComposeRequest {
   // A module an option or the base imports by a relative specifier, as imported, to its source: read only to prove
   // that a member read of it runs no code, never inlined or printed.
   modules: Readonly<Record<string, string>>;
-  // The specifiers whose exports are plain data, so a member read through their import, at any depth, runs no code.
-  // Each is matched whole, a `*` standing for any run of characters but `/`: `./*.styles`, `@styles/tokens.stylex`.
+  /**
+   * The specifiers whose exports are plain data, so a member read through their import, at any depth, runs no code;
+   * with `pureCalls` too, so does a read of what their calls answer.
+   * Each is matched whole, a `*` standing for any run of characters but `/`: `./*.styles`, `@styles/tokens.stylex`.
+   */
   plainData: readonly string[];
   // The specifiers whose functions run no code beyond answering, so a call through their import, its arguments
   // proven on their own, may be moved past. A separate trust from `plainData`, matched the same way.
