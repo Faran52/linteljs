@@ -1141,7 +1141,10 @@ plain data per composition in the step's table, kept in the repo, and the engine
 each logging under `node_modules/.cache/linteljs-gate/` (ignored, so the commit gate's tree never sees it). A
 failed step prints a short excerpt, so a failure reads in about fifteen lines; under `CI` it prints the whole log.
 
-The steps are independent only because none writes what another reads: the gate sets `LINTELJS_GATE_BUILT=1` so
+The steps are independent only because none writes what another reads. `typegen`, `compose`, `tailwind-styles`
+and `css-markup` each own their files (no file has two writers, and none reads a file another writes; the vite-react
+`AppHeader` and `HomePage` copies are `compose`'s alone), and each writes only when the text differs, so on a
+current tree nothing is written beside the steps that read it. The gate sets `LINTELJS_GATE_BUILT=1` so
 `lint:starters` packs with `--ignore-scripts` instead of rebuilding `dist` under `typecheck`.
 
 Under `CI` they run in series: a 4-core runner is saturated by `test:coverage` alone.

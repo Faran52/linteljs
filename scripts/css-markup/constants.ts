@@ -29,12 +29,7 @@ export const TARGETS: readonly Target[] = [
       { map: statusPage, markup: 'styling/atomic/src/components/features/status-page/StatusPage.tsx' },
       { map: aboutPage, markup: 'styling/atomic/src/pages/about/AboutPage.tsx' },
       { map: versionPage, markup: 'styling/atomic/src/pages/version/VersionPage.tsx' },
-      { map: homePage, markup: `${DATA_DRAWER}/pages/home/HomePage.tsx` },
-      { map: homePage, markup: `${STORE_DRAWER}/pages/home/HomePage.tsx` },
       { map: contactPage, markup: `${FORM_DRAWER}/pages/contact/ContactPage.tsx` },
-      { map: appHeader, markup: `router/react-routers/${APP_HEADER}` },
-      { map: appHeader, markup: `router/single-page/${APP_HEADER}` },
-      { map: appHeader, markup: `router/tanstack-router/${APP_HEADER}` },
     ],
   },
   {

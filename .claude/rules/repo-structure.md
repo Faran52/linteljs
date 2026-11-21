@@ -71,7 +71,8 @@ a generated project has, and it runs the shipped checker less this workspace's `
 `tailwind-styles` step fails when that changed a committed file.
 `scripts/css-markup/` writes each css copy of a markup file (`[<drawer>/]styling/atomic/src/X.tsx`, the stylex and
 tailwind group, to `[<drawer>/]styling/css/src/X.tsx`) from the class maps in `templates/codegen/css-sources/`,
-one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. The gate's `css-markup` step
+one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. A file `compose` writes, and
+the markup it would copy, is never a `TARGETS` entry: each file has one writer. The gate's `css-markup` step
 fails when that changed a committed file. `scripts/compose/` writes each composed file under `shells/` from its
 base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in the
 `SUBJECTS` table of its `constants.ts` (options, `plainData`, `pureCalls`, `modules`, import groups, the shipped path

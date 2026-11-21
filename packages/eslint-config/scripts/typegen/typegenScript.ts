@@ -56,12 +56,11 @@ const dts = await flatConfigsToRulesDTS([core, ...configs], {
 });
 const previous = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 
-writeFileSync(path, dts);
-
 if (dts === previous) {
   log('src/typegen.d.ts is current');
 }
 else {
+  writeFileSync(path, dts);
   logError('src/typegen.d.ts was stale and is regenerated: commit it');
   process.exitCode = 1;
 }
