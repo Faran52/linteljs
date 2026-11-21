@@ -448,6 +448,15 @@ const TEST_PAIRS: TestPair[] = [
     ],
   },
   {
+    base: 'next/home-page/page.test.tsx',
+    specifier: './store',
+    groups: groupsWith(REACT, []),
+    options: [
+      ['store.libraries.tsx', 'next/store/libraries/testing/vitest/src/app/page.test.tsx'],
+      ['store.react-state.tsx', 'next/data/redux-free/store/react-state/testing/vitest/src/app/page.test.tsx'],
+    ],
+  },
+  {
     base: 'sveltekit/routes/page.test.ts',
     specifier: './store',
     groups: groupsWith(SVELTE, []),
