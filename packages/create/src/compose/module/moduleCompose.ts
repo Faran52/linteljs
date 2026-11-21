@@ -1,6 +1,11 @@
+import { mapValues } from 'es-toolkit';
 import ts from 'typescript';
 
-import { DEFAULT_IMPORT_GROUPS } from '../constants';
+import {
+  BYTE_ORDER_MARK,
+  DEFAULT_IMPORT_GROUPS,
+  OTHER_LINE_ENDS,
+} from '../constants';
 import {
   exportOf,
   type Sources,
@@ -148,9 +153,19 @@ const prunedOnce: Step = (text, file) => {
   return undefined;
 };
 
+// A source as the engine reads it: every line ended by LF, no byte order mark.
+const plainOf = (source: string): string => {
+  const unmarked = source.startsWith(BYTE_ORDER_MARK) ? source.slice(BYTE_ORDER_MARK.length) : source;
+
+  return unmarked.replaceAll(OTHER_LINE_ENDS, '\n');
+};
+
 // The base with every parameter filled from its option module, simplified until none of the machinery is left.
 export const moduleCompose = (request: ComposeRequest): string => {
-  const sources = sourcesOf(request.base, request.options);
+  const base = plainOf(request.base);
+  const options = mapValues(request.options, plainOf);
+  const mark = request.base.startsWith(BYTE_ORDER_MARK) ? BYTE_ORDER_MARK : '';
+  const sources = sourcesOf(base, options);
   const commented = withComments(sources.body, sources);
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);
@@ -167,5 +182,5 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const imports = importBlock(sources.imports, read, request.importGroups ?? DEFAULT_IMPORT_GROUPS);
   const body = imports === '' ? pruned : `${imports}\n\n${pruned}`;
 
-  return wellFormed(sources.header + body);
+  return wellFormed(mark + sources.header + body);
 };

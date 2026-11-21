@@ -23,6 +23,12 @@ interface Refusal {
   message: RegExp;
 }
 
+interface Composition {
+  base: string;
+  options: Record<string, string>;
+  expected: string;
+}
+
 const templates = join(import.meta.dirname, '../../../templates');
 const fixtures = join(templates, 'codegen/compose-sources/vite-react');
 const shells = join(templates, 'shells/vite-react');
@@ -67,7 +73,7 @@ const GROUPS = [
   [String.raw`^.+\.s?css$`],
 ];
 
-const HEADERS = [
+const HEADERS: [string, string][] = [
   ['react-routers', 'atomic'],
   ['react-routers', 'css'],
   ['single-page', 'atomic'],
@@ -96,7 +102,7 @@ describe('moduleCompose, on the shipped app header', () => {
   });
 });
 
-const HOMES = [
+const HOMES: [string, string, string][] = [
   [
     'libraries',
     'atomic',
@@ -138,7 +144,7 @@ describe('moduleCompose, on the shipped home page', () => {
   });
 });
 
-const SHEETS = [
+const SHEETS: [string, string][] = [
   ['libraries', 'store/libraries'],
   ['react-state', 'data/redux-free/store/react-state'],
 ];
@@ -155,6 +161,110 @@ describe('moduleCompose, on the shipped home page style table', () => {
     const expected = readShipped(`${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`);
 
     expect(composed).toBe(expected);
+  });
+});
+
+const COMPOSITIONS: Composition[] = [
+  ...HEADERS
+    .map(([router, styling]): Composition => {
+      const composition: Composition = {
+        base: 'app-header/AppHeader.tsx',
+        options: {
+          './router': `app-header/router.${router}.tsx`,
+          './styling': `app-header/styling.${styling}.ts`,
+        },
+        expected: `router/${router}/styling/${styling}/src/components/features/app-header/AppHeader.tsx`,
+      };
+
+      return composition;
+    }),
+  ...HOMES
+    .map(([
+      store,
+      styling,
+      folder,
+    ]): Composition => {
+      const composition: Composition = {
+        base: 'home-page/HomePage.tsx',
+        options: {
+          './store': `home-page/store.${store}.tsx`,
+          './styling': `home-page/styling.${styling}.ts`,
+        },
+        expected: `${folder}/styling/${styling}/src/pages/home/HomePage.tsx`,
+      };
+
+      return composition;
+    }),
+  ...SHEETS
+    .map(([store, folder]): Composition => {
+      const composition: Composition = {
+        base: 'home-page-styles/HomePage.styles.ts',
+        options: { './store': `home-page-styles/store.${store}.ts` },
+        expected: `${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`,
+      };
+
+      return composition;
+    }),
+];
+
+const LINE_ENDS = [['CRLF', '\r\n'], ['a lone CR', '\r']];
+
+describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s', (_name, end) => {
+  it.each(COMPOSITIONS)('writes the shipped file, with LF, from $base', ({
+    base,
+    options,
+    expected,
+  }) => {
+    const ended = (text: string): string => {
+      return text.replaceAll('\n', end);
+    };
+
+    const read = Object.entries(options)
+      .map(([specifier, name]) => {
+        const option = readFixture(name);
+        const pair: [string, string] = [specifier, ended(option)];
+
+        return pair;
+      });
+    const baseText = readFixture(base);
+    const composed = moduleCompose({
+      base: ended(baseText),
+      options: Object.fromEntries(read),
+      importGroups: GROUPS,
+    });
+    const shipped = readShipped(expected);
+
+    expect(composed).toBe(shipped);
+  });
+});
+
+describe('moduleCompose, on inputs that open with a byte order mark', () => {
+  it('keeps the base\'s mark and drops each option\'s', () => {
+    const base = '\uFEFFimport { x } from \'./p\';\n\nexport const y = x;\n';
+    const composed = moduleCompose({
+      base,
+      options: { './p': '\uFEFFexport const x = 1;\n' },
+    });
+
+    expect(composed).toBe('\uFEFFexport const y = 1;\n');
+  });
+
+  it('keeps the mark of a base that opens with no import', () => {
+    const composed = moduleCompose({
+      base: '\uFEFFexport const y = 1;\n',
+      options: {},
+    });
+
+    expect(composed).toBe('\uFEFFexport const y = 1;\n');
+  });
+
+  it('writes no mark for a base without one, whatever its options open with', () => {
+    const composed = moduleCompose({
+      base: 'import { x } from \'./p\';\n\nexport const y = x;\n',
+      options: { './p': '\uFEFFexport const x = 1;\n' },
+    });
+
+    expect(composed).toBe('export const y = 1;\n');
   });
 });
 

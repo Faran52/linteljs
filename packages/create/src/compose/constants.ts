@@ -114,3 +114,9 @@ export const JSX_LINE_BREAK = /\r\n|\n|\r/u;
 
 // The spaces JSX trims where a line of text meets the one before it.
 export const JSX_LEADING_SPACES = /^[\t ]+/u;
+
+// The mark some editors open a file with; the base keeps it, an option's text lands inside the base without it.
+export const BYTE_ORDER_MARK = '\uFEFF';
+
+// A line end the engine reads as LF: CRLF and a lone CR.
+export const OTHER_LINE_ENDS = /\r\n?/gu;
