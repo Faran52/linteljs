@@ -229,6 +229,33 @@ describe('reindent', () => {
 
     expect(moved).toBe('');
   });
+
+  it.each([
+    [
+      'a template over lines',
+      'x = [\n    `a\n    b ${c}\n      d`,\n    e,\n];',
+      'x = [\n  `a\n    b ${c}\n      d`,\n  e,\n];',
+    ],
+    [
+      'a template whose later part runs over lines',
+      'x = `${a}\n    b ${c}\n    d`\n    + e;',
+      'x = `${a}\n    b ${c}\n    d`\n  + e;',
+    ],
+    [
+      'a string continued over lines',
+      'x = [\n    \'a\\\n    b\',\n];',
+      'x = [\n  \'a\\\n    b\',\n];',
+    ],
+    [
+      'a JSX attribute string over lines',
+      '<p\n    title="a\n    b"\n/>',
+      '<p\n  title="a\n    b"\n/>',
+    ],
+  ])('keeps the lines inside %s as written', (_name, block, expected) => {
+    const moved = reindent(block, '    ', '  ');
+
+    expect(moved).toBe(expected);
+  });
 });
 
 describe('unparen and valueOf', () => {

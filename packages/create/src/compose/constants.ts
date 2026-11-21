@@ -168,6 +168,18 @@ export const JSX_LEADING_SPACES = /^[\t ]+/u;
 // The mark some editors open a file with; the base keeps it, an option's text lands inside the base without it.
 export const BYTE_ORDER_MARK = '\uFEFF';
 
+// Every line break of a text the engine reads, each LF.
+export const LINE_BREAKS = /\n/gu;
+
+// The tokens whose text is their value, line breaks and indentation included.
+export const STRING_TOKENS = new Set([
+  ts.SyntaxKind.StringLiteral,
+  ts.SyntaxKind.NoSubstitutionTemplateLiteral,
+  ts.SyntaxKind.TemplateHead,
+  ts.SyntaxKind.TemplateMiddle,
+  ts.SyntaxKind.TemplateTail,
+]);
+
 // A line end the engine reads as LF: CRLF and a lone CR.
 export const OTHER_LINE_ENDS = /\r\n?/gu;
 

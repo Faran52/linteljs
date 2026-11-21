@@ -5,7 +5,9 @@ import {
   CALLED_FROM,
   INTRINSIC_TAG,
   LEVEL,
+  LINE_BREAKS,
   PURE_KEYWORDS,
+  STRING_TOKENS,
   UNARY_OPERATORS,
   UPDATES,
   WHOLE_EXPRESSION,
@@ -119,21 +121,48 @@ export const linesGone = (text: string, span: Span): Span => {
   return gone;
 };
 
-// Every line after the first moves from one indentation to another; a blank line stays blank.
+const isStringToken = (node: ts.Node): node is ts.Node => {
+  return STRING_TOKENS.has(node.kind);
+};
+
+// The lines, by index, that open inside a string or template written over lines: their text is its value.
+const heldLines = (block: string): Set<number> => {
+  const file = parse(block);
+  const held = collect(file, isStringToken)
+    .flatMap((token) => {
+      const start = token.getStart();
+      const end = token.getEnd();
+      const breaks = block
+        .slice(start, end)
+        .matchAll(LINE_BREAKS);
+      const found = Array.from(breaks);
+
+      return found
+        .map((lineBreak) => {
+          const before = block.slice(0, start + lineBreak.index);
+
+          return before.split('\n').length;
+        });
+    });
+
+  return new Set(held);
+};
+
+// Every line after the first moves from one indentation to another; a blank line, and one inside a string or a
+// template written over lines, stays as it is.
 export const reindent = (block: string, from: string, to: string): string => {
-  const [first = '', ...rest] = block.split('\n');
-  const moved = rest
-    .map((line) => {
-      if (line.trim() === '') {
+  const held = heldLines(block);
+  const moved = block
+    .split('\n')
+    .map((line, index) => {
+      if (index === 0 || held.has(index) || line.trim() === '') {
         return line;
       }
 
       return line.startsWith(from) ? to + line.slice(from.length) : line;
     });
 
-  const lines = [first, ...moved];
-
-  return lines.join('\n');
+  return moved.join('\n');
 };
 
 export const unparen = (node: ts.Expression): ts.Expression => {

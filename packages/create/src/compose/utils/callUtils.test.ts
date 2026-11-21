@@ -135,6 +135,11 @@ describe('inlineMember', () => {
       'run = () => {\n    return {\n      a: 1,\n    };\n};',
     ],
     [
+      'run = () => {\n    return x.text;\n};',
+      'export const x = {\n  text: {\n    t: `a\n  b`,\n  },\n};\n',
+      'run = () => {\n    return {\n      t: `a\n  b`,\n    };\n};',
+    ],
+    [
       'y = x.make(b);',
       'export const x = {\n  make: (n: number) => ({\n    a: n,\n  }),\n};\n',
       'y = {\n  a: b,\n};',

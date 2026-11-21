@@ -26,6 +26,7 @@ import {
   memberIn,
   ownsLines,
   parse,
+  reindent,
   type Span,
   spanOf,
   splice,
@@ -249,14 +250,12 @@ const spreadPropertyRule: Rule = (text, node) => {
   if (ownsLines(text, span) && inner.startsWith('\n')) {
     const to = indentAt(text, span.start);
     const from = leadingIndent(inner);
-    const moved = inner
+    const members = inner
       .trimEnd()
-      .replace(TRAILING_COMMA, '')
+      .replace(TRAILING_COMMA, '');
+    const moved = reindent(members, from, to)
       .split('\n')
-      .slice(1)
-      .map((line) => {
-        return line.startsWith(from) ? to + line.slice(from.length) : line;
-      });
+      .slice(1);
     const comma = span.end > node.getEnd() ? ',' : '';
     const lines = linesOf(text, span);
 

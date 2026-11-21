@@ -309,6 +309,11 @@ describe('simplifiedOnce', () => {
       'x = {\n  a: 1,\n\n  b: {\n    c: 2,\n  },\n\n  // why\n  d: 3,\n\n  e: 4,\n};',
     ],
     [
+      'a spread alone on its line, of a literal holding a template over lines, kept as written',
+      'x = {\n  ...{\n    b: `c\n    d`,\n  },\n};',
+      'x = {\n  b: `c\n    d`,\n};',
+    ],
+    [
       'a spread alone on its line with no comma, of a literal that ends with none',
       'x = {\n  ...{\n    b: 1\n  }\n};',
       'x = {\n  b: 1\n};',
