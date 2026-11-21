@@ -6,6 +6,7 @@ import {
   JSX_LEADING_SPACES,
   JSX_LINE_BREAK,
   PLAIN_STRING,
+  SIMPLIFIED_KINDS,
   TRAILING_COMMA,
   WRITTEN,
 } from '../constants';
@@ -395,13 +396,19 @@ const RULES: readonly Rule[] = [
   fragmentRule,
 ];
 
-const isNode = (node: ts.Node): node is ts.Node => {
-  return node.kind !== ts.SyntaxKind.Unknown;
+const isSimplified = (node: ts.Node): node is ts.Node => {
+  return SIMPLIFIED_KINDS.has(node.kind);
 };
 
-// One rewrite, innermost first; undefined once nothing applies.
-export const simplifiedOnce = (text: string, file: ts.SourceFile): string | undefined => {
-  const nodes = collect(file, isNode).toReversed();
+// One rewrite of a node filling wrote or wrote inside, innermost first; code no option touched stays as written.
+export const simplifiedOnce = (
+  text: string,
+  file: ts.SourceFile,
+  isTouched: (node: ts.Node) => boolean,
+): string | undefined => {
+  const nodes = collect(file, isSimplified)
+    .toReversed()
+    .filter(isTouched);
 
   for (const node of nodes) {
     for (const rule of RULES) {

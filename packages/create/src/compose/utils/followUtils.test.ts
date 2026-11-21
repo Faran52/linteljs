@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import {
   describe,
   expect,
@@ -5,18 +6,19 @@ import {
 } from 'vitest';
 
 import { Follower } from './followUtils';
-import { parse } from './sourceUtils';
+import { collect, parse } from './sourceUtils';
 
 // Follows each token of `before` holding a `$` mark through the rewrite to `after`, and answers where each landed.
 const landed = (before: string, after: string): (number | undefined)[] => {
   const marks = [...before.matchAll(/\$\w+/gu)];
-  const follower = new Follower();
+  const first = parse(before);
+  const follower = new Follower(first);
 
   for (const { index } of marks) {
     follower.track(index);
   }
 
-  follower.follow(parse(before), parse(after));
+  follower.follow(first, parse(after));
 
   return marks
     .map(({ 0: mark }) => {
@@ -28,13 +30,14 @@ const landed = (before: string, after: string): (number | undefined)[] => {
 
 // Every position of a rewritten text still followed.
 const followedIn = (before: string, after: string): number[] => {
-  const follower = new Follower();
+  const first = parse(before);
+  const follower = new Follower(first);
 
   for (const { index } of before.matchAll(/\$\w+/gu)) {
     follower.track(index);
   }
 
-  follower.follow(parse(before), parse(after));
+  follower.follow(first, parse(after));
 
   const positions = Array.from({ length: after.length }, (_unused, position) => {
     return position;
@@ -48,9 +51,10 @@ const followedIn = (before: string, after: string): number[] => {
 
 describe('Follower', () => {
   it('follows nothing it was not asked to', () => {
-    const follower = new Follower();
+    const first = parse('a;');
+    const follower = new Follower(first);
 
-    follower.follow(parse('a;'), parse('a;'));
+    follower.follow(first, parse('a;'));
 
     const isFollowed = follower.has(0);
 
@@ -149,15 +153,111 @@ describe('Follower', () => {
   });
 
   it('follows a token through two rewrites in turn', () => {
-    const follower = new Follower();
+    const first = parse('f($a);');
+    const follower = new Follower(first);
     const middle = parse('g(1); f($a);');
 
     follower.track(2);
-    follower.follow(parse('f($a);'), middle);
+    follower.follow(first, middle);
     follower.follow(middle, parse('f($a);'));
 
     const isFollowed = follower.has(2);
 
     expect(isFollowed).toBe(true);
+  });
+});
+
+// Whether rewriting `before` to `after` touched the first node of `after` whose text is `node`.
+const touched = (before: string, after: string, node: string): boolean => {
+  const first = parse(before);
+  const next = parse(after);
+  const follower = new Follower(first);
+
+  follower.follow(first, next);
+
+  const at = after.indexOf(node);
+  const [found] = collect(next, isNode)
+    .filter((candidate) => {
+      return candidate.getStart() === at && candidate.getText() === node;
+    });
+
+  return found !== undefined && follower.isTouched(next, found);
+};
+
+const isNode = (node: ts.Node): node is ts.Node => {
+  return node.kind !== ts.SyntaxKind.Unknown;
+};
+
+describe('Follower.isTouched', () => {
+  it.each([
+    [
+      'a node a rewrite wrote',
+      'f(a);',
+      'f(b);',
+      'b',
+    ],
+    [
+      'a node a rewrite wrote inside',
+      'f([a, b]);',
+      'f([a, c]);',
+      '[a, c]',
+    ],
+    [
+      'a node a rewrite dropped a token from between',
+      'f([a, b, c]);',
+      'f([a, c]);',
+      '[a, c]',
+    ],
+    [
+      'a node holding a token a rewrite wrote',
+      'f(a);',
+      'f(b);',
+      'f(b)',
+    ],
+  ])('answers yes for %s', (_name, before, after, node) => {
+    const isTouched = touched(before, after, node);
+
+    expect(isTouched).toBe(true);
+  });
+
+  it.each([
+    [
+      'a node left as it was',
+      'f([a, b]); g(1);',
+      'f([a, b]); g(2);',
+      '[a, b]',
+    ],
+    [
+      'a node a token was dropped beside, not inside',
+      'f([a, b], c);',
+      'f([a, b]);',
+      '[a, b]',
+    ],
+    [
+      'a node a token was written beside',
+      'f([a, b]);',
+      'f([a, b], c);',
+      '[a, b]',
+    ],
+  ])('answers no for %s', (_name, before, after, node) => {
+    const isTouched = touched(before, after, node);
+
+    expect(isTouched).toBe(false);
+  });
+
+  it('answers for each node of one text, read once', () => {
+    const first = parse('f(a); g(b);');
+    const next = parse('f(a); g(c);');
+    const follower = new Follower(first);
+
+    follower.follow(first, next);
+
+    const [left, right] = collect(next, ts.isCallExpression);
+    const answers = [left, right]
+      .map((call) => {
+        return call !== undefined && follower.isTouched(next, call);
+      });
+
+    expect(answers).toStrictEqual([false, true]);
   });
 });

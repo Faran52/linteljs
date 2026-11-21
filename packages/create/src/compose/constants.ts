@@ -229,3 +229,13 @@ export const VALUE_ONLY_DECLARATIONS = new Set([
   ts.SyntaxKind.BindingElement,
   ts.SyntaxKind.FunctionDeclaration,
 ]);
+
+// The kinds of node a simplify rule rewrites, so the rest are not asked whether filling touched them.
+export const SIMPLIFIED_KINDS = new Set([
+  ts.SyntaxKind.PropertyAccessExpression,
+  ts.SyntaxKind.ConditionalExpression,
+  ts.SyntaxKind.JsxSpreadAttribute,
+  ts.SyntaxKind.JsxAttribute,
+  ts.SyntaxKind.SpreadAssignment,
+  ts.SyntaxKind.JsxFragment,
+]);

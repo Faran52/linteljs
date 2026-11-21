@@ -11,6 +11,18 @@ type Kept = [number, number];
 
 type Round = ReadonlyMap<number, number>;
 
+// A token of the first text: where it stood and its place among that text's tokens.
+interface Origin {
+  start: number;
+  index: number;
+}
+
+// Where rewrites wrote or dropped something, from one token start to another.
+interface Mark {
+  from: number;
+  to: number;
+}
+
 // Each text is the next of one rewrite and the last of another, so its tokens are read once.
 const LEAVES = new WeakMap<ts.SourceFile, Leaf[]>();
 
@@ -156,29 +168,108 @@ const movesOf = (before: ts.SourceFile, after: ts.SourceFile): Map<number, numbe
   return new Map(pairs);
 };
 
-// Token starts followed through every rewrite of a text; a token a rewrite changed or dropped is no longer followed.
+// Each token of a text followed through every rewrite of it, back to the token of the first text it was, if any: a
+// token a rewrite wrote has none.
 export class Follower {
-  private positions = new Set<number>();
+  private origins: Map<number, Origin | undefined>;
 
-  public track(position: number): void {
-    this.positions.add(position);
+  private readonly tracked = new Set<number>();
+
+  private readonly marks = new WeakMap<ts.SourceFile, Mark[]>();
+
+  public constructor(first: ts.SourceFile) {
+    const origins = leavesOf(first)
+      .map(({ start }, index) => {
+        const origin: Origin = {
+          start,
+          index,
+        };
+        const pair: [number, Origin] = [start, origin];
+
+        return pair;
+      });
+
+    this.origins = new Map(origins);
   }
 
+  // A token of the first text, by where it starts there.
+  public track(start: number): void {
+    this.tracked.add(start);
+  }
+
+  // Whether the token now at a position is one tracked in the first text.
   public has(position: number): boolean {
-    return this.positions.has(position);
+    const origin = this.origins.get(position);
+
+    return origin !== undefined && this.tracked.has(origin.start);
+  }
+
+  // Whether rewrites wrote a token of a node, or dropped one from between its tokens.
+  public isTouched(file: ts.SourceFile, node: ts.Node): boolean {
+    const start = node.getStart(file);
+    const end = node.getEnd();
+
+    return this
+      .marksOf(file)
+      .some(({ from, to }) => {
+        return from >= start && to < end;
+      });
   }
 
   public readonly follow = (before: ts.SourceFile, after: ts.SourceFile): void => {
     const moves = movesOf(before, after);
-    const positions = [...this.positions];
-    const moved = positions
-      .map((position) => {
-        return moves.get(position);
-      })
-      .filter((to) => {
-        return to !== undefined;
+    const origins = [...moves]
+      .map(([from, to]) => {
+        const pair: [number, Origin | undefined] = [to, this.origins.get(from)];
+
+        return pair;
       });
 
-    this.positions = new Set(moved);
+    this.origins = new Map(origins);
   };
+
+  // A written token, as itself, and a dropped one, as the two tokens either side of it.
+  private marksOf(file: ts.SourceFile): Mark[] {
+    const known = this.marks.get(file);
+
+    if (known !== undefined) {
+      return known;
+    }
+
+    const leaves = leavesOf(file);
+    const written = leaves
+      .filter(({ start }) => {
+        return this.origins.get(start) === undefined;
+      })
+      .map(({ start }) => {
+        const mark: Mark = {
+          from: start,
+          to: start,
+        };
+
+        return mark;
+      });
+    const lefts = leaves.slice(0, -1);
+    const rights = leaves.slice(1);
+    const dropped = zip(lefts, rights)
+      .filter(([left, right]) => {
+        const leftIndex = this.origins.get(left.start)?.index;
+        const rightIndex = this.origins.get(right.start)?.index;
+
+        return leftIndex !== undefined && rightIndex !== undefined && rightIndex - leftIndex > 1;
+      })
+      .map(([left, right]) => {
+        const mark: Mark = {
+          from: left.start,
+          to: right.start,
+        };
+
+        return mark;
+      });
+    const marks = [...written, ...dropped];
+
+    this.marks.set(file, marks);
+
+    return marks;
+  }
 }

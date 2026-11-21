@@ -192,7 +192,7 @@ const emptied = (text: string, {
 const beforeOf = (base: string, text: string, sources: Sources): Before => {
   const file = parse(text);
   const checker = scopeOf(file, sources.modules, sources.held);
-  const follower = new Follower();
+  const follower = new Follower(file);
 
   for (const { arrow, pattern } of destructuredIn(file)) {
     for (const element of pattern.elements) {
@@ -280,7 +280,11 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);
   }, follower.follow);
-  const simplified = settled(filled, simplifiedOnce, follower.follow);
+  const simplified = settled(filled, (text, file) => {
+    return simplifiedOnce(text, file, (node) => {
+      return follower.isTouched(file, node);
+    });
+  }, follower.follow);
   const pruned = settled(simplified, prunedOnce(follower), follower.follow);
   const file = checked(pruned, sources);
   const identifiers = collect(file, ts.isIdentifier)

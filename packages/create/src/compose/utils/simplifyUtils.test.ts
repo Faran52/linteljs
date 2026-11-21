@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import {
   describe,
   expect,
@@ -5,10 +6,17 @@ import {
 } from 'vitest';
 
 import { simplifiedOnce } from './simplifyUtils';
+import { parse } from './sourceUtils';
 import { settled } from './stepUtils';
 
+const isAnyTouched = (): boolean => {
+  return true;
+};
+
 const simplified = (text: string): string => {
-  return settled(text, simplifiedOnce);
+  return settled(text, (current, file) => {
+    return simplifiedOnce(current, file, isAnyTouched);
+  });
 };
 
 describe('simplifiedOnce', () => {
@@ -352,5 +360,41 @@ describe('simplifiedOnce', () => {
     const message = 'An attribute set to undefined after a spread overrides the spread, so it cannot be removed';
 
     expect(run).toThrow(`${message}: b={undefined}`);
+  });
+
+  it.each([
+    ['a member', 'x = ({ a: 1 }).a;'],
+    ['a condition', 'x = true ? 1 : 2;'],
+    ['a spread of attributes', 'x = <a {...{ b: 1 }} />;'],
+    ['an undefined attribute', 'x = <a b={undefined} />;'],
+    ['an undefined attribute after a spread, not refused', 'x = <a {...r} b={undefined} />;'],
+    ['a spread of properties', 'x = { ...{ a: 1 } };'],
+    ['a fragment', 'x = <a><><b /></></a>;'],
+  ])('leaves %s no option touched as written', (_name, text) => {
+    const file = parse(text);
+
+    const isUntouched = (): boolean => {
+      return false;
+    };
+
+    const written = simplifiedOnce(text, file, isUntouched);
+
+    expect(written).toBeUndefined();
+  });
+
+  it('rewrites only the node an option touched, past one it did not', () => {
+    const text = 'x = [false ? 3 : 4, true ? 1 : 2];';
+
+    const isTouched = (node: ts.Node): boolean => {
+      return node
+        .getText()
+        .startsWith('false');
+    };
+
+    const written = settled(text, (current, file) => {
+      return simplifiedOnce(current, file, isTouched);
+    });
+
+    expect(written).toBe('x = [4, true ? 1 : 2];');
   });
 });

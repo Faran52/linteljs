@@ -1409,6 +1409,33 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
+    name: 'code no option touched, left as written though a rule would simplify it',
+    base: [
+      'import { x } from \'./p\';',
+      '',
+      'export const y = [x, true ? 1 : 2, ({ a: 1 }).a, { ...{ b: 1 } }];',
+      'export const Z = ({ ...r }) => <div {...r} c={undefined}><><b {...{ d: 1 }} e={undefined} /></></div>;',
+      '',
+    ].join('\n'),
+    option: 'export const x = 1;\n',
+    expected: [
+      'export const y = [1, true ? 1 : 2, ({ a: 1 }).a, { ...{ b: 1 } }];',
+      'export const Z = ({ ...r }) => <div {...r} c={undefined}><><b {...{ d: 1 }} e={undefined} /></></div>;',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'code filling wrote into, simplified',
+    base: [
+      'import { on } from \'./p\';',
+      '',
+      'export const y = [on ? 1 : 2, ({ a: on }).a];',
+      '',
+    ].join('\n'),
+    option: 'export const on = true;\n',
+    expected: 'export const y = [1, true];\n',
+  },
+  {
     name: 'a pattern with a default, left as written',
     base: [
       'import { Item } from \'./p\';',
