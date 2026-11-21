@@ -62,6 +62,18 @@ export const BINARY_LEVELS = new Map<ts.SyntaxKind, number>([
 
 export const UPDATES = new Set([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken]);
 
+// The statements that end with a semicolon, which may be left to automatic insertion when nothing follows.
+export const SEMICOLON_STATEMENTS = new Set([
+  ts.SyntaxKind.VariableStatement,
+  ts.SyntaxKind.ExpressionStatement,
+  ts.SyntaxKind.ThrowStatement,
+  ts.SyntaxKind.BreakStatement,
+  ts.SyntaxKind.ContinueStatement,
+  ts.SyntaxKind.DoStatement,
+  ts.SyntaxKind.DebuggerStatement,
+  ts.SyntaxKind.TypeAliasDeclaration,
+]);
+
 // What a destructuring assignment writes through to the names inside it.
 export const PATTERN_PARTS = new Set([
   ts.SyntaxKind.ArrayLiteralExpression,

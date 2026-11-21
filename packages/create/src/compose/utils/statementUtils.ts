@@ -1,5 +1,7 @@
 import ts from 'typescript';
 
+import { SEMICOLON_STATEMENTS } from '../constants';
+
 import { resolved, type Sources } from './bindingUtils';
 import { arrowOf, inlineCall } from './callUtils';
 import {
@@ -344,8 +346,11 @@ const blockOf = (kept: readonly ts.Statement[], indent: string): string => {
     .replace(LEADING_BLANK_LINES, '');
   const from = leadingIndent(block);
   const body = block.slice(from.length);
+  // Base code follows the block, so a semicolon left to insertion could join the next line to it.
+  const isOpen = SEMICOLON_STATEMENTS.has(last.kind) && last.getLastToken()?.kind !== ts.SyntaxKind.SemicolonToken;
+  const closing = isOpen ? ';' : '';
 
-  return reindent(body, from, indent);
+  return reindent(body, from, indent) + closing;
 };
 
 // `const y = f();`: the option's statements replace the statement, and `y.k` becomes `k`.

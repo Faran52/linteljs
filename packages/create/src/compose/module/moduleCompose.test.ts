@@ -1118,6 +1118,12 @@ const REFUSALS: Refusal[] = [
 
 const MORE_CASES: Case[] = [
   {
+    name: 'option statements written without semicolons, spliced before base code (F21)',
+    base: 'import { useK } from \'./p\';\n\nexport const C = () => {\n  const y = useK();\n  [y.k].forEach(log);\n};\n',
+    option: 'export const useK = () => {\n  const k = 1\n\n  return { k }\n}\n',
+    expected: 'export const C = () => {\n  const k = 1;\n  [k].forEach(log);\n};\n',
+  },
+  {
     name: 'a comment directive as the last line of a block',
     base: 'import { x } from \'./p\';\n\nexport const run = () => {\n  log(x);\n  // @lintel:comment ./p#note\n};\n',
     option: 'export const note = \'Why this is so.\';\nexport const x = 1;\n',

@@ -41,6 +41,12 @@ const RETURN_VALUE = '    return value;';
 
 const CLOSE = '};';
 
+const IF_K = [
+  '  if (k) {',
+  '    log(k);',
+  '  }',
+];
+
 const COMMENTED = lines(
   'export const x = () => {',
   '',
@@ -212,6 +218,24 @@ describe('spliceStatements', () => {
       'const made = x();\n',
       'export const x = () => 4;\n',
       'const made = 4;\n',
+    ],
+    [
+      'statements written without semicolons, before base code that would join them (F21)',
+      lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1', '', '  return { k }', '}'),
+      lines('run = () => {', '  const k = 1;', '  [k].forEach(log);', '};'),
+    ],
+    [
+      'an expression statement written without a semicolon, last of several',
+      lines('run = () => {', '  const y = x();', '  (y.k)();', '};'),
+      lines('export const x = () => {', '  const k = f;', '  log(k)', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = f;', '  log(k);', '  (k)();', '};'),
+    ],
+    [
+      'statements that end in a block, which takes no semicolon',
+      lines('run = () => {', '  const y = x();', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1;', ...IF_K, '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1;', ...IF_K, '  [k].forEach(log);', '};'),
     ],
   ])('fills %s', (_name, body, option, expected) => {
     const written = filled(body, option);
