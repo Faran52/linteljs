@@ -153,6 +153,40 @@ describe('sourcesOf, on option modules that import each other', () => {
   });
 });
 
+describe('sourcesOf, on where an option module sits', () => {
+  it.each([
+    ['../shared/styling'],
+    ['./sub/styling'],
+    ['@styles/styling'],
+    ['styling'],
+    ['./'],
+    ['./.'],
+    ['./..'],
+  ])('refuses an option module imported as %s', (specifier) => {
+    const run = (): Sources => {
+      return sourcesOf('export const x = 1;\n', { [specifier]: 'export const a = 1;\n' }, {}, NO_TRUST);
+    };
+
+    expect(run).toThrow(`An option module must sit in the base's own directory, imported as ./<name>: ${specifier}`);
+  });
+
+  it('takes option modules beside the base, and modules held for proof from anywhere', () => {
+    const options = {
+      './styling': 'export const a = 1;\n',
+      './HomePage.styles': 'export const b = 1;\n',
+    };
+    const held = { '../tokens/tokens.stylex': 'export const c = 1;\n' };
+    const { modules, held: kept } = sourcesOf('export const x = 1;\n', options, held, NO_TRUST);
+    const taken = [...modules.keys(), ...kept.keys()];
+
+    expect(taken).toStrictEqual([
+      './styling',
+      './HomePage.styles',
+      '../tokens/tokens.stylex',
+    ]);
+  });
+});
+
 describe('sourcesOf, on what a base opens with', () => {
   it('keeps the comments and directives before the imports as the header', () => {
     const base = '// Why.\n\'use client\';\n\nimport { a } from \'pkg\';\n\nexport const b = a;\n';

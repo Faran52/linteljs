@@ -1,5 +1,7 @@
 import ts from 'typescript';
 
+import { BESIDE_BASE } from '../constants';
+
 import { parse, textOf } from './sourceUtils';
 
 // A local name that stands for one export of a parameter module.
@@ -286,6 +288,15 @@ export const sourcesOf = (
   given: Readonly<Record<string, string>>,
   { plainData, pureCalls }: Trust,
 ): Sources => {
+  const elsewhere = Object.keys(options)
+    .find((specifier) => {
+      return !BESIDE_BASE.test(specifier);
+    });
+
+  if (elsewhere !== undefined) {
+    throw new Error(`An option module must sit in the base's own directory, imported as ./<name>: ${elsewhere}`);
+  }
+
   const baseFile = parse(base);
   const modules = parsedOf(options);
   const held = parsedOf(given);

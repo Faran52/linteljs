@@ -1578,6 +1578,22 @@ describe('moduleCompose, on option modules that import each other', () => {
   });
 });
 
+describe('moduleCompose, on an option module outside the base\'s directory', () => {
+  it('refuses it', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: 'import { a } from \'../shared/p\';\n\nexport const x = a;\n',
+        options: { '../shared/p': 'export const a = 1;\n' },
+        modules: {},
+        plainData: [],
+        pureCalls: [],
+      });
+    };
+
+    expect(run).toThrow('An option module must sit in the base\'s own directory, imported as ./<name>: ../shared/p');
+  });
+});
+
 describe('moduleCompose, refusing', () => {
   it.each([...REFUSALS, ...MORE_REFUSALS])('refuses $name', ({
     base,

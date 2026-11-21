@@ -40,7 +40,8 @@ import {
 export interface ComposeRequest {
   // The base module's source: ordinary typed code that imports its parameter modules.
   base: string;
-  // A parameter module's specifier, as the base imports it, to the chosen option module's source.
+  // A parameter module's specifier, as the base imports it, to the chosen option module's source. Every option module
+  // sits in the base's own directory, so its specifier is `./<name>` and names the same file from every module.
   options: Readonly<Record<string, string>>;
   // A module an option or the base imports by a relative specifier, as imported, to its source: read only to prove
   // that a member read of it runs no code, never inlined or printed.
