@@ -25,12 +25,9 @@ const pointAt = (position: number): Span => {
   return point;
 };
 
-// The runs of what one edit wrote that hold more than whitespace, each trimmed to it.
+// The runs of what one edit wrote that hold more than whitespace, each trimmed to it. A written text's copies are
+// disjoint and in the order they stand in it, as editUtils builds every one.
 const writtenOf = (edit: Edit, at: number): Span[] => {
-  const ordered = edit.copies
-    .toSorted((left, right) => {
-      return left.to - right.to;
-    });
   const end: Copy = {
     from: 0,
     to: edit.insert.length,
@@ -39,7 +36,7 @@ const writtenOf = (edit: Edit, at: number): Span[] => {
   const gaps: Span[] = [];
   let from = 0;
 
-  const stops = [...ordered, end];
+  const stops = [...edit.copies, end];
 
   for (const copy of stops) {
     const gap = edit.insert.slice(from, copy.to);
@@ -55,7 +52,7 @@ const writtenOf = (edit: Edit, at: number): Span[] => {
       gaps.push(span);
     }
 
-    from = Math.max(from, copy.to + copy.length);
+    from = copy.to + copy.length;
   }
 
   return gaps;

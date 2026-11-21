@@ -544,9 +544,10 @@ const isProvenCall = (context: Context, call: ts.CallExpression): boolean => {
 // operands of arithmetic are followed in turn; `checking` holds those on the way, so values that refer round fail.
 const isPrimitiveValue = (context: Context, value: ts.Expression, checking: Set<ts.Node>): boolean => {
   if (ts.isPrefixUnaryExpression(value)) {
-    const isNegated = value.operator !== ts.SyntaxKind.PlusToken && ts.isNumericLiteral(value.operand);
+    const { operator, operand } = value;
+    const isAnyOperand = operator === ts.SyntaxKind.ExclamationToken || operator === ts.SyntaxKind.PlusToken;
 
-    return value.operator === ts.SyntaxKind.ExclamationToken || value.operator === ts.SyntaxKind.PlusToken || isNegated;
+    return isAnyOperand || ts.isNumericLiteral(operand);
   }
 
   if (ts.isBinaryExpression(value) && !checking.has(value)) {

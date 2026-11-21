@@ -45,6 +45,31 @@ const wrap = (text: string, old: string, before: string, after: string): Edit =>
   return editOf(span, written);
 };
 
+// An edit of `text` from `start` to `end`, writing each part: a string as written, a pair as that span copied.
+const rewritten = (text: string, start: number, end: number, parts: readonly (string | [number, number])[]): Edit => {
+  const written = parts
+    .map((part) => {
+      if (typeof part === 'string') {
+        return plain(part);
+      }
+
+      const [from, to] = part;
+
+      return copied(text, {
+        start: from,
+        end: to,
+      });
+    });
+  const span = {
+    start,
+    end,
+  };
+
+  const whole = joined(written);
+
+  return editOf(span, whole);
+};
+
 const isNode = (node: ts.Node): node is ts.Node => {
   return node.kind !== ts.SyntaxKind.Unknown && node.kind !== ts.SyntaxKind.SourceFile;
 };
@@ -267,6 +292,34 @@ describe('Follower.isTouched', () => {
       [wrap('x = f(a);', 'f(a)', 'g(', ')')],
       'g(f(a))',
     ],
+    [
+      'a node an edit wrote, listed before an insert where it starts',
+      'f(a);',
+      [swap('f(a);', 'a', 'b'), swap('f(a);', '', 'g + ', 2)],
+      'b',
+    ],
+    [
+      'a node an edit wrote after one that shortened the text',
+      'f(ab, c);',
+      [swap('f(ab, c);', 'ab', 'x'), swap('f(ab, c);', 'c', 'y')],
+      'y',
+    ],
+    [
+      'a node holding the run carried before what an edit took out',
+      'f(a, b, c + d);',
+      [rewritten('f(a, b, c + d);', 2, 9, [
+        [8, 9],
+        ', ',
+        [2, 3],
+      ])],
+      'a + d',
+    ],
+    [
+      'a node an edit took a token out of between two runs it carries',
+      'f(a, b.c);',
+      [rewritten('f(a, b.c);', 2, 8, [[2, 3], [6, 8]])],
+      'a.c',
+    ],
   ])('answers yes for %s', (_name, before, edits, node) => {
     const isTouched = touched(before, edits, node);
 
@@ -303,6 +356,18 @@ describe('Follower.isTouched', () => {
       'x = f(a);',
       [wrap('x = f(a);', 'f(a)', 'g(', ')')],
       'f(a)',
+    ],
+    [
+      'a node a token was taken out right before',
+      'f(c, [a, b]);',
+      [swap('f(c, [a, b]);', 'c, ', '')],
+      '[a, b]',
+    ],
+    [
+      'a node made of runs an edit carries twice, one inside the other',
+      'f(abc);',
+      [rewritten('f(abc);', 2, 5, [[3, 4], [2, 5]])],
+      'babc',
     ],
   ])('answers no for %s', (_name, before, edits, node) => {
     const isTouched = touched(before, edits, node);
@@ -403,5 +468,123 @@ describe('Follower.isTouched', () => {
       true,
       true,
     ]);
+  });
+});
+
+// Where something was taken out of `before`, then where that lands as `next` is rewritten from `start` to `end`.
+const landedOf = (before: string, taken: string, start: number, end: number, parts: [number, number][]): Follower => {
+  const follower = new Follower();
+  const next = applied(before, [swap(before, taken, '')]);
+
+  follower.follow(before, [swap(before, taken, '')]);
+  follower.follow(next, [rewritten(next, start, end, parts)]);
+
+  return follower;
+};
+
+// The whitespace an edit writes beside `c`, and the runs a later edit carries to put it inside `d .e`.
+const SPACED: [string, string, [number, number][]][] = [
+  [
+    'after',
+    'c ',
+    [
+      [6, 7],
+      [3, 4],
+      [7, 9],
+      [4, 6],
+      [2, 3],
+    ],
+  ],
+  [
+    'before',
+    ' c',
+    [
+      [6, 7],
+      [2, 3],
+      [7, 9],
+      [4, 6],
+      [3, 4],
+    ],
+  ],
+];
+
+describe('Follower.isTouched, where an edit that carries runs moves a place something was taken out', () => {
+  it.each([
+    [
+      'where one run starts',
+      'q(mz.n);',
+      true,
+    ],
+    [
+      'where the edit starts',
+      'q(zm.n);',
+      false,
+    ],
+    [
+      'where the edit ends',
+      'q(m.nz);',
+      false,
+    ],
+  ])('keeps it %s inside what it rewrote, or at its edge', (_name, before, expected) => {
+    const follower = landedOf(before, 'z', 2, 5, [
+      [4, 5],
+      [3, 4],
+      [2, 3],
+    ]);
+    const node = nodeAt(parse('q(n.m);'), 'n.m');
+    const isTouched = follower.isTouched(node);
+
+    expect(isTouched).toBe(expected);
+  });
+
+  it('keeps it with the run that ends there before the run that starts there', () => {
+    const follower = landedOf('q(mz.n[k]);', 'z', 2, 8, [
+      [2, 3],
+      [5, 8],
+      [3, 5],
+    ]);
+    const node = nodeAt(parse('q(m[k].n);'), 'm[k]');
+    const isTouched = follower.isTouched(node);
+
+    expect(isTouched).toBe(true);
+  });
+
+  it.each(SPACED)('marks none of the whitespace an edit wrote %s what it wrote, wherever a later edit carries it', (
+    _side,
+    insert,
+    parts,
+  ) => {
+    const first = 'f(a, d.e);';
+    const follower = new Follower();
+    const second = applied(first, [swap(first, 'a', insert)]);
+    const end = second.indexOf(')');
+
+    follower.follow(first, [swap(first, 'a', insert)]);
+    follower.follow(second, [rewritten(second, 2, end, parts)]);
+
+    const node = nodeAt(parse('f(d .e, c);'), 'd .e');
+    const isTouched = follower.isTouched(node);
+
+    expect(isTouched).toBe(false);
+  });
+
+  it('carries no part of what an edit wrote that no run holds', () => {
+    const first = 'q(v.n, k);';
+    const second = 'q(w.n, k);';
+    const follower = new Follower();
+
+    follower.follow(first, [swap(first, 'v', 'w')]);
+
+    follower.follow(second, [rewritten(second, 2, 8, [
+      [7, 8],
+      [3, 5],
+      [5, 7],
+      [2, 3],
+    ])]);
+
+    const node = nodeAt(parse('q(k.n, w);'), 'k.n');
+    const isTouched = follower.isTouched(node);
+
+    expect(isTouched).toBe(false);
   });
 });

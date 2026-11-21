@@ -83,6 +83,7 @@ describe('applied', () => {
     [1, 3],
     [2, 2],
     [0, 6],
+    [3, 5],
   ])('refuses an edit from %i to %i over another from 1 to 4', (start, end) => {
     const run = (): string => {
       return applied('abcdef', [editAt(1, 4, 'x'), editAt(start, end, 'y')]);
@@ -158,6 +159,33 @@ describe('copied, copyOf, joined and sliced', () => {
         from: 0,
         to: 1,
         length: 2,
+      }],
+    });
+  });
+
+  it('slices where a copy ends, carrying none of it', () => {
+    const text = 'abcdef';
+    const whole = joined([
+      copied(text, {
+        start: 0,
+        end: 4,
+      }),
+      copied(text, {
+        start: 5,
+        end: 6,
+      }),
+    ]);
+    const part = sliced(whole, {
+      start: 4,
+      end: 5,
+    });
+
+    expect(part).toStrictEqual({
+      insert: 'f',
+      copies: [{
+        from: 5,
+        to: 0,
+        length: 1,
       }],
     });
   });

@@ -97,6 +97,11 @@ describe('aliasedOf', () => {
       undefined,
     ],
     [
+      'an import of a type and a value merged under one name',
+      'm',
+      'm = { c: 3 }',
+    ],
+    [
       'a local name',
       'l',
       undefined,
@@ -111,12 +116,13 @@ describe('aliasedOf', () => {
       'import { p } from \'./p\';',
       'import { h } from \'./h\';',
       'import { q } from \'./q\';',
+      'import { m } from \'./p\';',
       'const l = 1;',
-      'export const y = [p, h, q, l, g];',
+      'export const y = [p, h, q, m, l, g];',
       '',
     ].join('\n');
     const base = parse(text);
-    const option = parse('export const p = { a: 1 };\n');
+    const option = parse('export const p = { a: 1 };\nexport interface m {}\nexport const m = { c: 3 };\n');
     const held = parse('export const h = { b: 2 };\n');
     const checker = scopeOf(base, new Map([['./p', option]]), new Map([['./h', held]]));
     const name = nameAt(base, read, -1);
@@ -202,6 +208,36 @@ describe('declarationOf', () => {
     expect(typeReadText).toBe('type Id = string;');
     const valueReadText = textOfDeclaration(valueRead);
     expect(valueReadText).toBe("Id = 'id'");
+  });
+
+  it.each([
+    [
+      'a value read of a parameter merged with a type parameter',
+      'function f<T>(T: number) {\n  return T;\n}\n',
+      'T',
+      2,
+      'T: number',
+    ],
+    [
+      'a type read of an interface merged with a parameter',
+      'function f(P: number) {\n  interface P {}\n  const y: P = {};\n\n  return [y, P];\n}\n',
+      'P',
+      2,
+      'interface P {}',
+    ],
+    [
+      'a type read of a type merged with a destructured binding',
+      'const { X } = o;\ntype X = number;\nconst y: X = 1;\n',
+      'X',
+      2,
+      'type X = number;',
+    ],
+  ])('resolves %s to the declaration the read means', (_name, text, name, index, expected) => {
+    const { checker, base } = scopedOf(text, '');
+    const found = declarationOf(checker, nameAt(base, name, index));
+    const shown = textOfDeclaration(found);
+
+    expect(shown).toBe(expected);
   });
 
   it('resolves a name in an implements clause as a type, and the class it extends as a value', () => {
@@ -409,6 +445,8 @@ describe('declaredBy', () => {
       "import L, { M as N } from 'm';",
       "import * as O from 'o';",
       "import 'bare';",
+      "import Q, * as T from 't';",
+      "import U from 'u';",
       'const a = 1;',
       'let [b, , c] = list;',
       'var { d } = record;',
@@ -419,6 +457,11 @@ describe('declaredBy', () => {
       'class F {',
       '  m() {',
       '    var member = 1;',
+      '  }',
+      '}',
+      'class V {',
+      '  static {',
+      '    var still = 1;',
       '  }',
       '}',
       'interface G {}',
@@ -461,7 +504,11 @@ describe('declaredBy', () => {
       'N',
       'O',
       'P',
+      'Q',
       'R',
+      'T',
+      'U',
+      'V',
     ]);
   });
 });

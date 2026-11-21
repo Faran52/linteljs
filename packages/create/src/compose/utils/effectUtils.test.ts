@@ -102,6 +102,9 @@ const RETURNS = 'export const f = (c: boolean) => {\n  const l = [1].map((n) => 
 const EITHER = 'export const g = (c: boolean) => {\n  if (c) {\n    return () => ({ a: 1 });\n  }\n\n'
   + '  return () => ({ a: 2 });\n};\n';
 
+const GETTER_RETURNED = 'export const f = (c: boolean) => {\n  if (c) {\n    return { a: 1 };\n  }\n\n'
+  + '  return { get b() { return 1; } };\n};\n';
+
 const CALLED = 'import { f } from \'./p\';\n\ny = f().a;';
 
 const STYLED = 'import { s } from \'./t.styles\';\n\ny = s.tab(1).a;';
@@ -233,6 +236,24 @@ const UNPROVEN: [string, string, Given, Fault][] = [
     'const t = {};\ny = t.toString;',
     NONE,
     faultOf('"toString"', '"t"', false),
+  ],
+  [
+    'a member of a module whose specifier only begins as one declared plain data',
+    'import { s } from \'./t.styles.ts\';\n\ny = s.a;',
+    STYLES_PLAIN,
+    faultOf('"a"', './t.styles.ts', true),
+  ],
+  [
+    'a member of a literal an `await using` holds',
+    'await using t = { a: 1 };\ny = t.a;',
+    NONE,
+    faultOf('"a"', '"t"', false),
+  ],
+  [
+    'a member of a parameter read where its call has returned',
+    'import { f } from \'./p\';\n\nconst t = { a: 1 };\ny = f(t)().a;',
+    optionOf('export const f = (p: O) => () => p;\n'),
+    faultOf('"a"', '"p"', false),
   ],
   [
     'a member a spread may give',
@@ -520,6 +541,16 @@ describe('spreadFault', () => {
       STYLES_PLAIN,
       faultOf('every member', '"s.tab(1)"', false),
     ],
+    [
+      'import { f } from \'./p\';\n\ny = f();',
+      optionOf('const x = g();\nexport const f = () => x;\n'),
+      faultOf('every member', '"f()"', false),
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f(true);',
+      optionOf(GETTER_RETURNED),
+      faultOf('every member', '"f(true)"', false),
+    ],
   ])('answers for %s with %j', (base, given, expected) => {
     const { proof, value } = subjectOf(base, given);
     const fault = spreadFault(proof, value);
@@ -647,6 +678,48 @@ describe('actsIn', () => {
         '`t${f}`',
         '[a]',
       ],
+    ],
+    [
+      'y = [a ^ b, a & b, a != b, a <= b, a > b, a >= b, a >> b, a >>> b, a / b, a % b, a ** b];',
+      NONE,
+      [
+        'a ^ b',
+        'a & b',
+        'a != b',
+        'a <= b',
+        'a > b',
+        'a >= b',
+        'a >> b',
+        'a >>> b',
+        'a / b',
+        'a % b',
+        'a ** b',
+      ],
+    ],
+    [
+      'y = [(a === b) | 0, (a instanceof B) | 0];',
+      NONE,
+      ['a instanceof B'],
+    ],
+    [
+      'import { s } from \'./t.styles\';\n\ny = s.a + 1;',
+      STYLES_PLAIN,
+      ['s.a + 1'],
+    ],
+    [
+      'y = [f`t`, class {}];',
+      NONE,
+      ['f`t`', 'class {}'],
+    ],
+    [
+      'function* g() {\n  y = yield 1;\n}',
+      NONE,
+      ['yield 1'],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (...n: number[]) => n;\n'),
+      ['f(1)'],
     ],
     [
       [

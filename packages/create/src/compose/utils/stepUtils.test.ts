@@ -106,6 +106,18 @@ describe('settled', () => {
     expect(run).toThrow(/did not settle/u);
   });
 
+  it('refuses a rewrite that keeps answering no edits, which is not done', () => {
+    const run = (): ts.SourceFile => {
+      const start = parse('a');
+
+      return settled(start, () => {
+        return [];
+      });
+    };
+
+    expect(run).toThrow(/did not settle/u);
+  });
+
   it('asks for ten thousand rewrites before it refuses', () => {
     const asked: string[] = [];
 
@@ -166,6 +178,31 @@ const atEnd: Answer = (identifier) => {
   return edits;
 };
 
+// The name in capitals, and the text's end marked too.
+const alsoAtEnd: Answer = (identifier) => {
+  const end = identifier.getSourceFile().text.length;
+  const span: Span = {
+    start: end,
+    end,
+  };
+  const capitals = plain(identifier.text.toUpperCase());
+  const marked = plain('x;');
+  const edits = [editOver(identifier, capitals), editOf(span, marked)];
+
+  return edits;
+};
+
+// The whole statement of the name, in capitals.
+const wholeStatement: Answer = (identifier) => {
+  const { parent } = identifier;
+  const written = plain(parent
+    .getText()
+    .toUpperCase());
+  const edits = [editOver(parent, written)];
+
+  return edits;
+};
+
 const refused: Answer = () => {
   throw new Error('refused');
 };
@@ -203,6 +240,24 @@ describe('batched', () => {
     const text = passOf('a;\nb + c;\nd;\n', { b: atEnd }, []);
 
     expect(text).toBe('A;\nb + c;\nD;\n');
+  });
+
+  it('rewrites alone a first candidate one of whose edits reaches past its statement', () => {
+    const text = passOf('a;\nb;', { a: alsoAtEnd }, []);
+
+    expect(text).toBe('A;\nb;x;');
+  });
+
+  it('leaves for a later pass the statement of a later candidate one of whose edits reaches past it', () => {
+    const text = passOf('a;\nb + c;\nd;\n', { b: alsoAtEnd }, []);
+
+    expect(text).toBe('A;\nb + c;\nD;\n');
+  });
+
+  it('joins a later candidate whose edit ends where its statement does', () => {
+    const text = passOf('a;\nb;\n', { b: wholeStatement }, []);
+
+    expect(text).toBe('A;\nB;\n');
   });
 
   it('refuses as a later candidate is refused', () => {
