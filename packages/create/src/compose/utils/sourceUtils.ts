@@ -2,9 +2,11 @@ import ts from 'typescript';
 
 import {
   BINARY_LEVELS,
+  CALLED_FROM,
   INTRINSIC_TAG,
   LEVEL,
   PURE_KEYWORDS,
+  UNARY_OPERATORS,
   UPDATES,
   WHOLE_EXPRESSION,
   WRITTEN,
@@ -332,6 +334,14 @@ export const isWritten = (node: ts.Expression): boolean => {
   return ts.isDeleteExpression(parent) || (isUpdate && UPDATES.has(parent.operator));
 };
 
+// What a read, a non-null assertion or a tag continues: the chain before it.
+const linkOf = (value: ts.Expression): ts.Expression | undefined => {
+  const isRead = ts.isPropertyAccessExpression(value) || ts.isElementAccessExpression(value);
+  const inner = isRead || ts.isNonNullExpression(value) ? value.expression : undefined;
+
+  return ts.isTaggedTemplateExpression(value) ? value.tag : inner;
+};
+
 // How tightly an expression holds together; an operator this table does not name is an assignment.
 const levelOf = (value: ts.Expression): number => {
   if (ts.isBinaryExpression(value)) {
@@ -342,9 +352,7 @@ const levelOf = (value: ts.Expression): number => {
     return LEVEL.assignment;
   }
 
-  const isKeyworded = ts.isTypeOfExpression(value) || ts.isAwaitExpression(value) || ts.isVoidExpression(value);
-
-  if (ts.isPrefixUnaryExpression(value) || isKeyworded) {
+  if (ts.isPrefixUnaryExpression(value) || UNARY_OPERATORS.has(value.kind)) {
     return LEVEL.unary;
   }
 
@@ -352,22 +360,58 @@ const levelOf = (value: ts.Expression): number => {
     return LEVEL.relational;
   }
 
-  if (ts.isPropertyAccessExpression(value) || ts.isElementAccessExpression(value) || ts.isCallExpression(value)) {
-    return LEVEL.member;
+  if (ts.isOptionalChain(value)) {
+    return LEVEL.optional;
   }
 
-  return ts.isFunctionExpression(value) || ts.isObjectLiteralExpression(value) ? LEVEL.member - 1 : LEVEL.primary;
+  if (ts.isCallExpression(value)) {
+    return LEVEL.call;
+  }
+
+  // A chain holds together as loosely as the loosest link in it.
+  const link = linkOf(value);
+
+  if (link !== undefined) {
+    const linked = levelOf(link);
+
+    return Math.min(LEVEL.member, linked);
+  }
+
+  const isBare = ts.isNewExpression(value) && value.arguments === undefined;
+  const isOpen = ts.isFunctionExpression(value) || ts.isClassExpression(value) || ts.isObjectLiteralExpression(value);
+
+  if (isBare || isOpen || ts.isPostfixUnaryExpression(value)) {
+    return LEVEL.optional;
+  }
+
+  return ts.isNewExpression(value) ? LEVEL.member : LEVEL.primary;
+};
+
+// The loosest expression a binary operator takes on one side without parentheses.
+const operandRoom = (parent: ts.BinaryExpression, replaced: ts.Node): number => {
+  const { kind } = parent.operatorToken;
+  const level = BINARY_LEVELS.get(kind);
+
+  // An assignment takes any expression but a comma on its right.
+  if (level === undefined) {
+    return parent.right === replaced ? LEVEL.assignment : LEVEL.call;
+  }
+
+  // `??` takes neither `||` nor `&&` beside it without parentheses.
+  if (kind === ts.SyntaxKind.QuestionQuestionToken) {
+    return LEVEL.bitOr;
+  }
+
+  // `-1 ** 2` does not parse: the base of a power is never a unary expression.
+  return kind === ts.SyntaxKind.AsteriskAsteriskToken && parent.left === replaced ? LEVEL.optional : level + 1;
 };
 
 // The loosest expression a position takes without parentheses.
 const roomAt = (replaced: ts.Node): number => {
   const { parent } = replaced;
+  const isArgument = (ts.isCallExpression(parent) || ts.isNewExpression(parent)) && parent.expression !== replaced;
 
-  if (WHOLE_EXPRESSION.has(parent.kind)) {
-    return LEVEL.assignment;
-  }
-
-  if (ts.isCallExpression(parent) && parent.expression !== replaced) {
+  if (WHOLE_EXPRESSION.has(parent.kind) || isArgument) {
     return LEVEL.assignment;
   }
 
@@ -375,24 +419,25 @@ const roomAt = (replaced: ts.Node): number => {
     return parent.condition === replaced ? LEVEL.nullish : LEVEL.assignment;
   }
 
-  // `??` takes neither `||` nor `&&` beside it without parentheses.
-  if (ts.isBinaryExpression(parent) && parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) {
-    return LEVEL.bitOr;
-  }
-
-  const level = ts.isBinaryExpression(parent) ? BINARY_LEVELS.get(parent.operatorToken.kind) : undefined;
-
-  // An assignment takes any expression but a comma on its right.
-  if (ts.isBinaryExpression(parent) && level === undefined) {
-    return parent.right === replaced ? LEVEL.assignment : LEVEL.member;
-  }
-
-  if (level !== undefined) {
-    return level + 1;
+  if (ts.isBinaryExpression(parent)) {
+    return operandRoom(parent, replaced);
   }
 
   // One above a unary operator's own level, so `-x` never becomes `--1`.
-  return ts.isPrefixUnaryExpression(parent) ? LEVEL.unary + 1 : LEVEL.member;
+  if (ts.isPrefixUnaryExpression(parent)) {
+    return LEVEL.unary + 1;
+  }
+
+  if (UNARY_OPERATORS.has(parent.kind)) {
+    return LEVEL.unary;
+  }
+
+  // `class extends` takes a call, an optional chain or a bare `new`, as the left of an assignment does.
+  if (ts.isExpressionWithTypeArguments(parent)) {
+    return LEVEL.optional;
+  }
+
+  return CALLED_FROM.has(parent.kind) ? LEVEL.call : LEVEL.member;
 };
 
 // An expression's text as it can stand in place of `replaced` without changing what either means.

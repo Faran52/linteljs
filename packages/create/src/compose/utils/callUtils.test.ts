@@ -351,6 +351,18 @@ describe('inlineCall', () => {
     expect(written).toBe('y = (1 + 1) * 2;');
   });
 
+  it('keeps a call that lands as what `new` constructs in parentheses (F10)', () => {
+    const written = inlined('export const y = x(pick());', 'export const x = (C: new () => object) => new C();\n');
+
+    expect(written).toBe('export const y = new (pick())();');
+  });
+
+  it('puts a negative number that lands as the base of a power in parentheses (F23)', () => {
+    const written = inlined('y = x(-1);', 'export const x = (n: number) => n ** 2;\n');
+
+    expect(written).toBe('y = (-1) ** 2;');
+  });
+
   it.each([
     ['export const x = 4;\n'],
     ['export const x = function () {\n  return 1;\n};\n'],

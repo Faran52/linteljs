@@ -23,8 +23,12 @@ export const LEVEL = {
   multiplicative: 13,
   exponent: 14,
   unary: 15,
-  member: 17,
-  primary: 18,
+  // `a?.b`, `a++` and `new A` with no arguments: none can be read from or called without parentheses.
+  optional: 16,
+  // A call, or a member of one: it can be read from and called, never constructed.
+  call: 17,
+  member: 18,
+  primary: 19,
 };
 
 export const BINARY_LEVELS = new Map<ts.SyntaxKind, number>([
@@ -76,6 +80,24 @@ export const WHOLE_EXPRESSION = new Set([
   ts.SyntaxKind.SpreadElement,
   ts.SyntaxKind.ArrayLiteralExpression,
   ts.SyntaxKind.TemplateSpan,
+  ts.SyntaxKind.YieldExpression,
+]);
+
+// The operators a unary expression follows: `typeof -a` needs no parentheses.
+export const UNARY_OPERATORS = new Set([
+  ts.SyntaxKind.TypeOfExpression,
+  ts.SyntaxKind.VoidExpression,
+  ts.SyntaxKind.DeleteExpression,
+  ts.SyntaxKind.AwaitExpression,
+]);
+
+// The positions a value is read from, called or tagged in, which take a call but not an optional chain.
+export const CALLED_FROM = new Set([
+  ts.SyntaxKind.PropertyAccessExpression,
+  ts.SyntaxKind.ElementAccessExpression,
+  ts.SyntaxKind.CallExpression,
+  ts.SyntaxKind.TaggedTemplateExpression,
+  ts.SyntaxKind.NonNullExpression,
 ]);
 
 // A name JSX can write as an attribute.

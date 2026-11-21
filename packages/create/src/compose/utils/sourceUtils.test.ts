@@ -623,6 +623,196 @@ describe('fitted', () => {
       'await b',
       'await b',
     ],
+    [
+      'x = new A();',
+      'pick()',
+      '(pick())',
+    ],
+    [
+      'x = new A();',
+      'a().b',
+      '(a().b)',
+    ],
+    [
+      'x = new A();',
+      'a.b[0]',
+      'a.b[0]',
+    ],
+    [
+      'x = new A();',
+      'new B()',
+      'new B()',
+    ],
+    [
+      'x = new A();',
+      'a?.b',
+      '(a?.b)',
+    ],
+    [
+      'x = new B(A);',
+      'b + c',
+      'b + c',
+    ],
+    [
+      'x = A`t`;',
+      'f()',
+      'f()',
+    ],
+    [
+      'x = A`t`;',
+      'a?.b',
+      '(a?.b)',
+    ],
+    [
+      'x = A`t`;',
+      'new B',
+      '(new B)',
+    ],
+    [
+      'x = A.c;',
+      'a?.b',
+      '(a?.b)',
+    ],
+    [
+      'x = A();',
+      'a?.b()',
+      '(a?.b())',
+    ],
+    [
+      'x = A[0];',
+      'a?.[0]',
+      '(a?.[0])',
+    ],
+    [
+      'x = A!;',
+      'a?.b',
+      '(a?.b)',
+    ],
+    [
+      'x = A.y;',
+      'a++',
+      '(a++)',
+    ],
+    [
+      'x = A.y;',
+      'new B',
+      '(new B)',
+    ],
+    [
+      'x = A.y;',
+      'f().g',
+      'f().g',
+    ],
+    [
+      'x = A.y;',
+      'f()!',
+      'f()!',
+    ],
+    [
+      'x = A.y;',
+      'b`t`',
+      'b`t`',
+    ],
+    [
+      'x = async () => await A;',
+      'b + c',
+      '(b + c)',
+    ],
+    [
+      'x = async () => await A;',
+      '-b',
+      '-b',
+    ],
+    [
+      'x = typeof A;',
+      'b + c',
+      '(b + c)',
+    ],
+    [
+      'x = typeof A;',
+      '-b',
+      '-b',
+    ],
+    [
+      'x = void A;',
+      'b.c',
+      'b.c',
+    ],
+    [
+      'x = delete A;',
+      'b.c',
+      'b.c',
+    ],
+    [
+      'x = delete A;',
+      'b ? c : d',
+      '(b ? c : d)',
+    ],
+    [
+      'x = [...A];',
+      'b, c',
+      '(b, c)',
+    ],
+    [
+      'x = [...A];',
+      'b ? c : d',
+      'b ? c : d',
+    ],
+    [
+      'x = A ** 2;',
+      '-1',
+      '(-1)',
+    ],
+    [
+      'x = A ** 2;',
+      'typeof b',
+      '(typeof b)',
+    ],
+    [
+      'x = A ** 2;',
+      'a++',
+      'a++',
+    ],
+    [
+      'x = A ** 2;',
+      'b ** c',
+      '(b ** c)',
+    ],
+    [
+      'x = 2 ** A;',
+      '-1',
+      '-1',
+    ],
+    [
+      'x = `${A}`;',
+      'b, c',
+      '(b, c)',
+    ],
+    [
+      'x = `${A}`;',
+      'b ? c : d',
+      'b ? c : d',
+    ],
+    [
+      'class C extends A {}',
+      'f()',
+      'f()',
+    ],
+    [
+      'class C extends A {}',
+      'a?.b',
+      'a?.b',
+    ],
+    [
+      'class C extends A {}',
+      'b ? c : d',
+      '(b ? c : d)',
+    ],
+    [
+      'class C extends A {}',
+      '() => 1',
+      '(() => 1)',
+    ],
   ])('puts %s with %s in place as %s', (host, source, expected) => {
     const replaced = nodeIn(host, 'A');
     const expression = expressionOf(source);
@@ -640,6 +830,17 @@ describe('fitted, for a yield', () => {
     const written = expression !== undefined && replaced !== undefined && fitted(replaced, expression);
 
     expect(written).toBe('(yield b)');
+  });
+
+  it.each([
+    ['b, c', '(b, c)'],
+    ['b ? c : d', 'b ? c : d'],
+  ])('puts %s in place of what a yield gives as %s', (source, expected) => {
+    const replaced = nodeIn('function* g() { yield A; }', 'A');
+    const expression = expressionOf(source);
+    const written = fitted(replaced, expression);
+
+    expect(written).toBe(expected);
   });
 });
 
