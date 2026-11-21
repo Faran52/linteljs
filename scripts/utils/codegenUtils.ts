@@ -12,11 +12,14 @@ export interface Toggle {
 
 export type Table = Readonly<Record<string, string | Toggle>>;
 
-// Answers whether the write changed the file.
+// Writes the file only when its text differs, so a step running beside a reader of it never truncates it unchanged.
 export const writeChanged = (path: string, text: string): boolean => {
   const previous = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+  const isChanged = text !== previous;
 
-  writeFileSync(path, text);
+  if (isChanged) {
+    writeFileSync(path, text);
+  }
 
-  return text !== previous;
+  return isChanged;
 };

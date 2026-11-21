@@ -6,6 +6,7 @@ export const STEPS = [
   'typecheck',
   'test:coverage',
   'typegen',
+  'compose',
   'tailwind-styles',
   'css-markup',
   'test:band',
