@@ -202,6 +202,33 @@ const config = [
     },
   },
 
+  // docs/DESIGN.md: `@linteljs/workspace/compose-pure`
+  {
+    name: '@linteljs/workspace/compose-pure',
+    files: ['packages/compose/src/**'],
+    ignores: ['**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
+            message: 'The strict entry or the standard library. /compat is the lodash build.',
+          },
+          {
+            group: [
+              'node:fs',
+              'node:fs/*',
+              'node:child_process',
+              'node:process',
+              '@inquirer/*',
+            ],
+            message: 'The engine maps text to text; the gate step reads and writes the files.',
+          },
+        ],
+      }],
+    },
+  },
+
   // docs/DESIGN.md: `@linteljs/workspace/create-config-data`
   {
     name: '@linteljs/workspace/create-config-data',

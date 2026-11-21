@@ -97,7 +97,8 @@ vi.mock('../utils/stepUtils', async (importOriginal) => {
   return mocked;
 });
 
-const templates = join(import.meta.dirname, '../../../templates');
+// The sibling package's tree by relative path, which Stryker's sandbox keeps through the `create` link it plants.
+const templates = join(import.meta.dirname, '../../../create/templates');
 const fixtures = join(templates, 'codegen/compose-sources');
 const shells = join(templates, 'shells');
 

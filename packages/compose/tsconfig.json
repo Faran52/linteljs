@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    // The root map is `create`'s ring aliases; the engine reads none of them.
+    "paths": {}
+  },
+  "include": [
+    "src/**/*.ts",
+    "vitest.config.ts"
+  ]
+}

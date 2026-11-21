@@ -146,7 +146,7 @@ finally {
 
 const seconds = Math.round((performance.now() - started) / MS_PER_SECOND);
 
-// Three packages have a `meta.test.ts`.
+// Every package has a `meta.test.ts`.
 const labelOf = (test: string): string => {
   const name = basename(test);
 

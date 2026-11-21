@@ -1336,6 +1336,13 @@ and `@inquirer/*` `terminal/`. Nothing else may reach a world, so every disk acc
 and `node:url` are free. `spawns/` reaches `disk/` for `isExecutableFile` alone, sync because it feeds a
 `spawnSync`. The e2e harness lives outside `src/`, so the block never reaches it.
 
+### `@linteljs/workspace/compose-pure`
+
+The compose engine in `packages/compose/src/` takes text and answers text: the gate step reads the sources and
+writes the files. The block bans `node:fs`, `node:child_process`, `node:process` and `@inquirer/*` there, the bans
+it had as a ring of `create` under `create-worlds`, and repeats the compat pattern for the reason below. Its suites
+read their fixtures and stay outside it.
+
 ### The `es-toolkit/compat` ban
 
 Banned in every package: there was never lodash to migrate from, and its looser signatures only make a wrong call
