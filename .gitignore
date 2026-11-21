@@ -31,3 +31,6 @@ packages/*/reports/
 
 # Worktrees the coding agent harness creates for background agents. Never shared.
 .claude/worktrees/
+
+# Codex config here holds only a machine-local registry mirror.
+.codex/config.toml
