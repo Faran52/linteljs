@@ -1118,6 +1118,26 @@ const REFUSALS: Refusal[] = [
 
 const MORE_CASES: Case[] = [
   {
+    name: 'a name the base imports as a type and an option as a value, written as a value only',
+    base: 'import type { Thing } from \'lib\';\nimport { v } from \'./p\';\n\nexport const a: Thing = v;\n',
+    option: 'import { Thing } from \'lib\';\n\nexport const v = Thing;\n',
+    expected: 'import { Thing } from \'lib\';\n\nexport const a: Thing = Thing;\n',
+  },
+  {
+    name: 'a name the base marks type inside a value import and an option reads as a value',
+    base: 'import { other, type Thing } from \'lib\';\nimport { v } from \'./p\';\n\n'
+      + 'export const a: Thing = other(v);\n',
+    option: 'import { Thing } from \'lib\';\n\nexport const v = Thing;\n',
+    expected: 'import { other, Thing } from \'lib\';\n\nexport const a: Thing = other(Thing);\n',
+  },
+  {
+    name: 'an import with attributes, kept',
+    base: 'import data from \'./data.json\' with { type: \'json\' };\nimport { v } from \'./p\';\n\n'
+      + 'export const a = data.x + v;\n',
+    option: 'export const v = 1;\n',
+    expected: 'import data from \'./data.json\' with { type: \'json\' };\n\nexport const a = data.x + 1;\n',
+  },
+  {
     name: 'several kinds in one base, each by its rule',
     base: [
       'import { Extra, LIMIT, make, table } from \'./p\';',
@@ -1366,6 +1386,12 @@ const MORE_CASES: Case[] = [
 ];
 
 const MORE_REFUSALS: Refusal[] = [
+  {
+    name: 'a module the base and an option import whole under two names',
+    base: 'import React from \'react\';\nimport { v } from \'./p\';\n\nexport const a = [React, v];\n',
+    option: 'import R from \'react\';\n\nexport const v = R;\n',
+    message: /react is imported whole as "React" and as "R"; import it under one name/u,
+  },
   {
     name: 'a type read as a value',
     base: 'import { Extra } from \'./p\';\n\nexport const y = Extra;\n',

@@ -23,6 +23,12 @@ const GROUPS = [
   [String.raw`^.+\.s?css$`],
 ];
 
+const TYPE_THING = 'import type { Thing } from \'lib\';';
+
+const VALUE_THING = 'import { Thing } from \'lib\';';
+
+const INLINE_THING = 'import { type Thing, other } from \'lib\';';
+
 // The block for the imports a text holds, as if the body read the given names.
 const blockOf = (imports: readonly string[], read: readonly string[]): string => {
   const { imports: entries } = sourcesOf(`${imports.join('\n')}\n`, {}, {}, NO_TRUST);
@@ -147,5 +153,88 @@ describe('importBlock', () => {
     const block = blockOf(['import { a } from \'pkg\';', 'import type { T } from \'pkg\';'], ['a', 'T']);
 
     expect(block).toBe('import { a } from \'pkg\';\n\nimport type { T } from \'pkg\';');
+  });
+
+  it.each([
+    [
+      'default',
+      'import React from \'react\';',
+      'import R from \'react\';',
+    ],
+    [
+      'namespace',
+      'import * as React from \'react\';',
+      'import * as R from \'react\';',
+    ],
+  ])('refuses a module imported whole, as a %s, under two names the body reads', (_kind, base, option) => {
+    const run = (): string => {
+      return blockOf([base, option], ['React', 'R']);
+    };
+
+    expect(run).toThrow('react is imported whole as "React" and as "R"; import it under one name.');
+  });
+
+  it('writes a module imported whole under one name by two files once, beside a type import of it', () => {
+    const block = blockOf([
+      'import * as stylex from \'@stylexjs/stylex\';',
+      'import * as stylex from \'@stylexjs/stylex\';',
+      'import type { StyleXStyles } from \'@stylexjs/stylex\';',
+    ], ['stylex', 'StyleXStyles']);
+
+    const expected = [
+      'import * as stylex from \'@stylexjs/stylex\';',
+      '',
+      'import type { StyleXStyles } from \'@stylexjs/stylex\';',
+    ].join('\n');
+
+    expect(block).toBe(expected);
+  });
+
+  it.each([
+    ['a type import and a value import', [TYPE_THING, VALUE_THING]],
+    ['a value import and a type import', [VALUE_THING, TYPE_THING]],
+    ['an inline type and a value import', [INLINE_THING, VALUE_THING]],
+    ['a value import and an inline type', [VALUE_THING, INLINE_THING]],
+  ])('writes a name that %s both bind as a value only', (_name, lines) => {
+    const block = blockOf(lines, ['Thing', 'other']);
+    const expected = lines
+      .some((line) => {
+        return line.includes('other');
+      })
+      ? 'import { other, Thing } from \'lib\';'
+      : 'import { Thing } from \'lib\';';
+
+    expect(block).toBe(expected);
+  });
+
+  it('writes a default a type import and a value import both bind as a value only', () => {
+    const block = blockOf(['import type Thing from \'lib\';', 'import Thing from \'lib\';'], ['Thing']);
+
+    expect(block).toBe('import Thing from \'lib\';');
+  });
+
+  it('writes a name a type import and an inline type both bind in the type import only', () => {
+    const block = blockOf(['import { type Thing, other } from \'lib\';', 'import type { Thing } from \'lib\';'], [
+      'Thing',
+      'other',
+    ]);
+
+    expect(block).toBe('import { other } from \'lib\';\n\nimport type { Thing } from \'lib\';');
+  });
+
+  it('keeps an import\'s attributes, apart from an import of the same module without them', () => {
+    const block = blockOf([
+      'import data from \'./data.json\' with { type: \'json\' };',
+      'import { raw } from \'./data.json\';',
+      'import \'./side.css\' with { type: \'css\' };',
+    ], ['data', 'raw']);
+    const expected = [
+      'import data from \'./data.json\' with { type: \'json\' };',
+      'import { raw } from \'./data.json\';',
+      '',
+      'import \'./side.css\' with { type: \'css\' };',
+    ].join('\n');
+
+    expect(block).toBe(expected);
   });
 });

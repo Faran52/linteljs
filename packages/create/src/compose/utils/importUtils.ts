@@ -4,7 +4,7 @@ import {
   SORT_SWAPS,
 } from '../constants';
 
-import type { ImportEntry } from './bindingUtils';
+import { type ImportEntry, localsOf } from './bindingUtils';
 
 // Groups of regular expression sources, as `simple-import-sort` takes them: the longest match places an import.
 export type ImportGroups = readonly (readonly string[])[];
@@ -77,6 +77,7 @@ const keyOf = (entry: ImportEntry): string => {
     String(entry.isType),
     String(entry.isBare),
     String(entry.namespaceName !== undefined),
+    entry.attributes ?? '',
   ];
 
   return parts.join('\n');
@@ -91,6 +92,10 @@ const emptyLike = (entry: ImportEntry): ImportEntry => {
     typeNames: new Set(),
   };
 
+  if (entry.attributes !== undefined) {
+    empty.attributes = entry.attributes;
+  }
+
   return empty;
 };
 
@@ -100,36 +105,71 @@ const isWritten = (entry: ImportEntry): boolean => {
   return entry.isBare || hasSingle || entry.names.size > 0;
 };
 
-// One entry per module and kind, holding only the names the composed body reads.
+// The locals the imports of one kind bind: a value import's own type-marked names are not values.
+const localsOfKind = (entries: readonly ImportEntry[], isType: boolean): Set<string> => {
+  const locals = entries
+    .filter((entry) => {
+      return entry.isType === isType;
+    })
+    .flatMap((entry) => {
+      return localsOf(entry)
+        .filter((local) => {
+          return !entry.typeNames.has(local);
+        });
+    });
+
+  return new Set(locals);
+};
+
+// The one local a module is imported whole under, default or namespace: two would leave one of them unbound.
+const wholeOf = (specifier: string, known: string | undefined, local: string): string => {
+  if (known !== undefined && known !== local) {
+    throw new Error(`${specifier} is imported whole as "${known}" and as "${local}"; import it under one name.`);
+  }
+
+  return local;
+};
+
+// One entry per module and kind, holding only the names the composed body reads: a local imported as a value
+// anywhere is written as a value only, and one a type import binds is never also marked `type` in a value import.
 const merged = (entries: readonly ImportEntry[], read: ReadonlySet<string>): ImportEntry[] => {
   const byKey = new Map<string, ImportEntry>();
+  const values = localsOfKind(entries, false);
+  const types = localsOfKind(entries, true);
 
-  const take = (known: ImportEntry, entry: ImportEntry, local: string, exported: string): void => {
-    if (!read.has(local)) {
-      return;
+  const isTaken = (entry: ImportEntry, local: string | undefined): local is string => {
+    if (local === undefined || !read.has(local)) {
+      return false;
     }
 
-    known.names.set(local, exported);
-
-    if (entry.typeNames.has(local)) {
-      known.typeNames.add(local);
+    if (entry.isType) {
+      return !values.has(local);
     }
+
+    return !entry.typeNames.has(local) || (!values.has(local) && !types.has(local));
   };
 
   for (const entry of entries) {
     const key = keyOf(entry);
     const known = byKey.get(key) ?? emptyLike(entry);
+    const { defaultName, namespaceName } = entry;
 
     for (const [local, exported] of entry.names) {
-      take(known, entry, local, exported);
+      if (isTaken(entry, local)) {
+        known.names.set(local, exported);
+      }
+
+      if (isTaken(entry, local) && entry.typeNames.has(local)) {
+        known.typeNames.add(local);
+      }
     }
 
-    if (entry.defaultName !== undefined && read.has(entry.defaultName)) {
-      known.defaultName = entry.defaultName;
+    if (isTaken(entry, defaultName)) {
+      known.defaultName = wholeOf(entry.specifier, known.defaultName, defaultName);
     }
 
-    if (entry.namespaceName !== undefined && read.has(entry.namespaceName)) {
-      known.namespaceName = entry.namespaceName;
+    if (isTaken(entry, namespaceName)) {
+      known.namespaceName = wholeOf(entry.specifier, known.namespaceName, namespaceName);
     }
 
     byKey.set(key, known);
@@ -166,8 +206,10 @@ const namedOf = (entry: ImportEntry): string[] => {
 };
 
 const lineOf = (entry: ImportEntry): string => {
+  const attributes = entry.attributes === undefined ? '' : ` ${entry.attributes}`;
+
   if (entry.isBare) {
-    return `import '${entry.specifier}';`;
+    return `import '${entry.specifier}'${attributes};`;
   }
 
   const namespace = entry.namespaceName === undefined ? [] : [`* as ${entry.namespaceName}`];
@@ -180,7 +222,7 @@ const lineOf = (entry: ImportEntry): string => {
   ].join(', ');
   const keyword = entry.isType ? 'import type' : 'import';
 
-  return `${keyword} ${clause} from '${entry.specifier}';`;
+  return `${keyword} ${clause} from '${entry.specifier}'${attributes};`;
 };
 
 const byPlace = (left: Placed, right: Placed): number => {

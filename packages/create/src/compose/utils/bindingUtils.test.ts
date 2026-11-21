@@ -69,6 +69,17 @@ describe('sourcesOf', () => {
     expect(entry?.namespaceName).toBe('all');
   });
 
+  it('keeps an import\'s attributes as written, and none for an import without them', () => {
+    const base = 'import data from \'./data.json\' with { type: \'json\' };\nimport { a } from \'pkg\';\n';
+    const { imports } = sourcesOf(base, {}, {}, NO_TRUST);
+    const attributes = imports
+      .map((entry) => {
+        return entry.attributes;
+      });
+
+    expect(attributes).toStrictEqual(['with { type: \'json\' }', undefined]);
+  });
+
   it.each([
     ['import * as p from \'./p\';\n'],
     ['import \'./p\';\n'],

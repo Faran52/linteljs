@@ -15,6 +15,8 @@ export interface ImportEntry {
   isBare: boolean;
   defaultName?: string;
   namespaceName?: string;
+  // The `with { ... }` clause as written.
+  attributes?: string;
   // A local name to the export it stands for.
   names: Map<string, string>;
   // The local names imported as `type X` inside a value import.
@@ -113,6 +115,10 @@ const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
 
   if (bindings !== undefined && ts.isNamespaceImport(bindings)) {
     entry.namespaceName = bindings.name.text;
+  }
+
+  if (declaration.attributes !== undefined) {
+    entry.attributes = textOf(declaration.attributes);
   }
 
   return entry;
