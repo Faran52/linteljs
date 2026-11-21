@@ -1,11 +1,20 @@
 import ts from 'typescript';
 
-import { localsOf, type Sources } from './bindingUtils';
 import {
-  boundIn,
+  localsOf,
+  resolved,
+  type Sources,
+} from './bindingUtils';
+import { refusal } from './editUtils';
+import {
+  declarationOf,
+  resolvedAt,
+  scopeOf,
+} from './scopeUtils';
+import {
   collect,
-  declaredIn,
   isReference,
+  isWithin,
   parse,
 } from './sourceUtils';
 
@@ -32,47 +41,79 @@ export const settled = (text: string, once: Step): string => {
   throw new Error('The composition did not settle; an option module refers back to itself.');
 };
 
-// Nothing of the parameters may be left, and every name the composed body reads must mean what its author meant.
+const isImport = (declaration: ts.Declaration): boolean => {
+  return ts.isImportSpecifier(declaration) || ts.isImportClause(declaration) || ts.isNamespaceImport(declaration);
+};
+
+// What is wrong with one read of moved option code where it lands, or undefined when it reads the same thing there.
+const faultOf = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  read: ts.Identifier,
+  landing: ts.Node,
+): string | undefined => {
+  const origin = declarationOf(checker, read);
+  const found = resolvedAt(checker, read, landing);
+  const imported = new Set(sources.imports.flatMap(localsOf));
+
+  if (found !== undefined) {
+    return `"${read.text}" would read the base's own binding of that name where the option's code lands`;
+  }
+
+  if (origin === undefined) {
+    const isTaken = imported.has(read.text) || sources.bindings.has(read.text);
+
+    return isTaken ? `"${read.text}" is a global in the option module, and the base imports that name` : undefined;
+  }
+
+  const isExport = sources.bindings.has(read.text) && resolved(sources, read.text) === origin;
+  const isBound = isImport(origin) || isExport;
+
+  return isBound ? undefined : `"${read.text}" is declared in an option module and read by code that left it behind`;
+};
+
+// Option code moved to a landing site must read there what it read in its own module. A name declared outside
+// `owner` may be a global, an import or an export the base binds, and nothing at the landing site may bind it.
+export const landedCheck = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  owner: ts.Node,
+  moved: ts.Node,
+  landing: ts.Node,
+): void => {
+  const faults = collect(moved, ts.isIdentifier)
+    .filter((read) => {
+      const origin = declarationOf(checker, read);
+
+      return isReference(read) && (origin === undefined || !isWithin(origin, owner));
+    })
+    .map((read) => {
+      return faultOf(checker, sources, read, landing);
+    });
+  const [fault] = faults
+    .filter((found) => {
+      return found !== undefined;
+    });
+
+  if (fault !== undefined) {
+    throw refusal(landing, fault);
+  }
+};
+
+// Nothing of the parameters may be left: no read of a parameter binding the base does not bind itself, no directive.
 export const checked = (text: string, sources: Sources): ts.SourceFile => {
   const file = parse(text);
-  const reads = collect(file, ts.isIdentifier).filter(isReference);
-  const left = reads
+  const checker = scopeOf(file, sources.modules);
+  const left = collect(file, ts.isIdentifier)
     .find((identifier) => {
-      return sources.bindings.has(identifier.text);
+      const isParameter = sources.bindings.has(identifier.text) && isReference(identifier);
+
+      return isParameter && declarationOf(checker, identifier) === undefined;
     });
   const what = left === undefined ? MARKER : left.text;
 
   if (left !== undefined || text.includes(MARKER)) {
     throw new Error(`Something of the parameters is left after composing: ${what}`);
-  }
-
-  const bound = boundIn(file);
-  const declared = declaredIn(file);
-  const imported = new Set(sources.imports.flatMap(localsOf));
-  const known = bound
-    .union(declared)
-    .union(imported);
-  const owned = [...sources.modules.values()]
-    .map(declaredIn)
-    .reduce((all, names) => {
-      return all.union(names);
-    }, new Set<string>());
-  const orphan = reads
-    .find((identifier) => {
-      return owned.has(identifier.text) && !known.has(identifier.text);
-    });
-
-  if (orphan !== undefined) {
-    throw new Error(`"${orphan.text}" is declared in an option module and read by code that left it behind.`);
-  }
-
-  const captured = reads
-    .find((identifier) => {
-      return bound.has(identifier.text) && imported.has(identifier.text);
-    });
-
-  if (captured !== undefined) {
-    throw new Error(`"${captured.text}" is imported and also bound in the composed body; one of the two is captured.`);
   }
 
   return file;

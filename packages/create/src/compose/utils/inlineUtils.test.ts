@@ -101,13 +101,10 @@ describe('filledOnce', () => {
     expect(next).toBeUndefined();
   });
 
-  it('refuses a name the text binds that is also a parameter binding', () => {
+  it('leaves a read of a name the text binds again, which is not the parameter binding', () => {
     const sources = sourcesFor('import { v } from \'./p\';\n\ny = (v: number) => v;\n');
+    const next = stepOf(sources.body, sources);
 
-    const run = (): string | undefined => {
-      return stepOf(sources.body, sources);
-    };
-
-    expect(run).toThrow('"v" is bound in the base or in inlined code, and is also a parameter binding.');
+    expect(next).toBeUndefined();
   });
 });

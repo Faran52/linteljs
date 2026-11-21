@@ -7,8 +7,9 @@ import { isReference } from './sourceUtils';
  * each option found under the specifier it is imported by. The files come parsed and are never type checked, and no
  * lib is loaded, so a global such as `location` resolves to nothing, as does an import from a module that is not an
  * option. Composed text is never placed to ask about it: the engine builds a program over the body as it stands
- * before each edit and asks what a name would resolve to at the landing site. That body has no imports, so a name
- * the base imports resolves to nothing there too; the engine tells it from a global by the base's import list.
+ * before each edit, and once over the result, and asks what a name would resolve to at the landing site. That body
+ * has no imports, so a name the base imports resolves to nothing there too; the engine tells it from a global by the
+ * base's import list.
  */
 
 interface OptionFile {
@@ -134,7 +135,8 @@ export const resolvedAt = (checker: ts.TypeChecker, read: ts.Identifier, at: ts.
   return symbol?.declarations?.[0];
 };
 
-const namesOf = (name: ts.BindingName): string[] => {
+// The names a binding binds: itself, or each member of its pattern.
+export const bindingNamesOf = (name: ts.BindingName): string[] => {
   if (ts.isIdentifier(name)) {
     const own = [name.text];
 
@@ -146,7 +148,7 @@ const namesOf = (name: ts.BindingName): string[] => {
   return elements
     .filter(ts.isBindingElement)
     .flatMap((element) => {
-      return namesOf(element.name);
+      return bindingNamesOf(element.name);
     });
 };
 
@@ -160,7 +162,7 @@ const hoistedIn = (node: ts.Node): string[] => {
 
   if (ts.isVariableDeclarationList(node) && (node.flags & ts.NodeFlags.BlockScoped) === 0) {
     for (const declaration of node.declarations) {
-      found.push(...namesOf(declaration.name));
+      found.push(...bindingNamesOf(declaration.name));
     }
   }
 
@@ -202,7 +204,7 @@ const ownNamesOf = (statement: ts.Statement): string[] => {
   if (ts.isVariableStatement(statement)) {
     return statement.declarationList.declarations
       .flatMap((declaration) => {
-        return namesOf(declaration.name);
+        return bindingNamesOf(declaration.name);
       });
   }
 

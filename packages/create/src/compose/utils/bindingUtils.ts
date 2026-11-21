@@ -28,8 +28,6 @@ export interface Sources {
   modules: Map<string, ts.SourceFile>;
   bindings: Map<string, Binding>;
   imports: ImportEntry[];
-  // A rest binding's name to the members the inlined code reads from it.
-  rests: Map<string, string[]>;
 }
 
 export type Exported = ts.VariableDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
@@ -234,7 +232,6 @@ export const sourcesOf = (base: string, options: Readonly<Record<string, string>
     modules,
     bindings,
     imports,
-    rests: new Map(),
   };
 
   return sources;

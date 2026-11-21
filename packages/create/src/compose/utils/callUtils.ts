@@ -6,16 +6,16 @@ import {
   type Edit,
   refusal,
 } from './editUtils';
+import { referencesTo, resolvedAt } from './scopeUtils';
 import {
-  boundIn,
   collect,
   expressionOf,
   fitted,
   indentOf,
   isPure,
   isReference,
+  isWithin,
   isWritten,
-  referencesIn,
   reindent,
   spanOf,
   swapped,
@@ -23,6 +23,7 @@ import {
   unparen,
   valueOf,
 } from './sourceUtils';
+import { landedCheck } from './stepUtils';
 
 type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment;
 
@@ -66,16 +67,28 @@ export const returnedOf = (arrow: ts.ArrowFunction): ts.Expression => {
   return answer;
 };
 
-// An argument must not read a name the option's own code binds: inlined, it would read the wrong one.
-export const captureCheck = (inner: ts.Node, given: readonly ts.Expression[]): void => {
-  const bound = boundIn(inner);
-  const captured = given
-    .flatMap((expression) => {
-      return collect(expression, ts.isIdentifier).filter(isReference);
+// An argument must not read a name the option's own code binds around a read of its parameter: it would read that.
+export const captureCheck = (
+  checker: ts.TypeChecker,
+  inner: ts.Node,
+  given: ReadonlyMap<ts.Declaration, ts.Expression>,
+): void => {
+  const captured = [...given.entries()]
+    .flatMap(([declaration, argument]) => {
+      const sites = referencesTo(checker, declaration, inner);
+      const reads = collect(argument, ts.isIdentifier).filter(isReference);
+
+      return reads
+        .filter((read) => {
+          return sites
+            .some((site) => {
+              const found = resolvedAt(checker, read, site);
+
+              return found !== undefined && isWithin(found, inner);
+            });
+        });
     })
-    .find((identifier) => {
-      return bound.has(identifier.text);
-    });
+    .at(0);
 
   if (captured !== undefined) {
     throw refusal(captured, `"${captured.text}" is also bound inside the option's code, which would capture it`);
@@ -102,13 +115,17 @@ const isDeferred = (read: ts.Node, inner: ts.Node): boolean => {
 };
 
 // Arguments with an effect run in the order they were written, so their reads must come in that order too.
-export const orderCheck = (inner: ts.Node, given: ReadonlyMap<string, ts.Expression>): void => {
+export const orderCheck = (
+  checker: ts.TypeChecker,
+  inner: ts.Node,
+  given: ReadonlyMap<ts.Declaration, ts.Expression>,
+): void => {
   const positions = [...given.entries()]
     .filter(([, argument]) => {
       return !isPure(argument);
     })
-    .flatMap(([name]) => {
-      return referencesIn(inner, name);
+    .flatMap(([declaration]) => {
+      return referencesTo(checker, declaration, inner);
     })
     .map((read) => {
       return read.getStart();
@@ -124,13 +141,15 @@ export const orderCheck = (inner: ts.Node, given: ReadonlyMap<string, ts.Express
 };
 
 // One edit per read of a parameter, each taking the argument's text.
-export const substitutions = (inner: ts.Node, name: string, argument: ts.Expression): Edit[] => {
-  const reads = referencesIn(inner, name);
+export const substitutions = (
+  checker: ts.TypeChecker,
+  inner: ts.Node,
+  declaration: ts.ParameterDeclaration | ts.BindingElement,
+  argument: ts.Expression,
+): Edit[] => {
+  const reads = referencesTo(checker, declaration, inner);
   const count = String(reads.length);
-
-  if (boundIn(inner).has(name)) {
-    throw refusal(inner, `"${name}" is bound again inside the option's code, so its reads cannot be told apart`);
-  }
+  const name = textOf(declaration.name);
 
   if (!isPure(argument) && reads.length !== 1) {
     throw refusal(argument, `An argument with an effect must be read once, and "${name}" is read ${count} times`);
@@ -158,11 +177,16 @@ export const substitutions = (inner: ts.Node, name: string, argument: ts.Express
 };
 
 // A call's value: the function's returned expression with each parameter replaced by its argument.
-const calledWith = (arrow: ts.ArrowFunction, call: ts.CallExpression): Inlined => {
+const calledWith = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  arrow: ts.ArrowFunction,
+  call: ts.CallExpression,
+): Inlined => {
   const returned = returnedOf(arrow);
   const offset = returned.getStart();
 
-  captureCheck(returned, call.arguments);
+  landedCheck(checker, sources, arrow, returned, call);
 
   const dropped = call.arguments
     .slice(arrow.parameters.length)
@@ -183,16 +207,18 @@ const calledWith = (arrow: ts.ArrowFunction, call: ts.CallExpression): Inlined =
         throw refusal(call, 'Every parameter must be a plain name with an argument');
       }
 
-      const pair: [string, ts.Expression] = [parameter.name.text, argument];
+      const pair: [ts.ParameterDeclaration, ts.Expression] = [parameter, argument];
 
       return pair;
     });
+  const given = new Map<ts.Declaration, ts.Expression>(pairs);
 
-  orderCheck(returned, new Map(pairs));
+  captureCheck(checker, returned, given);
+  orderCheck(checker, returned, given);
 
   const edits = pairs
-    .flatMap(([name, argument]) => {
-      return substitutions(returned, name, argument);
+    .flatMap(([parameter, argument]) => {
+      return substitutions(checker, returned, parameter, argument);
     })
     .map((edit) => {
       const moved: Edit = {
@@ -233,9 +259,15 @@ const written = (replaced: ts.Node, value: ts.Expression): Inlined => {
   return inlined;
 };
 
-export const inlineCall = (text: string, sources: Sources, local: ts.Identifier, call: ts.CallExpression): string => {
+export const inlineCall = (
+  text: string,
+  sources: Sources,
+  local: ts.Identifier,
+  call: ts.CallExpression,
+  checker: ts.TypeChecker,
+): string => {
   const arrow = arrowOf(sources, local);
-  const value = calledWith(arrow, call);
+  const value = calledWith(checker, sources, arrow, call);
 
   return landed(text, call, value);
 };
@@ -270,6 +302,7 @@ export const inlineMember = (
   sources: Sources,
   local: ts.Identifier,
   access: ts.PropertyAccessExpression,
+  checker: ts.TypeChecker,
 ): string => {
   const value = memberOf(sources, local, access);
   const call = access.parent;
@@ -283,7 +316,7 @@ export const inlineMember = (
       throw refusal(access, 'A member called here must be an arrow function');
     }
 
-    const answer = calledWith(value, call);
+    const answer = calledWith(checker, sources, value, call);
 
     return landed(text, call, answer);
   }
@@ -292,17 +325,26 @@ export const inlineMember = (
     throw refusal(access, 'A member read as a value must have no effect');
   }
 
+  landedCheck(checker, sources, value, value, access);
+
   const read = written(access, value);
 
   return landed(text, access, read);
 };
 
-export const inlineValue = (text: string, sources: Sources, local: ts.Identifier): string => {
+export const inlineValue = (
+  text: string,
+  sources: Sources,
+  local: ts.Identifier,
+  checker: ts.TypeChecker,
+): string => {
   const value = exportedValue(sources, local.text);
 
   if (value === undefined || !isPure(value) || isWritten(local)) {
     throw refusal(local.parent, 'An option export read as a value must be a constant with no effect, never written');
   }
+
+  landedCheck(checker, sources, value, value, local);
 
   const read = written(local, value);
 

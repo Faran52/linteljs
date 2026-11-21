@@ -13,24 +13,31 @@ import {
   refusal,
 } from './editUtils';
 import {
+  declarationOf,
+  referencesTo,
+  resolvedAt,
+} from './scopeUtils';
+import {
   collect,
   expressionOf,
   indentAt,
   indentOf,
   isPlainElement,
   isPure,
+  isReference,
+  isWithin,
   leadingIndent,
   linesOf,
   ownsLines,
-  referencesIn,
+  patternOf,
   reindent,
   type Span,
   spanOf,
   splice,
-  swapped,
   textOf,
   unparen,
 } from './sourceUtils';
+import { landedCheck } from './stepUtils';
 
 import type { Sources } from './bindingUtils';
 
@@ -45,12 +52,20 @@ interface Placed {
   origin: string;
 }
 
+// A rest binding of a parameter, and the spread that reads it at the site.
+interface Rest {
+  read: ts.Identifier;
+  element: ts.BindingElement;
+  pattern: ts.ObjectBindingPattern;
+  owner: ts.SignatureDeclaration;
+}
+
 interface Site {
   head: JsxHead;
   element: ts.JsxElement | ts.JsxSelfClosingElement;
   given: Map<string, ts.Expression>;
   key: ts.JsxAttribute | undefined;
-  rest: string | undefined;
+  rest: Rest | undefined;
   children: string;
 }
 
@@ -66,8 +81,8 @@ const rootOf = (arrow: ts.ArrowFunction): JsxRoot => {
   return root;
 };
 
-// The props a component reads, by name.
-const wantedOf = (arrow: ts.ArrowFunction): string[] => {
+// The props a component reads, each a binding of its pattern.
+const wantedOf = (arrow: ts.ArrowFunction): readonly ts.BindingElement[] => {
   const [parameter, ...more] = arrow.parameters;
 
   if (parameter === undefined) {
@@ -80,10 +95,7 @@ const wantedOf = (arrow: ts.ArrowFunction): string[] => {
     throw refusal(arrow, 'A component inlined as an element must destructure plain props');
   }
 
-  return pattern.elements
-    .map((element) => {
-      return textOf(element.name);
-    });
+  return pattern.elements;
 };
 
 const quoted = (text: string): string => {
@@ -118,7 +130,7 @@ const attributeValue = (attribute: ts.JsxAttribute): ts.Expression => {
 };
 
 // The rest binding a spread reads, the one thing an option component may be spread.
-const restOf = (head: JsxHead): string | undefined => {
+const restOf = (checker: ts.TypeChecker, head: JsxHead): Rest | undefined => {
   const [spread, ...more] = head.attributes.properties.filter(ts.isJsxSpreadAttribute);
 
   if (spread === undefined) {
@@ -130,18 +142,29 @@ const restOf = (head: JsxHead): string | undefined => {
   }
 
   const { expression } = spread;
-  const name = ts.isIdentifier(expression) ? expression.text : undefined;
-  const file = head.getSourceFile();
-  const bound = collect(file, ts.isBindingElement)
-    .find((element) => {
-      return element.dotDotDotToken !== undefined && textOf(element.name) === name;
-    });
+  const reason = 'Only a rest binding can be spread onto an option component, and one a parameter destructures';
+  const read = ts.isIdentifier(expression) ? expression : undefined;
+  const element = read === undefined ? undefined : declarationOf(checker, read);
 
-  if (name === undefined || bound === undefined) {
-    throw refusal(spread, 'Only a rest binding can be spread onto an option component');
+  if (read === undefined || element === undefined || !ts.isBindingElement(element)) {
+    throw refusal(spread, reason);
   }
 
-  return name;
+  const pattern = element.parent;
+  const parameter = pattern.parent;
+
+  if (element.dotDotDotToken === undefined || !ts.isObjectBindingPattern(pattern) || !ts.isParameter(parameter)) {
+    throw refusal(spread, reason);
+  }
+
+  const rest: Rest = {
+    read,
+    element,
+    pattern,
+    owner: parameter.parent,
+  };
+
+  return rest;
 };
 
 // Each placeholder takes its text, moved to the indentation of the line it lands on.
@@ -171,7 +194,7 @@ const withPlaced = (body: string, placed: readonly Placed[]): string => {
     }, body);
 };
 
-const siteOf = (text: string, head: JsxHead): Site => {
+const siteOf = (checker: ts.TypeChecker, text: string, head: JsxHead): Site => {
   const element = ts.isJsxOpeningElement(head) ? head.parent : head;
   const attributes = head.attributes.properties.filter(ts.isJsxAttribute);
   const pairs = attributes
@@ -201,7 +224,7 @@ const siteOf = (text: string, head: JsxHead): Site => {
     element,
     given: new Map(pairs),
     key,
-    rest: restOf(head),
+    rest: restOf(checker, head),
     children,
   };
 
@@ -238,37 +261,51 @@ class Placement {
 }
 
 // Each prop the component reads takes the base's attribute; one the base leaves to its rest binding is noted.
-const placeProps = (placement: Placement, root: JsxRoot, wanted: readonly string[], site: Site): string[] => {
-  const needs: string[] = [];
-  const props = wanted
-    .filter((name) => {
-      return name !== 'children';
-    });
+const placeProps = (
+  checker: ts.TypeChecker,
+  placement: Placement,
+  root: JsxRoot,
+  wanted: readonly ts.BindingElement[],
+  site: Site,
+): ts.Identifier[] => {
+  const needs: ts.Identifier[] = [];
 
-  for (const name of props) {
+  for (const element of wanted) {
+    const name = textOf(element.name);
     const argument = site.given.get(name);
 
-    if (argument === undefined && site.rest === undefined) {
+    if (argument === undefined && site.rest === undefined && name !== 'children') {
       throw refusal(site.head, `The option's component needs "${name}", which the base does not pass`);
     }
 
-    if (argument === undefined) {
-      needs.push(name);
-    }
-    else {
+    if (argument !== undefined) {
       const origin = indentOf(argument.getSourceFile().text, argument);
 
-      for (const edit of substitutions(root, name, argument)) {
+      for (const edit of substitutions(checker, root, element, argument)) {
         placement.put(edit, edit.insert, origin);
       }
+    }
+    else if (name !== 'children' && ts.isIdentifier(element.name)) {
+      needs.push(element.name);
     }
   }
 
   return needs;
 };
 
-const placeChildren = (placement: Placement, root: JsxRoot, site: Site): void => {
-  const slots = referencesIn(root, 'children')
+const placeChildren = (
+  checker: ts.TypeChecker,
+  placement: Placement,
+  root: JsxRoot,
+  wanted: readonly ts.BindingElement[],
+  site: Site,
+): void => {
+  const children = wanted
+    .find((element) => {
+      return textOf(element.name) === 'children';
+    });
+  const reads = children === undefined ? [] : referencesTo(checker, children, root);
+  const slots = reads
     .map((read) => {
       if (!ts.isJsxExpression(read.parent)) {
         throw refusal(read, 'An option component can only render its children in place');
@@ -311,10 +348,14 @@ const placeKey = (placement: Placement, root: JsxRoot, site: Site): void => {
   placement.put(span, textOf(site.key), '', lead);
 };
 
-const ignoredCheck = (wanted: readonly string[], site: Site): void => {
+const ignoredCheck = (wanted: readonly ts.BindingElement[], site: Site): void => {
+  const names = wanted
+    .map((element) => {
+      return textOf(element.name);
+    });
   const ignored = [...site.given.entries()]
     .find(([name, value]) => {
-      return name !== 'key' && !wanted.includes(name) && !isPure(value);
+      return name !== 'key' && !names.includes(name) && !isPure(value);
     });
 
   if (ignored !== undefined) {
@@ -322,36 +363,160 @@ const ignoredCheck = (wanted: readonly string[], site: Site): void => {
   }
 };
 
+// Every read of a rest binding must be a spread onto an option component still to be filled.
+const spreadOnlyCheck = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  { read, element }: Rest,
+): readonly ts.Identifier[] => {
+  const reads = referencesTo(checker, element, read.getSourceFile());
+  const other = reads
+    .find((candidate) => {
+      const head = ts.isJsxSpreadAttribute(candidate.parent) ? candidate.parent.parent.parent : undefined;
+      const tag = head === undefined || !ts.isIdentifier(head.tagName) ? undefined : head.tagName;
+
+      return tag === undefined || !sources.bindings.has(tag.text) || declarationOf(checker, tag) !== undefined;
+    });
+
+  if (other !== undefined) {
+    throw refusal(other, `"${read.text}" is still read after composing; a rest binding is only for option components`);
+  }
+
+  return reads
+    .filter((candidate) => {
+      return candidate !== read;
+    });
+};
+
+// A need read from the rest becomes a binding of the rest's pattern, which nothing else may bind or lose to it.
+const needCheck = (checker: ts.TypeChecker, rest: Rest, need: ts.Identifier, landing: ts.Node): void => {
+  const { pattern, owner } = rest;
+  const found = resolvedAt(checker, need, landing);
+  const isPattern = found?.parent === pattern && found !== rest.element;
+  const reason = `The option's component reads "${need.text}" from "${rest.read.text}"`;
+
+  if (isPattern) {
+    return;
+  }
+
+  if (found !== undefined && isWithin(found, owner)) {
+    throw refusal(landing, `${reason}, and the base binds that name too`);
+  }
+
+  const taken = collect(owner, ts.isIdentifier)
+    .find((identifier) => {
+      if (identifier.text !== need.text || !isReference(identifier)) {
+        return false;
+      }
+
+      const declaration = declarationOf(checker, identifier);
+
+      return declaration === undefined || !isWithin(declaration, owner);
+    });
+
+  if (taken !== undefined) {
+    throw refusal(taken, `${reason}, which would capture this read`);
+  }
+};
+
+// The rest's pattern names what the component reads from it, and loses the rest once no spread reads it.
+const restEdit = (
+  text: string,
+  rest: Rest,
+  needs: readonly ts.Identifier[],
+  others: readonly ts.Identifier[],
+): Edit => {
+  const { pattern, element } = rest;
+  const own = pattern.elements
+    .filter((candidate) => {
+      return candidate !== element;
+    })
+    .map(textOf);
+  const added = needs
+    .map((need) => {
+      return need.text;
+    })
+    .filter((name) => {
+      return !own.includes(name);
+    });
+  const names = [...new Set([...own, ...added])];
+
+  if (others.length === 0) {
+    const indent = indentOf(text, pattern);
+    const whole: Edit = {
+      ...spanOf(pattern),
+      insert: patternOf(names, indent),
+    };
+
+    return whole;
+  }
+
+  const at = element.getStart();
+  const inserted = [...new Set(added)]
+    .map((name) => {
+      return `${name}, `;
+    });
+  const before: Edit = {
+    start: at,
+    end: at,
+    insert: inserted.join(''),
+  };
+
+  return before;
+};
+
 // `<X ...>children</X>`: the option component's returned element replaces the element that renders it.
-export const inlineElement = (text: string, sources: Sources, tag: ts.Identifier, head: JsxHead): string => {
+export const inlineElement = (
+  text: string,
+  sources: Sources,
+  tag: ts.Identifier,
+  head: JsxHead,
+  checker: ts.TypeChecker,
+): string => {
   const arrow = arrowOf(sources, tag);
   const root = rootOf(arrow);
   const wanted = wantedOf(arrow);
-  const site = siteOf(text, head);
-  const given = [...site.given.values()];
+  const site = siteOf(checker, text, head);
+  const pairs = wanted
+    .flatMap((element) => {
+      const argument = site.given.get(textOf(element.name));
+      const pair: [ts.Declaration, ts.Expression][] = argument === undefined ? [] : [[element, argument]];
+
+      return pair;
+    });
+  const given = new Map(pairs);
 
   ignoredCheck(wanted, site);
-  captureCheck(root, given);
-  orderCheck(root, site.given);
+  landedCheck(checker, sources, arrow, root, site.element);
+  captureCheck(checker, root, given);
+  orderCheck(checker, root, given);
 
   const placement = new Placement(root);
-  const needs = placeProps(placement, root, wanted, site);
+  const needs = placeProps(checker, placement, root, wanted, site);
 
-  placeChildren(placement, root, site);
+  placeChildren(checker, placement, root, wanted, site);
   placeKey(placement, root, site);
-
-  if (site.rest !== undefined) {
-    const known = sources.rests.get(site.rest) ?? [];
-    const names = new Set([...known, ...needs]);
-
-    sources.rests.set(site.rest, [...names]);
-  }
 
   const from = indentOf(root.getSourceFile().text, root);
   const to = indentOf(text, site.element);
   const edited = applied(textOf(root), placement.edits);
   const moved = reindent(edited, from, to);
   const body = withPlaced(moved, placement.placed);
+  const inlined: Edit = {
+    ...spanOf(site.element),
+    insert: body,
+  };
+  const { rest } = site;
 
-  return swapped(text, site.element, body);
+  if (rest === undefined) {
+    return applied(text, [inlined]);
+  }
+
+  const others = spreadOnlyCheck(checker, sources, rest);
+
+  for (const need of needs) {
+    needCheck(checker, rest, need, site.element);
+  }
+
+  return applied(text, [inlined, restEdit(text, rest, needs, others)]);
 };

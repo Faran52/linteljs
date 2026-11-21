@@ -208,31 +208,11 @@ export const referencesIn = (root: ts.Node, name: string): ts.Identifier[] => {
     });
 };
 
-const isBinder = (node: ts.Node): node is ts.NamedDeclaration => {
-  const isValue = ts.isVariableDeclaration(node) || ts.isParameter(node) || ts.isBindingElement(node);
-  const isFunction = ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node);
+// Whether a node sits inside another, in the same file.
+export const isWithin = (node: ts.Node, outer: ts.Node): boolean => {
+  const isSameFile = node.getSourceFile() === outer.getSourceFile();
 
-  return isValue || isFunction || ts.isClassDeclaration(node) || ts.isClassExpression(node);
-};
-
-const isWithin = (node: ts.Node, outer: ts.Node | undefined): boolean => {
-  return outer !== undefined && node.getStart() >= outer.getStart() && node.getEnd() <= outer.getEnd();
-};
-
-// Every name a subtree binds: variables, parameters, the members of their patterns, functions and classes.
-// `except` leaves one part of the subtree out.
-export const boundIn = (root: ts.Node, except?: ts.Node): Set<string> => {
-  const names = collect(root, ts.isIdentifier)
-    .filter((identifier) => {
-      const { parent } = identifier;
-
-      return isBinder(parent) && parent.name === identifier && !isWithin(identifier, except);
-    })
-    .map((identifier) => {
-      return identifier.text;
-    });
-
-  return new Set(names);
+  return isSameFile && node.getStart() >= outer.getStart() && node.getEnd() <= outer.getEnd();
 };
 
 // Through the wrappers that only speak to the type checker.
@@ -295,34 +275,6 @@ export const isPure = (node: ts.Expression): boolean => {
   }
 
   return ts.isObjectLiteralExpression(value) && value.properties.every(isPureProperty);
-};
-
-const isNamedDeclaration = (statement: ts.Statement): statement is ts.DeclarationStatement => {
-  const isValue = ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement);
-  const isType = ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement);
-
-  return isValue || isType || ts.isEnumDeclaration(statement);
-};
-
-// Every name a module declares at its top level, values and types alike; imports are not declarations.
-export const declaredIn = (file: ts.SourceFile): Set<string> => {
-  const named = file.statements
-    .filter(isNamedDeclaration)
-    .flatMap((statement) => {
-      const { name } = statement;
-      const own = name === undefined ? [] : [name.text];
-
-      return own;
-    });
-  const variables = file.statements
-    .filter(ts.isVariableStatement)
-    .flatMap((statement) => {
-      const bound = boundIn(statement.declarationList);
-
-      return Array.from(bound);
-    });
-
-  return new Set([...named, ...variables]);
 };
 
 // Assigned to, updated or deleted rather than read.

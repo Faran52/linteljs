@@ -6,9 +6,7 @@ import {
 } from 'vitest';
 
 import {
-  boundIn,
   collect,
-  declaredIn,
   expressionOf,
   fitted,
   indentAt,
@@ -16,6 +14,7 @@ import {
   isPlainElement,
   isPure,
   isReference,
+  isWithin,
   isWritten,
   leadingIndent,
   lineEnd,
@@ -303,56 +302,26 @@ describe('isReference and referencesIn', () => {
   });
 });
 
-describe('boundIn', () => {
-  it('lists every name a subtree binds', () => {
-    const values = 'const { a } = b; const f = (c) => c;';
-    const file = parse(`${values} function g() {} class K {} x = function h() {}; y = class L {};`);
-    const bound = boundIn(file);
+describe('isWithin', () => {
+  it('holds a node inside another of its file, and not one of another file', () => {
+    const file = parse('const a = [b];\n');
+    const other = parse('const a = [b];\n');
+    const [inner] = collect(file, ts.isArrayLiteralExpression);
+    const [statement] = file.statements;
+    const [elsewhere] = other.statements;
+    const isInside = inner !== undefined && statement !== undefined && isWithin(inner, statement);
+    const isOutside = statement !== undefined && inner !== undefined && isWithin(statement, inner);
+    const isForeign = inner !== undefined && elsewhere !== undefined && isWithin(inner, elsewhere);
+    const found = [
+      isInside,
+      isOutside,
+      isForeign,
+    ];
 
-    expect([...bound]).toStrictEqual([
-      'a',
-      'f',
-      'c',
-      'g',
-      'K',
-      'h',
-      'L',
-    ]);
-  });
-
-  it('leaves out the part it is told to', () => {
-    const file = parse('const a = 1; const b = 2; const c = 3;');
-    const [, second] = file.statements;
-    const bound = boundIn(file, second);
-
-    expect([...bound]).toStrictEqual(['a', 'c']);
-  });
-});
-
-describe('declaredIn', () => {
-  it('lists what a module declares at its top level, values and types, and no import', () => {
-    const source = [
-      'import { i } from \'m\';',
-      'export const a = 1, { b } = c;',
-      'function f() { const inner = 1; }',
-      'export default function () {}',
-      'class K {}',
-      'interface I {}',
-      'type T = 1;',
-      'enum E {}',
-      'log();',
-    ].join('\n');
-    const file = parse(source);
-    const declared = declaredIn(file);
-
-    expect([...declared]).toStrictEqual([
-      'f',
-      'K',
-      'I',
-      'T',
-      'E',
-      'a',
-      'b',
+    expect(found).toStrictEqual([
+      true,
+      false,
+      false,
     ]);
   });
 });

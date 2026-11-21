@@ -8,12 +8,19 @@ import {
   refusal,
 } from './editUtils';
 import {
-  boundIn,
+  bindingNamesOf,
+  declarationOf,
+  declaredBy,
+  referencesTo,
+  resolvedAt,
+} from './scopeUtils';
+import {
   collect,
   indentOf,
   isPlainElement,
+  isReference,
+  isWithin,
   leadingIndent,
-  referencesIn,
   reindent,
   spanOf,
   swapped,
@@ -21,6 +28,14 @@ import {
   unparen,
   withoutLines,
 } from './sourceUtils';
+import { landedCheck } from './stepUtils';
+
+// The statement that binds a call's result, the binding and the block it sits in.
+interface Holder {
+  statement: ts.VariableStatement;
+  declaration: ts.VariableDeclaration;
+  block: ts.Block;
+}
 
 const EMPTY_OBJECT = /^Record<never,\s*never>$/u;
 const LEADING_BLANK_LINES = /^(?:[\t ]*\n)+/u;
@@ -50,7 +65,12 @@ const nameOf = (member: ts.TypeElement): string | undefined => {
 };
 
 // `interface I extends X`: the option's members join I's own, and the clause goes.
-export const flattenHeritage = (text: string, sources: Sources, local: ts.Identifier): string => {
+export const flattenHeritage = (
+  text: string,
+  sources: Sources,
+  local: ts.Identifier,
+  checker: ts.TypeChecker,
+): string => {
   const reference = local.parent;
   const clause = reference.parent;
   const target = clause.parent;
@@ -80,6 +100,10 @@ export const flattenHeritage = (text: string, sources: Sources, local: ts.Identi
 
   if (twice !== undefined) {
     throw refusal(target.name, `Both the base and the option declare the member "${twice}" of`);
+  }
+
+  for (const member of joining) {
+    landedCheck(checker, sources, member, member, target);
   }
 
   const members = joining
@@ -123,7 +147,7 @@ const returnsEarly = (statement: ts.Statement): boolean => {
 };
 
 // The names the spliced statements hand to the base: the plain members of the object they return.
-const answeredNames = (returned: ts.ReturnStatement | undefined): string[] => {
+const answeredNames = (returned: ts.ReturnStatement | undefined): ts.Identifier[] => {
   const answer = returned?.expression === undefined ? undefined : unparen(returned.expression);
 
   if (answer === undefined) {
@@ -137,49 +161,109 @@ const answeredNames = (returned: ts.ReturnStatement | undefined): string[] => {
   return answer.properties
     .filter(ts.isShorthandPropertyAssignment)
     .map((property) => {
-      return property.name.text;
+      return property.name;
     });
 };
 
-// The statement that binds a call's result, when the call is all it holds: `const y = f();` inside a block.
-const holderOf = (call: ts.CallExpression): ts.VariableStatement | undefined => {
+// `const y = f();` inside a block, when the call is all it holds.
+const holderOf = (call: ts.CallExpression): Holder | undefined => {
   const declaration = call.parent;
-  const statement = ts.isVariableDeclaration(declaration) ? declaration.parent.parent : undefined;
-  const held = statement !== undefined && ts.isVariableStatement(statement) ? statement : undefined;
-  const isAlone = held?.declarationList.declarations.length === 1;
 
-  return held !== undefined && isAlone && ts.isBlock(held.parent) ? held : undefined;
+  if (!ts.isVariableDeclaration(declaration)) {
+    return undefined;
+  }
+
+  const statement = declaration.parent.parent;
+  const block = statement.parent;
+
+  if (!ts.isVariableStatement(statement) || !ts.isBlock(block) || statement.declarationList.declarations.length > 1) {
+    return undefined;
+  }
+
+  const holder: Holder = {
+    statement,
+    declaration,
+    block,
+  };
+
+  return holder;
 };
 
-// Each read of the holder becomes the plain name the option's statements answered.
-const holderReads = (scope: ts.Node, holder: string, names: readonly string[]): Edit[] => {
-  return referencesIn(scope, holder)
+// Each read of the holder becomes the plain name the option's statements answered, which must read the same there.
+const holderReads = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  arrow: ts.ArrowFunction,
+  { declaration, block }: Holder,
+  answered: readonly ts.Identifier[],
+): Edit[] => {
+  const holder = textOf(declaration.name);
+
+  return referencesTo(checker, declaration, block)
     .map((read) => {
       const access = read.parent;
+      const name = ts.isPropertyAccessExpression(access)
+        ? answered
+            .find((candidate) => {
+              return candidate.text === access.name.text;
+            })
+        : undefined;
 
-      if (!ts.isPropertyAccessExpression(access) || !names.includes(access.name.text)) {
+      if (name === undefined) {
         throw refusal(access, `"${holder}" can only be read by a member the option's statements answer`);
+      }
+
+      const found = resolvedAt(checker, name, access);
+
+      landedCheck(checker, sources, arrow, name, access);
+
+      if (found !== undefined && found !== declaration && isWithin(found, block)) {
+        throw refusal(access, `"${name.text}" is bound again around this read, so the option's one cannot land here`);
       }
 
       const edit: Edit = {
         ...spanOf(access),
-        insert: access.name.text,
+        insert: name.text,
       };
 
       return edit;
     });
 };
 
-const clashCheck = (kept: readonly ts.Statement[], statement: ts.Statement): void => {
-  const owner = ts.findAncestor(statement, ts.isFunctionLike) ?? statement.parent;
-  const taken = boundIn(owner, statement);
-  const clash = kept
-    .flatMap((candidate) => {
-      const names = boundIn(candidate);
-      const declared = Array.from(names);
+const varCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction): void => {
+  const hasVar = kept
+    .some((statement) => {
+      return collect(statement, ts.isVariableDeclarationList)
+        .some((list) => {
+          return (list.flags & ts.NodeFlags.BlockScoped) === 0;
+        });
+    });
 
-      return declared;
-    })
+  if (hasVar) {
+    throw refusal(arrow, 'Statements spliced into the base must declare with const or let, never var');
+  }
+};
+
+// A spliced name may not be declared again in the scope it lands in: the block, or the function or catch it opens.
+const clashCheck = (kept: readonly ts.Statement[], { statement, block }: Holder): void => {
+  const owner = block.parent;
+  const others = block.statements
+    .filter((candidate) => {
+      return candidate !== statement;
+    });
+  const parameters = ts.isFunctionLike(owner)
+    ? owner.parameters
+        .map((parameter) => {
+          return parameter.name;
+        })
+    : [];
+  const caught = ts.isCatchClause(owner) ? [owner.variableDeclaration?.name] : [];
+  const opened = [...parameters, ...caught]
+    .flatMap((name) => {
+      return name === undefined ? [] : bindingNamesOf(name);
+    });
+  const taken = declaredBy(others).union(new Set(opened));
+  const clash = [...declaredBy(kept)]
     .find((name) => {
       return taken.has(name);
     });
@@ -189,22 +273,55 @@ const clashCheck = (kept: readonly ts.Statement[], statement: ts.Statement): voi
   }
 };
 
+// A spliced name takes over every read of it in the block that meant a binding from outside the block.
+const takenOverCheck = (checker: ts.TypeChecker, kept: readonly ts.Statement[], { statement, block }: Holder): void => {
+  const names = declaredBy(kept);
+  const read = collect(block, ts.isIdentifier)
+    .find((identifier) => {
+      const isOutside = names.has(identifier.text) && isReference(identifier) && !isWithin(identifier, statement);
+
+      if (!isOutside) {
+        return false;
+      }
+
+      const found = declarationOf(checker, identifier);
+
+      return found === undefined || !isWithin(found, block);
+    });
+
+  if (read !== undefined) {
+    throw refusal(read, `The option's statements declare "${read.text}", which the base reads from outside the block`);
+  }
+};
+
 // The edits that make the base read the option's names: `y.k` to `k`, or none when a pattern already names them.
-const readsOf = (scope: ts.Node, holder: ts.BindingName, names: readonly string[]): Edit[] => {
-  if (ts.isIdentifier(holder)) {
-    return holderReads(scope, holder.text, names);
+const readsOf = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  arrow: ts.ArrowFunction,
+  holder: Holder,
+  answered: readonly ts.Identifier[],
+): Edit[] => {
+  const { name } = holder.declaration;
+
+  if (ts.isIdentifier(name)) {
+    return holderReads(checker, sources, arrow, holder, answered);
   }
 
-  const elements = ts.isObjectBindingPattern(holder) ? holder.elements : undefined;
+  const names = answered
+    .map((identifier) => {
+      return identifier.text;
+    });
+  const elements = ts.isObjectBindingPattern(name) ? name.elements : undefined;
   const isAnswered = elements
     ?.every((element) => {
-      const name = textOf(element.name);
+      const named = textOf(element.name);
 
-      return isPlainElement(element) && names.includes(name);
+      return isPlainElement(element) && names.includes(named);
     });
 
   if (isAnswered !== true) {
-    throw refusal(holder, 'A pattern can only take, by their own names, what the option\'s statements answer');
+    throw refusal(name, 'A pattern can only take, by their own names, what the option\'s statements answer');
   }
 
   return [];
@@ -237,13 +354,13 @@ export const spliceStatements = (
   sources: Sources,
   local: ts.Identifier,
   call: ts.CallExpression,
+  checker: ts.TypeChecker,
 ): string => {
   const arrow = arrowOf(sources, local);
-  const statement = holderOf(call);
-  const declaration = call.parent;
+  const holder = holderOf(call);
 
-  if (statement === undefined || !ts.isVariableDeclaration(declaration) || !ts.isBlock(arrow.body)) {
-    return inlineCall(text, sources, local, call);
+  if (holder === undefined || !ts.isBlock(arrow.body)) {
+    return inlineCall(text, sources, local, call, checker);
   }
 
   if (arrow.parameters.length > 0 || call.arguments.length > 0) {
@@ -253,15 +370,23 @@ export const spliceStatements = (
   const final = arrow.body.statements.at(-1);
   const returned = final !== undefined && ts.isReturnStatement(final) ? final : undefined;
   const kept = returned === undefined ? arrow.body.statements : arrow.body.statements.slice(0, -1);
+  const { statement } = holder;
 
   if (kept.some(returnsEarly)) {
     throw refusal(arrow, 'Statements spliced into the base may only return at the end');
   }
 
-  clashCheck(kept, statement);
+  varCheck(kept, arrow);
+  clashCheck(kept, holder);
 
-  const names = answeredNames(returned);
-  const reads = readsOf(statement.parent, declaration.name, names);
+  for (const moved of kept) {
+    landedCheck(checker, sources, arrow, moved, statement);
+  }
+
+  takenOverCheck(checker, kept, holder);
+
+  const answered = answeredNames(returned);
+  const reads = readsOf(checker, sources, arrow, holder, answered);
   const renamed = applied(text, reads);
   const indent = indentOf(text, statement);
   const block = blockOf(kept, indent);

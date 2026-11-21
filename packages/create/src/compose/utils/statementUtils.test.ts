@@ -6,21 +6,24 @@ import {
 } from 'vitest';
 
 import { sourcesOf } from './bindingUtils';
+import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
 
 // The first read of `x` in a body filled from an option module: a call's statements, or a type's members.
 const filled = (body: string, option: string): string => {
   const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option });
-  const [local] = referencesIn(parse(sources.body), 'x');
+  const file = parse(sources.body);
+  const checker = scopeOf(file, sources.modules);
+  const [local] = referencesIn(file, 'x');
 
   if (local === undefined) {
     throw new Error(`No x in ${body}`);
   }
 
   return ts.isCallExpression(local.parent)
-    ? spliceStatements(sources.body, sources, local, local.parent)
-    : flattenHeritage(sources.body, sources, local);
+    ? spliceStatements(sources.body, sources, local, local.parent, checker)
+    : flattenHeritage(sources.body, sources, local, checker);
 };
 
 const lines = (...written: string[]): string => {
@@ -194,6 +197,12 @@ describe('spliceStatements', () => {
       'y = [4];\n',
     ],
     [
+      'a call in a catch block that binds no variable',
+      lines('try {', '  run();', '}', 'catch {', '  const thing = x();', '', '  log(thing.value);', '}'),
+      HOOK,
+      lines('try {', '  run();', '}', 'catch {', '  const value = 1;', '', '  log(value);', '}'),
+    ],
+    [
       'a call that binds a name outside any block',
       'const made = x();\n',
       'export const x = () => 4;\n',
@@ -203,6 +212,75 @@ describe('spliceStatements', () => {
     const written = filled(body, option);
 
     expect(written).toBe(expected);
+  });
+
+  it('rewrites only the holder\'s own reads, past a callback binding its name (F7)', () => {
+    const body = lines(
+      'export const C = (items: { k: number }[]) => {',
+      '  const y = x();',
+      '',
+      '  return items.map((y) => y.k).concat(y.k);',
+      '};',
+    );
+    const option = lines('export const x = () => {', '  const k = 1;', '', '  return { k };', '};');
+    const written = filled(body, option);
+    const expected = lines(
+      'export const C = (items: { k: number }[]) => {',
+      '  const k = 1;',
+      '',
+      '  return items.map((y) => y.k).concat(k);',
+      '};',
+    );
+
+    expect(written).toBe(expected);
+  });
+
+  it('splices a name a nested scope binds again, which keeps its own reads', () => {
+    const body = lines(
+      'run = () => {',
+      '  const thing = x();',
+      '  const f = (value) => value;',
+      '',
+      '  return thing.value;',
+      '};',
+    );
+    const written = filled(body, HOOK);
+    const expected = lines(
+      'run = () => {',
+      '  const value = 1;',
+      '  const f = (value) => value;',
+      '',
+      '  return value;',
+      '};',
+    );
+
+    expect(written).toBe(expected);
+  });
+
+  it('refuses statements that declare a name the block reads from a module binding (F5)', () => {
+    const body = lines(
+      'const limit = 5;',
+      '',
+      'export const C = () => {',
+      '  const y = x();',
+      '',
+      '  return limit + y.k;',
+      '};',
+    );
+    const option = lines(
+      'export const x = () => {',
+      '  const limit = 1;',
+      '  const k = limit;',
+      '',
+      '  return { k };',
+      '};',
+    );
+
+    const run = (): string => {
+      return filled(body, option);
+    };
+
+    expect(run).toThrow('The option\'s statements declare "limit", which the base reads from outside the block: limit');
   });
 
   it.each([
@@ -275,6 +353,21 @@ describe('spliceStatements', () => {
       lines('{', '  const thing = x();', '}'),
       'export const x = 4;\n',
       /must be an arrow function/u,
+    ],
+    [
+      lines('{', '  const thing = x();', '}'),
+      lines('export const x = () => {', '  var value = 1;', '', '  return { value };', '};'),
+      /must declare with const or let, never var/u,
+    ],
+    [
+      lines('try {', '  run();', '}', 'catch (value) {', '  const thing = x();', '}'),
+      HOOK,
+      /declare "value", which the base already binds here/u,
+    ],
+    [
+      lines('{', '  const thing = x();', '', '  [1].map((value) => thing.value);', '}'),
+      HOOK,
+      /"value" is bound again around this read, so the option's one cannot land here: thing.value/u,
     ],
   ])('refuses %j from %j', (body, option, message) => {
     const run = (): string => {

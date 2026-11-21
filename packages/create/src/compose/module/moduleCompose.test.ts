@@ -160,6 +160,12 @@ describe('moduleCompose, on the shipped home page style table', () => {
 
 const CASES: Case[] = [
   {
+    name: 'a base binding that shadows a parameter binding, read as the base wrote it',
+    base: 'import { x } from \'./p\';\n\nexport const y = (x: number) => x;\n',
+    option: 'export const x = 1;\n',
+    expected: 'export const y = (x: number) => x;\n',
+  },
+  {
     name: 'a member of an object export',
     base: 'import { table } from \'./p\';\n\nexport const size = table.size;\n',
     option: 'export const table = { size: 4 };\n',
@@ -404,12 +410,6 @@ const REFUSALS: Refusal[] = [
     base: 'import type { Extra } from \'./p\';\n\nexport interface Props extends Extra {\n}\n',
     option: 'export type Extra = Other;\n',
     message: /must be an interface, a type literal or Record<never, never>/u,
-  },
-  {
-    name: 'a name the base binds that is also a parameter binding',
-    base: 'import { x } from \'./p\';\n\nexport const y = (x: number) => x;\n',
-    option: 'export const x = 1;\n',
-    message: /"x" is bound in the base or in inlined code/u,
   },
   {
     name: 'statements that take a parameter',
@@ -938,7 +938,7 @@ const MORE_REFUSALS: Refusal[] = [
       '};',
       '',
     ].join('\n'),
-    message: /"join" is imported and also bound in the composed body/u,
+    message: /The option's statements declare "join", which the base reads from outside the block/u,
   },
   {
     name: 'a composed text that is no longer a module',

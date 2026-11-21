@@ -7,11 +7,11 @@ import {
 
 import { type Sources, sourcesOf } from './bindingUtils';
 import { inlineElement } from './elementUtils';
+import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
 
 interface Filled {
   written: string;
-  rests: [string, string[]][];
 }
 
 // One `<X>` of a text replaced by what the option component returns; undefined once none is left.
@@ -25,10 +25,11 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
       return ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent);
     });
   const [head] = heads;
+  const checker = scopeOf(file, sources.modules);
 
   return head === undefined || !ts.isIdentifier(head.tagName)
     ? undefined
-    : inlineElement(text, sources, head.tagName, head);
+    : inlineElement(text, sources, head.tagName, head, checker);
 };
 
 const filled = (body: string, option: string): Filled => {
@@ -41,7 +42,6 @@ const filled = (body: string, option: string): Filled => {
 
   const result: Filled = {
     written,
-    rests: [...sources.rests.entries()],
   };
 
   return result;
@@ -150,23 +150,54 @@ describe('inlineElement', () => {
       ),
     ],
   ])('fills %s', (_name, body, option, expected) => {
-    const { written, rests } = filled(body, option);
+    const { written } = filled(body, option);
 
     expect(written).toBe(expected);
-    expect(rests).toStrictEqual([]);
   });
 
-  it('notes what a component reads from the rest binding the base spreads, once per name', () => {
+  it('binds what each component reads from its own rest binding, two of one name (F8)', () => {
+    const body = lines(
+      'A = ({ id, ...rest }: Props) => <X {...rest}>{id}</X>;',
+      'B = ({ name, ...rest }: Props) => <X {...rest}>{name}</X>;',
+    );
+    const option = 'export const X = ({ title, children }: P) => <section><h1>{title}</h1>{children}</section>;\n';
+    const { written } = filled(body, option);
+    const expected = lines(
+      'A = ({ id, title }: Props) => <section><h1>{title}</h1>{id}</section>;',
+      'B = ({ name, title }: Props) => <section><h1>{title}</h1>{name}</section>;',
+    );
+
+    expect(written).toBe(expected);
+  });
+
+  it('binds what a component reads from the rest it spreads when an outer rest has its name (F8)', () => {
+    const body = 'y = ({ id, ...rest }) => <ul>{list.map(({ name, ...rest }) => <X {...rest}>{name}</X>)}</ul>;\n';
+    const option = 'export const X = ({ title, children }: P) => <h1 title={title}>{children}</h1>;\n';
+    const { written } = filled(body, option);
+    const kept = 'y = ({ id, ...rest }) => <ul>';
+    const expected = `${kept}{list.map(({ name, title }) => <h1 title={title}>{name}</h1>)}</ul>;\n`;
+
+    expect(written).toBe(expected);
+  });
+
+  it('binds what a component reads from the rest past a nested binding of that name, which keeps its read', () => {
+    const body = 'y = ({ ...rest }) => <ul><X {...rest} />{[1].map((current) => current)}</ul>;\n';
+    const option = 'export const X = ({ current }: P) => <li hidden={current} />;\n';
+    const { written } = filled(body, option);
+
+    expect(written).toBe('y = ({ current }) => <ul><li hidden={current} />{[1].map((current) => current)}</ul>;\n');
+  });
+
+  it('binds what a component reads from the rest binding the base spreads, once per name', () => {
     const body = 'y = ({ ...rest }) => <ul><X id="a" {...rest} /><X id="b" {...rest} /></ul>;\n';
     const option = 'export const X = ({ id, current, on }: P) => <li id={id} hidden={current} onClick={on} />;\n';
-    const { written, rests } = filled(body, option);
+    const { written } = filled(body, option);
 
     const item = (id: string): string => {
       return `<li id={'${id}'} hidden={current} onClick={on} />`;
     };
 
-    expect(written).toBe(`y = ({ ...rest }) => <ul>${item('a')}${item('b')}</ul>;\n`);
-    expect(rests).toStrictEqual([['rest', ['current', 'on']]]);
+    expect(written).toBe(`y = ({ current, on }) => <ul>${item('a')}${item('b')}</ul>;\n`);
   });
 
   it.each([
@@ -274,6 +305,71 @@ describe('inlineElement', () => {
       'y = <X label={inner} />;',
       'export const X = ({ label }: P) => <ul>{[1].map((inner) => <li>{label}{inner}</li>)}</ul>;\n',
       /would capture it/u,
+    ],
+    [
+      'y = ({ ...rest }) => <ul><X {...rest} />{rest}</ul>;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /"rest" is still read after composing/u,
+    ],
+    [
+      'y = ({ ...rest }) => <ul><X {...rest} /><div {...rest} /></ul>;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /"rest" is still read after composing/u,
+    ],
+    [
+      'y = ({ ...rest }) => <ul><X {...rest} /><a.b {...rest} /></ul>;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /"rest" is still read after composing/u,
+    ],
+    [
+      'y = ({ ...rest }) => <ul><X {...rest} />{[1].map((X) => <X {...rest} />)}</ul>;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /"rest" is still read after composing/u,
+    ],
+    [
+      'y = ({ ...rest }) => [1].map((current) => <X key={current} {...rest} />);',
+      'export const X = ({ current }: P) => <li hidden={current} />;\n',
+      /reads "current" from "rest", and the base binds that name too/u,
+    ],
+    [
+      'y = ({ ...rest }) => <ul><X {...rest} />{current}</ul>;',
+      'export const X = ({ current }: P) => <li hidden={current} />;\n',
+      /reads "current" from "rest", which would capture this read: current/u,
+    ],
+    [
+      'const current = 1;\ny = ({ ...rest }) => <ul><X {...rest} />{current}</ul>;',
+      'export const X = ({ current }: P) => <li hidden={current} />;\n',
+      /which would capture this read: current/u,
+    ],
+    [
+      'y = ({ ...rest }) => <X {...{ a: 1 }} />;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
+    ],
+    [
+      'y = () => <X {...props} />;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
+    ],
+    [
+      'y = (rest) => <X {...rest} />;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
+    ],
+    [
+      'y = ({ rest }) => <X {...rest} />;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
+    ],
+    [
+      'y = ([...rest]) => <X {...rest} />;',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
+    ],
+    [
+      'y = () => {\n  const { ...rest } = props;\n\n  return <X {...rest} />;\n};',
+      'export const X = ({ id }: P) => <li id={id} />;\n',
+      /Only a rest binding can be spread/u,
     ],
   ])('refuses %s from %j', (body, option, message) => {
     const run = (): Filled => {

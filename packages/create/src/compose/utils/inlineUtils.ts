@@ -2,11 +2,8 @@ import ts from 'typescript';
 
 import { inlineMember, inlineValue } from './callUtils';
 import { inlineElement } from './elementUtils';
-import {
-  boundIn,
-  collect,
-  isReference,
-} from './sourceUtils';
+import { declarationOf, scopeOf } from './scopeUtils';
+import { collect, isReference } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
 
 import type { Sources } from './bindingUtils';
@@ -39,50 +36,43 @@ const rankOf = (local: ts.Identifier): number => {
 };
 
 // One read of a parameter binding replaced by what its option module gives.
-const filled = (text: string, sources: Sources, local: ts.Identifier): string => {
+const filled = (text: string, sources: Sources, local: ts.Identifier, checker: ts.TypeChecker): string => {
   const { parent } = local;
 
   if (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent)) {
-    return inlineElement(text, sources, local, parent);
+    return inlineElement(text, sources, local, parent, checker);
   }
 
   if (ts.isPropertyAccessExpression(parent)) {
-    return inlineMember(text, sources, local, parent);
+    return inlineMember(text, sources, local, parent, checker);
   }
 
   if (ts.isCallExpression(parent) && parent.expression === local) {
-    return spliceStatements(text, sources, local, parent);
+    return spliceStatements(text, sources, local, parent, checker);
   }
 
   if (ts.isExpressionWithTypeArguments(parent) || ts.isTypeReferenceNode(parent)) {
-    return flattenHeritage(text, sources, local);
+    return flattenHeritage(text, sources, local, checker);
   }
 
-  return inlineValue(text, sources, local);
+  return inlineValue(text, sources, local, checker);
 };
 
-// The next read of a parameter binding, filled; undefined once none is left.
+// The next read of a parameter binding, filled; undefined once none is left. The body holds no imports, so a read
+// that resolves to nothing there reads the parameter, and one that resolves to a binding of its name reads that.
 export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): string | undefined => {
   const { bindings } = sources;
-  const bound = boundIn(file);
-  const shadow = [...bound]
-    .find((name) => {
-      return bindings.has(name);
-    });
-
-  if (shadow !== undefined) {
-    throw new Error(`"${shadow}" is bound in the base or in inlined code, and is also a parameter binding.`);
-  }
-
+  const checker = scopeOf(file, sources.modules);
   const [next] = collect(file, ts.isIdentifier)
     .filter((identifier) => {
       const isClosing = ts.isJsxClosingElement(identifier.parent);
+      const isRead = bindings.has(identifier.text) && isReference(identifier) && !isClosing;
 
-      return bindings.has(identifier.text) && isReference(identifier) && !isClosing;
+      return isRead && declarationOf(checker, identifier) === undefined;
     })
     .toSorted((left, right) => {
       return rankOf(left) - rankOf(right);
     });
 
-  return next === undefined ? undefined : filled(text, sources, next);
+  return next === undefined ? undefined : filled(text, sources, next, checker);
 };

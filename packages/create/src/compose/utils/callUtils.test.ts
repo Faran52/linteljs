@@ -17,16 +17,25 @@ import {
   returnedOf,
   substitutions,
 } from './callUtils';
+import { scopeOf } from './scopeUtils';
 import {
   expressionOf,
   parse,
   referencesIn,
 } from './sourceUtils';
 
+interface Called {
+  checker: ts.TypeChecker;
+  arrow: ts.ArrowFunction;
+  returned: ts.Expression;
+}
+
 // The first read of `x` in a body filled from an option module, by the rule its position asks for.
 const inlined = (body: string, option: string): string => {
   const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option });
-  const [local] = referencesIn(parse(sources.body), 'x');
+  const file = parse(sources.body);
+  const checker = scopeOf(file, sources.modules);
+  const [local] = referencesIn(file, 'x');
 
   if (local === undefined) {
     throw new Error(`No x in ${body}`);
@@ -35,12 +44,12 @@ const inlined = (body: string, option: string): string => {
   const { parent } = local;
 
   if (ts.isPropertyAccessExpression(parent)) {
-    return inlineMember(sources.body, sources, local, parent);
+    return inlineMember(sources.body, sources, local, parent, checker);
   }
 
   return ts.isCallExpression(parent)
-    ? inlineCall(sources.body, sources, local, parent)
-    : inlineValue(sources.body, sources, local);
+    ? inlineCall(sources.body, sources, local, parent, checker)
+    : inlineValue(sources.body, sources, local, checker);
 };
 
 const table = (members: string): string => {
@@ -49,6 +58,11 @@ const table = (members: string): string => {
 
 describe('inlineMember', () => {
   it.each([
+    [
+      'y = x.again(a);',
+      table('again: (n: number) => [1].map((n) => n)'),
+      'y = [1].map((n) => n);',
+    ],
     [
       'y = x.size;',
       table('size: 4'),
@@ -272,11 +286,6 @@ describe('inlineMember', () => {
       /read in another order/u,
     ],
     [
-      'y = x.again(a);',
-      table('again: (n: number) => [1].map((n) => n)'),
-      /"n" is bound again inside the option's code/u,
-    ],
-    [
       'y = x.make();',
       table('make: () => {\n  const a = 1;\n\n  return a;\n}'),
       /must only return one/u,
@@ -381,41 +390,108 @@ describe('exportedValue, arrowOf and returnedOf', () => {
   });
 });
 
+// The arrow an option exports as `f`, with a checker over it.
+const calledOf = (option: string): Called => {
+  const file = parse(option);
+  const checker = scopeOf(parse(''), new Map([['./p', file]]));
+  const [statement] = file.statements;
+  const [declaration] = statement !== undefined && ts.isVariableStatement(statement)
+    ? statement.declarationList.declarations
+    : [];
+  const arrow = declaration?.initializer;
+
+  if (arrow === undefined || !ts.isArrowFunction(arrow)) {
+    throw new Error(`No arrow in ${option}`);
+  }
+
+  const called: Called = {
+    checker,
+    arrow,
+    returned: returnedOf(arrow),
+  };
+
+  return called;
+};
+
 describe('captureCheck, orderCheck and substitutions', () => {
-  it('lets an argument through that reads nothing the option code binds', () => {
-    const inner = expressionOf('[n].map((each) => each + n)');
+  it('lets an argument through that reads nothing the option code binds around the parameter', () => {
+    const {
+      checker,
+      arrow,
+      returned,
+    } = calledOf('export const f = (n: number) => [n].map((each) => each + n);\n');
+    const [parameter] = arrow.parameters;
+    const argument = expressionOf('other.each');
+    const pairs: [ts.Declaration, ts.Expression][] = parameter === undefined ? [] : [[parameter, argument]];
+    const given = new Map(pairs);
 
     const run = (): void => {
-      captureCheck(inner, [expressionOf('other.each')]);
+      captureCheck(checker, returned, given);
     };
 
     expect(run).not.toThrow();
+  });
+
+  it('refuses an argument that reads a name the option code binds around a read of the parameter', () => {
+    const {
+      checker,
+      arrow,
+      returned,
+    } = calledOf('export const f = (n: number) => [1].map((each) => each + n);\n');
+    const [parameter] = arrow.parameters;
+    const argument = expressionOf('each');
+    const pairs: [ts.Declaration, ts.Expression][] = parameter === undefined ? [] : [[parameter, argument]];
+    const given = new Map(pairs);
+
+    const run = (): void => {
+      captureCheck(checker, returned, given);
+    };
+
+    expect(run).toThrow('"each" is also bound inside the option\'s code, which would capture it: each');
   });
 
   it('lets arguments with no effect be read in any order', () => {
-    const inner = expressionOf('[b, a]');
-    const given = new Map([['a', expressionOf('c')], ['b', expressionOf('d')]]);
+    const {
+      checker,
+      arrow,
+      returned,
+    } = calledOf('export const f = (a: number, b: number) => [b, a];\n');
+    const pairs = arrow.parameters
+      .map((parameter, index) => {
+        const pair: [ts.Declaration, ts.Expression] = [parameter, expressionOf(index === 0 ? 'c' : 'd')];
+
+        return pair;
+      });
+    const given = new Map(pairs);
 
     const run = (): void => {
-      orderCheck(inner, given);
+      orderCheck(checker, returned, given);
     };
 
     expect(run).not.toThrow();
   });
 
-  it('answers one edit per read, each over the read\'s own span', () => {
-    const inner = expressionOf('n + n');
-    const edits = substitutions(inner, 'n', expressionOf('a * 2'));
+  it('answers one edit per read of the parameter, each over the read\'s own span, and none for a shadow', () => {
+    const option = 'export const f = (n: number) => n + [1].map((n) => n)[0] + n;\n';
+    const {
+      checker,
+      arrow,
+      returned,
+    } = calledOf(option);
+    const [parameter] = arrow.parameters;
+    const edits = parameter === undefined ? [] : substitutions(checker, returned, parameter, expressionOf('a * 2'));
+    const first = option.indexOf('n +');
+    const last = option.lastIndexOf('n;');
 
     expect(edits).toStrictEqual([
       {
-        start: 1,
-        end: 2,
+        start: first,
+        end: first + 1,
         insert: 'a * 2',
       },
       {
-        start: 5,
-        end: 6,
+        start: last,
+        end: last + 1,
         insert: 'a * 2',
       },
     ]);

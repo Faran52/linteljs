@@ -10,13 +10,11 @@ import { importBlock, type ImportGroups } from '../utils/importUtils';
 import { filledOnce } from '../utils/inlineUtils';
 import { simplifiedOnce } from '../utils/simplifyUtils';
 import {
-  boundIn,
   collect,
   indentAt,
   indentOf,
   isPlainElement,
   isReference,
-  parse,
   patternOf,
   referencesIn,
   type Span,
@@ -83,51 +81,6 @@ const withComments = (text: string, sources: Sources): string => {
 
       return note === undefined ? '' : `${indent}// ${note}\n`;
     });
-};
-
-// A rest binding gives way to the members the inlined code reads from it.
-const withRest = (text: string, rest: string, needs: readonly string[]): string => {
-  const file = parse(text);
-  const element = collect(file, ts.isBindingElement)
-    .find((candidate) => {
-      return candidate.dotDotDotToken !== undefined && textOf(candidate.name) === rest;
-    });
-  const reads = referencesIn(file, rest);
-
-  if (element === undefined || reads.length > 0) {
-    throw new Error(`"${rest}" is still read after composing; a rest binding is only for option components.`);
-  }
-
-  const pattern = element.parent;
-  const taken = boundIn(file, pattern);
-  const clash = needs
-    .find((name) => {
-      return taken.has(name);
-    });
-
-  if (clash !== undefined) {
-    throw new Error(`The option's component reads "${clash}" from "${rest}", and the base binds that name too.`);
-  }
-
-  const own = pattern.elements
-    .filter((candidate) => {
-      return candidate !== element;
-    })
-    .map(textOf);
-  const names = new Set([...own, ...needs]);
-  const indent = indentOf(text, pattern);
-  const printed = patternOf([...names], indent);
-
-  return swapped(text, pattern, printed);
-};
-
-const withRests = (text: string, sources: Sources): string => {
-  const rests = [...sources.rests.entries()];
-
-  return rests
-    .reduce((current, [rest, needs]) => {
-      return withRest(current, rest, needs);
-    }, text);
 };
 
 // The arrow parameters that destructure plain names, the one shape a name can be dropped from as it stands.
@@ -202,8 +155,7 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);
   });
-  const expanded = withRests(filled, sources);
-  const simplified = settled(expanded, simplifiedOnce);
+  const simplified = settled(filled, simplifiedOnce);
   const pruned = settled(simplified, prunedOnce);
   const file = checked(pruned, sources);
   const identifiers = collect(file, ts.isIdentifier)
