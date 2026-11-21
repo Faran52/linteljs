@@ -10,6 +10,7 @@ import {
   WRITTEN,
 } from '../constants';
 
+import { refusal } from './editUtils';
 import {
   collect,
   fitted,
@@ -157,7 +158,8 @@ const spreadAttributeRule: Rule = (text, node) => {
   return splice(text, span, joined);
 };
 
-// An absent attribute and one that is `undefined` read the same, unless an earlier one would show through.
+// An absent attribute and one that is `undefined` read the same, unless an earlier one would show through. After a
+// spread it decides which value wins, so it is refused rather than kept or dropped.
 const undefinedAttributeRule: Rule = (text, node) => {
   if (!ts.isJsxAttribute(node) || node.initializer === undefined || !ts.isJsxExpression(node.initializer)) {
     return undefined;
@@ -166,11 +168,18 @@ const undefinedAttributeRule: Rule = (text, node) => {
   const value = node.initializer.expression;
   const siblings = node.parent.properties;
   const earlier = siblings.slice(0, siblings.indexOf(node));
+  const isUndefined = value !== undefined && ts.isIdentifier(value) && value.text === 'undefined';
+
+  if (isUndefined && earlier.some(ts.isJsxSpreadAttribute)) {
+    const reason = 'An attribute set to undefined after a spread overrides the spread, so it cannot be removed';
+
+    throw refusal(node, reason);
+  }
+
   const isShadowing = earlier
     .some((sibling) => {
-      return ts.isJsxSpreadAttribute(sibling) || textOf(sibling.name) === textOf(node.name);
+      return ts.isJsxAttribute(sibling) && textOf(sibling.name) === textOf(node.name);
     });
-  const isUndefined = value !== undefined && ts.isIdentifier(value) && value.text === 'undefined';
 
   return isUndefined && !isShadowing ? removed(text, node) : undefined;
 };

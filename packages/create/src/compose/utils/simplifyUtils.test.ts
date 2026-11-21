@@ -149,9 +149,9 @@ describe('simplifiedOnce', () => {
       'x = <a b="1" b={undefined} />;',
     ],
     [
-      'an undefined attribute after a spread, left alone',
-      'x = <a {...r} b={undefined} />;',
-      'x = <a {...r} b={undefined} />;',
+      'an undefined attribute before a spread',
+      'x = <a b={undefined} {...r} />;',
+      'x = <a {...r} />;',
     ],
     [
       'an attribute with no value in braces, left alone',
@@ -337,5 +337,15 @@ describe('simplifiedOnce', () => {
     const written = simplified(text);
 
     expect(written).toBe(expected);
+  });
+
+  it('refuses to remove an undefined attribute after a spread, which decides which value wins', () => {
+    const run = (): string => {
+      return simplified('x = <a {...r} b={undefined} />;');
+    };
+
+    const message = 'An attribute set to undefined after a spread overrides the spread, so it cannot be removed';
+
+    expect(run).toThrow(`${message}: b={undefined}`);
   });
 });
