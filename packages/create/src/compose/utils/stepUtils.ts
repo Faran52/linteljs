@@ -16,6 +16,7 @@ import {
   isReference,
   isWithin,
   parse,
+  textOf,
 } from './sourceUtils';
 
 export type Step = (text: string, file: ts.SourceFile) => string | undefined;
@@ -72,6 +73,14 @@ const faultOf = (
   return isBound ? undefined : `"${read.text}" is declared in an option module and read by code that left it behind`;
 };
 
+// `this`, `arguments`, `super`, `new.target` and `import.meta` name what surrounds code, so they change as it moves.
+const isContextRead = (node: ts.Node): node is ts.Node => {
+  const isNamed = ts.isIdentifier(node) && node.text === 'arguments' && isReference(node);
+  const isKeyword = node.kind === ts.SyntaxKind.ThisKeyword || node.kind === ts.SyntaxKind.SuperKeyword;
+
+  return isNamed || isKeyword || ts.isMetaProperty(node);
+};
+
 // Option code moved to a landing site must read there what it read in its own module. A name declared outside
 // `owner` may be a global, an import or an export the base binds, and nothing at the landing site may bind it.
 export const landedCheck = (
@@ -81,6 +90,12 @@ export const landedCheck = (
   moved: ts.Node,
   landing: ts.Node,
 ): void => {
+  const [context] = collect(moved, isContextRead);
+
+  if (context !== undefined) {
+    throw refusal(landing, `The option's code reads "${textOf(context)}", which names another thing where it lands`);
+  }
+
   const imported = new Set(sources.imports.flatMap(localsOf));
   const faults = collect(moved, ts.isIdentifier)
     .filter((read) => {

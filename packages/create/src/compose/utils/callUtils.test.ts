@@ -211,6 +211,21 @@ describe('inlineMember', () => {
       /A member called here must be an arrow function/u,
     ],
     [
+      'y = x.load(1);',
+      table('load: async (n: number) => n'),
+      /An async option function answers a promise, so it is never inlined as what it returns: async/u,
+    ],
+    [
+      'y = x.list();',
+      table('list: function* () { yield 1; }'),
+      /A member called here must be an arrow function/u,
+    ],
+    [
+      'y = x.size();',
+      table('size: () => this.length'),
+      /The option's code reads "this", which names another thing where it lands/u,
+    ],
+    [
       'y = x.now;',
       table('now: Date.now()'),
       /A member read as a value must have no effect/u,
@@ -340,12 +355,21 @@ describe('inlineCall', () => {
     ['export const x = 4;\n'],
     ['export const x = function () {\n  return 1;\n};\n'],
     ['export type x = number;\n'],
+    ['export const x = function* () {\n  yield 1;\n};\n'],
   ])('refuses %j, which is not an arrow function', (option) => {
     const run = (): string => {
       return inlined('y = x(1);', option);
     };
 
     expect(run).toThrow(/An option export called or rendered here must be an arrow function: x/u);
+  });
+
+  it('refuses an async arrow, whose call answers a promise (F4)', () => {
+    const run = (): string => {
+      return inlined('export const p = x(1);', 'export const x = async (n: number) => n;\n');
+    };
+
+    expect(run).toThrow('An async option function answers a promise, so it is never inlined as what it returns: async');
   });
 });
 

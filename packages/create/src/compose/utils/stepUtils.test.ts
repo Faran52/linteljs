@@ -205,6 +205,31 @@ describe('landedCheck', () => {
       'const helper = 1;\n\nexport const v = helper;\n',
       '"helper" is declared in an option module and read by code that left it behind: v',
     ],
+    [
+      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      'export const v = () => this.size;\n',
+      'The option\'s code reads "this", which names another thing where it lands: v',
+    ],
+    [
+      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      'export const v = () => arguments[0];\n',
+      'The option\'s code reads "arguments", which names another thing where it lands: v',
+    ],
+    [
+      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      'export const v = () => super.size;\n',
+      'The option\'s code reads "super", which names another thing where it lands: v',
+    ],
+    [
+      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      'export const v = () => new.target;\n',
+      'The option\'s code reads "new.target", which names another thing where it lands: v',
+    ],
+    [
+      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      'export const v = import.meta.url;\n',
+      'The option\'s code reads "import.meta", which names another thing where it lands: v',
+    ],
   ])('refuses option code landing in %j that reads what the base cannot give it', (base, option, message) => {
     const {
       checker,
