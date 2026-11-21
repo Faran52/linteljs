@@ -1399,6 +1399,12 @@ const MORE_CASES: Case[] = [
 
 const MORE_REFUSALS: Refusal[] = [
   {
+    name: 'a parameter module named by a dynamic import (F22)',
+    base: 'import { v } from \'./p\';\n\nexport const a = v;\nexport const lazy = () => import(\'./p\');\n',
+    option: 'export const v = 1;\n',
+    message: /A parameter module is named where nothing fills it, so its option would be lost: import\('\.\/p'\)/u,
+  },
+  {
     name: 'an option export a destructuring assignment writes',
     base: 'import { v } from \'./p\';\n\nexport const f = () => {\n  [v] = [2];\n  ({ v } = { v: 3 });\n};\n',
     option: 'export const v = 1;\n',

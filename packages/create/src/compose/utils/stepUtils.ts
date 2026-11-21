@@ -116,9 +116,36 @@ export const landedCheck = (
   }
 };
 
-// Nothing of the parameters may be left: no read of a parameter binding the base does not bind itself, no directive.
+// What names a module outside the import block: `import()`, `typeof import()`, a re-export or `import x = require()`.
+const namerOf = (literal: ts.StringLiteral): ts.Node | undefined => {
+  const { parent } = literal;
+  const isDynamic = ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword;
+  const isNamer = isDynamic || ts.isExportDeclaration(parent) || ts.isExternalModuleReference(parent);
+
+  if (ts.isLiteralTypeNode(parent) && ts.isImportTypeNode(parent.parent)) {
+    return parent.parent;
+  }
+
+  return isNamer ? parent : undefined;
+};
+
+// Nothing of the parameters may be left: no read of a parameter binding the base does not bind itself, no directive,
+// and no parameter module named where nothing fills it.
 export const checked = (text: string, sources: Sources): ts.SourceFile => {
   const file = parse(text);
+  const [named] = collect(file, ts.isStringLiteral)
+    .filter((literal) => {
+      return sources.modules.has(literal.text);
+    })
+    .map(namerOf)
+    .filter((namer) => {
+      return namer !== undefined;
+    });
+
+  if (named !== undefined) {
+    throw refusal(named, 'A parameter module is named where nothing fills it, so its option would be lost');
+  }
+
   const checker = scopeOf(file, sources.modules, sources.held);
   const left = collect(file, ts.isIdentifier)
     .find((identifier) => {

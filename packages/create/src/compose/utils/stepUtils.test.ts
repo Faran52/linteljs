@@ -67,6 +67,8 @@ describe('checked', () => {
     ['const helper = 2;\n\nexport const y = helper;\n'],
     ['interface Local {}\n\nexport type Y = Local;\n'],
     ['export const y = [fs, all, join];\n'],
+    ['export const lazy = () => import(\'./other\');\nexport type T = typeof import(\'lib\');\n'],
+    ['export { a } from \'./other\';\nexport const s = \'./p\';\nf(\'./p\');\nexport type S = \'./p\';\n'],
   ])('answers the parsed module for %j', (text) => {
     const sources = sourcesFor();
     const file = checked(text, sources);
@@ -82,6 +84,22 @@ describe('checked', () => {
     };
 
     expect(run).toThrow(/is left after composing: x/u);
+  });
+
+  it.each([
+    ['export const lazy = () => import(\'./p\');\n', 'import(\'./p\')'],
+    ['export type T = typeof import(\'./p\');\n', 'typeof import(\'./p\')'],
+    ['export { x } from \'./p\';\n', 'export { x } from \'./p\';'],
+    ['export * from \'./p\';\n', 'export * from \'./p\';'],
+    ['import p = require(\'./p\');\n', 'require(\'./p\')'],
+  ])('refuses a parameter module named in %j', (text, shown) => {
+    const run = (): ts.SourceFile => {
+      const sources = sourcesFor();
+
+      return checked(text, sources);
+    };
+
+    expect(run).toThrow(`A parameter module is named where nothing fills it, so its option would be lost: ${shown}`);
   });
 
   it('refuses a directive that is still written', () => {
