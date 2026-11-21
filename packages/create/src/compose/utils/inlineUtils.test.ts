@@ -119,4 +119,40 @@ describe('filledOnce', () => {
 
     expect(next).toBeUndefined();
   });
+
+  it.each([
+    [
+      'a case at the top level, alone in its pass',
+      'y = v;\ns();\n',
+      [['s'], ['v']],
+    ],
+    [
+      'a case as a statement, after an expression',
+      's();\nz = m.a;\n',
+      [['m'], ['s']],
+    ],
+    [
+      'a case in a block, with the others',
+      '{\n  s();\n}\nz = m.a;\n',
+      [['m', 's']],
+    ],
+    [
+      'an argument of a case, with the others',
+      'f(v);\nz = m.a;\n',
+      [['m', 'v']],
+    ],
+  ])('fills %s', (_name, body, expected) => {
+    const sources = sourcesFor(`import { ${NAMES.join(', ')} } from './p';\n\n${body}`);
+    const passes: string[][] = [];
+    let text = sources.body;
+
+    for (let next = stepOf(text, sources); next !== undefined; next = stepOf(text, sources)) {
+      const gone = goneIn(text, next);
+
+      passes.push(gone);
+      text = next;
+    }
+
+    expect(passes).toStrictEqual(expected);
+  });
 });

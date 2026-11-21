@@ -18,6 +18,7 @@ import { refusal } from './editUtils';
 import { aliasedOf, declarationOf } from './scopeUtils';
 import {
   collect,
+  isAsync,
   isConverting,
   isPrimitiveLiteral,
   isPrototype,
@@ -346,10 +347,6 @@ const enteredOf = (context: Context, call: ts.CallExpression): Entered | undefin
     return undefined;
   }
 
-  const isAsync = arrow.modifiers
-    ?.some((modifier) => {
-      return modifier.kind === ts.SyntaxKind.AsyncKeyword;
-    });
   const pairs = arrow.parameters
     .flatMap((parameter, index): [ts.Declaration, ts.Expression][] => {
       const argument = call.arguments[index];
@@ -361,7 +358,7 @@ const enteredOf = (context: Context, call: ts.CallExpression): Entered | undefin
     });
   const isSpread = call.arguments.some(ts.isSpreadElement);
 
-  if (isAsync === true || isSpread || pairs.length < arrow.parameters.length) {
+  if (isAsync(arrow) || isSpread || pairs.length < arrow.parameters.length) {
     return undefined;
   }
 

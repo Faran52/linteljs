@@ -109,7 +109,7 @@ export const linesOf = (text: string, span: Span): Span => {
   return lines;
 };
 
-// The whole lines to take out, without leaving two blank lines, or one at the top of a block.
+// The whole lines to take out, without leaving two blank lines, or one at the top or the end of a block.
 export const linesGone = (text: string, span: Span): Span => {
   const lines = linesOf(text, span);
   const previous = lineStart(text, lines.start - 1);
@@ -120,8 +120,12 @@ export const linesGone = (text: string, span: Span): Span => {
   const next = text.slice(lines.end, nextEnd);
   const isOpen = before === '' || before.endsWith('{');
   const end = isOpen && next.trim() === '' ? Math.min(nextEnd + 1, text.length) : lines.end;
+  const isClosing = lines.end === text.length || next
+    .trimStart()
+    .startsWith('}');
+  const isBlankBefore = before === '' && previous < lines.start;
   const gone: Span = {
-    start: lines.start,
+    start: isBlankBefore && isClosing ? previous : lines.start,
     end,
   };
 
@@ -181,6 +185,16 @@ export const reindent = (block: string, from: string, to: string): string => {
       return moved.has(index) ? to + line.slice(from.length) : line;
     })
     .join('\n');
+};
+
+export const isAsync = (node: ts.Node): boolean => {
+  const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  const found = modifiers
+    ?.some((modifier) => {
+      return modifier.kind === ts.SyntaxKind.AsyncKeyword;
+    });
+
+  return found === true;
 };
 
 export const unparen = (node: ts.Expression): ts.Expression => {

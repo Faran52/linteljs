@@ -506,3 +506,218 @@ describe('spliceStatements', () => {
     expect(run).toThrow(message);
   });
 });
+
+const EMPTY_CASE = 'export const x = (): void => {};\n';
+const ASYNC_CASE = lines('export const x = async (): Promise<void> => {', '  await log();', '};');
+const BY_NAME = /A case takes each argument as a name the base passes under the parameter's own name/u;
+const AWAITED_IN_SYNC = /An awaited statement is spliced only into an async function/u;
+
+describe('spliceStatements, on a case called as a statement', () => {
+  it.each([
+    [
+      'an empty case, last in its block after a blank line',
+      lines('describe(\'s\', () => {', '  it(\'a\', f);', '', '  x();', '});'),
+      EMPTY_CASE,
+      lines('describe(\'s\', () => {', '  it(\'a\', f);', '});'),
+    ],
+    [
+      'an empty case between two statements',
+      lines('{', '  a();', '', '  x();', '', '  b();', '}'),
+      EMPTY_CASE,
+      lines('{', '  a();', '', '  b();', '}'),
+    ],
+    [
+      'an empty case, last in the file',
+      lines('log(1);', '', 'x();'),
+      EMPTY_CASE,
+      lines('log(1);'),
+    ],
+    [
+      'a case that takes an argument under its own name',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = (a: number): void => {', '  log(a);', '  log(2);', '};'),
+      lines('run = (a) => {', '  log(a);', '  log(2);', '};'),
+    ],
+    [
+      'a case at the top level, declaring a helper',
+      lines('x();', '', 'log(1);'),
+      lines('export const x = (): void => {', '  const helper = 1;', '};'),
+      lines('const helper = 1;', '', 'log(1);'),
+    ],
+    [
+      'an async case the base awaits, in an async function',
+      lines('run = async () => {', '  await x();', '};'),
+      ASYNC_CASE,
+      lines('run = async () => {', '  await log();', '};'),
+    ],
+    [
+      'a case that awaits inside a function of its own',
+      lines('run = () => {', '  x();', '};'),
+      lines('export const x = (): void => {', '  it(\'a\', async () => {', '    await log();', '  });', '};'),
+      lines('run = () => {', '  it(\'a\', async () => {', '    await log();', '  });', '};'),
+    ],
+    [
+      'a case with a loop that awaits nothing, in a function that is not async',
+      lines('run = () => {', '  x();', '};'),
+      lines('export const x = (): void => {', '  for (const a of b) {', '    log(a);', '  }', '};'),
+      lines('run = () => {', '  for (const a of b) {', '    log(a);', '  }', '};'),
+    ],
+    [
+      'a case holding a function that returns on its own',
+      lines('{', '  x();', '}'),
+      lines('export const x = (): void => {', '  log(() => {', '    return 1;', '  });', '};'),
+      lines('{', '  log(() => {', '    return 1;', '  });', '}'),
+    ],
+  ])('splices %s', (_name, body, option, expected) => {
+    const written = filled(body, option);
+
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    [
+      'an argument that is not a name',
+      lines('{', '  x(1);', '}'),
+      lines('export const x = (a: number): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'an argument under another name',
+      lines('run = (b) => {', '  x(b);', '};'),
+      lines('export const x = (a: number): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'an argument too few',
+      lines('{', '  x();', '}'),
+      lines('export const x = (a: number): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'an argument too many',
+      lines('run = (a) => {', '  x(a);', '};'),
+      EMPTY_CASE,
+      BY_NAME,
+    ],
+    [
+      'a parameter with a default',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = (a = 1): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'a rest parameter',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = (...a: number[]): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'an optional parameter',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = (a?: number): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'a destructured parameter',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = ({ a }: { a: number }): void => {', '  log(a);', '};'),
+      BY_NAME,
+    ],
+    [
+      'a case that declares its own parameter\'s name',
+      lines('run = (a) => {', '  x(a);', '};'),
+      lines('export const x = (a: number): void => {', '  const a = 2;', '};'),
+      /The case declares "a", the name of its own parameter: x\(a\)/u,
+    ],
+    [
+      'a case that returns',
+      lines('{', '  x();', '}'),
+      lines('export const x = (): void => {', '  log();', '', '  return;', '};'),
+      /A case called as a statement may not return/u,
+    ],
+    [
+      'a case that returns from within a branch',
+      lines('{', '  x();', '}'),
+      lines('export const x = (): void => {', '  if (k) {', '    return;', '  }', '};'),
+      /A case called as a statement may not return/u,
+    ],
+    [
+      'a sync case the base awaits',
+      lines('run = async () => {', '  await x();', '};'),
+      EMPTY_CASE,
+      /Only an async case is awaited where the base calls it: x\(\)/u,
+    ],
+    [
+      'an async case the base does not await',
+      lines('run = async () => {', '  x();', '};'),
+      ASYNC_CASE,
+      /An async case is spliced only where the base awaits its call: x\(\)/u,
+    ],
+    [
+      'an awaited statement spliced into a function that is not async',
+      lines('run = () => {', '  await x();', '};'),
+      ASYNC_CASE,
+      AWAITED_IN_SYNC,
+    ],
+    [
+      'an awaited statement spliced at the top level',
+      lines('await x();'),
+      ASYNC_CASE,
+      AWAITED_IN_SYNC,
+    ],
+    [
+      'a `for await` spliced into a function that is not async',
+      lines('run = () => {', '  await x();', '};'),
+      lines('export const x = async () => {', '  for await (const a of b) {', '    log(a);', '  }', CLOSE),
+      AWAITED_IN_SYNC,
+    ],
+    [
+      'an `await using` spliced into a function that is not async',
+      lines('run = () => {', '  await x();', '};'),
+      lines('export const x = async (): Promise<void> => {', '  await using a = b;', '};'),
+      AWAITED_IN_SYNC,
+    ],
+    [
+      'a name the block declares',
+      lines('{', '  const helper = 2;', '  x();', '}'),
+      lines('export const x = (): void => {', '  const helper = 1;', '};'),
+      /declare "helper", which the base already binds here: x\(\);/u,
+    ],
+    [
+      'a name the base imports, declared at the top level',
+      lines('import { helper } from \'h\';', '', 'x();'),
+      lines('export const x = (): void => {', '  const helper = 1;', '};'),
+      /declare "helper", which the base already binds here: x\(\);/u,
+    ],
+    [
+      'a name the block reads from outside it',
+      lines('const helper = 2;', '', '{', '  x();', '  log(helper);', '}'),
+      lines('export const x = (): void => {', '  const helper = 1;', '};'),
+      /declare "helper", which the base reads from outside the block: helper/u,
+    ],
+    [
+      'a read the landing site binds again',
+      lines('run = (log) => {', '  x();', '};'),
+      lines('export const x = (): void => {', '  log();', '};'),
+      /"log" would read the base's own binding of that name where the option's code lands: x\(\);/u,
+    ],
+    [
+      'a `var`',
+      lines('{', '  x();', '}'),
+      lines('export const x = (): void => {', '  var helper = 1;', '};'),
+      /must declare with const or let, never var/u,
+    ],
+    [
+      'a case that is not a statement of a block or the file',
+      lines('if (k) x();'),
+      EMPTY_CASE,
+      /A function inlined as an expression must only return one/u,
+    ],
+  ])('refuses %s', (_name, body, option, message) => {
+    const run = (): string => {
+      return filled(body, option);
+    };
+
+    expect(run).toThrow(message);
+  });
+});

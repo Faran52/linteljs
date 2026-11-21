@@ -2,8 +2,16 @@ import ts from 'typescript';
 
 import { SEMICOLON_STATEMENTS } from '../constants';
 
-import { resolved, type Sources } from './bindingUtils';
-import { arrowOf, inlineCall } from './callUtils';
+import {
+  localsOf,
+  resolved,
+  type Sources,
+} from './bindingUtils';
+import {
+  arrowOf,
+  functionOf,
+  inlineCall,
+} from './callUtils';
 import {
   copyOf,
   type Edit,
@@ -24,6 +32,7 @@ import {
 import {
   collect,
   indentOf,
+  isAsync,
   isPlainElement,
   isReference,
   isWithin,
@@ -39,11 +48,21 @@ import {
 } from './sourceUtils';
 import { landedCheck } from './stepUtils';
 
-// The statement that binds a call's result, the binding and the block it sits in.
-interface Holder {
-  statement: ts.VariableStatement;
+// Where spliced statements land: the statement they replace, and the block or file holding it.
+interface Landing {
+  statement: ts.Statement;
+  container: ts.Block | ts.SourceFile;
+}
+
+// An option function called as a statement, and the statements of its body.
+interface Case {
+  arrow: ts.ArrowFunction;
+  kept: readonly ts.Statement[];
+}
+
+// The statement that binds a call's result, and the binding.
+interface Holder extends Landing {
   declaration: ts.VariableDeclaration;
-  block: ts.Block;
 }
 
 const EMPTY_OBJECT = /^Record<never,\s*never>$/u;
@@ -210,7 +229,7 @@ const holderOf = (call: ts.CallExpression): Holder | undefined => {
   const holder: Holder = {
     statement,
     declaration,
-    block,
+    container: block,
   };
 
   return holder;
@@ -221,12 +240,12 @@ const holderReads = (
   checker: ts.TypeChecker,
   sources: Sources,
   arrow: ts.ArrowFunction,
-  { declaration, block }: Holder,
+  { declaration, container }: Holder,
   answered: readonly ts.Identifier[],
 ): Edit[] => {
   const holder = textOf(declaration.name);
 
-  return referencesTo(checker, declaration, block)
+  return referencesTo(checker, declaration, container)
     .map((read) => {
       const access = read.parent;
       const name = ts.isPropertyAccessExpression(access)
@@ -244,7 +263,7 @@ const holderReads = (
 
       landedCheck(checker, sources, arrow, name, access);
 
-      if (found !== undefined && found !== declaration && isWithin(found, block)) {
+      if (found !== undefined && found !== declaration && isWithin(found, container)) {
         throw refusal(access, `"${name.text}" is bound again around this read, so the option's one cannot land here`);
       }
 
@@ -252,6 +271,12 @@ const holderReads = (
 
       return editOver(access, short);
     });
+};
+
+const returnCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction): void => {
+  if (kept.some(returnsEarly)) {
+    throw refusal(arrow, 'Statements spliced into the base may only return at the end');
+  }
 };
 
 const varCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction): void => {
@@ -268,13 +293,13 @@ const varCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction): void 
   }
 };
 
-// A spliced name may not be declared again in the scope it lands in: the block, or the function or catch it opens.
-const clashCheck = (kept: readonly ts.Statement[], { statement, block }: Holder): void => {
-  const owner = block.parent;
-  const others = block.statements
-    .filter((candidate) => {
-      return candidate !== statement;
-    });
+// The names a block's opener binds in it: the function's parameters or the caught error; a file's are its imports.
+const openedBy = (sources: Sources, container: ts.Block | ts.SourceFile): string[] => {
+  if (ts.isSourceFile(container)) {
+    return sources.imports.flatMap(localsOf);
+  }
+
+  const owner = container.parent;
   const parameters = ts.isFunctionLike(owner)
     ? owner.parameters
         .map((parameter) => {
@@ -282,10 +307,23 @@ const clashCheck = (kept: readonly ts.Statement[], { statement, block }: Holder)
         })
     : [];
   const caught = ts.isCatchClause(owner) ? [owner.variableDeclaration?.name] : [];
-  const opened = [...parameters, ...caught]
+
+  const names = [...parameters, ...caught];
+
+  return names
     .flatMap((name) => {
       return name === undefined ? [] : bindingNamesOf(name);
     });
+};
+
+// A spliced name may not be declared again in the scope it lands in: the block, or the function or catch it opens, or
+// the file with the imports the composed module will hold.
+const clashCheck = (sources: Sources, kept: readonly ts.Statement[], { statement, container }: Landing): void => {
+  const others = container.statements
+    .filter((candidate) => {
+      return candidate !== statement;
+    });
+  const opened = openedBy(sources, container);
   const taken = declaredBy(others).union(new Set(opened));
   const clash = [...declaredBy(kept)]
     .find((name) => {
@@ -298,9 +336,10 @@ const clashCheck = (kept: readonly ts.Statement[], { statement, block }: Holder)
 };
 
 // A spliced name takes over every read of it in the block that meant a binding from outside the block.
-const takenOverCheck = (checker: ts.TypeChecker, kept: readonly ts.Statement[], { statement, block }: Holder): void => {
+const takenOverCheck = (checker: ts.TypeChecker, kept: readonly ts.Statement[], landing: Landing): void => {
+  const { statement, container } = landing;
   const names = declaredBy(kept);
-  const read = collect(block, ts.isIdentifier)
+  const read = collect(container, ts.isIdentifier)
     .find((identifier) => {
       const isOutside = names.has(identifier.text) && isReference(identifier) && !isWithin(identifier, statement);
 
@@ -310,7 +349,7 @@ const takenOverCheck = (checker: ts.TypeChecker, kept: readonly ts.Statement[], 
 
       const found = declarationOf(checker, identifier);
 
-      return found === undefined || !isWithin(found, block);
+      return found === undefined || !isWithin(found, container);
     });
 
   if (read !== undefined) {
@@ -378,6 +417,152 @@ const blockOf = (kept: readonly ts.Statement[], indent: string, isLineEnd: boole
   return reindent(body, from, indent);
 };
 
+const isAwaiting = (node: ts.Node): node is ts.Node => {
+  const isForAwait = ts.isForOfStatement(node) && node.awaitModifier !== undefined;
+  const isAwaitUsing = ts.isVariableDeclarationList(node)
+    && node.getFirstToken()?.kind === ts.SyntaxKind.AwaitKeyword;
+
+  return ts.isAwaitExpression(node) || isForAwait || isAwaitUsing;
+};
+
+// An async case is awaited by the base, a sync one is not, and what the case awaits lands in an async function.
+const awaitCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction, call: ts.CallExpression): void => {
+  const isAwaited = ts.isAwaitExpression(call.parent);
+
+  if (isAwaited && !isAsync(arrow)) {
+    throw refusal(call, 'Only an async case is awaited where the base calls it');
+  }
+
+  if (!isAwaited && isAsync(arrow)) {
+    throw refusal(call, 'An async case is spliced only where the base awaits its call');
+  }
+
+  const host = ts.findAncestor(call, ts.isFunctionLike);
+  const awaits = kept
+    .some((statement) => {
+      return collect(statement, isAwaiting)
+        .some((found) => {
+          return ts.findAncestor(found, ts.isFunctionLike) === arrow;
+        });
+    });
+
+  if (awaits && (host === undefined || !isAsync(host))) {
+    throw refusal(call, 'An awaited statement is spliced only into an async function');
+  }
+};
+
+const isPlainParameter = (parameter: ts.ParameterDeclaration): boolean => {
+  const isBare = parameter.initializer === undefined && parameter.dotDotDotToken === undefined;
+
+  return isBare && parameter.questionToken === undefined;
+};
+
+// A case takes each argument as the base's binding of the parameter's own name, and declares none of those names; a
+// pattern's text is never an argument's name.
+const argumentsCheck = (kept: readonly ts.Statement[], arrow: ts.ArrowFunction, call: ts.CallExpression): void => {
+  const names = arrow.parameters
+    .map((parameter) => {
+      return textOf(parameter.name);
+    });
+  const passed = call.arguments
+    .map((argument) => {
+      return ts.isIdentifier(argument) ? argument.text : undefined;
+    });
+  const isByName = names.length === passed.length && arrow.parameters.every(isPlainParameter);
+  const unnamed = names
+    .find((name, index) => {
+      return passed[index] !== name;
+    });
+
+  if (!isByName || unnamed !== undefined) {
+    throw refusal(call, 'A case takes each argument as a name the base passes under the parameter\'s own name');
+  }
+
+  const declared = declaredBy(kept);
+  const twice = names
+    .find((name) => {
+      return declared.has(name);
+    });
+
+  if (twice !== undefined) {
+    throw refusal(call, `The case declares "${twice}", the name of its own parameter`);
+  }
+};
+
+// `f(a);`, or `await f(a);` of an async case, written as its own statement in a block or at the file's top level.
+export const caseOf = (call: ts.CallExpression): Landing | undefined => {
+  const { parent } = call;
+  const statement = ts.isAwaitExpression(parent) ? parent.parent : parent;
+  const container = statement.parent;
+
+  if (!ts.isExpressionStatement(statement)) {
+    return undefined;
+  }
+
+  if (ts.isBlock(container) || ts.isSourceFile(container)) {
+    const landing: Landing = {
+      statement,
+      container,
+    };
+
+    return landing;
+  }
+
+  return undefined;
+};
+
+// The statements' text where the statement they replace stood, its lines gone when they are none.
+const splicedOver = (text: string, kept: readonly ts.Statement[], statement: ts.Statement): Edit => {
+  const indent = indentOf(text, statement);
+  const span = spanOf(statement);
+  const after = text.slice(span.end, lineEnd(text, span.end));
+  const block = blockOf(kept, indent, after.trim() === '');
+  const gone = block === '' && ownsLines(text, span) ? linesGone(text, span) : span;
+  const spliced = plain(block);
+
+  return editOf(gone, spliced);
+};
+
+// Option code moved to where it lands may not change what it or the base reads there.
+const landingCheck = (
+  checker: ts.TypeChecker,
+  sources: Sources,
+  kept: readonly ts.Statement[],
+  arrow: ts.ArrowFunction,
+  landing: Landing,
+): void => {
+  varCheck(kept, arrow);
+  clashCheck(sources, kept, landing);
+
+  for (const moved of kept) {
+    landedCheck(checker, sources, arrow, moved, landing.statement);
+  }
+
+  takenOverCheck(checker, kept, landing);
+};
+
+// `cases(a);`: the case's statements replace the statement, each parameter read as the argument of its name.
+const spliceCase = (
+  text: string,
+  sources: Sources,
+  { arrow, kept }: Case,
+  call: ts.CallExpression,
+  checker: ts.TypeChecker,
+  landing: Landing,
+): Edit[] => {
+  if (kept.some(returnsEarly)) {
+    throw refusal(arrow, 'A case called as a statement may not return');
+  }
+
+  argumentsCheck(kept, arrow, call);
+  awaitCheck(kept, arrow, call);
+  landingCheck(checker, sources, kept, arrow, landing);
+
+  const edits = [splicedOver(text, kept, landing.statement)];
+
+  return edits;
+};
+
 // `const y = f();`: the option's statements replace the statement, and `y.k` becomes `k`.
 export const spliceStatements = (
   text: string,
@@ -386,6 +571,18 @@ export const spliceStatements = (
   call: ts.CallExpression,
   checker: ts.TypeChecker,
 ): Edit[] => {
+  const landing = caseOf(call);
+  const option = functionOf(sources, local);
+
+  if (landing !== undefined && ts.isBlock(option.body)) {
+    const found: Case = {
+      arrow: option,
+      kept: option.body.statements,
+    };
+
+    return spliceCase(text, sources, found, call, checker, landing);
+  }
+
   const arrow = arrowOf(sources, local);
   const holder = holderOf(call);
 
@@ -400,30 +597,13 @@ export const spliceStatements = (
   const final = arrow.body.statements.at(-1);
   const returned = final !== undefined && ts.isReturnStatement(final) ? final : undefined;
   const kept = returned === undefined ? arrow.body.statements : arrow.body.statements.slice(0, -1);
-  const { statement } = holder;
 
-  if (kept.some(returnsEarly)) {
-    throw refusal(arrow, 'Statements spliced into the base may only return at the end');
-  }
-
-  varCheck(kept, arrow);
-  clashCheck(kept, holder);
-
-  for (const moved of kept) {
-    landedCheck(checker, sources, arrow, moved, statement);
-  }
-
-  takenOverCheck(checker, kept, holder);
+  returnCheck(kept, arrow);
+  landingCheck(checker, sources, kept, arrow, holder);
 
   const answered = answeredNames(returned);
   const reads = readsOf(checker, sources, arrow, holder, answered);
-  const indent = indentOf(text, statement);
-  const span = spanOf(statement);
-  const after = text.slice(span.end, lineEnd(text, span.end));
-  const block = blockOf(kept, indent, after.trim() === '');
-  const gone = block === '' && ownsLines(text, span) ? linesGone(text, span) : span;
-  const spliced = plain(block);
-  const edits = [...reads, editOf(gone, spliced)];
+  const edits = [...reads, splicedOver(text, kept, holder.statement)];
 
   return edits;
 };

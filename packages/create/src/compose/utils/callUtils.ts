@@ -29,6 +29,7 @@ import {
   collect,
   expressionOf,
   indentOf,
+  isAsync,
   isReference,
   isValueMember,
   isWithin,
@@ -73,22 +74,24 @@ export const exportedValue = (sources: Sources, local: string): ts.Expression | 
 
 // An async function answers a promise of what it returns, so what it returns cannot stand in for the call.
 const syncCheck = (arrow: ts.ArrowFunction): void => {
-  const isAsync = arrow.modifiers
-    ?.some((modifier) => {
-      return modifier.kind === ts.SyntaxKind.AsyncKeyword;
-    });
-
-  if (isAsync === true) {
+  if (isAsync(arrow)) {
     throw refusal(arrow, 'An async option function answers a promise, so it is never inlined as what it returns');
   }
 };
 
-export const arrowOf = (sources: Sources, local: ts.Identifier): ts.ArrowFunction => {
+// The arrow an option exports under a binding, async or not.
+export const functionOf = (sources: Sources, local: ts.Identifier): ts.ArrowFunction => {
   const value = exportedValue(sources, local.text);
 
   if (value === undefined || !ts.isArrowFunction(value)) {
     throw refusal(local, 'An option export called or rendered here must be an arrow function');
   }
+
+  return value;
+};
+
+export const arrowOf = (sources: Sources, local: ts.Identifier): ts.ArrowFunction => {
+  const value = functionOf(sources, local);
 
   syncCheck(value);
 

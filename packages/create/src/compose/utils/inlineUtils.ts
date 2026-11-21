@@ -4,7 +4,11 @@ import { inlineMember, inlineValue } from './callUtils';
 import { inlineElement } from './elementUtils';
 import { declarationOf, scopeOf } from './scopeUtils';
 import { collect, isReference } from './sourceUtils';
-import { flattenHeritage, spliceStatements } from './statementUtils';
+import {
+  caseOf,
+  flattenHeritage,
+  spliceStatements,
+} from './statementUtils';
 import { batched, type Candidate } from './stepUtils';
 
 import type { Sources } from './bindingUtils';
@@ -31,7 +35,9 @@ const rankOf = (local: ts.Identifier): number => {
   }
 
   if (ts.isCallExpression(parent) && parent.expression === local) {
-    return ts.isVariableDeclaration(parent.parent) ? RANK.statement : RANK.expression;
+    const isStatement = ts.isVariableDeclaration(parent.parent) || caseOf(parent) !== undefined;
+
+    return isStatement ? RANK.statement : RANK.expression;
   }
 
   return ts.isExpressionWithTypeArguments(parent) || ts.isTypeReferenceNode(parent) ? RANK.type : RANK.value;
@@ -60,9 +66,15 @@ const filled = (text: string, sources: Sources, local: ts.Identifier, checker: t
   return inlineValue(text, sources, local, checker);
 };
 
-// A type's members merge with every declaration of its name, so what another statement reads may change.
+// A type's members merge with every declaration of its name, and a case spliced at the top level may declare one, so
+// what another statement reads may change.
 const isAlone = (local: ts.Identifier): boolean => {
-  return rankOf(local) === RANK.type;
+  const { parent } = local;
+  const isCall = ts.isCallExpression(parent) && parent.expression === local;
+  const landing = isCall ? caseOf(parent) : undefined;
+  const isTopLevel = landing !== undefined && ts.isSourceFile(landing.container);
+
+  return isTopLevel || rankOf(local) === RANK.type;
 };
 
 // The next reads of parameter bindings, filled; undefined once none is left. The body holds no imports, so a read

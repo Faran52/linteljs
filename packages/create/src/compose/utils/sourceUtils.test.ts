@@ -12,6 +12,7 @@ import {
   fittingOf,
   indentAt,
   indentOf,
+  isAsync,
   isConverting,
   isPlainElement,
   isPrimitiveLiteral,
@@ -195,7 +196,11 @@ describe('linesGone', () => {
     ['b\n\nc', 'c'],
     ['a\nb', 'a\n'],
     ['{\nb', '{\n'],
-  ])('takes the line of b out of %j, leaving no blank line doubled or first in a block', (text, expected) => {
+    ['a\n\nb\n}', 'a\n}'],
+    ['a\n\n  b\n  });', 'a\n  });'],
+    ['a\n\nb', 'a\n'],
+    ['a\n\nb\n', 'a\n'],
+  ])('takes the line of b out of %j, leaving no blank line doubled, first or last in a block', (text, expected) => {
     const start = text.indexOf('b');
     const gone = linesGone(text, {
       start,
@@ -245,6 +250,26 @@ describe('reindent', () => {
     const moved = reindent(block, '    ', '  ');
 
     expect(moved).toBe(expected);
+  });
+});
+
+describe('isAsync', () => {
+  it.each([
+    ['x = async () => 1;', true],
+    ['x = () => 1;', false],
+    ['async function f() {}', true],
+    ['function f() {}', false],
+    ['export function f() {}', false],
+    ['x = 1;', false],
+  ])('reads %j as async: %s', (text, expected) => {
+    const file = parse(text);
+    const [statement] = file.statements;
+    const isExpression = statement !== undefined && ts.isExpressionStatement(statement);
+    const expression = isExpression ? statement.expression : undefined;
+    const node = expression !== undefined && ts.isBinaryExpression(expression) ? expression.right : statement;
+    const found = node === undefined ? undefined : isAsync(node);
+
+    expect(found).toBe(expected);
   });
 });
 
