@@ -2,12 +2,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+  afterEach,
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import { moduleCompose } from './moduleCompose';
+
+import type { Candidate } from '../utils/stepUtils';
 
 interface Case {
   name: string;
@@ -48,6 +52,40 @@ interface OrderedCase extends Ordered {
 interface DisorderedCase extends Ordered {
   message: string;
 }
+
+const rewrites = vi.hoisted(() => {
+  const mode = { isOneAtATime: false };
+
+  return mode;
+});
+
+// One rewrite at a time is the batched pass with every candidate taken as one that may change what others read.
+vi.mock('../utils/stepUtils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../utils/stepUtils')>();
+
+  const batched: typeof actual.batched = (text, candidates) => {
+    const alone = candidates
+      .map((candidate) => {
+        const taken: Candidate = {
+          ...candidate,
+          isAlone: () => {
+            return true;
+          },
+        };
+
+        return taken;
+      });
+
+    return actual.batched(text, rewrites.isOneAtATime ? alone : candidates);
+  };
+
+  const mocked = {
+    ...actual,
+    batched,
+  };
+
+  return mocked;
+});
 
 const templates = join(import.meta.dirname, '../../../templates');
 const fixtures = join(templates, 'codegen/compose-sources/vite-react');
@@ -244,35 +282,59 @@ const COMPOSITIONS: Composition[] = [
 
 const LINE_ENDS = [['CRLF', '\r\n'], ['a lone CR', '\r']];
 
-describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s', (_name, end) => {
-  it.each(COMPOSITIONS)('writes the shipped file, with LF, from $base', ({
-    base,
-    options,
-    expected,
-  }) => {
-    const ended = (text: string): string => {
-      return text.replaceAll('\n', end);
-    };
+// A composition with every line of its inputs ended by `end`.
+const endedFrom = ({ base, options }: Composition, end: string): string => {
+  const ended = (text: string): string => {
+    return text.replaceAll('\n', end);
+  };
 
-    const read = Object.entries(options)
-      .map(([specifier, name]) => {
-        const option = readFixture(name);
-        const pair: [string, string] = [specifier, ended(option)];
+  const read = Object.entries(options)
+    .map(([specifier, name]) => {
+      const option = readFixture(name);
+      const pair: [string, string] = [specifier, ended(option)];
 
-        return pair;
-      });
-    const baseText = readFixture(base);
-    const composed = moduleCompose({
-      base: ended(baseText),
-      options: Object.fromEntries(read),
-      modules: {},
-      plainData: PLAIN_DATA,
-      pureCalls: PURE_CALLS,
-      importGroups: GROUPS,
+      return pair;
     });
-    const shipped = readShipped(expected);
+  const baseText = readFixture(base);
+
+  return moduleCompose({
+    base: ended(baseText),
+    options: Object.fromEntries(read),
+    modules: {},
+    plainData: PLAIN_DATA,
+    pureCalls: PURE_CALLS,
+    importGroups: GROUPS,
+  });
+};
+
+describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s', (_name, end) => {
+  it.each(COMPOSITIONS)('writes the shipped file, with LF, from $base', (composition) => {
+    const composed = endedFrom(composition, end);
+    const shipped = readShipped(composition.expected);
 
     expect(composed).toBe(shipped);
+  });
+});
+
+const EVERY_LINE_END = [['LF', '\n'], ...LINE_ENDS];
+
+// Top-level statements answer the same whichever is rewritten first, so batching them changes no byte.
+describe.each(EVERY_LINE_END)('moduleCompose, one rewrite at a time, on inputs that end their lines with %s', (
+  _name,
+  end,
+) => {
+  afterEach(() => {
+    rewrites.isOneAtATime = false;
+  });
+
+  it.each(COMPOSITIONS)('writes what the batched passes write from $base', (composition) => {
+    const batched = endedFrom(composition, end);
+
+    rewrites.isOneAtATime = true;
+
+    const alone = endedFrom(composition, end);
+
+    expect(alone).toBe(batched);
   });
 });
 
