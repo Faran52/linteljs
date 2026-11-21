@@ -491,6 +491,14 @@ const DISORDERED: DisorderedCase[] = [
     message: `${MAY_ACT}setup.t`,
   },
   {
+    name: 'a call of what a call answers, its module declared both pure calls and plain data',
+    base: passing('X', '', ''),
+    option: rendering('title={st.tab(1)(2)}', STYLES),
+    plainData: ['./*.styles'],
+    pureCalls: ['./*.styles'],
+    message: `${MAY_ACT}st.tab(1)(2)`,
+  },
+  {
     name: 'a template of a value not proven primitive',
     base: passing('X', '', ''),
     option: rendering('title={`${location}`}', ''),

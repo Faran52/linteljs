@@ -787,6 +787,24 @@ describe('actsIn', () => {
       ],
     ],
     [
+      'import { s } from \'./t.styles\';\n\ny = [s.tab(1)(2), s.tab(1).fn(2), s.tab(1).a];',
+      STYLES,
+      ['s.tab(1)(2)', 's.tab(1).fn(2)'],
+    ],
+    [
+      'import { s } from \'./t.styles\';\n\nconst f = s.tab(1);\ny = f(2);',
+      STYLES,
+      ['f(2)'],
+    ],
+    [
+      'import { pick } from \'./p\';\n\ny = pick()(1);',
+      {
+        ...STYLES,
+        options: { './p': 'import { s } from \'./t.styles\';\n\nexport const pick = () => s.tab;\n' },
+      },
+      [],
+    ],
+    [
       'import { g } from \'./p\';\n\ny = g().tab(1);',
       {
         ...STYLES_PURE,

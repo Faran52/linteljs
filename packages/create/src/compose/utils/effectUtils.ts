@@ -80,6 +80,9 @@ interface Walk {
   isTrusted: (specifier: string) => boolean;
   // The nodes on the way to the current one, so a cycle is a fault.
   seen: Set<ts.Node>;
+  // Whether what a trusted call answers may stand for the rest of the path: for a read of its members, not to be
+  // called itself.
+  isAnswered: boolean;
 }
 
 // Where a walk lands: the first step no proof covers, else every expression it can end at, none for a declared module.
@@ -183,11 +186,12 @@ const moduleOrigin = (specifier: string): Origin => {
   return origin;
 };
 
-const walkOf = (context: Context, isTrusted: (specifier: string) => boolean): Walk => {
+const walkOf = (context: Context, isTrusted: (specifier: string) => boolean, isAnswered: boolean): Walk => {
   const walk: Walk = {
     context,
     isTrusted,
     seen: new Set(),
+    isAnswered,
   };
 
   return walk;
@@ -198,7 +202,7 @@ const readWalkOf = (context: Context): Walk => {
 
   return walkOf(context, (specifier) => {
     return isDeclared(plainData, specifier);
-  });
+  }, true);
 };
 
 const callWalkOf = (context: Context): Walk => {
@@ -206,7 +210,7 @@ const callWalkOf = (context: Context): Walk => {
 
   return walkOf(context, (specifier) => {
     return isDeclared(pureCalls, specifier);
-  });
+  }, false);
 };
 
 // A call into a module declared both pure calls and plain data answers plain data.
@@ -215,7 +219,7 @@ const answerWalkOf = (context: Context): Walk => {
 
   return walkOf(context, (specifier) => {
     return isDeclared(pureCalls, specifier) && isDeclared(plainData, specifier);
-  });
+  }, true);
 };
 
 // Reading a path from an object literal: each step a plain property of it.
@@ -414,7 +418,7 @@ const answersOf = (arrow: ts.ArrowFunction): ts.Expression[] | undefined => {
 const callStep = (walk: Walk, call: ts.CallExpression, path: readonly Key[], origin: Origin): Reached => {
   const answerWalk = answerWalkOf(walk.context);
 
-  if (isVouched(answerWalk, call)) {
+  if (walk.isAnswered && isVouched(answerWalk, call)) {
     return reachedAt([]);
   }
 
