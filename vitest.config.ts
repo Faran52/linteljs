@@ -16,6 +16,7 @@ export default defineConfig({
       ],
       exclude: [
         '**/*.test.ts',
+        '**/*.d.ts',
         '**/types.ts',
       ],
       // docs/DESIGN.md: Coverage thresholds
