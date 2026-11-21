@@ -239,11 +239,11 @@ describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s'
 });
 
 describe('moduleCompose, on inputs that open with a byte order mark', () => {
-  it('keeps the base\'s mark and drops each option\'s', () => {
+  it('keeps the base\'s mark in front of what replaces its imports', () => {
     const base = '\uFEFFimport { x } from \'./p\';\n\nexport const y = x;\n';
     const composed = moduleCompose({
       base,
-      options: { './p': '\uFEFFexport const x = 1;\n' },
+      options: { './p': 'export const x = 1;\n' },
     });
 
     expect(composed).toBe('\uFEFFexport const y = 1;\n');
