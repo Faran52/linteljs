@@ -200,6 +200,25 @@ describe('inlineElement', () => {
     expect(written).toBe(`y = ({ current, on }) => <ul>${item('a')}${item('b')}</ul>;\n`);
   });
 
+  it('refuses children that read a name the option binds around {children}', () => {
+    const body = 'y = (item) => <X>{item}</X>;';
+    const option = 'export const X = ({ children }: P) => <ul>{[1].map((item) => <li>{children}</li>)}</ul>;\n';
+
+    const fill = (): Filled => {
+      return filled(body, option);
+    };
+
+    expect(fill).toThrow('"item" is also bound around {children} in the option\'s code, which would capture it: item');
+  });
+
+  it('places children that read a name the option binds only outside its root', () => {
+    const body = 'y = (title) => <X title="a">{title}</X>;';
+    const option = 'export const X = ({ title, children }: P) => <h1 title={title}>{children}</h1>;\n';
+    const { written } = filled(body, option);
+
+    expect(written).toBe('y = (title) => <h1 title={\'a\'}>{title}</h1>;');
+  });
+
   it.each([
     [
       'y = <X />;',

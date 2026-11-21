@@ -293,6 +293,35 @@ const placeProps = (
   return needs;
 };
 
+// The base's children land in the slot, so no binding the option's code makes around it may take one of their reads.
+const childrenCheck = (
+  checker: ts.TypeChecker,
+  root: JsxRoot,
+  site: Site,
+  slots: readonly ts.JsxExpression[],
+): void => {
+  const passed = ts.isJsxElement(site.element) ? site.element.children : [];
+  const captured = passed
+    .flatMap((child) => {
+      return collect(child, ts.isIdentifier);
+    })
+    .filter(isReference)
+    .find((read) => {
+      return slots
+        .some((slot) => {
+          const found = resolvedAt(checker, read, slot);
+
+          return found !== undefined && isWithin(found, root);
+        });
+    });
+
+  if (captured !== undefined) {
+    const reason = `"${captured.text}" is also bound around {children} in the option's code, which would capture it`;
+
+    throw refusal(captured, reason);
+  }
+};
+
 const placeChildren = (
   checker: ts.TypeChecker,
   placement: Placement,
@@ -318,6 +347,8 @@ const placeChildren = (
   if (trimmed !== '' && slots.length !== 1) {
     throw refusal(site.head, 'The base passes children, so the option component must render {children} once');
   }
+
+  childrenCheck(checker, root, site, slots);
 
   const origin = leadingIndent(site.children);
 
