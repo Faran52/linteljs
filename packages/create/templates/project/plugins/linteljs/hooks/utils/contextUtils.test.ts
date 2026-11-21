@@ -23,9 +23,14 @@ import {
   contextOf,
   contextWarningOf,
   elapsedOf,
+  mainBadgesOf,
   mainContextOf,
+  modelBadgeOf,
+  modelNameOf,
   subagentRowsOf,
   subagentTranscriptOf,
+  tokensFromEnv,
+  transcriptModelOf,
 } from './contextUtils.ts';
 
 import type { SessionInput } from './hostUtils.ts';
@@ -203,6 +208,26 @@ describe('badgeOf', () => {
   });
 });
 
+describe('tokensFromEnv', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ['300000', 300_000],
+    ['', 7],
+    ['0', 7],
+    ['1.5', 7],
+    ['many', 7],
+  ])('reads %s as %s', (value, tokens) => {
+    vi.stubEnv('LINTELJS_TOKENS', value);
+
+    const read = tokensFromEnv('LINTELJS_TOKENS', 7);
+
+    expect(read).toBe(tokens);
+  });
+});
+
 describe('elapsedOf', () => {
   it('prints minutes under an hour, hours and minutes after, and never below zero', () => {
     const underAMinute = elapsedOf(59_999);
@@ -210,9 +235,59 @@ describe('elapsedOf', () => {
     const minutes = elapsedOf(12 * 60_000);
     expect(minutes).toBe('12m');
     const hours = elapsedOf(125 * 60_000);
-    expect(hours).toBe('2h5m');
+    expect(hours).toBe('2h 5m');
     const negative = elapsedOf(-5);
     expect(negative).toBe('0m');
+  });
+});
+
+const modelEntry = (model: string): string => {
+  return JSON.stringify({ type: 'assistant', message: { model } });
+};
+
+describe('modelNameOf', () => {
+  it.each([
+    ['claude-opus-5-5', 'OPUS 5.5'],
+    ['claude-fable-5-1[1m]', 'FABLE 5.1'],
+    ['claude-haiku-4-5-20251001', 'HAIKU 4.5'],
+    ['claude-sonnet-4-20250514', 'SONNET 4'],
+    ['<synthetic>', undefined],
+    [undefined, undefined],
+  ])('names %s as %s', (id, name) => {
+    const named = modelNameOf(id);
+    expect(named).toBe(name);
+  });
+});
+
+describe('transcriptModelOf', () => {
+  it('names the last assistant entry\'s model, past synthetic entries', () => {
+    const path = transcriptOf([
+      modelEntry('claude-sonnet-5-5'),
+      modelEntry('claude-opus-5-5'),
+      modelEntry('<synthetic>'),
+    ]);
+
+    const model = transcriptModelOf(path);
+
+    expect(model).toBe('OPUS 5.5');
+  });
+
+  it('names nothing for a missing transcript', () => {
+    const model = transcriptModelOf(join(directory, 'missing.jsonl'));
+    expect(model).toBeUndefined();
+  });
+});
+
+describe('mainBadgesOf', () => {
+  it('puts the model badge after the context badge, from the payload or else the transcript', () => {
+    const path = transcriptOf([modelEntry('claude-haiku-5-5')]);
+
+    const reported = mainBadgesOf({ model: { id: 'claude-opus-5-5' }, context_window: { total_input_tokens: 5 } });
+    expect(reported).toBe(`${badgeOf(5)} ${modelBadgeOf('OPUS 5.5')}`);
+    const read = mainBadgesOf({ transcript_path: path, context_window: { total_input_tokens: 5 } });
+    expect(read).toBe(`${badgeOf(5)} ${modelBadgeOf('HAIKU 5.5')}`);
+    const unknown = mainBadgesOf({});
+    expect(unknown).toBe(badgeOf(0));
   });
 });
 
@@ -309,7 +384,13 @@ describe('subagentRowsOf', () => {
     const main = transcriptOf([assistant(1, 0, 0)]);
     mkdirSync(join(directory, 'main', 'subagents'), { recursive: true });
     const first = JSON.stringify({ type: 'user', timestamp: '2026-10-14T07:00:00.000Z' });
-    transcriptOf([first, assistant(0, 84_000, 0)], join('main', 'subagents', 'agent-a1.jsonl'));
+
+    transcriptOf([
+      first,
+      modelEntry('claude-fable-5-1'),
+      assistant(0, 84_000, 0),
+    ], join('main', 'subagents', 'agent-a1.jsonl'));
+
     const now = Date.parse('2026-10-14T08:12:30.000Z');
 
     const rows = subagentRowsOf({
@@ -321,8 +402,27 @@ describe('subagentRowsOf', () => {
       }],
     }, now);
 
-    const expected = [{ id: 'a1', content: `${badgeOf(84_000)} 1h12m Run 6` }];
+    const expected = [{ id: 'a1', content: `${badgeOf(84_000)} ${modelBadgeOf('FABLE 5.1')} Run 6 1h 12m` }];
     expect(rows).toEqual(expected);
+  });
+
+  it('takes the start time and model Claude Code sends, and pins the run time to the right edge', () => {
+    const now = Date.parse('2026-10-14T08:12:30.000Z');
+    const task = {
+      id: 'a1',
+      type: 'local_agent',
+      label: 'Run 6',
+      model: 'claude-opus-5-5',
+      startTime: Date.parse('2026-10-14T08:00:00.000Z'),
+    };
+    const left = `${badgeOf(5)} ${modelBadgeOf('OPUS 5.5')}`;
+
+    const wide = subagentRowsOf({ columns: 40, tasks: [{ ...task, tokenCount: 5 }] }, now);
+    expect(wide).toEqual([{ id: 'a1', content: `${left} Run 6            12m` }]);
+    const narrow = subagentRowsOf({ columns: 25, tasks: [{ ...task, tokenCount: 5 }] }, now);
+    expect(narrow).toEqual([{ id: 'a1', content: `${left} R 12m` }]);
+    const tight = subagentRowsOf({ columns: 10, tasks: [{ ...task, tokenCount: 5 }] }, now);
+    expect(tight).toEqual([{ id: 'a1', content: `${left} 12m` }]);
   });
 
   it('answers no rows without tasks', () => {

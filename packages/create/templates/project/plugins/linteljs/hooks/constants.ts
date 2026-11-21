@@ -1,6 +1,7 @@
-export const CONTEXT_WARN_TOKENS = 130_000;
+// A project may raise both through its settings env (`CONTEXT_WARN_TOKENS`, `CONTEXT_CEILING_TOKENS`).
+export const DEFAULT_CONTEXT_WARN_TOKENS = 130_000;
 
-export const CONTEXT_CEILING_TOKENS = 150_000;
+export const DEFAULT_CONTEXT_CEILING_TOKENS = 150_000;
 
 // The badge and the warning count in thousands: `130K`.
 export const TOKENS_PER_K = 1000;
@@ -21,3 +22,6 @@ export const BADGE_COLOURS = {
   near: 173,
   over: 167,
 } as const;
+
+// 256-colour code for the model badge: steel blue, apart from the context colours.
+export const MODEL_BADGE_COLOUR = 110;

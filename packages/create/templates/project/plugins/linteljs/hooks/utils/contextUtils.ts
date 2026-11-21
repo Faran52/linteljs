@@ -11,9 +11,10 @@ import { join } from 'node:path';
 
 import {
   BADGE_COLOURS,
-  CONTEXT_CEILING_TOKENS,
-  CONTEXT_WARN_TOKENS,
+  DEFAULT_CONTEXT_CEILING_TOKENS,
+  DEFAULT_CONTEXT_WARN_TOKENS,
   MINUTES_PER_HOUR,
+  MODEL_BADGE_COLOUR,
   MS_PER_MINUTE,
   TOKENS_PER_K,
   TRANSCRIPT_HEAD_BYTES,
@@ -32,6 +33,15 @@ export interface SubagentRow {
   id: string;
   content: string;
 }
+
+export const tokensFromEnv = (name: string, fallback: number): number => {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+};
+
+const CONTEXT_WARN_TOKENS = tokensFromEnv('CONTEXT_WARN_TOKENS', DEFAULT_CONTEXT_WARN_TOKENS);
+
+const CONTEXT_CEILING_TOKENS = tokensFromEnv('CONTEXT_CEILING_TOKENS', DEFAULT_CONTEXT_CEILING_TOKENS);
 
 const USAGE_KEYS = [
   'input_tokens',
@@ -90,24 +100,72 @@ const tailOf = (path: string, tailBytes: number): string => {
   }
 };
 
-// Live context is the last assistant entry's prompt size; a line the tail cut in half fails to parse and is skipped.
-export const contextOf = (transcript: string, tailBytes = TRANSCRIPT_TAIL_BYTES): number => {
+// `claude-opus-5-5[1m]` reads `OPUS 5.5`, `claude-sonnet-4-20250514` reads `SONNET 4`; anything else has no name.
+export const modelNameOf = (id: string | undefined): string | undefined => {
+  if (id === undefined) {
+    return undefined;
+  }
+
+  const name = /^claude-[a-z]+-\d+(?:-\d{1,2})?(?=-|\[|$)/u.exec(id)?.[0];
+
+  if (name === undefined) {
+    return undefined;
+  }
+
+  return name
+    .replace(/^claude-/u, '')
+    .toUpperCase()
+    .replace('-', ' ')
+    .replace('-', '.');
+};
+
+const assistantModelOf = (line: string): string | undefined => {
+  const entry = jsonObjectOf(() => {
+    return line;
+  });
+
+  if (stringAt(entry, 'type') !== 'assistant') {
+    return undefined;
+  }
+
+  const message = objectAt(entry, 'message');
+  const model = stringAt(message, 'model');
+
+  return modelNameOf(model);
+};
+
+// The newest assistant entry `pick` answers for; a line the tail cut in half fails to parse and is skipped.
+const lastAssistantOf = <T>(
+  transcript: string,
+  pick: (line: string) => T | undefined,
+  tailBytes: number,
+): T | undefined => {
   try {
     for (const line of tailOf(transcript, tailBytes)
       .split('\n')
       .toReversed()) {
-      const tokens = assistantTokensOf(line);
+      const value = pick(line);
 
-      if (tokens !== undefined) {
-        return tokens;
+      if (value !== undefined) {
+        return value;
       }
     }
   }
   catch {
-    // An unreadable transcript holds no context.
+    // An unreadable transcript answers nothing.
   }
 
-  return 0;
+  return undefined;
+};
+
+// Live context is the last assistant entry's prompt size.
+export const contextOf = (transcript: string, tailBytes = TRANSCRIPT_TAIL_BYTES): number => {
+  return lastAssistantOf(transcript, assistantTokensOf, tailBytes) ?? 0;
+};
+
+// The model is the one that wrote the last assistant entry; synthetic entries name none.
+export const transcriptModelOf = (transcript: string, tailBytes = TRANSCRIPT_TAIL_BYTES): string | undefined => {
+  return lastAssistantOf(transcript, assistantModelOf, tailBytes);
 };
 
 const headOf = (path: string, headBytes: number): string => {
@@ -140,7 +198,7 @@ export const elapsedOf = (milliseconds: number): string => {
   const minutes = Math.max(0, Math.floor(milliseconds / MS_PER_MINUTE));
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
 
-  return hours === 0 ? `${String(minutes)}m` : `${String(hours)}h${String(minutes % MINUTES_PER_HOUR)}m`;
+  return hours === 0 ? `${String(minutes)}m` : `${String(hours)}h ${String(minutes % MINUTES_PER_HOUR)}m`;
 };
 
 export const subagentTranscriptOf = (transcript: string, agentId: string): string => {
@@ -163,6 +221,10 @@ export const badgeOf = (tokens: number): string => {
   const thousands = Math.floor(tokens / TOKENS_PER_K);
 
   return `\u001B[38;5;${String(colour)}m[CTX ${String(thousands)}K]\u001B[0m`;
+};
+
+export const modelBadgeOf = (name: string): string => {
+  return `\u001B[38;5;${String(MODEL_BADGE_COLOUR)}m[${name}]\u001B[0m`;
 };
 
 const namedContextOf = (payload: object, pathOf: (transcript: string) => string): number => {
@@ -191,7 +253,57 @@ export const mainContextOf = (payload: object): number => {
   });
 };
 
-// Only `local_agent` rows are subagents; any other row keeps Claude Code's own rendering.
+// Claude Code sends the session's model id; without it the transcript answers.
+export const mainModelOf = (payload: object): string | undefined => {
+  const transcript = stringAt(payload, 'transcript_path');
+  const model = objectAt(payload, 'model');
+  const id = stringAt(model, 'id');
+  const reported = modelNameOf(id);
+
+  return reported ?? (transcript === undefined ? undefined : transcriptModelOf(transcript));
+};
+
+// The context badge, then the model badge when the model is known.
+export const mainBadgesOf = (payload: object): string => {
+  const model = mainModelOf(payload);
+  const context = mainContextOf(payload);
+  const badge = badgeOf(context);
+
+  return model === undefined ? badge : `${badge} ${modelBadgeOf(model)}`;
+};
+
+// What the terminal shows of a string: its colour codes take no width.
+const visibleWidthOf = (text: string): number => {
+  return text.replaceAll(/\u001B\[[\d;]*m/gu, '').length;
+};
+
+// The run time sits at the row's right edge, as in Claude Code's own row; the label is cut to make room.
+const rowOf = (
+  left: string,
+  label: string | undefined,
+  elapsed: string | undefined,
+  columns: number | undefined,
+): string => {
+  const head = label === undefined ? left : `${left} ${label}`;
+
+  if (elapsed === undefined) {
+    return head;
+  }
+
+  if (columns === undefined) {
+    return `${head} ${elapsed}`;
+  }
+
+  const room = columns - visibleWidthOf(left) - elapsed.length - 2;
+  const cut = label === undefined || room < 1 ? undefined : label.slice(0, room);
+  const start = cut === undefined ? left : `${left} ${cut}`;
+  const gap = Math.max(1, columns - visibleWidthOf(start) - elapsed.length);
+
+  return `${start}${' '.repeat(gap)}${elapsed}`;
+};
+
+// Only `local_agent` rows are subagents; any other row keeps Claude Code's own rendering. Claude Code sends each
+// task's start time and model; the subagent's transcript answers when it does not.
 export const subagentRowsOf = (payload: object, now = Date.now()): SubagentRow[] => {
   const tasks = objectAt(payload, 'tasks') ?? {};
   const transcript = stringAt(payload, 'transcript_path');
@@ -210,18 +322,14 @@ export const subagentRowsOf = (payload: object, now = Date.now()): SubagentRow[]
       });
       const tokens = read === 0 ? numberAt(task, 'tokenCount') ?? 0 : read;
       const label = stringAt(task, 'label') ?? stringAt(task, 'description');
-      const startedAt = transcript === undefined ? undefined : startedAtOf(subagentTranscriptOf(transcript, id));
+      const own = transcript === undefined ? undefined : subagentTranscriptOf(transcript, id);
+      const startedAt = numberAt(task, 'startTime') ?? (own === undefined ? undefined : startedAtOf(own));
       const elapsed = startedAt === undefined ? undefined : elapsedOf(now - startedAt);
+      const sent = stringAt(task, 'model');
+      const model = modelNameOf(sent) ?? (own === undefined ? undefined : transcriptModelOf(own));
       const badge = badgeOf(tokens);
-      const content = [
-        badge,
-        elapsed,
-        label,
-      ]
-        .filter((part) => {
-          return part !== undefined;
-        })
-        .join(' ');
+      const left = model === undefined ? badge : `${badge} ${modelBadgeOf(model)}`;
+      const content = rowOf(left, label, elapsed, numberAt(payload, 'columns'));
       const rows = [
         {
           id,
