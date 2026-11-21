@@ -1,9 +1,13 @@
+import { isEqual } from 'es-toolkit';
 import ts from 'typescript';
 
 import {
   ATTRIBUTE_NAME,
+  JSX_LEADING_SPACES,
+  JSX_LINE_BREAK,
   PLAIN_STRING,
   TRAILING_COMMA,
+  WRITTEN,
 } from '../constants';
 
 import {
@@ -16,6 +20,7 @@ import {
   linesGone,
   linesOf,
   ownsLines,
+  parse,
   type Span,
   spanOf,
   splice,
@@ -25,6 +30,10 @@ import {
 } from './sourceUtils';
 
 type Rule = (text: string, node: ts.Node) => string | undefined;
+
+type Shown = string | ts.SyntaxKind;
+
+type JsxParent = ts.JsxElement | ts.JsxFragment;
 
 const literalOf = (node: ts.Expression): ts.ObjectLiteralExpression | undefined => {
   const value = unparen(node);
@@ -244,14 +253,61 @@ const spreadPropertyRule: Rule = (text, node) => {
   return swapped(text, node, properties);
 };
 
-// A fragment among an element's children is its own children, in place and at the fragment's indentation.
-const fragmentRule: Rule = (text, node) => {
-  const isChild = ts.isJsxFragment(node) && (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent));
+const isJsxParent = (node: ts.Node): node is JsxParent => {
+  return ts.isJsxElement(node) || ts.isJsxFragment(node);
+};
 
-  if (!ts.isJsxFragment(node) || !isChild) {
-    return undefined;
-  }
+// What a JSX text renders: each line trimmed where it meets another, blank lines dropped, the rest joined by a space.
+const shownText = (raw: string): string => {
+  const lines = raw.split(JSX_LINE_BREAK);
+  const last = lines.length - 1;
 
+  return lines
+    .map((line, index) => {
+      const opened = index === 0 ? line : line.replace(JSX_LEADING_SPACES, '');
+      const end = opened
+        .split('')
+        .findLastIndex((character) => {
+          return WRITTEN.test(character);
+        });
+
+      return index === last ? opened : opened.slice(0, end + 1);
+    })
+    .filter((line) => {
+      return line !== '';
+    })
+    .join(' ');
+};
+
+// What children render, fragments opened: the text they show, and every other child by its kind.
+const shownOf = (children: readonly ts.JsxChild[]): Shown[] => {
+  const parts = children
+    .flatMap((child): Shown[] => {
+      if (ts.isJsxFragment(child)) {
+        return shownOf(child.children);
+      }
+
+      const shown = ts.isJsxText(child) ? shownText(child.text) : child.kind;
+      const kept: Shown[] = shown === '' ? [] : [shown];
+
+      return kept;
+    });
+
+  // Two texts side by side render as one.
+  return parts
+    .reduce<Shown[]>((all, part) => {
+      const previous = all.at(-1);
+
+      if (typeof part === 'string' && typeof previous === 'string') {
+        return all.with(-1, previous + part);
+      }
+
+      return all.concat(part);
+    }, []);
+};
+
+// A fragment's children in its place; alone on its lines, each line it held moves to the fragment's indentation.
+const unwrapped = (text: string, node: ts.JsxFragment): string => {
   const span = spanOf(node);
   const inner = text.slice(node.openingFragment.getEnd(), node.closingFragment.getStart());
 
@@ -266,19 +322,52 @@ const fragmentRule: Rule = (text, node) => {
   }
 
   const to = indentAt(text, span.start);
-  const from = leadingIndent(inner);
-  const moved = inner
-    .split('\n')
-    .slice(1, -1)
-    .map((line) => {
+  const pieces = inner.split('\n');
+  const from = leadingIndent(pieces
+    .slice(1)
+    .join('\n'));
+  const written = pieces
+    .map((line, index) => {
+      if (index === 0) {
+        return to + line.trimStart();
+      }
+
       return line.startsWith(from) ? to + line.slice(from.length) : line;
+    })
+    .filter((line, index) => {
+      const isTag = index === 0 || index === pieces.length - 1;
+
+      return !isTag || line.trim() !== '';
     })
     .map((line) => {
       return `${line}\n`;
     })
     .join('');
 
-  return splice(text, lines, moved);
+  return splice(text, lines, written);
+};
+
+// A fragment among an element's children is its own children, kept where that would change what they render.
+const fragmentRule: Rule = (text, node) => {
+  const { parent } = node;
+
+  if (!ts.isJsxFragment(node) || !isJsxParent(parent)) {
+    return undefined;
+  }
+
+  const next = unwrapped(text, node);
+  const before = shownOf(parent.children);
+  const start = parent.getStart();
+  const file = parse(next);
+  const after = collect(file, isJsxParent)
+    .filter((candidate) => {
+      return candidate.getStart() === start;
+    })
+    .map((candidate) => {
+      return shownOf(candidate.children);
+    });
+
+  return isEqual(after, [before]) ? next : undefined;
 };
 
 const RULES: readonly Rule[] = [

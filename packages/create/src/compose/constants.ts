@@ -108,3 +108,9 @@ export const DEFAULT_IMPORT_GROUPS = [
 
 // The comma a literal written over several lines ends its last member with.
 export const TRAILING_COMMA = /,$/u;
+
+// A line break as JSX reads one in text.
+export const JSX_LINE_BREAK = /\r\n|\n|\r/u;
+
+// The spaces JSX trims where a line of text meets the one before it.
+export const JSX_LEADING_SPACES = /^[\t ]+/u;

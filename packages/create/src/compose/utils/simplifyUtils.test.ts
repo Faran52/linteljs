@@ -219,6 +219,41 @@ describe('simplifiedOnce', () => {
       'x = <ul>\n  <a />\n</ul>;',
     ],
     [
+      'a fragment with children on its opening and closing lines, none of them lost (F2)',
+      'x = (\n  <div>\n    <>first {v}\n      <b>second</b></>\n  </div>\n);',
+      'x = (\n  <div>\n    first {v}\n    <b>second</b>\n  </div>\n);',
+    ],
+    [
+      'a fragment with a child on its closing line',
+      'x = (\n  <ul>\n    <>\n      <a />\n      <b /></>\n  </ul>\n);',
+      'x = (\n  <ul>\n    <a />\n    <b />\n  </ul>\n);',
+    ],
+    [
+      'a fragment over several lines inside another',
+      'x = (\n  <ul>\n    <>\n      <>\n        <a />\n      </>\n    </>\n  </ul>\n);',
+      'x = (\n  <ul>\n    <a />\n  </ul>\n);',
+    ],
+    [
+      'a fragment of text over several lines',
+      'x = (\n  <p>\n    <>\n      some\n      text\n    </>\n  </p>\n);',
+      'x = (\n  <p>\n    some\n    text\n  </p>\n);',
+    ],
+    [
+      'a fragment of text on the line of other text',
+      'x = <p>hello <>world</></p>;',
+      'x = <p>hello world</p>;',
+    ],
+    [
+      'a fragment whose text would join the text before it with a space, left alone',
+      'x = (\n  <p>\n    hello\n    <>world</>\n  </p>\n);',
+      'x = (\n  <p>\n    hello\n    <>world</>\n  </p>\n);',
+    ],
+    [
+      'a fragment whose text opens with a space it would lose, left alone',
+      'x = (\n  <p>\n    <> a\n      <b />\n    </>\n  </p>\n);',
+      'x = (\n  <p>\n    <> a\n      <b />\n    </>\n  </p>\n);',
+    ],
+    [
       'a spread alone on its line, of a literal over several lines, comments and blank lines kept',
       'x = {\n  a: 1,\n\n  ...{\n    b: {\n      c: 2,\n    },\n\n    // why\n    d: 3,\n  },\n\n  e: 4,\n};',
       'x = {\n  a: 1,\n\n  b: {\n    c: 2,\n  },\n\n  // why\n  d: 3,\n\n  e: 4,\n};',
