@@ -246,6 +246,20 @@ describe('inlineElement', () => {
   });
 
   it.each([
+    ['y = <X title="a&amp;b &lt; c">x</X>;'],
+    ['y = <X title="a & b" />;'],
+    ['y = <X title="one\ntwo" />;'],
+    ['y = <X title="one\rtwo" />;'],
+    ['y = <X title="one\u2028two" />;'],
+  ])('refuses an attribute string JSX reads otherwise than a JS string, in %j (F14)', (body) => {
+    const run = (): Filled => {
+      return filled(`${body}\n`, 'export const X = ({ title }: P) => <h1>{title}</h1>;\n');
+    };
+
+    expect(run).toThrow('An attribute string holding "&" or a line break means another text as a JS string');
+  });
+
+  it.each([
     [
       'y = <X />;',
       'export const X = 4;\n',

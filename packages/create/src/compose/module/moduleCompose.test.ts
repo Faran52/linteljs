@@ -1399,6 +1399,13 @@ const MORE_CASES: Case[] = [
 
 const MORE_REFUSALS: Refusal[] = [
   {
+    name: 'an attribute string holding entities (F14)',
+    base: 'import { Card } from \'./p\';\n\nexport const A = () => {\n'
+      + '  return <Card title="a&amp;b &lt; c">x</Card>;\n};\n',
+    option: 'export const Card = ({ title }: { title: string }) => {\n  return <h1>{title}</h1>;\n};\n',
+    message: /An attribute string holding "&" or a line break means another text as a JS string: title="a&amp;/u,
+  },
+  {
     name: 'a parameter module named by a dynamic import (F22)',
     base: 'import { v } from \'./p\';\n\nexport const a = v;\nexport const lazy = () => import(\'./p\');\n',
     option: 'export const v = 1;\n',

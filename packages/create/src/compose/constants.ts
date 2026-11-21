@@ -210,6 +210,9 @@ export const OTHER_LINE_ENDS = /\r\n?/gu;
 // How an option module beside the base is imported: `./` and one name, never a path through another directory.
 export const BESIDE_BASE = /^\.\/(?!\.\.?$)[^/]+$/u;
 
+// What a JSX attribute string reads otherwise than a JS string would: an entity, which JSX decodes, or a line break.
+export const JSX_STRING_ONLY = /[&\n\r\u2028\u2029]/u;
+
 // The characters that end a `//` comment: a note holding one would write the rest of it as code.
 export const COMMENT_ENDS = /[\n\r\u2028\u2029]/u;
 

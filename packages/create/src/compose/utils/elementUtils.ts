@@ -1,5 +1,7 @@
 import ts from 'typescript';
 
+import { JSX_STRING_ONLY } from '../constants';
+
 import {
   arrowOf,
   captureCheck,
@@ -118,6 +120,10 @@ const attributeValue = (attribute: ts.JsxAttribute): ts.Expression => {
 
   if (initializer === undefined) {
     return expressionOf('true');
+  }
+
+  if (ts.isStringLiteral(initializer) && JSX_STRING_ONLY.test(initializer.text)) {
+    throw refusal(attribute, 'An attribute string holding "&" or a line break means another text as a JS string');
   }
 
   if (ts.isStringLiteral(initializer)) {
