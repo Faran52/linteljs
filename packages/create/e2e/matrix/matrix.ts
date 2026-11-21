@@ -1,5 +1,3 @@
-import { env } from 'node:process';
-
 import {
   memoize,
   orderBy,
@@ -69,7 +67,6 @@ export const projectsOf = (item: E2eCase, name: string): [E2eProject, ...E2eProj
 };
 
 // Every pair rather than every combination, under pnpm alone: every defect found so far was a two-way interaction.
-// `E2E_FULL=1` runs the cross product instead.
 
 // Each library on and off, the full set first, so the widest case carries every one.
 const withAndWithout = (sets: Library[][], library: Library): Library[][] => {
@@ -493,7 +490,7 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
 export const targetCases = (target: TargetId): E2eCase[] => {
   const every = everyCase(target);
 
-  const paired = env['E2E_FULL'] === '1' ? every : coveringSubset(every);
+  const paired = coveringSubset(every);
 
   const widest = widestOf(every);
   const extra = widest

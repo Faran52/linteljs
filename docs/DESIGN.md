@@ -1216,7 +1216,7 @@ dependency set would save about 30%, not worth a tree-cloning mechanism.
 Every defect the suite has found was a two-way interaction (Vue host with TanStack Query, Angular with
 `testing: none`, and so on). The greedy cover picks only from the legal enumeration, so the pair universe is the
 reachable one, and it is deterministic, so a failed label names the same case under `-t`. Three-way interactions
-are given up; `E2E_FULL=1` runs the cross product.
+are given up.
 
 The manager is not an axis: the widest case holds every dependency a target can emit, so one smoke per manager and
 target installs them all. A manager resolving differently but still installing is the accepted risk under

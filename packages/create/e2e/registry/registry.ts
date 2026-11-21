@@ -182,13 +182,12 @@ const publishedAs = (version: string, publish: () => void): void => {
   }
 };
 
-// `E2E_UPSTREAM` stands in for npmjs where only a mirror is reachable.
-const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
+const verdaccioConfig = (storage: string): string => {
   const lines = [
     `storage: ${storage}`,
     'uplinks:',
     '  npmjs:',
-    `    url: ${upstream}`,
+    `    url: ${UPSTREAM}`,
     // Defaults are 2 and 5m: two transient failures refuse every later request as a 404 for five minutes.
     '    max_fails: 30',
     '    fail_timeout: 10s',
@@ -227,7 +226,7 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
   const url = `http://127.0.0.1:${String(PORT)}/`;
   const config = join(RUN_DIR, 'verdaccio.yaml');
 
-  writeFileSync(config, verdaccioConfig(storage, env['E2E_UPSTREAM']));
+  writeFileSync(config, verdaccioConfig(storage));
 
   const verdaccio = spawn(
     join(ROOT, 'node_modules/.bin/verdaccio'),
