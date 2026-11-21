@@ -26,6 +26,10 @@ export interface Sources {
   header: string;
   body: string;
   modules: Map<string, ts.SourceFile>;
+  // Modules held only to prove what a member read of theirs does: never bound, inlined or printed.
+  held: Map<string, ts.SourceFile>;
+  // The specifiers, exact or with `*` for any run of characters but `/`, whose exports are taken as plain data.
+  plainData: readonly string[];
   bindings: Map<string, Binding>;
   imports: ImportEntry[];
 }
@@ -193,16 +197,36 @@ const partsOf = (base: string, file: ts.SourceFile): Parts => {
   return parts;
 };
 
-// The base without its imports, each option module parsed, and what every import stands for.
-export const sourcesOf = (base: string, options: Readonly<Record<string, string>>): Sources => {
-  const baseFile = parse(base);
-  const parsed = Object.entries(options)
+const parsedOf = (texts: Readonly<Record<string, string>>): Map<string, ts.SourceFile> => {
+  const parsed = Object.entries(texts)
     .map(([specifier, source]) => {
       const pair: [string, ts.SourceFile] = [specifier, parse(source)];
 
       return pair;
     });
-  const modules = new Map(parsed);
+
+  return new Map(parsed);
+};
+
+// The base without its imports, each option module parsed, and what every import stands for.
+export const sourcesOf = (
+  base: string,
+  options: Readonly<Record<string, string>>,
+  given: Readonly<Record<string, string>>,
+  plainData: readonly string[],
+): Sources => {
+  const baseFile = parse(base);
+  const modules = parsedOf(options);
+  const held = parsedOf(given);
+  const both = [...held.keys()]
+    .find((specifier) => {
+      return modules.has(specifier);
+    });
+
+  if (both !== undefined) {
+    throw new Error(`${both} is given both as a parameter module and as a module held for proof.`);
+  }
+
   const bindings = new Map<string, Binding>();
   const imports: ImportEntry[] = [];
   const owners = new Map<string, string>();
@@ -230,6 +254,8 @@ export const sourcesOf = (base: string, options: Readonly<Record<string, string>
     header,
     body,
     modules,
+    held,
+    plainData,
     bindings,
     imports,
   };

@@ -119,7 +119,7 @@ export const landedCheck = (
 // Nothing of the parameters may be left: no read of a parameter binding the base does not bind itself, no directive.
 export const checked = (text: string, sources: Sources): ts.SourceFile => {
   const file = parse(text);
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
   const left = collect(file, ts.isIdentifier)
     .find((identifier) => {
       const isParameter = sources.bindings.has(identifier.text) && isReference(identifier);

@@ -21,6 +21,8 @@ export interface Span {
 
 export type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment;
 
+export type MemberRead = ts.PropertyAccessExpression | ts.ElementAccessExpression;
+
 // TSX for every module, so one parser reads a base and its option modules alike.
 export const parse = (text: string): ts.SourceFile => {
   return ts.createSourceFile('module.tsx', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -289,7 +291,7 @@ export const isPrototype = (property: ts.ObjectLiteralElementLike): boolean => {
 };
 
 // Through the wrappers that only speak to the type checker.
-const unwrapped = (node: ts.Expression): ts.Expression => {
+export const unwrapped = (node: ts.Expression): ts.Expression => {
   const isWrapper = ts.isParenthesizedExpression(node)
     || ts.isAsExpression(node)
     || ts.isSatisfiesExpression(node)
@@ -298,19 +300,15 @@ const unwrapped = (node: ts.Expression): ts.Expression => {
   return isWrapper ? unwrapped(node.expression) : node;
 };
 
-const isPureProperty = (property: ts.ObjectLiteralElementLike): boolean => {
-  if (ts.isShorthandPropertyAssignment(property)) {
-    return true;
-  }
-
-  const isPlain = ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name);
-
-  return isPlain && isPure(property.initializer);
-};
-
-// Evaluating it twice, or not at all, changes nothing. Reading a name or a member is taken to have no effect.
-export const isPure = (node: ts.Expression): boolean => {
+// Evaluating it twice, or not at all, changes nothing. A name is read with no effect; a member only when `isPlain`
+// proves it, so with no test no member read is.
+export const isPure = (node: ts.Expression, isPlain: ((read: MemberRead) => boolean)
+  | undefined): boolean => {
   const value = unwrapped(node);
+
+  const isPureIn = (inner: ts.Expression): boolean => {
+    return isPure(inner, isPlain);
+  };
 
   if (ts.isIdentifier(value) || ts.isLiteralExpression(value) || ts.isArrowFunction(value)) {
     return true;
@@ -320,34 +318,37 @@ export const isPure = (node: ts.Expression): boolean => {
     return true;
   }
 
-  if (ts.isPropertyAccessExpression(value)) {
-    return isPure(value.expression);
-  }
+  if (ts.isPropertyAccessExpression(value) || ts.isElementAccessExpression(value)) {
+    const isRead = isPlain !== undefined && isPlain(value) && isPureIn(value.expression);
 
-  if (ts.isElementAccessExpression(value)) {
-    return isPure(value.expression) && isPure(value.argumentExpression);
+    return isRead && (ts.isPropertyAccessExpression(value) || isPureIn(value.argumentExpression));
   }
 
   if (ts.isPrefixUnaryExpression(value)) {
-    return !UPDATES.has(value.operator) && isPure(value.operand);
+    return !UPDATES.has(value.operator) && isPureIn(value.operand);
   }
 
   if (ts.isConditionalExpression(value)) {
-    return isPure(value.condition) && isPure(value.whenTrue) && isPure(value.whenFalse);
+    return isPureIn(value.condition) && isPureIn(value.whenTrue) && isPureIn(value.whenFalse);
   }
 
   if (ts.isBinaryExpression(value)) {
-    return BINARY_LEVELS.has(value.operatorToken.kind) && isPure(value.left) && isPure(value.right);
+    return BINARY_LEVELS.has(value.operatorToken.kind) && isPureIn(value.left) && isPureIn(value.right);
   }
 
   if (ts.isTemplateExpression(value)) {
     return value.templateSpans
       .every((span) => {
-        return isPure(span.expression);
+        return isPureIn(span.expression);
       });
   }
 
-  return ts.isObjectLiteralExpression(value) && value.properties.every(isPureProperty);
+  return ts.isObjectLiteralExpression(value) && value.properties
+    .every((property) => {
+      const isPlainValue = ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name);
+
+      return ts.isShorthandPropertyAssignment(property) || (isPlainValue && isPureIn(property.initializer));
+    });
 };
 
 // Assigned to, updated or deleted rather than read.

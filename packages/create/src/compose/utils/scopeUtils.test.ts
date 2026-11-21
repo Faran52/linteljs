@@ -6,6 +6,7 @@ import {
 } from 'vitest';
 
 import {
+  aliasedOf,
   declarationOf,
   declaredBy,
   referencesTo,
@@ -23,7 +24,7 @@ interface Scoped {
 const scopedOf = (base: string, option: string): Scoped => {
   const baseFile = parse(base);
   const optionFile = parse(option);
-  const checker = scopeOf(baseFile, new Map([['./p', optionFile]]));
+  const checker = scopeOf(baseFile, new Map([['./p', optionFile]]), new Map());
   const scoped: Scoped = {
     checker,
     base: baseFile,
@@ -50,6 +51,54 @@ const nameAt = (file: ts.SourceFile, name: string, index: number): ts.Identifier
 const textOfDeclaration = (declaration: ts.Declaration | undefined): string | undefined => {
   return declaration?.getText();
 };
+
+describe('aliasedOf', () => {
+  it.each([
+    [
+      'an import of an option module',
+      'p',
+      'p = { a: 1 }',
+    ],
+    [
+      'an import of a module held for proof',
+      'h',
+      'h = { b: 2 }',
+    ],
+    [
+      'an import of a module the program lacks',
+      'q',
+      undefined,
+    ],
+    [
+      'a local name',
+      'l',
+      undefined,
+    ],
+    [
+      'a name that resolves to nothing',
+      'g',
+      undefined,
+    ],
+  ])('answers for %s', (_name, read, expected) => {
+    const text = [
+      'import { p } from \'./p\';',
+      'import { h } from \'./h\';',
+      'import { q } from \'./q\';',
+      'const l = 1;',
+      'export const y = [p, h, q, l, g];',
+      '',
+    ].join('\n');
+    const base = parse(text);
+    const option = parse('export const p = { a: 1 };\n');
+    const held = parse('export const h = { b: 2 };\n');
+    const checker = scopeOf(base, new Map([['./p', option]]), new Map([['./h', held]]));
+    const name = nameAt(base, read, -1);
+    const found = aliasedOf(checker, name);
+    const shown = textOfDeclaration(found);
+
+    expect(shown).toBe(expected);
+  });
+});
 
 describe('declarationOf', () => {
   it('resolves a parameter that shadows an outer name to the parameter, and the outer read to the outer', () => {

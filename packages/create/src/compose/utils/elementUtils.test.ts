@@ -25,7 +25,7 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
       return ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent);
     });
   const [head] = heads;
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
 
   return head === undefined || !ts.isIdentifier(head.tagName)
     ? undefined
@@ -33,7 +33,7 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
 };
 
 const filled = (body: string, option: string): Filled => {
-  const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option });
+  const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, []);
   let written = sources.body;
 
   for (let next = filledOnce(written, sources); next !== undefined; next = filledOnce(written, sources)) {
@@ -191,7 +191,7 @@ describe('inlineElement', () => {
   it('binds what a component reads from a rest still spread, in the layout of a pattern written over lines', () => {
     const body = lines('y = ({', '  id,', '  ...rest', '}) => <ul><X {...rest} />{id}<X {...rest} /></ul>;');
     const option = 'export const X = ({ current, on }: P) => <li hidden={current} onClick={on} />;\n';
-    const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option });
+    const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, []);
     const once = filledOnce(sources.body, sources);
     const expected = lines(
       'y = ({',

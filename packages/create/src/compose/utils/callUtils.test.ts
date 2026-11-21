@@ -33,9 +33,9 @@ interface Called {
 
 // The first read of `x` in a body filled from an option module, by the rule its position asks for.
 const inlined = (body: string, option: string): string => {
-  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option });
+  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, []);
   const file = parse(sources.body);
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
   const [local] = referencesIn(file, 'x');
 
   if (local === undefined) {
@@ -514,12 +514,12 @@ describe('inlineCall, for arguments that run or may be written', () => {
       '"a" is read later',
     ],
     [
-      'y = x(a.b, h());',
+      'const a = { b: 1 };\ny = x(a.b, h());',
       'export const x = (m: number, n: number) => [n, m];\n',
       'An argument that may be written must be read before anything can write it, and "m" is not: a.b',
     ],
     [
-      'y = x(h(), a.b);',
+      'const a = { b: 1 };\ny = x(h(), a.b);',
       'export const x = (m: number, n: number) => [n, m];\n',
       'and "n" is not: a.b',
     ],
@@ -597,7 +597,7 @@ describe('inlineValue', () => {
 
 describe('exportedValue, arrowOf and returnedOf', () => {
   it('answers no value for a name with no export', () => {
-    const sources = sourcesOf('import { x } from \'./p\';\n', { './p': 'export interface x {}\n' });
+    const sources = sourcesOf('import { x } from \'./p\';\n', { './p': 'export interface x {}\n' }, {}, []);
     const value = exportedValue(sources, 'x');
 
     expect(value).toBeUndefined();
@@ -605,7 +605,7 @@ describe('exportedValue, arrowOf and returnedOf', () => {
 
   it('answers the arrow an export holds, and what it returns', () => {
     const option = 'export const x = () => {\n  return 4;\n};\n';
-    const sources = sourcesOf('import { x } from \'./p\';\n\ny = x();\n', { './p': option });
+    const sources = sourcesOf('import { x } from \'./p\';\n\ny = x();\n', { './p': option }, {}, []);
     const [local] = referencesIn(parse(sources.body), 'x');
     const returned = local === undefined ? undefined : returnedOf(arrowOf(sources, local));
 
@@ -616,7 +616,7 @@ describe('exportedValue, arrowOf and returnedOf', () => {
 // The arrow an option exports as `f`, with a checker over it.
 const calledOf = (option: string): Called => {
   const file = parse(option);
-  const checker = scopeOf(parse(''), new Map([['./p', file]]));
+  const checker = scopeOf(parse(''), new Map([['./p', file]]), new Map());
   const [statement] = file.statements;
   const [declaration] = statement !== undefined && ts.isVariableStatement(statement)
     ? statement.declarationList.declarations

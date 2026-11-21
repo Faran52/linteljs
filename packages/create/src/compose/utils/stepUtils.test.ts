@@ -28,7 +28,7 @@ const BASE = 'import fs, * as all from \'node:fs\';\nimport { join } from \'node
 const OPTION = 'const helper = 1;\n\nexport const x = helper;\nexport interface Local {}\n';
 
 const sourcesFor = (): Sources => {
-  return sourcesOf(BASE, { './p': OPTION });
+  return sourcesOf(BASE, { './p': OPTION }, {}, []);
 };
 
 describe('settled', () => {
@@ -95,10 +95,10 @@ describe('checked', () => {
 
 // The option's `v` lands on the first read of `v` in the base: its value, or what its arrow returns.
 const landingOf = (base: string, option: string): Landing => {
-  const sources = sourcesOf(base, { './p': option });
+  const sources = sourcesOf(base, { './p': option }, {}, []);
   const file = parse(sources.body);
   const optionFile = sources.modules.get('./p');
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
   const declaration = optionFile === undefined
     ? undefined
     : collect(optionFile, ts.isVariableDeclaration)

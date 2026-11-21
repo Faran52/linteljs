@@ -14,6 +14,7 @@ import {
   type Edit,
   refusal,
 } from './editUtils';
+import { type Proof, pureCheck } from './effectUtils';
 import {
   declarationOf,
   referencesTo,
@@ -25,7 +26,6 @@ import {
   indentAt,
   indentOf,
   isPlainElement,
-  isPure,
   isReference,
   isWithin,
   leadingIndent,
@@ -390,18 +390,18 @@ const placeKey = (placement: Placement, root: JsxRoot, site: Site): void => {
   placement.put(span, textOf(site.key), '', lead);
 };
 
-const ignoredCheck = (wanted: readonly ts.BindingElement[], site: Site): void => {
+const ignoredCheck = (proof: Proof, wanted: readonly ts.BindingElement[], site: Site): void => {
   const names = wanted
     .map((element) => {
       return textOf(element.name);
     });
-  const ignored = [...site.given.entries()]
-    .find(([name, value]) => {
-      return name !== 'key' && !names.includes(name) && !isPure(value);
+  const dropped = [...site.given.entries()]
+    .filter(([name]) => {
+      return name !== 'key' && !names.includes(name);
     });
 
-  if (ignored !== undefined) {
-    throw refusal(site.head, `The option's component ignores "${ignored[0]}", whose value has an effect`);
+  for (const [name, value] of dropped) {
+    pureCheck(proof, value, refusal(site.head, `The option's component ignores "${name}", whose value has an effect`));
   }
 };
 
@@ -510,7 +510,7 @@ const restEdit = (
 };
 
 // What the component receives from the attributes, in the order the base writes them.
-const passedOf = (checker: ts.TypeChecker, wanted: readonly ts.BindingElement[], site: Site): Passed[] => {
+const passedOf = (proof: Proof, wanted: readonly ts.BindingElement[], site: Site): Passed[] => {
   const names = [...site.given.keys()];
 
   const placeOf = (each: Passed): number => {
@@ -530,7 +530,7 @@ const passedOf = (checker: ts.TypeChecker, wanted: readonly ts.BindingElement[],
       const each: Passed[] = [
         {
           declaration: element,
-          kind: kindOf(checker, argument),
+          kind: kindOf(proof, argument),
           shown: argument,
         },
       ];
@@ -565,11 +565,15 @@ export const inlineElement = (
       return pair;
     });
   const given = new Map(pairs);
+  const proof: Proof = {
+    checker,
+    sources,
+  };
 
-  ignoredCheck(wanted, site);
+  ignoredCheck(proof, wanted, site);
   landedCheck(checker, sources, arrow, root, site.element);
   captureCheck(checker, root, given);
-  effectCheck(checker, root, passedOf(checker, wanted, site));
+  effectCheck(checker, root, passedOf(proof, wanted, site));
 
   const placement = new Placement(root);
   const needs = placeProps(checker, placement, root, wanted, site);

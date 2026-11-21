@@ -460,11 +460,50 @@ describe('isPure', () => {
     ['{ ...a }', false],
     ['[a]', false],
     ['a++', false],
-  ])('answers for %s', (source, expected) => {
+  ])('answers for %s, every member read proven', (source, expected) => {
     const expression = expressionOf(source);
-    const pure = isPure(expression);
+    const pure = isPure(expression, () => {
+      return true;
+    });
 
     expect(pure).toBe(expected);
+  });
+
+  it.each([
+    [
+      'a.b',
+      'a.b',
+      true,
+    ],
+    [
+      'a.b.c',
+      'a.b.c',
+      false,
+    ],
+    [
+      'a[0]',
+      'a[0]',
+      true,
+    ],
+    [
+      'a.b',
+      'a.c',
+      false,
+    ],
+  ])('takes %s as pure only when the test proves each member read, here %s', (source, proven, expected) => {
+    const expression = expressionOf(source);
+    const pure = isPure(expression, (read) => {
+      return textOf(read) === proven;
+    });
+
+    expect(pure).toBe(expected);
+  });
+
+  it.each(['a.b', 'a[0]'])('takes no member read in %s as pure with no test', (source) => {
+    const expression = expressionOf(source);
+    const pure = isPure(expression, undefined);
+
+    expect(pure).toBe(false);
   });
 });
 

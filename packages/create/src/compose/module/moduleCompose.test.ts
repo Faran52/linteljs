@@ -73,6 +73,9 @@ const GROUPS = [
   [String.raw`^.+\.s?css$`],
 ];
 
+// The modules the fixtures read styles and tokens from, which the engine is not given.
+const PLAIN_DATA = ['./*.styles', '@styles/tokens.stylex'];
+
 const HEADERS: [string, string][] = [
   ['react-routers', 'atomic'],
   ['react-routers', 'css'],
@@ -93,6 +96,8 @@ describe('moduleCompose, on the shipped app header', () => {
         './router': routerOption,
         './styling': stylingOption,
       },
+      modules: {},
+      plainData: PLAIN_DATA,
       importGroups: GROUPS,
     });
     const folder = `router/${router}/styling/${styling}`;
@@ -136,6 +141,8 @@ describe('moduleCompose, on the shipped home page', () => {
         './store': storeOption,
         './styling': stylingOption,
       },
+      modules: {},
+      plainData: PLAIN_DATA,
       importGroups: GROUPS,
     });
     const expected = readShipped(`${folder}/styling/${styling}/src/pages/home/HomePage.tsx`);
@@ -156,6 +163,8 @@ describe('moduleCompose, on the shipped home page style table', () => {
     const composed = moduleCompose({
       base,
       options: { './store': storeOption },
+      modules: {},
+      plainData: PLAIN_DATA,
       importGroups: GROUPS,
     });
     const expected = readShipped(`${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`);
@@ -230,11 +239,144 @@ describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s'
     const composed = moduleCompose({
       base: ended(baseText),
       options: Object.fromEntries(read),
+      modules: {},
+      plainData: PLAIN_DATA,
       importGroups: GROUPS,
     });
     const shipped = readShipped(expected);
 
     expect(composed).toBe(shipped);
+  });
+});
+
+// The six whose options read the stylex sheets or tokens, which the engine is not given.
+const READS_PLAIN_DATA = COMPOSITIONS
+  .filter(({ options }) => {
+    return Object.values(options)
+      .some((name) => {
+        return name.includes('atomic') || name.endsWith('store.libraries.ts');
+      });
+  });
+
+describe('moduleCompose, on the shipped compositions with no module declared plain data', () => {
+  it('finds six that read one', () => {
+    expect(READS_PLAIN_DATA).toHaveLength(6);
+  });
+
+  it.each(READS_PLAIN_DATA)('refuses to move a member read of $options', ({ base, options }) => {
+    const read = Object.entries(options)
+      .map(([specifier, name]) => {
+        const pair: [string, string] = [specifier, readFixture(name)];
+
+        return pair;
+      });
+    const baseText = readFixture(base);
+
+    const run = (): string => {
+      return moduleCompose({
+        base: baseText,
+        options: Object.fromEntries(read),
+        modules: {},
+        plainData: [],
+        importGroups: GROUPS,
+      });
+    };
+
+    expect(run).toThrow(/is not shown to be a plain property, so reading it may run code: give the engine/u);
+  });
+});
+
+const READ_BASE = 'import { x } from \'./p\';\n\nexport const y = x.m;\n';
+
+const SIBLING_READ = 'import { t } from \'./t\';\n\nexport const x = { m: t.a };\n';
+
+describe('moduleCompose, on a member read it moves', () => {
+  it('takes a plain property of a literal in the option file as proven by source', () => {
+    const composed = moduleCompose({
+      base: 'import { t, x } from \'./p\';\n\nexport const y = [x.m, t.b];\n',
+      options: { './p': 'export const t = { a: 1, b: 2 };\nexport const x = { m: t.a };\n' },
+      modules: {},
+      plainData: [],
+    });
+
+    expect(composed).toBe('export const y = [1, 2];\n');
+  });
+
+  it('refuses a getter of a literal in the option file', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: 'import { t, x } from \'./p\';\n\nexport const y = [x.m, t];\n',
+        options: { './p': 'export const t = { get a() { return 1; } };\nexport const x = { m: t.a };\n' },
+        modules: {},
+        plainData: [],
+      });
+    };
+
+    expect(run).toThrow('"a" of "t" is not shown to be a plain property of an object literal, so reading it may run');
+  });
+
+  it('takes a plain property of a literal in a sibling module it is given as proven by source', () => {
+    const composed = moduleCompose({
+      base: READ_BASE,
+      options: { './p': SIBLING_READ },
+      modules: { './t': 'export const t = { a: 1 };\n' },
+      plainData: [],
+    });
+
+    expect(composed).toBe('import { t } from \'./t\';\n\nexport const y = t.a;\n');
+  });
+
+  it('refuses a getter in a sibling module it is given', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: READ_BASE,
+        options: { './p': SIBLING_READ },
+        modules: { './t': 'export const t = { get a() { return 1; } };\n' },
+        plainData: [],
+      });
+    };
+
+    expect(run).toThrow('"a" of ./t is not shown to be a plain property');
+  });
+
+  it('refuses a read of a module it is neither given nor told is plain data', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: READ_BASE,
+        options: { './p': SIBLING_READ },
+        modules: {},
+        plainData: [],
+      });
+    };
+
+    const message = '"a" of ./t is not shown to be a plain property, so reading it may run code: give the engine that '
+      + 'module, or declare it plain data: t.a';
+
+    expect(run).toThrow(message);
+  });
+
+  it('takes a read two members deep of a module declared plain data', () => {
+    const composed = moduleCompose({
+      base: READ_BASE,
+      options: { './p': 'import { t } from \'./t.styles\';\n\nexport const x = { m: t.a.b };\n' },
+      modules: {},
+      plainData: ['./*.styles'],
+    });
+
+    expect(composed).toBe('import { t } from \'./t.styles\';\n\nexport const y = t.a.b;\n');
+  });
+
+  it('refuses a read of a module the declared pattern does not match, a star never crossing a slash', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: READ_BASE,
+        options: { './p': 'import { t } from \'./a/t.styles\';\n\nexport const x = { m: t.a };\n' },
+        modules: {},
+        plainData: ['./*.styles'],
+      });
+    };
+
+    expect(run).toThrow('"a" of ./a/t.styles is not shown to be a plain property');
   });
 });
 
@@ -244,6 +386,8 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
     const composed = moduleCompose({
       base,
       options: { './p': 'export const x = 1;\n' },
+      modules: {},
+      plainData: [],
     });
 
     expect(composed).toBe('\uFEFFexport const y = 1;\n');
@@ -253,6 +397,8 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
     const composed = moduleCompose({
       base: '\uFEFFexport const y = 1;\n',
       options: {},
+      modules: {},
+      plainData: [],
     });
 
     expect(composed).toBe('\uFEFFexport const y = 1;\n');
@@ -262,6 +408,8 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
     const composed = moduleCompose({
       base: 'import { x } from \'./p\';\n\nexport const y = x;\n',
       options: { './p': '\uFEFFexport const x = 1;\n' },
+      modules: {},
+      plainData: [],
     });
 
     expect(composed).toBe('export const y = 1;\n');
@@ -1075,6 +1223,8 @@ describe('moduleCompose, one rule at a time', () => {
     const composed = moduleCompose({
       base,
       options: { './p': option },
+      modules: {},
+      plainData: [],
     });
 
     expect(composed).toBe(expected);
@@ -1091,6 +1241,8 @@ describe('moduleCompose, refusing', () => {
       return moduleCompose({
         base,
         options: { './p': option },
+        modules: {},
+        plainData: [],
       });
     };
 

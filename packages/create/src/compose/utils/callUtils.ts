@@ -14,6 +14,11 @@ import {
   refusal,
 } from './editUtils';
 import {
+  plainReadOf,
+  type Proof,
+  pureCheck,
+} from './effectUtils';
+import {
   declarationOf,
   referencesTo,
   resolvedAt,
@@ -181,8 +186,11 @@ const isWritable = (checker: ts.TypeChecker, read: ts.Node): boolean => {
 };
 
 // How an argument can change by moving: by running its effect, or by reading what other code may write.
-export const kindOf = (checker: ts.TypeChecker, argument: ts.Expression): ArgumentKind => {
-  if (!isPure(argument)) {
+export const kindOf = (proof: Proof, argument: ts.Expression): ArgumentKind => {
+  const { checker } = proof;
+  const isPlain = plainReadOf(proof);
+
+  if (!isPure(argument, isPlain)) {
     return 'effect';
   }
 
@@ -332,17 +340,22 @@ const calledWith = (
 ): Inlined => {
   const returned = returnedOf(arrow);
   const offset = returned.getStart();
+  const proof: Proof = {
+    checker,
+    sources,
+  };
 
   landedCheck(checker, sources, arrow, returned, call);
 
-  const dropped = call.arguments
-    .slice(arrow.parameters.length)
-    .find((argument) => {
-      return !isPure(argument);
-    });
+  const reason = 'An argument the option takes no parameter for must have no effect, and none may be spread';
+  const extra = refusal(call, reason);
 
-  if (dropped !== undefined || call.arguments.some(ts.isSpreadElement)) {
-    throw refusal(call, 'An argument the option takes no parameter for must have no effect, and none may be spread');
+  if (call.arguments.some(ts.isSpreadElement)) {
+    throw extra;
+  }
+
+  for (const argument of call.arguments.slice(arrow.parameters.length)) {
+    pureCheck(proof, argument, extra);
   }
 
   const pairs = arrow.parameters
@@ -363,7 +376,7 @@ const calledWith = (
     .map(([parameter, argument]) => {
       const each: Passed = {
         declaration: parameter,
-        kind: kindOf(checker, argument),
+        kind: kindOf(proof, argument),
         shown: argument,
       };
 
@@ -478,9 +491,12 @@ export const inlineMember = (
     return landed(text, call, answer);
   }
 
-  if (!isPure(value)) {
-    throw refusal(access, 'A member read as a value must have no effect');
-  }
+  const proof: Proof = {
+    checker,
+    sources,
+  };
+
+  pureCheck(proof, value, refusal(access, 'A member read as a value must have no effect'));
 
   landedCheck(checker, sources, value, value, access);
 
@@ -496,10 +512,19 @@ export const inlineValue = (
   checker: ts.TypeChecker,
 ): string => {
   const value = exportedValue(sources, local.text);
+  const proof: Proof = {
+    checker,
+    sources,
+  };
 
-  if (value === undefined || !isPure(value) || isWritten(local)) {
-    throw refusal(local.parent, 'An option export read as a value must be a constant with no effect, never written');
+  const reason = 'An option export read as a value must be a constant with no effect, never written';
+  const refused = refusal(local.parent, reason);
+
+  if (value === undefined || isWritten(local)) {
+    throw refused;
   }
+
+  pureCheck(proof, value, refused);
 
   landedCheck(checker, sources, value, value, local);
 

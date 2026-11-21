@@ -76,7 +76,7 @@ const isThisFree = (node: ts.PropertyAccessExpression, member: ValueMember): boo
 const memberRule: Rule = (text, node) => {
   const table = ts.isPropertyAccessExpression(node) ? literalOf(node.expression) : undefined;
 
-  if (!ts.isPropertyAccessExpression(node) || table === undefined || !isPure(table) || isWritten(node)) {
+  if (!ts.isPropertyAccessExpression(node) || table === undefined || !isPure(table, undefined) || isWritten(node)) {
     return undefined;
   }
 

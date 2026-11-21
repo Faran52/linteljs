@@ -47,7 +47,7 @@ const OPTION = [
 ].join('\n');
 
 const sourcesFor = (base: string): Sources => {
-  return sourcesOf(base, { './p': OPTION });
+  return sourcesOf(base, { './p': OPTION }, {}, []);
 };
 
 const stepOf = (text: string, sources: Sources): string | undefined => {

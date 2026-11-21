@@ -12,9 +12,9 @@ import { flattenHeritage, spliceStatements } from './statementUtils';
 
 // The first read of `x` in a body filled from an option module: a call's statements, or a type's members.
 const filled = (body: string, option: string): string => {
-  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option });
+  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, []);
   const file = parse(sources.body);
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
   const [local] = referencesIn(file, 'x');
 
   if (local === undefined) {

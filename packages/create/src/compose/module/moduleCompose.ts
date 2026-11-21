@@ -40,6 +40,12 @@ export interface ComposeRequest {
   base: string;
   // A parameter module's specifier, as the base imports it, to the chosen option module's source.
   options: Readonly<Record<string, string>>;
+  // A module an option or the base imports by a relative specifier, as imported, to its source: read only to prove
+  // that a member read of it runs no code, never inlined or printed.
+  modules: Readonly<Record<string, string>>;
+  // The specifiers whose exports are plain data, so a member read through their import, at any depth, runs no code.
+  // Each is matched whole, a `*` standing for any run of characters but `/`: `./*.styles`, `@styles/tokens.stylex`.
+  plainData: readonly string[];
   // The project's import groups, as its lint config hands them to `simple-import-sort`.
   importGroups?: ImportGroups;
 }
@@ -164,8 +170,9 @@ const plainOf = (source: string): string => {
 export const moduleCompose = (request: ComposeRequest): string => {
   const base = plainOf(request.base);
   const options = mapValues(request.options, plainOf);
+  const modules = mapValues(request.modules, plainOf);
   const mark = request.base.startsWith(BYTE_ORDER_MARK) ? BYTE_ORDER_MARK : '';
-  const sources = sourcesOf(base, options);
+  const sources = sourcesOf(base, options, modules, request.plainData);
   const commented = withComments(sources.body, sources);
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);

@@ -62,7 +62,7 @@ const filled = (text: string, sources: Sources, local: ts.Identifier, checker: t
 // that resolves to nothing there reads the parameter, and one that resolves to a binding of its name reads that.
 export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): string | undefined => {
   const { bindings } = sources;
-  const checker = scopeOf(file, sources.modules);
+  const checker = scopeOf(file, sources.modules, sources.held);
   const [next] = collect(file, ts.isIdentifier)
     .filter((identifier) => {
       const isClosing = ts.isJsxClosingElement(identifier.parent);

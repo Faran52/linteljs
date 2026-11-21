@@ -5,12 +5,12 @@ import { TYPE_ONLY_DECLARATIONS, VALUE_ONLY_DECLARATIONS } from '../constants';
 import { isReference } from './sourceUtils';
 
 /**
- * No lib is loaded, so a global such as `location` resolves to nothing, as does an import of a module that is not an
- * option. The body asked about has no imports, so a name the base imports resolves to nothing too: the engine tells
- * it from a global by the base's import list.
+ * No lib is loaded, so a global such as `location` resolves to nothing, as does an import of a module that is neither
+ * an option nor held for proof. The body asked about has no imports, so a name the base imports resolves to nothing
+ * too: the engine tells it from a global by the base's import list.
  */
 
-interface OptionFile {
+interface ModuleFile {
   specifier: string;
   name: string;
   file: ts.SourceFile;
@@ -25,17 +25,22 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
   types: [],
 };
 
-// The checker over the base and its option modules, keyed by the specifier each is imported by.
-export const scopeOf = (base: ts.SourceFile, options: ReadonlyMap<string, ts.SourceFile>): ts.TypeChecker => {
-  const named = [...options.entries()]
+// The checker over the base, its option modules and the modules held for proof, keyed by the specifier each is
+// imported by.
+export const scopeOf = (
+  base: ts.SourceFile,
+  options: ReadonlyMap<string, ts.SourceFile>,
+  held: ReadonlyMap<string, ts.SourceFile>,
+): ts.TypeChecker => {
+  const named = [...options.entries(), ...held.entries()]
     .map(([specifier, file], index) => {
-      const option: OptionFile = {
+      const entry: ModuleFile = {
         specifier,
-        name: `/option-${String(index)}.tsx`,
+        name: `/module-${String(index)}.tsx`,
         file,
       };
 
-      return option;
+      return entry;
     });
   const files = new Map(named
     .map(({ name, file }) => {
@@ -111,6 +116,14 @@ export const declarationOf = (checker: ts.TypeChecker, identifier: ts.Identifier
     : checker.getSymbolAtLocation(identifier);
 
   return meantOf(symbol, identifier);
+};
+
+// What an imported name stands for in the module the program holds for it; undefined for any other name.
+export const aliasedOf = (checker: ts.TypeChecker, identifier: ts.Identifier): ts.Declaration | undefined => {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  const isAlias = symbol !== undefined && (symbol.flags & ts.SymbolFlags.Alias) !== 0;
+
+  return isAlias ? checker.getAliasedSymbol(symbol).valueDeclaration : undefined;
 };
 
 // Every read of one declaration within a node; another binding of the same name is not one.
