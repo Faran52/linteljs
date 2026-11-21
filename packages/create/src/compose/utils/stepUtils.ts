@@ -49,12 +49,12 @@ const isImport = (declaration: ts.Declaration): boolean => {
 const faultOf = (
   checker: ts.TypeChecker,
   sources: Sources,
+  imported: ReadonlySet<string>,
   read: ts.Identifier,
   landing: ts.Node,
 ): string | undefined => {
   const origin = declarationOf(checker, read);
   const found = resolvedAt(checker, read, landing);
-  const imported = new Set(sources.imports.flatMap(localsOf));
 
   if (found !== undefined) {
     return `"${read.text}" would read the base's own binding of that name where the option's code lands`;
@@ -81,6 +81,7 @@ export const landedCheck = (
   moved: ts.Node,
   landing: ts.Node,
 ): void => {
+  const imported = new Set(sources.imports.flatMap(localsOf));
   const faults = collect(moved, ts.isIdentifier)
     .filter((read) => {
       const origin = declarationOf(checker, read);
@@ -88,7 +89,7 @@ export const landedCheck = (
       return isReference(read) && (origin === undefined || !isWithin(origin, owner));
     })
     .map((read) => {
-      return faultOf(checker, sources, read, landing);
+      return faultOf(checker, sources, imported, read, landing);
     });
   const [fault] = faults
     .filter((found) => {

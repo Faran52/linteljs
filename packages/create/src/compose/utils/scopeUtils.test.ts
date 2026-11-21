@@ -117,12 +117,27 @@ describe('declarationOf', () => {
     expect(readText).toBe('size = 1');
   });
 
-  it('resolves a type and a value of one name in one scope to one declaration', () => {
+  it('resolves a type read and a value read of one name in one scope to the type and to the value', () => {
     const { checker, base } = scopedOf("type Id = string;\nconst Id = 'id';\nexport const f = (x: Id) => Id;\n", '');
     const typeRead = declarationOf(checker, nameAt(base, 'Id', 2));
     const valueRead = declarationOf(checker, nameAt(base, 'Id', 3));
 
-    expect(typeRead).toBe(valueRead);
+    const typeReadText = textOfDeclaration(typeRead);
+    expect(typeReadText).toBe('type Id = string;');
+    const valueReadText = textOfDeclaration(valueRead);
+    expect(valueReadText).toBe("Id = 'id'");
+  });
+
+  it('resolves a name in an implements clause as a type, and the class it extends as a value', () => {
+    const text = 'const Shape = 1;\ninterface Shape {}\nclass Base {}\nclass C extends Base implements Shape {}\n';
+    const { checker, base } = scopedOf(text, '');
+    const implemented = declarationOf(checker, nameAt(base, 'Shape', 2));
+    const extended = declarationOf(checker, nameAt(base, 'Base', 1));
+    const isInterface = implemented !== undefined && ts.isInterfaceDeclaration(implemented);
+    const isClass = extended !== undefined && ts.isClassDeclaration(extended);
+
+    expect(isInterface).toBe(true);
+    expect(isClass).toBe(true);
   });
 
   it('resolves a type read and a value read of one name to the type and to the value in their own scopes', () => {
@@ -201,6 +216,21 @@ describe('referencesTo', () => {
     expect(starts).toStrictEqual(expected);
   });
 
+  it('finds the value reads of a const that shares its name with an interface declared before it', () => {
+    const base = 'interface Id {\n  a: 1;\n}\nconst Id = { a: 1 };\nexport const f = (x: Id) => Id;\n';
+    const { checker, base: file } = scopedOf(base, '');
+    const constant = nameAt(file, 'Id', 1).parent;
+    const found = ts.isVariableDeclaration(constant) ? referencesTo(checker, constant, file) : [];
+    const starts = found
+      .map((read) => {
+        return read.getStart();
+      });
+
+    const expected = [nameAt(file, 'Id', 3).getStart()];
+
+    expect(starts).toStrictEqual(expected);
+  });
+
   it('finds nothing for a declaration that is not named by an identifier', () => {
     const { checker, base } = scopedOf('const { a } = { a: 1 };\nlog(a);\n', '');
     const [statement] = base.statements;
@@ -254,6 +284,24 @@ describe('resolvedAt', () => {
     expect(isImport).toBe(true);
   });
 
+  it('answers, of a type and a value merged at the landing site, the one a read means', () => {
+    const base = 'interface Id {\n  a: 1;\n}\nconst Id = { a: 1 };\nexport const f = Id;\n';
+    const option = 'export type Uses = Id;\nexport const w = Id;\n';
+    const {
+      checker,
+      base: file,
+      option: optionFile,
+    } = scopedOf(base, option);
+    const at = nameAt(file, 'f', 0);
+    const typed = resolvedAt(checker, nameAt(optionFile, 'Id', 0), at);
+    const valued = resolvedAt(checker, nameAt(optionFile, 'Id', 1), at);
+    const isInterface = typed !== undefined && ts.isInterfaceDeclaration(typed);
+
+    expect(isInterface).toBe(true);
+    const valuedText = textOfDeclaration(valued);
+    expect(valuedText).toBe('Id = { a: 1 }');
+  });
+
   it('looks a type read up among types only', () => {
     const base = 'const Id = 1;\ninterface Base {\n  a: 1;\n}\nexport const f = Id;\n';
     const option = [
@@ -300,6 +348,11 @@ describe('declaredBy', () => {
       'interface G {}',
       'type H = 1;',
       'enum I {}',
+      'namespace P {',
+      '  var inner = 1;',
+      '}',
+      "declare module 'q' {}",
+      'module R.S {}',
       'if (x) {',
       '  var j = 1;',
       '  let block = 2;',
@@ -331,6 +384,8 @@ describe('declaredBy', () => {
       'L',
       'N',
       'O',
+      'P',
+      'R',
     ]);
   });
 });

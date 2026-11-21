@@ -1,15 +1,13 @@
 import ts from 'typescript';
 
+import { TYPE_ONLY_DECLARATIONS, VALUE_ONLY_DECLARATIONS } from '../constants';
+
 import { isReference } from './sourceUtils';
 
 /**
- * What a name refers to, answered by the checker over one program: the base and its option modules as real modules,
- * each option found under the specifier it is imported by. The files come parsed and are never type checked, and no
- * lib is loaded, so a global such as `location` resolves to nothing, as does an import from a module that is not an
- * option. Composed text is never placed to ask about it: the engine builds a program over the body as it stands
- * before each edit, and once over the result, and asks what a name would resolve to at the landing site. That body
- * has no imports, so a name the base imports resolves to nothing there too; the engine tells it from a global by the
- * base's import list.
+ * No lib is loaded, so a global such as `location` resolves to nothing, as does an import of a module that is not an
+ * option. The body asked about has no imports, so a name the base imports resolves to nothing too: the engine tells
+ * it from a global by the base's import list.
  */
 
 interface OptionFile {
@@ -85,6 +83,26 @@ export const scopeOf = (base: ts.SourceFile, options: ReadonlyMap<string, ts.Sou
   return program.getTypeChecker();
 };
 
+const meaningOf = (read: ts.Identifier): ts.SymbolFlags => {
+  const { parent } = read;
+  const clause = ts.isExpressionWithTypeArguments(parent) ? parent.parent : undefined;
+  const isHeritage = clause !== undefined && ts.isHeritageClause(clause);
+  const isTypeClause = isHeritage
+    && (ts.isInterfaceDeclaration(clause.parent) || clause.token === ts.SyntaxKind.ImplementsKeyword);
+
+  return ts.isTypeReferenceNode(parent) || isTypeClause ? ts.SymbolFlags.Type : ts.SymbolFlags.Value;
+};
+
+// Of a type and a value merged under one name, the declaration that gives the name the meaning its read takes.
+const meantOf = (symbol: ts.Symbol | undefined, read: ts.Identifier): ts.Declaration | undefined => {
+  const excluded = meaningOf(read) === ts.SymbolFlags.Type ? VALUE_ONLY_DECLARATIONS : TYPE_ONLY_DECLARATIONS;
+
+  return symbol?.declarations
+    ?.find((declaration) => {
+      return !excluded.has(declaration.kind);
+    });
+};
+
 // The declaration a name resolves to where it is written; a shorthand member is read as the value it names.
 export const declarationOf = (checker: ts.TypeChecker, identifier: ts.Identifier): ts.Declaration | undefined => {
   const { parent } = identifier;
@@ -92,7 +110,7 @@ export const declarationOf = (checker: ts.TypeChecker, identifier: ts.Identifier
     ? checker.getShorthandAssignmentValueSymbol(parent)
     : checker.getSymbolAtLocation(identifier);
 
-  return symbol?.declarations?.[0];
+  return meantOf(symbol, identifier);
 };
 
 // Every read of one declaration within a node; another binding of the same name is not one.
@@ -120,19 +138,12 @@ export const referencesTo = (
   return found;
 };
 
-const meaningOf = (read: ts.Identifier): ts.SymbolFlags => {
-  const { parent } = read;
-  const isHeritage = ts.isExpressionWithTypeArguments(parent) && ts.isInterfaceDeclaration(parent.parent.parent);
-
-  return ts.isTypeReferenceNode(parent) || isHeritage ? ts.SymbolFlags.Type : ts.SymbolFlags.Value;
-};
-
 // The declaration a read's name, in the read's meaning, would resolve to if it were written at another node.
 export const resolvedAt = (checker: ts.TypeChecker, read: ts.Identifier, at: ts.Node): ts.Declaration | undefined => {
   const meaning = meaningOf(read);
   const symbol = checker.resolveName(read.text, at, meaning, false);
 
-  return symbol?.declarations?.[0];
+  return meantOf(symbol, read);
 };
 
 // The names a binding binds: itself, or each member of its pattern.
@@ -152,11 +163,11 @@ export const bindingNamesOf = (name: ts.BindingName): string[] => {
     });
 };
 
-// A `var` belongs to the function around it, so it leaves every block on the way there.
+// A `var` belongs to the function or namespace around it, so it leaves every block on the way there.
 const hoistedIn = (node: ts.Node): string[] => {
   const found: string[] = [];
 
-  if (ts.isFunctionLike(node) || ts.isClassLike(node)) {
+  if (ts.isFunctionLike(node) || ts.isClassLike(node) || ts.isModuleDeclaration(node)) {
     return found;
   }
 
@@ -194,6 +205,10 @@ const importedOf = (statement: ts.ImportDeclaration): (ts.Identifier | undefined
 };
 
 const ownNameOf = (statement: ts.Statement): ts.Identifier | undefined => {
+  if (ts.isModuleDeclaration(statement)) {
+    return ts.isIdentifier(statement.name) ? statement.name : undefined;
+  }
+
   const isValue = ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement);
   const isType = ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement);
 

@@ -188,6 +188,23 @@ describe('inlineElement', () => {
     expect(written).toBe('y = ({ current }) => <ul><li hidden={current} />{[1].map((current) => current)}</ul>;\n');
   });
 
+  it('binds what a component reads from a rest still spread, in the layout of a pattern written over lines', () => {
+    const body = lines('y = ({', '  id,', '  ...rest', '}) => <ul><X {...rest} />{id}<X {...rest} /></ul>;');
+    const option = 'export const X = ({ current, on }: P) => <li hidden={current} onClick={on} />;\n';
+    const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option });
+    const once = filledOnce(sources.body, sources);
+    const expected = lines(
+      'y = ({',
+      '  id,',
+      '  current,',
+      '  on,',
+      '  ...rest',
+      '}) => <ul><li hidden={current} onClick={on} />{id}<X {...rest} /></ul>;',
+    );
+
+    expect(once).toBe(expected);
+  });
+
   it('binds what a component reads from the rest binding the base spreads, once per name', () => {
     const body = 'y = ({ ...rest }) => <ul><X id="a" {...rest} /><X id="b" {...rest} /></ul>;\n';
     const option = 'export const X = ({ id, current, on }: P) => <li id={id} hidden={current} onClick={on} />;\n';

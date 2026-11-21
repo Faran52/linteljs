@@ -120,3 +120,17 @@ export const BYTE_ORDER_MARK = '\uFEFF';
 
 // A line end the engine reads as LF: CRLF and a lone CR.
 export const OTHER_LINE_ENDS = /\r\n?/gu;
+
+// The declarations that give a name only a type, and those that give it only a value; the rest give it both.
+export const TYPE_ONLY_DECLARATIONS = new Set([
+  ts.SyntaxKind.InterfaceDeclaration,
+  ts.SyntaxKind.TypeAliasDeclaration,
+  ts.SyntaxKind.TypeParameter,
+]);
+
+export const VALUE_ONLY_DECLARATIONS = new Set([
+  ts.SyntaxKind.VariableDeclaration,
+  ts.SyntaxKind.Parameter,
+  ts.SyntaxKind.BindingElement,
+  ts.SyntaxKind.FunctionDeclaration,
+]);

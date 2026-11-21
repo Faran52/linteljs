@@ -483,9 +483,11 @@ const restEdit = (
   }
 
   const at = element.getStart();
+  const isOwnLine = ownsLines(text, spanOf(element));
+  const gap = isOwnLine ? `\n${indentOf(text, element)}` : ' ';
   const inserted = [...new Set(added)]
     .map((name) => {
-      return `${name}, `;
+      return `${name},${gap}`;
     });
   const before: Edit = {
     start: at,
