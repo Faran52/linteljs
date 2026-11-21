@@ -295,6 +295,10 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
 };
 
 export const setup = async (project: TestProject): Promise<() => void> => {
+  if (env['CI'] === undefined) {
+    throw new Error('The end-to-end suite runs in cloud CI only: run `gh workflow run e2e.yml`, or push to main.');
+  }
+
   const { registry, stop } = await startRegistry();
 
   project.provide('registry', registry);
