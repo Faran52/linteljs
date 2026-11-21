@@ -100,15 +100,7 @@ const joinedTo = (text: string, first: readonly Edit[], statement: ts.Node, othe
       continue;
     }
 
-    let answer: readonly Edit[] | undefined;
-
-    // A refusal waits for its turn: the order may put rewrites of other statements before it.
-    try {
-      answer = answerOf(candidate);
-    }
-    catch {
-      return edits;
-    }
+    const answer = answerOf(candidate);
 
     if (answer !== undefined) {
       taken.add(own);

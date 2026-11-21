@@ -188,10 +188,12 @@ describe('batched', () => {
     expect(text).toBe('A;\nb + c;\nD;\n');
   });
 
-  it('ends the pass at a later candidate that is refused', () => {
-    const text = passOf('a;\nb;\nc;\nd;\n', { c: refused }, []);
+  it('refuses as a later candidate is refused', () => {
+    const run = (): string => {
+      return passOf('a;\nb;\nc;\nd;\n', { c: refused }, []);
+    };
 
-    expect(text).toBe('A;\nB;\nc;\nd;\n');
+    expect(run).toThrow('refused');
   });
 
   it('refuses as the first candidate is refused', () => {
