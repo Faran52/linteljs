@@ -11,6 +11,7 @@ import { type AnswerRecord, ANSWERS } from '@answers';
 import {
   answerRows,
   gateRows,
+  gateRowsOf,
   literal,
   nameDeclaration,
   stackRows,
@@ -132,6 +133,25 @@ describe('gateRows', () => {
     expect(lines.length).toBeGreaterThan(1);
     expect(fits).toBe(true);
     expect(joined).toMatch(/^paraglide-js compile .* && svelte-kit sync && svelte-check /u);
+  });
+});
+
+describe('gateRowsOf', () => {
+  it('skips a gate the scripts lack, keeping the order of the gates', () => {
+    const rows = gateRowsOf('pnpm', {
+      typecheck: 'tsc --noEmit',
+      lint: 'eslint .',
+    }, [
+      'lint',
+      'test',
+      'typecheck',
+    ]);
+
+    const expected = [
+      ["command: 'pnpm lint'", "runs: 'eslint .'"],
+      ["command: 'pnpm typecheck'", "runs: 'tsc --noEmit'"],
+    ];
+    expect(rows).toEqual(expected);
   });
 });
 
