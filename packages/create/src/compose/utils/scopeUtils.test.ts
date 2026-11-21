@@ -52,6 +52,33 @@ const textOfDeclaration = (declaration: ts.Declaration | undefined): string | un
   return declaration?.getText();
 };
 
+describe('scopeOf', () => {
+  it('answers one checker for a file asked about again with the same modules', () => {
+    const base = parse('export const y = 1;\n');
+    const options = new Map([['./p', parse('export const v = 1;\n')]]);
+    const held = new Map<string, ts.SourceFile>();
+    const first = scopeOf(base, options, held);
+    const again = scopeOf(base, options, held);
+
+    expect(again).toBe(first);
+  });
+
+  it.each([
+    ['other options', 'options'],
+    ['other held modules', 'held'],
+  ])('answers a new checker for the same file with %s', (_name, changed) => {
+    const base = parse('export const y = 1;\n');
+    const options = new Map([['./p', parse('export const v = 1;\n')]]);
+    const held = new Map<string, ts.SourceFile>();
+    const first = scopeOf(base, options, held);
+    const otherOptions = changed === 'options' ? new Map(options) : options;
+    const otherHeld = changed === 'held' ? new Map(held) : held;
+    const again = scopeOf(base, otherOptions, otherHeld);
+
+    expect(again).not.toBe(first);
+  });
+});
+
 describe('aliasedOf', () => {
   it.each([
     [

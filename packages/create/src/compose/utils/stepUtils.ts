@@ -19,7 +19,9 @@ import {
   collect,
   isReference,
   isWithin,
+  ownsLines,
   parse,
+  spanOf,
   textOf,
 } from './sourceUtils';
 
@@ -28,19 +30,26 @@ export type Step = (text: string, file: ts.SourceFile) => readonly Edit[] | unde
 
 export type Watch = (text: string, edits: readonly Edit[]) => void;
 
+// One rewrite a pass may make: where it is, whether it may change what another statement reads, and its edits.
+export interface Candidate {
+  node: ts.Node;
+  isAlone: () => boolean;
+  edits: () => readonly Edit[] | undefined;
+}
+
 const MARKER = '@lintel:';
 const STEP_LIMIT = 10_000;
 
 // Until a rewrite answers undefined, each rewrite shown to `watch`; a module that never settles is refused rather than
 // looped on.
-export const settled = (text: string, once: Step, watch?: Watch): string => {
-  let file = parse(text);
+export const settled = (start: ts.SourceFile, once: Step, watch?: Watch): ts.SourceFile => {
+  let file = start;
 
   for (let steps = 0; steps < STEP_LIMIT; steps += 1) {
     const edits = once(file.text, file);
 
     if (edits === undefined) {
-      return file.text;
+      return file;
     }
 
     const next = applied(file.text, edits);
@@ -50,6 +59,88 @@ export const settled = (text: string, once: Step, watch?: Watch): string => {
   }
 
   throw new Error('The composition did not settle; an option module refers back to itself.');
+};
+
+const statementOf = (node: ts.Node): ts.Node => {
+  let statement = node;
+
+  while (!ts.isSourceFile(statement.parent)) {
+    statement = statement.parent;
+  }
+
+  return statement;
+};
+
+const isInside = (edits: readonly Edit[], statement: ts.Node): boolean => {
+  return edits
+    .every(({ start, end }) => {
+      return start >= statement.getStart() && end <= statement.getEnd();
+    });
+};
+
+const answerOf = (candidate: Candidate): readonly Edit[] | undefined => {
+  return candidate.isAlone() ? [] : candidate.edits();
+};
+
+// The first edits joined by those of each later candidate whose statement is not taken and owns its lines.
+const joinedTo = (text: string, first: readonly Edit[], statement: ts.Node, others: readonly Candidate[]): Edit[] => {
+  const taken = new Set([statement]);
+  const edits = [...first];
+
+  for (const candidate of others) {
+    const own = statementOf(candidate.node);
+
+    if (taken.has(own)) {
+      continue;
+    }
+
+    const span = spanOf(own);
+
+    if (!ownsLines(text, span)) {
+      continue;
+    }
+
+    let answer: readonly Edit[] | undefined;
+
+    // A refusal waits for its turn: the order may put rewrites of other statements before it.
+    try {
+      answer = answerOf(candidate);
+    }
+    catch {
+      return edits;
+    }
+
+    if (answer !== undefined) {
+      taken.add(own);
+    }
+
+    if (answer !== undefined && isInside(answer, own)) {
+      edits.push(...answer);
+    }
+  }
+
+  return edits;
+};
+
+/**
+ * The first candidate's edits, and with them the first of each other top-level statement on lines of its own, when
+ * every one stays inside its statement and none may change what another reads: such statements answer the same
+ * whichever is rewritten first, so one pass reaches what one rewrite at a time would.
+ */
+export const batched = (text: string, candidates: readonly Candidate[]): readonly Edit[] | undefined => {
+  for (const [index, candidate] of candidates.entries()) {
+    const first = candidate.edits();
+
+    if (first !== undefined) {
+      const statement = statementOf(candidate.node);
+      const isOpen = !candidate.isAlone() && isInside(first, statement);
+      const others = candidates.slice(index + 1);
+
+      return isOpen ? joinedTo(text, first, statement, others) : first;
+    }
+  }
+
+  return undefined;
 };
 
 const isImport = (declaration: ts.Declaration): boolean => {
@@ -141,8 +232,8 @@ const namerOf = (literal: ts.StringLiteral): ts.Node | undefined => {
 
 // Nothing of the parameters may be left: no read of a parameter binding the base does not bind itself, no directive,
 // and no parameter module named where nothing fills it.
-export const checked = (text: string, sources: Sources): ts.SourceFile => {
-  const file = parse(text);
+export const checked = (file: ts.SourceFile, sources: Sources): ts.SourceFile => {
+  const { text } = file;
   const [named] = collect(file, ts.isStringLiteral)
     .filter((literal) => {
       return sources.modules.has(literal.text);

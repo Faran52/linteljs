@@ -67,39 +67,40 @@ const stepOf = (text: string, sources: Sources): string | undefined => {
   return edits === undefined ? undefined : applied(text, edits);
 };
 
-const remaining = (text: string): string[] => {
-  const file = parse(text);
+// The names a rewrite took a read of away.
+const goneIn = (text: string, next: string): string[] => {
+  const before = parse(text);
+  const after = parse(next);
 
   return NAMES
     .filter((name) => {
-      return referencesIn(file, name).length > 0;
+      return referencesIn(after, name).length < referencesIn(before, name).length;
     });
 };
 
 describe('filledOnce', () => {
-  it('fills one read at a time: elements, then members and calls, statements, types and plain values', () => {
+  it('fills by rank, one read per statement a pass, a type alone', () => {
     const sources = sourcesFor(BASE);
-    const order: string[] = [];
+    const passes: string[][] = [];
     let text = sources.body;
 
     for (let next = stepOf(text, sources); next !== undefined; next = stepOf(text, sources)) {
-      const [gone] = remaining(text)
-        .filter((name) => {
-          return !remaining(next).includes(name);
-        });
+      const gone = goneIn(text, next);
 
-      order.push(gone ?? 'v');
+      passes.push(gone);
       text = next;
     }
 
-    expect(order).toStrictEqual([
-      'C',
-      'k',
-      'm',
-      's',
-      'T',
-      'v',
-      'v',
+    expect(passes).toStrictEqual([
+      [
+        'C',
+        'k',
+        'm',
+        's',
+        'v',
+      ],
+      ['T'],
+      ['v'],
     ]);
 
     expect(text).toBe('interface P {\n  a: 1;\n}\ny = [1, f(1)];\n{\n  log();\n}\nq = 5;\nz = 2;\nw = <hr />;\n');

@@ -15,6 +15,7 @@ import {
   applied,
   type Edit,
   editOf,
+  editOver,
   plain,
 } from './editUtils';
 import { scopeOf } from './scopeUtils';
@@ -24,6 +25,8 @@ import {
   type Span,
 } from './sourceUtils';
 import {
+  batched,
+  type Candidate,
   checked,
   landedCheck,
   settled,
@@ -37,6 +40,8 @@ interface Landing {
   moved: ts.Node;
   landing: ts.Node;
 }
+
+type Answer = (identifier: ts.Identifier) => readonly Edit[] | undefined;
 
 const NO_TRUST: Trust = {
   plainData: [],
@@ -66,7 +71,8 @@ const firstA = (text: string, insert: string): Edit[] | undefined => {
 
 describe('settled', () => {
   it('applies a rewrite until it has nothing left to do', () => {
-    const text = settled('aaa', (current) => {
+    const start = parse('aaa');
+    const { text } = settled(start, (current) => {
       return firstA(current, 'b');
     });
 
@@ -75,8 +81,9 @@ describe('settled', () => {
 
   it('shows each rewrite, as the text before it and its edits, to the watch', () => {
     const seen: string[] = [];
+    const start = parse('aa');
 
-    settled('aa', (current) => {
+    settled(start, (current) => {
       return firstA(current, 'b');
     }, (before, edits) => {
       const after = applied(before, edits);
@@ -88,13 +95,142 @@ describe('settled', () => {
   });
 
   it('refuses a rewrite that never stops', () => {
-    const run = (): string => {
-      return settled('a', (text) => {
+    const run = (): ts.SourceFile => {
+      const start = parse('a');
+
+      return settled(start, (text) => {
         return firstA(text, 'a');
       });
     };
 
     expect(run).toThrow(/did not settle/u);
+  });
+});
+
+const upper: Answer = (identifier) => {
+  const written = plain(identifier.text.toUpperCase());
+  const edits = [editOver(identifier, written)];
+
+  return edits;
+};
+
+// Each name of a text a candidate written in capitals, or as `answer` gives it for the names it knows.
+const passOf = (text: string, answers: Readonly<Record<string, Answer>>, alone: readonly string[]): string => {
+  const file = parse(text);
+  const candidates = collect(file, ts.isIdentifier)
+    .map((identifier) => {
+      const answer = answers[identifier.text] ?? upper;
+      const candidate: Candidate = {
+        node: identifier,
+        isAlone: () => {
+          return alone.includes(identifier.text);
+        },
+        edits: () => {
+          return answer(identifier);
+        },
+      };
+
+      return candidate;
+    });
+  const edits = batched(text, candidates);
+
+  return edits === undefined ? text : applied(text, edits);
+};
+
+const atEnd: Answer = (identifier) => {
+  const end = identifier.getSourceFile().text.length;
+  const span: Span = {
+    start: end,
+    end,
+  };
+  const written = plain('x;');
+  const edits = [editOf(span, written)];
+
+  return edits;
+};
+
+const refused: Answer = () => {
+  throw new Error('refused');
+};
+
+const nothing: Answer = () => {
+  return undefined;
+};
+
+describe('batched', () => {
+  it('rewrites the first of each statement on lines of its own in one pass', () => {
+    const text = passOf('a + b;\nc;\nd; e;\n', {}, []);
+
+    expect(text).toBe('A + b;\nC;\nd; e;\n');
+  });
+
+  it('rewrites alone a first candidate that may change what others read', () => {
+    const text = passOf('a;\nb;\n', {}, ['a']);
+
+    expect(text).toBe('A;\nb;\n');
+  });
+
+  it('leaves for a later pass the statement of a later candidate that may change what others read', () => {
+    const text = passOf('a;\nb + c;\nd;\n', {}, ['b']);
+
+    expect(text).toBe('A;\nb + c;\nD;\n');
+  });
+
+  it('rewrites alone a first candidate whose edits reach past its statement', () => {
+    const text = passOf('a;\nb;', { a: atEnd }, []);
+
+    expect(text).toBe('a;\nb;x;');
+  });
+
+  it('leaves for a later pass the statement of a later candidate whose edits reach past it', () => {
+    const text = passOf('a;\nb + c;\nd;\n', { b: atEnd }, []);
+
+    expect(text).toBe('A;\nb + c;\nD;\n');
+  });
+
+  it('ends the pass at a later candidate that is refused', () => {
+    const text = passOf('a;\nb;\nc;\nd;\n', { c: refused }, []);
+
+    expect(text).toBe('A;\nB;\nc;\nd;\n');
+  });
+
+  it('refuses as the first candidate is refused', () => {
+    const run = (): string => {
+      return passOf('a;\nb;\n', { a: refused }, []);
+    };
+
+    expect(run).toThrow('refused');
+  });
+
+  it('passes over a candidate with nothing to rewrite', () => {
+    const text = passOf('a;\nb + c;\nd + e;\n', {
+      a: nothing,
+      b: nothing,
+      d: nothing,
+    }, []);
+
+    expect(text).toBe('a;\nb + C;\nd + E;\n');
+  });
+
+  it('answers undefined when no candidate rewrites', () => {
+    const file = parse('a;\n');
+    const candidates = collect(file, ts.isIdentifier)
+      .map((identifier) => {
+        const candidate: Candidate = {
+          node: identifier,
+          isAlone: () => {
+            return false;
+          },
+          edits: () => {
+            return undefined;
+          },
+        };
+
+        return candidate;
+      });
+    const edits = batched(file.text, candidates);
+
+    expect(edits).toBeUndefined();
   });
 });
 
@@ -109,16 +245,19 @@ describe('checked', () => {
     ['export { a } from \'./other\';\nexport const s = \'./p\';\nf(\'./p\');\nexport type S = \'./p\';\n'],
   ])('answers the parsed module for %j', (text) => {
     const sources = sourcesFor();
-    const file = checked(text, sources);
+    const parsed = parse(text);
+    const file = checked(parsed, sources);
 
-    expect(file.text).toBe(text);
+    expect(file).toBe(parsed);
   });
 
   it('refuses a parameter binding that is still read', () => {
     const run = (): ts.SourceFile => {
       const sources = sourcesFor();
 
-      return checked('export const y = x;\n', sources);
+      const file = parse('export const y = x;\n');
+
+      return checked(file, sources);
     };
 
     expect(run).toThrow(/is left after composing: x/u);
@@ -133,8 +272,9 @@ describe('checked', () => {
   ])('refuses a parameter module named in %j', (text, shown) => {
     const run = (): ts.SourceFile => {
       const sources = sourcesFor();
+      const file = parse(text);
 
-      return checked(text, sources);
+      return checked(file, sources);
     };
 
     expect(run).toThrow(`A parameter module is named where nothing fills it, so its option would be lost: ${shown}`);
@@ -144,7 +284,9 @@ describe('checked', () => {
     const run = (): ts.SourceFile => {
       const sources = sourcesFor();
 
-      return checked('export const y = 1; // @lintel:comment ./p#note\n', sources);
+      const file = parse('export const y = 1; // @lintel:comment ./p#note\n');
+
+      return checked(file, sources);
     };
 
     expect(run).toThrow(/is left after composing: @lintel:/u);
@@ -152,7 +294,8 @@ describe('checked', () => {
 
   it('answers a base binding that shadows a parameter binding, which reads what its author meant', () => {
     const sources = sourcesFor();
-    const file = checked('export const y = (x: number) => x;\n', sources);
+    const parsed = parse('export const y = (x: number) => x;\n');
+    const file = checked(parsed, sources);
 
     expect(file.statements).toHaveLength(1);
   });

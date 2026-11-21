@@ -5,6 +5,7 @@ import { inlineElement } from './elementUtils';
 import { declarationOf, scopeOf } from './scopeUtils';
 import { collect, isReference } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
+import { batched, type Candidate } from './stepUtils';
 
 import type { Sources } from './bindingUtils';
 import type { Edit } from './editUtils';
@@ -59,12 +60,17 @@ const filled = (text: string, sources: Sources, local: ts.Identifier, checker: t
   return inlineValue(text, sources, local, checker);
 };
 
-// The next read of a parameter binding, filled; undefined once none is left. The body holds no imports, so a read
+// A type's members merge with every declaration of its name, so what another statement reads may change.
+const isAlone = (local: ts.Identifier): boolean => {
+  return rankOf(local) === RANK.type;
+};
+
+// The next reads of parameter bindings, filled; undefined once none is left. The body holds no imports, so a read
 // that resolves to nothing there reads the parameter, and one that resolves to a binding of its name reads that.
-export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): Edit[] | undefined => {
+export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): readonly Edit[] | undefined => {
   const { bindings } = sources;
   const checker = scopeOf(file, sources.modules, sources.held);
-  const [next] = collect(file, ts.isIdentifier)
+  const candidates = collect(file, ts.isIdentifier)
     .filter((identifier) => {
       const isClosing = ts.isJsxClosingElement(identifier.parent);
       const isRead = bindings.has(identifier.text) && isReference(identifier) && !isClosing;
@@ -73,7 +79,20 @@ export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources):
     })
     .toSorted((left, right) => {
       return rankOf(left) - rankOf(right);
+    })
+    .map((next) => {
+      const candidate: Candidate = {
+        node: next,
+        isAlone: () => {
+          return isAlone(next);
+        },
+        edits: () => {
+          return filled(text, sources, next, checker);
+        },
+      };
+
+      return candidate;
     });
 
-  return next === undefined ? undefined : filled(text, sources, next, checker);
+  return batched(text, candidates);
 };

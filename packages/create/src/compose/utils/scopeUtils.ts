@@ -1,6 +1,11 @@
 import ts from 'typescript';
 
-import { TYPE_ONLY_DECLARATIONS, VALUE_ONLY_DECLARATIONS } from '../constants';
+import {
+  BASE_FILE,
+  COMPILER_OPTIONS,
+  TYPE_ONLY_DECLARATIONS,
+  VALUE_ONLY_DECLARATIONS,
+} from '../constants';
 
 import { isReference } from './sourceUtils';
 
@@ -16,18 +21,16 @@ interface ModuleFile {
   file: ts.SourceFile;
 }
 
-const BASE_FILE = '/base.tsx';
+interface Scope {
+  options: ReadonlyMap<string, ts.SourceFile>;
+  held: ReadonlyMap<string, ts.SourceFile>;
+  checker: ts.TypeChecker;
+}
 
-const COMPILER_OPTIONS: ts.CompilerOptions = {
-  jsx: ts.JsxEmit.Preserve,
-  noEmit: true,
-  noLib: true,
-  types: [],
-};
+// A program per text asked about, not per question: building one is most of what a question costs.
+const SCOPES = new WeakMap<ts.SourceFile, Scope>();
 
-// The checker over the base, its option modules and the modules held for proof, keyed by the specifier each is
-// imported by.
-export const scopeOf = (
+const programOf = (
   base: ts.SourceFile,
   options: ReadonlyMap<string, ts.SourceFile>,
   held: ReadonlyMap<string, ts.SourceFile>,
@@ -86,6 +89,31 @@ export const scopeOf = (
   });
 
   return program.getTypeChecker();
+};
+
+// The checker over the base, its option modules and the modules held for proof, keyed by the specifier each is
+// imported by.
+export const scopeOf = (
+  base: ts.SourceFile,
+  options: ReadonlyMap<string, ts.SourceFile>,
+  held: ReadonlyMap<string, ts.SourceFile>,
+): ts.TypeChecker => {
+  const known = SCOPES.get(base);
+
+  if (known?.options === options && known.held === held) {
+    return known.checker;
+  }
+
+  const checker = programOf(base, options, held);
+  const scope: Scope = {
+    options,
+    held,
+    checker,
+  };
+
+  SCOPES.set(base, scope);
+
+  return checker;
 };
 
 const meaningOf = (read: ts.Identifier): ts.SymbolFlags => {

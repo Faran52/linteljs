@@ -44,6 +44,8 @@ import {
   valueOf,
 } from '../utils/sourceUtils';
 import {
+  batched,
+  type Candidate,
   checked,
   settled,
   type Step,
@@ -198,8 +200,7 @@ const emptied = ({
   return editOf(span, left);
 };
 
-const beforeOf = (base: string, text: string, sources: Sources): Before => {
-  const file = parse(text);
+const beforeOf = (base: string, file: ts.SourceFile, sources: Sources): Before => {
   const checker = scopeOf(file, sources.modules, sources.held);
   const follower = new Follower();
 
@@ -235,41 +236,58 @@ const beforeOf = (base: string, text: string, sources: Sources): Before => {
 };
 
 // A destructured name that filling left unread is dropped from its pattern; one the base never read stays.
+const prunedOf = (follower: Follower, text: string, site: Destructured): Edit[] | undefined => {
+  const { arrow, pattern } = site;
+  const names = pattern.elements
+    .map((element) => {
+      return textOf(element.name);
+    });
+  const kept = pattern.elements
+    .filter(({ name }) => {
+      const reads = referencesIn(arrow, textOf(name));
+
+      return !follower.has(name) || reads.length > 0;
+    })
+    .map(({ name }) => {
+      return copyOf(name);
+    });
+
+  if (kept.length === 0 && names.length > 0) {
+    const gone = [emptied(site)];
+
+    return gone;
+  }
+
+  if (kept.length < names.length) {
+    const indent = indentOf(text, pattern);
+    const printed = patternOf(kept, indent);
+    const span = spanOf(pattern);
+    const pruned = [editOf(span, printed)];
+
+    return pruned;
+  }
+
+  return undefined;
+};
+
 const prunedOnce = (follower: Follower): Step => {
   return (text, file) => {
-    for (const site of destructuredIn(file)) {
-      const { arrow, pattern } = site;
-      const names = pattern.elements
-        .map((element) => {
-          return textOf(element.name);
-        });
-      const kept = pattern.elements
-        .filter(({ name }) => {
-          const reads = referencesIn(arrow, textOf(name));
+    const candidates = destructuredIn(file)
+      .map((site) => {
+        const candidate: Candidate = {
+          node: site.arrow,
+          isAlone: () => {
+            return false;
+          },
+          edits: () => {
+            return prunedOf(follower, text, site);
+          },
+        };
 
-          return !follower.has(name) || reads.length > 0;
-        })
-        .map(({ name }) => {
-          return copyOf(name);
-        });
+        return candidate;
+      });
 
-      if (kept.length === 0 && names.length > 0) {
-        const gone = [emptied(site)];
-
-        return gone;
-      }
-
-      if (kept.length < names.length) {
-        const indent = indentOf(text, pattern);
-        const printed = patternOf(kept, indent);
-        const span = spanOf(pattern);
-        const pruned = [editOf(span, printed)];
-
-        return pruned;
-      }
-    }
-
-    return undefined;
+    return batched(text, candidates);
   };
 };
 
@@ -288,8 +306,9 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const mark = request.base.startsWith(BYTE_ORDER_MARK) ? BYTE_ORDER_MARK : '';
   const sources = sourcesOf(base, options, modules, request);
   const commented = withComments(sources.body, sources);
-  const { follower, unread } = beforeOf(base, commented, sources);
-  const filled = settled(commented, (text, file) => {
+  const start = parse(commented);
+  const { follower, unread } = beforeOf(base, start, sources);
+  const filled = settled(start, (text, file) => {
     return filledOnce(text, file, sources);
   }, follower.follow);
   const simplified = settled(filled, (text, file) => {
@@ -306,7 +325,7 @@ export const moduleCompose = (request: ComposeRequest): string => {
     });
   const read = new Set([...identifiers, ...unread]);
   const imports = importBlock(sources.imports, read, request.importGroups ?? DEFAULT_IMPORT_GROUPS);
-  const body = imports === '' ? pruned : `${imports}\n\n${pruned}`;
+  const body = imports === '' ? file.text : `${imports}\n\n${file.text}`;
 
   return wellFormed(mark + sources.header + body);
 };

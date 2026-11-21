@@ -301,3 +301,13 @@ export const PRIMITIVE_ANSWERS = new Set([
   ts.SyntaxKind.VoidExpression,
   ts.SyntaxKind.TemplateExpression,
 ]);
+
+// The name the checker gives the body it is asked about.
+export const BASE_FILE = '/base.tsx';
+
+export const COMPILER_OPTIONS: ts.CompilerOptions = {
+  jsx: ts.JsxEmit.Preserve,
+  noEmit: true,
+  noLib: true,
+  types: [],
+};

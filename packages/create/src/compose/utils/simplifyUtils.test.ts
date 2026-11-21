@@ -5,6 +5,7 @@ import {
   it,
 } from 'vitest';
 
+import { applied } from './editUtils';
 import { simplifiedOnce } from './simplifyUtils';
 import { parse } from './sourceUtils';
 import { settled } from './stepUtils';
@@ -14,12 +15,24 @@ const isAnyTouched = (): boolean => {
 };
 
 const simplified = (text: string): string => {
-  return settled(text, (current, file) => {
+  const start = parse(text);
+  const end = settled(start, (current, file) => {
     return simplifiedOnce(current, file, isAnyTouched);
   });
+
+  return end.text;
 };
 
 describe('simplifiedOnce', () => {
+  it('rewrites the innermost node of each statement in one pass', () => {
+    const text = 'x = { a: true ? 1 : 2 }.a;\ny = true ? 3 : 4;\n';
+    const file = parse(text);
+    const edits = simplifiedOnce(text, file, isAnyTouched);
+    const written = edits === undefined ? text : applied(text, edits);
+
+    expect(written).toBe('x = { a: 1 }.a;\ny = 3;\n');
+  });
+
   it.each([
     [
       'a member of an object literal',
@@ -396,7 +409,8 @@ describe('simplifiedOnce', () => {
         .startsWith('false');
     };
 
-    const written = settled(text, (current, file) => {
+    const start = parse(text);
+    const { text: written } = settled(start, (current, file) => {
       return simplifiedOnce(current, file, isTouched);
     });
 

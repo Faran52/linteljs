@@ -48,6 +48,7 @@ import {
   unparen,
   type ValueMember,
 } from './sourceUtils';
+import { batched, type Candidate } from './stepUtils';
 
 type Rule = (text: string, node: ts.Node) => Edit | undefined;
 
@@ -477,27 +478,43 @@ const isSimplified = (node: ts.Node): node is ts.Node => {
   return SIMPLIFIED_KINDS.has(node.kind);
 };
 
-// One rewrite of a node filling wrote or wrote inside, innermost first; code no option touched stays as written.
-export const simplifiedOnce = (
-  text: string,
-  file: ts.SourceFile,
-  isTouched: (node: ts.Node) => boolean,
-): Edit[] | undefined => {
-  const nodes = collect(file, isSimplified)
-    .toReversed()
-    .filter(isTouched);
+// The first rule's rewrite of a node.
+const rewriteOf = (text: string, node: ts.Node): Edit[] | undefined => {
+  for (const rule of RULES) {
+    const edit = rule(text, node);
 
-  for (const node of nodes) {
-    for (const rule of RULES) {
-      const edit = rule(text, node);
+    if (edit !== undefined) {
+      const edits = [edit];
 
-      if (edit !== undefined) {
-        const edits = [edit];
-
-        return edits;
-      }
+      return edits;
     }
   }
 
   return undefined;
+};
+
+// Rewrites of nodes filling wrote or wrote inside, innermost first; code no option touched stays as written.
+export const simplifiedOnce = (
+  text: string,
+  file: ts.SourceFile,
+  isTouched: (node: ts.Node) => boolean,
+): readonly Edit[] | undefined => {
+  const candidates = collect(file, isSimplified)
+    .toReversed()
+    .filter(isTouched)
+    .map((node) => {
+      const candidate: Candidate = {
+        node,
+        isAlone: () => {
+          return false;
+        },
+        edits: () => {
+          return rewriteOf(text, node);
+        },
+      };
+
+      return candidate;
+    });
+
+  return batched(text, candidates);
 };
