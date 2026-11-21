@@ -11,10 +11,25 @@ import {
   WRITTEN,
 } from '../constants';
 
-import { refusal } from './editUtils';
+import {
+  applied,
+  copied,
+  copyOf,
+  type Edit,
+  editOf,
+  editOver,
+  fitted,
+  joined,
+  plain,
+  refusal,
+  reindented,
+  separated,
+  sliced,
+  takenOut,
+  type Written,
+} from './editUtils';
 import {
   collect,
-  fitted,
   indentAt,
   isPrototype,
   isPure,
@@ -27,21 +42,20 @@ import {
   memberIn,
   ownsLines,
   parse,
-  reindent,
   type Span,
   spanOf,
-  splice,
-  swapped,
   textOf,
   unparen,
   type ValueMember,
 } from './sourceUtils';
 
-type Rule = (text: string, node: ts.Node) => string | undefined;
+type Rule = (text: string, node: ts.Node) => Edit | undefined;
 
 type Shown = string | ts.SyntaxKind;
 
 type JsxParent = ts.JsxElement | ts.JsxFragment;
+
+const BREAK = plain('\n');
 
 const literalOf = (node: ts.Expression): ts.ObjectLiteralExpression | undefined => {
   const value = unparen(node);
@@ -50,7 +64,7 @@ const literalOf = (node: ts.Expression): ts.ObjectLiteralExpression | undefined 
 };
 
 // A node's text gone: its lines too when it stood alone on them, else the space that led to it.
-const removed = (text: string, node: ts.Node): string => {
+const removed = (text: string, node: ts.Node): Edit => {
   const span = spanOf(node);
   const isLed = text.charAt(span.start - 1) === ' ';
   const inline: Span = {
@@ -59,7 +73,7 @@ const removed = (text: string, node: ts.Node): string => {
   };
   const whole = ownsLines(text, span) ? linesOf(text, span) : inline;
 
-  return splice(text, whole, '');
+  return takenOut(whole);
 };
 
 // Called, a member runs with the literal as `this`, which only an arrow function does not read.
@@ -86,16 +100,20 @@ const memberRule: Rule = (text, node) => {
   const isInherited = Reflect.has(Object.prototype, name) || table.properties.some(isPrototype);
 
   if (member === undefined) {
-    return isInherited ? undefined : swapped(text, node, 'undefined');
+    const absent = plain('undefined');
+
+    return isInherited ? undefined : editOver(node, absent);
   }
 
   if (!isValueMember(member) || keyOf(member) !== name || !isThisFree(node, member)) {
     return undefined;
   }
 
-  const value = ts.isPropertyAssignment(member) ? fitted(node, member.initializer) : name;
+  const named = ts.isPropertyAssignment(member) ? member.initializer : member.name;
+  const own = copyOf(named);
+  const value = ts.isPropertyAssignment(member) ? fitted(node, member.initializer, own) : own;
 
-  return swapped(text, node, value);
+  return editOver(node, value);
 };
 
 // `true ? a : b` is `a`.
@@ -111,21 +129,43 @@ const conditionRule: Rule = (text, node) => {
   }
 
   const branch = kind === ts.SyntaxKind.TrueKeyword ? node.whenTrue : node.whenFalse;
-  const value = fitted(node, branch);
+  const own = copyOf(branch);
+  const value = fitted(node, branch, own);
 
-  return swapped(text, node, value);
+  return editOver(node, value);
 };
 
-const attributeOf = (property: ts.ObjectLiteralElementLike): string | undefined => {
+// A string literal's value, carried where its text is the value as written.
+const contentOf = (literal: ts.StringLiteral): Written => {
+  const span: Span = {
+    start: literal.getStart() + 1,
+    end: literal.getEnd() - 1,
+  };
+  const { text } = literal.getSourceFile();
+  const isRaw = text.slice(span.start, span.end) === literal.text;
+
+  return isRaw ? copied(text, span) : plain(literal.text);
+};
+
+const attributeOf = (property: ts.ObjectLiteralElementLike): Written | undefined => {
   if (ts.isShorthandPropertyAssignment(property)) {
-    return `${property.name.text}={${property.name.text}}`;
+    const name = copyOf(property.name);
+
+    return joined([
+      name,
+      plain('={'),
+      name,
+      plain('}'),
+    ]);
   }
 
   if (!ts.isPropertyAssignment(property)) {
     return undefined;
   }
 
-  const name = ts.isStringLiteral(property.name) ? property.name.text : textOf(property.name);
+  const key = property.name;
+  const name = ts.isStringLiteral(key) ? key.text : textOf(key);
+  const shown = ts.isStringLiteral(key) ? contentOf(key) : copyOf(key);
   const value = property.initializer;
   const isQuotable = ts.isStringLiteral(value) && PLAIN_STRING.test(value.text);
 
@@ -133,7 +173,19 @@ const attributeOf = (property: ts.ObjectLiteralElementLike): string | undefined 
     return undefined;
   }
 
-  return isQuotable ? `${name}="${value.text}"` : `${name}={${textOf(value)}}`;
+  return isQuotable
+    ? joined([
+        shown,
+        plain('="'),
+        contentOf(value),
+        plain('"'),
+      ])
+    : joined([
+        shown,
+        plain('={'),
+        copyOf(value),
+        plain('}'),
+      ]);
 };
 
 // `{...{ a: 1 }}` is `a={1}`: the same attributes, in the same place and order.
@@ -155,9 +207,9 @@ const spreadAttributeRule: Rule = (text, node) => {
 
   const span = spanOf(node);
   const gap = ownsLines(text, span) ? `\n${indentAt(text, span.start)}` : ' ';
-  const joined = written.join(gap);
+  const spread = separated(written, gap);
 
-  return splice(text, span, joined);
+  return editOf(span, spread);
 };
 
 // An absent attribute and one that is `undefined` read the same, unless an earlier one would show through. After a
@@ -198,19 +250,21 @@ const withComma = (text: string, node: ts.Node): Span => {
 };
 
 // A property gone from its literal, with the comma that set it apart.
-const withoutProperty = (text: string, node: ts.SpreadAssignment): string => {
+const withoutProperty = (text: string, node: ts.SpreadAssignment): Edit => {
   const end = node.getEnd();
   const span = withComma(text, node);
   const isFollowed = span.end > end;
 
   if (node.parent.properties.length === 1) {
-    return swapped(text, node.parent, '{}');
+    const empty = plain('{}');
+
+    return editOver(node.parent, empty);
   }
 
   if (ownsLines(text, span)) {
     const gone = linesGone(text, span);
 
-    return splice(text, gone, '');
+    return takenOut(gone);
   }
 
   const inline: Span = isFollowed
@@ -223,7 +277,7 @@ const withoutProperty = (text: string, node: ts.SpreadAssignment): string => {
         end,
       };
 
-  return splice(text, inline, '');
+  return takenOut(inline);
 };
 
 // `{ ...{ a: 1 } }` is `{ a: 1 }`, and `...{}` is nothing.
@@ -245,29 +299,42 @@ const spreadPropertyRule: Rule = (text, node) => {
   }
 
   const span = withComma(text, node);
-  const inner = text.slice(table.getStart() + 1, table.getEnd() - 1);
+  const braces: Span = {
+    start: table.getStart() + 1,
+    end: table.getEnd() - 1,
+  };
+  const inner = copied(text, braces);
 
   // Alone on its lines, a literal written over several lines keeps them, comments and blank lines too.
-  if (ownsLines(text, span) && inner.startsWith('\n')) {
+  if (ownsLines(text, span) && inner.insert.startsWith('\n')) {
     const to = indentAt(text, span.start);
-    const from = leadingIndent(inner);
-    const members = inner
+    const from = leadingIndent(inner.insert);
+    const trimmed = inner.insert
       .trimEnd()
       .replace(TRAILING_COMMA, '');
-    const moved = reindent(members, from, to)
-      .split('\n')
-      .slice(1);
+    const members: Span = {
+      start: 0,
+      end: trimmed.length,
+    };
+    const moved = reindented(sliced(inner, members), from, to);
+    const body: Span = {
+      start: moved.insert.indexOf('\n') + 1,
+      end: moved.insert.length,
+    };
     const comma = span.end > node.getEnd() ? ',' : '';
     const lines = linesOf(text, span);
 
-    return splice(text, lines, `${moved.join('\n')}${comma}\n`);
+    const kept = sliced(moved, body);
+    const closing = plain(`${comma}\n`);
+    const lifted = joined([kept, closing]);
+
+    return editOf(lines, lifted);
   }
 
-  const properties = table.properties
-    .map(textOf)
-    .join(', ');
+  const copies = table.properties.map(copyOf);
+  const properties = separated(copies, ', ');
 
-  return swapped(text, node, properties);
+  return editOver(node, properties);
 };
 
 const isJsxParent = (node: ts.Node): node is JsxParent => {
@@ -324,44 +391,54 @@ const shownOf = (children: readonly ts.JsxChild[]): Shown[] => {
 };
 
 // A fragment's children in its place; alone on its lines, each line it held moves to the fragment's indentation.
-const unwrapped = (text: string, node: ts.JsxFragment): string => {
+const unwrapped = (text: string, node: ts.JsxFragment): Edit => {
   const span = spanOf(node);
-  const inner = text.slice(node.openingFragment.getEnd(), node.closingFragment.getStart());
+  const children: Span = {
+    start: node.openingFragment.getEnd(),
+    end: node.closingFragment.getStart(),
+  };
+  const inner = copied(text, children);
 
   if (!ownsLines(text, span)) {
-    return splice(text, span, inner);
+    return editOf(span, inner);
   }
 
   const lines = linesOf(text, span);
 
-  if (!inner.includes('\n')) {
-    return inner === '' ? splice(text, lines, '') : splice(text, span, inner);
+  if (!inner.insert.includes('\n')) {
+    return inner.insert === '' ? takenOut(lines) : editOf(span, inner);
   }
 
   const to = indentAt(text, span.start);
-  const pieces = inner.split('\n');
+  const pieces = inner.insert.split('\n');
   const from = leadingIndent(pieces
     .slice(1)
     .join('\n'));
+  let at = 0;
   const written = pieces
     .map((line, index) => {
-      if (index === 0) {
-        return to + line.trimStart();
-      }
+      const lead = index === 0 ? line.length - line.trimStart().length : from.length;
+      const isMoved = index === 0 || line.startsWith(from);
+      const kept: Span = {
+        start: at + (isMoved ? lead : 0),
+        end: at + line.length,
+      };
 
-      return line.startsWith(from) ? to + line.slice(from.length) : line;
+      at += line.length + 1;
+
+      return joined([plain(isMoved ? to : ''), sliced(inner, kept)]);
     })
     .filter((line, index) => {
       const isTag = index === 0 || index === pieces.length - 1;
 
-      return !isTag || line.trim() !== '';
+      return !isTag || line.insert.trim() !== '';
     })
     .map((line) => {
-      return `${line}\n`;
-    })
-    .join('');
+      return joined([line, BREAK]);
+    });
+  const unwrappedLines = joined(written);
 
-  return splice(text, lines, written);
+  return editOf(lines, unwrappedLines);
 };
 
 // A fragment among an element's children is its own children, kept where that would change what they render.
@@ -372,10 +449,10 @@ const fragmentRule: Rule = (text, node) => {
     return undefined;
   }
 
-  const next = unwrapped(text, node);
+  const edit = unwrapped(text, node);
   const before = shownOf(parent.children);
   const start = parent.getStart();
-  const file = parse(next);
+  const file = parse(applied(text, [edit]));
   const after = collect(file, isJsxParent)
     .filter((candidate) => {
       return candidate.getStart() === start;
@@ -384,7 +461,7 @@ const fragmentRule: Rule = (text, node) => {
       return shownOf(candidate.children);
     });
 
-  return isEqual(after, [before]) ? next : undefined;
+  return isEqual(after, [before]) ? edit : undefined;
 };
 
 const RULES: readonly Rule[] = [
@@ -405,17 +482,19 @@ export const simplifiedOnce = (
   text: string,
   file: ts.SourceFile,
   isTouched: (node: ts.Node) => boolean,
-): string | undefined => {
+): Edit[] | undefined => {
   const nodes = collect(file, isSimplified)
     .toReversed()
     .filter(isTouched);
 
   for (const node of nodes) {
     for (const rule of RULES) {
-      const next = rule(text, node);
+      const edit = rule(text, node);
 
-      if (next !== undefined) {
-        return next;
+      if (edit !== undefined) {
+        const edits = [edit];
+
+        return edits;
       }
     }
   }

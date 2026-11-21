@@ -9,6 +9,7 @@ import {
   sourcesOf,
   type Trust,
 } from './bindingUtils';
+import { applied } from './editUtils';
 import { filledOnce } from './inlineUtils';
 import { parse, referencesIn } from './sourceUtils';
 
@@ -61,8 +62,9 @@ const sourcesFor = (base: string): Sources => {
 
 const stepOf = (text: string, sources: Sources): string | undefined => {
   const file = parse(text);
+  const edits = filledOnce(text, file, sources);
 
-  return filledOnce(text, file, sources);
+  return edits === undefined ? undefined : applied(text, edits);
 };
 
 const remaining = (text: string): string[] => {

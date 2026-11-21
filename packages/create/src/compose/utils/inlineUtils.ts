@@ -7,6 +7,7 @@ import { collect, isReference } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
 
 import type { Sources } from './bindingUtils';
+import type { Edit } from './editUtils';
 
 // How early a read must be filled: an element passes values along that the later kinds then find in place.
 const RANK = {
@@ -36,7 +37,7 @@ const rankOf = (local: ts.Identifier): number => {
 };
 
 // One read of a parameter binding replaced by what its option module gives.
-const filled = (text: string, sources: Sources, local: ts.Identifier, checker: ts.TypeChecker): string => {
+const filled = (text: string, sources: Sources, local: ts.Identifier, checker: ts.TypeChecker): Edit[] => {
   const { parent } = local;
 
   if (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent)) {
@@ -60,7 +61,7 @@ const filled = (text: string, sources: Sources, local: ts.Identifier, checker: t
 
 // The next read of a parameter binding, filled; undefined once none is left. The body holds no imports, so a read
 // that resolves to nothing there reads the parameter, and one that resolves to a binding of its name reads that.
-export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): string | undefined => {
+export const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): Edit[] | undefined => {
   const { bindings } = sources;
   const checker = scopeOf(file, sources.modules, sources.held);
   const [next] = collect(file, ts.isIdentifier)

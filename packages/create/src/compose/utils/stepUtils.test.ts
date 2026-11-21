@@ -11,8 +11,18 @@ import {
   type Trust,
 } from './bindingUtils';
 import { returnedOf } from './callUtils';
+import {
+  applied,
+  type Edit,
+  editOf,
+  plain,
+} from './editUtils';
 import { scopeOf } from './scopeUtils';
-import { collect, parse } from './sourceUtils';
+import {
+  collect,
+  parse,
+  type Span,
+} from './sourceUtils';
 import {
   checked,
   landedCheck,
@@ -40,22 +50,38 @@ const sourcesFor = (): Sources => {
   return sourcesOf(BASE, { './p': OPTION }, {}, NO_TRUST);
 };
 
+// The first `a` of a text written as `insert`, or nothing once none is left.
+const firstA = (text: string, insert: string): Edit[] | undefined => {
+  const at = text.indexOf('a');
+  const span: Span = {
+    start: at,
+    end: at + 1,
+  };
+
+  const written = plain(insert);
+  const edits = [editOf(span, written)];
+
+  return at === -1 ? undefined : edits;
+};
+
 describe('settled', () => {
   it('applies a rewrite until it has nothing left to do', () => {
     const text = settled('aaa', (current) => {
-      return current.includes('a') ? current.replace('a', 'b') : undefined;
+      return firstA(current, 'b');
     });
 
     expect(text).toBe('bbb');
   });
 
-  it('shows each rewrite, as the text before and after it, to the watch', () => {
+  it('shows each rewrite, as the text before it and its edits, to the watch', () => {
     const seen: string[] = [];
 
     settled('aa', (current) => {
-      return current.includes('a') ? current.replace('a', 'b') : undefined;
-    }, (before, after) => {
-      seen.push(`${before.text}>${after.text}`);
+      return firstA(current, 'b');
+    }, (before, edits) => {
+      const after = applied(before, edits);
+
+      seen.push(`${before}>${after}`);
     });
 
     expect(seen).toStrictEqual(['aa>ba', 'ba>bb']);
@@ -64,7 +90,7 @@ describe('settled', () => {
   it('refuses a rewrite that never stops', () => {
     const run = (): string => {
       return settled('a', (text) => {
-        return `${text}a`.slice(-1);
+        return firstA(text, 'a');
       });
     };
 

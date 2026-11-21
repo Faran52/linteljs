@@ -13,8 +13,17 @@ import {
 } from './callUtils';
 import {
   applied,
+  copied,
+  copyOf,
   type Edit,
+  editOf,
+  patternOf,
+  plain,
   refusal,
+  reindented,
+  sliced,
+  type Written,
+  writtenWith,
 } from './editUtils';
 import {
   actsIn,
@@ -37,11 +46,9 @@ import {
   leadingIndent,
   linesOf,
   ownsLines,
-  patternOf,
   reindent,
   type Span,
   spanOf,
-  splice,
   textOf,
   unparen,
 } from './sourceUtils';
@@ -56,7 +63,7 @@ type JsxHead = ts.JsxOpeningElement | ts.JsxSelfClosingElement;
 // A text waiting to land on a placeholder, with the indentation it was written at.
 interface Placed {
   token: string;
-  text: string;
+  text: Written;
   origin: string;
 }
 
@@ -76,10 +83,12 @@ interface Site {
   rest: Rest | undefined;
   // Attributes the rest spread after them may override.
   overridden: Set<string>;
-  children: string;
+  children: Written;
 }
 
 const MARK = '\u0000';
+
+const NOTHING = plain('');
 
 const rootOf = (arrow: ts.ArrowFunction): JsxRoot => {
   const root = unparen(returnedOf(arrow));
@@ -182,30 +191,34 @@ const restOf = (checker: ts.TypeChecker, head: JsxHead): Rest | undefined => {
 };
 
 // Each placeholder takes its text, moved to the indentation of the line it lands on.
-const withPlaced = (body: string, placed: readonly Placed[]): string => {
+const withPlaced = (body: string, placed: readonly Placed[]): Written => {
+  const start = plain(body);
+
   return placed
     .reduce((current, {
       token,
       text,
       origin,
     }) => {
-      const at = current.indexOf(token);
+      const at = current.insert.indexOf(token);
       const span: Span = {
         start: at,
         end: at + token.length,
       };
 
-      if (text === '' && ownsLines(current, span)) {
-        const lines = linesOf(current, span);
+      if (text.insert === '' && ownsLines(current.insert, span)) {
+        const lines = linesOf(current.insert, span);
+        const gone = editOf(lines, NOTHING);
 
-        return splice(current, lines, '');
+        return writtenWith(current, [gone]);
       }
 
-      const indent = indentAt(current, at);
-      const moved = reindent(text, origin, indent);
+      const indent = indentAt(current.insert, at);
+      const moved = reindented(text, origin, indent);
+      const landed = editOf(span, moved);
 
-      return splice(current, span, moved);
-    }, body);
+      return writtenWith(current, [landed]);
+    }, start);
 };
 
 const siteOf = (checker: ts.TypeChecker, text: string, head: JsxHead): Site => {
@@ -230,9 +243,16 @@ const siteOf = (checker: ts.TypeChecker, text: string, head: JsxHead): Site => {
     throw refusal(head, 'An option component takes each attribute once, and its children between its tags');
   }
 
-  const children = ts.isJsxElement(element)
-    ? text.slice(element.openingElement.getEnd(), element.closingElement.getStart())
-    : '';
+  const inside: Span = ts.isJsxElement(element)
+    ? {
+        start: element.openingElement.getEnd(),
+        end: element.closingElement.getStart(),
+      }
+    : {
+        start: 0,
+        end: 0,
+      };
+  const children = copied(text, inside);
   const spread = head.attributes.properties.find(ts.isJsxSpreadAttribute);
   const overridden = attributes
     .filter((attribute) => {
@@ -266,7 +286,7 @@ class Placement {
     this.offset = root.getStart();
   }
 
-  public put(span: Span, text: string, origin: string, lead = ''): void {
+  public put(span: Span, text: Written, origin: string, lead = ''): void {
     const token = `${MARK}${String(this.placed.length)}${MARK}`;
 
     this.placed.push({
@@ -275,13 +295,24 @@ class Placement {
       origin,
     });
 
-    this.edits.push({
+    const at: Span = {
       start: span.start - this.offset,
       end: span.end - this.offset,
-      insert: lead + token,
-    });
+    };
+
+    const marked = plain(lead + token);
+
+    this.edits.push(editOf(at, marked));
   }
 }
+
+// An attribute's value carried as the base writes it, or written where the engine spelled it, as for a string.
+const ownOf = (site: Site, argument: ts.Expression): Written => {
+  const isBase = argument.getSourceFile() === site.head.getSourceFile();
+  const spelled = textOf(argument);
+
+  return isBase ? copyOf(argument) : plain(spelled);
+};
 
 // Each prop the component reads takes the base's attribute; one the base leaves to its rest binding is noted.
 const placeProps = (
@@ -306,10 +337,12 @@ const placeProps = (
     }
 
     if (argument !== undefined) {
-      const origin = indentOf(argument.getSourceFile().text, argument);
+      const { text } = argument.getSourceFile();
+      const origin = indentOf(text, argument);
+      const own = ownOf(site, argument);
 
-      for (const edit of substitutions(checker, root, element, argument)) {
-        placement.put(edit, edit.insert, origin);
+      for (const edit of substitutions(checker, root, element, argument, own)) {
+        placement.put(edit, edit, origin);
       }
     }
     else if (name !== 'children' && ts.isIdentifier(element.name)) {
@@ -369,15 +402,21 @@ const placeChildren = (
 
       return read.parent;
     });
-  const trimmed = site.children.trim();
+  const { insert } = site.children;
+  const lead = insert.length - insert.trimStart().length;
+  const kept: Span = {
+    start: lead,
+    end: Math.max(lead, insert.trimEnd().length),
+  };
+  const trimmed = sliced(site.children, kept);
 
-  if (trimmed !== '' && slots.length !== 1) {
+  if (trimmed.insert !== '' && slots.length !== 1) {
     throw refusal(site.head, 'The base passes children, so the option component must render {children} once');
   }
 
   childrenCheck(checker, root, site, slots);
 
-  const origin = leadingIndent(site.children);
+  const origin = leadingIndent(insert);
 
   for (const slot of slots) {
     placement.put(spanOf(slot), trimmed, origin);
@@ -412,7 +451,7 @@ const placeKey = (placement: Placement, root: JsxRoot, site: Site): void => {
     end: at,
   };
 
-  placement.put(span, textOf(site.key), '', lead);
+  placement.put(span, copyOf(site.key), '', lead);
 };
 
 const ignoredCheck = (proof: Proof, wanted: readonly ts.BindingElement[], site: Site): void => {
@@ -497,41 +536,42 @@ const restEdit = (
   const own = pattern.elements
     .filter((candidate) => {
       return candidate !== element;
-    })
-    .map(textOf);
+    });
+  const owned = own.map(textOf);
   const added = needs
     .map((need) => {
       return need.text;
     })
     .filter((name) => {
-      return !own.includes(name);
+      return !owned.includes(name);
     });
-  const names = [...new Set([...own, ...added])];
+  const fresh = [...new Set(added)];
 
   if (others.length === 0) {
     const indent = indentOf(text, pattern);
-    const whole: Edit = {
-      ...spanOf(pattern),
-      insert: patternOf(names, indent),
-    };
+    const names = [...own.map(copyOf), ...fresh.map(plain)];
 
-    return whole;
+    const span = spanOf(pattern);
+    const written = patternOf(names, indent);
+
+    return editOf(span, written);
   }
 
   const at = element.getStart();
   const isOwnLine = ownsLines(text, spanOf(element));
   const gap = isOwnLine ? `\n${indentOf(text, element)}` : ' ';
-  const inserted = [...new Set(added)]
+  const inserted = fresh
     .map((name) => {
       return `${name},${gap}`;
     });
-  const before: Edit = {
+  const before: Span = {
     start: at,
     end: at,
-    insert: inserted.join(''),
   };
 
-  return before;
+  const written = plain(inserted.join(''));
+
+  return editOf(before, written);
 };
 
 // What the component receives from the attributes, in the order the base writes them.
@@ -605,7 +645,7 @@ export const inlineElement = (
   tag: ts.Identifier,
   head: JsxHead,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const arrow = arrowOf(sources, tag);
   const root = rootOf(arrow);
   const wanted = wantedOf(arrow);
@@ -643,14 +683,13 @@ export const inlineElement = (
   const edited = applied(textOf(root), placement.edits);
   const moved = reindent(edited, from, to);
   const body = withPlaced(moved, placement.placed);
-  const inlined: Edit = {
-    ...spanOf(site.element),
-    insert: body,
-  };
+  const inlined = editOf(spanOf(site.element), body);
   const { rest } = site;
 
   if (rest === undefined) {
-    return applied(text, [inlined]);
+    const alone = [inlined];
+
+    return alone;
   }
 
   const others = spreadOnlyCheck(checker, sources, rest);
@@ -659,5 +698,8 @@ export const inlineElement = (
     needCheck(checker, rest, need, site.element);
   }
 
-  return applied(text, [inlined, restEdit(text, rest, needs, others)]);
+  const named = restEdit(text, rest, needs, others);
+  const edits = [inlined, named];
+
+  return edits;
 };

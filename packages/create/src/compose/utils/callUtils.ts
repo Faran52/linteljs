@@ -4,9 +4,16 @@ import { EFFECT_KINDS, LOGICAL } from '../constants';
 
 import { resolved, type Sources } from './bindingUtils';
 import {
-  applied,
+  copyOf,
   type Edit,
+  editOf,
+  fitted,
+  plain,
   refusal,
+  reindented,
+  sliced,
+  type Written,
+  writtenWith,
 } from './editUtils';
 import {
   actsIn,
@@ -21,7 +28,6 @@ import {
 import {
   collect,
   expressionOf,
-  fitted,
   indentOf,
   isReference,
   isValueMember,
@@ -29,9 +35,8 @@ import {
   isWritten,
   keyOf,
   memberIn,
-  reindent,
+  type Span,
   spanOf,
-  swapped,
   textOf,
   unparen,
   valueOf,
@@ -40,7 +45,7 @@ import { landedCheck } from './stepUtils';
 
 // A value's text, and the indentation its first line was written at.
 interface Inlined {
-  value: string;
+  value: Written;
   from: string;
 }
 
@@ -300,12 +305,13 @@ export const effectCheck = (proof: Proof, inner: ts.Node, passed: readonly Passe
   }
 };
 
-// One edit per read of a parameter, each taking the argument's text.
+// One edit per read of a parameter, each taking the argument's text, `own` as the base writes it.
 export const substitutions = (
   checker: ts.TypeChecker,
   inner: ts.Node,
   declaration: ts.ParameterDeclaration | ts.BindingElement,
   argument: ts.Expression,
+  own: Written,
 ): Edit[] => {
   const reads = referencesTo(checker, declaration, inner);
 
@@ -315,12 +321,10 @@ export const substitutions = (
 
   return reads
     .map((read) => {
-      const edit: Edit = {
-        ...spanOf(read),
-        insert: fitted(read, argument),
-      };
+      const value = fitted(read, argument, own);
+      const span = spanOf(read);
 
-      return edit;
+      return editOf(span, value);
     });
 };
 
@@ -383,23 +387,33 @@ const calledWith = (
 
   const edits = pairs
     .flatMap(([parameter, argument]) => {
-      return substitutions(checker, returned, parameter, argument);
+      const own = copyOf(argument);
+
+      return substitutions(checker, returned, parameter, argument, own);
     })
     .map((edit) => {
       const moved: Edit = {
+        ...edit,
         start: edit.start - offset,
         end: edit.end - offset,
-        insert: edit.insert,
       };
 
       return moved;
     });
-  const filled = applied(textOf(returned), edits);
-  const expression = unparen(expressionOf(filled));
+  const written = plain(textOf(returned));
+  const filled = writtenWith(written, edits);
+  const parsed = expressionOf(filled.insert);
+  const expression = unparen(parsed);
+  // `expressionOf` reads the text inside `(...)`, one character on.
+  const span: Span = {
+    start: expression.getStart() - 1,
+    end: expression.getEnd() - 1,
+  };
+  const own = sliced(filled, span);
   const origin = unparen(returned);
 
   const inlined: Inlined = {
-    value: fitted(call, expression),
+    value: fitted(call, expression, own),
     from: indentOf(origin.getSourceFile().text, origin),
   };
 
@@ -407,17 +421,20 @@ const calledWith = (
 };
 
 // A value's text in place of a node, its later lines moved to the indentation of the line it lands on.
-const landed = (text: string, replaced: ts.Node, { value, from }: Inlined): string => {
+const landed = (text: string, replaced: ts.Node, { value, from }: Inlined): Edit[] => {
   const to = indentOf(text, replaced);
-  const moved = reindent(value, from, to);
+  const moved = reindented(value, from, to);
+  const span = spanOf(replaced);
+  const edits = [editOf(span, moved)];
 
-  return swapped(text, replaced, moved);
+  return edits;
 };
 
 // An option's own value as it is written, ready to land where it is read.
 const written = (replaced: ts.Node, value: ts.Expression): Inlined => {
+  const own = plain(textOf(value));
   const inlined: Inlined = {
-    value: fitted(replaced, value),
+    value: fitted(replaced, value, own),
     from: indentOf(value.getSourceFile().text, value),
   };
 
@@ -430,7 +447,7 @@ export const inlineCall = (
   local: ts.Identifier,
   call: ts.CallExpression,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const arrow = arrowOf(sources, local);
   const value = calledWith(checker, sources, arrow, call);
 
@@ -466,7 +483,7 @@ export const inlineMember = (
   local: ts.Identifier,
   access: ts.PropertyAccessExpression,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const value = memberOf(sources, local, access);
   const call = access.parent;
 
@@ -506,7 +523,7 @@ export const inlineValue = (
   sources: Sources,
   local: ts.Identifier,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const value = exportedValue(sources, local.text);
   const proof: Proof = {
     checker,

@@ -5,10 +5,11 @@ import {
   it,
 } from 'vitest';
 
+import { applied, takenOut } from './editUtils';
 import {
   collect,
   expressionOf,
-  fitted,
+  fittingOf,
   indentAt,
   indentOf,
   isPlainElement,
@@ -27,12 +28,9 @@ import {
   memberIn,
   ownsLines,
   parse,
-  patternOf,
   referencesIn,
   reindent,
   spanOf,
-  splice,
-  swapped,
   textOf,
   unparen,
   valueOf,
@@ -54,7 +52,7 @@ const nodeIn = (host: string, spelled: string): ts.Node => {
   return found;
 };
 
-describe('spanOf, textOf, splice and swapped', () => {
+describe('spanOf and textOf', () => {
   it('answers a node\'s span and text without the space before it', () => {
     const node = nodeIn('  const a = 1;', 'a');
 
@@ -67,18 +65,6 @@ describe('spanOf, textOf, splice and swapped', () => {
     });
 
     expect(text).toBe('a');
-  });
-
-  it('replaces a span, and a node, leaving the rest as written', () => {
-    const node = nodeIn('const a = 1;', 'a');
-    const spliced = splice('abcd', {
-      start: 1,
-      end: 3,
-    }, 'X');
-    const written = swapped('const a = 1;', node, 'bb');
-
-    expect(spliced).toBe('aXd');
-    expect(written).toBe('const bb = 1;');
   });
 });
 
@@ -211,7 +197,7 @@ describe('linesGone', () => {
       start,
       end: start + 1,
     });
-    const written = splice(text, gone, '');
+    const written = applied(text, [takenOut(gone)]);
 
     expect(written).toBe(expected);
   });
@@ -546,7 +532,14 @@ describe('isWritten', () => {
   });
 });
 
-describe('fitted', () => {
+// An expression's text with what it needs around it to stand in place of `replaced`.
+const fittedText = (replaced: ts.Node, expression: ts.Expression): string => {
+  const { before, after } = fittingOf(replaced, expression);
+
+  return `${before}${expression.getText()}${after}`;
+};
+
+describe('fittingOf', () => {
   it.each([
     [
       'x = !A;',
@@ -901,18 +894,18 @@ describe('fitted', () => {
   ])('puts %s with %s in place as %s', (host, source, expected) => {
     const replaced = nodeIn(host, 'A');
     const expression = expressionOf(source);
-    const written = fitted(replaced, expression);
+    const written = fittedText(replaced, expression);
 
     expect(written).toBe(expected);
   });
 });
 
-describe('fitted, for a yield', () => {
+describe('fittingOf, for a yield', () => {
   it('keeps a yield in parentheses where a member is read from it', () => {
     const file = parse('function* g() { x = A.y; yield b; }');
     const [expression] = collect(file, ts.isYieldExpression);
     const [replaced] = referencesIn(file, 'A');
-    const written = expression !== undefined && replaced !== undefined && fitted(replaced, expression);
+    const written = expression !== undefined && replaced !== undefined && fittedText(replaced, expression);
 
     expect(written).toBe('(yield b)');
   });
@@ -923,7 +916,7 @@ describe('fitted, for a yield', () => {
   ])('puts %s in place of what a yield gives as %s', (source, expected) => {
     const replaced = nodeIn('function* g() { yield A; }', 'A');
     const expression = expressionOf(source);
-    const written = fitted(replaced, expression);
+    const written = fittedText(replaced, expression);
 
     expect(written).toBe(expected);
   });
@@ -962,29 +955,5 @@ describe('isPlainElement', () => {
     const plain = element !== undefined && isPlainElement(element);
 
     expect(plain).toBe(expected);
-  });
-});
-
-describe('patternOf', () => {
-  it('writes no name as an empty pattern', () => {
-    const pattern = patternOf([], '  ');
-
-    expect(pattern).toBe('{}');
-  });
-
-  it('keeps up to two names on one line', () => {
-    const pattern = patternOf(['a', 'b'], '  ');
-
-    expect(pattern).toBe('{ a, b }');
-  });
-
-  it('breaks more than two, one per line', () => {
-    const pattern = patternOf([
-      'a',
-      'b',
-      'c',
-    ], '  ');
-
-    expect(pattern).toBe('{\n    a,\n    b,\n    c,\n  }');
   });
 });

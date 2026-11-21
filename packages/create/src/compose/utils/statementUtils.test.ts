@@ -6,6 +6,7 @@ import {
 } from 'vitest';
 
 import { sourcesOf, type Trust } from './bindingUtils';
+import { applied } from './editUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
@@ -26,9 +27,11 @@ const filled = (body: string, option: string): string => {
     throw new Error(`No x in ${body}`);
   }
 
-  return ts.isCallExpression(local.parent)
+  const edits = ts.isCallExpression(local.parent)
     ? spliceStatements(sources.body, sources, local, local.parent, checker)
     : flattenHeritage(sources.body, sources, local, checker);
+
+  return applied(sources.body, edits);
 };
 
 const lines = (...written: string[]): string => {

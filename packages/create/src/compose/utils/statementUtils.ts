@@ -5,9 +5,14 @@ import { SEMICOLON_STATEMENTS } from '../constants';
 import { resolved, type Sources } from './bindingUtils';
 import { arrowOf, inlineCall } from './callUtils';
 import {
-  applied,
+  copyOf,
   type Edit,
+  editOf,
+  editOver,
+  joined,
+  plain,
   refusal,
+  separated,
 } from './editUtils';
 import {
   bindingNamesOf,
@@ -27,6 +32,7 @@ import {
   linesGone,
   ownsLines,
   reindent,
+  type Span,
   spanOf,
   textOf,
   unparen,
@@ -90,7 +96,7 @@ export const flattenHeritage = (
   sources: Sources,
   local: ts.Identifier,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const reference = local.parent;
   const clause = reference.parent;
   const target = clause.parent;
@@ -139,22 +145,23 @@ export const flattenHeritage = (
     .filter((type) => {
       return type !== reference;
     })
-    .map(textOf);
-  const kept = others.length === 0 ? '' : ` extends ${others.join(', ')}`;
-  const edits: Edit[] = [
-    {
-      start: at,
-      end: at,
-      insert: members.join(''),
-    },
-    {
-      start: clause.getFullStart(),
-      end: clause.getEnd(),
-      insert: kept,
-    },
-  ];
+    .map(copyOf);
+  const listed = separated(others, ', ');
+  const extending = plain(' extends ');
+  const kept = others.length === 0 ? listed : joined([extending, listed]);
+  const added: Span = {
+    start: at,
+    end: at,
+  };
+  const clauseSpan: Span = {
+    start: clause.getFullStart(),
+    end: clause.getEnd(),
+  };
 
-  return applied(text, edits);
+  const appended = plain(members.join(''));
+  const edits = [editOf(added, appended), editOf(clauseSpan, kept)];
+
+  return edits;
 };
 
 const returnsEarly = (statement: ts.Statement): boolean => {
@@ -241,12 +248,9 @@ const holderReads = (
         throw refusal(access, `"${name.text}" is bound again around this read, so the option's one cannot land here`);
       }
 
-      const edit: Edit = {
-        ...spanOf(access),
-        insert: name.text,
-      };
+      const short = plain(name.text);
 
-      return edit;
+      return editOver(access, short);
     });
 };
 
@@ -381,7 +385,7 @@ export const spliceStatements = (
   local: ts.Identifier,
   call: ts.CallExpression,
   checker: ts.TypeChecker,
-): string => {
+): Edit[] => {
   const arrow = arrowOf(sources, local);
   const holder = holderOf(call);
 
@@ -418,10 +422,8 @@ export const spliceStatements = (
   const after = text.slice(span.end, lineEnd(text, span.end));
   const block = blockOf(kept, indent, after.trim() === '');
   const gone = block === '' && ownsLines(text, span) ? linesGone(text, span) : span;
-  const replaced: Edit = {
-    ...gone,
-    insert: block,
-  };
+  const spliced = plain(block);
+  const edits = [...reads, editOf(gone, spliced)];
 
-  return applied(text, [...reads, replaced]);
+  return edits;
 };

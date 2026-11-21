@@ -5,58 +5,98 @@ import {
   it,
 } from 'vitest';
 
+import {
+  applied,
+  copied,
+  type Edit,
+  editOf,
+  joined,
+  plain,
+} from './editUtils';
 import { Follower } from './followUtils';
 import { collect, parse } from './sourceUtils';
 
-// Follows each token of `before` holding a `$` mark through the rewrite to `after`, and answers where each landed.
-const landed = (before: string, after: string): (number | undefined)[] => {
-  const marks = [...before.matchAll(/\$\w+/gu)];
-  const first = parse(before);
-  const follower = new Follower(first);
+// An edit of `text` over the first `old` from `from`, writing `insert`.
+const swap = (text: string, old: string, insert: string, from = 0): Edit => {
+  const start = text.indexOf(old, from);
+  const span = {
+    start,
+    end: start + old.length,
+  };
 
-  for (const { index } of marks) {
-    follower.track(index);
-  }
+  const written = plain(insert);
 
-  follower.follow(first, parse(after));
-
-  return marks
-    .map(({ 0: mark }) => {
-      const at = after.indexOf(mark);
-
-      return follower.has(at) ? at : undefined;
-    });
+  return editOf(span, written);
 };
 
-// Every position of a rewritten text still followed.
-const followedIn = (before: string, after: string): number[] => {
-  const first = parse(before);
-  const follower = new Follower(first);
+// An edit of `text` over the first `old`, writing it back between `before` and `after`, carried.
+const wrap = (text: string, old: string, before: string, after: string): Edit => {
+  const start = text.indexOf(old);
+  const span = {
+    start,
+    end: start + old.length,
+  };
+  const written = joined([
+    plain(before),
+    copied(text, span),
+    plain(after),
+  ]);
 
-  for (const { index } of before.matchAll(/\$\w+/gu)) {
-    follower.track(index);
+  return editOf(span, written);
+};
+
+const isNode = (node: ts.Node): node is ts.Node => {
+  return node.kind !== ts.SyntaxKind.Unknown && node.kind !== ts.SyntaxKind.SourceFile;
+};
+
+// The first node of a file whose text is `shown`, from `from` on.
+const nodeAt = (file: ts.SourceFile, shown: string, from = 0): ts.Node => {
+  const at = file.text.indexOf(shown, from);
+  const [found] = collect(file, isNode)
+    .filter((candidate) => {
+      return candidate.getStart() === at && candidate.getText() === shown;
+    });
+
+  if (found === undefined) {
+    throw new Error(`No ${shown} at ${String(at)}`);
   }
 
-  follower.follow(first, parse(after));
+  return found;
+};
 
-  const positions = Array.from({ length: after.length }, (_unused, position) => {
-    return position;
-  });
+// Each identifier from `$` tracked, one edit list applied, and where each tracked one is still followed.
+const followed = (before: string, edits: readonly Edit[]): number[] => {
+  const follower = new Follower();
 
-  return positions
-    .filter((position) => {
-      return follower.has(position);
+  const identifiers = collect(parse(before), ts.isIdentifier);
+
+  for (const identifier of identifiers) {
+    if (identifier.text.startsWith('$')) {
+      follower.track(identifier);
+    }
+  }
+
+  follower.follow(before, edits);
+
+  const after = parse(applied(before, edits));
+
+  return collect(after, ts.isIdentifier)
+    .filter((identifier) => {
+      return follower.has(identifier);
+    })
+    .map((identifier) => {
+      return identifier.getStart();
     });
 };
 
 describe('Follower', () => {
   it('follows nothing it was not asked to', () => {
-    const first = parse('a;');
-    const follower = new Follower(first);
+    const follower = new Follower();
+    const file = parse('a;');
 
-    follower.follow(first, parse('a;'));
+    follower.follow('a;', []);
 
-    const isFollowed = follower.has(0);
+    const isFollowed = follower.has(nodeAt(file, 'a'));
 
     expect(isFollowed).toBe(false);
   });
@@ -65,56 +105,41 @@ describe('Follower', () => {
     [
       'in a text left as it was',
       'f($a, b);',
-      'f($a, b);',
-    ],
-    [
-      'as the first token',
-      '$a(1);',
-      '$a(2);',
+      [],
+      [2],
     ],
     [
       'moved by an insertion before it',
       'f($a);',
-      'g(1, 2); f($a);',
+      [swap('f($a);', '', 'g(1, 2); ')],
+      [11],
     ],
     [
       'moved by a deletion before it',
       'g(1, 2); f($a);',
-      'f($a);',
+      [swap('g(1, 2); f($a);', 'g(1, 2); ', '')],
+      [2],
     ],
     [
       'reindented',
       'if (x) {\n  f($a);\n}',
-      'if (x) {\n        f($a);\n}',
+      [swap('if (x) {\n  f($a);\n}', '  ', '        ')],
+      [19],
     ],
     [
-      'with edits on both sides',
-      'x = 1; f($a); y = 2;',
-      'x = [1, 3]; f($a); z = 2;',
+      'with edits right against it on both sides',
+      'f(1, $a, 2);',
+      [swap('f(1, $a, 2);', '1, ', '3, 4, '), swap('f(1, $a, 2);', ', 2', ', 5')],
+      [8],
     ],
     [
-      'between two far edits of one rewrite',
-      'f(1); g($a); h(2);',
-      'f(10); g($a); h(20);',
-    ],
-    [
-      'when a copy of it is written after it',
+      'carried inside an edit that writes round it',
       'f($a);',
-      'f($a); f(b);',
+      [wrap('f($a);', 'f($a)', 'g(', ', 1)')],
+      [4],
     ],
-    [
-      'when tokens like it are dropped round it',
-      'f(a, $a, a);',
-      'f($a);',
-    ],
-    [
-      'in JSX, before a rewritten element',
-      'y = ({ $a }) => <X a={a} />;',
-      'y = ({ $a }) => <li />;',
-    ],
-  ])('keeps a token %s', (_name, before, after) => {
-    const found = landed(before, after);
-    const expected = [after.indexOf('$a')];
+  ])('keeps a token %s', (_name, before, edits, expected) => {
+    const found = followed(before, edits);
 
     expect(found).toStrictEqual(expected);
   });
@@ -123,99 +148,127 @@ describe('Follower', () => {
     [
       'rewritten',
       'f($a);',
-      'f($b);',
+      [swap('f($a);', '$a', '$b')],
     ],
     [
       'dropped',
       'f($a, b);',
-      'f(b);',
+      [swap('f($a, b);', '$a, ', '')],
     ],
     [
-      'rewritten as the first token',
-      '$a;',
-      'b;',
+      'written again by the edit over it',
+      'f($a);',
+      [swap('f($a);', 'f($a)', 'f($a)')],
     ],
-  ])('stops following a token %s', (_name, before, after) => {
-    const found = followedIn(before, after);
+    [
+      'split by text written inside it',
+      'f($ab);',
+      [swap('f($ab);', '', ' + ', 4)],
+    ],
+    [
+      'grown by text written right after it',
+      'f($a);',
+      [swap('f($a);', '', 'b', 4)],
+    ],
+  ])('stops following a token %s', (_name, before, edits) => {
+    const found = followed(before, edits);
 
     expect(found).toStrictEqual([]);
   });
 
-  it('follows several tokens through one rewrite, dropping only the one it changed', () => {
-    const found = landed('f($a, $b, $c);', 'f($a, $x, $c, d);');
-    const expected = [
-      2,
-      undefined,
-      10,
-    ];
+  it('follows the token itself, never another of its name a diff would pair it with', () => {
+    const text = 'f($a); f($a);';
+    const follower = new Follower();
+    const file = parse(text);
+    const [first] = collect(file, ts.isIdentifier)
+      .filter((identifier) => {
+        return identifier.text === '$a';
+      });
 
-    expect(found).toStrictEqual(expected);
+    if (first !== undefined) {
+      follower.track(first);
+    }
+
+    follower.follow(text, [swap(text, 'f($a); ', '')]);
+
+    const after = parse('f($a);');
+    const left = nodeAt(after, '$a');
+    const isFollowed = follower.has(left);
+
+    expect(isFollowed).toBe(false);
   });
 
-  it('follows a token through two rewrites in turn', () => {
-    const first = parse('f($a);');
-    const follower = new Follower(first);
-    const middle = parse('g(1); f($a);');
+  it('follows a token through two edit lists in turn', () => {
+    const first = 'f($a);';
+    const middle = 'g(1); f($a);';
+    const follower = new Follower();
 
-    follower.track(2);
-    follower.follow(first, middle);
-    follower.follow(middle, parse('f($a);'));
+    const tracked = nodeAt(parse(first), '$a');
 
-    const isFollowed = follower.has(2);
+    follower.track(tracked);
+    follower.follow(first, [swap(first, '', 'g(1); ')]);
+    follower.follow(middle, [swap(middle, 'g(1); ', '')]);
+
+    const landed = nodeAt(parse(first), '$a');
+    const isFollowed = follower.has(landed);
 
     expect(isFollowed).toBe(true);
   });
 });
 
-// Whether rewriting `before` to `after` touched the first node of `after` whose text is `node`.
-const touched = (before: string, after: string, node: string): boolean => {
-  const first = parse(before);
-  const next = parse(after);
-  const follower = new Follower(first);
+// Whether an edit list touched the first node of the text it makes that reads `node`.
+const touched = (before: string, edits: readonly Edit[], node: string): boolean => {
+  const follower = new Follower();
 
-  follower.follow(first, next);
+  follower.follow(before, edits);
 
-  const at = after.indexOf(node);
-  const [found] = collect(next, isNode)
-    .filter((candidate) => {
-      return candidate.getStart() === at && candidate.getText() === node;
-    });
+  const after = parse(applied(before, edits));
 
-  return found !== undefined && follower.isTouched(next, found);
-};
+  const found = nodeAt(after, node);
 
-const isNode = (node: ts.Node): node is ts.Node => {
-  return node.kind !== ts.SyntaxKind.Unknown;
+  return follower.isTouched(found);
 };
 
 describe('Follower.isTouched', () => {
   it.each([
     [
-      'a node a rewrite wrote',
+      'a node an edit wrote',
       'f(a);',
-      'f(b);',
+      [swap('f(a);', 'a', 'b')],
       'b',
     ],
     [
-      'a node a rewrite wrote inside',
+      'a node an edit wrote inside',
       'f([a, b]);',
-      'f([a, c]);',
+      [swap('f([a, b]);', 'b', 'c')],
       '[a, c]',
     ],
     [
-      'a node a rewrite dropped a token from between',
+      'a node an edit took a token out of',
       'f([a, b, c]);',
-      'f([a, c]);',
+      [swap('f([a, b, c]);', ', b', '')],
       '[a, c]',
     ],
     [
-      'a node holding a token a rewrite wrote',
+      'a node two edits from one place wrote',
       'f(a);',
-      'f(b);',
+      [swap('f(a);', '', 'g', 2), swap('f(a);', 'a', 'b')],
+      'gb',
+    ],
+    [
+      'a node holding what an edit wrote',
+      'f(a);',
+      [swap('f(a);', 'a', 'b')],
       'f(b)',
     ],
-  ])('answers yes for %s', (_name, before, after, node) => {
-    const isTouched = touched(before, after, node);
+    [
+      'a node holding a carried one an edit wrote round',
+      'x = f(a);',
+      [wrap('x = f(a);', 'f(a)', 'g(', ')')],
+      'g(f(a))',
+    ],
+  ])('answers yes for %s', (_name, before, edits, node) => {
+    const isTouched = touched(before, edits, node);
 
     expect(isTouched).toBe(true);
   });
@@ -224,40 +277,131 @@ describe('Follower.isTouched', () => {
     [
       'a node left as it was',
       'f([a, b]); g(1);',
-      'f([a, b]); g(2);',
+      [swap('f([a, b]); g(1);', '1', '2')],
       '[a, b]',
     ],
     [
-      'a node a token was dropped beside, not inside',
+      'a node a token was taken out beside, not inside',
       'f([a, b], c);',
-      'f([a, b]);',
+      [swap('f([a, b], c);', ', c', '')],
       '[a, b]',
     ],
     [
       'a node a token was written beside',
       'f([a, b]);',
-      'f([a, b], c);',
+      [swap('f([a, b]);', '', ', c', 8)],
       '[a, b]',
     ],
-  ])('answers no for %s', (_name, before, after, node) => {
-    const isTouched = touched(before, after, node);
+    [
+      'a node an edit only reindented inside',
+      'f([\n  a,\n]);',
+      [swap('f([\n  a,\n]);', '  ', '    ')],
+      '[\n    a,\n]',
+    ],
+    [
+      'a node an edit carried whole, writing round it',
+      'x = f(a);',
+      [wrap('x = f(a);', 'f(a)', 'g(', ')')],
+      'f(a)',
+    ],
+  ])('answers no for %s', (_name, before, edits, node) => {
+    const isTouched = touched(before, edits, node);
 
     expect(isTouched).toBe(false);
   });
 
-  it('answers for each node of one text, read once', () => {
-    const first = parse('f(a); g(b);');
-    const next = parse('f(a); g(c);');
-    const follower = new Follower(first);
-
-    follower.follow(first, next);
-
-    const [left, right] = collect(next, ts.isCallExpression);
-    const answers = [left, right]
-      .map((call) => {
-        return call !== undefined && follower.isTouched(next, call);
+  it('marks only what an edit writes and takes out between the runs it carries, in any order', () => {
+    const text = 'f(a, b, c);';
+    const swapped = joined([
+      copied(text, {
+        start: 8,
+        end: 9,
+      }),
+      plain(', '),
+      copied(text, {
+        start: 2,
+        end: 3,
+      }),
+    ]);
+    const edit = editOf({
+      start: 2,
+      end: 9,
+    }, swapped);
+    const edits = [edit];
+    const answers = [
+      'c',
+      'a',
+      'f(c, a)',
+    ]
+      .map((node) => {
+        return touched(text, edits, node);
       });
 
-    expect(answers).toStrictEqual([false, true]);
+    expect(answers).toStrictEqual([
+      false,
+      false,
+      true,
+    ]);
+  });
+
+  it('keeps what an edit wrote touched as later edits move it, carry it, or write round it', () => {
+    const first = 'x = a; y = 1;';
+    const second = 'x = f(b); y = 1;';
+    const third = 'z = 0; x = g(f(b)); y = 1;';
+    const follower = new Follower();
+
+    follower.follow(first, [swap(first, 'a', 'f(b)')]);
+    follower.follow(second, [swap(second, '', 'z = 0; '), wrap(second, 'f(b)', 'g(', ')')]);
+
+    const file = parse(third);
+    const answers = [
+      nodeAt(file, 'f(b)'),
+      nodeAt(file, 'b'),
+      nodeAt(file, 'y = 1;'),
+    ]
+      .map((node) => {
+        return follower.isTouched(node);
+      });
+
+    expect(answers).toStrictEqual([
+      true,
+      true,
+      false,
+    ]);
+  });
+
+  it('keeps where an edit took something out as later edits move it, carry it, or replace round it', () => {
+    const first = 'x = [a, b, c];';
+    const second = 'x = [a, c];';
+    const third = 'q; x = [a, c];';
+    const fourth = 'q; x = ([a, c]);';
+    const fifth = 'q; x = ([d, c]);';
+    const follower = new Follower();
+
+    follower.follow(first, [swap(first, ', b', '')]);
+    follower.follow(second, [swap(second, '', 'q; ')]);
+
+    const movedNode = nodeAt(parse(third), '[a, c]');
+    const moved = follower.isTouched(movedNode);
+
+    follower.follow(third, [wrap(third, '[a, c]', '(', ')')]);
+
+    const carriedNode = nodeAt(parse(fourth), '[a, c]');
+    const carried = follower.isTouched(carriedNode);
+
+    follower.follow(fourth, [swap(fourth, 'a, ', 'd, ')]);
+
+    const replacedNode = nodeAt(parse(fifth), '[d, c]');
+    const replaced = follower.isTouched(replacedNode);
+
+    expect([
+      moved,
+      carried,
+      replaced,
+    ]).toStrictEqual([
+      true,
+      true,
+      true,
+    ]);
   });
 });

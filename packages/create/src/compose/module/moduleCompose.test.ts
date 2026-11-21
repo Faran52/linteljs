@@ -1468,6 +1468,42 @@ const MORE_CASES: Case[] = [
     expected: 'export const y = [1, true];\n',
   },
   {
+    name: 'filled code written like the author code beside it, simplified, the author code left',
+    base: [
+      'import { on } from \'./p\';',
+      '',
+      'export const y = [on, true ? 1 : 2];',
+      'export const z = <p>{on}{true ? 1 : 2}</p>;',
+      '',
+    ].join('\n'),
+    option: 'export const on = true ? 1 : 2;\n',
+    expected: [
+      'export const y = [1, true ? 1 : 2];',
+      'export const z = <p>{1}{true ? 1 : 2}</p>;',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'of two bindings of one name, the base\'s that filling leaves unread dropped, the option\'s kept',
+    base: [
+      'import { Item, row } from \'./p\';',
+      '',
+      'export const a = [row, ({ id }: P) => <Item id={id} />];',
+      'export const b = [({ id }: P) => <Item id={id} />, row];',
+      '',
+    ].join('\n'),
+    option: [
+      'export const Item = () => <li />;',
+      'export const row = ({ id }: P) => <li />;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const a = [({ id }: P) => <li />, () => <li />];',
+      'export const b = [() => <li />, ({ id }: P) => <li />];',
+      '',
+    ].join('\n'),
+  },
+  {
     name: 'a pattern with a default, left as written',
     base: [
       'import { Item } from \'./p\';',

@@ -24,6 +24,11 @@ export type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment
 
 export type MemberRead = ts.PropertyAccessExpression | ts.ElementAccessExpression;
 
+export interface Fitting {
+  before: string;
+  after: string;
+}
+
 // TSX for every module, so one parser reads a base and its option modules alike.
 export const parse = (text: string): ts.SourceFile => {
   return ts.createSourceFile('module.tsx', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -43,17 +48,6 @@ export const textOf = (node: ts.Node): string => {
   const { start, end } = spanOf(node);
 
   return text.slice(start, end);
-};
-
-export const splice = (text: string, span: Span, insert: string): string => {
-  return text.slice(0, span.start) + insert + text.slice(span.end);
-};
-
-// A node's text replaced, the rest left as written.
-export const swapped = (text: string, node: ts.Node, insert: string): string => {
-  const span = spanOf(node);
-
-  return splice(text, span, insert);
 };
 
 export const lineStart = (text: string, position: number): number => {
@@ -151,21 +145,32 @@ const heldLines = (block: string): Set<number> => {
   return new Set(held);
 };
 
-// Every line after the first moves from one indentation to another; a blank line, and one inside a string or a
-// template written over lines, stays as it is.
-export const reindent = (block: string, from: string, to: string): string => {
+// The lines, by index, that move from one indentation to another: every line after the first that opens with it, but
+// a blank line, and one inside a string or a template written over lines, whose text is its value.
+export const movedLines = (block: string, from: string): Set<number> => {
   const held = heldLines(block);
   const moved = block
     .split('\n')
-    .map((line, index) => {
-      if (index === 0 || held.has(index) || line.trim() === '') {
-        return line;
-      }
-
-      return line.startsWith(from) ? to + line.slice(from.length) : line;
+    .entries()
+    .filter(([index, line]) => {
+      return index > 0 && !held.has(index) && line.trim() !== '' && line.startsWith(from);
+    })
+    .map(([index]) => {
+      return index;
     });
 
-  return moved.join('\n');
+  return new Set(moved);
+};
+
+export const reindent = (block: string, from: string, to: string): string => {
+  const moved = movedLines(block, from);
+
+  return block
+    .split('\n')
+    .map((line, index) => {
+      return moved.has(index) ? to + line.slice(from.length) : line;
+    })
+    .join('\n');
 };
 
 export const unparen = (node: ts.Expression): ts.Expression => {
@@ -483,25 +488,37 @@ const roomAt = (replaced: ts.Node): number => {
   return CALLED_FROM.has(parent.kind) ? LEVEL.call : LEVEL.member;
 };
 
-// An expression's text as it can stand in place of `replaced` without changing what either means.
-export const fitted = (replaced: ts.Node, expression: ts.Expression): string => {
-  const text = textOf(expression);
+// What an expression's text needs around it to stand in place of `replaced` without changing what either means.
+export const fittingOf = (replaced: ts.Node, expression: ts.Expression): Fitting => {
   const { parent } = replaced;
+  const wrapped: Fitting = {
+    before: '(',
+    after: ')',
+  };
+  const bare: Fitting = {
+    before: '',
+    after: '',
+  };
 
   if (ts.isShorthandPropertyAssignment(parent)) {
-    return `${textOf(replaced)}: ${text}`;
+    const named: Fitting = {
+      before: `${textOf(replaced)}: `,
+      after: '',
+    };
+
+    return named;
   }
 
   if (ts.isArrowFunction(parent) && parent.body === replaced) {
     const isWhole = !ts.isObjectLiteralExpression(expression) && levelOf(expression) >= LEVEL.assignment;
 
-    return isWhole ? text : `(${text})`;
+    return isWhole ? bare : wrapped;
   }
 
   // `4.toFixed()` does not parse.
   const isDotted = ts.isNumericLiteral(expression) && ts.isPropertyAccessExpression(parent);
 
-  return levelOf(expression) >= roomAt(replaced) && !isDotted ? text : `(${text})`;
+  return levelOf(expression) >= roomAt(replaced) && !isDotted ? bare : wrapped;
 };
 
 // The same expression parsed alone, for the cases where a text has to become a node again.
@@ -528,22 +545,4 @@ export const isPlainElement = (element: ts.BindingElement): boolean => {
   const isRenamed = element.propertyName !== undefined || element.dotDotDotToken !== undefined;
 
   return !isRenamed && element.initializer === undefined && ts.isIdentifier(element.name);
-};
-
-// Up to two names on one line, more than two broken, one per line.
-export const patternOf = (names: readonly string[], indent: string): string => {
-  if (names.length === 0) {
-    return '{}';
-  }
-
-  if (names.length <= 2) {
-    return `{ ${names.join(', ')} }`;
-  }
-
-  const lines = names
-    .map((name) => {
-      return `${indent}  ${name},`;
-    });
-
-  return `{\n${lines.join('\n')}\n${indent}}`;
 };

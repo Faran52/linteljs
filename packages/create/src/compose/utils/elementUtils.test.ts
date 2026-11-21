@@ -10,6 +10,7 @@ import {
   sourcesOf,
   type Trust,
 } from './bindingUtils';
+import { applied } from './editUtils';
 import { inlineElement } from './elementUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
@@ -36,9 +37,13 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
   const [head] = heads;
   const checker = scopeOf(file, sources.modules, sources.held);
 
-  return head === undefined || !ts.isIdentifier(head.tagName)
-    ? undefined
-    : inlineElement(text, sources, head.tagName, head, checker);
+  if (head === undefined || !ts.isIdentifier(head.tagName)) {
+    return undefined;
+  }
+
+  const edits = inlineElement(text, sources, head.tagName, head, checker);
+
+  return applied(text, edits);
 };
 
 const filled = (body: string, option: string): Filled => {

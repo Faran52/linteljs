@@ -18,6 +18,7 @@ import {
   returnedOf,
   substitutions,
 } from './callUtils';
+import { applied, plain } from './editUtils';
 import { type Proof } from './effectUtils';
 import { scopeOf } from './scopeUtils';
 import {
@@ -51,12 +52,16 @@ const inlined = (body: string, option: string): string => {
   const { parent } = local;
 
   if (ts.isPropertyAccessExpression(parent)) {
-    return inlineMember(sources.body, sources, local, parent, checker);
+    const edits = inlineMember(sources.body, sources, local, parent, checker);
+
+    return applied(sources.body, edits);
   }
 
-  return ts.isCallExpression(parent)
+  const edits = ts.isCallExpression(parent)
     ? inlineCall(sources.body, sources, local, parent, checker)
     : inlineValue(sources.body, sources, local, checker);
+
+  return applied(sources.body, edits);
 };
 
 const table = (members: string): string => {
@@ -725,7 +730,8 @@ describe('captureCheck, effectCheck and substitutions', () => {
       returned,
     } = calledOf(option);
     const [parameter] = arrow.parameters;
-    const edits = parameter === undefined ? [] : substitutions(checker, returned, parameter, expressionOf('a * 2'));
+    const argument = expressionOf('a * 2');
+    const edits = parameter === undefined ? [] : substitutions(checker, returned, parameter, argument, plain('a * 2'));
     const first = option.indexOf('n +');
     const last = option.lastIndexOf('n;');
 
@@ -734,11 +740,13 @@ describe('captureCheck, effectCheck and substitutions', () => {
         start: first,
         end: first + 1,
         insert: 'a * 2',
+        copies: [],
       },
       {
         start: last,
         end: last + 1,
         insert: 'a * 2',
+        copies: [],
       },
     ]);
   });

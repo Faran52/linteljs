@@ -122,6 +122,11 @@ describe('simplifiedOnce', () => {
       'x = <a data-x={1} />;',
     ],
     [
+      'a string written with an escape, as its value',
+      'x = <a {...{ t: \'it\\\'s\' }} />;',
+      'x = <a t="it\'s" />;',
+    ],
+    [
       'a string a quoted attribute cannot hold',
       'x = <a {...{ t: \'a"b\' }} />;',
       'x = <a t={\'a"b\'} />;',

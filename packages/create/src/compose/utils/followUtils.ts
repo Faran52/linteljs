@@ -1,275 +1,238 @@
-import { zip } from 'es-toolkit';
 import ts from 'typescript';
 
-// A token of a text, without its trivia, so a step that only reindents moves it without changing it.
-interface Leaf {
-  start: number;
-  text: string;
+import {
+  type Copy,
+  type Edit,
+  type Written,
+  writtenWith,
+} from './editUtils';
+import { type Span, spanOf } from './sourceUtils';
+
+// An edit and where what it writes starts in the text it makes.
+interface Placed {
+  edit: Edit;
+  at: number;
 }
 
-type Kept = [number, number];
+const WRITTEN = /\S/u;
 
-type Round = ReadonlyMap<number, number>;
-
-// A token of the first text: where it stood and its place among that text's tokens.
-interface Origin {
-  start: number;
-  index: number;
-}
-
-// Where rewrites wrote or dropped something, from one token start to another.
-interface Mark {
-  from: number;
-  to: number;
-}
-
-// Each text is the next of one rewrite and the last of another, so its tokens are read once.
-const LEAVES = new WeakMap<ts.SourceFile, Leaf[]>();
-
-const leavesOf = (file: ts.SourceFile): Leaf[] => {
-  const known = LEAVES.get(file);
-
-  if (known !== undefined) {
-    return known;
-  }
-
-  const leaves: Leaf[] = [];
-
-  const visit = (node: ts.Node): void => {
-    const count = leaves.length;
-
-    node.forEachChild(visit);
-
-    const start = node.getStart(file);
-    const text = file.text.slice(start, node.getEnd());
-
-    if (leaves.length === count && text.trim() !== '') {
-      leaves.push({
-        start,
-        text,
-      });
-    }
+const pointAt = (position: number): Span => {
+  const point: Span = {
+    start: position,
+    end: position,
   };
 
-  visit(file);
-  LEAVES.set(file, leaves);
-
-  return leaves;
+  return point;
 };
 
-// The furthest token of the first list each diagonal reaches; before the first edit the path stands at 0.
-const endOf = (round: Round, diagonal: number): number => {
-  return round.get(diagonal) ?? 0;
-};
+// The runs of what one edit wrote that hold more than whitespace, each trimmed to it.
+const writtenOf = (edit: Edit, at: number): Span[] => {
+  const ordered = edit.copies
+    .toSorted((left, right) => {
+      return left.to - right.to;
+    });
+  const end: Copy = {
+    from: 0,
+    to: edit.insert.length,
+    length: 0,
+  };
+  const gaps: Span[] = [];
+  let from = 0;
 
-// The diagonal a path on this one came from, by the move Myers takes there.
-const previousOf = (round: Round, diagonal: number, edits: number): number => {
-  const isEdge = diagonal === -edits;
-  const isDown = isEdge || (diagonal !== edits && endOf(round, diagonal - 1) < endOf(round, diagonal + 1));
+  const stops = [...ordered, end];
 
-  return isDown ? diagonal + 1 : diagonal - 1;
-};
+  for (const copy of stops) {
+    const gap = edit.insert.slice(from, copy.to);
+    const first = gap.search(WRITTEN);
 
-// Each round of Myers' search over two token lists, as the ends it starts from, up to the round that reaches both ends.
-const traceOf = (before: readonly string[], after: readonly string[]): Round[] => {
-  const trace: Round[] = [];
-  let round: Round = new Map<number, number>();
-  let edits = 0;
-  let isDone = false;
+    if (first !== -1) {
+      const last = gap.length - gap.trimEnd().length;
+      const span: Span = {
+        start: at + from + first,
+        end: at + copy.to - last,
+      };
 
-  while (!isDone) {
-    const next = new Map(round);
-
-    trace.push(round);
-
-    for (let diagonal = -edits; diagonal <= edits && !isDone; diagonal += 2) {
-      const previous = previousOf(round, diagonal, edits);
-      let x = endOf(round, previous) + (previous < diagonal ? 1 : 0);
-      let y = x - diagonal;
-
-      while (x < before.length && y < after.length && before[x] === after[y]) {
-        x += 1;
-        y += 1;
-      }
-
-      next.set(diagonal, x);
-      isDone = x >= before.length && y >= after.length;
+      gaps.push(span);
     }
 
-    round = next;
-    edits += 1;
+    from = Math.max(from, copy.to + copy.length);
   }
 
-  return trace;
+  return gaps;
 };
 
-// The pairs of indices a shortest edit script between two token lists keeps, walked back from both ends.
-const keptOf = (before: readonly string[], after: readonly string[]): Kept[] => {
-  const rounds = traceOf(before, after)
-    .entries()
-    .toArray();
-  const kept: Kept[] = [];
-  let x = before.length;
-  let y = after.length;
+// Where an edit took out more than whitespace: right after the copy before what it took, else where it starts.
+const removedOf = (text: string, edit: Edit, at: number): Span[] => {
+  const ordered = edit.copies
+    .toSorted((left, right) => {
+      return left.from - right.from;
+    });
+  const end: Copy = {
+    from: edit.end,
+    to: 0,
+    length: 0,
+  };
+  const points: Span[] = [];
+  let from = edit.start;
+  let point = at;
 
-  for (const [edits, ends] of rounds.toReversed()) {
-    const previous = previousOf(ends, x - y, edits);
-    const fromX = endOf(ends, previous);
-    const fromY = fromX - previous;
+  const stops = [...ordered, end];
 
-    while (x > fromX && y > fromY) {
-      x -= 1;
-      y -= 1;
-      kept.push([x, y]);
+  for (const copy of stops) {
+    const taken = text.slice(from, copy.from);
+
+    if (WRITTEN.test(taken)) {
+      points.push(pointAt(point));
     }
 
-    x = fromX;
-    y = fromY;
+    from = Math.max(from, copy.from + copy.length);
+    point = at + copy.to + copy.length;
   }
 
-  return kept;
+  return points;
 };
 
-const textsOf = (leaves: readonly Leaf[]): string[] => {
-  return leaves
-    .map(({ text }) => {
-      return text;
+// Where a position lands: past every edit before it, and inside one, where a copy carries it or where the edit starts.
+const pointIn = (placed: readonly Placed[], position: number): number => {
+  let landed = position;
+
+  for (const { edit, at } of placed) {
+    const copy = edit.copies
+      .find(({ from, length }) => {
+        return from <= position && position <= from + length;
+      });
+
+    if (edit.end <= position) {
+      landed = position - edit.end + at + edit.insert.length;
+    }
+    else if (edit.start < position) {
+      landed = copy === undefined ? at : at + copy.to + position - copy.from;
+    }
+  }
+
+  return landed;
+};
+
+// Each piece of a span that runs carry unchanged, where it lands.
+const spansIn = (runs: readonly Copy[], span: Span): Span[] => {
+  return runs
+    .flatMap((run) => {
+      const start = Math.max(span.start, run.from);
+      const end = Math.min(span.end, run.from + run.length);
+      const kept: Span[] = end > start
+        ? [{
+            start: run.to + start - run.from,
+            end: run.to + end - run.from,
+          }]
+        : [];
+
+      return kept;
     });
 };
 
-// Where each token of one text stands in the next, for the tokens a rewrite left as they were.
-const movesOf = (before: ts.SourceFile, after: ts.SourceFile): Map<number, number> => {
-  const from = leavesOf(before);
-  const to = leavesOf(after);
-  const kept = keptOf(textsOf(from), textsOf(to));
-  const keptFrom = new Set(kept
-    .map(([left]) => {
-      return left;
-    }));
-  const keptTo = new Set(kept
-    .map(([, right]) => {
-      return right;
-    }));
-
-  const stayed = (leaves: readonly Leaf[], indices: ReadonlySet<number>): number[] => {
-    return leaves
-      .filter((_leaf, index) => {
-        return indices.has(index);
-      })
-      .map(({ start }) => {
-        return start;
-      });
-  };
-
-  const fromStarts = stayed(from, keptFrom);
-  const toStarts = stayed(to, keptTo);
-  const pairs = zip(fromStarts, toStarts);
-
-  return new Map(pairs);
+const isPoint = (mark: Span): boolean => {
+  return mark.start === mark.end;
 };
 
-// Each token of a text followed through every rewrite of it, back to the token of the first text it was, if any: a
-// token a rewrite wrote has none.
+const isSame = (left: Span, right: Span): boolean => {
+  return left.start === right.start && left.end === right.end;
+};
+
+/**
+ * Tokens and what filling wrote, carried through every edit of a text exactly: a token keeps its identity while no
+ * edit covers it or an edit carries it whole, and a span is touched when an edit wrote into it or took something out
+ * of it. Whitespace alone, as a reindent writes, is not written.
+ */
 export class Follower {
-  private origins: Map<number, Origin | undefined>;
+  private tracked: Span[] = [];
 
-  private readonly tracked = new Set<number>();
+  private marks: Span[] = [];
 
-  private readonly marks = new WeakMap<ts.SourceFile, Mark[]>();
-
-  public constructor(first: ts.SourceFile) {
-    const origins = leavesOf(first)
-      .map(({ start }, index) => {
-        const origin: Origin = {
-          start,
-          index,
-        };
-        const pair: [number, Origin] = [start, origin];
-
-        return pair;
-      });
-
-    this.origins = new Map(origins);
+  // A token of the text as it now stands.
+  public track(node: ts.Node): void {
+    this.tracked.push(spanOf(node));
   }
 
-  // A token of the first text, by where it starts there.
-  public track(start: number): void {
-    this.tracked.add(start);
-  }
+  // Whether a node is, whole, a token that was tracked.
+  public has(node: ts.Node): boolean {
+    const span = spanOf(node);
 
-  // Whether the token now at a position is one tracked in the first text.
-  public has(position: number): boolean {
-    const origin = this.origins.get(position);
-
-    return origin !== undefined && this.tracked.has(origin.start);
-  }
-
-  // Whether rewrites wrote a token of a node, or dropped one from between its tokens.
-  public isTouched(file: ts.SourceFile, node: ts.Node): boolean {
-    const start = node.getStart(file);
-    const end = node.getEnd();
-
-    return this
-      .marksOf(file)
-      .some(({ from, to }) => {
-        return from >= start && to < end;
+    return this.tracked
+      .some((tracked) => {
+        return isSame(tracked, span);
       });
   }
 
-  public readonly follow = (before: ts.SourceFile, after: ts.SourceFile): void => {
-    const moves = movesOf(before, after);
-    const origins = [...moves]
-      .map(([from, to]) => {
-        const pair: [number, Origin | undefined] = [to, this.origins.get(from)];
+  // Whether edits wrote into a node, or took something out from inside it.
+  public isTouched(node: ts.Node): boolean {
+    const { start, end } = spanOf(node);
 
-        return pair;
+    return this.marks
+      .some((mark) => {
+        return isPoint(mark) ? mark.start > start && mark.start < end : mark.start < end && mark.end > start;
+      });
+  }
+
+  public readonly follow = (text: string, edits: readonly Edit[]): void => {
+    const whole: Written = {
+      insert: text,
+      copies: [{
+        from: 0,
+        to: 0,
+        length: text.length,
+      }],
+    };
+    const runs = writtenWith(whole, edits).copies;
+    const placed: Placed[] = [];
+    let shift = 0;
+
+    for (const edit of edits
+      .toSorted((left, right) => {
+        return left.start - right.start || left.end - right.end;
+      })) {
+      placed.push({
+        edit,
+        at: edit.start + shift,
       });
 
-    this.origins = new Map(origins);
-  };
-
-  // A written token, as itself, and a dropped one, as the two tokens either side of it.
-  private marksOf(file: ts.SourceFile): Mark[] {
-    const known = this.marks.get(file);
-
-    if (known !== undefined) {
-      return known;
+      shift += edit.insert.length - edit.end + edit.start;
     }
 
-    const leaves = leavesOf(file);
-    const written = leaves
-      .filter(({ start }) => {
-        return this.origins.get(start) === undefined;
-      })
-      .map(({ start }) => {
-        const mark: Mark = {
-          from: start,
-          to: start,
-        };
-
-        return mark;
+    const tracked = this.tracked
+      .flatMap((span) => {
+        return spansIn(runs, span)
+          .filter((landed) => {
+            return landed.end - landed.start === span.end - span.start;
+          });
       });
-    const lefts = leaves.slice(0, -1);
-    const rights = leaves.slice(1);
-    const dropped = zip(lefts, rights)
-      .filter(([left, right]) => {
-        const leftIndex = this.origins.get(left.start)?.index;
-        const rightIndex = this.origins.get(right.start)?.index;
+    const moved = this.marks
+      .filter(isPoint)
+      .map((mark) => {
+        const landed = pointIn(placed, mark.start);
 
-        return leftIndex !== undefined && rightIndex !== undefined && rightIndex - leftIndex > 1;
-      })
-      .map(([left, right]) => {
-        const mark: Mark = {
-          from: left.start,
-          to: right.start,
-        };
-
-        return mark;
+        return pointAt(landed);
       });
-    const marks = [...written, ...dropped];
+    const carried = this.marks
+      .filter((mark) => {
+        return !isPoint(mark);
+      })
+      .flatMap((mark) => {
+        return spansIn(runs, mark);
+      });
+    const added = placed
+      .flatMap(({ edit, at }) => {
+        const written = writtenOf(edit, at);
+        const removed = removedOf(text, edit, at);
 
-    this.marks.set(file, marks);
+        return written.concat(removed);
+      });
 
-    return marks;
-  }
+    this.tracked = tracked;
+
+    this.marks = [
+      ...moved,
+      ...carried,
+      ...added,
+    ];
+  };
 }

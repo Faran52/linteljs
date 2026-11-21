@@ -5,7 +5,11 @@ import {
   resolved,
   type Sources,
 } from './bindingUtils';
-import { refusal } from './editUtils';
+import {
+  applied,
+  type Edit,
+  refusal,
+} from './editUtils';
 import {
   declarationOf,
   resolvedAt,
@@ -19,9 +23,10 @@ import {
   textOf,
 } from './sourceUtils';
 
-export type Step = (text: string, file: ts.SourceFile) => string | undefined;
+// A rewrite answers the edits it makes of the text, so what each one carries or writes is known, never guessed.
+export type Step = (text: string, file: ts.SourceFile) => readonly Edit[] | undefined;
 
-export type Watch = (before: ts.SourceFile, after: ts.SourceFile) => void;
+export type Watch = (text: string, edits: readonly Edit[]) => void;
 
 const MARKER = '@lintel:';
 const STEP_LIMIT = 10_000;
@@ -32,16 +37,16 @@ export const settled = (text: string, once: Step, watch?: Watch): string => {
   let file = parse(text);
 
   for (let steps = 0; steps < STEP_LIMIT; steps += 1) {
-    const next = once(file.text, file);
+    const edits = once(file.text, file);
 
-    if (next === undefined) {
+    if (edits === undefined) {
       return file.text;
     }
 
-    const nextFile = parse(next);
+    const next = applied(file.text, edits);
 
-    watch?.(file, nextFile);
-    file = nextFile;
+    watch?.(file.text, edits);
+    file = parse(next);
   }
 
   throw new Error('The composition did not settle; an option module refers back to itself.');

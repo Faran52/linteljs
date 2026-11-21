@@ -14,6 +14,13 @@ import {
   type Sources,
   sourcesOf,
 } from '../utils/bindingUtils';
+import {
+  copyOf,
+  type Edit,
+  editOf,
+  patternOf,
+  plain,
+} from '../utils/editUtils';
 import { Follower } from '../utils/followUtils';
 import { importBlock, type ImportGroups } from '../utils/importUtils';
 import { filledOnce } from '../utils/inlineUtils';
@@ -30,11 +37,9 @@ import {
   isPlainElement,
   isReference,
   parse,
-  patternOf,
   referencesIn,
   type Span,
-  splice,
-  swapped,
+  spanOf,
   textOf,
   valueOf,
 } from '../utils/sourceUtils';
@@ -174,11 +179,11 @@ const destructuredIn = (file: ts.SourceFile): Destructured[] => {
 };
 
 // A pattern with no name left: the parameter goes when none follows it, else it stays as `{}`.
-const emptied = (text: string, {
+const emptied = ({
   arrow,
   parameter,
   pattern,
-}: Destructured): string => {
+}: Destructured): Edit => {
   const index = arrow.parameters.indexOf(parameter);
   const previous = arrow.parameters[index - 1];
   const gone: Span = {
@@ -186,18 +191,22 @@ const emptied = (text: string, {
     end: parameter.getEnd(),
   };
 
-  return index === arrow.parameters.length - 1 ? splice(text, gone, '') : swapped(text, pattern, '{}');
+  const isLast = index === arrow.parameters.length - 1;
+  const span = isLast ? gone : spanOf(pattern);
+  const left = plain(isLast ? '' : '{}');
+
+  return editOf(span, left);
 };
 
 const beforeOf = (base: string, text: string, sources: Sources): Before => {
   const file = parse(text);
   const checker = scopeOf(file, sources.modules, sources.held);
-  const follower = new Follower(file);
+  const follower = new Follower();
 
   for (const { arrow, pattern } of destructuredIn(file)) {
     for (const element of pattern.elements) {
       if (referencesTo(checker, element, arrow).length > 0) {
-        follower.track(element.name.getStart());
+        follower.track(element.name);
       }
     }
   }
@@ -236,24 +245,27 @@ const prunedOnce = (follower: Follower): Step => {
         });
       const kept = pattern.elements
         .filter(({ name }) => {
-          const start = name.getStart();
           const reads = referencesIn(arrow, textOf(name));
 
-          return !follower.has(start) || reads.length > 0;
+          return !follower.has(name) || reads.length > 0;
         })
         .map(({ name }) => {
-          return textOf(name);
+          return copyOf(name);
         });
 
       if (kept.length === 0 && names.length > 0) {
-        return emptied(text, site);
+        const gone = [emptied(site)];
+
+        return gone;
       }
 
       if (kept.length < names.length) {
         const indent = indentOf(text, pattern);
         const printed = patternOf(kept, indent);
+        const span = spanOf(pattern);
+        const pruned = [editOf(span, printed)];
 
-        return swapped(text, pattern, printed);
+        return pruned;
       }
     }
 
@@ -282,7 +294,7 @@ export const moduleCompose = (request: ComposeRequest): string => {
   }, follower.follow);
   const simplified = settled(filled, (text, file) => {
     return simplifiedOnce(text, file, (node) => {
-      return follower.isTouched(file, node);
+      return follower.isTouched(node);
     });
   }, follower.follow);
   const pruned = settled(simplified, prunedOnce(follower), follower.follow);
