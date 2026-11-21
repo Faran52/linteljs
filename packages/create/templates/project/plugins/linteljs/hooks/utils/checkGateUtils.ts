@@ -46,6 +46,8 @@ interface Project {
   directory: string;
   index: string;
   manager: string;
+  // A linked worktree, not the main one: its git directory is not the common one.
+  linked: boolean;
 }
 
 interface CheckRecord {
@@ -167,6 +169,8 @@ export const projectOf = (cwd: string): Project | undefined => {
       'linteljs',
       '--git-path',
       'index',
+      '--git-dir',
+      '--git-common-dir',
     ]);
   });
 
@@ -178,10 +182,12 @@ export const projectOf = (cwd: string): Project | undefined => {
     root,
     directory,
     index,
+    gitDirectory,
+    commonDirectory,
   ] = paths.split('\n');
 
   // A `git` that answers fewer lines (a wrapper, or one older than `--path-format`) has no project to name.
-  if (root === undefined || directory === undefined || index === undefined) {
+  if (root === undefined || directory === undefined || index === undefined || commonDirectory === undefined) {
     return undefined;
   }
 
@@ -198,6 +204,7 @@ export const projectOf = (cwd: string): Project | undefined => {
     directory,
     index,
     manager: managerOf(packageJson),
+    linked: gitDirectory !== commonDirectory,
   };
 
   return project;
@@ -491,7 +498,17 @@ const docsOnly = (project: Project): boolean => {
     });
 };
 
+// A project that sets `LINTELJS_GATE_WORKTREES=off` runs the check once before a branch merges, so a linked
+// worktree commits unheld; the main working tree is held as ever.
+const unheld = (project: Project): boolean => {
+  return project.linked && process.env['LINTELJS_GATE_WORKTREES'] === 'off';
+};
+
 const heldReason = (project: Project): string | undefined => {
+  if (unheld(project)) {
+    return undefined;
+  }
+
   const state = stateOf(project);
 
   if (state === 'passed' || docsOnly(project)) {

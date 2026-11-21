@@ -60,6 +60,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- In Claude Code, `LINTELJS_GATE_WORKTREES=off` in the settings `env` lets a commit in a linked git worktree
+  through without the gate hold, for a project that runs the check once before the merge; the main working tree is
+  held as before.
 - `--e2e` (`playwright`, or `maestro` on react-native) and `--stories` (`storybook`) are asked per project and
   recorded in `linteljs.config.json`; the files they emit arrive in a later release.
 - Nuxt is a target.

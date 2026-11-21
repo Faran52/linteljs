@@ -79,6 +79,17 @@ const scratchDirectory = (name: string): string => {
   return realpathSync(directory);
 };
 
+// A linked worktree with code to commit, inside the scratch repository so it goes when that does.
+const linkedWorktree = (): string => {
+  const worktree = join(root, 'linked');
+  git('add', 'package.json');
+  git('-c', 'user.name=x', '-c', 'user.email=x@x', 'commit', '--quiet', '-m', 'x');
+  git('worktree', 'add', '--quiet', worktree);
+  writeFileSync(join(worktree, 'a.ts'), 'x');
+
+  return worktree;
+};
+
 const statePath = (): string => {
   const directory = git('rev-parse', '--path-format=absolute', '--git-path', 'linteljs');
   return join(directory, 'check.json');
@@ -129,6 +140,7 @@ describe('projectOf', () => {
       directory: join(root, '.git/linteljs'),
       index: join(root, '.git/index'),
       manager: 'pnpm',
+      linked: false,
     });
   });
 
@@ -163,9 +175,13 @@ describe('projectOf', () => {
     expect(project?.root).toBe(root);
   });
 
-  it('answers nothing from a git that names fewer than three paths', () => {
+  it.each([
+    ['one', 'echo {root}'],
+    ['four', 'printf "{root}\\n{root}\\n{root}\\n{root}\\n"'],
+  ])('answers nothing from a git that names %s of its five paths', (_label, script) => {
     const planted = scratchDirectory('short');
-    writeFileSync(join(planted, 'git'), `#!/bin/sh\necho ${root}\n`, { mode: 0o755 });
+    const body = script.replaceAll('{root}', root);
+    writeFileSync(join(planted, 'git'), `#!/bin/sh\n${body}\n`, { mode: 0o755 });
     vi.stubEnv('PATH', planted);
 
     const project = projectOf(root);
@@ -600,6 +616,49 @@ describe('commitGateReason', () => {
 
     expect(running).toContain('it has not finished, or was stopped');
     expect(stale).toContain('files changed since it passed');
+  });
+
+  it.each([
+    [
+      'held without the opt-in, in a linked worktree',
+      undefined,
+      true,
+      'not run on these files',
+    ],
+    [
+      'held with the opt-in, in the main working tree',
+      'off',
+      false,
+      'not run on these files',
+    ],
+    [
+      'held with another value, in a linked worktree',
+      'on',
+      true,
+      'not run on these files',
+    ],
+  ])('is %s', (_label, value, linked, why) => {
+    vi.stubEnv('LINTELJS_GATE_WORKTREES', value);
+    const cwd = linked ? linkedWorktree() : root;
+    const reason = commitGateReason({
+      ...shell('git commit -m x'),
+      cwd,
+    });
+
+    expect(reason).toContain(why);
+  });
+
+  it('lets a linked worktree commit unheld once the project opts in', () => {
+    vi.stubEnv('LINTELJS_GATE_WORKTREES', 'off');
+    const worktree = linkedWorktree();
+    const reason = commitGateReason({
+      ...shell('git commit -m x'),
+      cwd: worktree,
+    });
+    const project = projectOf(worktree);
+
+    expect(reason).toBeUndefined();
+    expect(project?.linked).toBe(true);
   });
 
   it('lets a commit through once the check passed on the same files', () => {

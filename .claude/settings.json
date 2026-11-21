@@ -1,5 +1,8 @@
 {
   "includeCoAuthoredBy": false,
+  "env": {
+    "LINTELJS_GATE_WORKTREES": "off"
+  },
   "hooks": {
     "PreToolUse": [
       {

@@ -94,7 +94,8 @@ suggests by default. Stage your own files by path.
 
 In Claude Code the shipped hooks run here too: a commit is held until `pnpm check` has passed on
 the work tree, run on its own or redirected to a file outside it, and never piped or chained. A change only to
-`.md` files needs no check.
+`.md` files needs no check. A commit in a linked worktree is not held (`LINTELJS_GATE_WORKTREES=off` in
+`.claude/settings.json`): run `pnpm check` once before the branch merges to `main`.
 `.claude/skills/linteljs/` adds the repo's own guards and bands.
 
 No em-dashes anywhere: not in code comments, JSDoc, documentation, commit messages or rule

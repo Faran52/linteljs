@@ -973,7 +973,13 @@ its status and a chain adds to it. A leading `cd <dir> &&` and leading literal `
 wrapper does not. The project judged is the one the command runs in (`cd`, `git -C`), not the session's. The record
 lives at `git rev-parse --git-path linteljs`, so it is never in the tree it describes and each worktree keeps its
 own. A tree that differs from HEAD, or from the last pass, only in `.md` files goes through unchecked: prose runs no
-code, and gating it costs a full run per wording fix.
+code, and gating it costs a full run per wording fix. Only a run that finished counts: `PostToolUse` also reaches a
+managed hook for a failed call, with the error text as `tool_response`, and a run moved to the background answers
+with a `backgroundTaskId` before it exits, so that run stays `running` and never passes.
+
+A project that sets `LINTELJS_GATE_WORKTREES=off` in its settings `env` lets a commit in a linked worktree (its
+`--git-dir` is not its `--git-common-dir`) through unheld, and runs the check once before the branch merges; the main
+working tree is held as ever. This workspace sets it.
 
 `generatedFileGuardHook.ts` denies an edit to a file whose first line carries a generator's marker; the edit
 belongs in the generator. linteljs writes no marker of its own.
