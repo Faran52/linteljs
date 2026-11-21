@@ -480,6 +480,15 @@ const TEST_PAIRS: TestPair[] = [
     ],
   },
   {
+    base: 'vite-react/app/App.test.tsx',
+    specifier: './router',
+    groups: groupsWith(REACT, [aliasGroup('@router')]),
+    options: [
+      ['router.single-page.tsx', 'vite-react/router/single-page/testing/vitest/src/App.test.tsx'],
+      ['router.libraries.tsx', 'vite-react/router/libraries/testing/vitest/src/App.test.tsx'],
+    ],
+  },
+  {
     base: 'wxt/background/onInstalled.test.ts',
     specifier: './browser',
     groups: groupsWith([], []),
