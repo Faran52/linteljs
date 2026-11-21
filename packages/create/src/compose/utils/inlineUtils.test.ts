@@ -4,9 +4,18 @@ import {
   it,
 } from 'vitest';
 
-import { type Sources, sourcesOf } from './bindingUtils';
+import {
+  type Sources,
+  sourcesOf,
+  type Trust,
+} from './bindingUtils';
 import { filledOnce } from './inlineUtils';
 import { parse, referencesIn } from './sourceUtils';
+
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
 
 const NAMES = [
   'C',
@@ -47,7 +56,7 @@ const OPTION = [
 ].join('\n');
 
 const sourcesFor = (base: string): Sources => {
-  return sourcesOf(base, { './p': OPTION }, {}, []);
+  return sourcesOf(base, { './p': OPTION }, {}, NO_TRUST);
 };
 
 const stepOf = (text: string, sources: Sources): string | undefined => {

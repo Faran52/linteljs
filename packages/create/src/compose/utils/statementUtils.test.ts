@@ -5,14 +5,19 @@ import {
   it,
 } from 'vitest';
 
-import { sourcesOf } from './bindingUtils';
+import { sourcesOf, type Trust } from './bindingUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
 import { flattenHeritage, spliceStatements } from './statementUtils';
 
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
+
 // The first read of `x` in a body filled from an option module: a call's statements, or a type's members.
 const filled = (body: string, option: string): string => {
-  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, []);
+  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
   const file = parse(sources.body);
   const checker = scopeOf(file, sources.modules, sources.held);
   const [local] = referencesIn(file, 'x');

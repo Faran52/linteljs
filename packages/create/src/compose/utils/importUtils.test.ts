@@ -4,8 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { sourcesOf } from './bindingUtils';
+import { sourcesOf, type Trust } from './bindingUtils';
 import { importBlock } from './importUtils';
+
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
 
 const GROUPS = [
   ['^node:'],
@@ -20,7 +25,7 @@ const GROUPS = [
 
 // The block for the imports a text holds, as if the body read the given names.
 const blockOf = (imports: readonly string[], read: readonly string[]): string => {
-  const { imports: entries } = sourcesOf(`${imports.join('\n')}\n`, {}, {}, []);
+  const { imports: entries } = sourcesOf(`${imports.join('\n')}\n`, {}, {}, NO_TRUST);
 
   const names = new Set(read);
 
@@ -96,7 +101,7 @@ describe('importBlock', () => {
   });
 
   it('writes every import as one group when no group is given', () => {
-    const { imports } = sourcesOf('import { b } from \'bee\';\nimport { a } from \'./a\';\n', {}, {}, []);
+    const { imports } = sourcesOf('import { b } from \'bee\';\nimport { a } from \'./a\';\n', {}, {}, NO_TRUST);
     const block = importBlock(imports, new Set(['a', 'b']), []);
 
     expect(block).toBe('import { a } from \'./a\';\nimport { b } from \'bee\';');

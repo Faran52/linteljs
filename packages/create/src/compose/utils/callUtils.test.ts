@@ -5,7 +5,7 @@ import {
   it,
 } from 'vitest';
 
-import { sourcesOf } from './bindingUtils';
+import { sourcesOf, type Trust } from './bindingUtils';
 import {
   arrowOf,
   captureCheck,
@@ -18,6 +18,7 @@ import {
   returnedOf,
   substitutions,
 } from './callUtils';
+import { type Proof } from './effectUtils';
 import { scopeOf } from './scopeUtils';
 import {
   expressionOf,
@@ -31,9 +32,14 @@ interface Called {
   returned: ts.Expression;
 }
 
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
+
 // The first read of `x` in a body filled from an option module, by the rule its position asks for.
 const inlined = (body: string, option: string): string => {
-  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, []);
+  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
   const file = parse(sources.body);
   const checker = scopeOf(file, sources.modules, sources.held);
   const [local] = referencesIn(file, 'x');
@@ -456,6 +462,11 @@ describe('inlineCall, for arguments that run or may be written', () => {
       'export const x = (m: number, n: number) => [m, n];\n',
       'y = [h(), a.b];',
     ],
+    [
+      'let n = 0;\ny = x(() => n);',
+      'export const x = (f: F) => [g(), f];\n',
+      'let n = 0;\ny = [g(), () => n];',
+    ],
   ])('fills %s from %j', (body, option, expected) => {
     const written = inlined(body, option);
 
@@ -597,7 +608,7 @@ describe('inlineValue', () => {
 
 describe('exportedValue, arrowOf and returnedOf', () => {
   it('answers no value for a name with no export', () => {
-    const sources = sourcesOf('import { x } from \'./p\';\n', { './p': 'export interface x {}\n' }, {}, []);
+    const sources = sourcesOf('import { x } from \'./p\';\n', { './p': 'export interface x {}\n' }, {}, NO_TRUST);
     const value = exportedValue(sources, 'x');
 
     expect(value).toBeUndefined();
@@ -605,7 +616,7 @@ describe('exportedValue, arrowOf and returnedOf', () => {
 
   it('answers the arrow an export holds, and what it returns', () => {
     const option = 'export const x = () => {\n  return 4;\n};\n';
-    const sources = sourcesOf('import { x } from \'./p\';\n\ny = x();\n', { './p': option }, {}, []);
+    const sources = sourcesOf('import { x } from \'./p\';\n\ny = x();\n', { './p': option }, {}, NO_TRUST);
     const [local] = referencesIn(parse(sources.body), 'x');
     const returned = local === undefined ? undefined : returnedOf(arrowOf(sources, local));
 
@@ -690,8 +701,17 @@ describe('captureCheck, effectCheck and substitutions', () => {
         return each;
       });
 
+    const proof: Proof = {
+      checker,
+      sources: sourcesOf('', {}, {}, {
+        plainData: [],
+        pureCalls: [],
+      }),
+      given: new Map(),
+    };
+
     const run = (): void => {
-      effectCheck(checker, returned, passed);
+      effectCheck(proof, returned, passed);
     };
 
     expect(run).not.toThrow();

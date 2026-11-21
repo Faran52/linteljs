@@ -5,7 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import { type Sources, sourcesOf } from './bindingUtils';
+import {
+  type Sources,
+  sourcesOf,
+  type Trust,
+} from './bindingUtils';
 import { inlineElement } from './elementUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
@@ -13,6 +17,11 @@ import { parse, referencesIn } from './sourceUtils';
 interface Filled {
   written: string;
 }
+
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
 
 // One `<X>` of a text replaced by what the option component returns; undefined once none is left.
 const filledOnce = (text: string, sources: Sources): string | undefined => {
@@ -33,7 +42,7 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
 };
 
 const filled = (body: string, option: string): Filled => {
-  const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, []);
+  const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
   let written = sources.body;
 
   for (let next = filledOnce(written, sources); next !== undefined; next = filledOnce(written, sources)) {
@@ -191,7 +200,7 @@ describe('inlineElement', () => {
   it('binds what a component reads from a rest still spread, in the layout of a pattern written over lines', () => {
     const body = lines('y = ({', '  id,', '  ...rest', '}) => <ul><X {...rest} />{id}<X {...rest} /></ul>;');
     const option = 'export const X = ({ current, on }: P) => <li hidden={current} onClick={on} />;\n';
-    const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, []);
+    const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
     const once = filledOnce(sources.body, sources);
     const expected = lines(
       'y = ({',

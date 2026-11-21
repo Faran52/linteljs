@@ -46,6 +46,9 @@ export interface ComposeRequest {
   // The specifiers whose exports are plain data, so a member read through their import, at any depth, runs no code.
   // Each is matched whole, a `*` standing for any run of characters but `/`: `./*.styles`, `@styles/tokens.stylex`.
   plainData: readonly string[];
+  // The specifiers whose functions run no code beyond answering, so a call through their import, its arguments
+  // proven on their own, may be moved past. A separate trust from `plainData`, matched the same way.
+  pureCalls: readonly string[];
   // The project's import groups, as its lint config hands them to `simple-import-sort`.
   importGroups?: ImportGroups;
 }
@@ -172,7 +175,7 @@ export const moduleCompose = (request: ComposeRequest): string => {
   const options = mapValues(request.options, plainOf);
   const modules = mapValues(request.modules, plainOf);
   const mark = request.base.startsWith(BYTE_ORDER_MARK) ? BYTE_ORDER_MARK : '';
-  const sources = sourcesOf(base, options, modules, request.plainData);
+  const sources = sourcesOf(base, options, modules, request);
   const commented = withComments(sources.body, sources);
   const filled = settled(commented, (text, file) => {
     return filledOnce(text, file, sources);

@@ -5,7 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import { type Sources, sourcesOf } from './bindingUtils';
+import {
+  type Sources,
+  sourcesOf,
+  type Trust,
+} from './bindingUtils';
 import { returnedOf } from './callUtils';
 import { scopeOf } from './scopeUtils';
 import { collect, parse } from './sourceUtils';
@@ -24,11 +28,16 @@ interface Landing {
   landing: ts.Node;
 }
 
+const NO_TRUST: Trust = {
+  plainData: [],
+  pureCalls: [],
+};
+
 const BASE = 'import fs, * as all from \'node:fs\';\nimport { join } from \'node:path\';\nimport { x } from \'./p\';\n';
 const OPTION = 'const helper = 1;\n\nexport const x = helper;\nexport interface Local {}\n';
 
 const sourcesFor = (): Sources => {
-  return sourcesOf(BASE, { './p': OPTION }, {}, []);
+  return sourcesOf(BASE, { './p': OPTION }, {}, NO_TRUST);
 };
 
 describe('settled', () => {
@@ -95,7 +104,7 @@ describe('checked', () => {
 
 // The option's `v` lands on the first read of `v` in the base: its value, or what its arrow returns.
 const landingOf = (base: string, option: string): Landing => {
-  const sources = sourcesOf(base, { './p': option }, {}, []);
+  const sources = sourcesOf(base, { './p': option }, {}, NO_TRUST);
   const file = parse(sources.body);
   const optionFile = sources.modules.get('./p');
   const checker = scopeOf(file, sources.modules, sources.held);

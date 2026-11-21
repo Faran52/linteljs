@@ -14,7 +14,11 @@ import {
   type Edit,
   refusal,
 } from './editUtils';
-import { type Proof, pureCheck } from './effectUtils';
+import {
+  actsIn,
+  type Proof,
+  pureCheck,
+} from './effectUtils';
 import {
   declarationOf,
   referencesTo,
@@ -545,6 +549,34 @@ const passedOf = (proof: Proof, wanted: readonly ts.BindingElement[], site: Site
     });
 };
 
+// The children run where the base renders the element, after its attributes: with an effect, they are one more
+// argument, read at the {children} slot.
+const childrenPassed = (proof: Proof, wanted: readonly ts.BindingElement[], site: Site): Passed[] => {
+  const element = wanted
+    .find((each) => {
+      return textOf(each.name) === 'children';
+    });
+  const passed = ts.isJsxElement(site.element) ? site.element.children : [];
+  const [acting] = passed
+    .flatMap((child) => {
+      return actsIn(proof, child);
+    });
+
+  if (element === undefined || acting === undefined) {
+    return [];
+  }
+
+  const each: Passed[] = [
+    {
+      declaration: element,
+      kind: 'effect',
+      shown: acting,
+    },
+  ];
+
+  return each;
+};
+
 // `<X ...>children</X>`: the option component's returned element replaces the element that renders it.
 export const inlineElement = (
   text: string,
@@ -568,12 +600,16 @@ export const inlineElement = (
   const proof: Proof = {
     checker,
     sources,
+    given,
   };
 
   ignoredCheck(proof, wanted, site);
   landedCheck(checker, sources, arrow, root, site.element);
   captureCheck(checker, root, given);
-  effectCheck(checker, root, passedOf(proof, wanted, site));
+  const passed = passedOf(proof, wanted, site);
+  const children = childrenPassed(proof, wanted, site);
+
+  effectCheck(proof, root, [...passed, ...children]);
 
   const placement = new Placement(root);
   const needs = placeProps(checker, placement, root, wanted, site);

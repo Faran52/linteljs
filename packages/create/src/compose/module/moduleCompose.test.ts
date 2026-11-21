@@ -29,6 +29,26 @@ interface Composition {
   expected: string;
 }
 
+interface RefusedComposition extends Composition {
+  message: RegExp | string;
+}
+
+interface Ordered {
+  name: string;
+  base: string;
+  option: string;
+  plainData: string[];
+  pureCalls: string[];
+}
+
+interface OrderedCase extends Ordered {
+  expected: string;
+}
+
+interface DisorderedCase extends Ordered {
+  message: string;
+}
+
 const templates = join(import.meta.dirname, '../../../templates');
 const fixtures = join(templates, 'codegen/compose-sources/vite-react');
 const shells = join(templates, 'shells/vite-react');
@@ -76,6 +96,9 @@ const GROUPS = [
 // The modules the fixtures read styles and tokens from, which the engine is not given.
 const PLAIN_DATA = ['./*.styles', '@styles/tokens.stylex'];
 
+// The modules whose functions the fixtures call, the stylex sheets.
+const PURE_CALLS = ['./*.styles'];
+
 const HEADERS: [string, string][] = [
   ['react-routers', 'atomic'],
   ['react-routers', 'css'],
@@ -98,6 +121,7 @@ describe('moduleCompose, on the shipped app header', () => {
       },
       modules: {},
       plainData: PLAIN_DATA,
+      pureCalls: PURE_CALLS,
       importGroups: GROUPS,
     });
     const folder = `router/${router}/styling/${styling}`;
@@ -143,6 +167,7 @@ describe('moduleCompose, on the shipped home page', () => {
       },
       modules: {},
       plainData: PLAIN_DATA,
+      pureCalls: PURE_CALLS,
       importGroups: GROUPS,
     });
     const expected = readShipped(`${folder}/styling/${styling}/src/pages/home/HomePage.tsx`);
@@ -165,6 +190,7 @@ describe('moduleCompose, on the shipped home page style table', () => {
       options: { './store': storeOption },
       modules: {},
       plainData: PLAIN_DATA,
+      pureCalls: PURE_CALLS,
       importGroups: GROUPS,
     });
     const expected = readShipped(`${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`);
@@ -241,6 +267,7 @@ describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s'
       options: Object.fromEntries(read),
       modules: {},
       plainData: PLAIN_DATA,
+      pureCalls: PURE_CALLS,
       importGroups: GROUPS,
     });
     const shipped = readShipped(expected);
@@ -258,31 +285,258 @@ const READS_PLAIN_DATA = COMPOSITIONS
       });
   });
 
-describe('moduleCompose, on the shipped compositions with no module declared plain data', () => {
-  it('finds six that read one', () => {
-    expect(READS_PLAIN_DATA).toHaveLength(6);
+// The two whose router spreads what `styles.tab` answers before it renders the children.
+const CALLS_TAB = COMPOSITIONS
+  .filter(({ options }) => {
+    const isAtomic = options['./styling'] === 'app-header/styling.atomic.ts';
+
+    return isAtomic && options['./router'] !== 'app-header/router.react-routers.tsx';
   });
 
-  it.each(READS_PLAIN_DATA)('refuses to move a member read of $options', ({ base, options }) => {
-    const read = Object.entries(options)
-      .map(([specifier, name]) => {
-        const pair: [string, string] = [specifier, readFixture(name)];
+const READ_REFUSAL = /is not shown to be a plain property, so reading it may run code: give the engine/u;
 
-        return pair;
-      });
-    const baseText = readFixture(base);
+const ORDER_REFUSAL = 'An argument with an effect must run first, and "children" is read after this, which may act: '
+  + '{...sx.tab(';
 
+const NO_PLAIN_DATA = READS_PLAIN_DATA
+  .map((composition): RefusedComposition => {
+    const refused: RefusedComposition = {
+      ...composition,
+      message: CALLS_TAB.includes(composition) ? ORDER_REFUSAL : READ_REFUSAL,
+    };
+
+    return refused;
+  });
+
+const composedFrom = ({ base, options }: Composition, plainData: string[], pureCalls: string[]): string => {
+  const read = Object.entries(options)
+    .map(([specifier, name]) => {
+      const pair: [string, string] = [specifier, readFixture(name)];
+
+      return pair;
+    });
+  const baseText = readFixture(base);
+
+  return moduleCompose({
+    base: baseText,
+    options: Object.fromEntries(read),
+    modules: {},
+    plainData,
+    pureCalls,
+    importGroups: GROUPS,
+  });
+};
+
+describe('moduleCompose, on the shipped compositions with no module declared plain data', () => {
+  it('finds six that read one, two of them spreading what a stylex call answers', () => {
+    expect(READS_PLAIN_DATA).toHaveLength(6);
+    expect(CALLS_TAB).toHaveLength(2);
+  });
+
+  it.each(NO_PLAIN_DATA)('refuses $options', (refused) => {
+    const run = (): string => {
+      return composedFrom(refused, [], []);
+    };
+
+    expect(run).toThrow(refused.message);
+  });
+});
+
+describe('moduleCompose, on the shipped compositions with no module declared pure calls', () => {
+  it.each(CALLS_TAB)('refuses to render the children of $options after a stylex call', (composition) => {
+    const run = (): string => {
+      return composedFrom(composition, PLAIN_DATA, []);
+    };
+
+    expect(run).toThrow(ORDER_REFUSAL);
+  });
+});
+
+// A component that renders its children after `root`'s attributes, and a base that passes it children that act.
+const rendering = (root: string, head: string): string => {
+  const props = root.includes('setup') ? 'setup, children' : 'children';
+
+  return `${head}export const X = ({ ${props} }: P) => (\n  <a ${root}>{children}</a>\n);\n`;
+};
+
+const passing = (names: string, attributes: string, before: string): string => {
+  const imports = `import { ${names} } from './p';\n\n`;
+
+  return `${imports}export const B = () => {\n${before}  return <X${attributes}>{f()}</X>;\n};\n`;
+};
+
+const STYLES = 'import { st } from \'./a.styles\';\n\n';
+
+const SETUP = 'export const useSetup = () => {\n  const t = \'x\';\n\n  return { t };\n};\n';
+
+const ORDERED: OrderedCase[] = [
+  {
+    name: 'a member read proven by source',
+    base: passing('X, s', '', ''),
+    option: rendering('title={s.a}', 'export const s = { a: \'x\' };\n'),
+    plainData: [],
+    pureCalls: [],
+    expected: 'export const B = () => {\n  return <a title={\'x\'}>{f()}</a>;\n};\n',
+  },
+  {
+    name: 'a call into a module declared pure calls',
+    base: passing('X', '', ''),
+    option: rendering('title={st.tab(1)}', STYLES),
+    plainData: [],
+    pureCalls: ['./*.styles'],
+    expected: `${STYLES}export const B = () => {\n  return <a title={st.tab(1)}>{f()}</a>;\n};\n`,
+  },
+  {
+    name: 'a spread of what a call answers, its module declared both pure calls and plain data',
+    base: passing('X', '', ''),
+    option: rendering('{...st.tab(1)}', STYLES),
+    plainData: ['./*.styles'],
+    pureCalls: ['./*.styles'],
+    expected: `${STYLES}export const B = () => {\n  return <a {...st.tab(1)}>{f()}</a>;\n};\n`,
+  },
+  {
+    name: 'a member read of a prop followed through the site and an option call to the literal it returns',
+    base: passing('X, useSetup', ' setup={setup}', '  const setup = useSetup();\n\n'),
+    option: rendering('title={setup.t}', SETUP),
+    plainData: [],
+    pureCalls: [],
+    expected: 'export const B = () => {\n  const t = \'x\';\n\n  return <a title={t}>{f()}</a>;\n};\n',
+  },
+];
+
+const MAY_ACT = 'An argument with an effect must run first, and "children" is read after this, which may act: ';
+
+const DISORDERED: DisorderedCase[] = [
+  {
+    name: 'an unproven call',
+    base: passing('X', '', ''),
+    option: rendering('title={String(1)}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}String(1)`,
+  },
+  {
+    name: 'a call into a module declared plain data only',
+    base: passing('X', '', ''),
+    option: rendering('title={st.tab(1)}', STYLES),
+    plainData: ['./*.styles'],
+    pureCalls: [],
+    message: `${MAY_ACT}st.tab(1)`,
+  },
+  {
+    name: 'a spread of what a call answers, its module declared pure calls only',
+    base: passing('X', '', ''),
+    option: rendering('{...st.tab(1)}', STYLES),
+    plainData: [],
+    pureCalls: ['./*.styles'],
+    message: `${MAY_ACT}{...st.tab(1)}`,
+  },
+  {
+    name: 'a spread of what a call answers, its module declared plain data only',
+    base: passing('X', '', ''),
+    option: rendering('{...st.tab(1)}', STYLES),
+    plainData: ['./*.styles'],
+    pureCalls: [],
+    message: `${MAY_ACT}{...st.tab(1)}`,
+  },
+  {
+    name: 'a prop read whose argument comes from a call site outside the program',
+    base: 'import { X } from \'./p\';\n\nexport const B = (props: Q) => <X setup={props.setup}>{f()}</X>;\n',
+    option: rendering('title={setup.t}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'a prop read whose argument is a let',
+    base: passing('X', ' setup={setup}', '  let setup = { t: \'x\' };\n\n'),
+    option: rendering('title={setup.t}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'a prop read whose argument is answered by a function the engine cannot enter',
+    base: passing('X', ' setup={setup}', '  const setup = make();\n\n'),
+    option: rendering('title={setup.t}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'a prop read the base leaves to a destructured rest',
+    base: 'import { X } from \'./p\';\n\nexport const B = ({ ...rest }: Q) => <X {...rest}>{f()}</X>;\n',
+    option: rendering('title={setup.t}', ''),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'a prop read whose option call has a return it cannot follow',
+    base: passing('X, useSetup', ' setup={setup}', '  const setup = useSetup();\n\n'),
+    option: rendering(
+      'title={setup.t}',
+      'export const useSetup = () => {\n  if (c) {\n    return { t: \'x\' };\n  }\n\n  return make();\n};\n',
+    ),
+    plainData: [],
+    pureCalls: [],
+    message: `${MAY_ACT}setup.t`,
+  },
+  {
+    name: 'children read twice',
+    base: passing('X', '', ''),
+    option: 'export const X = ({ children }: P) => (\n  <a>{children}{children}</a>\n);\n',
+    plainData: [],
+    pureCalls: [],
+    message: 'An argument with an effect must be read once, and "children" is read 2 times: f()',
+  },
+  {
+    name: 'children deferred into a function',
+    base: passing('X', '', ''),
+    option: 'export const X = ({ children }: P) => (\n  <a>{[1].map(() => children)}</a>\n);\n',
+    plainData: [],
+    pureCalls: [],
+    message: 'An argument with an effect must run where the call did, and "children" is read later: f()',
+  },
+];
+
+describe('moduleCompose, on children that act, rendered after other code', () => {
+  it.each(ORDERED)('renders them after $name', ({
+    base,
+    option,
+    plainData,
+    pureCalls,
+    expected,
+  }) => {
+    const composed = moduleCompose({
+      base,
+      options: { './p': option },
+      modules: {},
+      plainData,
+      pureCalls,
+    });
+
+    expect(composed).toBe(expected);
+  });
+
+  it.each(DISORDERED)('refuses to render them after $name', ({
+    base,
+    option,
+    plainData,
+    pureCalls,
+    message,
+  }) => {
     const run = (): string => {
       return moduleCompose({
-        base: baseText,
-        options: Object.fromEntries(read),
+        base,
+        options: { './p': option },
         modules: {},
-        plainData: [],
-        importGroups: GROUPS,
+        plainData,
+        pureCalls,
       });
     };
 
-    expect(run).toThrow(/is not shown to be a plain property, so reading it may run code: give the engine/u);
+    expect(run).toThrow(message);
   });
 });
 
@@ -297,6 +551,7 @@ describe('moduleCompose, on a member read it moves', () => {
       options: { './p': 'export const t = { a: 1, b: 2 };\nexport const x = { m: t.a };\n' },
       modules: {},
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe('export const y = [1, 2];\n');
@@ -309,6 +564,7 @@ describe('moduleCompose, on a member read it moves', () => {
         options: { './p': 'export const t = { get a() { return 1; } };\nexport const x = { m: t.a };\n' },
         modules: {},
         plainData: [],
+        pureCalls: [],
       });
     };
 
@@ -321,6 +577,7 @@ describe('moduleCompose, on a member read it moves', () => {
       options: { './p': SIBLING_READ },
       modules: { './t': 'export const t = { a: 1 };\n' },
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe('import { t } from \'./t\';\n\nexport const y = t.a;\n');
@@ -333,6 +590,7 @@ describe('moduleCompose, on a member read it moves', () => {
         options: { './p': SIBLING_READ },
         modules: { './t': 'export const t = { get a() { return 1; } };\n' },
         plainData: [],
+        pureCalls: [],
       });
     };
 
@@ -346,6 +604,7 @@ describe('moduleCompose, on a member read it moves', () => {
         options: { './p': SIBLING_READ },
         modules: {},
         plainData: [],
+        pureCalls: [],
       });
     };
 
@@ -361,6 +620,7 @@ describe('moduleCompose, on a member read it moves', () => {
       options: { './p': 'import { t } from \'./t.styles\';\n\nexport const x = { m: t.a.b };\n' },
       modules: {},
       plainData: ['./*.styles'],
+      pureCalls: [],
     });
 
     expect(composed).toBe('import { t } from \'./t.styles\';\n\nexport const y = t.a.b;\n');
@@ -373,6 +633,7 @@ describe('moduleCompose, on a member read it moves', () => {
         options: { './p': 'import { t } from \'./a/t.styles\';\n\nexport const x = { m: t.a };\n' },
         modules: {},
         plainData: ['./*.styles'],
+        pureCalls: [],
       });
     };
 
@@ -388,6 +649,7 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
       options: { './p': 'export const x = 1;\n' },
       modules: {},
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe('\uFEFFexport const y = 1;\n');
@@ -399,6 +661,7 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
       options: {},
       modules: {},
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe('\uFEFFexport const y = 1;\n');
@@ -410,6 +673,7 @@ describe('moduleCompose, on inputs that open with a byte order mark', () => {
       options: { './p': '\uFEFFexport const x = 1;\n' },
       modules: {},
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe('export const y = 1;\n');
@@ -1225,6 +1489,7 @@ describe('moduleCompose, one rule at a time', () => {
       options: { './p': option },
       modules: {},
       plainData: [],
+      pureCalls: [],
     });
 
     expect(composed).toBe(expected);
@@ -1243,6 +1508,7 @@ describe('moduleCompose, refusing', () => {
         options: { './p': option },
         modules: {},
         plainData: [],
+        pureCalls: [],
       });
     };
 

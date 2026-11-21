@@ -7,6 +7,7 @@ import {
 
 import { sourcesOf } from './bindingUtils';
 import {
+  actsIn,
   type Fault,
   plainCheck,
   type Proof,
@@ -21,6 +22,7 @@ interface Given {
   options: Record<string, string>;
   held: Record<string, string>;
   plainData: string[];
+  pureCalls: string[];
 }
 
 interface Subject {
@@ -33,8 +35,12 @@ const subjectOf = (base: string, {
   options,
   held,
   plainData,
+  pureCalls,
 }: Given): Subject => {
-  const sources = sourcesOf(base, options, held, plainData);
+  const sources = sourcesOf(base, options, held, {
+    plainData,
+    pureCalls,
+  });
   const file = parse(sources.body);
   const checker = scopeOf(file, sources.modules, sources.held);
   const [assigned] = collect(file, ts.isBinaryExpression)
@@ -50,6 +56,7 @@ const subjectOf = (base: string, {
     proof: {
       checker,
       sources,
+      given: new Map(),
     },
     value: assigned.right,
   };
@@ -61,7 +68,43 @@ const NONE: Given = {
   options: {},
   held: {},
   plainData: [],
+  pureCalls: [],
 };
+
+const STYLES: Given = {
+  ...NONE,
+  plainData: ['./*.styles'],
+  pureCalls: ['./*.styles'],
+};
+
+const STYLES_PURE: Given = {
+  ...NONE,
+  pureCalls: ['./*.styles'],
+};
+
+const STYLES_PLAIN: Given = {
+  ...NONE,
+  plainData: ['./*.styles'],
+};
+
+const optionOf = (option: string): Given => {
+  const given: Given = {
+    ...NONE,
+    options: { './p': option },
+  };
+
+  return given;
+};
+
+const RETURNS = 'export const f = (c: boolean) => {\n  const l = [1].map((n) => {\n    return n;\n  });\n'
+  + '  if (c) {\n    return { a: l };\n  }\n  return { a: 2 };\n};\n';
+
+const EITHER = 'export const g = (c: boolean) => {\n  if (c) {\n    return () => ({ a: 1 });\n  }\n\n'
+  + '  return () => ({ a: 2 });\n};\n';
+
+const CALLED = 'import { f } from \'./p\';\n\ny = f().a;';
+
+const STYLED = 'import { s } from \'./t.styles\';\n\ny = s.tab(1).a;';
 
 const faultOf = (member: string, shown: string, isModule: boolean): Fault => {
   const fault: Fault = {
@@ -112,6 +155,7 @@ const PROVEN: [string, string, Given][] = [
     {
       ...NONE,
       plainData: ['./*.styles'],
+      pureCalls: [],
     },
   ],
   [
@@ -146,7 +190,28 @@ const PROVEN: [string, string, Given][] = [
       ...NONE,
       options: { './p': 'import { t } from \'./t\';\n\nexport const x = { m: t };\n' },
       plainData: ['./t'],
+      pureCalls: [],
     },
+  ],
+  [
+    'what an option call answers',
+    CALLED,
+    optionOf('export const f = () => ({ a: 1 });\n'),
+  ],
+  [
+    'what every return of an option call answers, a nested function\'s aside',
+    'import { f } from \'./p\';\n\ny = f(true).a;',
+    optionOf(RETURNS),
+  ],
+  [
+    'a parameter followed to its argument',
+    'import { f } from \'./p\';\n\ny = f({ a: 1 }).a;',
+    optionOf('export const f = (o: O) => o;\n'),
+  ],
+  [
+    'what a call answers, its module declared both pure calls and plain data',
+    STYLED,
+    STYLES,
   ],
 ];
 
@@ -192,6 +257,12 @@ const UNPROVEN: [string, string, Given, Fault][] = [
     'const t = { a: 1 };\ny = t[k];',
     NONE,
     faultOf('[k]', '"t"', false),
+  ],
+  [
+    'a member of a value that is no object literal',
+    'const t = 1;\ny = t.a;',
+    NONE,
+    faultOf('"a"', '"t"', false),
   ],
   [
     'a let',
@@ -249,6 +320,7 @@ const UNPROVEN: [string, string, Given, Fault][] = [
     {
       ...NONE,
       plainData: ['./*.styles'],
+      pureCalls: [],
     },
     faultOf('"a"', './a/t.styles', true),
   ],
@@ -288,6 +360,84 @@ const UNPROVEN: [string, string, Given, Fault][] = [
     },
     faultOf('"a"', './t', true),
   ],
+  [
+    'what a call answers, its module declared pure calls only',
+    STYLED,
+    STYLES_PURE,
+    faultOf('"a"', '"s.tab(1)"', false),
+  ],
+  [
+    'what a call answers, its module declared plain data only',
+    STYLED,
+    STYLES_PLAIN,
+    faultOf('"a"', '"s.tab(1)"', false),
+  ],
+  [
+    'what an option call answers with a bare return',
+    CALLED,
+    optionOf('export const f = () => {\n  return;\n};\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'what an option call answers beside a bare return',
+    'import { f } from \'./p\';\n\ny = f(true).a;',
+    optionOf('export const f = (c: boolean) => {\n  if (c) {\n    return;\n  }\n\n  return { a: 1 };\n};\n'),
+    faultOf('"a"', '"f(true)"', false),
+  ],
+  [
+    'what an option call answers only from a nested function',
+    CALLED,
+    optionOf('export const f = () => {\n  [1].map(() => {\n    return { a: 1 };\n  });\n};\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'what a function of the base answers',
+    'const f = () => ({ a: 1 });\ny = f().a;',
+    NONE,
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'what an async option function answers',
+    CALLED,
+    optionOf('export const f = async () => ({ a: 1 });\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'a parameter with a default',
+    CALLED,
+    optionOf('export const f = (o = { a: 1 }) => o;\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'a parameter with no argument',
+    CALLED,
+    optionOf('export const f = (o: O) => o;\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'a parameter past a spread argument',
+    'import { f } from \'./p\';\n\ny = f(...l, { a: 1 }).a;',
+    optionOf('export const f = (n: N, o: O) => o;\n'),
+    faultOf('"a"', '"f(...l, { a: 1 })"', false),
+  ],
+  [
+    'an option function that answers its own call',
+    CALLED,
+    optionOf('export const f = (): O => f();\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
+  [
+    'a callee that may be either of two functions',
+    'import { g } from \'./p\';\n\ny = g(true)().a;',
+    optionOf(EITHER),
+    faultOf('"a"', '"g(true)()"', false),
+  ],
+  [
+    'a callee that is no function',
+    CALLED,
+    optionOf('export const f = 1;\n'),
+    faultOf('"a"', '"f()"', false),
+  ],
 ];
 
 describe('readFault', () => {
@@ -316,15 +466,62 @@ describe('readFault', () => {
   });
 });
 
+const SPREAD_TAB = 'import { s } from \'./t.styles\';\n\ny = s.tab(1);';
+
 describe('spreadFault', () => {
   it.each([
-    ['const t = { a: 1, b, \'c\': 2 };\ny = t;', undefined],
-    ['const t = { a: 1, get b() { return 1; } };\ny = t;', faultOf('every member', '"t"', false)],
-    ['const t = { __proto__: p };\ny = t;', faultOf('every member', '"t"', false)],
-    ['const t = { [k]: 1 };\ny = t;', faultOf('every member', '"t"', false)],
-    ['y = t;', faultOf('every member', '"t"', false)],
-  ])('answers for %s', (base, expected) => {
-    const { proof, value } = subjectOf(base, NONE);
+    [
+      'const t = { a: 1, b, \'c\': 2 };\ny = t;',
+      NONE,
+      undefined,
+    ],
+    [
+      'const t = { a: 1, get b() { return 1; } };\ny = t;',
+      NONE,
+      faultOf('every member', '"t"', false),
+    ],
+    [
+      'const t = { __proto__: p };\ny = t;',
+      NONE,
+      faultOf('every member', '"t"', false),
+    ],
+    [
+      'const t = { [k]: 1 };\ny = t;',
+      NONE,
+      faultOf('every member', '"t"', false),
+    ],
+    [
+      'y = t;',
+      NONE,
+      faultOf('every member', '"t"', false),
+    ],
+    [
+      'const t = [1];\ny = t;',
+      NONE,
+      faultOf('every member', '"t"', false),
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f();',
+      optionOf('export const f = () => ({ a: 1 });\n'),
+      undefined,
+    ],
+    [
+      SPREAD_TAB,
+      STYLES,
+      undefined,
+    ],
+    [
+      SPREAD_TAB,
+      STYLES_PURE,
+      faultOf('every member', '"s.tab(1)"', false),
+    ],
+    [
+      SPREAD_TAB,
+      STYLES_PLAIN,
+      faultOf('every member', '"s.tab(1)"', false),
+    ],
+  ])('answers for %s with %j', (base, given, expected) => {
+    const { proof, value } = subjectOf(base, given);
     const fault = spreadFault(proof, value);
 
     expect(fault).toStrictEqual(expected);
@@ -394,5 +591,126 @@ describe('pureCheck', () => {
     };
 
     expect(run).toThrow('refused');
+  });
+});
+
+const CALLING = 'import { f } from \'./p\';\n\ny = f(1);';
+
+const TAB = 'import { s } from \'./t.styles\';\n\ny = s.tab(k);';
+
+describe('actsIn', () => {
+  it.each([
+    [
+      'y = [1, a + b, c ? d : e, `t${f}`, () => g(), <a b={c} />];',
+      NONE,
+      [],
+    ],
+    [
+      'y = f(u.b);',
+      NONE,
+      ['f(u.b)', 'u.b'],
+    ],
+    [
+      'y = (a = 1);',
+      NONE,
+      ['a = 1'],
+    ],
+    [
+      'y = [++i, i--, new C(), delete o.k];',
+      NONE,
+      [
+        '++i',
+        'i--',
+        'new C()',
+        'delete o.k',
+        'o.k',
+      ],
+    ],
+    [
+      'const t = { a: 1 };\ny = { ...t, ...u };',
+      NONE,
+      ['...u'],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => n + 1;\n'),
+      [],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => {\n  return n;\n};\n'),
+      [],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => g(n);\n'),
+      ['f(1)'],
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f(u);',
+      optionOf('export const f = (n = g()) => 1;\n'),
+      ['f(u)'],
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f();',
+      optionOf('export const f = (): O => f();\n'),
+      ['f()'],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => {\n  return;\n};\n'),
+      ['f(1)'],
+    ],
+    [
+      CALLING,
+      optionOf('export const f = (n: number) => {\n  const m = n;\n\n  return m;\n};\n'),
+      ['f(1)'],
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f({ a: 1 });',
+      optionOf('export const f = (o: O) => o.a;\n'),
+      [],
+    ],
+    [
+      'import { f } from \'./p\';\n\ny = f(u);',
+      optionOf('export const f = (o: O) => o.a;\n'),
+      ['f(u)'],
+    ],
+    [
+      TAB,
+      STYLES_PURE,
+      [],
+    ],
+    [
+      TAB,
+      STYLES_PLAIN,
+      ['s.tab(k)'],
+    ],
+    [
+      TAB,
+      NONE,
+      ['s.tab(k)', 's.tab'],
+    ],
+    [
+      'import { s } from \'./t.styles\';\n\ny = s[g()](h());',
+      STYLES_PURE,
+      ['g()', 'h()'],
+    ],
+    [
+      'import { g } from \'./p\';\n\ny = g().tab(1);',
+      {
+        ...STYLES_PURE,
+        options: { './p': 'import { s } from \'./t.styles\';\n\nexport const g = () => s;\n' },
+      },
+      [],
+    ],
+  ])('finds what may act in %s with %j', (base, given, expected) => {
+    const { proof, value } = subjectOf(base, given);
+    const acting = actsIn(proof, value)
+      .map((node) => {
+        return node.getText();
+      });
+
+    expect(acting).toStrictEqual(expected);
   });
 });

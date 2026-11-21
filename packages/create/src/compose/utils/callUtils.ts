@@ -14,7 +14,7 @@ import {
   refusal,
 } from './editUtils';
 import {
-  plainReadOf,
+  actsIn,
   type Proof,
   pureCheck,
 } from './effectUtils';
@@ -28,7 +28,6 @@ import {
   expressionOf,
   fitted,
   indentOf,
-  isPure,
   isReference,
   isValueMember,
   isWithin,
@@ -188,9 +187,9 @@ const isWritable = (checker: ts.TypeChecker, read: ts.Node): boolean => {
 // How an argument can change by moving: by running its effect, or by reading what other code may write.
 export const kindOf = (proof: Proof, argument: ts.Expression): ArgumentKind => {
   const { checker } = proof;
-  const isPlain = plainReadOf(proof);
+  const acting = actsIn(proof, argument);
 
-  if (!isPure(argument, isPlain)) {
+  if (acting.length > 0) {
     return 'effect';
   }
 
@@ -222,19 +221,20 @@ const isDeferred = (node: ts.Node, inner: ts.Node, isSkippable: boolean): boolea
   return isDeferred(parent, inner, isSkippable);
 };
 
-// The first thing of the option's code with an effect that runs before a read, as code runs left to right.
-const effectBefore = (read: ts.Node, inner: ts.Node): ts.Node | undefined => {
+// The first thing of the option's code not proven to act on nothing that runs before a read, as code runs left to
+// right.
+const effectBefore = (proof: Proof, read: ts.Node, inner: ts.Node): ts.Node | undefined => {
   const start = read.getStart();
 
-  return heldIn(inner, isEffect)
+  return actsIn(proof, inner)
     .find((effect) => {
       return effect.getEnd() <= start;
     });
 };
 
-// An argument with an effect runs where the call did only when its one read is the first thing the code runs.
-const effectRead = (checker: ts.TypeChecker, inner: ts.Node, passed: Passed): ts.Identifier => {
-  const reads = referencesTo(checker, passed.declaration, inner);
+// An argument with an effect runs where the call did only when it is read once, then, after nothing that may act.
+const effectRead = (proof: Proof, inner: ts.Node, passed: Passed): ts.Identifier => {
+  const reads = referencesTo(proof.checker, passed.declaration, inner);
   const name = textOf(passed.declaration.name);
   const [only] = reads;
 
@@ -248,7 +248,7 @@ const effectRead = (checker: ts.TypeChecker, inner: ts.Node, passed: Passed): ts
     throw refusal(passed.shown, `An argument with an effect must run where the call did, and "${name}" is read later`);
   }
 
-  const before = effectBefore(only, inner);
+  const before = effectBefore(proof, only, inner);
 
   if (before !== undefined) {
     throw refusal(before, `An argument with an effect must run first, and "${name}" is read after this, which may act`);
@@ -257,9 +257,13 @@ const effectRead = (checker: ts.TypeChecker, inner: ts.Node, passed: Passed): ts
   return only;
 };
 
-// Arguments run before the option's code, in the order passed. One with an effect is inlined only as the first
-// thing that code runs, once; one that reads what may be written, only where nothing could have written it yet.
-export const effectCheck = (checker: ts.TypeChecker, inner: ts.Node, passed: readonly Passed[]): void => {
+/**
+ * Arguments run before the option's code, in the order passed. One with an effect is inlined only where it is read
+ * once, not deferred, after code proven to act on nothing; one that reads what may be written, only where nothing
+ * could have written it yet.
+ */
+export const effectCheck = (proof: Proof, inner: ts.Node, passed: readonly Passed[]): void => {
+  const { checker } = proof;
   const effects = passed
     .flatMap((each, index): EffectRead[] => {
       if (each.kind !== 'effect') {
@@ -269,7 +273,7 @@ export const effectCheck = (checker: ts.TypeChecker, inner: ts.Node, passed: rea
       const found: EffectRead[] = [
         {
           index,
-          read: effectRead(checker, inner, each),
+          read: effectRead(proof, inner, each),
         },
       ];
 
@@ -295,7 +299,7 @@ export const effectCheck = (checker: ts.TypeChecker, inner: ts.Node, passed: rea
             return (effect.index < index) !== (effect.read.getStart() < read.getStart());
           });
 
-        return isPast || isDeferred(read, inner, false) || effectBefore(read, inner) !== undefined;
+        return isPast || isDeferred(read, inner, false) || effectBefore(proof, read, inner) !== undefined;
       });
 
     if (isMoved) {
@@ -340,10 +344,6 @@ const calledWith = (
 ): Inlined => {
   const returned = returnedOf(arrow);
   const offset = returned.getStart();
-  const proof: Proof = {
-    checker,
-    sources,
-  };
 
   landedCheck(checker, sources, arrow, returned, call);
 
@@ -352,10 +352,6 @@ const calledWith = (
 
   if (call.arguments.some(ts.isSpreadElement)) {
     throw extra;
-  }
-
-  for (const argument of call.arguments.slice(arrow.parameters.length)) {
-    pureCheck(proof, argument, extra);
   }
 
   const pairs = arrow.parameters
@@ -372,6 +368,16 @@ const calledWith = (
       return pair;
     });
   const given = new Map<ts.Declaration, ts.Expression>(pairs);
+  const proof: Proof = {
+    checker,
+    sources,
+    given,
+  };
+
+  for (const argument of call.arguments.slice(arrow.parameters.length)) {
+    pureCheck(proof, argument, extra);
+  }
+
   const passed = pairs
     .map(([parameter, argument]) => {
       const each: Passed = {
@@ -384,7 +390,7 @@ const calledWith = (
     });
 
   captureCheck(checker, returned, given);
-  effectCheck(checker, returned, passed);
+  effectCheck(proof, returned, passed);
 
   const edits = pairs
     .flatMap(([parameter, argument]) => {
@@ -494,6 +500,7 @@ export const inlineMember = (
   const proof: Proof = {
     checker,
     sources,
+    given: new Map(),
   };
 
   pureCheck(proof, value, refusal(access, 'A member read as a value must have no effect'));
@@ -515,6 +522,7 @@ export const inlineValue = (
   const proof: Proof = {
     checker,
     sources,
+    given: new Map(),
   };
 
   const reason = 'An option export read as a value must be a constant with no effect, never written';

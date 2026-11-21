@@ -30,8 +30,16 @@ export interface Sources {
   held: Map<string, ts.SourceFile>;
   // The specifiers, exact or with `*` for any run of characters but `/`, whose exports are taken as plain data.
   plainData: readonly string[];
+  // The specifiers, in the same patterns, whose functions are taken to run no code beyond what they answer.
+  pureCalls: readonly string[];
   bindings: Map<string, Binding>;
   imports: ImportEntry[];
+}
+
+// What the request declares the engine may take without seeing the source.
+export interface Trust {
+  plainData: readonly string[];
+  pureCalls: readonly string[];
 }
 
 export type Exported = ts.VariableDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
@@ -213,7 +221,7 @@ export const sourcesOf = (
   base: string,
   options: Readonly<Record<string, string>>,
   given: Readonly<Record<string, string>>,
-  plainData: readonly string[],
+  { plainData, pureCalls }: Trust,
 ): Sources => {
   const baseFile = parse(base);
   const modules = parsedOf(options);
@@ -256,6 +264,7 @@ export const sourcesOf = (
     modules,
     held,
     plainData,
+    pureCalls,
     bindings,
     imports,
   };
