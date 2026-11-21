@@ -1,6 +1,7 @@
 # Contributing
 
-This is a pnpm workspace of three published packages, so a change here reaches somebody else's project.
+This is a pnpm workspace of three published packages and one private build-time package, so a change here reaches
+somebody else's project.
 
 ## What you need
 
@@ -46,7 +47,7 @@ included, and its `typecheck`, since a type error is no lint finding. It lints o
 changed since their last clean lint; `--all` lints every one, as CI and `LINTELJS_GATE_NO_CACHE=1` do. The first run installs everything and takes several minutes; a run with nothing changed takes
 under one. It needs the network. `pnpm lint:starters:fix` writes autofixes back to the templates.
 
-## The three packages
+## The packages
 
 ```
 eslint-plugin  <-  eslint-config  <-  create
@@ -68,6 +69,25 @@ the package name into text, which is why it can be built and tested before that 
   `config/`, `targets/` and `utils/` inside, `emitters/` turning answers into file text, and
   `disk/`, `spawns/`, `terminal/` and `pipeline/` outside. The direction points inward only,
   enforced by `import-x/no-restricted-paths`.
+- **`packages/compose`** is private and never published: the engine that writes a composed template file
+  from a base module and the option modules it imports. Only the gate's `compose` step runs it.
+
+## Adding a composition
+
+A file that differs per answer only in a few lines is written once as a base and one option module per
+answer, under `packages/create/templates/codegen/compose-sources/<shell>/<subject>/`: the base under the
+shipped file's name, `<param>.ts` the stand-in it imports, and `<param>.<option>.ts` per option, all in one
+directory.
+
+1. Add a row to `SUBJECTS` in `scripts/compose/constants.ts`: the base, its import groups, the `plainData` and
+   `pureCalls` modules it may trust, any `modules` it reads, and one variant per option with the shipped path
+   under `shells/` it writes.
+2. Add the same composition to `packages/compose/src/module/moduleCompose.test.ts`, which holds every shipped
+   composition byte-equal.
+3. Run `pnpm compose`. It writes each shipped file and fails while one changed; commit what it wrote.
+
+The engine refuses what it cannot prove keeps the meaning; the message quotes the code it refused. Change the sources, not
+the engine's trust lists, unless the module really is plain data or pure.
 
 ## Where the reasons live
 

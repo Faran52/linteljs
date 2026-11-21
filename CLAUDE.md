@@ -1,7 +1,8 @@
 # linteljs
 
-A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/eslint-config`,
-`@linteljs/eslint-plugin`. Public repo, published to npm, so everything in it is outward-facing.
+A pnpm workspace of three published packages, `@linteljs/create`, `@linteljs/eslint-config` and
+`@linteljs/eslint-plugin`, and one private build-time package, `@linteljs/compose`. Public repo, published to npm,
+so everything in it is outward-facing.
 
 ## Never
 
@@ -28,6 +29,7 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
   one global 100% block over the root `coverage.include`.
 - `pnpm check` runs `build`, then `lint`, `lint:types`, `lint:css`, `typecheck`,
   `test:coverage`, `typegen` (rewrites `eslint-config`'s `src/typegen.d.ts`, failing when that changed it),
+  `compose` (rewrites each composed template file from `templates/codegen/compose-sources/`, failing when that changed one),
   `tailwind-styles` (rewrites each shell's tailwind `X.styles.ts` from the shared tables, failing when that changed one),
   `css-markup` (rewrites each shell's css markup from the shared markup and class maps, failing when that changed one) and
   `test:band` (`claude plugin test` on the shipped check band, with the `@anthropic-ai/claude-code` devDependency) at once (in series under `CI`), each logged to `node_modules/.cache/linteljs-gate/<step>.log`;

@@ -11,10 +11,10 @@ paths:
 
 `packages/create/templates/fragments/claude-rules/repo-structure.package.md` is the standard: read it there, not
 in a copy. The per-target files describe applications and do not apply. Below is where this workspace differs,
-and where each fact is caught. Each package has its own rule on top: `create-structure.md`,
+and where each fact is caught. Each published package has its own rule on top: `create-structure.md`,
 `eslint-config-structure.md`, and `packages/eslint-plugin/CLAUDE.md`.
 
-## Three packages, one direction
+## Three published packages, one direction
 
 ```
 eslint-plugin  <-  eslint-config  <-  create
@@ -24,6 +24,11 @@ eslint-plugin  <-  eslint-config  <-  create
 
 `create` never imports `eslint-config` at runtime: it writes the package name into text, so it builds and tests
 before that package publishes. The types it redeclares are held equal by `packages/create/src/types.test.ts`.
+
+`packages/compose` (`@linteljs/compose`, `"private": true`) is the compose engine, run only at build time by the
+gate's `compose` step. No package depends on it and it never publishes. It reads nothing from disk: its suites read
+their fixtures from `../create/templates/`, and its `src/` has the subject `module/` (`moduleCompose.ts`), a
+`utils/` and a `constants.ts`, held by its `src/meta.test.ts`.
 
 ## Files, everywhere
 
@@ -45,7 +50,7 @@ before that package publishes. The types it redeclares are held equal by `packag
   components included, a file under `utils/` 800. Tests, `__mocks__/` and e2e are exempt. Caught by `max-lines`
   and `max-lines-per-function` in the `base` layer, the same limits a generated project
   gets; `docs/DESIGN.md` carries the measurement.
-- **Coverage is 100% on all four metrics** in all three packages, with no ignore comment. Delete an unreachable
+- **Coverage is 100% on all four metrics** in every package, with no ignore comment. Delete an unreachable
   line rather than ignore it. Caught by `scripts/checkBannedPatterns.ts`, which bans every `v8`, `c8` and
   `istanbul` ignore in `packages/*/src`.
 
@@ -67,7 +72,12 @@ a generated project has, and it runs the shipped checker less this workspace's `
 `scripts/css-markup/` writes each css copy of a markup file (`[<drawer>/]styling/atomic/src/X.tsx`, the stylex and
 tailwind group, to `[<drawer>/]styling/css/src/X.tsx`) from the class maps in `templates/codegen/css-sources/`,
 one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. The gate's `css-markup` step
-fails when that changed a committed file. `scripts/utils/codegenUtils.ts` holds what both share.
+fails when that changed a committed file. `scripts/compose/` writes each composed file under `shells/` from its
+base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in the
+`SUBJECTS` table of its `constants.ts` (options, `plainData`, `pureCalls`, `modules`, import groups, the shipped path
+of each variant); the gate's `compose` step fails when that changed a committed file. The engine's suites keep
+their own copy of the table, since shipped code never imports repo tooling. `scripts/utils/codegenUtils.ts` holds
+what the three share.
 
 ## `packages/create/templates/`
 
@@ -79,7 +89,8 @@ group name, listed under `groups` in that question folder's `share.json`),
 `fragments/` the pieces joined into one file (kept as an explicit list, since they have no
 destination), `schemas/` the mirror of the root `schemas/` published by raw URL
 (`answers/utils/schemaUtils.test.ts` holds them equal), `codegen/tailwind-sources/` one tailwind strings table per
-component, and `codegen/css-sources/` one css class map per component, both repo-only: the engine never reads `codegen/` and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
+component, `codegen/css-sources/` one css class map per component, and `codegen/compose-sources/` the bases and
+option modules the compose step reads, all repo-only: `create` never reads `codegen/` and `package.json` excludes it from the tarball. It cannot live under `src/`: it holds TypeScript for
 frameworks this workspace does not install and files named `*.test.ts`.
 
 How a template file is authored once and placed per shell, with no copies: `template-authoring.md`.
@@ -140,4 +151,4 @@ tsconfig checks, and ignores them where the types are missing.
   (one project per package, the coverage thresholds), `tsconfig.json` and `tsconfig.root.json`,
   `pnpm-workspace.yaml` (the `catalog:` versions), `lint-staged.config.js`, `commitlint.config.js`, `.husky/`,
   `.claude/settings.json` (the shipped hooks, run from `templates/project/plugins/linteljs/hooks/`),
-  `stryker.parts.mjs` (what the three `stryker.config.mjs` share: the runner, the reports, the `STRYKER_PART` split).
+  `stryker.parts.mjs` (what every `stryker.config.mjs` shares: the runner, the reports, the `STRYKER_PART` split).

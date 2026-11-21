@@ -43,6 +43,9 @@ None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `
 `index.ts` and `rings.ts`, holds `main`: a `--target` in `FRAMEWORKS` (one positional, not `sync`, every flag one
 the manifest declares) runs the rewrite and maps its errors to exit codes; anything else goes to `@terminal`'s `main`.
 
+The compose engine is no ring: it is the private `packages/compose`, run by the gate's `compose` step, and nothing
+in `src/` imports it.
+
 - **Membership is the world a module reaches**, readable off its imports: `node:fs` means `disk/`,
   `node:child_process` means `spawns/`, `node:process` and `@inquirer/*` mean `terminal/`. Nothing else may
   reach a world, so the inner rings stay pure. Caught by `no-restricted-imports`

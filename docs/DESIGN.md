@@ -32,6 +32,7 @@ For work on this workspace itself:
 
 - [One shape for every ring](#one-shape-for-every-ring)
 - [The shipped starter source, and the gate that reads it](#the-shipped-starter-source-and-the-gate-that-reads-it)
+- [Composed template files, written at build time](#composed-template-files-written-at-build-time)
 - [How `check` runs](#how-check-runs)
 - [One version per shared dependency](#one-version-per-shared-dependency)
 - [The end-to-end matrix](#the-end-to-end-matrix)
@@ -1113,6 +1114,26 @@ sets it.
 
 `children?: React.ReactNode` with no React import is legal TypeScript; this standard's style is
 `@linteljs/react-no-global-namespace`, in the React layer. The gate carries no copy of a rule.
+
+## Composed template files, written at build time
+
+A file that differs per answer in a few lines is authored once, as a base module and one option module per
+answer under `templates/codegen/compose-sources/`, and the composed copies under `shells/` are committed. The
+gate's `compose` step (`scripts/compose/`) writes every one and fails when that changed a committed file, as
+`tailwind-styles` and `css-markup` do. Nothing composes at run time: `create` copies files and carries no parser,
+and `typescript` stays out of its runtime path.
+
+**The engine is a private package.** `packages/compose` (`"private": true`) is never published and no package
+depends on it; only the step imports it. It is not part of `create`, whose tarball would carry it, and not
+`@linteljs/core`, which generated projects install. It keeps its own suites, the 100% coverage bar and a
+mutation job in `audit.yml`. Its suites read the shipped files and sources from `../create/templates/` by
+relative path; `stryker.config.mjs` links `create` beside the sandbox so that path holds there too.
+
+**Trust is declared, never inferred.** The engine moves an option's code into the base only where it proves the
+move keeps the meaning: a member read is plain only when the engine sees the member written, in the option or
+a source the step hands it in `modules`, or the module is named in `plainData`; a call may be moved past other code only when its module is named
+in `pureCalls`; the members a trusted call returns are plain only when its module is in both. The two lists are
+plain data per composition in the step's table, kept in the repo, and the engine refuses anything else.
 
 ## How `check` runs
 

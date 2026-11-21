@@ -10,7 +10,7 @@ copy. Below is only where this workspace differs.
 
 ## Deviations
 
-- **Components.** That section describes an application; these are three libraries. The rest applies unchanged.
+- **Components.** That section describes an application; these are libraries. The rest applies unchanged.
 - **`node:fs/promises` over sync `node:fs`** wherever the caller is or can be async. Sync stays only where the
   contract is synchronous: a resolver feeding `spawnSync`, ESLint layer construction, the spawned gate scripts.
 - **`unknown`** only where the standard grants it: a narrowing guard's input (and the guard type a helper such as
