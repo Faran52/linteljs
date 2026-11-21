@@ -33,3 +33,26 @@ export const shellPayload = (cwd: string, command: string, event = 'PreToolUse')
 
   return payload;
 };
+
+// What the Bash tool answers for a command that ran in the foreground to its end.
+export const FINISHED_BASH = {
+  stdout: '',
+  stderr: '',
+  interrupted: false,
+  isImage: false,
+  noOutputExpected: false,
+};
+
+export const shellResult = (
+  cwd: string,
+  command: string,
+  event: string,
+  response: object | string = FINISHED_BASH,
+): object => {
+  const payload = {
+    ...shellPayload(cwd, command, event),
+    tool_response: response,
+  };
+
+  return payload;
+};

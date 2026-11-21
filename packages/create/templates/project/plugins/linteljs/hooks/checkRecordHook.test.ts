@@ -1,6 +1,10 @@
 import { rmSync } from 'node:fs';
 
-import { checkedProject, shellPayload } from '@mocks/checkedProject';
+import {
+  checkedProject,
+  shellPayload,
+  shellResult,
+} from '@mocks/checkedProject';
 import { spawnHook } from '@mocks/runHook';
 import {
   afterEach,
@@ -14,7 +18,7 @@ let root = '';
 
 const stateAfter = (event: string): string => {
   spawnHook('commitGateHook.ts', shellPayload(root, 'pnpm check'));
-  const recorded = spawnHook('checkRecordHook.ts', shellPayload(root, 'pnpm check', event));
+  const recorded = spawnHook('checkRecordHook.ts', shellResult(root, 'pnpm check', event));
   const state = spawnHook('checkStatusHook.ts', '', undefined, undefined, root);
 
   expect(recorded).toBe('');
@@ -45,7 +49,7 @@ describe('checkRecordHook.ts', () => {
   it('records a check run as `cd <dir> && <check>` against <dir>', () => {
     const check = `cd ${root} && pnpm check`;
     spawnHook('commitGateHook.ts', shellPayload('/', check));
-    spawnHook('checkRecordHook.ts', shellPayload('/', check, 'PostToolUse'));
+    spawnHook('checkRecordHook.ts', shellResult('/', check, 'PostToolUse'));
     const state = spawnHook('checkStatusHook.ts', '', undefined, undefined, root);
     expect(state).toBe('passed');
   });

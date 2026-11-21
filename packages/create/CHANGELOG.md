@@ -303,6 +303,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- **The commit gate records a pass only for a check that finished and succeeded.** A run moved to the
+  background used to count as passed the moment it moved, and a failed or interrupted call seen as `PostToolUse` did
+  too; such a run now stays running or reads as failed.
+
 - **A React Native project installs with plain `npm install`.** `@types/react-dom` follows Expo SDK 57's
   `@types/react ~19.2.2` at `~19.2.3`, where `^19.3.0` peered `@types/react ^19.3.0` and npm stopped on ERESOLVE.
 

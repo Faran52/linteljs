@@ -15,6 +15,7 @@ type Surface = (typeof SURFACES)[number];
 
 const PROMPT = {
   hasSurvey: false,
+  isCollapsed: false,
   isWorking: false,
   maxRows: 10,
   bodyColumns: 80,

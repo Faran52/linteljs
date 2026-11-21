@@ -1,7 +1,11 @@
 import { rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
-import { checkedProject, shellPayload } from '@mocks/checkedProject';
+import {
+  checkedProject,
+  shellPayload,
+  shellResult,
+} from '@mocks/checkedProject';
 import {
   copilotPayload,
   cursorShellPayload,
@@ -33,7 +37,7 @@ describe('commitGateHook.ts', () => {
   it('holds a commit until `check` has passed on the same files', () => {
     const held = runHook('commitGateHook.ts', shellPayload(root, 'git commit -m x'));
     runHook('commitGateHook.ts', shellPayload(root, 'pnpm check > /tmp/check.log 2>&1'));
-    spawnHook('checkRecordHook.ts', shellPayload(root, 'pnpm check > /tmp/check.log 2>&1', 'PostToolUse'));
+    spawnHook('checkRecordHook.ts', shellResult(root, 'pnpm check > /tmp/check.log 2>&1', 'PostToolUse'));
     const passed = runHook('commitGateHook.ts', shellPayload(root, 'git commit -m x'));
 
     expect(held).toMatch(/^Commit held: `pnpm check` has not passed on these files \(it has not run/u);
@@ -45,7 +49,7 @@ describe('commitGateHook.ts', () => {
     const check = `cd ${root} && pnpm check > /tmp/check.log 2>&1`;
     const held = runHook('commitGateHook.ts', shellPayload(elsewhere, `git -C ${root} commit -m x`));
     runHook('commitGateHook.ts', shellPayload(elsewhere, check));
-    spawnHook('checkRecordHook.ts', shellPayload(elsewhere, check, 'PostToolUse'));
+    spawnHook('checkRecordHook.ts', shellResult(elsewhere, check, 'PostToolUse'));
     const moved = runHook('commitGateHook.ts', shellPayload(elsewhere, `cd ${root} && git commit -m x`));
     const named = runHook('commitGateHook.ts', shellPayload(elsewhere, `git -C ${root} commit -m x`));
 

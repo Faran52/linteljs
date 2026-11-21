@@ -16,6 +16,7 @@ import {
   relative,
 } from 'node:path';
 
+import { FINISHED_BASH, shellResult } from '@mocks/checkedProject';
 import {
   afterEach,
   beforeEach,
@@ -68,7 +69,7 @@ const shell = (command: string, event = 'PreToolUse', tool = 'Bash'): object => 
 
 const runCheck = (command: string, event = 'PostToolUse'): void => {
   startCheck(shell(command));
-  finishCheck(shell(command, event));
+  finishCheck(shellResult(root, command, event));
 };
 
 const scratchDirectory = (name: string): string => {
@@ -260,7 +261,7 @@ describe('checkState', () => {
     const before = checkState(root);
     startCheck(shell('pnpm check'));
     const running = checkState(root);
-    finishCheck(shell('pnpm check', 'PostToolUse'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse'));
     const passed = checkState(root);
     writeFileSync(join(root, 'changed.ts'), 'x');
     const stale = checkState(root);
@@ -375,6 +376,7 @@ describe('startCheck and finishCheck', () => {
     finishCheck({
       ...payload,
       hook_event_name: 'PostToolUse',
+      tool_response: FINISHED_BASH,
     });
 
     const state = checkState(root);
@@ -411,10 +413,10 @@ describe('startCheck and finishCheck', () => {
   });
 
   it('finishes only a run it saw start, and leaves a finished one as it was', () => {
-    finishCheck(shell('pnpm check', 'PostToolUse'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse'));
     const unstarted = checkState(root);
     runCheck('pnpm check', 'PostToolUseFailure');
-    finishCheck(shell('pnpm check', 'PostToolUse'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse'));
     const finished = checkState(root);
 
     expect(unstarted).toBe('none');
@@ -424,13 +426,52 @@ describe('startCheck and finishCheck', () => {
   it('records the tree taken as the check started', () => {
     startCheck(shell('pnpm check'));
     writeFileSync(join(root, 'during.ts'), 'x');
-    finishCheck(shell('pnpm check', 'PostToolUse'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse'));
     const state = checkState(root);
     const text = readFileSync(statePath(), 'utf8');
     const record: unknown = JSON.parse(text);
 
     expect(state).toBe('stale');
     expect(record).toMatchObject({ result: 'passed' });
+  });
+
+  it.each([
+    [
+      'moved to the background',
+      {
+        ...FINISHED_BASH,
+        backgroundTaskId: 'b1',
+        timedOutAfterMs: 120_000,
+      },
+      'running',
+    ],
+    [
+      'run in the background',
+      {
+        ...FINISHED_BASH,
+        backgroundTaskId: 'b2',
+      },
+      'running',
+    ],
+    [
+      'interrupted',
+      {
+        ...FINISHED_BASH,
+        interrupted: true,
+      },
+      'failed',
+    ],
+    [
+      'failed, as a managed hook sees it',
+      'Exit code 1',
+      'failed',
+    ],
+  ])('never records a pass for a check %s', (_, response, expected) => {
+    startCheck(shell('pnpm check'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse', response));
+    const state = checkState(root);
+
+    expect(state).toBe(expected);
   });
 
   it('records nothing for a project with no check script', () => {
@@ -553,7 +594,7 @@ describe('commitGateReason', () => {
   it('names a run still going, and a pass the files have moved past', () => {
     startCheck(shell('pnpm check'));
     const running = commitGateReason(shell('git commit'));
-    finishCheck(shell('pnpm check', 'PostToolUse'));
+    finishCheck(shellResult(root, 'pnpm check', 'PostToolUse'));
     writeFileSync(join(root, 'later.ts'), 'x');
     const stale = commitGateReason(shell('git commit'));
 

@@ -413,7 +413,23 @@ export const startCheck = (payload: object): void => {
   }
 };
 
-// Claude Code sends `PostToolUse` for a command that exited 0 and `PostToolUseFailure` for one that did not.
+// `PostToolUse` alone vouches for nothing: a managed hook also gets it for a failed call, with the error text as
+// `tool_response`, and a command moved to the background answers with its `backgroundTaskId` while it still runs.
+const outcomeOf = (payload: object): Result => {
+  const response = fieldAt(payload, 'tool_response');
+
+  if (stringAt(payload, 'hook_event_name') !== 'PostToolUse' || typeof response !== 'object') {
+    return 'failed';
+  }
+
+  if ('backgroundTaskId' in response) {
+    return 'running';
+  }
+
+  return 'interrupted' in response && response.interrupted === true ? 'failed' : 'passed';
+};
+
+// A run moved to the background stays running: nothing reports its exit, so it never passes.
 export const finishCheck = (payload: object): void => {
   const project = checkProjectOf(payload);
 
@@ -429,7 +445,7 @@ export const finishCheck = (payload: object): void => {
 
   writeRecord(project, {
     tree: checkRecord.tree,
-    result: stringAt(payload, 'hook_event_name') === 'PostToolUse' ? 'passed' : 'failed',
+    result: outcomeOf(payload),
   });
 };
 
