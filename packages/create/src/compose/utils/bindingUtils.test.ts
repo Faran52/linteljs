@@ -92,6 +92,67 @@ describe('sourcesOf', () => {
   });
 });
 
+const RINGS: [string, Record<string, string>, string][] = [
+  [
+    'two modules that import each other',
+    {
+      './p': 'import { b } from \'./q\';\nexport const a = { x: b, y: b };\n',
+      './q': 'import { a } from \'./p\';\nexport const b = { x: a, y: a };\n',
+    },
+    './p -> ./q -> ./p',
+  ],
+  [
+    'a module that imports itself',
+    { './p': 'import { a } from \'./p\';\nexport const b = a;\nexport const a = 1;\n' },
+    './p -> ./p',
+  ],
+  [
+    'a ring that does not pass the first module',
+    {
+      './p': 'import { b } from \'./q\';\nexport const a = b;\n',
+      './q': 'import { c } from \'./r\';\nexport const b = c;\n',
+      './r': 'import type { T } from \'./q\';\nexport const c: T = 1;\n',
+    },
+    './q -> ./r -> ./q',
+  ],
+];
+
+const CHAINS: [string, Record<string, string>][] = [
+  [
+    'a chain to a shared module',
+    {
+      './router': 'import { sx } from \'./styling\';\nexport const r = sx;\n',
+      './styling': 'import type { Sx } from \'./ports\';\nexport const sx: Sx = 1;\n',
+    },
+  ],
+  [
+    'two chains that meet',
+    {
+      './p': 'import { b } from \'./q\';\nimport { c } from \'./r\';\nexport const a = b + c;\n',
+      './q': 'import { c } from \'./r\';\nexport const b = c;\n',
+      './r': 'import { d } from \'lib\';\nexport const c = d;\n',
+    },
+  ],
+];
+
+describe('sourcesOf, on option modules that import each other', () => {
+  it.each(RINGS)('refuses %s, naming the ring', (_name, options, ring) => {
+    const run = (): Sources => {
+      return sourcesOf('import { a } from \'./p\';\n\nexport const x = a;\n', options, {}, NO_TRUST);
+    };
+
+    expect(run).toThrow(`Option modules import each other in a ring, so filling them never ends: ${ring}`);
+  });
+
+  it.each(CHAINS)('takes %s', (_name, options) => {
+    const { modules } = sourcesOf('export const x = 1;\n', options, {}, NO_TRUST);
+    const taken = [...modules.keys()];
+    const given = Object.keys(options);
+
+    expect(taken).toStrictEqual(given);
+  });
+});
+
 describe('sourcesOf, on what a base opens with', () => {
   it('keeps the comments and directives before the imports as the header', () => {
     const base = '// Why.\n\'use client\';\n\nimport { a } from \'pkg\';\n\nexport const b = a;\n';

@@ -48,6 +48,8 @@ export type Exported = ts.VariableDeclaration | ts.InterfaceDeclaration | ts.Typ
 
 type Parts = Pick<Sources, 'body' | 'header'>;
 
+type Module = [string, ts.SourceFile];
+
 const isExported = (statement: ts.Statement): boolean => {
   const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined;
   const isMarked = modifiers
@@ -82,6 +84,11 @@ export const exportOf = (module: ts.SourceFile, name: string): Exported | undefi
     });
 };
 
+const specifierOf = (declaration: ts.ImportDeclaration): string => {
+  return textOf(declaration.moduleSpecifier)
+    .slice(1, -1);
+};
+
 const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
   const clause = declaration.importClause;
   const bindings = clause?.namedBindings;
@@ -100,9 +107,8 @@ const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
     .map((element) => {
       return element.name.text;
     });
-  const { moduleSpecifier } = declaration;
   const entry: ImportEntry = {
-    specifier: textOf(moduleSpecifier).slice(1, -1),
+    specifier: specifierOf(declaration),
     isType: clause?.phaseModifier === ts.SyntaxKind.TypeKeyword,
     isBare: clause === undefined,
     names: new Map(pairs),
@@ -222,6 +228,57 @@ const parsedOf = (texts: Readonly<Record<string, string>>): Map<string, ts.Sourc
   return new Map(parsed);
 };
 
+// The option modules a module imports.
+const nextOf = (file: ts.SourceFile, modules: ReadonlyMap<string, ts.SourceFile>): Module[] => {
+  return file.statements
+    .filter(ts.isImportDeclaration)
+    .flatMap((declaration) => {
+      const specifier = specifierOf(declaration);
+      const next = modules.get(specifier);
+      const found: Module[] = next === undefined ? [] : [[specifier, next]];
+
+      return found;
+    });
+};
+
+// A chain of option modules, `path` on, that returns to a module it passed, or undefined.
+const cycleFrom = (
+  [specifier, file]: Module,
+  modules: ReadonlyMap<string, ts.SourceFile>,
+  path: readonly string[],
+): string[] | undefined => {
+  if (path.includes(specifier)) {
+    const start = path.indexOf(specifier);
+    const ring = [...path.slice(start), specifier];
+
+    return ring;
+  }
+
+  const walked = [...path, specifier];
+  return nextOf(file, modules)
+    .map((next) => {
+      return cycleFrom(next, modules, walked);
+    })
+    .find((cycle) => {
+      return cycle !== undefined;
+    });
+};
+
+// Option modules that import each other in a ring would be filled into each other without end.
+const cycleCheck = (modules: ReadonlyMap<string, ts.SourceFile>): void => {
+  const cycle = [...modules]
+    .map((module) => {
+      return cycleFrom(module, modules, []);
+    })
+    .find((found) => {
+      return found !== undefined;
+    });
+
+  if (cycle !== undefined) {
+    throw new Error(`Option modules import each other in a ring, so filling them never ends: ${cycle.join(' -> ')}`);
+  }
+};
+
 // The base without its imports, each option module parsed, and what every import stands for.
 export const sourcesOf = (
   base: string,
@@ -240,6 +297,8 @@ export const sourcesOf = (
   if (both !== undefined) {
     throw new Error(`${both} is given both as a parameter module and as a module held for proof.`);
   }
+
+  cycleCheck(modules);
 
   const bindings = new Map<string, Binding>();
   const imports: ImportEntry[] = [];

@@ -1559,6 +1559,25 @@ describe('moduleCompose, one rule at a time', () => {
   });
 });
 
+describe('moduleCompose, on option modules that import each other', () => {
+  it('refuses them, naming the ring, before it fills anything', () => {
+    const run = (): string => {
+      return moduleCompose({
+        base: 'import { a } from \'./p\';\n\nexport const x = a;\n',
+        options: {
+          './p': 'import { b } from \'./q\';\nexport const a = { x: b, y: b };\n',
+          './q': 'import { a } from \'./p\';\nexport const b = { x: a, y: a };\n',
+        },
+        modules: {},
+        plainData: [],
+        pureCalls: [],
+      });
+    };
+
+    expect(run).toThrow('Option modules import each other in a ring, so filling them never ends: ./p -> ./q -> ./p');
+  });
+});
+
 describe('moduleCompose, refusing', () => {
   it.each([...REFUSALS, ...MORE_REFUSALS])('refuses $name', ({
     base,
