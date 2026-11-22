@@ -9,6 +9,8 @@ import { sourcesOf } from './bindingUtils';
 import {
   actsIn,
   type Fault,
+  isProvenPure,
+  pathFault,
   plainCheck,
   type Proof,
   pureCheck,
@@ -1158,5 +1160,32 @@ describe('actsIn and pureCheck, on in and instanceof', () => {
     const acting = actedOf(LOOKED, given);
 
     expect(acting).toStrictEqual(expected);
+  });
+});
+
+describe('isProvenPure', () => {
+  it.each([
+    [`${TABLE}y = t.a + 1;`, true],
+    ['y = u.a;', false],
+    ['y = f();', false],
+  ])('answers for %j', (base, expected) => {
+    const { proof, value } = subjectOf(base, NONE);
+    const pure = isProvenPure(proof, value);
+
+    expect(pure).toBe(expected);
+  });
+});
+
+describe('pathFault', () => {
+  it.each([
+    [['a'], undefined],
+    [['a', 'b'], undefined],
+    [['a', 'c'], faultOf('"c"', '"t"', false)],
+    [['d'], faultOf('"d"', '"t"', false)],
+  ])('answers for the path %j of a literal', (names, expected) => {
+    const { proof, value } = subjectOf('const t = { a: { b: 1 } };\ny = t;', NONE);
+    const fault = pathFault(proof, value, names);
+
+    expect(fault).toStrictEqual(expected);
   });
 });

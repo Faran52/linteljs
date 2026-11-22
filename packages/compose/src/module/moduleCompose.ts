@@ -14,41 +14,22 @@ import {
   type Sources,
   sourcesOf,
 } from '../utils/bindingUtils';
-import {
-  copyOf,
-  type Edit,
-  editOf,
-  patternOf,
-  plain,
-} from '../utils/editUtils';
 import { Follower } from '../utils/followUtils';
 import { importBlock, type ImportGroups } from '../utils/importUtils';
 import { filledOnce } from '../utils/inlineUtils';
-import {
-  declarationOf,
-  referencesTo,
-  scopeOf,
-} from '../utils/scopeUtils';
+import { prunedOnce, trackRead } from '../utils/pruneUtils';
+import { declarationOf, scopeOf } from '../utils/scopeUtils';
 import { simplifiedOnce } from '../utils/simplifyUtils';
 import {
   collect,
   indentAt,
-  indentOf,
-  isPlainElement,
   isReference,
   parse,
-  referencesIn,
-  type Span,
-  spanOf,
-  textOf,
   valueOf,
 } from '../utils/sourceUtils';
 import {
-  batched,
-  type Candidate,
   checked,
   settled,
-  type Step,
   wellFormed,
 } from '../utils/stepUtils';
 
@@ -74,14 +55,8 @@ export interface ComposeRequest {
   importGroups?: ImportGroups;
 }
 
-interface Destructured {
-  arrow: ts.ArrowFunction;
-  parameter: ts.ParameterDeclaration;
-  pattern: ts.ObjectBindingPattern;
-}
-
 interface Before {
-  // The base's destructured names something reads before filling, the only ones pruning may drop.
+  // The base's bindings something reads before filling, the only ones pruning may drop.
   follower: Follower;
   // The names the base imports and never reads, which stay imported whatever the fills leave.
   unread: string[];
@@ -159,58 +134,11 @@ const withComments = (text: string, sources: Sources): string => {
     });
 };
 
-// The arrow parameters that destructure plain names, the one shape a name can be dropped from as it stands.
-const destructuredIn = (file: ts.SourceFile): Destructured[] => {
-  return collect(file, ts.isArrowFunction)
-    .flatMap((arrow) => {
-      return arrow.parameters
-        .flatMap((parameter) => {
-          const pattern = parameter.name;
-          const isPlain = ts.isObjectBindingPattern(pattern) && pattern.elements.every(isPlainElement);
-          const found: Destructured[] = isPlain
-            ? [{
-                arrow,
-                parameter,
-                pattern,
-              }]
-            : [];
-
-          return found;
-        });
-    });
-};
-
-// A pattern with no name left: the parameter goes when none follows it, else it stays as `{}`.
-const emptied = ({
-  arrow,
-  parameter,
-  pattern,
-}: Destructured): Edit => {
-  const index = arrow.parameters.indexOf(parameter);
-  const previous = arrow.parameters[index - 1];
-  const gone: Span = {
-    start: previous === undefined ? parameter.getStart() : previous.getEnd(),
-    end: parameter.getEnd(),
-  };
-
-  const isLast = index === arrow.parameters.length - 1;
-  const span = isLast ? gone : spanOf(pattern);
-  const left = plain(isLast ? '' : '{}');
-
-  return editOf(span, left);
-};
-
 const beforeOf = (base: string, file: ts.SourceFile, sources: Sources): Before => {
   const checker = scopeOf(file, sources.modules, sources.held);
   const follower = new Follower();
 
-  for (const { arrow, pattern } of destructuredIn(file)) {
-    for (const element of pattern.elements) {
-      if (referencesTo(checker, element, arrow).length > 0) {
-        follower.track(element.name);
-      }
-    }
-  }
+  trackRead(file, checker, follower);
 
   const reads = collect(file, ts.isIdentifier)
     .filter((identifier) => {
@@ -233,62 +161,6 @@ const beforeOf = (base: string, file: ts.SourceFile, sources: Sources): Before =
   };
 
   return before;
-};
-
-// A destructured name that filling left unread is dropped from its pattern; one the base never read stays.
-const prunedOf = (follower: Follower, text: string, site: Destructured): Edit[] | undefined => {
-  const { arrow, pattern } = site;
-  const names = pattern.elements
-    .map((element) => {
-      return textOf(element.name);
-    });
-  const kept = pattern.elements
-    .filter(({ name }) => {
-      const reads = referencesIn(arrow, textOf(name));
-
-      return !follower.has(name) || reads.length > 0;
-    })
-    .map(({ name }) => {
-      return copyOf(name);
-    });
-
-  if (kept.length === 0 && names.length > 0) {
-    const gone = [emptied(site)];
-
-    return gone;
-  }
-
-  if (kept.length < names.length) {
-    const indent = indentOf(text, pattern);
-    const printed = patternOf(kept, indent);
-    const span = spanOf(pattern);
-    const pruned = [editOf(span, printed)];
-
-    return pruned;
-  }
-
-  return undefined;
-};
-
-const prunedOnce = (follower: Follower): Step => {
-  return (text, file) => {
-    const candidates = destructuredIn(file)
-      .map((site) => {
-        const candidate: Candidate = {
-          node: site.arrow,
-          isAlone: () => {
-            return false;
-          },
-          edits: () => {
-            return prunedOf(follower, text, site);
-          },
-        };
-
-        return candidate;
-      });
-
-    return batched(text, candidates);
-  };
 };
 
 // A source as the engine reads it: every line ended by LF, no byte order mark.
@@ -316,7 +188,7 @@ export const moduleCompose = (request: ComposeRequest): string => {
       return follower.isTouched(node);
     });
   }, follower.follow);
-  const pruned = settled(simplified, prunedOnce(follower), follower.follow);
+  const pruned = settled(simplified, prunedOnce(follower, sources), follower.follow);
   const file = checked(pruned, sources);
   const identifiers = collect(file, ts.isIdentifier)
     .filter(isReference)

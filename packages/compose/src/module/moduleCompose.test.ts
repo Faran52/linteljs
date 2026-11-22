@@ -1745,6 +1745,50 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
+    name: 'a const filling leaves unread, dropped, and the import only it read with it',
+    base: [
+      'import { x } from \'pkg\';',
+      'import { on } from \'./p\';',
+      '',
+      'export const z = () => {',
+      '  const y = x;',
+      '  const kept = 1;',
+      '',
+      '  return on ? 1 : y;',
+      '};',
+      '',
+    ].join('\n'),
+    option: [
+      'export const on = true;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const z = () => {',
+      '  const kept = 1;',
+      '',
+      '  return 1;',
+      '};',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'a last positional parameter filling leaves unread, dropped with its comma',
+    base: [
+      'import { Item } from \'./p\';',
+      '',
+      'export const List = (ref: Ref, label: string) => <Item label={label} />;',
+      '',
+    ].join('\n'),
+    option: [
+      'export const Item = () => <li />;',
+      '',
+    ].join('\n'),
+    expected: [
+      'export const List = (ref: Ref) => <li />;',
+      '',
+    ].join('\n'),
+  },
+  {
     name: 'a parameter the base already leaves unread, left as written',
     base: [
       'import { Item } from \'./p\';',
@@ -1779,7 +1823,7 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a name the base leaves unread, kept though an inner binding of that name is read',
+    name: 'a name the base leaves unread, kept though an inner binding of that name, then dropped, was read',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1791,7 +1835,7 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = ({ label }: Props) => [1].map((label) => <li />);',
+      'export const List = ({ label }: Props) => [1].map(() => <li />);',
       '',
     ].join('\n'),
   },

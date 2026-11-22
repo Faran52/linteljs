@@ -750,6 +750,23 @@ const purityOf = (proof: Proof): Purity => {
   return purity;
 };
 
+// Whether a value is pure on proof: each member read, conversion and look in it proven to run nothing.
+export const isProvenPure = (proof: Proof, value: ts.Expression): boolean => {
+  const purity = purityOf(proof);
+
+  return isPure(value, purity);
+};
+
+// What stops reading a path of members from a value, as a pattern does, from being proven to run no code.
+export const pathFault = (proof: Proof, owner: ts.Expression, names: readonly string[]): Fault | undefined => {
+  const context = contextOf(proof);
+  const walk = readWalkOf(context);
+  const origin = nameOrigin(textOf(owner));
+  const path = names.map(namedKey);
+
+  return reach(walk, owner, path, origin).fault;
+};
+
 const readRefusal = (node: ts.Node, { member, origin }: Fault): Error => {
   const read = `${member} of ${origin.shown} is not shown to be a plain property`;
   const reason = origin.isModule
