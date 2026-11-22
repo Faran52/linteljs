@@ -809,6 +809,11 @@ describe('actsIn', () => {
       ['f(u.b)', 'u.b'],
     ],
     [
+      'class C {}\ny = C.p;',
+      NONE,
+      ['C.p'],
+    ],
+    [
       'y = (a = 1);',
       NONE,
       ['a = 1'],
@@ -1074,9 +1079,100 @@ const LOOKS: [string, Given, boolean][] = [
     false,
   ],
   [
-    'class C {}\ny = a instanceof C;',
+    'class C {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class B {}\nclass C extends B {\n  m() {}\n  static s = 1;\n}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'const C = class {};\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'import { C } from \'./p\';\n\nconst o = {};\ny = o instanceof C;',
+    optionOf('export class C {}\n'),
+    true,
+  ],
+  [
+    'import { C } from \'./q\';\n\nconst o = {};\ny = o instanceof C;',
+    {
+      ...NONE,
+      held: { './q': 'export class C {}\n' },
+    },
+    true,
+  ],
+  [
+    'class C {\n  static [Symbol.hasInstance]() {\n    return true;\n  }\n}\nconst o = {};\ny = o instanceof C;',
     NONE,
     false,
+  ],
+  [
+    'class C {\n  [k]() {}\n}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {\n  static {}\n}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    '@d\nclass C {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'declare class C {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C extends u {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class B {\n  static [k] = 1;\n}\nclass C extends B {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class A extends B {}\nclass B extends A {}\nconst o = {};\ny = o instanceof A;',
+    NONE,
+    false,
+  ],
+  [
+    'let C = class {};\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'const C = () => 1;\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'import { C } from \'./q\';\n\nconst o = {};\ny = o instanceof C;',
+    HELD,
+    false,
+  ],
+  [
+    'import { C } from \'./q\';\n\nconst o = {};\ny = o instanceof C;',
+    {
+      ...NONE,
+      held: { './q': 'class C {}\nexport const D = 1;\n' },
+    },
+    false,
+  ],
+  [
+    'class C implements I {}\nconst o = {};\ny = o instanceof C;',
+    NONE,
+    true,
   ],
   [
     `${TABLE}y = 'a' instanceof t;`,
@@ -1084,7 +1180,77 @@ const LOOKS: [string, Given, boolean][] = [
     false,
   ],
   [
-    'y = a instanceof u;',
+    'const o = {};\ny = o instanceof u;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\ny = 1 instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\ny = \'s\' instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\ny = {} instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\nconst o = [1];\ny = o instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\ny = (() => 1) instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\nconst o = function () {};\ny = o instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\nclass D {}\ny = D instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\nconst D = class extends C {};\ny = D instanceof C;',
+    NONE,
+    true,
+  ],
+  [
+    'class C {}\ny = a instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\ny = { __proto__: p } instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\nlet o = {};\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\nconst o = u;\ny = o instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\nclass D extends u {}\ny = D instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    'class C {}\nconst o = 1n;\ny = o instanceof C;',
     NONE,
     false,
   ],

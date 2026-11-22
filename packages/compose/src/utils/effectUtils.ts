@@ -255,8 +255,28 @@ const declaredStep = (
   const flags = isVariable ? ts.getCombinedNodeFlags(declaration) : 0;
   const isConstant = (flags & ts.NodeFlags.Const) !== 0 && (flags & ts.NodeFlags.Using) === 0;
   const initializer = isVariable && isConstant ? declaration.initializer : undefined;
+  const named = declaration !== undefined && ts.isClassDeclaration(declaration) ? declaration.name : undefined;
+
+  // A class declaration is no expression; the walk ends at its name, which stands for it.
+  if (named !== undefined && path.length === 0) {
+    return reachedAt([named]);
+  }
 
   return initializer === undefined ? faultAt(path, origin) : reach(walk, initializer, path, origin);
+};
+
+// A class a module exports by name, declared there.
+const classIn = (module: ts.SourceFile | undefined, name: string): ts.ClassDeclaration | undefined => {
+  return module?.statements
+    .filter(ts.isClassDeclaration)
+    .find((declared) => {
+      const isExported = ts.getModifiers(declared)
+        ?.some((modifier) => {
+          return modifier.kind === ts.SyntaxKind.ExportKeyword;
+        });
+
+      return isExported === true && declared.name?.text === name;
+    });
 };
 
 // A name that resolves to nothing in the body: a parameter binding, an import of the base, or a global.
@@ -265,8 +285,9 @@ const outsideStep = (walk: Walk, name: ts.Identifier, path: readonly Key[]): Rea
   const binding = sources.bindings.get(name.text);
 
   if (binding !== undefined) {
-    const exported = resolved(sources, name.text);
+    const option = sources.modules.get(binding.specifier);
     const origin = moduleOrigin(binding.specifier);
+    const exported = classIn(option, binding.exported) ?? resolved(sources, name.text);
 
     return declaredStep(walk, exported, path, origin);
   }
@@ -287,7 +308,9 @@ const outsideStep = (walk: Walk, name: ts.Identifier, path: readonly Key[]): Rea
 
   const module = sources.held.get(entry.specifier);
   const exported = entry.names.get(name.text);
-  const found = module === undefined || exported === undefined ? undefined : exportOf(module, exported);
+  const found = module === undefined || exported === undefined
+    ? undefined
+    : classIn(module, exported) ?? exportOf(module, exported);
 
   return declaredStep(walk, found, path, origin);
 };
@@ -606,11 +629,73 @@ const isOwnTable = (value: ts.Expression): boolean => {
     });
 };
 
-// `k in t` runs nothing when `t` is proven such a literal and `k` a key; `instanceof` is never proven.
-const isPlainLook = (context: Context, look: ts.BinaryExpression): boolean => {
-  const isIn = look.operatorToken.kind === ts.SyntaxKind.InKeyword;
+// A class written in source that `instanceof` asks nothing of but its prototype: no decorator that may replace it, no
+// member with a computed name (`[Symbol.hasInstance]` among them), no static block, and a parent of the same kind.
+const isPlainClass = (context: Context, value: ts.Expression, checking: Set<ts.Node>): boolean => {
+  const declared = ts.isIdentifier(value) && ts.isClassDeclaration(value.parent) ? value.parent : value;
 
-  return isIn && isEveryValue(context, look.right, isOwnTable) && isEveryValue(context, look.left, (value) => {
+  if (!ts.isClassLike(declared) || checking.has(declared)) {
+    return false;
+  }
+
+  const isDeclared = ts.getModifiers(declared)
+    ?.some((modifier) => {
+      return modifier.kind === ts.SyntaxKind.DeclareKeyword;
+    });
+  const isDecorated = ts.getDecorators(declared) !== undefined;
+  const isOpen = declared.members
+    .some((member) => {
+      const isComputed = member.name !== undefined && ts.isComputedPropertyName(member.name);
+
+      return isComputed || ts.isClassStaticBlockDeclaration(member);
+    });
+  const parent = declared.heritageClauses
+    ?.find((clause) => {
+      return clause.token === ts.SyntaxKind.ExtendsKeyword;
+    })
+    ?.types
+    .at(0);
+
+  checking.add(declared);
+
+  const isPlainParent = parent === undefined || isEveryValue(context, parent.expression, (inner) => {
+    return isPlainClass(context, inner, checking);
+  });
+
+  checking.delete(declared);
+
+  return isDeclared !== true && !isDecorated && !isOpen && isPlainParent;
+};
+
+// A value whose prototype chain `instanceof` walks without running code, as a Proxy's trap would: a primitive, or a
+// literal of its own (object with no `__proto__`, array, function, or a class of the kind above).
+const isOwnValue = (context: Context, value: ts.Expression): boolean => {
+  const checking = new Set<ts.Node>();
+  const isLiteral = ts.isObjectLiteralExpression(value) && !value.properties.some(isPrototype);
+  const isOwn = isLiteral
+    || ts.isArrayLiteralExpression(value)
+    || ts.isFunctionExpression(value)
+    || ts.isArrowFunction(value);
+
+  return isOwn || isPrimitiveValue(context, value, checking) || isPlainClass(context, value, checking);
+};
+
+// `k in t` runs nothing when `t` is proven such a literal and `k` a key, `x instanceof C` when `C` is such a class and
+// `x` such a value.
+const isPlainLook = (context: Context, look: ts.BinaryExpression): boolean => {
+  if (look.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword) {
+    const isPlainRight = isEveryValue(context, look.right, (value) => {
+      const checking = new Set<ts.Node>();
+
+      return isPlainClass(context, value, checking);
+    });
+
+    return isPlainRight && isEveryValue(context, look.left, (value) => {
+      return isOwnValue(context, value);
+    });
+  }
+
+  return isEveryValue(context, look.right, isOwnTable) && isEveryValue(context, look.left, (value) => {
     return isKeyValue(context, value);
   });
 };
