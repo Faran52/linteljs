@@ -178,9 +178,16 @@ describe('claudeSettingsEmitter', () => {
     "context_ceiling_tokens": {
       "type": "number",
       "title": "Context ceiling (tokens)",
-      "description": "Subagent tool calls are refused past this; the user is told when the main session passes it.",
+      "description": "Subagents past this are refused after their wrap-up calls; you hear when your session passes it.",
       "default": 150000,
       "min": 1
+    },
+    "context_wrap_up_calls": {
+      "type": "number",
+      "title": "Wrap-up calls past the ceiling",
+      "description": "Calls a subagent past the ceiling gets to commit and update its resume note; 0 refuses at once.",
+      "default": 10,
+      "min": 0
     }
   }
 }

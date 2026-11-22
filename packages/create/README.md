@@ -222,8 +222,8 @@ file outside the work tree (`check > /tmp/check.log 2>&1`), never piped or chain
 needs none. Until then the commit asks you, and you can allow that one commit; a session with nobody to answer
 (`claude -p`) is refused. A run moved to the background never counts as a pass. With `LINTELJS_GATE_WORKTREES=off` in the settings
 `env`, a commit in a linked git worktree is not held, and the check runs once before the merge. The plugin's mod tells you once
-when the session's context passes 150K tokens, warns a subagent once past 130K and refuses its tool calls past
-150K; both limits are plugin options in `/config` (`context_warn_tokens`, `context_ceiling_tokens`), the machine's
+when the session's context passes 150K tokens, warns a subagent once past 130K, and past 150K gives it 10 more tool calls to commit
+passing work and update its resume note, then refuses its calls (`context_wrap_up_calls`, 0 refuses at once); both limits are plugin options in `/config` (`context_warn_tokens`, `context_ceiling_tokens`), the machine's
 default, and a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in its settings `env`,
 which the badges follow too.
 `.claude/settings.json` adds a `[CTX nK]` badge for the session and for

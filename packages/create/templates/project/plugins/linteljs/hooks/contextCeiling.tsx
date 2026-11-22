@@ -18,6 +18,7 @@ import type { ContextReading } from '../types/index.d.ts';
 interface Limits {
   warn: number;
   ceiling: number;
+  wrapUpCalls: number;
 }
 
 // The main loop carries no agent id.
@@ -27,6 +28,7 @@ const UNREAD: ContextReading = {
   tokens: 0,
   isPastWarn: false,
   isPastCeiling: false,
+  wrapUpCalls: 0,
 };
 
 const FAILED = 'The context ceiling guard failed, so this call is refused. Return your report.';
@@ -55,6 +57,7 @@ const limitsIn = async ($: EngineInterface, options: Limits): Promise<Limits> =>
   const limits = {
     warn: tokensOf(warn, options.warn),
     ceiling: tokensOf(ceiling, options.ceiling),
+    wrapUpCalls: options.wrapUpCalls,
   };
 
   return limits;
@@ -64,9 +67,33 @@ export const limitsOf = (options: PluginOptions): Limits => {
   const limits = {
     warn: limitOf(options, 'context_warn_tokens'),
     ceiling: limitOf(options, 'context_ceiling_tokens'),
+    wrapUpCalls: limitOf(options, 'context_wrap_up_calls'),
   };
 
   return limits;
+};
+
+const callsOf = (count: number): string => {
+  return count === 1 ? '1 tool call' : `${String(count)} tool calls`;
+};
+
+// What the call that ran past the ceiling tells the agent, with `left` calls to go after it.
+const wrapUpOf = (size: string, ceiling: string, left: number): string => {
+  if (left === 0) {
+    return `Context is ${size}, past the ${ceiling} ceiling, and that was your last tool call: return your report.`;
+  }
+
+  return `Context is ${size}, past the ${ceiling} ceiling. ${callsOf(left)} left, only to commit work that passes `
+    + 'the check and update your resume note; then every call is refused. Start no new work.';
+};
+
+// What the user is told becomes of a subagent that passed the ceiling.
+const thenOf = (wrapUpCalls: number): string => {
+  if (wrapUpCalls === 0) {
+    return 'its tool calls are refused';
+  }
+
+  return `it has ${callsOf(wrapUpCalls)} to wrap up, then its tool calls are refused`;
 };
 
 const sizeOf = (tokens: number): string => {
@@ -122,12 +149,16 @@ const judge = async (
   const isPastCeiling = reading.tokens >= limits.ceiling;
   const size = sizeOf(reading.tokens);
   const ceiling = sizeOf(limits.ceiling);
+  // Dropping back under the ceiling resets the count.
+  const spent = isPastCeiling ? reading.wrapUpCalls : 0;
+  const isWrapUp = e.agentId !== undefined && isPastCeiling && spent < limits.wrapUpCalls;
 
   await update($, loop, (current) => {
     const seen = {
       ...current,
       isPastWarn,
       isPastCeiling,
+      wrapUpCalls: isWrapUp ? spent + 1 : spent,
     };
 
     return seen;
@@ -138,15 +169,22 @@ const judge = async (
   if (e.agentId !== undefined && isPastCeiling) {
     if (isFirstPastCeiling) {
       const description = await descriptionOf($, e.agentId);
-      $.ui.toast(`Subagent ${description} passed ${ceiling} (${size}); its tool calls are refused.`);
+      $.ui.toast(`Subagent ${description} passed ${ceiling} (${size}); ${thenOf(limits.wrapUpCalls)}.`);
     }
 
-    const refused = {
-      deny: `Context is ${size}, past the ${ceiling} ceiling, so this call is refused. Commit only work that passes `
-        + 'the check, update your resume note and return your report. Start no new work.',
-    };
+    if (!isWrapUp) {
+      const refused = {
+        deny: `Context is ${size}, past the ${ceiling} ceiling, and no tool calls are left, so this call is refused. `
+          + 'Return your report.',
+      };
 
-    return refused;
+      return refused;
+    }
+
+    const wrapped = await next(e);
+    const left = wrapUpOf(size, ceiling, limits.wrapUpCalls - spent - 1);
+
+    return withContext(wrapped, left);
   }
 
   const ran = await next(e);

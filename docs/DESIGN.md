@@ -963,9 +963,11 @@ project's own wins on `create --existing`. The ceiling is `hooks/contextCeiling.
 classic hook could not hold it: it ran on `PostToolUse`, after the tool, where `decision: "block"` only hands Claude
 a reason, and it read a transcript Claude Code writes behind the conversation, so agents ran on to 156K to 186K. The
 mod reads each loop's prompt size from its `turn.step` usage (input plus cache read and written), and on
-`tool.call` warns a subagent once past `context_warn_tokens`, refuses every call past `context_ceiling_tokens` before
-it runs (a guard with `.catch`, so a failed guard refuses too), and tells the user once when the main session passes
-the ceiling; dropping back under clears each. A task's `tokenCount` sums all its output, so it is not read. A
+`tool.call` warns a subagent once past `context_warn_tokens`; past `context_ceiling_tokens` it runs
+`context_wrap_up_calls` more calls (10 by default), each told how many are left and that they are for committing
+passing work and the resume note, since a refusal at once also refused that commit, then refuses every call before
+it runs (a guard with `.catch`, so a failed guard refuses too). The user is told once when a subagent or the main
+session passes the ceiling; dropping back under clears each and resets the count, kept in `linteljs.context`. A task's `tokenCount` sums all its output, so it is not read. A
 plugin names one hooks module, so `register.tsx` registers the check band and the ceiling. The limits are plugin
 options, which Claude Code reads from user settings alone (a project's entries are ignored), so they are the
 machine's default and a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in its

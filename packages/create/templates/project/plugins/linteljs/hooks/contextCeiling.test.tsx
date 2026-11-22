@@ -27,6 +27,15 @@ const LIMITS = {
   options: {
     context_warn_tokens: 1000,
     context_ceiling_tokens: 2000,
+    context_wrap_up_calls: 2,
+  },
+};
+
+// No wrap-up calls: a subagent past the ceiling is refused at once.
+const NO_WRAP_UP = {
+  options: {
+    ...LIMITS.options,
+    context_wrap_up_calls: 0,
   },
 };
 
@@ -50,8 +59,16 @@ const AGENT_INFO: AgentInfo = {
 const WARNING = 'Context is 1K of a 2K ceiling. Finish the current step, commit work that passes the check, update '
   + 'your resume note and return your report.';
 
-const REFUSAL = 'Context is 2K, past the 2K ceiling, so this call is refused. Commit only work that passes the '
-  + 'check, update your resume note and return your report. Start no new work.';
+const REFUSAL = 'Context is 2K, past the 2K ceiling, and no tool calls are left, so this call is refused. Return '
+  + 'your report.';
+
+const WRAP_UP = 'Context is 2K, past the 2K ceiling. 1 tool call left, only to commit work that passes the check '
+  + 'and update your resume note; then every call is refused. Start no new work.';
+
+const LAST_CALL = 'Context is 2K, past the 2K ceiling, and that was your last tool call: return your report.';
+
+const TOLD = 'Subagent Port the ceiling passed 2K (2K); it has 2 tool calls to wrap up, then its tool calls are '
+  + 'refused.';
 
 const usageOf = (tokens: number): TurnStepResult['usage'] => {
   const third = Math.floor(tokens / 3);
@@ -187,7 +204,29 @@ test('warns a subagent once past the warning line, after its call ran', LIMITS, 
   expect(world.toasts).toEqual([]);
 });
 
-test('refuses every call of a subagent past the ceiling, and tells the user once', LIMITS, async ($, on) => {
+test('runs a subagent\'s wrap-up calls past the ceiling, counting them down, then refuses every call', LIMITS, async (
+  $,
+  on,
+) => {
+  const world = fakeWorld(on);
+  await step($, world, 2000, AGENT);
+  const first = await call($, AGENT);
+  const last = await call($, AGENT);
+  const refused = await call($, AGENT);
+  const again = await call($, AGENT);
+
+  expect(first.context).toEqual([WRAP_UP]);
+  expect(last.context).toEqual([LAST_CALL]);
+  expect(refused.deny).toBe(REFUSAL);
+  expect(again.deny).toBe(REFUSAL);
+  expect(world.ran).toBe(2);
+  expect(world.toasts).toEqual([TOLD]);
+});
+
+test('refuses every call of a subagent past the ceiling at once with no wrap-up calls', NO_WRAP_UP, async (
+  $,
+  on,
+) => {
   const world = fakeWorld(on);
   await step($, world, 2000, AGENT);
   const first = await call($, AGENT);
@@ -199,12 +238,24 @@ test('refuses every call of a subagent past the ceiling, and tells the user once
   expect(world.toasts).toEqual(['Subagent Port the ceiling passed 2K (2K); its tool calls are refused.']);
 });
 
+test('counts a wrap-up call whose tool refused it', LIMITS, async ($, on) => {
+  const world = fakeWorld(on);
+  world.answer = { deny: 'beneath said no' };
+  await step($, world, 2000, AGENT);
+  const first = await call($, AGENT);
+  await call($, AGENT);
+  const refused = await call($, AGENT);
+
+  expect(first).toEqual({ deny: 'beneath said no' });
+  expect(refused.deny).toBe(REFUSAL);
+});
+
 test('names a subagent the list no longer holds by its id', LIMITS, async ($, on) => {
   const world = fakeWorld(on);
   await step($, world, 2000, 'agent-2');
   await call($, 'agent-2');
 
-  expect(world.toasts).toEqual(['Subagent agent-2 passed 2K (2K); its tool calls are refused.']);
+  expect(world.toasts).toEqual([TOLD.replace('Port the ceiling', 'agent-2')]);
 });
 
 test('lets a subagent work again once its context drops back under, and holds it again past', LIMITS, async (
@@ -214,6 +265,8 @@ test('lets a subagent work again once its context drops back under, and holds it
   const world = fakeWorld(on);
   await step($, world, 2500, AGENT);
   await call($, AGENT);
+  await call($, AGENT);
+  const spent = await call($, AGENT);
   await step($, world, 500, AGENT);
   const compacted = await call($, AGENT);
   await step($, world, 1200, AGENT);
@@ -221,10 +274,11 @@ test('lets a subagent work again once its context drops back under, and holds it
   await step($, world, 2100, AGENT);
   const over = await call($, AGENT);
 
+  expect(spent.deny).toBe(REFUSAL);
   expect(compacted.deny).toBeUndefined();
   expect(near.context).toEqual([WARNING]);
-  expect(over.deny).toBe(REFUSAL);
-  expect(world.ran).toBe(2);
+  expect(over.context).toEqual([WRAP_UP]);
+  expect(world.ran).toBe(5);
   expect(world.toasts).toHaveLength(2);
 });
 
@@ -235,7 +289,7 @@ test('passes each request\'s stream on whole', LIMITS, async ($, on) => {
   expect(texts).toEqual(['thinking aloud']);
 });
 
-test('keeps the last reading through a request that reported no usage', LIMITS, async ($, on) => {
+test('keeps the last reading through a request that reported no usage', NO_WRAP_UP, async ($, on) => {
   const world = fakeWorld(on);
   await step($, world, 2000, AGENT);
   await step($, world, null, AGENT);
@@ -259,7 +313,7 @@ test('tells the user and the model once when the main session passes the ceiling
   expect(world.toasts).toEqual(['Context passed 2K (2K). Consider /compact or a fresh session.']);
 });
 
-test('reads each loop apart: a subagent past the ceiling leaves the main session working', LIMITS, async (
+test('reads each loop apart: a subagent past the ceiling leaves the main session working', NO_WRAP_UP, async (
   $,
   on,
 ) => {
@@ -319,7 +373,7 @@ test('answers what the call settled to when the guard fails after it ran, runnin
   expect(world.ran).toBe(1);
 });
 
-test('takes the manifest defaults, 130000 and 150000, when no option is set', async ($, on) => {
+test('takes the manifest defaults, 130000, 150000 and 10 wrap-up calls, when no option is set', async ($, on) => {
   const world = fakeWorld(on);
   await step($, world, 129_999, AGENT);
   const under = await call($, AGENT);
@@ -330,13 +384,27 @@ test('takes the manifest defaults, 130000 and 150000, when no option is set', as
   await step($, world, 150_000, AGENT);
   const over = await call($, AGENT);
 
+  // The second to the ninth wrap-up call.
+  for (let index = 2; index < 10; index += 1) {
+    await call($, AGENT);
+  }
+
+  const lastWrapUp = await call($, AGENT);
+  const refused = await call($, AGENT);
+
   expect(under.context).toBeUndefined();
   expect(near.context).toEqual([WARNING.replace('1K of a 2K', '130K of a 150K')]);
   expect(below.deny).toBeUndefined();
-  expect(over.deny).toBe(REFUSAL.replace('is 2K, past the 2K', 'is 150K, past the 150K'));
+
+  expect(over.context).toEqual([WRAP_UP
+    .replaceAll('2K', '150K')
+    .replace('1 tool call', '9 tool calls')]);
+
+  expect(lastWrapUp.context).toEqual([LAST_CALL.replaceAll('2K', '150K')]);
+  expect(refused.deny).toBe(REFUSAL.replaceAll('2K', '150K'));
 });
 
-test('takes the limits a project sets in its env over the options', LIMITS, async ($, on) => {
+test('takes the limits a project sets in its env over the options', NO_WRAP_UP, async ($, on) => {
   const world = fakeWorld(on, {
     CONTEXT_WARN_TOKENS: '3000',
     CONTEXT_CEILING_TOKENS: '4000',
@@ -353,7 +421,7 @@ test('takes the limits a project sets in its env over the options', LIMITS, asyn
   expect(over.deny).toBe(REFUSAL.replace('is 2K, past the 2K', 'is 4K, past the 4K'));
 });
 
-test('keeps the option for an env limit that is not a positive integer', LIMITS, async ($, on) => {
+test('keeps the option for an env limit that is not a positive integer', NO_WRAP_UP, async ($, on) => {
   const world = fakeWorld(on, {
     CONTEXT_WARN_TOKENS: '1.5',
     CONTEXT_CEILING_TOKENS: '0',

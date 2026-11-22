@@ -175,7 +175,9 @@ when a version's change lives in a sibling it is described there instead:
   amber past 130K, red past 150K. A project's own status lines are kept on `create --existing`.
 - The mod holds a Claude Code subagent under the ceiling, read from each model request's own usage: past the
   warning line it is told once to finish the step, commit work that passes the check, update its resume note and
-  report; past the ceiling every tool call is refused before it runs, and the user is told once. The two limits
+  report; past the ceiling it gets `context_wrap_up_calls` (10) more tool calls, each told how many are left, to
+  commit passing work and update its resume note, then every tool call is refused before it runs, and the user is
+  told once. The two limits
   are the plugin's options, `context_warn_tokens` (130000) and `context_ceiling_tokens` (150000), set in `/config`
   as the machine's default; a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in
   its settings `env`, which the status line badges colour by as well.
