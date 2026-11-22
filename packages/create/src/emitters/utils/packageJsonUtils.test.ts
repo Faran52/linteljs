@@ -523,6 +523,18 @@ describe('buildDependencies', () => {
 
     expect(dependencies).not.toHaveProperty('nativewind');
   });
+
+  it('pins NativeWind exactly, beside the one react-native-css its rc peers', () => {
+    const native = answersFor({
+      target: 'react-native',
+      libraries: [],
+      styling: 'tailwind',
+    });
+
+    const dependencies = buildDependencies(native);
+    expect(dependencies['nativewind']).toBe('5.0.0-rc.1');
+    expect(dependencies['react-native-css']).toBe('3.1.0-rc.1');
+  });
 });
 
 describe('buildDevDependencies', () => {
@@ -930,6 +942,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'expo-status-bar': '~',
   'jest-expo': '~',
   'lightningcss': '',
+  'nativewind': '',
   'react-native': '',
   'react-native-css': '',
   'react-native-gesture-handler': '~',

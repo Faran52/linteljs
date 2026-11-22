@@ -196,13 +196,14 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/svelte-form': '^1.33.5',
   '@tanstack/vue-form': '^1.33.5',
   'es-toolkit': '^1.53.2',
-  'nativewind': '^5.0.0-rc.0',
+  // Exact, and a prerelease: each rc peers one exact `react-native-css`, so a range breaks on the next rc.
+  'nativewind': '5.0.0-rc.1',
   'postcss': '^8.5.28',
   'react-hook-form': '^7.89.0',
   'i18next': '^26.4.2',
   'react-i18next': '^17.0.15',
-  // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version.
-  'react-native-css': '3.1.0-rc.0',
+  // Exact, and a prerelease: `nativewind@5.0.0-rc.1` peers this one version.
+  'react-native-css': '3.1.0-rc.1',
   // NativeWind 5's documented pin: react-native-css fails to deserialize global.css under 1.32 and 1.33.
   'lightningcss': '1.30.1',
   'react-router': '^8.4.0',
