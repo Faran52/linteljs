@@ -96,6 +96,16 @@ describe('flattenHeritage', () => {
       lines('interface Props extends Own {', '  readonly name: string;', '  readonly more: number;', '}'),
     ],
     [
+      lines('interface Props extends Own<string>, More, x {', '    readonly name: string;', '}'),
+      MEMBER,
+      lines(
+        'interface Props extends Own<string>, More {',
+        '    readonly name: string;',
+        '    readonly more: number;',
+        '}',
+      ),
+    ],
+    [
       lines('interface Props extends x {', '}'),
       lines('export type x = {', '    readonly on: (', '        page: string,', '    ) => void;', '};'),
       lines('interface Props {', '  readonly on: (', '      page: string,', '  ) => void;', '}'),
@@ -153,8 +163,28 @@ describe('flattenHeritage', () => {
       /can only be used as a type an interface extends/u,
     ],
     [
+      lines('interface Props {', '  readonly more: x;', '}'),
+      MEMBER,
+      /can only be used as a type an interface extends/u,
+    ],
+    [
+      'interface Props extends x {}\n',
+      lines('type Local = number;', '', 'export interface x {', '  readonly more: Local;', '}'),
+      /"Local" is declared in an option module and read by code that left it behind/u,
+    ],
+    [
       'interface Props extends x {}\n',
       'export type x = Other;\n',
+      /must be an interface, a type literal or Record<never, never>/u,
+    ],
+    [
+      'interface Props extends x {}\n',
+      'export type x = Other & Record<never, never>;\n',
+      /must be an interface, a type literal or Record<never, never>/u,
+    ],
+    [
+      'interface Props extends x {}\n',
+      'export type x = Record<never, never> & Other;\n',
       /must be an interface, a type literal or Record<never, never>/u,
     ],
     [
@@ -163,7 +193,7 @@ describe('flattenHeritage', () => {
       /must be an interface, a type literal or Record<never, never>/u,
     ],
     [
-      'interface Props extends x<string> {}\n',
+      'interface Props extends Own, x<string> {}\n',
       MEMBER,
       /takes no type arguments here: x<string>/u,
     ],
@@ -193,6 +223,18 @@ describe('flattenHeritage', () => {
 
 describe('spliceStatements', () => {
   it.each([
+    [
+      'a holder named as the member it reads',
+      lines('run = () => {', '  const value = x();', '', '  return value.value;', '};'),
+      HOOK,
+      lines('run = () => {', '  const value = 1;', '', '  return value;', '};'),
+    ],
+    [
+      'a holder with only blanks after it on its line, the last statement\'s comment kept',
+      lines('run = () => {', '  const y = x();  ', '  [y.k].forEach(log);', '};'),
+      lines('export const x = () => {', '  const k = 1; // why', '', '  return { k };', '};'),
+      lines('run = () => {', '  const k = 1; // why  ', '  [k].forEach(log);', '};'),
+    ],
     [
       'a holder read by member',
       lines('run = () => {', '  const thing = x();', '', '  return thing.value + thing.other;', '};'),
@@ -500,6 +542,36 @@ describe('spliceStatements', () => {
       HOOK,
       /"value" is bound again around this read, so the option's one cannot land here: thing.value/u,
     ],
+    [
+      lines('run = () => {', '  const thing = x();', '', '  return thing.outer;', '};'),
+      lines('const outer = 1;', '', 'export const x = () => {', '  log();', '', '  return { outer };', '};'),
+      /"outer" is declared in an option module and read by code that left it behind: thing.outer/u,
+    ],
+    [
+      lines('run = () => {', '  const { value, other } = x();', '', '  log(value);', '};'),
+      HOOK,
+      /A pattern can only take, by their own names, what the option's statements answer/u,
+    ],
+    [
+      lines('run = () => {', '  const thing = log(x());', '};'),
+      HOOK,
+      /A function inlined as an expression must only return one/u,
+    ],
+    [
+      lines('run = () => {', '  return x();', '};'),
+      'export const x = (): void => {};\n',
+      /A function inlined as an expression must only return one/u,
+    ],
+    [
+      lines('const thing = x();', '', 'log(thing.value);'),
+      HOOK,
+      /A function inlined as an expression must only return one/u,
+    ],
+    [
+      lines('run = () => {', '  for (const thing = x(); ; ) {', '    log(thing.value);', '  }', '};'),
+      HOOK,
+      /A function inlined as an expression must only return one/u,
+    ],
   ])('refuses %j from %j', (body, option, message) => {
     const run = (): string => {
       return filled(body, option);
@@ -516,6 +588,24 @@ const AWAITED_IN_SYNC = /An awaited statement is spliced only into an async func
 
 describe('spliceStatements, on a case called as a statement', () => {
   it.each([
+    [
+      'a case whose first statement shares the line of its opening brace, its blank lines kept',
+      lines('run = () => {', '  x();', '};'),
+      lines('export const x = (): void => { log(1);', '', ' log(2);', '};'),
+      lines('run = () => {', '  log(1);', '', '  log(2);', '};'),
+    ],
+    [
+      'a sync case declaring with using, which awaits nothing',
+      lines('run = () => {', '  x();', '};'),
+      lines('export const x = (): void => {', '  using a = b;', '};'),
+      lines('run = () => {', '  using a = b;', '};'),
+    ],
+    [
+      'a case opening on a comment at the start of its line',
+      lines('run = () => {', '  x();', '};'),
+      lines('export const x = (): void => {', '//why', 'log(1);', '};'),
+      lines('run = () => {', '  //why', '  log(1);', '};'),
+    ],
     [
       'an empty case, last in its block after a blank line',
       lines('describe(\'s\', () => {', '  it(\'a\', f);', '', '  x();', '});'),

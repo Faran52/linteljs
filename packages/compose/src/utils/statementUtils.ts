@@ -72,25 +72,31 @@ interface Holder extends Landing {
 
 const EMPTY_OBJECT = /^Record<never,\s*never>$/u;
 const LEADING_BLANK_LINES = /^(?:[\t ]*\n)+/u;
+const PLAIN_ANSWER = 'Statements spliced into the base must answer an object of plain names';
+const NOT_MEMBERS = 'A type an interface extends must be an interface, a type literal or Record<never, never>';
 
 const membersOf = (exported: ts.Node, use: ts.Node): readonly ts.TypeElement[] => {
   if (ts.isInterfaceDeclaration(exported)) {
     return exported.members;
   }
 
-  const type = ts.isTypeAliasDeclaration(exported) ? exported.type : undefined;
+  if (!ts.isTypeAliasDeclaration(exported)) {
+    throw refusal(use, NOT_MEMBERS);
+  }
 
-  if (type !== undefined && ts.isTypeLiteralNode(type)) {
+  const { type } = exported;
+
+  if (ts.isTypeLiteralNode(type)) {
     return type.members;
   }
 
-  const written = type === undefined ? '' : textOf(type);
+  const written = textOf(type);
 
   if (EMPTY_OBJECT.test(written)) {
     return [];
   }
 
-  throw refusal(use, 'A type an interface extends must be an interface, a type literal or Record<never, never>');
+  throw refusal(use, NOT_MEMBERS);
 };
 
 const nameOf = (member: ts.TypeElement): string | undefined => {
@@ -101,14 +107,17 @@ const nameOf = (member: ts.TypeElement): string | undefined => {
 const commentedEnd = (node: ts.Node): number => {
   const trailing = ts.getTrailingCommentRanges(node.getSourceFile().text, node.getEnd());
 
-  return trailing?.at(-1)?.end ?? node.getEnd();
+  const last = trailing?.at(-1);
+
+  return last === undefined ? node.getEnd() : last.end;
 };
 
 // A member with its comments: those on the lines above it, and those after it on its own line.
 const commentedOf = (member: ts.TypeElement): string => {
   const source = member.getSourceFile().text;
   const leading = ts.getLeadingCommentRanges(source, member.getFullStart());
-  const start = leading?.at(0)?.pos ?? member.getStart();
+  const first = leading?.at(0);
+  const start = first === undefined ? member.getStart() : first.pos;
   const end = commentedEnd(member);
 
   return source.slice(start, end);
@@ -125,9 +134,7 @@ export const flattenHeritage = (
   const clause = reference.parent;
   const target = clause.parent;
 
-  const isHeritage = ts.isExpressionWithTypeArguments(reference) && ts.isHeritageClause(clause);
-
-  if (!isHeritage || !ts.isInterfaceDeclaration(target)) {
+  if (!ts.isHeritageClause(clause) || !ts.isInterfaceDeclaration(target)) {
     throw refusal(local, 'An option type can only be used as a type an interface extends');
   }
 
@@ -136,7 +143,12 @@ export const flattenHeritage = (
   const exported = resolved(sources, local.text);
   const isGeneric = ts.isVariableDeclaration(exported) ? false : exported.typeParameters !== undefined;
 
-  if (isGeneric || reference.typeArguments !== undefined) {
+  const isTyped = clause.types
+    .some((type) => {
+      return type === reference && type.typeArguments !== undefined;
+    });
+
+  if (isGeneric || isTyped) {
     throw refusal(reference, 'A type an interface extends takes no type arguments here');
   }
 
@@ -145,7 +157,7 @@ export const flattenHeritage = (
   const twice = joining
     .map(nameOf)
     .find((name) => {
-      return name !== undefined && own.has(name);
+      return own.has(name);
     });
 
   if (twice !== undefined) {
@@ -198,36 +210,47 @@ const returnsEarly = (statement: ts.Statement): boolean => {
 };
 
 // The names the spliced statements hand to the base: the plain members of the object they return.
-const answeredNames = (returned: ts.ReturnStatement | undefined): ts.Identifier[] => {
+const answeredNames = (returned: ts.ReturnStatement | undefined): ReadonlyMap<string, ts.Identifier> => {
   const answer = returned?.expression === undefined ? undefined : unparen(returned.expression);
 
   if (answer === undefined) {
-    return [];
+    return new Map();
   }
 
-  if (!ts.isObjectLiteralExpression(answer) || !answer.properties.every(ts.isShorthandPropertyAssignment)) {
-    throw refusal(answer, 'Statements spliced into the base must answer an object of plain names');
+  if (!ts.isObjectLiteralExpression(answer)) {
+    throw refusal(answer, PLAIN_ANSWER);
   }
 
-  return answer.properties
-    .filter(ts.isShorthandPropertyAssignment)
+  const entries = answer.properties
     .map((property) => {
-      return property.name;
+      if (!ts.isShorthandPropertyAssignment(property)) {
+        throw refusal(answer, PLAIN_ANSWER);
+      }
+
+      const entry: [string, ts.Identifier] = [property.name.text, property.name];
+
+      return entry;
     });
+
+  return new Map(entries);
 };
 
 // `const y = f();` inside a block, when the call is all it holds.
 const holderOf = (call: ts.CallExpression): Holder | undefined => {
-  const declaration = call.parent;
+  const statement = ts.findAncestor(call, ts.isVariableStatement);
 
-  if (!ts.isVariableDeclaration(declaration)) {
+  if (statement === undefined) {
     return undefined;
   }
 
-  const statement = declaration.parent.parent;
   const block = statement.parent;
+  const { declarations } = statement.declarationList;
+  const declaration = declarations
+    .find((candidate) => {
+      return candidate.initializer === call;
+    });
 
-  if (!ts.isVariableStatement(statement) || !ts.isBlock(block) || statement.declarationList.declarations.length > 1) {
+  if (!ts.isBlock(block) || declaration === undefined || declarations.length > 1) {
     return undefined;
   }
 
@@ -246,7 +269,7 @@ const holderReads = (
   sources: Sources,
   arrow: ts.ArrowFunction,
   { declaration, container }: Holder,
-  answered: readonly ts.Identifier[],
+  answered: ReadonlyMap<string, ts.Identifier>,
 ): Edit[] => {
   const holder = textOf(declaration.name);
 
@@ -254,10 +277,7 @@ const holderReads = (
     .map((read) => {
       const access = read.parent;
       const name = ts.isPropertyAccessExpression(access)
-        ? answered
-            .find((candidate) => {
-              return candidate.text === access.name.text;
-            })
+        ? answered.get(access.name.text)
         : undefined;
 
       if (name === undefined) {
@@ -311,14 +331,16 @@ const openedBy = (sources: Sources, container: ts.Block | ts.SourceFile): string
           return parameter.name;
         })
     : [];
-  const caught = ts.isCatchClause(owner) ? [owner.variableDeclaration?.name] : [];
-
+  // Of the nodes opening a block, only a catch clause holds a variable declaration as a child of its own.
+  const caught = owner
+    .getChildren()
+    .filter(ts.isVariableDeclaration)
+    .map((declaration) => {
+      return declaration.name;
+    });
   const names = [...parameters, ...caught];
 
-  return names
-    .flatMap((name) => {
-      return name === undefined ? [] : bindingNamesOf(name);
-    });
+  return names.flatMap(bindingNamesOf);
 };
 
 // A spliced name may not be declared again in the scope it lands in: the block, or the function or catch it opens, or
@@ -368,7 +390,7 @@ const readsOf = (
   sources: Sources,
   arrow: ts.ArrowFunction,
   holder: Holder,
-  answered: readonly ts.Identifier[],
+  answered: ReadonlyMap<string, ts.Identifier>,
 ): Edit[] => {
   const { name } = holder.declaration;
 
@@ -376,16 +398,12 @@ const readsOf = (
     return holderReads(checker, sources, arrow, holder, answered);
   }
 
-  const names = answered
-    .map((identifier) => {
-      return identifier.text;
-    });
   const elements = ts.isObjectBindingPattern(name) ? name.elements : undefined;
   const isAnswered = elements
     ?.every((element) => {
       const named = textOf(element.name);
 
-      return isPlainElement(element) && names.includes(named);
+      return isPlainElement(element) && answered.has(named);
     });
 
   if (isAnswered !== true) {
@@ -401,19 +419,23 @@ const readsOf = (
  * a line comment would swallow.
  */
 const blockOf = (kept: readonly ts.Statement[], indent: string, isLineEnd: boolean): string => {
-  const first = kept.at(0);
   const last = kept.at(-1);
 
-  if (first === undefined || last === undefined) {
+  if (last === undefined) {
     return '';
   }
 
-  const source = first.getSourceFile().text;
+  const source = last.getSourceFile().text;
   const end = last.getEnd();
   // Base code follows the block, so a semicolon left to insertion could join the next line to it.
-  const isOpen = SEMICOLON_STATEMENTS.has(last.kind) && last.getLastToken()?.kind !== ts.SyntaxKind.SemicolonToken;
+  const written = last.getText();
+  const isOpen = SEMICOLON_STATEMENTS.has(last.kind) && !written.endsWith(';');
   const closing = isOpen ? ';' : '';
-  const statements = source.slice(first.getFullStart(), end);
+  const statements = kept
+    .map((statement) => {
+      return statement.getFullText();
+    })
+    .join('');
   const comments = isLineEnd ? source.slice(end, commentedEnd(last)) : '';
   const block = (statements + closing + comments).replace(LEADING_BLANK_LINES, '');
   const from = leadingIndent(block);
@@ -424,8 +446,8 @@ const blockOf = (kept: readonly ts.Statement[], indent: string, isLineEnd: boole
 
 const isAwaiting = (node: ts.Node): node is ts.Node => {
   const isForAwait = ts.isForOfStatement(node) && node.awaitModifier !== undefined;
-  const isAwaitUsing = ts.isVariableDeclarationList(node)
-    && node.getFirstToken()?.kind === ts.SyntaxKind.AwaitKeyword;
+  // Only a declaration list carries these flags.
+  const isAwaitUsing = (node.flags & ts.NodeFlags.Const) !== 0 && (node.flags & ts.NodeFlags.Using) !== 0;
 
   return ts.isAwaitExpression(node) || isForAwait || isAwaitUsing;
 };
