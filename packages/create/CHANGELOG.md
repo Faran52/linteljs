@@ -176,7 +176,9 @@ when a version's change lives in a sibling it is described there instead:
 - The mod holds a Claude Code subagent under the ceiling, read from each model request's own usage: past the
   warning line it is told once to finish the step, commit work that passes the check, update its resume note and
   report; past the ceiling every tool call is refused before it runs, and the user is told once. The two limits
-  are the plugin's options, `context_warn_tokens` (130000) and `context_ceiling_tokens` (150000), set in `/config`.
+  are the plugin's options, `context_warn_tokens` (130000) and `context_ceiling_tokens` (150000), set in `/config`
+  as the machine's default; a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in
+  its settings `env`, which the status line badges colour by as well.
 - Two more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
   would commit, untracked files included: until then the hook asks the user, who can allow that one commit, and a
   session with nobody to answer (`claude -p`, a run with prompts turned off) is refused. The run counts on its own, with its output redirected to a file outside

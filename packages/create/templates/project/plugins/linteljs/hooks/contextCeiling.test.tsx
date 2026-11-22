@@ -1,6 +1,7 @@
 import {
   type Engine,
   expect,
+  mock,
   test,
 } from 'claude-code/testing';
 
@@ -65,8 +66,11 @@ const usageOf = (tokens: number): TurnStepResult['usage'] => {
   return usage;
 };
 
-// The model, the tools, the agent list and the toasts beneath the plugin; each tool call that reaches them counts.
-const fakeWorld = (on: On): World => {
+// The model, the tools, the agent list, the toasts and an env that sets no limit beneath the plugin; each tool call
+// that reaches them counts.
+const fakeWorld = (on: On, env: Readonly<Record<string, string>> = {}): World => {
+  mock.env(on, env);
+
   const world: World = {
     prompt: 0,
     toasts: [],
@@ -330,4 +334,38 @@ test('takes the manifest defaults, 130000 and 150000, when no option is set', as
   expect(near.context).toEqual([WARNING.replace('1K of a 2K', '130K of a 150K')]);
   expect(below.deny).toBeUndefined();
   expect(over.deny).toBe(REFUSAL.replace('is 2K, past the 2K', 'is 150K, past the 150K'));
+});
+
+test('takes the limits a project sets in its env over the options', LIMITS, async ($, on) => {
+  const world = fakeWorld(on, {
+    CONTEXT_WARN_TOKENS: '3000',
+    CONTEXT_CEILING_TOKENS: '4000',
+  });
+  await step($, world, 2999, AGENT);
+  const under = await call($, AGENT);
+  await step($, world, 3000, AGENT);
+  const near = await call($, AGENT);
+  await step($, world, 4000, AGENT);
+  const over = await call($, AGENT);
+
+  expect(under.context).toBeUndefined();
+  expect(near.context).toEqual([WARNING.replace('1K of a 2K', '3K of a 4K')]);
+  expect(over.deny).toBe(REFUSAL.replace('is 2K, past the 2K', 'is 4K, past the 4K'));
+});
+
+test('keeps the option for an env limit that is not a positive integer', LIMITS, async ($, on) => {
+  const world = fakeWorld(on, {
+    CONTEXT_WARN_TOKENS: '1.5',
+    CONTEXT_CEILING_TOKENS: '0',
+  });
+  await step($, world, 999, AGENT);
+  const under = await call($, AGENT);
+  await step($, world, 1000, AGENT);
+  const near = await call($, AGENT);
+  await step($, world, 2000, AGENT);
+  const over = await call($, AGENT);
+
+  expect(under.context).toBeUndefined();
+  expect(near.context).toEqual([WARNING]);
+  expect(over.deny).toBe(REFUSAL);
 });

@@ -29,6 +29,15 @@ export interface SubagentRow {
   content: string;
 }
 
+export const tokensFromEnv = (name: string, fallback: number): number => {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+};
+
+const CONTEXT_WARN_TOKENS = tokensFromEnv('CONTEXT_WARN_TOKENS', DEFAULT_CONTEXT_WARN_TOKENS);
+
+const CONTEXT_CEILING_TOKENS = tokensFromEnv('CONTEXT_CEILING_TOKENS', DEFAULT_CONTEXT_CEILING_TOKENS);
+
 const USAGE_KEYS = [
   'input_tokens',
   'cache_read_input_tokens',
@@ -194,14 +203,14 @@ export const subagentTranscriptOf = (transcript: string, agentId: string): strin
 };
 
 // The number is always printed, so the colour is never the only cue. A status line command gets no plugin options,
-// so the colours hold to the limits' manifest defaults.
+// so the colours follow the project's env limits, else the options' manifest defaults.
 export const badgeOf = (tokens: number): string => {
   let colour: number = BADGE_COLOURS.over;
 
-  if (tokens < DEFAULT_CONTEXT_WARN_TOKENS) {
+  if (tokens < CONTEXT_WARN_TOKENS) {
     colour = BADGE_COLOURS.under;
   }
-  else if (tokens < DEFAULT_CONTEXT_CEILING_TOKENS) {
+  else if (tokens < CONTEXT_CEILING_TOKENS) {
     colour = BADGE_COLOURS.near;
   }
 

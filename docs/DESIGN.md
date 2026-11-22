@@ -967,8 +967,11 @@ mod reads each loop's prompt size from its `turn.step` usage (input plus cache r
 it runs (a guard with `.catch`, so a failed guard refuses too), and tells the user once when the main session passes
 the ceiling; dropping back under clears each. A task's `tokenCount` sums all its output, so it is not read. A
 plugin names one hooks module, so `register.tsx` registers the check band and the ceiling. The limits are plugin
-options; a status line command gets none, so the badges colour at their defaults, and a subagent row reads its own
-transcript. The number is always printed, so colour is never the only cue.
+options, which Claude Code reads from user settings alone (a project's entries are ignored), so they are the
+machine's default and a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in its
+settings `env`, read through `$.env.get`; a value that is not a positive integer is ignored for the option. A status
+line command gets no options, so the badges colour by the same two env vars, else the defaults, and a subagent row
+reads its own transcript. The number is always printed, so colour is never the only cue.
 
 ### The commit gate and the generated-file guard
 

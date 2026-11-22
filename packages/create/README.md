@@ -223,7 +223,9 @@ needs none. Until then the commit asks you, and you can allow that one commit; a
 (`claude -p`) is refused. A run moved to the background never counts as a pass. With `LINTELJS_GATE_WORKTREES=off` in the settings
 `env`, a commit in a linked git worktree is not held, and the check runs once before the merge. The plugin's mod tells you once
 when the session's context passes 150K tokens, warns a subagent once past 130K and refuses its tool calls past
-150K; both limits are plugin options in `/config` (`context_warn_tokens`, `context_ceiling_tokens`).
+150K; both limits are plugin options in `/config` (`context_warn_tokens`, `context_ceiling_tokens`), the machine's
+default, and a project overrides them with `CONTEXT_WARN_TOKENS` and `CONTEXT_CEILING_TOKENS` in its settings `env`,
+which the badges follow too.
 `.claude/settings.json` adds a `[CTX nK]` badge for the session and for
 each subagent: green, amber past 130K, red past 150K. A status line of your own is kept. A band above the prompt
 shows the gate's state for the work tree (passed, failed, running, stale or not run); it needs Claude Code

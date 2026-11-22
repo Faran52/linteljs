@@ -15,6 +15,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import {
@@ -27,8 +28,15 @@ import {
   modelNameOf,
   subagentRowsOf,
   subagentTranscriptOf,
+  tokensFromEnv,
   transcriptModelOf,
 } from './contextUtils.ts';
+
+// Hoisted above the import, so the limits a session exports cannot move the module's defaults.
+vi.hoisted(() => {
+  vi.stubEnv('CONTEXT_WARN_TOKENS', undefined);
+  vi.stubEnv('CONTEXT_CEILING_TOKENS', undefined);
+});
 
 const assistant = (input: number, read: number, created: number): string => {
   return JSON.stringify({
@@ -200,6 +208,26 @@ describe('badgeOf', () => {
     const badge = badgeOf(tokens);
 
     expect(badge).toBe(`\u001B[38;5;${String(colour)}m${text}\u001B[0m`);
+  });
+});
+
+describe('tokensFromEnv', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ['300000', 300_000],
+    ['', 7],
+    ['0', 7],
+    ['1.5', 7],
+    ['many', 7],
+  ])('reads %s as %s', (value, tokens) => {
+    vi.stubEnv('LINTELJS_TOKENS', value);
+
+    const read = tokensFromEnv('LINTELJS_TOKENS', 7);
+
+    expect(read).toBe(tokens);
   });
 });
 

@@ -266,6 +266,8 @@ export const spawnHook = (
 
   delete env['CLAUDE_PROJECT_DIR'];
   delete env['CLAUDE_PLUGIN_DATA'];
+  delete env['CONTEXT_WARN_TOKENS'];
+  delete env['CONTEXT_CEILING_TOKENS'];
   // Each spawn strips and compiles the hook and its checker afresh; the cache keeps that to the first.
   env['NODE_COMPILE_CACHE'] = COMPILE_CACHE;
 

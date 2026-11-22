@@ -42,6 +42,24 @@ const limitOf = (options: PluginOptions, key: string): number => {
   return value;
 };
 
+// A project's settings env overrides the options, which Claude Code reads from user settings alone.
+const tokensOf = (value: string | undefined, fallback: number): number => {
+  const tokens = Number(value);
+
+  return Number.isInteger(tokens) && tokens > 0 ? tokens : fallback;
+};
+
+const limitsIn = async ($: EngineInterface, options: Limits): Promise<Limits> => {
+  const warn = await $.env.get('CONTEXT_WARN_TOKENS');
+  const ceiling = await $.env.get('CONTEXT_CEILING_TOKENS');
+  const limits = {
+    warn: tokensOf(warn, options.warn),
+    ceiling: tokensOf(ceiling, options.ceiling),
+  };
+
+  return limits;
+};
+
 export const limitsOf = (options: PluginOptions): Limits => {
   const limits = {
     warn: limitOf(options, 'context_warn_tokens'),
@@ -91,8 +109,9 @@ const judge = async (
   $: EngineInterface,
   e: ToolCallInput,
   next: (input: ToolCallInput) => Promise<ToolCallResult>,
-  limits: Limits,
+  options: Limits,
 ): Promise<ToolCallResult> => {
+  const limits = await limitsIn($, options);
   const loop = atom({
     plugin: 'linteljs',
     key: 'context',
