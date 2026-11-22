@@ -1254,6 +1254,11 @@ const LOOKS: [string, Given, boolean][] = [
     NONE,
     false,
   ],
+  [
+    'class C {}\nconst g = (o: object) => {\n  y = o instanceof C;\n};',
+    NONE,
+    false,
+  ],
 ];
 
 const PROVEN_LOOKS = LOOKS
@@ -1303,7 +1308,8 @@ describe('actsIn and pureCheck, on in and instanceof', () => {
   it.each(REFUSED_LOOKS)('take %s with %j as acting', (base, given) => {
     const acting = actedOf(base, given);
     const run = pureRun(base, given);
-    const look = base.slice(base.lastIndexOf('y = ') + 4, -1);
+    const start = base.lastIndexOf('y = ') + 4;
+    const look = base.slice(start, base.indexOf(';', start));
 
     expect(acting).toStrictEqual([look]);
     expect(run).toThrow('refused');
