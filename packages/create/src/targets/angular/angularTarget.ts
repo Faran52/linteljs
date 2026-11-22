@@ -246,6 +246,20 @@ export const angularTarget: TargetBuilder = () => {
       'tslib',
     ],
     testDevDependencies: ['@analogjs/vite-plugin-angular'],
+    overrides: [
+      {
+        parent: '@oxc-parser/binding-wasm32-wasi',
+        name: '@emnapi/core',
+      },
+      {
+        parent: '@oxc-parser/binding-wasm32-wasi',
+        name: '@emnapi/runtime',
+      },
+      {
+        parent: '@analogjs/vite-plugin-angular',
+        name: 'oxc-parser',
+      },
+    ],
     allowBuilds: [
       '@parcel/watcher',
       'esbuild',

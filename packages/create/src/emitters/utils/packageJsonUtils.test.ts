@@ -209,6 +209,36 @@ const LIGHTNINGCSS_KEYS: [PackageManager, string[]][] = [
   ['bun', ['lightningcss']],
 ];
 
+const BINDING = '@oxc-parser/binding-wasm32-wasi';
+const ANALOG = '@analogjs/vite-plugin-angular';
+
+const ANGULAR_PINS: [PackageManager, [string, string][]][] = [
+  [
+    'pnpm',
+    [
+      [`${BINDING}>@emnapi/core`, '@emnapi/core'],
+      [`${BINDING}>@emnapi/runtime`, '@emnapi/runtime'],
+      [`${ANALOG}>oxc-parser`, 'oxc-parser'],
+    ],
+  ],
+  [
+    'yarn',
+    [
+      [`${BINDING}/@emnapi/core`, '@emnapi/core'],
+      [`${BINDING}/@emnapi/runtime`, '@emnapi/runtime'],
+      [`${ANALOG}/oxc-parser`, 'oxc-parser'],
+    ],
+  ],
+  [
+    'bun',
+    [
+      ['@emnapi/core', '@emnapi/core'],
+      ['@emnapi/runtime', '@emnapi/runtime'],
+      ['oxc-parser', 'oxc-parser'],
+    ],
+  ],
+];
+
 describe('buildOverrides', () => {
   it.each(LIGHTNINGCSS_KEYS)('pins lightningcss where NativeWind reads it for %s as %j', (packageManager, keys) => {
     const overrides = buildOverrides(answersFor({
@@ -233,6 +263,36 @@ describe('buildOverrides', () => {
     }));
 
     expect(overrides).toEqual({});
+  });
+
+  it.each(ANGULAR_PINS)('pins the Angular toolchain\'s oxc parser and emnapi for %s', (packageManager, pairs) => {
+    const overrides = buildOverrides(answersFor({
+      target: 'angular',
+      packageManager,
+    }));
+    const expected = Object.fromEntries(pairs
+      .map(([key, name]) => {
+        const pin: [string, string | undefined] = [key, VERSIONS[name]];
+        return pin;
+      }));
+
+    expect(overrides).toEqual(expected);
+  });
+
+  it('nests the Angular pins under each parent for npm', () => {
+    const overrides = buildOverrides(answersFor({
+      target: 'angular',
+      packageManager: 'npm',
+    }));
+
+    const expected = {
+      [BINDING]: {
+        '@emnapi/core': VERSIONS['@emnapi/core'],
+        '@emnapi/runtime': VERSIONS['@emnapi/runtime'],
+      },
+      [ANALOG]: { 'oxc-parser': VERSIONS['oxc-parser'] },
+    };
+    expect(overrides).toEqual(expected);
   });
 
   it('nests the npm pin under each parent', () => {
@@ -927,6 +987,8 @@ describe('parsePackageJson', () => {
 
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
+  '@emnapi/core': '',
+  '@emnapi/runtime': '',
   '@react-native-async-storage/async-storage': '',
   '@react-native/jest-preset': '',
   '@react-native/metro-config': '',
@@ -941,6 +1003,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'jest-expo': '~',
   'lightningcss': '',
   'nativewind': '',
+  'oxc-parser': '',
   'oxc-transform-react': '~',
   'react-native': '',
   'react-native-css': '',

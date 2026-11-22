@@ -38,6 +38,26 @@ describe('angularTarget', () => {
     expect(record.id).toBe('angular');
   });
 
+  it('pins the emnapi pair under the oxc wasm binding, and the oxc parser under the Vitest plugin', () => {
+    const { overrides } = recordFor();
+
+    const expected = [
+      {
+        parent: '@oxc-parser/binding-wasm32-wasi',
+        name: '@emnapi/core',
+      },
+      {
+        parent: '@oxc-parser/binding-wasm32-wasi',
+        name: '@emnapi/runtime',
+      },
+      {
+        parent: '@analogjs/vite-plugin-angular',
+        name: 'oxc-parser',
+      },
+    ];
+    expect(overrides).toEqual(expected);
+  });
+
   it('has its project file written rather than copied', () => {
     const record = recordFor();
     expect(record.angularProject).toBe(true);

@@ -36,9 +36,15 @@ export const VERSIONS: Record<string, string> = {
   '@angular/platform-browser': '^22.2.1',
   '@angular/router': '^22.2.1',
   // Moves with `@analogjs/vite-plugin-angular`, which reads its internals.
-  '@angular/build': '~22.2.1',
-  '@angular/cli': '^22.2.1',
-  '@angular/compiler-cli': '^22.2.1',
+  '@angular/build': '~22.3.0',
+  // Floored at the build's minor: a lower cli brings a second devkit, with another chokidar peer.
+  '@angular/cli': '^22.3.0',
+  '@angular/compiler-cli': '^22.3.0',
+  // Pinned under the oxc wasm binding `@angular/build` installs, which ships alphas its own wasm runtime refuses.
+  '@emnapi/core': '2.0.0-beta.3',
+  '@emnapi/runtime': '2.0.0-beta.3',
+  // The one `@angular/build` uses, pinned under `@analogjs/vite-plugin-angular` so the tree has one oxc wasm binding.
+  'oxc-parser': '0.158.0',
   'rxjs': '~7.8.2',
   'tslib': '^2.8.1',
   // NgRx 22 peers `@angular/core ^22.0.0`, which is what `ng new` writes.

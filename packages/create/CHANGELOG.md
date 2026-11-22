@@ -291,6 +291,11 @@ when a version's change lives in a sibling it is described there instead:
   releases at least two days old as of 2026-10-05 are taken too: Angular 22.2.1, `@analogjs/vite-plugin-angular`
   2.8.0, Next 16.3.8, Vite 8.3.2, Vitest 5.0.3, ESLint 10.12.0, Stylelint 17.16.0, TanStack Query 5.104.1,
   `@eslint-react/eslint-plugin` 5.23.5, `vue-tsc` 3.3.12 and `next-intl` 4.14.9.
+- An Angular project installs clean under every manager. `@angular/build`, `@angular/cli` and
+  `@angular/compiler-cli` sit on 22.3 together, so one `@angular-devkit/core` and one chokidar peer remain. Scoped
+  overrides pin `@emnapi/core` and `@emnapi/runtime` to 2.0.0-beta.3 under `@oxc-parser/binding-wasm32-wasi`,
+  whose 2.0.0-alpha.6 its own `@napi-rs/wasm-runtime` refuses, and pin the `oxc-parser` of
+  `@analogjs/vite-plugin-angular` to the 0.158.0 `@angular/build` uses, so npm sees one wasm binding.
 - `es-toolkit` joins `@inquirer/prompts` as a runtime dependency of this package.
 - The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on
   file carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule
