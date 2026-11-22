@@ -61,6 +61,8 @@ interface Located {
   words: string[] | undefined;
 }
 
+type RevParseLines = [string, string, string, string, string, ...string[]];
+
 const RESULTS = new Set<Json | undefined>([
   'failed',
   'passed',
@@ -159,6 +161,14 @@ const checkOf = (project: Project): string => {
   return project.manager === 'npm' ? 'npm run check' : `${project.manager} check`;
 };
 
+// One line per path `projectOf` asks for.
+const REV_PARSE_LINE_COUNT = 5;
+
+// `split` leaves no holes, so a fifth line means the first four are there too.
+const hasFiveLines = (lines: string[]): lines is RevParseLines => {
+  return lines.length >= REV_PARSE_LINE_COUNT;
+};
+
 export const projectOf = (cwd: string): Project | undefined => {
   const paths = attempt(() => {
     return git(cwd, [
@@ -178,18 +188,20 @@ export const projectOf = (cwd: string): Project | undefined => {
     return undefined;
   }
 
+  const lines = paths.split('\n');
+
+  // A `git` that answers fewer lines (a wrapper, or one older than `--path-format`) has no project to name.
+  if (!hasFiveLines(lines)) {
+    return undefined;
+  }
+
   const [
     root,
     directory,
     index,
     gitDirectory,
     commonDirectory,
-  ] = paths.split('\n');
-
-  // A `git` that answers fewer lines (a wrapper, or one older than `--path-format`) has no project to name.
-  if (root === undefined || directory === undefined || index === undefined || commonDirectory === undefined) {
-    return undefined;
-  }
+  ] = lines;
 
   const packageJson = jsonAt(join(root, 'package.json'));
   const scripts = fieldAt(packageJson, 'scripts');
