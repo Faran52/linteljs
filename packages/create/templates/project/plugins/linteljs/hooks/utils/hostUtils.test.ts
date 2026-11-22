@@ -22,8 +22,11 @@ import {
 } from 'vitest';
 
 import {
+  type CursorEvent,
+  type DecisionKind,
   decisionOf,
   fieldAt,
+  type Host,
   hostOf,
   jsonObjectOf,
   readCommand,
@@ -32,6 +35,13 @@ import {
   readSession,
   writeDecision,
 } from './hostUtils.ts';
+
+import type { Dialect } from './commandParserUtils.ts';
+
+const SHELL_DIALECTS: [NodeJS.Platform, Dialect][] = [
+  ['darwin', 'bash'],
+  ['win32', 'powershell'],
+];
 
 describe('jsonObjectOf', () => {
   const unreadable = (): string => {
@@ -156,10 +166,7 @@ describe('readCommand', () => {
     expect(command).toBeUndefined();
   });
 
-  it.each([
-    ['darwin', 'bash'],
-    ['win32', 'powershell'],
-  ] as const)('reads Cursor\'s shell gate command on %s as %s', (platform, dialect) => {
+  it.each(SHELL_DIALECTS)('reads Cursor\'s shell gate command on %s as %s', (platform, dialect) => {
     const command = readCommand(cursorShellPayload('git status'), 'beforeShellExecution', platform);
     const expected = {
       host: 'cursor',
@@ -169,10 +176,7 @@ describe('readCommand', () => {
     expect(command).toEqual(expected);
   });
 
-  it.each([
-    ['darwin', 'bash'],
-    ['win32', 'powershell'],
-  ] as const)('reads Gemini CLI\'s shell command on %s as %s', (platform, dialect) => {
+  it.each(SHELL_DIALECTS)('reads Gemini CLI\'s shell command on %s as %s', (platform, dialect) => {
     const payload = geminiPayload('BeforeTool', 'run_shell_command', { command: 'git status' });
     const command = readCommand(payload, 'beforeShellExecution', platform);
     const expected = {
@@ -188,11 +192,11 @@ describe('readCommand', () => {
     expect(toolEvent?.command).toBe('eslint src');
   });
 
-  it.each([
+  it.each<[object, CursorEvent]>([
     [cursorToolPayload('git stash', 'preToolUse'), 'beforeShellExecution'],
     [cursorToolPayload('eslint src', 'preToolUse'), 'postToolUse'],
     [cursorShellPayload('eslint src'), 'postToolUse'],
-  ] as const)('ignores a Cursor payload for any event but the one the hook answers', (payload, event) => {
+  ])('ignores a Cursor payload for any event but the one the hook answers', (payload, event) => {
     const command = readCommand(payload, event);
     expect(command).toBeUndefined();
   });
@@ -333,7 +337,43 @@ describe('readEdit', () => {
 });
 
 describe('decisionOf', () => {
-  it.each([
+  it.each<[Host, DecisionKind, object]>([
+    [
+      'claude',
+      'ask',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'ask',
+          permissionDecisionReason: 'why',
+        },
+      },
+    ],
+    [
+      'copilot',
+      'ask',
+      {
+        permissionDecision: 'ask',
+        permissionDecisionReason: 'why',
+      },
+    ],
+    [
+      'cursor',
+      'ask',
+      {
+        permission: 'ask',
+        user_message: 'why',
+        agent_message: 'why',
+      },
+    ],
+    [
+      'gemini',
+      'ask',
+      {
+        decision: 'deny',
+        reason: 'why',
+      },
+    ],
     [
       'claude',
       'deny',
@@ -423,7 +463,7 @@ describe('decisionOf', () => {
         },
       },
     ],
-  ] as const)('writes a %s %s in that host\'s own words', (host, kind, decision) => {
+  ])('writes a %s %s in that host\'s own words', (host, kind, decision) => {
     const hostDecision = decisionOf(host, kind, 'why');
     expect(hostDecision).toEqual(decision);
   });
@@ -432,6 +472,8 @@ describe('decisionOf', () => {
     const decision = decisionOf('cursor', 'deny', undefined);
     const expected = { permission: 'allow' };
     expect(decision).toEqual(expected);
+    const cursorAsk = decisionOf('cursor', 'ask', undefined);
+    expect(cursorAsk).toEqual(expected);
     const cursorDecision = decisionOf('cursor', 'warn', undefined);
     expect(cursorDecision).toBeUndefined();
     const claudeDecision = decisionOf('claude', 'deny', undefined);

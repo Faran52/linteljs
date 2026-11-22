@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('commitGateHook.ts', () => {
-  it('holds a commit until `check` has passed on the same files', () => {
+  it('asks the user about a commit until `check` has passed on the same files', () => {
     const held = runHook('commitGateHook.ts', shellPayload(root, 'git commit -m x'));
     runHook('commitGateHook.ts', shellPayload(root, 'pnpm check > /tmp/check.log 2>&1'));
     spawnHook('checkRecordHook.ts', shellResult(root, 'pnpm check > /tmp/check.log 2>&1', 'PostToolUse'));

@@ -60,9 +60,9 @@ export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'es
 export type ContextScript = 'checkRecordHook.ts' | 'checkStatusHook.ts' | 'contextWarningHook.ts'
   | 'mainStatusLineHook.ts' | 'subagentStatusLineHook.ts';
 
-// The hooks that deny; the rest add context or block.
-const PERMISSIONS = new Map<HookScript, 'deny'>([
-  ['commitGateHook.ts', 'deny'],
+// The hooks that ask or deny; the rest add context or block.
+const PERMISSIONS = new Map<HookScript, 'ask' | 'deny'>([
+  ['commitGateHook.ts', 'ask'],
   ['generatedFileGuardHook.ts', 'deny'],
   ['gitSafetyGuardHook.ts', 'deny'],
 ]);
@@ -184,7 +184,7 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
   if (host === 'gemini') {
     const decision = permission !== undefined
       ? {
-          decision: permission,
+          decision: 'deny',
           reason: text,
         }
       : {

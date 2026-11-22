@@ -177,7 +177,8 @@ when a version's change lives in a sibling it is described there instead:
   finish the step, commit work that passes the check and report; past 150K every call is blocked, and the user
   is told once.
 - Two more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
-  would commit, untracked files included; the run counts on its own, with its output redirected to a file outside
+  would commit, untracked files included: until then the hook asks the user, who can allow that one commit, and a
+  session with nobody to answer (`claude -p`, a run with prompts turned off) is refused. The run counts on its own, with its output redirected to a file outside
   the work tree or after a leading `cd <dir> &&`, never piped or otherwise chained, and its result lives in the git
   directory. A commit is judged on the checkout it runs in, so `cd <dir> && git commit` and `git -C <dir> commit`
   read that checkout's run. A file whose first line marks it generated (`@generated`, `do not edit` and the like)

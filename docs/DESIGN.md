@@ -967,7 +967,14 @@ always printed, so colour is never the only cue.
 
 ### The commit gate and the generated-file guard
 
-`commitGateHook.ts` denies a `git commit` until `check` has passed on the tree it would commit: the work tree,
+`commitGateHook.ts` holds a `git commit` until `check` has passed on the tree it would commit. It answers `ask`, not
+`deny`: the user sees the reason in a permission prompt and can allow that one commit. Claude Code refuses an `ask`
+that nobody can answer (`claude -p`, `--permission-prompts none`, `permissions.denyInsteadOfPrompting`), and the
+reason reaches the agent instead; measured with `claude -p` 2.1.330 in the default, `auto`, `dontAsk` and
+`bypassPermissions` modes and under an allow rule, each refused. A background subagent's prompt goes to the main
+session. What can still answer an `ask` without a person is something the user installed to answer it: an Agent
+SDK `canUseTool` callback, a `--permission-prompt-tool`, a `PermissionRequest` hook or a mod's `tool.check`. A host
+that documents no ask (Gemini CLI) gets a denial from `hostUtils.ts`. The tree judged is the work tree,
 untracked included, snapshot as a tree object from a scratch index when the check starts, so a change mid-run
 leaves the pass stale. Only the check itself counts, alone or redirected to a file outside the tree: a pipe hides
 its status and a chain adds to it. A leading `cd <dir> &&` and leading literal `NAME=value` assignments count; a

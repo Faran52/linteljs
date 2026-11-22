@@ -30,7 +30,7 @@ describe('emitAgentAdapter', () => {
 - Run \`pnpm check\` before declaring implementation work complete.
 - Run it alone or redirected out of the work tree (\`pnpm check > /tmp/check.log 2>&1\`), never piped or chained.
   Leading \`NAME=value\` assignments are fine.
-- In Claude Code a commit waits until that run has passed on the work tree it would commit.
+- In Claude Code a commit before that run has passed on the work tree it would commit asks the user first.
 - Never edit a file whose first line marks it generated.
 - Run \`pnpm lint:fix\`, not lint without fixes.
 - Comments are minimal: a short why, or none. Never restate the code; no comments in tests.

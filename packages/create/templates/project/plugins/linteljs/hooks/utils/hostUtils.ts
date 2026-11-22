@@ -5,7 +5,9 @@ import type { Dialect } from './commandParserUtils.ts';
 
 export type Host = 'claude' | 'copilot' | 'cursor' | 'gemini';
 
-export type DecisionKind = 'block' | 'deny' | 'warn';
+export type DecisionKind = 'ask' | 'block' | 'deny' | 'warn';
+
+type PermissionKind = Extract<DecisionKind, 'ask' | 'deny'>;
 
 // The one event each command hook answers under Cursor; `.cursor/hooks.json` registers it there and nowhere else.
 export type CursorEvent = 'beforeShellExecution' | 'postToolUse';
@@ -226,8 +228,13 @@ export const readSession = (payload: object): SessionInput | undefined => {
   return sessionInput;
 };
 
+// An ask puts the call to the user, who may allow it.
+const isPermission = (kind: DecisionKind): kind is PermissionKind => {
+  return kind === 'ask' || kind === 'deny';
+};
+
 const cursorDecision = (kind: DecisionKind, text: string): object => {
-  const decision = kind === 'deny'
+  const decision = isPermission(kind)
     ? {
         permission: kind,
         user_message: text,
@@ -239,7 +246,7 @@ const cursorDecision = (kind: DecisionKind, text: string): object => {
 };
 
 const copilotDecision = (kind: DecisionKind, text: string): object => {
-  const decision = kind === 'deny'
+  const decision = isPermission(kind)
     ? {
         permissionDecision: kind,
         permissionDecisionReason: text,
@@ -249,11 +256,12 @@ const copilotDecision = (kind: DecisionKind, text: string): object => {
   return decision;
 };
 
-// Under Gemini CLI a warning or a block answers only after the tool, where a denial would replace its result.
+// Gemini CLI documents no ask, so an ask denies there. A warning or a block answers only after the tool, where a
+// denial would replace its result.
 const geminiDecision = (kind: DecisionKind, text: string): object => {
-  const decision = kind === 'deny'
+  const decision = isPermission(kind)
     ? {
-        decision: kind,
+        decision: 'deny',
         reason: text,
       }
     : {
@@ -277,7 +285,7 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
   }
 
   const decision = {
-    hookSpecificOutput: kind === 'deny'
+    hookSpecificOutput: isPermission(kind)
       ? {
           hookEventName: 'PreToolUse',
           permissionDecision: kind,
@@ -297,7 +305,7 @@ export const decisionOf = (host: Host, kind: DecisionKind, text: string | undefi
   if (text === undefined) {
     const allow = { permission: 'allow' };
 
-    return host === 'cursor' && kind === 'deny' ? allow : undefined;
+    return host === 'cursor' && isPermission(kind) ? allow : undefined;
   }
 
   if (host === 'cursor') {

@@ -37,7 +37,8 @@ so everything in it is outward-facing.
   because the packages typecheck against each other's built declarations. `lint:css` passes on an empty glob:
   this workspace has no CSS, and it ships the gate to every target. Outside `CI` a step whose every input matches
   its last pass is skipped whole (`docs/DESIGN.md`, Gate cache); `LINTELJS_GATE_NO_CACHE=1` reruns them all.
-- A commit is held until `pnpm check` has passed on the work tree it would commit. Run it on its own or redirected
+- A commit is held until `pnpm check` has passed on the work tree it would commit: until then the hook asks the user,
+  who can allow that one commit, and a session with nobody to answer is refused. Run it on its own or redirected
   to a file outside the tree (`pnpm check > /tmp/check.log 2>&1`), never piped or chained, or it does
   not count. Leading `NAME=value` assignments (`CI=1 pnpm check`) and a leading `cd <dir> &&` are fine. A tree that
   differs from HEAD, or from the last pass, only in `.md` files commits without it.

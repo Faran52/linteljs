@@ -5,5 +5,5 @@ const payload = readPayload();
 
 if (payload !== undefined) {
   startCheck(payload);
-  writeDecision('claude', 'deny', commitGateReason(payload));
+  writeDecision('claude', 'ask', commitGateReason(payload));
 }

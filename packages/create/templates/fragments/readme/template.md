@@ -34,7 +34,8 @@ Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, 
 line marks it generated, and ask you before a dependency is added or removed. In Claude Code a commit is held
 until `{{RUN}} check` has passed on the work tree it would commit, run on its own or redirected to a file outside
 the work tree (leading `NAME=value` assignments are fine), never piped or chained (a change only to `.md` files
-needs none), and a band above the prompt shows that state. Set `LINTELJS_GATE_WORKTREES=off` in
+needs none), and a band above the prompt shows that state. Until then the commit asks you, and you can allow that
+one commit; a session with nobody to answer (`claude -p`) is refused. Set `LINTELJS_GATE_WORKTREES=off` in
 `.claude/settings.json` `env` to let a commit in a linked git worktree through unheld, and run the check once before
 the merge.
 

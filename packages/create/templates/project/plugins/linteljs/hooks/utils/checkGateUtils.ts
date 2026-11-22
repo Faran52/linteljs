@@ -517,10 +517,10 @@ const heldReason = (project: Project): string | undefined => {
 
   const check = checkOf(project);
 
-  return `Commit held: \`${check}\` has not passed on these files (${WHY[state]}). Run \`${check}\` on its own, `
-    + `or with its output redirected to a file outside the work tree (\`${check} > /tmp/check.log 2>&1\`), and `
-    + 'commit once it passes, from the work tree or after `cd <dir> &&`, with leading `NAME=value` assignments '
-    + 'or none. A run piped into another command or chained '
+  return `Commit held: \`${check}\` has not passed on these files (${WHY[state]}). Allowing this commit skips `
+    + `the check. To pass it instead, run \`${check}\` on its own, or with its output redirected to a file outside `
+    + `the work tree (\`${check} > /tmp/check.log 2>&1\`), and commit once it passes, from the work tree or after `
+    + '`cd <dir> &&`, with leading `NAME=value` assignments or none. A run piped into another command or chained '
     + 'with one is not counted: its exit status is not the check\'s.';
 };
 

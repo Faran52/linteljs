@@ -574,11 +574,12 @@ describe('commitGateReason', () => {
     expect(reason).toContain('not run on these files');
   });
 
-  it('says how to run the check', () => {
+  it('says what allowing the commit skips, and how to run the check', () => {
     const reason = commitGateReason(shell('git commit'));
 
     expect(reason).toBe('Commit held: `pnpm check` has not passed on these files (it has not run on these files). '
-      + 'Run `pnpm check` on its own, or with its output redirected to a file outside the work tree '
+      + 'Allowing this commit skips the check. To pass it instead, run `pnpm check` on its own, or with its output '
+      + 'redirected to a file outside the work tree '
       + '(`pnpm check > /tmp/check.log 2>&1`), and commit once it passes, from the work tree or after '
       + '`cd <dir> &&`, with leading `NAME=value` assignments or none. A run piped into another command or '
       + 'chained with one is not counted: its exit status is not the check\'s.');
