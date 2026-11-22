@@ -1694,7 +1694,7 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a last parameter filling leaves unread, dropped whole',
+    name: 'a last parameter filling leaves unread, left as an empty pattern',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1706,12 +1706,12 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = () => <li />;',
+      'export const List = ({}: Props) => <li />;',
       '',
     ].join('\n'),
   },
   {
-    name: 'a parameter filling leaves unread after another, dropped with its comma',
+    name: 'a parameter filling leaves unread after another, left as an empty pattern',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1723,7 +1723,7 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = (ref: Ref) => <li />;',
+      'export const List = (ref: Ref, {}: Props) => <li />;',
       '',
     ].join('\n'),
   },
@@ -1772,7 +1772,7 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a last positional parameter filling leaves unread, dropped with its comma',
+    name: 'a last positional parameter filling leaves unread, kept so the arity holds',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1784,7 +1784,7 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = (ref: Ref) => <li />;',
+      'export const List = (ref: Ref, label: string) => <li />;',
       '',
     ].join('\n'),
   },
@@ -1823,7 +1823,7 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'a name the base leaves unread, kept though an inner binding of that name, then dropped, was read',
+    name: 'a name the base leaves unread, kept, and an inner positional binding of that name kept',
     base: [
       'import { Item } from \'./p\';',
       '',
@@ -1835,7 +1835,7 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const List = ({ label }: Props) => [1].map(() => <li />);',
+      'export const List = ({ label }: Props) => [1].map((label) => <li />);',
       '',
     ].join('\n'),
   },
@@ -1883,7 +1883,7 @@ const MORE_CASES: Case[] = [
     ].join('\n'),
   },
   {
-    name: 'of two bindings of one name, the base\'s that filling leaves unread dropped, the option\'s kept',
+    name: 'of two bindings of one name, the base\'s that filling leaves unread emptied, the option\'s kept',
     base: [
       'import { Item, row } from \'./p\';',
       '',
@@ -1897,8 +1897,8 @@ const MORE_CASES: Case[] = [
       '',
     ].join('\n'),
     expected: [
-      'export const a = [({ id }: P) => <li />, () => <li />];',
-      'export const b = [() => <li />, ({ id }: P) => <li />];',
+      'export const a = [({ id }: P) => <li />, ({}: P) => <li />];',
+      'export const b = [({}: P) => <li />, ({ id }: P) => <li />];',
       '',
     ].join('\n'),
   },

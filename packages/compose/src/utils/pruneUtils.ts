@@ -10,7 +10,6 @@ import {
   editOver,
   joined,
   patternOf,
-  plain,
   takenOut,
   type Written,
 } from './editUtils';
@@ -61,9 +60,30 @@ interface Held {
   scope: ts.Node;
 }
 
+// A parameter written as an object pattern, the only kind pruning writes again.
+interface Patterned {
+  parameter: ts.ParameterDeclaration;
+  pattern: ts.ObjectBindingPattern;
+}
+
 // A function written with parameters of its own: one without a body has no read of them, so nothing to prune.
 const isFunction = (node: ts.Node): node is ts.FunctionLikeDeclaration => {
   return FUNCTION_KINDS.has(node.kind);
+};
+
+const patternedOf = (owner: ts.FunctionLikeDeclaration): Patterned[] => {
+  return owner.parameters
+    .flatMap((parameter) => {
+      const { name } = parameter;
+      const patterned: Patterned[] = ts.isObjectBindingPattern(name)
+        ? [{
+            parameter,
+            pattern: name,
+          }]
+        : [];
+
+      return patterned;
+    });
 };
 
 // The code a statement's bindings are seen in: the block it stands in, or every clause of its `switch`.
@@ -113,13 +133,13 @@ const boundIn = (name: ts.BindingName, declaration: ts.Declaration, scope: ts.No
     });
 };
 
-// Every name pruning may drop: of parameters, and of `const` and `let` declarations.
+// Every name pruning may drop: inside parameter patterns, and of `const` and `let` declarations.
 const everyBound = (file: ts.SourceFile): Bound[] => {
   const parameters = collect(file, isFunction)
     .flatMap((owner) => {
-      return owner.parameters
-        .flatMap((parameter) => {
-          return boundIn(parameter.name, parameter, owner);
+      return patternedOf(owner)
+        .flatMap(({ parameter, pattern }) => {
+          return boundIn(pattern, parameter, owner);
         });
     });
   const declared = heldIn(file)
@@ -256,66 +276,14 @@ const patternOver = (pruning: Pruning, pattern: ts.BindingPattern, kept: readonl
   return editOver(pattern, printed);
 };
 
-// The last parameter taken out with the comma before it; a lone arrow parameter written without parentheses leaves
-// them.
-const parameterGone = (owner: ts.FunctionLikeDeclaration, parameter: ts.ParameterDeclaration): Edit => {
-  const index = owner.parameters.indexOf(parameter);
-  const previous = owner.parameters[index - 1];
-  const isBare = ts.isArrowFunction(owner) && !owner
-    .getChildren()
-    .some((child) => {
-      return child.kind === ts.SyntaxKind.OpenParenToken;
-    });
-
-  if (isBare) {
-    const parentheses = plain('()');
-
-    return editOver(parameter, parentheses);
-  }
-
-  const span: Span = {
-    start: previous === undefined ? parameter.getStart() : previous.getEnd(),
-    end: parameter.getEnd(),
-  };
-
-  return takenOut(span);
-};
-
-// Only the last parameter goes, as dropping another would shift the ones after it; a setter keeps its one.
-const isLastDroppable = (
-  pruning: Pruning,
-  owner: ts.FunctionLikeDeclaration,
-  parameter: ts.ParameterDeclaration,
-): boolean => {
-  const isLast = owner.parameters.at(-1) === parameter;
-  const isPlain = parameter.dotDotDotToken === undefined && ts.getModifiers(parameter) === undefined;
-
-  return isLast && isPlain && !ts.isSetAccessorDeclaration(owner) && isPureValue(pruning, parameter.initializer);
-};
-
+// A parameter keeps its place, so the function's arity holds: only names inside its pattern go, down to `{}`.
 const parameterPruned = (
   pruning: Pruning,
   owner: ts.FunctionLikeDeclaration,
-  parameter: ts.ParameterDeclaration,
+  pattern: ts.ObjectBindingPattern,
 ): Edit[] | undefined => {
-  const { name } = parameter;
-
-  if (ts.isIdentifier(name)) {
-    const isGone = isUnread(pruning, name, owner);
-    const gone = isGone && isLastDroppable(pruning, owner, parameter) ? [parameterGone(owner, parameter)] : undefined;
-
-    return gone;
-  }
-
-  const kept = ts.isObjectBindingPattern(name) ? keptIn(pruning, name, owner, undefined, []) : undefined;
-
-  if (kept === undefined) {
-    return undefined;
-  }
-
-  const isGone = kept.length === 0 && isLastDroppable(pruning, owner, parameter);
-  const pruned = isGone ? parameterGone(owner, parameter) : patternOver(pruning, name, kept);
-  const edits = [pruned];
+  const kept = keptIn(pruning, pattern, owner, undefined, []);
+  const edits = kept === undefined ? undefined : [patternOver(pruning, pattern, kept)];
 
   return edits;
 };
@@ -395,7 +363,7 @@ const candidateOf = (node: ts.Node, edits: () => readonly Edit[] | undefined): C
   return candidate;
 };
 
-// Drops what filling left unread: a destructured name, a last parameter, a `const` or `let` declarator.
+// Drops what filling left unread: a destructured name or a `const` or `let` declarator.
 export const prunedOnce = (follower: Follower, sources: Sources): Step => {
   return (text, file) => {
     let proven: Proof | undefined;
@@ -414,10 +382,10 @@ export const prunedOnce = (follower: Follower, sources: Sources): Step => {
     };
     const parameters = collect(file, isFunction)
       .flatMap((owner) => {
-        return owner.parameters
-          .map((parameter) => {
+        return patternedOf(owner)
+          .map(({ parameter, pattern }) => {
             return candidateOf(parameter, () => {
-              return parameterPruned(pruning, owner, parameter);
+              return parameterPruned(pruning, owner, pattern);
             });
           });
       });

@@ -1,15 +1,22 @@
+import ts from 'typescript';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
+import { FUNCTION_KINDS } from '../constants';
+
 import { sourcesOf } from './bindingUtils';
 import { editOf, plain } from './editUtils';
 import { Follower } from './followUtils';
 import { prunedOnce, trackRead } from './pruneUtils';
 import { scopeOf } from './scopeUtils';
-import { parse, type Span } from './sourceUtils';
+import {
+  collect,
+  parse,
+  type Span,
+} from './sourceUtils';
 import { settled } from './stepUtils';
 
 // What pruning leaves of a body once a stand-in for filling has written `to` over the last `from`.
@@ -81,7 +88,7 @@ describe('prunedOnce, on destructured parameters', () => {
       'const g = ({ a: { b } = {} }) => use(b);\n',
       'b)',
       '1)',
-      'const g = () => use(1);\n',
+      'const g = ({}) => use(1);\n',
     ],
     [
       'const g = ({ a: x, b }) => use(x, b);\n',
@@ -174,50 +181,32 @@ describe('prunedOnce, on destructured parameters', () => {
   });
 });
 
-describe('prunedOnce, on positional parameters', () => {
+// How many parameters the first function in a text declares, its `length` when none has a default or a rest.
+const arityOf = (text: string): number | undefined => {
+  const owners = collect(parse(text), (node): node is ts.FunctionLikeDeclaration => {
+    return FUNCTION_KINDS.has(node.kind);
+  });
+
+  return owners.at(0)?.parameters.length;
+};
+
+describe('prunedOnce, on whole parameters', () => {
   it.each([
     [
       'const g = (a, b) => use(a, b);\n',
-      'b)',
-      'const g = (a) => use(a, 1);\n',
+      'use(a, b)',
+      'use(a, 1)',
     ],
     [
-      'const g = a => use(a);\n',
-      'a)',
-      'const g = () => use(1);\n',
-    ],
-    [
-      'const g = async a => use(a);\n',
-      'a)',
-      'const g = async () => use(1);\n',
+      'const g = (a, b) => use(a, b);\n',
+      'use(a, b)',
+      'use(1, b)',
     ],
     [
       'const g = (a, b = 1) => use(a, b);\n',
-      'b)',
-      'const g = (a) => use(a, 1);\n',
+      'use(a, b)',
+      'use(a, 1)',
     ],
-    [
-      'function f(a) {\n  use(a);\n}\n',
-      'a)',
-      'function f() {\n  use(1);\n}\n',
-    ],
-    [
-      'function f(a: number): void;\nfunction f(a: number) {\n  use(a);\n}\n',
-      'a)',
-      'function f(a: number): void;\nfunction f() {\n  use(1);\n}\n',
-    ],
-    [
-      'const g = (a, b) => use(a, b);\n',
-      'a,',
-      'const g = (a, b) => use(1, b);\n',
-    ],
-  ])('drops only a last one filling made unread, in %j', (base, from, expected) => {
-    const pruned = prunedAfter(base, from, from.replace(/^\w+/u, '1'));
-
-    expect(pruned).toBe(expected);
-  });
-
-  it.each([
     [
       'const g = (a, b = f()) => use(a, b);\n',
       'use(a, b)',
@@ -229,6 +218,11 @@ describe('prunedOnce, on positional parameters', () => {
       'use(a, 1)',
     ],
     [
+      'function f(a: number): void;\nfunction f(a: number) {\n  use(a);\n}\n',
+      'use(a)',
+      'use(1)',
+    ],
+    [
       'class C {\n  constructor(private b) {\n    use(b);\n  }\n}\n',
       'use(b)',
       'use(1)',
@@ -238,11 +232,52 @@ describe('prunedOnce, on positional parameters', () => {
       'use(b)',
       'use(1)',
     ],
-  ])('keeps one with a default not proven pure, a rest, a field or a setter\'s own, in %j', (base, from, to) => {
+  ])('keeps every one filling made unread, in %j', (base, from, to) => {
     const pruned = prunedAfter(base, from, to);
     const expected = base.replace(from, to);
 
     expect(pruned).toBe(expected);
+  });
+
+  it.each([
+    [
+      'function f(a) {\n  use(a);\n}\n',
+      'function f(a) {\n  use(1);\n}\n',
+    ],
+    [
+      'function f({ a }) {\n  use(a);\n}\n',
+      'function f({}) {\n  use(1);\n}\n',
+    ],
+    [
+      'class C {\n  m(a) {\n    use(a);\n  }\n}\n',
+      'class C {\n  m(a) {\n    use(1);\n  }\n}\n',
+    ],
+    [
+      'class C {\n  m({ a }) {\n    use(a);\n  }\n}\n',
+      'class C {\n  m({}) {\n    use(1);\n  }\n}\n',
+    ],
+    [
+      'const g = a => use(a);\n',
+      'const g = a => use(1);\n',
+    ],
+    [
+      'const g = ({ a }) => use(a);\n',
+      'const g = ({}) => use(1);\n',
+    ],
+    [
+      'const g = async a => use(a);\n',
+      'const g = async a => use(1);\n',
+    ],
+    [
+      'const g = async ({ a }) => use(a);\n',
+      'const g = async ({}) => use(1);\n',
+    ],
+  ])('keeps the arity of %j', (base, expected) => {
+    const pruned = prunedAfter(base, 'a)', '1)');
+    const arity = arityOf(pruned);
+
+    expect(pruned).toBe(expected);
+    expect(arity).toBe(1);
   });
 
   it('keeps one the base leaves unread', () => {
