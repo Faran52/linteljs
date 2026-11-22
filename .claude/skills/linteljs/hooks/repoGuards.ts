@@ -189,6 +189,10 @@ const baseNote = async ($: EngineInterface, root: string): Promise<string | unde
 
 const POLL_DENIAL = { deny: POLL_REASON };
 
+// A guard that fails refuses: the engine skips a failed hook and would let the call through unchecked.
+const GUARD_REASON = 'linteljs: a repo guard failed, so the call is refused rather than let through unchecked.';
+const GUARD_FAILED = { deny: `${GUARD_REASON} Run \`claude --debug\` for why.` };
+
 export const registerGuards = (on: On): void => {
   on('tool.call', { tool: 'Read' }, async ($, e, next) => {
     const reason = readReason(e.file_path);
@@ -200,11 +204,17 @@ export const registerGuards = (on: On): void => {
     const denied = { deny: reason };
 
     return denied;
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 
   on('tool.call', { tool: 'Monitor' }, async ($, e, next) => {
     return e.agentId === undefined ? next(e) : POLL_DENIAL;
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     const polls = e.agentId === undefined ? undefined : pollReason(e.command);
@@ -218,7 +228,10 @@ export const registerGuards = (on: On): void => {
     const denied = { deny: reason };
 
     return denied;
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 
   on('tool.call', { tool: 'Edit' }, async ($, e, next) => {
     const bans = addedBans(e.file_path, e.old_string, e.new_string);
@@ -231,7 +244,10 @@ export const registerGuards = (on: On): void => {
     const denied = { deny: reason };
 
     return denied;
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 
   on('tool.call', { tool: 'Write' }, async ($, e, next) => {
     const before = await textOf($, e.file_path);
@@ -245,7 +261,10 @@ export const registerGuards = (on: On): void => {
     const denied = { deny: reason };
 
     return denied;
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 
   on('tool.call', { tool: 'Agent' }, async ($, e, next) => {
     if (e.agentId !== undefined || e.isolation !== 'worktree') {
@@ -270,5 +289,8 @@ export const registerGuards = (on: On): void => {
     const spawned = note === undefined ? e : { ...e, prompt: `${note}\n\n${e.prompt}` };
 
     return next(spawned);
-  });
+  })
+    .catch(async ($, e, next) => {
+      return next.called ? next(e) : GUARD_FAILED;
+    });
 };

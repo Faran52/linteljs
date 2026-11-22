@@ -178,17 +178,20 @@ const refresh = async ($: EngineInterface): Promise<void> => {
 };
 
 export const registerCiBand = (on: On): void => {
-  // The classic events, since the check band holds `session.start` and `turn.complete`; `Stop` is the main session's.
-  on('classic.SessionStart', async ($, e, next) => {
+  // Not the classic events, which the built-in security plugin passes on unheard, and not `session.start` or
+  // `turn.complete`, which the check band holds: one module hooks an event once.
+  on('session.attach', async ($, e, next) => {
+    const attached = await next(e);
     await refresh($);
 
-    return next(e);
+    return attached;
   });
 
-  on('classic.Stop', async ($, e, next) => {
+  on('turn.start', async ($, e, next) => {
+    const started = await next(e);
     await refresh($);
 
-    return next(e);
+    return started;
   });
 
   // The check band's render too, so both draw on one line; a segment with nothing read is left out.

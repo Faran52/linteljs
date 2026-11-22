@@ -314,6 +314,13 @@ const config = [
       '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { arguments: false } }],
     },
   },
+
+  // The engine's `on(...).catch(...)` registers, it is no promise. docs/DESIGN.md: `@linteljs/workspace/mod-guards`
+  {
+    name: '@linteljs/workspace/mod-guards',
+    files: ['.claude/skills/linteljs/hooks/repoGuards.ts'],
+    rules: { '@linteljs/prefer-async-await': 'off' },
+  },
 ];
 
 export default config;

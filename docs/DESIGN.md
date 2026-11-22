@@ -1458,6 +1458,13 @@ Two rules restated for `modModules()` files only.
 - `import-x/no-unresolved` ignoring `^claude-code(/testing)?$`, ambient modules the resolver cannot reach: 9
   findings without it, all such imports; `tsc` resolves them.
 
+### `@linteljs/workspace/mod-guards`
+
+`@linteljs/prefer-async-await` is off for `repoGuards.ts` alone. Each guard ends in the engine's
+`on(...).catch(...)`, which answers in the hook's place when it fails: without it the engine skips a failed guard
+and lets the call through. The rule reads that as a promise `.catch`. Measured: 6 findings, one per guard, none on
+a promise, and none can be written with `await`.
+
 ### Coverage thresholds, in `vitest.config.ts`
 
 The root config gates; a package's own coverage block is ignored under `projects`. One global 100% block rather
