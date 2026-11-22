@@ -60,6 +60,10 @@ export const DEFAULT_HOOKS = [
 // The only way to exercise the `hooks` option on real code.
 export const EXTRA_HOOKS = ['useLayoutEffect', 'useImperativeHandle'];
 
+// prefer-destructured-props's own test for a component: a PascalCase binding whose body holds JSX or a hook call.
+const COMPONENT_NAME = /^[A-Z][\dA-Za-z]*$/;
+const HOOK_CALLEE = /^use(?:[A-Z]|$)/;
+
 // Textual and over-skipping: a lost candidate costs nothing.
 const ARROW_HAZARDS = /\b(?:this|arguments|super|asserts)\b|new\s*\.\s*target/;
 
@@ -703,6 +707,32 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
   return replaced(state, fn.range[0], fn.range[1], rewritten);
 };
 
+const isHookCall = (call: AstNode): boolean => {
+  const { callee } = call;
+  const named = callee?.type === 'MemberExpression' ? callee.property : callee;
+
+  return named?.name !== undefined && HOOK_CALLEE.test(named.name);
+};
+
+// JSX or a hook in a nested callback counts for the enclosing function, as in the rule.
+const rendersInside = (state: State, fn: AstNode): boolean => {
+  const markers = [
+    ...nodesOf(state, 'JSXElement'),
+    ...nodesOf(state, 'JSXFragment'),
+    ...nodesOf(state, 'CallExpression')
+      .filter(isHookCall),
+  ];
+
+  return markers
+    .some((node) => {
+      return node.range[0] >= fn.range[0] && node.range[1] <= fn.range[1];
+    });
+};
+
+const isComponentNamed = (node: AstNode | null | undefined): boolean => {
+  return node?.type === 'Identifier' && node.name !== undefined && COMPONENT_NAME.test(node.name);
+};
+
 export const arrowComponentCase: Build = (state) => {
   const declarators = nodesOf(state, 'VariableDeclarator');
 
@@ -710,9 +740,9 @@ export const arrowComponentCase: Build = (state) => {
     const { id, init } = node;
     const names = init?.type === 'ArrowFunctionExpression' ? propsPatternNames(init.params?.[0]) : undefined;
 
-    const isComponent = id?.type === 'Identifier' && id.name !== undefined && /^[A-Z]/.test(id.name);
+    const isComponent = isComponentNamed(id) && init && rendersInside(state, init);
 
-    return isComponent && init && names ? componentPropsRewrite(state, init, names) : undefined;
+    return isComponent && names ? componentPropsRewrite(state, init, names) : undefined;
   });
 };
 
@@ -721,7 +751,8 @@ export const functionDeclarationComponentCase: Build = (state) => {
 
   return pickFirst(functionDeclarations, (node) => {
     const names = propsPatternNames(node.params?.[0]);
+    const isComponent = isComponentNamed(node.id) && rendersInside(state, node);
 
-    return /^[A-Z]/.test(node.id?.name ?? '') && names ? componentPropsRewrite(state, node, names) : undefined;
+    return isComponent && names ? componentPropsRewrite(state, node, names) : undefined;
   });
 };
