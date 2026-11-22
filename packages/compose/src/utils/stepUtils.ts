@@ -54,6 +54,10 @@ export const settled = (start: ts.SourceFile, once: Step, watch?: Watch): ts.Sou
 
     const next = applied(file.text, edits);
 
+    if (next === file.text) {
+      throw new Error('A step of the composition left the module as it was, so it would never settle');
+    }
+
     watch?.(file.text, edits);
     file = parse(next);
   }

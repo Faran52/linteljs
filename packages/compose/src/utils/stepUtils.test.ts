@@ -69,6 +69,18 @@ const firstA = (text: string, insert: string): Edit[] | undefined => {
   return at === -1 ? undefined : edits;
 };
 
+// A one-letter text turned from `a` to `b` and back, so it changes every step and never settles.
+const flipped = (text: string): Edit[] => {
+  const span: Span = {
+    start: 0,
+    end: 1,
+  };
+  const written = plain(text === 'a' ? 'b' : 'a');
+  const edits = [editOf(span, written)];
+
+  return edits;
+};
+
 describe('settled', () => {
   it('applies a rewrite until it has nothing left to do', () => {
     const start = parse('aaa');
@@ -99,23 +111,45 @@ describe('settled', () => {
       const start = parse('a');
 
       return settled(start, (text) => {
-        return firstA(text, 'a');
+        return flipped(text);
       });
     };
 
     expect(run).toThrow(/did not settle/u);
   });
 
-  it('refuses a rewrite that keeps answering no edits, which is not done', () => {
+  it('refuses at once a rewrite that answers no edits, which is not done', () => {
+    const asked: string[] = [];
+
     const run = (): ts.SourceFile => {
       const start = parse('a');
 
-      return settled(start, () => {
+      return settled(start, (text) => {
+        asked.push(text);
+
         return [];
       });
     };
 
-    expect(run).toThrow(/did not settle/u);
+    expect(run).toThrow(/left the module as it was/u);
+    expect(asked).toStrictEqual(['a']);
+  });
+
+  it('refuses at once a rewrite that writes the text as it was', () => {
+    const seen: string[] = [];
+
+    const run = (): ts.SourceFile => {
+      const start = parse('a');
+
+      return settled(start, (text) => {
+        return firstA(text, 'a');
+      }, (before) => {
+        seen.push(before);
+      });
+    };
+
+    expect(run).toThrow(/left the module as it was/u);
+    expect(seen).toStrictEqual([]);
   });
 
   it('asks for ten thousand rewrites before it refuses', () => {
@@ -127,7 +161,7 @@ describe('settled', () => {
       return settled(start, (text) => {
         asked.push(text);
 
-        return firstA(text, 'a');
+        return flipped(text);
       });
     };
 

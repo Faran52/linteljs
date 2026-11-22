@@ -179,6 +179,14 @@ export const writtenWith = (written: Written, edits: readonly Edit[]): Written =
 
 export const applied = (text: string, edits: readonly Edit[]): string => {
   const whole = plain(text);
+  const isOutside = edits
+    .some(({ start, end }) => {
+      return !(start >= 0 && end >= start && end <= text.length);
+    });
+
+  if (isOutside) {
+    throw new Error('An edit lies outside the text it edits, so it cannot be written');
+  }
 
   return writtenWith(whole, edits).insert;
 };

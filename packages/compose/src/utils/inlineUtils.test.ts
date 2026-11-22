@@ -12,6 +12,12 @@ import {
 import { applied } from './editUtils';
 import { filledOnce } from './inlineUtils';
 import { parse, referencesIn } from './sourceUtils';
+import { settled } from './stepUtils';
+
+interface Filled {
+  passes: string[][];
+  text: string;
+}
 
 const NO_TRUST: Trust = {
   plainData: [],
@@ -78,18 +84,31 @@ const goneIn = (text: string, next: string): string[] => {
     });
 };
 
+// The names each pass of `settled` took a read of away, so a fill that never ends is refused, not looped on.
+const passesOf = (sources: Sources): Filled => {
+  const passes: string[][] = [];
+  const start = parse(sources.body);
+
+  const { text } = settled(start, (current, file) => {
+    return filledOnce(current, file, sources);
+  }, (before, edits) => {
+    const next = applied(before, edits);
+    const gone = goneIn(before, next);
+
+    passes.push(gone);
+  });
+  const filled: Filled = {
+    passes,
+    text,
+  };
+
+  return filled;
+};
+
 describe('filledOnce', () => {
   it('fills by rank, one read per statement a pass, a type alone', () => {
     const sources = sourcesFor(BASE);
-    const passes: string[][] = [];
-    let text = sources.body;
-
-    for (let next = stepOf(text, sources); next !== undefined; next = stepOf(text, sources)) {
-      const gone = goneIn(text, next);
-
-      passes.push(gone);
-      text = next;
-    }
+    const { passes, text } = passesOf(sources);
 
     expect(passes).toStrictEqual([
       [
@@ -143,15 +162,7 @@ describe('filledOnce', () => {
     ],
   ])('fills %s', (_name, body, expected) => {
     const sources = sourcesFor(`import { ${NAMES.join(', ')} } from './p';\n\n${body}`);
-    const passes: string[][] = [];
-    let text = sources.body;
-
-    for (let next = stepOf(text, sources); next !== undefined; next = stepOf(text, sources)) {
-      const gone = goneIn(text, next);
-
-      passes.push(gone);
-      text = next;
-    }
+    const { passes } = passesOf(sources);
 
     expect(passes).toStrictEqual(expected);
   });

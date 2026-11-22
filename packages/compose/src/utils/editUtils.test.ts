@@ -91,6 +91,26 @@ describe('applied', () => {
 
     expect(run).toThrow('Two edits of one text overlap, so neither can be written as it was meant');
   });
+
+  it('writes an insert at either end of the text', () => {
+    const text = applied('abc', [editAt(0, 0, 'x'), editAt(3, 3, 'y')]);
+
+    expect(text).toBe('xabcy');
+  });
+
+  it.each([
+    [-1, 1],
+    [2, 1],
+    [2, 4],
+    [Number.NaN, 1],
+    [1, Number.NaN],
+  ])('refuses an edit from %d to %d, which is not inside the text', (start, end) => {
+    const run = (): string => {
+      return applied('abc', [editAt(0, 1, 'x'), editAt(start, end, 'y')]);
+    };
+
+    expect(run).toThrow('An edit lies outside the text it edits, so it cannot be written');
+  });
 });
 
 describe('copied, copyOf, joined and sliced', () => {
