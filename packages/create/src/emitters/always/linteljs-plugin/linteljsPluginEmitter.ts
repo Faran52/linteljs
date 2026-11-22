@@ -47,7 +47,6 @@ export const linteljsPluginEmitter = (workspace: Workspace): Artifact[] => {
     copied('plugins/linteljs/hooks/checkRecordHook.ts'),
     copied('plugins/linteljs/hooks/checkStatusHook.ts'),
     copied('plugins/linteljs/hooks/generatedFileGuardHook.ts'),
-    copied('plugins/linteljs/hooks/contextWarningHook.ts'),
     copied('plugins/linteljs/hooks/mainStatusLineHook.ts'),
     copied('plugins/linteljs/hooks/subagentStatusLineHook.ts'),
     copied('plugins/linteljs/hooks/constants.ts'),

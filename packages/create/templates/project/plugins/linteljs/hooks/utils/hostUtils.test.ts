@@ -32,7 +32,6 @@ import {
   readCommand,
   readEdit,
   readPayload,
-  readSession,
   writeDecision,
 } from './hostUtils.ts';
 
@@ -216,53 +215,6 @@ describe('readCommand', () => {
     expect(emptyInputCommand).toBeUndefined();
     const numericCommand = readCommand({ tool_input: { command: 7 } }, 'beforeShellExecution');
     expect(numericCommand).toBeUndefined();
-  });
-});
-
-describe('readSession', () => {
-  const main = {
-    session_id: 'e1d9603e-6671_4aba',
-    transcript_path: '/p/e1d9603e.jsonl',
-    tool_name: 'Bash',
-  };
-
-  it('reads the main session\'s id and transcript', () => {
-    const mainSession = readSession(main);
-    const expected = {
-      session: 'e1d9603e-6671_4aba',
-      transcript: '/p/e1d9603e.jsonl',
-    };
-    expect(mainSession).toEqual(expected);
-  });
-
-  it('reads a subagent\'s id and type beside the session', () => {
-    const subagent = readSession({
-      ...main,
-      agent_id: 'a1',
-      agent_type: 'Explore',
-    });
-    const expected = {
-      session: 'e1d9603e-6671_4aba',
-      transcript: '/p/e1d9603e.jsonl',
-      agent: { id: 'a1', type: 'Explore' },
-    };
-    expect(subagent).toEqual(expected);
-  });
-
-  it.each([
-    ['a subagent that is not a plain token', { ...main, agent_id: '../x' }],
-    ['a subagent id that is no string', { ...main, agent_id: 7 }],
-    ['a Cursor payload', { ...main, cursor_version: '2.4.0' }],
-    ['a Copilot payload', { ...main, toolName: 'bash' }],
-    ['a Gemini CLI payload', { ...main, hook_event_name: 'AfterTool' }],
-    ['no transcript', { session_id: 'abc' }],
-    ['no session', { transcript_path: '/p/t.jsonl' }],
-    ['a session that is not a plain token', { ...main, session_id: '../x' }],
-    ['an empty session', { ...main, session_id: '' }],
-    ['a session with a path after its token', { ...main, session_id: 'abc/../x' }],
-  ])('reads nothing from %s', (_label, payload) => {
-    const session = readSession(payload);
-    expect(session).toBeUndefined();
   });
 });
 

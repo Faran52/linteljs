@@ -1,11 +1,8 @@
 import {
   closeSync,
-  existsSync,
   fstatSync,
-  mkdirSync,
   openSync,
   readSync,
-  rmSync,
 } from 'node:fs';
 import { join } from 'node:path';
 
@@ -22,26 +19,15 @@ import {
 } from '../constants.ts';
 
 import {
-  type Agent,
   fieldAt,
   type Json,
   jsonObjectOf,
-  type SessionInput,
 } from './hostUtils.ts';
 
 export interface SubagentRow {
   id: string;
   content: string;
 }
-
-export const tokensFromEnv = (name: string, fallback: number): number => {
-  const value = Number(process.env[name]);
-  return Number.isInteger(value) && value > 0 ? value : fallback;
-};
-
-const CONTEXT_WARN_TOKENS = tokensFromEnv('CONTEXT_WARN_TOKENS', DEFAULT_CONTEXT_WARN_TOKENS);
-
-const CONTEXT_CEILING_TOKENS = tokensFromEnv('CONTEXT_CEILING_TOKENS', DEFAULT_CONTEXT_CEILING_TOKENS);
 
 const USAGE_KEYS = [
   'input_tokens',
@@ -207,14 +193,15 @@ export const subagentTranscriptOf = (transcript: string, agentId: string): strin
   return join(sessionDirectory, 'subagents', `agent-${agentId}.jsonl`);
 };
 
-// The number is always printed, so the colour is never the only cue.
+// The number is always printed, so the colour is never the only cue. A status line command gets no plugin options,
+// so the colours hold to the limits' manifest defaults.
 export const badgeOf = (tokens: number): string => {
   let colour: number = BADGE_COLOURS.over;
 
-  if (tokens < CONTEXT_WARN_TOKENS) {
+  if (tokens < DEFAULT_CONTEXT_WARN_TOKENS) {
     colour = BADGE_COLOURS.under;
   }
-  else if (tokens < CONTEXT_CEILING_TOKENS) {
+  else if (tokens < DEFAULT_CONTEXT_CEILING_TOKENS) {
     colour = BADGE_COLOURS.near;
   }
 
@@ -339,90 +326,4 @@ export const subagentRowsOf = (payload: object, now = Date.now()): SubagentRow[]
 
       return rows;
     });
-};
-
-const CEILING = `${String(CONTEXT_CEILING_TOKENS / TOKENS_PER_K)}K`;
-
-const sizeOf = (tokens: number): string => {
-  const thousands = Math.floor(tokens / TOKENS_PER_K);
-  return `${String(thousands)}K`;
-};
-
-const markerOf = (input: SessionInput, directory: string): string => {
-  const name = input.agent === undefined ? input.session : `${input.session}-${input.agent.id}`;
-  return join(directory, `linteljs-context-${name}`);
-};
-
-// True the first time only; the marker holds until the context drops back under.
-const isFirstPass = (marker: string, directory: string): boolean => {
-  if (existsSync(marker)) {
-    return false;
-  }
-
-  mkdirSync(directory, { recursive: true });
-  closeSync(openSync(marker, 'w'));
-  return true;
-};
-
-const mainWarningOf = (size: string): object => {
-  const warning = {
-    systemMessage: `Context passed ${CEILING} (${size}). Consider /compact or a fresh session.`,
-    hookSpecificOutput: {
-      hookEventName: 'PostToolUse',
-      additionalContext: `Context is ${size}, past ${CEILING}. Tell the user so in one line, and keep replies lean.`,
-    },
-  };
-
-  return warning;
-};
-
-const subagentNearOf = (size: string): object => {
-  const warning = {
-    hookSpecificOutput: {
-      hookEventName: 'PostToolUse',
-      additionalContext: `Context is ${size} of a ${CEILING} ceiling. Finish the current step, commit work that `
-        + 'passes the check, and return your report.',
-    },
-  };
-
-  return warning;
-};
-
-// Every call past the ceiling is blocked; the user hears of it once.
-const subagentOverOf = (size: string, agent: Agent, isFirst: boolean): object => {
-  const block = {
-    decision: 'block',
-    reason: `Context is ${size}, past the ${CEILING} ceiling. Stop now: commit only work that passes the check, `
-      + 'and return your report. Start no new work.',
-  };
-
-  const told = {
-    ...block,
-    systemMessage: `Subagent ${agent.type ?? agent.id} passed ${CEILING} (${size}); told to stop.`,
-  };
-
-  return isFirst ? told : block;
-};
-
-// The main session is told once past the ceiling; a subagent is nudged from the warning line and blocked past the
-// ceiling. Dropping back under clears the marker.
-export const contextWarningOf = (input: SessionInput, directory: string): object | undefined => {
-  const { agent } = input;
-  const transcript = agent === undefined ? input.transcript : subagentTranscriptOf(input.transcript, agent.id);
-  const tokens = contextOf(transcript);
-  const marker = markerOf(input, directory);
-  const size = sizeOf(tokens);
-
-  if (tokens < CONTEXT_CEILING_TOKENS) {
-    rmSync(marker, { force: true });
-    return agent === undefined || tokens < CONTEXT_WARN_TOKENS ? undefined : subagentNearOf(size);
-  }
-
-  const isFirst = isFirstPass(marker, directory);
-
-  if (agent !== undefined) {
-    return subagentOverOf(size, agent, isFirst);
-  }
-
-  return isFirst ? mainWarningOf(size) : undefined;
 };

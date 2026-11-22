@@ -1,6 +1,5 @@
 import {
   closeSync,
-  existsSync,
   mkdirSync,
   mkdtempSync,
   openSync,
@@ -21,7 +20,6 @@ import {
 import {
   badgeOf,
   contextOf,
-  contextWarningOf,
   elapsedOf,
   mainBadgesOf,
   mainContextOf,
@@ -29,17 +27,8 @@ import {
   modelNameOf,
   subagentRowsOf,
   subagentTranscriptOf,
-  tokensFromEnv,
   transcriptModelOf,
 } from './contextUtils.ts';
-
-import type { SessionInput } from './hostUtils.ts';
-
-// Hoisted above the import, so the limits a session exports cannot move the module's defaults.
-vi.hoisted(() => {
-  vi.stubEnv('CONTEXT_WARN_TOKENS', undefined);
-  vi.stubEnv('CONTEXT_CEILING_TOKENS', undefined);
-});
 
 const assistant = (input: number, read: number, created: number): string => {
   return JSON.stringify({
@@ -211,26 +200,6 @@ describe('badgeOf', () => {
     const badge = badgeOf(tokens);
 
     expect(badge).toBe(`\u001B[38;5;${String(colour)}m${text}\u001B[0m`);
-  });
-});
-
-describe('tokensFromEnv', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it.each([
-    ['300000', 300_000],
-    ['', 7],
-    ['0', 7],
-    ['1.5', 7],
-    ['many', 7],
-  ])('reads %s as %s', (value, tokens) => {
-    vi.stubEnv('LINTELJS_TOKENS', value);
-
-    const read = tokensFromEnv('LINTELJS_TOKENS', 7);
-
-    expect(read).toBe(tokens);
   });
 });
 
@@ -436,172 +405,5 @@ describe('subagentRowsOf', () => {
     expect(noTasksRows).toEqual([]);
     const textTasksRows = subagentRowsOf({ tasks: 'none' });
     expect(textTasksRows).toEqual([]);
-  });
-});
-
-describe('contextWarningOf', () => {
-  const warning = (size: string): object => {
-    const expected = {
-      systemMessage: `Context passed 150K (${size}). Consider /compact or a fresh session.`,
-      hookSpecificOutput: {
-        hookEventName: 'PostToolUse',
-        additionalContext: `Context is ${size}, past 150K. Tell the user so in one line, and keep replies lean.`,
-      },
-    };
-
-    return expected;
-  };
-
-  const inputAt = (tokens: number): SessionInput => {
-    const entry = assistant(0, tokens, 0);
-    const transcript = transcriptOf([entry]);
-    const input: SessionInput = {
-      session: 's12a',
-      transcript,
-    };
-
-    return input;
-  };
-
-  it('warns once past the ceiling, and again only after the context drops back under', () => {
-    const over = inputAt(188_000);
-    const first = contextWarningOf(over, directory);
-    const second = contextWarningOf(over, directory);
-    const under = contextWarningOf(inputAt(40_000), directory);
-    const again = contextWarningOf(inputAt(188_000), directory);
-
-    const actual = [
-      first,
-      second,
-      under,
-      again,
-    ];
-    const expected = [
-      warning('188K'),
-      undefined,
-      undefined,
-      warning('188K'),
-    ];
-    expect(actual).toEqual(expected);
-  });
-
-  it('stays silent under the ceiling and leaves no marker', () => {
-    const output = contextWarningOf(inputAt(149_999), directory);
-
-    expect(output).toBeUndefined();
-    const exists = existsSync(join(directory, 'linteljs-context-s12a'));
-    expect(exists).toBe(false);
-  });
-
-  it('warns at exactly the ceiling', () => {
-    const output = contextWarningOf(inputAt(150_000), directory);
-
-    expect(output).toEqual(warning('150K'));
-  });
-
-  it('creates a marker directory that does not exist yet', () => {
-    const data = join(directory, 'data');
-    const output = contextWarningOf(inputAt(188_000), data);
-
-    expect(output).toEqual(warning('188K'));
-    const exists = existsSync(join(data, 'linteljs-context-s12a'));
-    expect(exists).toBe(true);
-  });
-
-  describe('for a subagent', () => {
-    const agentInputAt = (tokens: number, type?: string): SessionInput => {
-      const main = transcriptOf([assistant(0, 1, 0)]);
-      const subagents = join(directory, 'main', 'subagents');
-      mkdirSync(subagents, { recursive: true });
-      writeFileSync(join(subagents, 'agent-a1.jsonl'), `${assistant(0, tokens, 0)}\n`);
-      const input: SessionInput = {
-        session: 's12a',
-        transcript: main,
-        agent: { id: 'a1', type },
-      };
-
-      return input;
-    };
-
-    const near = (size: string): object => {
-      const expected = {
-        hookSpecificOutput: {
-          hookEventName: 'PostToolUse',
-          additionalContext: `Context is ${size} of a 150K ceiling. Finish the current step, commit work that `
-            + 'passes the check, and return your report.',
-        },
-      };
-
-      return expected;
-    };
-
-    const block = {
-      decision: 'block',
-      reason: 'Context is 188K, past the 150K ceiling. Stop now: commit only work that passes the check, '
-        + 'and return your report. Start no new work.',
-    };
-
-    it('reads its own transcript and stays silent under the warning line', () => {
-      const output = contextWarningOf(agentInputAt(129_999), directory);
-
-      expect(output).toBeUndefined();
-    });
-
-    it('nudges from the warning line up to the ceiling, every call', () => {
-      const input = agentInputAt(130_000);
-      const first = contextWarningOf(input, directory);
-      const second = contextWarningOf(input, directory);
-      const last = contextWarningOf(agentInputAt(149_999), directory);
-
-      const actual = [
-        first,
-        second,
-        last,
-      ];
-      const expected = [
-        near('130K'),
-        near('130K'),
-        near('149K'),
-      ];
-      expect(actual).toEqual(expected);
-    });
-
-    it('blocks every call past the ceiling and tells the user once, by type, until it drops back under', () => {
-      const over = agentInputAt(188_000, 'Explore');
-      const first = contextWarningOf(over, directory);
-      const second = contextWarningOf(over, directory);
-      contextWarningOf(agentInputAt(40_000), directory);
-      const again = contextWarningOf(agentInputAt(188_000, 'Explore'), directory);
-
-      const told = {
-        ...block,
-        systemMessage: 'Subagent Explore passed 150K (188K); told to stop.',
-      };
-      const actual = [
-        first,
-        second,
-        again,
-      ];
-      const expected = [
-        told,
-        block,
-        told,
-      ];
-      expect(actual).toEqual(expected);
-    });
-
-    it('names a subagent with no type by its id, and keeps its marker apart from the main session\'s', () => {
-      const output = contextWarningOf(agentInputAt(188_000), directory);
-
-      const expected = {
-        ...block,
-        systemMessage: 'Subagent a1 passed 150K (188K); told to stop.',
-      };
-      expect(output).toEqual(expected);
-      const agentMarked = existsSync(join(directory, 'linteljs-context-s12a-a1'));
-      const mainMarked = existsSync(join(directory, 'linteljs-context-s12a'));
-      const markers = [agentMarked, mainMarked];
-      expect(markers).toEqual([true, false]);
-    });
   });
 });

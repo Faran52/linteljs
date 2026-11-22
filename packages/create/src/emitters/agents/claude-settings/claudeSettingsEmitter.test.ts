@@ -145,6 +145,8 @@ describe('claudeSettingsEmitter', () => {
       ['plugins/linteljs/.claude-plugin/marketplace.json', undefined],
       ['plugins/linteljs/hooks/hooks.json', undefined],
       ['plugins/linteljs/hooks/checkBand.tsx', undefined],
+      ['plugins/linteljs/hooks/contextCeiling.tsx', undefined],
+      ['plugins/linteljs/hooks/register.tsx', undefined],
       ['plugins/linteljs/types/index.d.ts', undefined],
     ];
     expect(written).toEqual(expected);
@@ -164,7 +166,23 @@ describe('claudeSettingsEmitter', () => {
   "version": "1.0.0",
   "description": "LintelJS project standards and safety hooks",
   "author": { "name": "Faran Ali" },
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "context_warn_tokens": {
+      "type": "number",
+      "title": "Context warning (tokens)",
+      "description": "A subagent is warned once when its context passes this many tokens.",
+      "default": 130000,
+      "min": 1
+    },
+    "context_ceiling_tokens": {
+      "type": "number",
+      "title": "Context ceiling (tokens)",
+      "description": "Subagent tool calls are refused past this; the user is told when the main session passes it.",
+      "default": 150000,
+      "min": 1
+    }
+  }
 }
 `);
 

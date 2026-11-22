@@ -4,7 +4,6 @@ import {
   type EngineInterface,
   type On,
   read,
-  type Register,
   update,
 } from 'claude-code';
 
@@ -13,7 +12,7 @@ import type { CheckWord } from '../types/index.d.ts';
 const check = atom({
   plugin: 'linteljs',
   key: 'check',
-} as const, null);
+}, null);
 
 // Each state's glyph and its colour.
 export const MARKS: Record<CheckWord, [string, string]> = {
@@ -68,7 +67,7 @@ export const registerCheckRefresh = (on: On): void => {
   });
 };
 
-export const register: Register = (on) => {
+export const registerCheckBand = (on: On): void => {
   registerCheckRefresh(on);
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {

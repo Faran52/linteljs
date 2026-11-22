@@ -30,7 +30,7 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
   const hooks: unknown = JSON.parse(hooksText);
 
   expect(hooks).toEqual({
-    modules: ['./checkBand.tsx'],
+    modules: ['./register.tsx'],
     hooks: {
       PreToolUse: [
         {
@@ -76,14 +76,6 @@ it('registers the eight hooks, each run by node from the plugin root', () => {
             {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/checkRecordHook.ts"',
-            },
-          ],
-        },
-        {
-          hooks: [
-            {
-              type: 'command',
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/contextWarningHook.ts"',
             },
           ],
         },

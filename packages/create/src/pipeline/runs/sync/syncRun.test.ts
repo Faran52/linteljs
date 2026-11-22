@@ -307,7 +307,9 @@ describe('syncPlugin', () => {
       CLAUDE_MARKETPLACE,
       CLAUDE_PLUGIN,
       'plugins/linteljs/hooks/checkBand.tsx',
+      'plugins/linteljs/hooks/contextCeiling.tsx',
       'plugins/linteljs/hooks/hooks.json',
+      'plugins/linteljs/hooks/register.tsx',
       'plugins/linteljs/types/index.d.ts',
     ]);
 

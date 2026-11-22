@@ -170,12 +170,13 @@ when a version's change lives in a sibling it is described there instead:
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
   `.github/hooks/linteljs.json`. The command guards read PowerShell as well as Bash, and `--no-verify` is denied
   on any git subcommand.
-- Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
-  `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
-  130K, red past 150K. A project's own status lines are kept on `create --existing`.
-- The context hook holds a Claude Code subagent under the 150K ceiling: past 130K each tool call tells it to
-  finish the step, commit work that passes the check and report; past 150K every call is blocked, and the user
-  is told once.
+- Claude Code projects watch their context: the plugin's mod tells the user once when the session passes the
+  ceiling, and `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green,
+  amber past 130K, red past 150K. A project's own status lines are kept on `create --existing`.
+- The mod holds a Claude Code subagent under the ceiling, read from each model request's own usage: past the
+  warning line it is told once to finish the step, commit work that passes the check, update its resume note and
+  report; past the ceiling every tool call is refused before it runs, and the user is told once. The two limits
+  are the plugin's options, `context_warn_tokens` (130000) and `context_ceiling_tokens` (150000), set in `/config`.
 - Two more agent hooks. In Claude Code a commit is held until the project's `check` passes on the work tree it
   would commit, untracked files included: until then the hook asks the user, who can allow that one commit, and a
   session with nobody to answer (`claude -p`, a run with prompts turned off) is refused. The run counts on its own, with its output redirected to a file outside
@@ -186,8 +187,8 @@ when a version's change lives in a sibling it is described there instead:
   an agent how to run `check` so it counts and to leave a generated file alone.
 - In Claude Code a band above the prompt shows the commit gate's state for the work tree as a coloured glyph and
   a word (`✓ check passed`, `✗ check failed`, `◐ check running`, `◐ check stale`, `○ check none`), read at session
-  start and after each main-session turn. It is a function-hooks module,
-  `hooks/checkBand.tsx`, that `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
+  start and after each main-session turn. It is `hooks/checkBand.tsx`, registered
+  by `hooks/register.tsx`, the function-hooks module `hooks/hooks.json` names under `modules`; Claude Code from about 2.1.250 draws it,
   and older versions run the other hooks without it. Codex reads `hooks/codexHooks.json`, the same hooks without
   `modules`, and every generated `tsconfig.json` excludes `plugins/linteljs`.
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with

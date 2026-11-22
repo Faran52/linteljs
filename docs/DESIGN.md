@@ -956,14 +956,19 @@ or nothing when it cannot read it, and nothing is a finding (the git guard denie
 Substitutions and nested shells are read as the commands inside them; a computed word or opaque PowerShell
 construct is denied outside a commit message. It is a guardrail, not a sandbox.
 
-### Context: a warning hook and two status lines
+### Context: a ceiling mod and two status lines
 
 A plugin's `settings.json` cannot set `statusLine`, so both badges go in the generated `.claude/settings.json`; a
-project's own wins on `create --existing`. `contextWarningHook.ts` warns once past 150K under Claude Code (other
-hosts send no transcript); dropping back under clears the marker. A subagent's tool call reads the subagent's own
-transcript: past 130K each call nudges it to wrap up, past 150K each call is blocked, and the user hears of it once.
-A subagent row reads its own transcript too, since a task's `tokenCount` is a different measure. The number is
-always printed, so colour is never the only cue.
+project's own wins on `create --existing`. The ceiling is `hooks/contextCeiling.tsx` in the plugin's mod, since a
+classic hook could not hold it: it ran on `PostToolUse`, after the tool, where `decision: "block"` only hands Claude
+a reason, and it read a transcript Claude Code writes behind the conversation, so agents ran on to 156K to 186K. The
+mod reads each loop's prompt size from its `turn.step` usage (input plus cache read and written), and on
+`tool.call` warns a subagent once past `context_warn_tokens`, refuses every call past `context_ceiling_tokens` before
+it runs (a guard with `.catch`, so a failed guard refuses too), and tells the user once when the main session passes
+the ceiling; dropping back under clears each. A task's `tokenCount` sums all its output, so it is not read. A
+plugin names one hooks module, so `register.tsx` registers the check band and the ceiling. The limits are plugin
+options; a status line command gets none, so the badges colour at their defaults, and a subagent row reads its own
+transcript. The number is always printed, so colour is never the only cue.
 
 ### The commit gate and the generated-file guard
 
@@ -994,7 +999,8 @@ belongs in the generator. linteljs writes no marker of its own.
 
 ### The check band, in the same plugin
 
-`hooks/checkBand.tsx` draws the check state in the `AbovePrompt` band. It sits in the linteljs plugin rather than
+`hooks/checkBand.tsx` draws the check state in the `AbovePrompt` band, registered with the context ceiling by
+`hooks/register.tsx`, the one module `hooks.json` names. It sits in the linteljs plugin rather than
 its own because an older Claude Code ignores `modules` beside command hooks but drops a plugin holding `modules`
 alone. Codex refuses `modules`, so its manifest names `hooks/codexHooks.json`, emitted from `hooks.json` without
 that key.
@@ -1460,10 +1466,11 @@ Two rules restated for `modModules()` files only.
 
 ### `@linteljs/workspace/mod-guards`
 
-`@linteljs/prefer-async-await` is off for `repoGuards.ts` alone. Each guard ends in the engine's
-`on(...).catch(...)`, which answers in the hook's place when it fails: without it the engine skips a failed guard
-and lets the call through. The rule reads that as a promise `.catch`. Measured: 6 findings, one per guard, none on
-a promise, and none can be written with `await`.
+`@linteljs/prefer-async-await` is off for `repoGuards.ts` and the shipped `contextCeiling.tsx` alone. Each guard
+ends in the engine's `on(...).catch(...)`, which answers in the hook's place when it fails: without it the engine
+skips a failed guard and lets the call through. The rule reads that as a promise `.catch`. Measured: 6 findings in
+`repoGuards.ts` and 1 in `contextCeiling.tsx`, one per guard, none on a promise, and none can be written with
+`await`.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

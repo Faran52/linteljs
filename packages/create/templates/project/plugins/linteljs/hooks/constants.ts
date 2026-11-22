@@ -1,4 +1,4 @@
-// A project may raise both through its settings env (`CONTEXT_WARN_TOKENS`, `CONTEXT_CEILING_TOKENS`).
+// The defaults of the plugin's `context_warn_tokens` and `context_ceiling_tokens` options, which the badges colour by.
 export const DEFAULT_CONTEXT_WARN_TOKENS = 130_000;
 
 export const DEFAULT_CONTEXT_CEILING_TOKENS = 150_000;

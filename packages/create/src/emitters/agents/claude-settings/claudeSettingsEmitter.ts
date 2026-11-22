@@ -87,6 +87,8 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
     copied('plugins/linteljs/.claude-plugin/marketplace.json'),
     copied('plugins/linteljs/hooks/hooks.json'),
     copied('plugins/linteljs/hooks/checkBand.tsx'),
+    copied('plugins/linteljs/hooks/contextCeiling.tsx'),
+    copied('plugins/linteljs/hooks/register.tsx'),
     copied('plugins/linteljs/types/index.d.ts'),
   ];
 

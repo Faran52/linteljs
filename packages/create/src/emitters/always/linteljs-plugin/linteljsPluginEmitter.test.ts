@@ -225,7 +225,6 @@ describe('linteljsPluginEmitter', () => {
       ['plugins/linteljs/hooks/checkRecordHook.ts', undefined],
       ['plugins/linteljs/hooks/checkStatusHook.ts', undefined],
       ['plugins/linteljs/hooks/generatedFileGuardHook.ts', undefined],
-      ['plugins/linteljs/hooks/contextWarningHook.ts', undefined],
       ['plugins/linteljs/hooks/mainStatusLineHook.ts', undefined],
       ['plugins/linteljs/hooks/subagentStatusLineHook.ts', undefined],
       ['plugins/linteljs/hooks/constants.ts', undefined],

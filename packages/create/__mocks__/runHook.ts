@@ -57,8 +57,8 @@ export type HookScript = 'bannedPatternGuardHook.ts' | 'commitGateHook.ts' | 'es
   | 'generatedFileGuardHook.ts' | 'gitSafetyGuardHook.ts';
 
 // Scripts that answer in their own shape rather than a decision, so only `spawnHook` runs them.
-export type ContextScript = 'checkRecordHook.ts' | 'checkStatusHook.ts' | 'contextWarningHook.ts'
-  | 'mainStatusLineHook.ts' | 'subagentStatusLineHook.ts';
+export type ContextScript = 'checkRecordHook.ts' | 'checkStatusHook.ts' | 'mainStatusLineHook.ts'
+  | 'subagentStatusLineHook.ts';
 
 // The hooks that ask or deny; the rest add context or block.
 const PERMISSIONS = new Map<HookScript, 'ask' | 'deny'>([
@@ -266,8 +266,6 @@ export const spawnHook = (
 
   delete env['CLAUDE_PROJECT_DIR'];
   delete env['CLAUDE_PLUGIN_DATA'];
-  delete env['CONTEXT_WARN_TOKENS'];
-  delete env['CONTEXT_CEILING_TOKENS'];
   // Each spawn strips and compiles the hook and its checker afresh; the cache keeps that to the first.
   env['NODE_COMPILE_CACHE'] = COMPILE_CACHE;
 

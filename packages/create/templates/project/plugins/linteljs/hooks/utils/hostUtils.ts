@@ -24,25 +24,11 @@ export interface EditInput {
   paths: string[];
 }
 
-export interface SessionInput {
-  session: string;
-  transcript: string;
-  agent?: Agent;
-}
-
-export interface Agent {
-  id: string;
-  type: string | undefined;
-}
-
-type Field = 'agent_id' | 'agent_type' | 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path'
+type Field = 'command' | 'content' | 'cursor_version' | 'cwd' | 'file_path'
   | 'file_text' | 'filePath' | 'hook_event_name' | 'new_str' | 'new_string' | 'old_str' | 'old_string' | 'patch'
-  | 'path' | 'session_id' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
+  | 'path' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName';
 
 export type Json = number | object | string;
-
-// A session id names a state file, so nothing but a plain token is accepted.
-const SESSION_ID = /^[\w-]+$/u;
 
 const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)/u;
 
@@ -197,35 +183,6 @@ export const readEdit = (payload: object): EditInput | undefined => {
   };
 
   return editInput;
-};
-
-// Claude Code adds `agent_id` to a subagent's tool call; it names a state file too, so it is held to the same token.
-export const readSession = (payload: object): SessionInput | undefined => {
-  const session = stringAt(payload, 'session_id');
-  const transcript = stringAt(payload, 'transcript_path');
-  const agentId = stringAt(payload, 'agent_id');
-
-  if (hostOf(payload) !== 'claude' || transcript === undefined) {
-    return undefined;
-  }
-
-  if (session === undefined || !SESSION_ID.test(session)) {
-    return undefined;
-  }
-
-  if ('agent_id' in payload && (agentId === undefined || !SESSION_ID.test(agentId))) {
-    return undefined;
-  }
-
-  const sessionInput: SessionInput = agentId === undefined
-    ? { session, transcript }
-    : {
-        session,
-        transcript,
-        agent: { id: agentId, type: stringAt(payload, 'agent_type') },
-      };
-
-  return sessionInput;
 };
 
 // An ask puts the call to the user, who may allow it.
