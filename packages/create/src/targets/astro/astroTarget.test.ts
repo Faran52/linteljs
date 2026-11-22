@@ -22,12 +22,22 @@ import {
 
 import { LANGUAGES } from '@config/constants';
 
+import { keysOf } from '@utils/objectUtils';
+
 import { DEFAULT_ANSWERS } from '@answers';
 
 import { astroTarget } from './astroTarget';
-import { TRANSLATED } from './constants';
+import { INTEGRATIONS, TRANSLATED } from './constants';
 
 import type { Answers, HostedFramework } from '@config/types';
+
+const UNSWAPPED: HostedFramework[] = [
+  'react',
+  'vue',
+  'svelte',
+];
+
+const HOSTS = keysOf(INTEGRATIONS);
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   const answers: Answers = {
@@ -103,11 +113,7 @@ describe('the build it owns', () => {
     expect(record.vitestFactory).toEqual(expected);
   });
 
-  it.each([
-    'react',
-    'vue',
-    'svelte',
-  ] as const)('swaps no plugin under a %s host', (hostedFramework) => {
+  it.each(UNSWAPPED)('swaps no plugin under a %s host', (hostedFramework) => {
     const record = recordFor({ hostedFramework });
 
     expect(record.vitestFactory?.swap).toBeUndefined();
@@ -177,25 +183,15 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  it('leaves the react build plugin to `@astrojs/react` and holds it there with a scoped override', () => {
-    const {
-      devDependencies,
-      overrides,
-    } = recordFor({ hostedFramework: 'react' });
+  it('leaves the react build plugin to `@astrojs/react`', () => {
+    const { devDependencies } = recordFor({ hostedFramework: 'react' });
 
-    const expected = [
-      {
-        parent: '@astrojs/react',
-        name: '@vitejs/plugin-react',
-      },
-    ];
     expect(devDependencies).not.toContain('@vitejs/plugin-react');
     expect(devDependencies).toContain('oxc-transform-react');
-    expect(overrides).toEqual(expected);
   });
 
-  it('overrides nothing for a host other than react', () => {
-    const { overrides } = recordFor({ hostedFramework: 'vue' });
+  it.each(HOSTS)('overrides nothing for a %s host', (hostedFramework) => {
+    const { overrides } = recordFor({ hostedFramework });
 
     expect(overrides).toBeUndefined();
   });

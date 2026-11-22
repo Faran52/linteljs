@@ -89,19 +89,10 @@ export const INTEGRATIONS: Record<HostedFramework, string> = {
 };
 
 // What one hosted framework alone changes in the record.
-export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'overrides'
-  | 'packageImports'
+export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'packageImports'
   | 'testInline'
   | 'vitestFactory'>> = {
-  // Until `@astrojs/react` peers the `oxc-transform-react` its plugin's newer releases do.
-  react: {
-    overrides: [
-      {
-        parent: '@astrojs/react',
-        name: '@vitejs/plugin-react',
-      },
-    ],
-  },
+  react: {},
   vue: {},
   // Svelte's island reads SvelteKit's own spelling of `src/lib`.
   svelte: { packageImports: { '#lib/*': './src/lib/*' } },

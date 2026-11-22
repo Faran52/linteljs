@@ -719,8 +719,8 @@ than fork.
 React and the React hosts run the compiler as `oxc-transform-react` through `@vitejs/plugin-react`'s `compiler`
 option, not Babel: `@astrojs/react` 7 refuses the `babel` option, and Babel needed three more packages. The
 built bundles carry the memo cache calls, so it is proven to run. The Babel pass, `reactCompilerPreset()`, is the
-fallback. The plugin is held at exactly 6.1.1 and Astro scopes an override to `@astrojs/react`
-(withastro/astro#18151) until `@astrojs/react` peers `oxc-transform-react ^0.152`; then both are lifted.
+fallback. `oxc-transform-react` takes a tilde on its 0.156 line, the newest that both `@vitejs/plugin-react` and
+`@astrojs/react` peer (`<0.157.0`).
 
 The compiler is off under `VITEST`, since the memo cache leaves an unreachable branch per component. Next keeps
 its own switch, off; framework mode runs none; React Native keeps `babel-preset-expo`.

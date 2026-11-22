@@ -13,6 +13,7 @@ import type {
   Answers,
   Data,
   Form,
+  HostedFramework,
   Library,
   Router,
   Styling,
@@ -22,6 +23,7 @@ import type {
 
 interface AnswerOverrides {
   target?: TargetId;
+  hostedFramework?: HostedFramework;
   router?: Router;
   libraries?: Library[];
   form?: Form;
@@ -90,7 +92,7 @@ describe('emitYarnrc', () => {
 
   it('writes every extension under packageExtensions', () => {
     const nuxt = emitYarnrc(answersFor({ target: 'nuxt' }));
-    const [, extensions = ''] = nuxt.split('packageExtensions:\n');
+    const extensions = nuxt.slice(nuxt.indexOf('packageExtensions:\n') + 'packageExtensions:\n'.length);
 
     const topLevel = extensions
       .trimEnd()
@@ -158,12 +160,30 @@ describe('emitYarnrc', () => {
     expect(plain).not.toContain('eslint-plugin-router');
   });
 
+  it('hands vite to the react plugin beneath an Astro React island only', () => {
+    const react = emitYarnrc(answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+    }));
+
+    expect(react).toContain(
+      '  "@astrojs/react@*":\n    peerDependencies:\n      vite: "*"\n'
+      + '  "@astrojs/react-renderer@*":\n    peerDependencies:\n      vite: "*"\n',
+    );
+
+    const vue = emitYarnrc(answersFor({
+      target: 'astro',
+      hostedFramework: 'vue',
+    }));
+    expect(vue).not.toContain('"@astrojs/react@*"');
+  });
+
   it('discards no warning code on any target', () => {
-    const targets = [
+    const targets: TargetId[] = [
       'react',
       'angular',
       'react-native',
-    ] as const;
+    ];
 
     for (const target of targets) {
       const output = emitYarnrc(answersFor({ target }));

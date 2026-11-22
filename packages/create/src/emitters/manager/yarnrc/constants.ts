@@ -157,6 +157,14 @@ export const PEER_EXTENSIONS: Record<string, string> = {
       typescript-eslint:
         optional: true
 `,
+  // `@astrojs/react` and the renderer beneath it hand no vite to the `@vitejs/plugin-react` each depends on.
+  '@astrojs/react': `  "@astrojs/react@*":
+    peerDependencies:
+      vite: "*"
+  "@astrojs/react-renderer@*":
+    peerDependencies:
+      vite: "*"
+`,
   '@astrojs/check': `${WASM_RUNTIME}  "@astrojs/language-server@*":
     peerDependencies:
       typescript: "*"

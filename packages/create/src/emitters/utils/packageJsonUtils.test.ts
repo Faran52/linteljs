@@ -201,12 +201,16 @@ describe('pinned', () => {
   });
 });
 
+const MANAGERS = keysOf(MANAGER_FLOORS);
+
+const LIGHTNINGCSS_KEYS: [PackageManager, string[]][] = [
+  ['pnpm', ['@expo/metro-config>lightningcss', 'react-native-css>lightningcss']],
+  ['yarn', ['@expo/metro-config/lightningcss', 'react-native-css/lightningcss']],
+  ['bun', ['lightningcss']],
+];
+
 describe('buildOverrides', () => {
-  it.each([
-    ['pnpm', ['@expo/metro-config>lightningcss', 'react-native-css>lightningcss']],
-    ['yarn', ['@expo/metro-config/lightningcss', 'react-native-css/lightningcss']],
-    ['bun', ['lightningcss']],
-  ] as const)('pins lightningcss where NativeWind reads it for %s as %j', (packageManager, keys) => {
+  it.each(LIGHTNINGCSS_KEYS)('pins lightningcss where NativeWind reads it for %s as %j', (packageManager, keys) => {
     const overrides = buildOverrides(answersFor({
       target: 'react-native',
       styling: 'tailwind',
@@ -221,19 +225,14 @@ describe('buildOverrides', () => {
     expect(overrides).toEqual(expected);
   });
 
-  it.each([
-    ['npm', { '@astrojs/react': { '@vitejs/plugin-react': '6.1.1' } }],
-    ['pnpm', { '@astrojs/react>@vitejs/plugin-react': '6.1.1' }],
-    ['yarn', { '@astrojs/react/@vitejs/plugin-react': '6.1.1' }],
-    ['bun', { '@vitejs/plugin-react': '6.1.1' }],
-  ] as const)('holds the react plugin under `@astrojs/react` for %s', (packageManager, expected) => {
+  it.each(MANAGERS)('pins nothing for an Astro React island on %s', (packageManager) => {
     const overrides = buildOverrides(answersFor({
       target: 'astro',
       hostedFramework: 'react',
       packageManager,
     }));
 
-    expect(overrides).toEqual(expected);
+    expect(overrides).toEqual({});
   });
 
   it('nests the npm pin under each parent', () => {
@@ -546,7 +545,7 @@ describe('buildDevDependencies', () => {
   });
 
   it('names vite beside vitest for yarn only, since yarn installs no peers', () => {
-    const next = { target: 'next' } as const;
+    const next: Partial<Answers> = { target: 'next' };
 
     const yarn = buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }));
     expect(yarn).toHaveProperty('vite');
@@ -931,7 +930,6 @@ const PINNED_TIGHTER: Record<string, string> = {
   '@react-native-async-storage/async-storage': '',
   '@react-native/jest-preset': '',
   '@react-native/metro-config': '',
-  '@vitejs/plugin-react': '',
   'expo': '~',
   'expo-build-properties': '~',
   'expo-constants': '~',
@@ -943,6 +941,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'jest-expo': '~',
   'lightningcss': '',
   'nativewind': '',
+  'oxc-transform-react': '~',
   'react-native': '',
   'react-native-css': '',
   'react-native-gesture-handler': '~',
@@ -1073,7 +1072,11 @@ const configDependencies = (): [string, string][] => {
   const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
   const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
 
-  return Object.entries(devDependencies ?? {})
+  if (devDependencies === undefined) {
+    throw new Error(`${path} declares no devDependencies`);
+  }
+
+  return Object.entries(devDependencies)
     .filter(([, range]) => {
       return range !== 'catalog:';
     });

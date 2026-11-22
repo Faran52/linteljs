@@ -165,7 +165,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      // Less the build plugin, which `@astrojs/react` brings and `overrides` holds.
+      // Less the build plugin, which `@astrojs/react` brings.
       ...hosted?.devDependencies
         .filter((name) => {
           return name !== '@vitejs/plugin-react';
