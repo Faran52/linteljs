@@ -40,35 +40,35 @@ export const VITE_VUE_SUBJECTS: readonly Subject[] = [
     ],
   },
   {
-    base: 'vite-vue/home-view-styles/HomeView.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     groups: VUE_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
     variants: [
       {
-        options: { './store': 'store.libraries.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: 'vite-vue/store/libraries/styling/stylex/src/views/home/HomeView.styles.ts',
       },
       {
-        options: { './store': 'store.vue-reactivity.ts' },
+        options: { './store': 'store.ts' },
         shipped: 'vite-vue/store/vue-reactivity/styling/stylex/src/views/home/HomeView.styles.ts',
       },
     ],
   },
   {
-    base: 'vite-vue/home-view-css/HomeView.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     groups: VUE_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
     variants: [
       {
-        options: { './store': 'store.libraries.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: 'vite-vue/store/libraries/styling/css/src/views/home/HomeView.styles.ts',
       },
       {
-        options: { './store': 'store.vue-reactivity.ts' },
+        options: { './store': 'store.ts' },
         shipped: 'vite-vue/store/vue-reactivity/styling/css/src/views/home/HomeView.styles.ts',
       },
     ],

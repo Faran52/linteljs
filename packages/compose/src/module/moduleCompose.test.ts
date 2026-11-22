@@ -226,14 +226,14 @@ describe('moduleCompose, on the shipped home page', () => {
 });
 
 const SHEETS: [string, string][] = [
-  ['libraries', 'store/libraries'],
-  ['react-state', 'data/redux-free/store/react-state'],
+  ['store.counter.ts', 'store/libraries'],
+  ['store.ts', 'data/redux-free/store/react-state'],
 ];
 
 describe('moduleCompose, on the shipped home page style table', () => {
   it.each(SHEETS)('writes the shipped file for %s', (store, folder) => {
-    const base = readFixture('vite-react/home-page-styles/HomePage.styles.ts');
-    const storeOption = readFixture(`vite-react/home-page-styles/store.${store}.ts`);
+    const base = readFixture('shared/home-stylex/home.styles.ts');
+    const storeOption = readFixture(`shared/home-stylex/${store}`);
     const composed = moduleCompose({
       base,
       options: { './store': storeOption },
@@ -284,8 +284,8 @@ const REACT_COMPOSITIONS: Composition[] = [
   ...SHEETS
     .map(([store, folder]): Composition => {
       const composition: Composition = {
-        base: 'vite-react/home-page-styles/HomePage.styles.ts',
-        options: { './store': `vite-react/home-page-styles/store.${store}.ts` },
+        base: 'shared/home-stylex/home.styles.ts',
+        options: { './store': `shared/home-stylex/${store}` },
         expected: `vite-react/${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`,
         groups: GROUPS,
       };
@@ -555,39 +555,39 @@ const PAIRS: Pair[] = [
     ],
   },
   {
-    base: 'sveltekit/home-view-css/HomeView.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     specifier: './store',
     groups: groupsWith(SVELTE, []),
     options: [
-      ['store.runes.ts', `sveltekit/store/runes/styling/css/${HOME_VIEW_STYLES}`],
-      ['store.tanstack-store.ts', `sveltekit/store/tanstack-store/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.ts', `sveltekit/store/runes/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.counter.ts', `sveltekit/store/tanstack-store/styling/css/${HOME_VIEW_STYLES}`],
     ],
   },
   {
-    base: 'vite-vue/home-view-css/HomeView.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     specifier: './store',
     groups: groupsWith([VUE_GROUP], []),
     options: [
-      ['store.libraries.ts', `vite-vue/store/libraries/styling/css/${HOME_VIEW_STYLES}`],
-      ['store.vue-reactivity.ts', `vite-vue/store/vue-reactivity/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.counter.ts', `vite-vue/store/libraries/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.ts', `vite-vue/store/vue-reactivity/styling/css/${HOME_VIEW_STYLES}`],
     ],
   },
   {
-    base: 'vite-solid/home-page-css/HomePage.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     specifier: './store',
     groups: groupsWith(SOLID, []),
     options: [
-      ['store.signals.ts', `vite-solid/store/signals/styling/css/${HOME_PAGE_STYLES}`],
-      ['store.tanstack-store.ts', `vite-solid/store/tanstack-store/styling/css/${HOME_PAGE_STYLES}`],
+      ['store.ts', `vite-solid/store/signals/styling/css/${HOME_PAGE_STYLES}`],
+      ['store.counter.ts', `vite-solid/store/tanstack-store/styling/css/${HOME_PAGE_STYLES}`],
     ],
   },
   {
-    base: 'angular-cli/home-css/home.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     specifier: './store',
     groups: groupsWith(ANGULAR, []),
     options: [
-      ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts'],
-      ['store.signals.ts', 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts'],
+      ['store.counter.ts', 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts'],
+      ['store.ts', 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts'],
     ],
   },
 ];
@@ -595,39 +595,39 @@ const PAIRS: Pair[] = [
 // The single-question files whose options read the stylex sheets or tokens.
 const STYLEX_PAIRS: Pair[] = [
   {
-    base: 'sveltekit/home-view-styles/HomeView.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     specifier: './store',
     groups: groupsWith(SVELTE, []),
     options: [
-      ['store.runes.ts', `sveltekit/store/runes/styling/stylex/${HOME_VIEW_STYLES}`],
-      ['store.tanstack-store.ts', `sveltekit/store/tanstack-store/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.ts', `sveltekit/store/runes/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.counter.ts', `sveltekit/store/tanstack-store/styling/stylex/${HOME_VIEW_STYLES}`],
     ],
   },
   {
-    base: 'vite-vue/home-view-styles/HomeView.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     specifier: './store',
     groups: groupsWith([VUE_GROUP], []),
     options: [
-      ['store.libraries.ts', `vite-vue/store/libraries/styling/stylex/${HOME_VIEW_STYLES}`],
-      ['store.vue-reactivity.ts', `vite-vue/store/vue-reactivity/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.counter.ts', `vite-vue/store/libraries/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.ts', `vite-vue/store/vue-reactivity/styling/stylex/${HOME_VIEW_STYLES}`],
     ],
   },
   {
-    base: 'vite-solid/home-page-styles/HomePage.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     specifier: './store',
     groups: groupsWith(SOLID, []),
     options: [
-      ['store.signals.ts', `vite-solid/store/signals/styling/stylex/${HOME_PAGE_STYLES}`],
-      ['store.tanstack-store.ts', `vite-solid/store/tanstack-store/styling/stylex/${HOME_PAGE_STYLES}`],
+      ['store.ts', `vite-solid/store/signals/styling/stylex/${HOME_PAGE_STYLES}`],
+      ['store.counter.ts', `vite-solid/store/tanstack-store/styling/stylex/${HOME_PAGE_STYLES}`],
     ],
   },
   {
-    base: 'next/home-page-styles/page.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     specifier: './store',
     groups: groupsWith(REACT, []),
     options: [
-      ['store.libraries.ts', 'next/store/libraries/styling/stylex/src/app/page.styles.ts'],
-      ['store.react-state.ts', 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts'],
+      ['store.counter.ts', 'next/store/libraries/styling/stylex/src/app/page.styles.ts'],
+      ['store.ts', 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts'],
     ],
   },
   {
@@ -758,7 +758,7 @@ const READS_PLAIN_DATA = REACT_COMPOSITIONS
   .filter(({ options }) => {
     return Object.values(options)
       .some((name) => {
-        return name.includes('atomic') || name.endsWith('store.libraries.ts');
+        return name.includes('atomic') || name.endsWith('home-stylex/store.counter.ts');
       });
   });
 

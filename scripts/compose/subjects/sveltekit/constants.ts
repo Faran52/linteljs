@@ -36,35 +36,35 @@ export const SVELTEKIT_SUBJECTS: readonly Subject[] = [
     ],
   },
   {
-    base: 'sveltekit/home-view-styles/HomeView.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     groups: SVELTE_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
     variants: [
       {
-        options: { './store': 'store.runes.ts' },
+        options: { './store': 'store.ts' },
         shipped: 'sveltekit/store/runes/styling/stylex/src/views/home/HomeView.styles.ts',
       },
       {
-        options: { './store': 'store.tanstack-store.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: 'sveltekit/store/tanstack-store/styling/stylex/src/views/home/HomeView.styles.ts',
       },
     ],
   },
   {
-    base: 'sveltekit/home-view-css/HomeView.styles.ts',
+    base: 'shared/home-css/home.styles.ts',
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
     variants: [
       {
-        options: { './store': 'store.runes.ts' },
+        options: { './store': 'store.ts' },
         shipped: 'sveltekit/store/runes/styling/css/src/views/home/HomeView.styles.ts',
       },
       {
-        options: { './store': 'store.tanstack-store.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: 'sveltekit/store/tanstack-store/styling/css/src/views/home/HomeView.styles.ts',
       },
     ],

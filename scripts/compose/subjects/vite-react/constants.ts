@@ -81,18 +81,18 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     ],
   },
   {
-    base: 'vite-react/home-page-styles/HomePage.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     groups: VITE_REACT_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
     variants: [
       {
-        options: { './store': 'store.libraries.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: `${LIBRARIES_STORE}/${HOME_STYLES}`,
       },
       {
-        options: { './store': 'store.react-state.ts' },
+        options: { './store': 'store.ts' },
         shipped: `${REACT_STATE_STORE}/${HOME_STYLES}`,
       },
     ],

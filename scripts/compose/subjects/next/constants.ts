@@ -25,18 +25,18 @@ export const NEXT_SUBJECTS: readonly Subject[] = [
     ],
   },
   {
-    base: 'next/home-page-styles/page.styles.ts',
+    base: 'shared/home-stylex/home.styles.ts',
     groups: REACT_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
     variants: [
       {
-        options: { './store': 'store.libraries.ts' },
+        options: { './store': 'store.counter.ts' },
         shipped: 'next/store/libraries/styling/stylex/src/app/page.styles.ts',
       },
       {
-        options: { './store': 'store.react-state.ts' },
+        options: { './store': 'store.ts' },
         shipped: 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts',
       },
     ],
