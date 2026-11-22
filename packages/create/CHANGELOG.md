@@ -376,6 +376,11 @@ when a version's change lives in a sibling it is described there instead:
 - An Astro React island installs under every manager. `@vitejs/plugin-react` is no longer a direct dependency there:
   `@astrojs/react` brings its own, and on yarn a package extension has `@astrojs/react` and its renderer peer vite,
   so they hand the project's vite to it.
+- On yarn an Astro React island lists `vite` itself, whatever the test runner, so the package extensions above
+  have a vite to hand on.
+- A yarn monorepo's `.yarnrc.yml` carries every project's package extensions, not only the first project's. A Vue
+  app beside a React one installed with two `YN0002` warnings (`@vue/compiler-dom`, `globals`) that a Vue app on
+  its own never printed.
 - **The commit gate reads a check run as written.** `CI=1 pnpm check` and `cd <dir> && FOO=a pnpm run check
   > /tmp/check.log 2>&1` count; an assignment whose value is computed (`CI="$()" pnpm check`), an
   assignment chained before the check (`CI=1; pnpm check`) and a wrapper (`env`, `time`) no longer do.

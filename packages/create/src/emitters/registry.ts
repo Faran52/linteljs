@@ -81,7 +81,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'testing/vitest-config': vitestConfigEmitter,
   'testing/jest-config': jestConfigEmitter,
   'testing/test-setup': testSetupEmitter,
-  'manager/yarnrc': yarnrcEmitter,
   'manager/bunfig': bunfigEmitter,
 };
 
@@ -99,6 +98,7 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
 // Written once at the git root from every project, so no project emits them twice.
 export const ROOT_EMITTERS: Record<string, RootEmitter> = {
   'manager/pnpm-workspace': pnpmWorkspaceEmitter,
+  'manager/yarnrc': yarnrcEmitter,
   'layout/workspace-root': workspaceRootEmitter,
   'always/linteljs-plugin': linteljsPluginEmitter,
   'agents/copilot-instructions': copilotInstructionsEmitter,

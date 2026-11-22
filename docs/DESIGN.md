@@ -807,7 +807,7 @@ npm emits no `.npmrc`: a peer conflict must fail the install rather than be chos
 otherwise picks one that clashes with Expo's React. Yarn needs `nodeLinker: node-modules`, since PnP breaks the
 ESLint TypeScript resolver.
 
-`.yarnrc.yml` is emitted, so its `packageExtensions` follow what a project installs, and it answers a peer with
+`.yarnrc.yml` is emitted, so its `packageExtensions` follow what a project installs (in a monorepo, what every project installs: the root file is the only one yarn reads), and it answers a peer with
 `packageExtensions`, never `logFilters`. A peer supplied by a tree the project does not own is marked optional on
 the asker. `postcss-html` on `postcss` is answered by supplying it: stylelint 17 dropped its own, and marking it
 optional leaves YN0002 printing. A blanket `YN0002`/`YN0060` discard would also blind the suite's no-warnings

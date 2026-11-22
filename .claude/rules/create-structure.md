@@ -81,7 +81,7 @@ in `src/` imports it.
 - `<group>/<subject>/<subjectEmitter>.ts`: the subject directory is named for the file it writes, the group for
   the answer that decides whether it writes anything (`agents/`, `manager/`, `target/`, `testing/`,
   `libraries/`, `typesafety/`, and `always/` for none). `layout/workspace-root/` writes a monorepo's root manifest and tooling. `ROOT_EMITTERS` holds what
-  writes once for the workspace, past the move `inProject` makes: `pnpm-workspace`, `workspace-root`,
+  writes once for the workspace, past the move `inProject` makes: `pnpm-workspace`, `yarnrc`, `workspace-root`,
   `linteljs-plugin` and the agent rule and adapter subjects.
 - Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a branchless `flatMap`
   over `registry.ts`. `meta.test.ts` reads its source to hold that, and holds the registry's `<group>/<subject>`

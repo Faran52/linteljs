@@ -1,3 +1,4 @@
+import { hostedAnswersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -6,6 +7,8 @@ import {
 
 import { DEFAULT_ANSWERS } from '@answers';
 
+import { workspaceOf } from '../../utils/layoutUtils';
+
 import { AGE_GATE, HEAD } from './constants';
 import { emitYarnrc, yarnrcEmitter } from './yarnrcEmitter';
 
@@ -13,12 +16,14 @@ import type {
   Answers,
   Data,
   Form,
+  HostedAnswers,
   HostedFramework,
   Library,
   Router,
   Styling,
   TargetId,
   Testing,
+  Workspace,
 } from '@config/types';
 
 interface AnswerOverrides {
@@ -248,9 +253,29 @@ describe('emitYarnrc', () => {
 });
 
 describe('yarnrcEmitter', () => {
+  const workspaceFor = (first: HostedAnswers, ...rest: HostedAnswers[]): Workspace => {
+    const others = rest
+      .map((answers) => {
+        const project = {
+          name: 'site',
+          answers,
+        };
+
+        return project;
+      });
+    const workspace = workspaceOf('demo-app', [{
+      name: 'demo-app',
+      answers: first,
+    }, ...others]);
+
+    return workspace;
+  };
+
   it('writes the yarnrc for berry and nothing for any other manager', () => {
-    const berryArtifacts = yarnrcEmitter(answersFor({}));
-    const text = emitYarnrc(answersFor({}));
+    const answers = hostedAnswersFor({ packageManager: 'yarn' });
+    const berry = workspaceFor(answers);
+    const berryArtifacts = yarnrcEmitter(berry);
+    const text = emitYarnrc(answers);
     const expected = [{
       stage: 'package',
       target: '.yarnrc.yml',
@@ -258,11 +283,37 @@ describe('yarnrcEmitter', () => {
     }];
     expect(berryArtifacts).toEqual(expected);
 
-    const artifacts = yarnrcEmitter({
-      ...DEFAULT_ANSWERS,
-      packageManager: 'npm',
-    });
+    const npm = workspaceFor(hostedAnswersFor({ packageManager: 'npm' }));
+    const artifacts = yarnrcEmitter(npm);
 
     expect(artifacts).toEqual([]);
+  });
+
+  it('carries every project\'s extensions in a monorepo, each once', () => {
+    const react = hostedAnswersFor({
+      packageManager: 'yarn',
+      target: 'react',
+    });
+    const vue = hostedAnswersFor({
+      packageManager: 'yarn',
+      target: 'vue',
+    });
+    const reactOnly = emitYarnrc(react);
+    const both = emitYarnrc(react, vue);
+    const artifacts = yarnrcEmitter(workspaceFor(react, vue));
+    const expected = [{
+      stage: 'package',
+      target: '.yarnrc.yml',
+      content: { text: both },
+    }];
+    const commitlintBlocks = both
+      .split('"@commitlint/cli@*":')
+      .length - 1;
+
+    expect(reactOnly).not.toContain('@vue/test-utils');
+    expect(both).toContain('  "@vue/test-utils@*":\n');
+    expect(both).toContain('  "eslint-plugin-vuejs-accessibility@*":\n');
+    expect(commitlintBlocks).toBe(1);
+    expect(artifacts).toEqual(expected);
   });
 });
