@@ -9,7 +9,7 @@ export const EXPO_SUBJECTS: readonly Subject[] = [
     shell: 'expo',
     path: 'src/app-layout.test.tsx',
     base: 'expo/app-layout/app-layout.test.tsx',
-    parameters: { './styling': { question: 'styling' } },
+    parameters: { './styling': { question: 'styling', files: { css: 'styling.ts' } } },
     groups: EXPO_GROUPS,
     plainData: [],
     pureCalls: [],

@@ -42,14 +42,14 @@ const optionFile = (
   value: string,
   sourceNames: readonly string[],
 ): string => {
-  if (parameter.files !== undefined) {
-    const file = parameter.files[value];
+  const mapped = parameter.files?.[value];
 
-    if (file === undefined || !sourceNames.includes(file)) {
+  if (mapped !== undefined) {
+    if (!sourceNames.includes(mapped)) {
       throw new Error(`${shipped}: no option file for ${specifier} at ${parameter.question} ${value}`);
     }
 
-    return file;
+    return mapped;
   }
 
   const stem = `${basename(specifier)}.${value}`;

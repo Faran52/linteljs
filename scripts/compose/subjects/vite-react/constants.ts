@@ -13,7 +13,7 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     path: 'src/components/features/app-header/AppHeader.tsx',
     base: 'vite-react/app-header/AppHeader.tsx',
     parameters: {
-      './router': { question: 'router' },
+      './router': { question: 'router', files: { 'react-routers': 'router.tsx' } },
       './styling': { question: 'styling' },
     },
     groups: VITE_REACT_GROUPS,
@@ -26,7 +26,7 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     path: 'src/pages/home/HomePage.tsx',
     base: 'vite-react/home-page/HomePage.tsx',
     parameters: {
-      './store': { question: 'store' },
+      './store': { question: 'store', files: { 'react-state': 'store.tsx' } },
       './styling': { question: 'styling' },
     },
     groups: VITE_REACT_GROUPS,

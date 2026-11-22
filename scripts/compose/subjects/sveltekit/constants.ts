@@ -23,7 +23,7 @@ export const SVELTEKIT_SUBJECTS: readonly Subject[] = [
     shell: 'sveltekit',
     path: 'src/routes/page.test.ts',
     base: 'sveltekit/routes/page.test.ts',
-    parameters: { './store': { question: 'store' } },
+    parameters: { './store': { question: 'store', files: { runes: 'store.ts' } } },
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],

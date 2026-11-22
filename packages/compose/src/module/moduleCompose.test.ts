@@ -148,6 +148,15 @@ const PLAIN_DATA = ['./*.styles', '@styles/tokens.stylex'];
 // The modules whose functions the fixtures call, the stylex sheets.
 const PURE_CALLS = ['./*.styles'];
 
+// The default value's option is the default module itself.
+const routerFile = (router: string): string => {
+  return router === 'react-routers' ? 'router.tsx' : `router.${router}.tsx`;
+};
+
+const storeFile = (store: string): string => {
+  return store === 'react-state' ? 'store.tsx' : `store.${store}.tsx`;
+};
+
 const HEADERS: [string, string][] = [
   ['react-routers', 'atomic'],
   ['react-routers', 'css'],
@@ -160,7 +169,7 @@ const HEADERS: [string, string][] = [
 describe('moduleCompose, on the shipped app header', () => {
   it.each(HEADERS)('writes the shipped file for %s with %s', (router, styling) => {
     const base = readFixture('vite-react/app-header/AppHeader.tsx');
-    const routerOption = readFixture(`vite-react/app-header/router.${router}.tsx`);
+    const routerOption = readFixture(`vite-react/app-header/${routerFile(router)}`);
     const stylingOption = readFixture(`vite-react/app-header/styling.${styling}.ts`);
     const composed = moduleCompose({
       base,
@@ -206,7 +215,7 @@ const HOMES: [string, string, string][] = [
 describe('moduleCompose, on the shipped home page', () => {
   it.each(HOMES)('writes the shipped file for %s with %s', (store, styling, folder) => {
     const base = readFixture('vite-react/home-page/HomePage.tsx');
-    const storeOption = readFixture(`vite-react/home-page/store.${store}.tsx`);
+    const storeOption = readFixture(`vite-react/home-page/${storeFile(store)}`);
     const stylingOption = readFixture(`vite-react/home-page/styling.${styling}.ts`);
     const composed = moduleCompose({
       base,
@@ -254,7 +263,7 @@ const REACT_COMPOSITIONS: Composition[] = [
       const composition: Composition = {
         base: 'vite-react/app-header/AppHeader.tsx',
         options: {
-          './router': `vite-react/app-header/router.${router}.tsx`,
+          './router': `vite-react/app-header/${routerFile(router)}`,
           './styling': `vite-react/app-header/styling.${styling}.ts`,
         },
         expected: `vite-react/router/${router}/styling/${styling}/src/components/features/app-header/AppHeader.tsx`,
@@ -272,7 +281,7 @@ const REACT_COMPOSITIONS: Composition[] = [
       const composition: Composition = {
         base: 'vite-react/home-page/HomePage.tsx',
         options: {
-          './store': `vite-react/home-page/store.${store}.tsx`,
+          './store': `vite-react/home-page/${storeFile(store)}`,
           './styling': `vite-react/home-page/styling.${styling}.ts`,
         },
         expected: `vite-react/${folder}/styling/${styling}/src/pages/home/HomePage.tsx`,
@@ -462,7 +471,7 @@ const PAIRS: Pair[] = [
     groups: groupsWith(ANGULAR, []),
     options: [
       ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/testing/vitest/src/app/home/home.spec.ts'],
-      ['store.signals.ts', 'angular-cli/store/signals/testing/vitest/src/app/home/home.spec.ts'],
+      ['store.ts', 'angular-cli/store/signals/testing/vitest/src/app/home/home.spec.ts'],
     ],
   },
   {
@@ -479,7 +488,7 @@ const PAIRS: Pair[] = [
     specifier: './store',
     groups: groupsWith(SVELTE, []),
     options: [
-      ['store.runes.ts', 'sveltekit/store/runes/testing/vitest/src/routes/page.test.ts'],
+      ['store.ts', 'sveltekit/store/runes/testing/vitest/src/routes/page.test.ts'],
       ['store.tanstack-store.ts', 'sveltekit/store/tanstack-store/testing/vitest/src/routes/page.test.ts'],
     ],
   },
@@ -488,7 +497,7 @@ const PAIRS: Pair[] = [
     specifier: './store',
     groups: groupsWith(SOLID, []),
     options: [
-      ['store.signals.tsx', 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx'],
+      ['store.tsx', 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx'],
       ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/testing/vitest/src/pages/home/HomePage.test.tsx'],
     ],
   },
@@ -506,7 +515,7 @@ const PAIRS: Pair[] = [
     specifier: './styling',
     groups: groupsWith(REACT, [aliasGroup('@')]),
     options: [
-      ['styling.css.ts', 'expo/testing/jest/styling/css/src/app-layout.test.tsx'],
+      ['styling.ts', 'expo/testing/jest/styling/css/src/app-layout.test.tsx'],
       ['styling.tailwind.ts', 'expo/testing/jest/styling/tailwind/src/app-layout.test.tsx'],
     ],
   },
@@ -561,7 +570,7 @@ const PAIRS: Pair[] = [
     specifier: './store',
     groups: groupsWith(SOLID, []),
     options: [
-      ['store.signals.tsx', 'vite-solid/store/signals/src/pages/home/HomePage.tsx'],
+      ['store.tsx', 'vite-solid/store/signals/src/pages/home/HomePage.tsx'],
       ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/src/pages/home/HomePage.tsx'],
     ],
   },
@@ -778,7 +787,7 @@ const CALLS_TAB = REACT_COMPOSITIONS
   .filter(({ options }) => {
     const isAtomic = options['./styling'] === 'vite-react/app-header/styling.atomic.ts';
 
-    return isAtomic && options['./router'] !== 'vite-react/app-header/router.react-routers.tsx';
+    return isAtomic && options['./router'] !== 'vite-react/app-header/router.tsx';
   });
 
 const READ_REFUSAL = /is not shown to be a plain property, so reading it may run code: give the engine/u;
