@@ -4,6 +4,8 @@ import {
   MOCKING_BASE,
   MSW_MOCKING,
   SOLID_GROUPS,
+  STYLEX_PLAIN_DATA,
+  STYLEX_PURE_CALLS,
 } from '../constants.ts';
 
 import type { Subject } from '../../utils/composeUtils.ts';
@@ -46,6 +48,40 @@ export const VITE_SOLID_SUBJECTS: readonly Subject[] = [
     variants: [
       { options: { './store': 'store.signals.tsx' }, shipped: `${SOLID}/signals/${SOLID_PAGE}` },
       { options: { './store': 'store.tanstack-store.tsx' }, shipped: `${SOLID}/tanstack-store/${SOLID_PAGE}` },
+    ],
+  },
+  {
+    base: 'vite-solid/home-page-styles/HomePage.styles.ts',
+    groups: SOLID_GROUPS,
+    plainData: STYLEX_PLAIN_DATA,
+    pureCalls: STYLEX_PURE_CALLS,
+    modules: {},
+    variants: [
+      {
+        options: { './store': 'store.signals.ts' },
+        shipped: 'vite-solid/store/signals/styling/stylex/src/pages/home/HomePage.styles.ts',
+      },
+      {
+        options: { './store': 'store.tanstack-store.ts' },
+        shipped: 'vite-solid/store/tanstack-store/styling/stylex/src/pages/home/HomePage.styles.ts',
+      },
+    ],
+  },
+  {
+    base: 'vite-solid/home-page-css/HomePage.styles.ts',
+    groups: SOLID_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+    variants: [
+      {
+        options: { './store': 'store.signals.ts' },
+        shipped: 'vite-solid/store/signals/styling/css/src/pages/home/HomePage.styles.ts',
+      },
+      {
+        options: { './store': 'store.tanstack-store.ts' },
+        shipped: 'vite-solid/store/tanstack-store/styling/css/src/pages/home/HomePage.styles.ts',
+      },
     ],
   },
 ];

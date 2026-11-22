@@ -41,4 +41,21 @@ export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
       },
     ],
   },
+  {
+    base: 'angular-cli/home-css/home.styles.ts',
+    groups: ANGULAR_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+    variants: [
+      {
+        options: { './store': 'store.ngrx-signals.ts' },
+        shipped: 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts',
+      },
+      {
+        options: { './store': 'store.signals.ts' },
+        shipped: 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts',
+      },
+    ],
+  },
 ];

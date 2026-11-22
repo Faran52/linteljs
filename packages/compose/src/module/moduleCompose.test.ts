@@ -401,6 +401,10 @@ const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalle
 
 const DEVTOOLS = 'surfaces/devtools-panel/src/devtools/devtools.ts';
 
+const HOME_VIEW_STYLES = 'src/views/home/HomeView.styles.ts';
+
+const HOME_PAGE_STYLES = 'src/pages/home/HomePage.styles.ts';
+
 // The five shells whose contact suite is one file, by where each keeps the mocking option.
 const CONTACT_SHELLS: [string, string[][]][] = [
   ['astro/form/libraries', []],
@@ -550,35 +554,137 @@ const PAIRS: Pair[] = [
       ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/src/pages/home/HomePage.tsx'],
     ],
   },
+  {
+    base: 'sveltekit/home-view-css/HomeView.styles.ts',
+    specifier: './store',
+    groups: groupsWith(SVELTE, []),
+    options: [
+      ['store.runes.ts', `sveltekit/store/runes/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.tanstack-store.ts', `sveltekit/store/tanstack-store/styling/css/${HOME_VIEW_STYLES}`],
+    ],
+  },
+  {
+    base: 'vite-vue/home-view-css/HomeView.styles.ts',
+    specifier: './store',
+    groups: groupsWith([VUE_GROUP], []),
+    options: [
+      ['store.libraries.ts', `vite-vue/store/libraries/styling/css/${HOME_VIEW_STYLES}`],
+      ['store.vue-reactivity.ts', `vite-vue/store/vue-reactivity/styling/css/${HOME_VIEW_STYLES}`],
+    ],
+  },
+  {
+    base: 'vite-solid/home-page-css/HomePage.styles.ts',
+    specifier: './store',
+    groups: groupsWith(SOLID, []),
+    options: [
+      ['store.signals.ts', `vite-solid/store/signals/styling/css/${HOME_PAGE_STYLES}`],
+      ['store.tanstack-store.ts', `vite-solid/store/tanstack-store/styling/css/${HOME_PAGE_STYLES}`],
+    ],
+  },
+  {
+    base: 'angular-cli/home-css/home.styles.ts',
+    specifier: './store',
+    groups: groupsWith(ANGULAR, []),
+    options: [
+      ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts'],
+      ['store.signals.ts', 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts'],
+    ],
+  },
 ];
 
-const PAIR_COMPOSITIONS = PAIRS
-  .flatMap(({
-    base,
-    specifier,
-    groups,
-    options,
-  }) => {
-    const folder = base.slice(0, base.lastIndexOf('/') + 1);
+// The single-question files whose options read the stylex sheets or tokens.
+const STYLEX_PAIRS: Pair[] = [
+  {
+    base: 'sveltekit/home-view-styles/HomeView.styles.ts',
+    specifier: './store',
+    groups: groupsWith(SVELTE, []),
+    options: [
+      ['store.runes.ts', `sveltekit/store/runes/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.tanstack-store.ts', `sveltekit/store/tanstack-store/styling/stylex/${HOME_VIEW_STYLES}`],
+    ],
+  },
+  {
+    base: 'vite-vue/home-view-styles/HomeView.styles.ts',
+    specifier: './store',
+    groups: groupsWith([VUE_GROUP], []),
+    options: [
+      ['store.libraries.ts', `vite-vue/store/libraries/styling/stylex/${HOME_VIEW_STYLES}`],
+      ['store.vue-reactivity.ts', `vite-vue/store/vue-reactivity/styling/stylex/${HOME_VIEW_STYLES}`],
+    ],
+  },
+  {
+    base: 'vite-solid/home-page-styles/HomePage.styles.ts',
+    specifier: './store',
+    groups: groupsWith(SOLID, []),
+    options: [
+      ['store.signals.ts', `vite-solid/store/signals/styling/stylex/${HOME_PAGE_STYLES}`],
+      ['store.tanstack-store.ts', `vite-solid/store/tanstack-store/styling/stylex/${HOME_PAGE_STYLES}`],
+    ],
+  },
+  {
+    base: 'next/home-page-styles/page.styles.ts',
+    specifier: './store',
+    groups: groupsWith(REACT, []),
+    options: [
+      ['store.libraries.ts', 'next/store/libraries/styling/stylex/src/app/page.styles.ts'],
+      ['store.react-state.ts', 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts'],
+    ],
+  },
+  {
+    base: 'next/page/page.tsx',
+    specifier: './store',
+    groups: groupsWith(REACT, []),
+    options: [
+      ['store.libraries.tsx', 'next/store/libraries/styling/atomic/src/app/page.tsx'],
+      ['store.react-state.tsx', 'next/data/redux-free/store/react-state/styling/atomic/src/app/page.tsx'],
+    ],
+  },
+];
 
-    return options
-      .map(([option, expected]): Composition => {
-        const composition: Composition = {
-          base,
-          options: { [specifier]: folder + option },
-          expected,
-          groups,
-        };
+const compositionsOf = (pairs: Pair[]): Composition[] => {
+  return pairs
+    .flatMap(({
+      base,
+      specifier,
+      groups,
+      options,
+    }) => {
+      const folder = base.slice(0, base.lastIndexOf('/') + 1);
 
-        return composition;
-      });
-  });
+      return options
+        .map(([option, expected]): Composition => {
+          const composition: Composition = {
+            base,
+            options: { [specifier]: folder + option },
+            expected,
+            groups,
+          };
 
-const COMPOSITIONS = [...REACT_COMPOSITIONS, ...PAIR_COMPOSITIONS];
+          return composition;
+        });
+    });
+};
+
+const PAIR_COMPOSITIONS = compositionsOf(PAIRS);
+
+const STYLEX_COMPOSITIONS = compositionsOf(STYLEX_PAIRS);
+
+const COMPOSITIONS = [
+  ...REACT_COMPOSITIONS,
+  ...PAIR_COMPOSITIONS,
+  ...STYLEX_COMPOSITIONS,
+];
 
 describe('moduleCompose, on the shipped single-question files', () => {
   it.each(PAIR_COMPOSITIONS)('writes $expected', (composition) => {
     const composed = composedFrom(composition, [], []);
+    const shipped = readShipped(composition.expected);
+
+    expect(composed).toBe(shipped);
+  });
+
+  it.each(STYLEX_COMPOSITIONS)('writes $expected, trusting the stylex sheets and tokens', (composition) => {
+    const composed = composedFrom(composition, PLAIN_DATA, PURE_CALLS);
     const shipped = readShipped(composition.expected);
 
     expect(composed).toBe(shipped);
