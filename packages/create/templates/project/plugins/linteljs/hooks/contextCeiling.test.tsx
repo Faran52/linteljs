@@ -1,7 +1,6 @@
 import {
   type Engine,
   expect,
-  mock,
   test,
 } from 'claude-code/testing';
 
@@ -18,7 +17,7 @@ interface World {
   prompt: number | null;
   toasts: string[];
   ran: number;
-  failing?: 'agent.list' | 'ui.toast';
+  failing?: 'agent.list' | 'env.get' | 'ui.toast';
   // What the tool answers; a plain run when not given.
   answer?: ToolCallResult;
 }
@@ -65,6 +64,8 @@ const REFUSAL = 'Context is 2K, past the 2K ceiling, and no tool calls are left,
 const WRAP_UP = 'Context is 2K, past the 2K ceiling. 1 tool call left, only to commit work that passes the check '
   + 'and update your resume note; then every call is refused. Start no new work.';
 
+const FAILED = 'The context ceiling guard failed, so this call is refused. Return your report.';
+
 const LAST_CALL = 'Context is 2K, past the 2K ceiling, and that was your last tool call: return your report.';
 
 const TOLD = 'Subagent Port the ceiling passed 2K (2K); it has 2 tool calls to wrap up, then its tool calls are '
@@ -86,8 +87,6 @@ const usageOf = (tokens: number): TurnStepResult['usage'] => {
 // The model, the tools, the agent list, the toasts and an env that sets no limit beneath the plugin; each tool call
 // that reaches them counts.
 const fakeWorld = (on: On, env: Readonly<Record<string, string>> = {}): World => {
-  mock.env(on, env);
-
   const world: World = {
     prompt: 0,
     toasts: [],
@@ -124,6 +123,16 @@ const fakeWorld = (on: On, env: Readonly<Record<string, string>> = {}): World =>
     const ran = { result: 'done' };
 
     return world.answer ?? ran;
+  });
+
+  on('env.get', (_, e) => {
+    if (world.failing === 'env.get') {
+      throw new Error('no env');
+    }
+
+    const read = { value: env[e.name] };
+
+    return read;
   });
 
   on('agent.list', () => {
@@ -356,7 +365,26 @@ test('refuses the call when the guard fails before it ran', LIMITS, async ($, on
   await step($, world, 2000, AGENT);
   const result = await call($, AGENT);
 
-  expect(result.deny).toBe('The context ceiling guard failed, so this call is refused. Return your report.');
+  expect(result.deny).toBe(FAILED);
+  expect(world.ran).toBe(0);
+});
+
+test('passes the main session\'s call on when the guard fails before it ran', LIMITS, async ($, on) => {
+  const world = fakeWorld(on);
+  world.failing = 'env.get';
+  const result = await call($);
+
+  expect(result.deny).toBeUndefined();
+  expect(world.ran).toBe(1);
+});
+
+test('refuses a subagent\'s call when the guard fails before it ran, whatever its context', LIMITS, async ($, on) => {
+  const world = fakeWorld(on);
+  world.failing = 'env.get';
+  await step($, world, 10, AGENT);
+  const result = await call($, AGENT);
+
+  expect(result.deny).toBe(FAILED);
   expect(world.ran).toBe(0);
 });
 

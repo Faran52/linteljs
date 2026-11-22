@@ -237,9 +237,10 @@ export const registerContextCeiling = (on: On, options: PluginOptions): void => 
   on('tool.call', ($, e, next) => {
     return judge($, e, next, limits);
   })
+    // A failed guard refuses a subagent's call, never the main session's, which would lock the user out.
     .catch(($, e, next) => {
       const failed = { deny: FAILED };
 
-      return next.called ? next(e) : failed;
+      return next.called || e.agentId === undefined ? next(e) : failed;
     });
 };

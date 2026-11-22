@@ -966,7 +966,8 @@ mod reads each loop's prompt size from its `turn.step` usage (input plus cache r
 `tool.call` warns a subagent once past `context_warn_tokens`; past `context_ceiling_tokens` it runs
 `context_wrap_up_calls` more calls (10 by default), each told how many are left and that they are for committing
 passing work and the resume note, since a refusal at once also refused that commit, then refuses every call before
-it runs (a guard with `.catch`, so a failed guard refuses too). The user is told once when a subagent or the main
+it runs (a guard with `.catch`: a failed guard refuses a subagent's call too, and passes the main session's on, since
+refusing it would lock the user out of their own session). The user is told once when a subagent or the main
 session passes the ceiling; dropping back under clears each and resets the count, kept in `linteljs.context`. A task's `tokenCount` sums all its output, so it is not read. A
 plugin names one hooks module, so `register.tsx` registers the check band and the ceiling. The limits are plugin
 options, which Claude Code reads from user settings alone (a project's entries are ignored), so they are the
