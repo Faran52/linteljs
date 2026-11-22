@@ -361,9 +361,9 @@ const isVouched = (walk: Walk, call: ts.CallExpression): boolean => {
 const enteredOf = (context: Context, call: ts.CallExpression): Entered | undefined => {
   const walk = readWalkOf(context);
   const origin = nameOrigin(textOf(call.expression));
-  const { fault, values } = reach(walk, call.expression, [], origin);
+  const { values } = reach(walk, call.expression, [], origin);
   const [value, ...more] = values.map(unwrapped);
-  const isOne = fault === undefined && more.length === 0;
+  const isOne = more.length === 0;
   const arrow = isOne && value !== undefined && ts.isArrowFunction(value) ? value : undefined;
   const options = [...context.proof.sources.modules.values()];
   const file = arrow?.getSourceFile();
@@ -593,9 +593,9 @@ const isPrimitiveValue = (context: Context, value: ts.Expression, checking: Set<
 const isEveryValue = (context: Context, operand: ts.Expression, test: (value: ts.Expression) => boolean): boolean => {
   const walk = readWalkOf(context);
   const origin = nameOrigin(textOf(operand));
-  const { fault, values } = reach(walk, operand, [], origin);
+  const { values } = reach(walk, operand, [], origin);
 
-  return fault === undefined && values.length > 0 && values.every(test);
+  return values.length > 0 && values.every(test);
 };
 
 // Whether every value an operand can hold is proven a primitive, so converting it runs nothing.
