@@ -106,6 +106,15 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     peerDependencies:
       vue: "*"
 `,
+  // `@nuxt/test-utils` hands no vite to `@nuxt/devtools-kit`, and its own environment hands it neither vite nor vue.
+  '@nuxt/test-utils': `  "@nuxt/test-utils@*":
+    peerDependencies:
+      vite: "*"
+  "vitest-environment-nuxt@*":
+    peerDependencies:
+      vite: "*"
+      vue: "*"
+`,
   // stylelint 17 omits postcss, so nothing declares one. Optional leaves YN0002 printing; docs/DESIGN.md has why.
   'postcss-html': `  "postcss-html@*":
     dependencies:

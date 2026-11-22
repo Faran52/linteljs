@@ -17,6 +17,7 @@ import type {
   Router,
   Styling,
   TargetId,
+  Testing,
 } from '@config/types';
 
 interface AnswerOverrides {
@@ -26,6 +27,7 @@ interface AnswerOverrides {
   form?: Form;
   styling?: Styling;
   data?: Data;
+  testing?: Testing;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -135,6 +137,21 @@ describe('emitYarnrc', () => {
       + '  "@nuxt/devtools@*":\n    peerDependencies:\n      vue: "*"\n',
     );
 
+    const tested = emitYarnrc(answersFor({
+      target: 'nuxt',
+      testing: 'vitest',
+    }));
+
+    expect(tested).toContain(
+      '  "@nuxt/test-utils@*":\n    peerDependencies:\n      vite: "*"\n'
+      + '  "vitest-environment-nuxt@*":\n    peerDependencies:\n      vite: "*"\n      vue: "*"\n',
+    );
+
+    const untested = emitYarnrc(answersFor({
+      target: 'nuxt',
+      testing: 'none',
+    }));
+    expect(untested).not.toContain('"@nuxt/test-utils@*"');
     const vue = emitYarnrc(answersFor({ target: 'vue' }));
     expect(vue).not.toContain('"nuxt@*"');
     const plain = emitYarnrc(answersFor({}));
