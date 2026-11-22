@@ -8,54 +8,40 @@ import type { Subject } from '../../utils/composeUtils.ts';
 
 export const NEXT_SUBJECTS: readonly Subject[] = [
   {
+    shell: 'next',
+    path: 'src/app/page.test.tsx',
     base: 'next/home-page/page.test.tsx',
+    parameters: { './store': { question: 'store' } },
     groups: REACT_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.libraries.tsx' },
-        shipped: 'next/store/libraries/testing/vitest/src/app/page.test.tsx',
-      },
-      {
-        options: { './store': 'store.react-state.tsx' },
-        shipped: 'next/data/redux-free/store/react-state/testing/vitest/src/app/page.test.tsx',
-      },
-    ],
   },
   {
+    shell: 'next',
+    path: 'src/app/page.styles.ts',
+    where: { styling: 'stylex' },
     base: 'shared/home-stylex/home.styles.ts',
+    parameters: {
+      './store': {
+        question: 'store',
+        files: { 'libraries': 'store.counter.ts', 'react-state': 'store.ts' },
+      },
+    },
     groups: REACT_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.counter.ts' },
-        shipped: 'next/store/libraries/styling/stylex/src/app/page.styles.ts',
-      },
-      {
-        options: { './store': 'store.ts' },
-        shipped: 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts',
-      },
-    ],
   },
   {
+    shell: 'next',
+    path: 'src/app/page.tsx',
+    where: { styling: 'atomic' },
     base: 'next/page/page.tsx',
+    parameters: { './store': { question: 'store' } },
     groups: REACT_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.libraries.tsx' },
-        shipped: 'next/store/libraries/styling/atomic/src/app/page.tsx',
-      },
-      {
-        options: { './store': 'store.react-state.tsx' },
-        shipped: 'next/data/redux-free/store/react-state/styling/atomic/src/app/page.tsx',
-      },
-    ],
   },
 ];

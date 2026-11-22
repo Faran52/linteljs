@@ -1,8 +1,6 @@
 import {
   CONTACT,
-  LOCAL_MOCKING,
   MOCKING_BASE,
-  MSW_MOCKING,
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
   SVELTE_GROUPS,
@@ -10,63 +8,57 @@ import {
 
 import type { Subject } from '../../utils/composeUtils.ts';
 
-const SVELTE_TEST = 'testing/vitest/src/routes/page.test.ts';
-
 export const SVELTEKIT_SUBJECTS: readonly Subject[] = [
   {
+    shell: 'sveltekit',
+    path: CONTACT,
     base: MOCKING_BASE,
+    parameters: { './mocking': { question: 'mocking' } },
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      { options: LOCAL_MOCKING, shipped: `sveltekit/form/tanstack-form/mocking/local/${CONTACT}` },
-      { options: MSW_MOCKING, shipped: `sveltekit/form/tanstack-form/mocking/msw/${CONTACT}` },
-    ],
   },
   {
+    shell: 'sveltekit',
+    path: 'src/routes/page.test.ts',
     base: 'sveltekit/routes/page.test.ts',
+    parameters: { './store': { question: 'store' } },
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      { options: { './store': 'store.runes.ts' }, shipped: `sveltekit/store/runes/${SVELTE_TEST}` },
-      { options: { './store': 'store.tanstack-store.ts' }, shipped: `sveltekit/store/tanstack-store/${SVELTE_TEST}` },
-    ],
   },
   {
+    shell: 'sveltekit',
+    path: 'src/views/home/HomeView.styles.ts',
+    where: { styling: 'stylex' },
     base: 'shared/home-stylex/home.styles.ts',
+    parameters: {
+      './store': {
+        question: 'store',
+        files: { 'runes': 'store.ts', 'tanstack-store': 'store.counter.ts' },
+      },
+    },
     groups: SVELTE_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.ts' },
-        shipped: 'sveltekit/store/runes/styling/stylex/src/views/home/HomeView.styles.ts',
-      },
-      {
-        options: { './store': 'store.counter.ts' },
-        shipped: 'sveltekit/store/tanstack-store/styling/stylex/src/views/home/HomeView.styles.ts',
-      },
-    ],
   },
   {
+    shell: 'sveltekit',
+    path: 'src/views/home/HomeView.styles.ts',
+    where: { styling: 'css' },
     base: 'shared/home-css/home.styles.ts',
+    parameters: {
+      './store': {
+        question: 'store',
+        files: { 'runes': 'store.ts', 'tanstack-store': 'store.counter.ts' },
+      },
+    },
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.ts' },
-        shipped: 'sveltekit/store/runes/styling/css/src/views/home/HomeView.styles.ts',
-      },
-      {
-        options: { './store': 'store.counter.ts' },
-        shipped: 'sveltekit/store/tanstack-store/styling/css/src/views/home/HomeView.styles.ts',
-      },
-    ],
   },
 ];

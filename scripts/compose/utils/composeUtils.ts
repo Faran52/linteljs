@@ -12,15 +12,29 @@ export interface Variant {
   readonly shipped: string;
 }
 
+export interface Parameter {
+  // The question folder whose value picks the option.
+  readonly question: string;
+  // A value to its option file, where that file is not `<parameter>.<value>.<ext>` beside the base.
+  readonly files?: Readonly<Record<string, string>>;
+}
+
 export interface Subject {
+  // The folder under `shells/`.
+  readonly shell: string;
+  // The composed file's path below its question and value folders.
+  readonly path: string;
+  // The question values a shipped path carries to belong to this subject.
+  readonly where?: Readonly<Record<string, string>>;
   // The base module, under `codegen/compose-sources/`.
   readonly base: string;
+  // A specifier the base imports to the question its option follows.
+  readonly parameters: Readonly<Record<string, Parameter>>;
   readonly groups: ImportGroups;
   readonly plainData: readonly string[];
   readonly pureCalls: readonly string[];
   // A specifier the base or an option imports to its file under `codegen/compose-sources/`.
   readonly modules: Readonly<Record<string, string>>;
-  readonly variants: readonly Variant[];
 }
 
 const readText = (path: string): string => {

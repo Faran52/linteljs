@@ -75,8 +75,9 @@ one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain cla
 the markup it would copy, is never a `TARGETS` entry: each file has one writer. The gate's `css-markup` step
 fails when that changed a committed file. `scripts/compose/` writes each composed file under `shells/` from its
 base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in the
-`SUBJECTS` table of its `constants.ts` (options, `plainData`, `pureCalls`, `modules`, import groups, the shipped path
-of each variant), which joins one data-only `subjects/<shell>/constants.ts` per shell over the import groups in
+`SUBJECTS` table of its `constants.ts` (the shell, the composed path below the question folders, the question values
+it needs, the question each option follows, `plainData`, `pureCalls`, `modules`, import groups), whose variants
+`utils/subjectUtils.ts` derives from the files under `shells/<shell>`; the table joins one data-only `subjects/<shell>/constants.ts` per shell over the import groups in
 `subjects/constants.ts`; the gate's `compose` step fails when that changed a committed file. The engine's suites keep
 their own copy of the table, since shipped code never imports repo tooling. `scripts/utils/codegenUtils.ts` holds
 what the three share.

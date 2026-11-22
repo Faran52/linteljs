@@ -172,10 +172,6 @@ export const STYLEX_PLAIN_DATA = ['./*.styles', '@styles/tokens.stylex'];
 
 export const STYLEX_PURE_CALLS = ['./*.styles'];
 
-export const CONTACT = 'testing/vitest/src/lib/apis/contact/contactEndpoints.test.ts';
+export const CONTACT = 'src/lib/apis/contact/contactEndpoints.test.ts';
 
 export const MOCKING_BASE = 'shared/contact-endpoints/contactEndpoints.test.ts';
-
-export const LOCAL_MOCKING = { './mocking': 'mocking.local.ts' };
-
-export const MSW_MOCKING = { './mocking': 'mocking.msw.ts' };

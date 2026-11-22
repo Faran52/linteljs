@@ -11,11 +11,12 @@ import {
   SUBJECTS,
 } from './constants.ts';
 import { composedText } from './utils/composeUtils.ts';
+import { subjectVariants } from './utils/subjectUtils.ts';
 
 const stale: string[] = [];
 
 for (const subject of SUBJECTS) {
-  for (const variant of subject.variants) {
+  for (const variant of subjectVariants(subject, SHELLS_DIR, SOURCES_DIR)) {
     const path = join(SHELLS_DIR, variant.shipped);
     const text = composedText(subject, variant, SOURCES_DIR);
 

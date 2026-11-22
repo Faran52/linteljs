@@ -1,61 +1,44 @@
 import {
   ANGULAR_GROUPS,
-  LOCAL_MOCKING,
-  MSW_MOCKING,
 } from '../constants.ts';
 
 import type { Subject } from '../../utils/composeUtils.ts';
 
 export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
   {
+    shell: 'angular-cli',
+    path: 'src/lib/apis/contact/contact-endpoints.spec.ts',
     base: 'shared/contact-endpoints/contact-endpoints.spec.ts',
+    parameters: { './mocking': { question: 'mocking' } },
     groups: ANGULAR_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      {
-        options: LOCAL_MOCKING,
-        shipped: 'angular-cli/mocking/local/testing/vitest/src/lib/apis/contact/contact-endpoints.spec.ts',
-      },
-      {
-        options: MSW_MOCKING,
-        shipped: 'angular-cli/mocking/msw/testing/vitest/src/lib/apis/contact/contact-endpoints.spec.ts',
-      },
-    ],
   },
   {
+    shell: 'angular-cli',
+    path: 'src/app/home/home.spec.ts',
     base: 'angular-cli/home/home.spec.ts',
+    parameters: { './store': { question: 'store' } },
     groups: ANGULAR_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.ngrx-signals.ts' },
-        shipped: 'angular-cli/store/ngrx-signals/testing/vitest/src/app/home/home.spec.ts',
-      },
-      {
-        options: { './store': 'store.signals.ts' },
-        shipped: 'angular-cli/store/signals/testing/vitest/src/app/home/home.spec.ts',
-      },
-    ],
   },
   {
+    shell: 'angular-cli',
+    path: 'src/app/home/home.styles.ts',
+    where: { styling: 'css' },
     base: 'shared/home-css/home.styles.ts',
+    parameters: {
+      './store': {
+        question: 'store',
+        files: { 'ngrx-signals': 'store.counter.ts', 'signals': 'store.ts' },
+      },
+    },
     groups: ANGULAR_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
-    variants: [
-      {
-        options: { './store': 'store.counter.ts' },
-        shipped: 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts',
-      },
-      {
-        options: { './store': 'store.ts' },
-        shipped: 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts',
-      },
-    ],
   },
 ];
