@@ -19,4 +19,7 @@ export const CREATE_FLAGS: Record<E2eVariant, readonly string[] | undefined> = {
 
 export const CLEAN_FIXES = ['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix'];
 
+// A fix line, bare or named by its project in a monorepo of several.
+export const FIX_LINE = /^(?:[^\s:]+: )?(?:eslint|stylelint) --fix: /;
+
 export const LINT_PROBLEMS = /✖ (\d+) problem/;

@@ -570,6 +570,49 @@ describe('the fix stage', () => {
       });
     expect(fixedIn).toEqual(expected);
   });
+
+  it('names each fix line by its project in a monorepo of several, and leaves a lone project bare', async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'eslint'), "#!/bin/sh\necho '[]'\n", 'utf8');
+    await chmod(join(bin, 'eslint'), 0o755);
+    const web = {
+      name: 'web',
+      answers: hostedAnswersFor({ layout: 'monorepo' }),
+    };
+    const shared = {
+      name: 'shared',
+      answers: hostedAnswersFor({
+        layout: 'monorepo',
+        target: 'typescript',
+      }),
+    };
+
+    const fixNotices = async (projects: [typeof web, ...(typeof web)[]]): Promise<string[]> => {
+      const notices: string[] = [];
+
+      await pipelineRun({
+        name: 'acme',
+        cwd,
+        answers: hostedAnswersFor({ layout: 'monorepo' }),
+        projects,
+        skip: ['standard', 'install'],
+        onNotice: (message) => {
+          notices.push(message);
+        },
+      });
+
+      return notices;
+    };
+
+    const several = await fixNotices([web, shared]);
+    const lone = await fixNotices([web]);
+
+    const expectedSeveral = ['web: eslint --fix: nothing to fix', 'shared: eslint --fix: nothing to fix'];
+    const expectedLone = ['eslint --fix: nothing to fix'];
+    expect(several).toEqual(expectedSeveral);
+    expect(lone).toEqual(expectedLone);
+  });
 });
 
 describe('what create and sync each discover about a project', () => {

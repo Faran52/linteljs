@@ -150,8 +150,17 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   standard: stageStandard,
   install: stageInstall,
   fix: async (options) => {
-    for (const project of projectsOf(options)) {
-      await fixPass(rootOf(options, project), project.answers, options.onNotice, options.cwd);
+    const projects = projectsOf(options);
+
+    for (const project of projects) {
+      // Named only beside another project, so a single project keeps its bare lines.
+      const onNotice = projects.length > 1
+        ? (message: string): void => {
+            options.onNotice?.(`${project.name}: ${message}`);
+          }
+        : options.onNotice;
+
+      await fixPass(rootOf(options, project), project.answers, onNotice, options.cwd);
     }
   },
 };

@@ -279,7 +279,8 @@ when a version's change lives in a sibling it is described there instead:
   through the most specific alias and within one relatively, the shape `@linteljs/prefer-alias` asks for. Its file
   names pass the target's own `naming` map. The fix stage stays, to bring an existing project into line.
 - The fix stage reports per tool: `eslint --fix: 3 files changed` or `eslint --fix: nothing to fix`, and the same for
-  `stylelint --fix`, which said nothing unless it could not run.
+  `stylelint --fix`, which said nothing unless it could not run. In a monorepo of several projects each line names its
+  project (`web: eslint --fix: nothing to fix`), since the stage runs once per project.
 - Node `>=22.18.0`, down from `>=26.8.1`, for both the CLI and the project it writes: the first 22.x release that
   strips types by default, so the project's TypeScript scripts and hooks run with plain `node`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.

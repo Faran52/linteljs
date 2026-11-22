@@ -40,6 +40,7 @@ import {
   CLEAN_FIXES,
   CREATE_FLAGS,
   DEPRECATION,
+  FIX_LINE,
   LINT_PROBLEMS,
   STYLEX_CLASSES,
   SVELTEKIT_VERSION_HASH,
@@ -157,22 +158,47 @@ const missingStylexRules = (project: string): string => {
   return missing;
 };
 
-const expectCreated = async ({
-  answers,
-  variant,
-  projects,
-}: E2eCase, root: string): Promise<RunResult> => {
+// One pair per project, each named by its project once there are several.
+const cleanFixesOf = (item: E2eCase): string[] => {
+  const projects = projectsOf(item, item.answers.target);
+
+  if (projects.length === 1) {
+    return CLEAN_FIXES;
+  }
+
+  return projects
+    .flatMap(({ name }) => {
+      return CLEAN_FIXES
+        .map((line) => {
+          return `${name}: ${line}`;
+        });
+    });
+};
+
+const expectCreated = async (item: E2eCase, root: string): Promise<RunResult> => {
+  const {
+    answers,
+    variant,
+    projects,
+  } = item;
   const flags = variant === undefined ? undefined : CREATE_FLAGS[variant];
   const create = await createProject(root, answers.target, answers, flags, projects);
   // A skipped fix pass reports nothing.
-  const expectedFixes = flags === undefined ? CLEAN_FIXES : null;
+  const expectedFixes = flags === undefined ? cleanFixesOf(item) : [];
 
   const created = outcome(create, '@linteljs/create');
 
   expect(created).toBe('@linteljs/create: ok');
 
   // Emitted code lands clean: the fix stage brings an existing project into line, and a fresh one needs none.
-  const fixes = create.output.match(/\b(?:eslint|stylelint) --fix: [^\n]*/g);
+  const fixes = create.output
+    .split('\n')
+    .map((line) => {
+      return line.trim();
+    })
+    .filter((line) => {
+      return FIX_LINE.test(line);
+    });
 
   expect(fixes).toEqual(expectedFixes);
 
