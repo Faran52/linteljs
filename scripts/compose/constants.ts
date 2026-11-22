@@ -196,6 +196,16 @@ const ROUTE_ERROR_TEST = 'testing/vitest/src/components/features/route-error/Rou
 
 const BACKGROUND_TEST = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
 
+const SVELTE_TEST = 'testing/vitest/src/routes/page.test.ts';
+
+const SOLID = 'vite-solid/store';
+
+const SOLID_TEST = 'testing/vitest/src/pages/home/HomePage.test.tsx';
+
+const SOLID_PAGE = 'src/pages/home/HomePage.tsx';
+
+const DEVTOOLS = 'surfaces/devtools-panel/src/devtools/devtools.ts';
+
 const MOCKING_BASE = 'shared/contact-endpoints/contactEndpoints.test.ts';
 
 const LOCAL_MOCKING = { './mocking': 'mocking.local.ts' };
@@ -392,14 +402,8 @@ export const SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
     variants: [
-      {
-        options: { './store': 'store.runes.ts' },
-        shipped: 'sveltekit/store/runes/testing/vitest/src/routes/page.test.ts',
-      },
-      {
-        options: { './store': 'store.tanstack-store.ts' },
-        shipped: 'sveltekit/store/tanstack-store/testing/vitest/src/routes/page.test.ts',
-      },
+      { options: { './store': 'store.runes.ts' }, shipped: `sveltekit/store/runes/${SVELTE_TEST}` },
+      { options: { './store': 'store.tanstack-store.ts' }, shipped: `sveltekit/store/tanstack-store/${SVELTE_TEST}` },
     ],
   },
   {
@@ -409,14 +413,19 @@ export const SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
     variants: [
-      {
-        options: { './store': 'store.signals.ts' },
-        shipped: 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx',
-      },
-      {
-        options: { './store': 'store.tanstack-store.ts' },
-        shipped: 'vite-solid/store/tanstack-store/testing/vitest/src/pages/home/HomePage.test.tsx',
-      },
+      { options: { './store': 'store.signals.tsx' }, shipped: `${SOLID}/signals/${SOLID_TEST}` },
+      { options: { './store': 'store.tanstack-store.tsx' }, shipped: `${SOLID}/tanstack-store/${SOLID_TEST}` },
+    ],
+  },
+  {
+    base: 'vite-solid/home-page/HomePage.tsx',
+    groups: SOLID_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+    variants: [
+      { options: { './store': 'store.signals.tsx' }, shipped: `${SOLID}/signals/${SOLID_PAGE}` },
+      { options: { './store': 'store.tanstack-store.tsx' }, shipped: `${SOLID}/tanstack-store/${SOLID_PAGE}` },
     ],
   },
   {
@@ -517,6 +526,17 @@ export const SUBJECTS: readonly Subject[] = [
     variants: [
       { options: { './browser': 'browser.chrome.ts' }, shipped: `wxt/browser/chrome/${BACKGROUND_TEST}` },
       { options: { './browser': 'browser.firefox.ts' }, shipped: `wxt/browser/firefox/${BACKGROUND_TEST}` },
+    ],
+  },
+  {
+    base: 'wxt/devtools/devtools.ts',
+    groups: PLAIN_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+    variants: [
+      { options: { './browser': 'browser.chrome.ts' }, shipped: `wxt/browser/chrome/${DEVTOOLS}` },
+      { options: { './browser': 'browser.firefox.ts' }, shipped: `wxt/browser/firefox/${DEVTOOLS}` },
     ],
   },
 ];

@@ -55,8 +55,8 @@ interface DisorderedCase extends Ordered {
   message: string;
 }
 
-// One test file composed per option: its base and option modules under compose-sources, each beside its shipped copy.
-interface TestPair {
+// One file composed per option: its base and option modules under compose-sources, each beside its shipped copy.
+interface Pair {
   base: string;
   specifier: string;
   groups: ImportGroups;
@@ -399,6 +399,8 @@ const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteErr
 
 const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
 
+const DEVTOOLS = 'surfaces/devtools-panel/src/devtools/devtools.ts';
+
 // The five shells whose contact suite is one file, by where each keeps the mocking option.
 const CONTACT_SHELLS: [string, string[][]][] = [
   ['astro/form/libraries', []],
@@ -414,8 +416,8 @@ const CONTACT_SHELLS: [string, string[][]][] = [
 ];
 
 const MOCKING_PAIRS = CONTACT_SHELLS
-  .map(([shell, framework]): TestPair => {
-    const pair: TestPair = {
+  .map(([shell, framework]): Pair => {
+    const pair: Pair = {
       base: 'shared/contact-endpoints/contactEndpoints.test.ts',
       specifier: './mocking',
       groups: groupsWith(framework, []),
@@ -428,7 +430,7 @@ const MOCKING_PAIRS = CONTACT_SHELLS
     return pair;
   });
 
-const TEST_PAIRS: TestPair[] = [
+const PAIRS: Pair[] = [
   ...MOCKING_PAIRS,
   {
     base: 'shared/contact-endpoints/contact-endpoints.spec.ts',
@@ -471,8 +473,8 @@ const TEST_PAIRS: TestPair[] = [
     specifier: './store',
     groups: groupsWith(SOLID, []),
     options: [
-      ['store.signals.ts', 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx'],
-      ['store.tanstack-store.ts', 'vite-solid/store/tanstack-store/testing/vitest/src/pages/home/HomePage.test.tsx'],
+      ['store.signals.tsx', 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx'],
+      ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/testing/vitest/src/pages/home/HomePage.test.tsx'],
     ],
   },
   {
@@ -530,9 +532,27 @@ const TEST_PAIRS: TestPair[] = [
       ['browser.firefox.ts', `wxt/browser/firefox/${BACKGROUND}`],
     ],
   },
+  {
+    base: 'wxt/devtools/devtools.ts',
+    specifier: './browser',
+    groups: groupsWith([], []),
+    options: [
+      ['browser.chrome.ts', `wxt/browser/chrome/${DEVTOOLS}`],
+      ['browser.firefox.ts', `wxt/browser/firefox/${DEVTOOLS}`],
+    ],
+  },
+  {
+    base: 'vite-solid/home-page/HomePage.tsx',
+    specifier: './store',
+    groups: groupsWith(SOLID, []),
+    options: [
+      ['store.signals.tsx', 'vite-solid/store/signals/src/pages/home/HomePage.tsx'],
+      ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/src/pages/home/HomePage.tsx'],
+    ],
+  },
 ];
 
-const TEST_COMPOSITIONS = TEST_PAIRS
+const PAIR_COMPOSITIONS = PAIRS
   .flatMap(({
     base,
     specifier,
@@ -554,10 +574,10 @@ const TEST_COMPOSITIONS = TEST_PAIRS
       });
   });
 
-const COMPOSITIONS = [...REACT_COMPOSITIONS, ...TEST_COMPOSITIONS];
+const COMPOSITIONS = [...REACT_COMPOSITIONS, ...PAIR_COMPOSITIONS];
 
-describe('moduleCompose, on the shipped test files', () => {
-  it.each(TEST_COMPOSITIONS)('writes $expected', (composition) => {
+describe('moduleCompose, on the shipped single-question files', () => {
+  it.each(PAIR_COMPOSITIONS)('writes $expected', (composition) => {
     const composed = composedFrom(composition, [], []);
     const shipped = readShipped(composition.expected);
 
