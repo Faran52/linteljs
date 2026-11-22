@@ -26,6 +26,8 @@ const config = {
   ...STRYKER_BASE,
   // `all`: a rule is built at module load, so per-test attribution scores caught mutants as survivors.
   coverageAnalysis: 'all',
+  // A trial: every part ran 2 to 6 times slower on threads once runner 10.1.1 replaced the patched 10.0.0.
+  vitest: { pool: 'forks' },
 
   mutate: [
     ...globs,
