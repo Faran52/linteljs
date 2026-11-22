@@ -35,7 +35,8 @@ export const FIXTURE = [
   '',
   'function greet(name) { return charlie + name; }',
   '',
-  'const Widget = (props) => props.alpha + props.bravo;',
+  // A hook call marks it a component; the js fixture parses no JSX.
+  'const Widget = (props) => useLabel(props.alpha + props.bravo);',
   '',
   'const load = async () => {',
   '  return fetch("/x").then(toJson).catch(report);',
