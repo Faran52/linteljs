@@ -393,6 +393,8 @@ const REACT = [
 
 const CONTACT = 'testing/vitest/src/lib/apis/contact';
 
+const CONTACT_PAGE_TEST = 'testing/vitest/src/views/contact/ContactPage.test.tsx';
+
 const APP_HEADER = 'testing/vitest/src/components/features/app-header/AppHeader.test.tsx';
 
 const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteError.test.tsx';
@@ -436,6 +438,15 @@ const MOCKING_PAIRS = CONTACT_SHELLS
 
 const PAIRS: Pair[] = [
   ...MOCKING_PAIRS,
+  {
+    base: 'astro/contact-page/ContactPage.test.tsx',
+    specifier: './hostedFramework',
+    groups: groupsWith([], []),
+    options: [
+      ['hostedFramework.react.tsx', `astro/form/libraries/hostedFramework/react/${CONTACT_PAGE_TEST}`],
+      ['hostedFramework.solid.tsx', `astro/form/tanstack-form/hostedFramework/solid/${CONTACT_PAGE_TEST}`],
+    ],
+  },
   {
     base: 'shared/contact-endpoints/contact-endpoints.spec.ts',
     specifier: './mocking',
