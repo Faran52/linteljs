@@ -80,7 +80,8 @@ answer, under `packages/create/templates/codegen/compose-sources/<shell>/<subjec
 shipped file's name, `<param>.ts` the stand-in it imports, and `<param>.<option>.ts` per option, all in one
 directory.
 
-1. Add a row to `SUBJECTS` in `scripts/compose/constants.ts`: the base, its import groups, the `plainData` and
+1. Add a row to the shell's table in `scripts/compose/subjects/<shell>/constants.ts`, which `SUBJECTS` in
+   `scripts/compose/constants.ts` joins: the base, its import groups, the `plainData` and
    `pureCalls` modules it may trust, any `modules` it reads, and one variant per option with the shipped path
    under `shells/` it writes.
 2. Add the same composition to `packages/compose/src/module/moduleCompose.test.ts`, which holds every shipped

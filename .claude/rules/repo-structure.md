@@ -76,7 +76,8 @@ the markup it would copy, is never a `TARGETS` entry: each file has one writer. 
 fails when that changed a committed file. `scripts/compose/` writes each composed file under `shells/` from its
 base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in the
 `SUBJECTS` table of its `constants.ts` (options, `plainData`, `pureCalls`, `modules`, import groups, the shipped path
-of each variant); the gate's `compose` step fails when that changed a committed file. The engine's suites keep
+of each variant), which joins one data-only `subjects/<shell>/constants.ts` per shell over the import groups in
+`subjects/constants.ts`; the gate's `compose` step fails when that changed a committed file. The engine's suites keep
 their own copy of the table, since shipped code never imports repo tooling. `scripts/utils/codegenUtils.ts` holds
 what the three share.
 
