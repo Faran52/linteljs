@@ -2,10 +2,14 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { EXCLUDED_MOD_TYPECHECK, EXCLUDED_TEST } from '../constants.ts';
+import {
+  EXCLUDED_CODEGEN,
+  EXCLUDED_MOD_TYPECHECK,
+  EXCLUDED_TEST,
+} from '../constants.ts';
 
 const isExcluded = (name: string): boolean => {
-  return EXCLUDED_TEST.test(name) || EXCLUDED_MOD_TYPECHECK.test(name);
+  return EXCLUDED_TEST.test(name) || EXCLUDED_MOD_TYPECHECK.test(name) || EXCLUDED_CODEGEN.test(name);
 };
 
 export const filesIn = (dir: string): string[] => {
