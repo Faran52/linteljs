@@ -106,18 +106,6 @@ describe('settled', () => {
     expect(seen).toStrictEqual(['aa>ba', 'ba>bb']);
   });
 
-  it('refuses a rewrite that never stops', () => {
-    const run = (): ts.SourceFile => {
-      const start = parse('a');
-
-      return settled(start, (text) => {
-        return flipped(text);
-      });
-    };
-
-    expect(run).toThrow(/did not settle/u);
-  });
-
   it('refuses at once a rewrite that answers no edits, which is not done', () => {
     const asked: string[] = [];
 
@@ -161,6 +149,11 @@ describe('settled', () => {
       return settled(start, (text) => {
         asked.push(text);
 
+        // A limit that is never reached fails here rather than looping on.
+        if (asked.length > 10_000) {
+          throw new Error('asked past the limit');
+        }
+
         return flipped(text);
       });
     };
@@ -178,9 +171,12 @@ const upper: Answer = (identifier) => {
 };
 
 // Each name of a text a candidate written in capitals, or as `answer` gives it for the names it knows.
-const passOf = (text: string, answers: Readonly<Record<string, Answer>>, alone: readonly string[]): string => {
-  const file = parse(text);
-  const candidates = collect(file, ts.isIdentifier)
+const candidatesOf = (
+  file: ts.SourceFile,
+  answers: Readonly<Record<string, Answer>>,
+  alone: readonly string[],
+): Candidate[] => {
+  return collect(file, ts.isIdentifier)
     .map((identifier) => {
       const answer = answers[identifier.text] ?? upper;
       const candidate: Candidate = {
@@ -195,9 +191,20 @@ const passOf = (text: string, answers: Readonly<Record<string, Answer>>, alone: 
 
       return candidate;
     });
+};
+
+// The text as one batched pass over `candidates` writes it.
+const writtenBy = (text: string, candidates: readonly Candidate[]): string => {
   const edits = batched(text, candidates);
 
   return edits === undefined ? text : applied(text, edits);
+};
+
+const passOf = (text: string, answers: Readonly<Record<string, Answer>>, alone: readonly string[]): string => {
+  const file = parse(text);
+  const candidates = candidatesOf(file, answers, alone);
+
+  return writtenBy(text, candidates);
 };
 
 const atEnd: Answer = (identifier) => {
@@ -205,6 +212,17 @@ const atEnd: Answer = (identifier) => {
   const span: Span = {
     start: end,
     end,
+  };
+  const written = plain('x;');
+  const edits = [editOf(span, written)];
+
+  return edits;
+};
+
+const atStart: Answer = () => {
+  const span: Span = {
+    start: 0,
+    end: 0,
   };
   const written = plain('x;');
   const edits = [editOf(span, written)];
@@ -272,6 +290,41 @@ describe('batched', () => {
 
   it('leaves for a later pass the statement of a later candidate whose edits reach past it', () => {
     const text = passOf('a;\nb + c;\nd;\n', { b: atEnd }, []);
+
+    expect(text).toBe('A;\nb + c;\nD;\n');
+  });
+
+  it('joins only the candidates after the first, whatever their order in the text', () => {
+    const text = 'a;\nb + c;\n';
+    const file = parse(text);
+    const order = [
+      'b',
+      'a',
+      'c',
+    ];
+    const candidates = candidatesOf(file, { b: nothing }, ['b'])
+      .toSorted((left, right) => {
+        const leftAt = order.indexOf(left.node.getText());
+        const rightAt = order.indexOf(right.node.getText());
+
+        return leftAt - rightAt;
+      });
+    const written = writtenBy(text, candidates);
+
+    expect(written).toBe('A;\nb + C;\n');
+  });
+
+  it('rewrites alone a first candidate whose edits reach before its statement', () => {
+    const text = passOf('a;\nb;\nc;\n', {
+      a: nothing,
+      b: atStart,
+    }, []);
+
+    expect(text).toBe('x;a;\nb;\nc;\n');
+  });
+
+  it('leaves for a later pass the statement of a later candidate whose edits reach before it', () => {
+    const text = passOf('a;\nb + c;\nd;\n', { b: atStart }, []);
 
     expect(text).toBe('A;\nb + c;\nD;\n');
   });
@@ -377,6 +430,7 @@ describe('checked', () => {
     ['export { x } from \'./p\';\n', 'export { x } from \'./p\';'],
     ['export * from \'./p\';\n', 'export * from \'./p\';'],
     ['import p = require(\'./p\');\n', 'require(\'./p\')'],
+    ['export const s = \'./p\';\nexport const lazy = () => import(\'./p\');\n', 'import(\'./p\')'],
   ])('refuses a parameter module named in %j', (text, shown) => {
     const run = (): ts.SourceFile => {
       const sources = sourcesFor();
@@ -410,8 +464,9 @@ describe('checked', () => {
 });
 
 // The option's `v` lands on the first read of `v` in the base: its value, or what its arrow returns.
-const landingOf = (base: string, option: string): Landing => {
-  const sources = sourcesOf(base, { './p': option }, {}, NO_TRUST);
+// Where `v` of the option `./p` lands in the base, with other options beside it.
+const landingAmong = (base: string, options: Readonly<Record<string, string>>): Landing => {
+  const sources = sourcesOf(base, options, {}, NO_TRUST);
   const file = parse(sources.body);
   const optionFile = sources.modules.get('./p');
   const checker = scopeOf(file, sources.modules, sources.held);
@@ -428,7 +483,7 @@ const landingOf = (base: string, option: string): Landing => {
     });
 
   if (owner === undefined || landing === undefined) {
-    throw new Error(`No v in ${base} or ${option}`);
+    throw new Error(`No v in ${base} or ./p`);
   }
 
   const moved = ts.isArrowFunction(owner) ? returnedOf(owner) : owner;
@@ -441,6 +496,10 @@ const landingOf = (base: string, option: string): Landing => {
   };
 
   return found;
+};
+
+const landingOf = (base: string, option: string): Landing => {
+  return landingAmong(base, { './p': option });
 };
 
 describe('landedCheck', () => {
@@ -465,6 +524,27 @@ describe('landedCheck', () => {
     };
 
     expect(run).not.toThrow();
+  });
+
+  it('refuses a private option helper named as another option\'s export the base binds', () => {
+    const base = 'import { v } from \'./p\';\nimport { a } from \'./q\';\n\nexport const y = [a, v];\n';
+    const options = {
+      './p': 'const a = 2;\n\nexport const v = a;\n',
+      './q': 'export const a = 1;\n',
+    };
+    const {
+      checker,
+      sources,
+      owner,
+      moved,
+      landing,
+    } = landingAmong(base, options);
+
+    const run = (): void => {
+      landedCheck(checker, sources, owner, moved, landing);
+    };
+
+    expect(run).toThrow('"a" is declared in an option module and read by code that left it behind: v');
   });
 
   it('refuses a private option helper that a base parameter of its name would capture (F6a)', () => {

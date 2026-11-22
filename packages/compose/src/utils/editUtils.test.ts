@@ -183,6 +183,27 @@ describe('copied, copyOf, joined and sliced', () => {
     });
   });
 
+  it('slices inside a copy, cutting it at both ends of the slice', () => {
+    const text = 'abcdef';
+    const whole = copied(text, {
+      start: 0,
+      end: 6,
+    });
+    const part = sliced(whole, {
+      start: 2,
+      end: 4,
+    });
+
+    expect(part).toStrictEqual({
+      insert: 'cd',
+      copies: [{
+        from: 2,
+        to: 0,
+        length: 2,
+      }],
+    });
+  });
+
   it('slices where a copy ends, carrying none of it', () => {
     const text = 'abcdef';
     const whole = joined([

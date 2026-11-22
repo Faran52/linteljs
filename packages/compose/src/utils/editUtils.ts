@@ -22,6 +22,12 @@ export interface Written {
 
 export type Edit = Span & Written;
 
+// A line as `reindented` writes it, with the run of the old line it carries.
+interface PlacedLine {
+  line: string;
+  move: Copy;
+}
+
 const SHOWN = 80;
 
 export const plain = (insert: string): Written => {
@@ -194,30 +200,38 @@ export const applied = (text: string, edits: readonly Edit[]): string => {
 // `reindent` over a written text, each line's copies carried past the indentation it changes.
 export const reindented = (written: Written, from: string, to: string): Written => {
   const moved = movedLines(written.insert, from);
-  const moves: Copy[] = [];
-  const lines: string[] = [];
   let oldAt = 0;
   let newAt = 0;
-
-  for (const [index, line] of written.insert
+  const placed = written.insert
     .split('\n')
-    .entries()) {
-    const isMoved = moved.has(index);
-    const lead = isMoved ? from.length : 0;
-    const indent = isMoved ? to : '';
-    const next = indent + line.slice(lead);
-    const move: Copy = {
-      from: oldAt + lead,
-      to: newAt + indent.length,
-      length: line.length - lead,
-    };
+    .map((line, index) => {
+      const isMoved = moved.has(index);
+      const lead = isMoved ? from.length : 0;
+      const indent = isMoved ? to : '';
+      const next = indent + line.slice(lead);
+      const move: Copy = {
+        from: oldAt + lead,
+        to: newAt + indent.length,
+        length: line.length - lead,
+      };
+      const each: PlacedLine = {
+        line: next,
+        move,
+      };
 
-    moves.push(move);
-    lines.push(next);
-    oldAt += line.length + 1;
-    newAt += next.length + 1;
-  }
+      oldAt += line.length + 1;
+      newAt += next.length + 1;
 
+      return each;
+    });
+  const lines = placed
+    .map((each) => {
+      return each.line;
+    });
+  const moves = placed
+    .map((each) => {
+      return each.move;
+    });
   const result: Written = {
     insert: lines.join('\n'),
     copies: carried(written.copies, moves),

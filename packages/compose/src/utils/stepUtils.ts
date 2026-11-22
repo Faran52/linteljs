@@ -66,13 +66,7 @@ export const settled = (start: ts.SourceFile, once: Step, watch?: Watch): ts.Sou
 };
 
 const statementOf = (node: ts.Node): ts.Node => {
-  let statement = node;
-
-  while (!ts.isSourceFile(statement.parent)) {
-    statement = statement.parent;
-  }
-
-  return statement;
+  return ts.isSourceFile(node.parent) ? node : statementOf(node.parent);
 };
 
 const isInside = (edits: readonly Edit[], statement: ts.Node): boolean => {
@@ -80,10 +74,6 @@ const isInside = (edits: readonly Edit[], statement: ts.Node): boolean => {
     .every(({ start, end }) => {
       return start >= statement.getStart() && end <= statement.getEnd();
     });
-};
-
-const answerOf = (candidate: Candidate): readonly Edit[] | undefined => {
-  return candidate.isAlone() ? [] : candidate.edits();
 };
 
 // The first edits joined by those of each later candidate whose statement is not taken and owns its lines.
@@ -104,7 +94,13 @@ const joinedTo = (text: string, first: readonly Edit[], statement: ts.Node, othe
       continue;
     }
 
-    const answer = answerOf(candidate);
+    // A candidate that may change what others read keeps its statement for a later pass.
+    if (candidate.isAlone()) {
+      taken.add(own);
+      continue;
+    }
+
+    const answer = candidate.edits();
 
     if (answer !== undefined) {
       taken.add(own);
@@ -287,7 +283,6 @@ export const checked = (file: ts.SourceFile, sources: Sources): ts.SourceFile =>
 export const wellFormed = (text: string): string => {
   const { diagnostics = [] } = ts.transpileModule(text, {
     reportDiagnostics: true,
-    compilerOptions: { jsx: ts.JsxEmit.Preserve },
     fileName: 'module.tsx',
   });
   const [fault] = diagnostics;

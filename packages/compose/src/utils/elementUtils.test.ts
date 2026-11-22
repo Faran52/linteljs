@@ -10,10 +10,11 @@ import {
   sourcesOf,
   type Trust,
 } from './bindingUtils';
-import { applied } from './editUtils';
+import { applied, type Edit } from './editUtils';
 import { inlineElement } from './elementUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
+import { settled } from './stepUtils';
 
 interface Filled {
   written: string;
@@ -25,8 +26,7 @@ const NO_TRUST: Trust = {
 };
 
 // One `<X>` of a text replaced by what the option component returns; undefined once none is left.
-const filledOnce = (text: string, sources: Sources): string | undefined => {
-  const file = parse(text);
+const filledOnce = (text: string, file: ts.SourceFile, sources: Sources): readonly Edit[] | undefined => {
   const heads = referencesIn(file, 'X')
     .map((tag) => {
       return tag.parent;
@@ -41,21 +41,18 @@ const filledOnce = (text: string, sources: Sources): string | undefined => {
     return undefined;
   }
 
-  const edits = inlineElement(text, sources, head.tagName, head, checker);
-
-  return applied(text, edits);
+  return inlineElement(text, sources, head.tagName, head, checker);
 };
 
+// Every `<X>` filled through `settled`, so a fill that never ends is refused, not looped on.
 const filled = (body: string, option: string): Filled => {
   const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
-  let written = sources.body;
-
-  for (let next = filledOnce(written, sources); next !== undefined; next = filledOnce(written, sources)) {
-    written = next;
-  }
-
+  const start = parse(sources.body);
+  const { text } = settled(start, (current, file) => {
+    return filledOnce(current, file, sources);
+  });
   const result: Filled = {
-    written,
+    written: text,
   };
 
   return result;
@@ -212,7 +209,9 @@ describe('inlineElement', () => {
     const body = lines('y = ({', '  id,', '  ...rest', '}) => <ul><X {...rest} />{id}<X {...rest} /></ul>;');
     const option = 'export const X = ({ current, on }: P) => <li hidden={current} onClick={on} />;\n';
     const sources = sourcesOf(`import { X } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
-    const once = filledOnce(sources.body, sources);
+    const file = parse(sources.body);
+    const edits = filledOnce(sources.body, file, sources);
+    const once = edits === undefined ? undefined : applied(sources.body, edits);
     const expected = lines(
       'y = ({',
       '  id,',
