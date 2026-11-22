@@ -1,9 +1,32 @@
 {
   "name": "linteljs",
   "version": "0.0.0",
-  "description": "This repo's own Claude Code mods: the shipped check band, a CI band and repo guards",
+  "description": "This repo's own Claude Code mods: the shipped check band and context ceiling, a CI band and repo guards",
   "author": {
     "name": "Faran Ali"
   },
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "context_warn_tokens": {
+      "type": "number",
+      "title": "Context warning (tokens)",
+      "description": "A subagent is warned once when its context passes this many tokens.",
+      "default": 130000,
+      "min": 1
+    },
+    "context_ceiling_tokens": {
+      "type": "number",
+      "title": "Context ceiling (tokens)",
+      "description": "Subagents past this are refused after their wrap-up calls; you hear when your session passes it.",
+      "default": 150000,
+      "min": 1
+    },
+    "context_wrap_up_calls": {
+      "type": "number",
+      "title": "Wrap-up calls past the ceiling",
+      "description": "Calls a subagent past the ceiling gets to commit and update its resume note; 0 refuses at once.",
+      "default": 10,
+      "min": 0
+    }
+  }
 }

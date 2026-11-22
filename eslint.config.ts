@@ -319,6 +319,7 @@ const config = [
   {
     name: '@linteljs/workspace/mod-guards',
     files: [
+      '.claude/skills/linteljs/hooks/contextCeiling.tsx',
       '.claude/skills/linteljs/hooks/repoGuards.ts',
       'packages/create/templates/project/plugins/linteljs/hooks/contextCeiling.tsx',
     ],

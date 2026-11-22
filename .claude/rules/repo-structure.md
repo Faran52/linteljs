@@ -111,7 +111,7 @@ How a template file is authored once and placed per shell, with no copies: `temp
 ## The repo mod
 
 `.claude/skills/linteljs/` is this repo's own Claude Code mod. The engine finds the plugin folder there with no
-`settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the three below. It is
+`settings.json` entry; `hooks/hooks.json` names one module, `register.tsx`, which registers the four below. It is
 named `linteljs` because the check band's atom belongs to plugin `linteljs`. Its gate is
 `claude plugin validate .claude/skills/linteljs`, plus `pnpm typecheck` and `pnpm lint`:
 each mod folder (this one and the shipped plugin) carries a `tsconfig.json`
@@ -129,6 +129,10 @@ tsconfig checks, and ignores them where the types are missing.
   without its `*.test.ts`, with the root devDependency `@anthropic-ai/claude-code`. `checkStatusHook.ts` runs the
   shipped script. `register.tsx` takes only its refresh (`registerCheckRefresh`): the CI band draws the check state
   on its line.
+- **Context ceiling**: `contextCeiling.tsx` and the `constants.ts` it imports are byte copies of the shipped
+  files beside the band, held equal by the same `hooks.test.ts`; change the shipped file, then copy it. Its suite,
+  `contextCeiling.test.tsx`, lives only beside the shipped file, and the manifest carries the same three
+  `userConfig` fields (`context_warn_tokens`, `context_ceiling_tokens`, `context_wrap_up_calls`) for `options`.
 - **CI band** (`ciBand.tsx`): main's latest `ci`, `e2e` and `audit` runs from `gh run list` and the GitHub
   Actions component from githubstatus, refreshed on `classic.SessionStart` and `classic.Stop` at most every 3
   minutes. One line, `◐ check stale  │  main  ci ✓  e2e ✗  audit ✗  │  actions ✓`: each glyph coloured (✓ green,

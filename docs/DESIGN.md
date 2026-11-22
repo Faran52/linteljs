@@ -1345,6 +1345,9 @@ The decisions the mod's code cannot show:
 - **The check band is a copy.** `claude plugin validate` refuses an import from outside the plugin, a symlink and a
   second `modules` entry, so `checkBand.tsx` is carried byte for byte, held equal by `hooks.test.ts`. Its suite
   stays beside the shipped band only.
+- **So is the context ceiling**: `contextCeiling.tsx` and the `constants.ts` it imports are byte copies held equal
+  by the same test, registered with the manifest's three `userConfig` fields, so this repo's sessions get the
+  ceiling without the shipped plugin installed. Its suite stays beside the shipped file.
 - **It is named `linteljs`**, since the band's atom is keyed to that plugin name.
 - **The CI band listens on classic events** (`classic.SessionStart`, `classic.Stop`), at most every 3 minutes.
 - **One line, drawn by the CI band**, check state first; it declares its own `check` atom, since the engine
@@ -1472,10 +1475,11 @@ Two rules restated for `modModules()` files only.
 
 ### `@linteljs/workspace/mod-guards`
 
-`@linteljs/prefer-async-await` is off for `repoGuards.ts` and the shipped `contextCeiling.tsx` alone. Each guard
+`@linteljs/prefer-async-await` is off for `repoGuards.ts` and `contextCeiling.tsx` (shipped, and its copy in the
+repo mod) alone. Each guard
 ends in the engine's `on(...).catch(...)`, which answers in the hook's place when it fails: without it the engine
 skips a failed guard and lets the call through. The rule reads that as a promise `.catch`. Measured: 6 findings in
-`repoGuards.ts` and 1 in `contextCeiling.tsx`, one per guard, none on a promise, and none can be written with
+`repoGuards.ts` and 1 in each `contextCeiling.tsx`, one per guard, none on a promise, and none can be written with
 `await`.
 
 ### Coverage thresholds, in `vitest.config.ts`

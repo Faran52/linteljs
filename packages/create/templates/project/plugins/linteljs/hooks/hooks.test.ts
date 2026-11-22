@@ -121,11 +121,15 @@ it('suffixes every hook script with Hook', () => {
   expect(unsuffixed).toEqual([]);
 });
 
-// The repo's own mod carries the band as a copy, since the engine loads nothing outside a plugin.
-it('keeps .claude/skills/linteljs/hooks/checkBand.tsx byte-equal', () => {
-  const shipped = readFileSync(join(import.meta.dirname, 'checkBand.tsx'));
+// The repo's own mod carries the band and the ceiling as copies, since the engine loads nothing outside a plugin.
+it.each([
+  'checkBand.tsx',
+  'contextCeiling.tsx',
+  'constants.ts',
+])('keeps .claude/skills/linteljs/hooks/%s byte-equal', (name) => {
+  const shipped = readFileSync(join(import.meta.dirname, name));
   const modHooks = join(import.meta.dirname, '../../../../../../../.claude/skills/linteljs/hooks');
-  const copy = readFileSync(join(modHooks, 'checkBand.tsx'));
+  const copy = readFileSync(join(modHooks, name));
 
   const isEqual = copy.equals(shipped);
 
