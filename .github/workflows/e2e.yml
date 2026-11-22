@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   generate:
-    name: answers pass their own gate (${{ matrix.pm }} ${{ matrix.shard }})
+    name: answers pass their own gate (${{ matrix.pm }}, shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
