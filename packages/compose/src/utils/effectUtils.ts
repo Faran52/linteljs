@@ -1,9 +1,11 @@
 import ts from 'typescript';
 
 import {
+  BINARY_LEVELS,
   BOOLEAN_OPERATORS,
   COERCING_OPERATORS,
   EFFECT_KINDS,
+  NON_KEY_KINDS,
   PRIMITIVE_ANSWERS,
   UPDATES,
 } from '../constants';
@@ -20,10 +22,10 @@ import {
   collect,
   isAsync,
   isConverting,
+  isLooking,
   isPrimitiveLiteral,
   isPrototype,
   isPure,
-  isQuietOperator,
   isValueMember,
   isWritten,
   keyOf,
@@ -564,23 +566,53 @@ const isPrimitiveValue = (context: Context, value: ts.Expression, checking: Set<
   return isPrimitiveLiteral(value) || PRIMITIVE_ANSWERS.has(value.kind);
 };
 
-// Whether every value an operand can hold is proven a primitive, so converting it runs nothing.
-const isPrimitiveIn = (context: Context, operand: ts.Expression, checking: Set<ts.Node>): boolean => {
+// Whether the walk ends an operand at values that all pass a test, each step on the way visible.
+const isEveryValue = (context: Context, operand: ts.Expression, test: (value: ts.Expression) => boolean): boolean => {
   const walk = readWalkOf(context);
   const origin = nameOrigin(textOf(operand));
   const { fault, values } = reach(walk, operand, [], origin);
-  const isEvery = values
-    .every((value) => {
-      return isPrimitiveValue(context, value, checking);
-    });
 
-  return fault === undefined && values.length > 0 && isEvery;
+  return fault === undefined && values.length > 0 && values.every(test);
+};
+
+// Whether every value an operand can hold is proven a primitive, so converting it runs nothing.
+const isPrimitiveIn = (context: Context, operand: ts.Expression, checking: Set<ts.Node>): boolean => {
+  return isEveryValue(context, operand, (value) => {
+    return isPrimitiveValue(context, value, checking);
+  });
 };
 
 const isPrimitive = (context: Context, operand: ts.Expression): boolean => {
   const checking = new Set<ts.Node>();
 
   return isPrimitiveIn(context, operand, checking);
+};
+
+// A primitive that is a key as it stands, a string or a number: no boolean, `null` or `undefined`.
+const isKeyValue = (context: Context, value: ts.Expression): boolean => {
+  const isBoolean = ts.isBinaryExpression(value) && BOOLEAN_OPERATORS.has(value.operatorToken.kind);
+  const isNegated = ts.isPrefixUnaryExpression(value) && value.operator === ts.SyntaxKind.ExclamationToken;
+  const checking = new Set<ts.Node>();
+
+  return !isBoolean && !isNegated && !NON_KEY_KINDS.has(value.kind) && isPrimitiveValue(context, value, checking);
+};
+
+// A literal whose every member is its own and named: no spread, no key only the running code knows, no `__proto__`
+// to inherit another object's members from.
+const isOwnTable = (value: ts.Expression): boolean => {
+  return ts.isObjectLiteralExpression(value) && value.properties
+    .every((property) => {
+      return keyOf(property) !== undefined && !isPrototype(property);
+    });
+};
+
+// `k in t` runs nothing when `t` is proven such a literal and `k` a key; `instanceof` is never proven.
+const isPlainLook = (context: Context, look: ts.BinaryExpression): boolean => {
+  const isIn = look.operatorToken.kind === ts.SyntaxKind.InKeyword;
+
+  return isIn && isEveryValue(context, look.right, isOwnTable) && isEveryValue(context, look.left, (value) => {
+    return isKeyValue(context, value);
+  });
 };
 
 // Whether evaluating a node may run code the author wrote or write a binding, its parts aside.
@@ -592,8 +624,11 @@ const isActing = (context: Context, node: ts.Node): boolean => {
   const isCoercing = isConverting(node, (operand) => {
     return isPrimitive(context, operand);
   });
+  const isLookingIn = isLooking(node, (look) => {
+    return isPlainLook(context, look);
+  });
 
-  if (isCoercing) {
+  if (isCoercing || isLookingIn) {
     return true;
   }
 
@@ -606,7 +641,7 @@ const isActing = (context: Context, node: ts.Node): boolean => {
   }
 
   if (ts.isBinaryExpression(node)) {
-    return !isQuietOperator(node.operatorToken.kind);
+    return !BINARY_LEVELS.has(node.operatorToken.kind);
   }
 
   const isUpdate = ts.isPrefixUnaryExpression(node) && UPDATES.has(node.operator);
@@ -689,14 +724,15 @@ export const spreadFault = (proof: Proof, spread: ts.Expression): Fault | undefi
 };
 
 // The code under a node not proven to run nothing: a call other than a proven or declared pure one, `new`, `await`,
-// a tagged template, an assignment, an update, `delete`, or a member read or spread no proof covers.
+// a tagged template, an assignment, an update, `delete`, or a member read, spread, conversion or look no proof covers.
 export const actsIn = (proof: Proof, node: ts.Node): ts.Node[] => {
   const context = contextOf(proof);
 
   return actingIn(context, node);
 };
 
-// What `isPure` takes as proven: a member read no fault stops, an operand every value of which is a primitive.
+// What `isPure` takes as proven: a member read no fault stops, an operand every value of which is a primitive, a look
+// `isPlainLook` proves.
 const purityOf = (proof: Proof): Purity => {
   const context = contextOf(proof);
   const purity: Purity = {
@@ -705,6 +741,9 @@ const purityOf = (proof: Proof): Purity => {
     },
     isPrimitive: (operand) => {
       return isPrimitive(context, operand);
+    },
+    isPlainLook: (look) => {
+      return isPlainLook(context, look);
     },
   };
 
@@ -755,10 +794,11 @@ const isAny = (): boolean => {
   return true;
 };
 
-// Every member read and conversion taken as proven, to tell whether only member reads may stand in the way.
+// Every member read, conversion and look taken as proven, to tell whether only member reads may stand in the way.
 const ANY_READ: Purity = {
   isPlain: isAny,
   isPrimitive: isAny,
+  isPlainLook: isAny,
 };
 
 // A value the engine moves, repeats or drops must be pure; when only member reads stand in the way, it says which.

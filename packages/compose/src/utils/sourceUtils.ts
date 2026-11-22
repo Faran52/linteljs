@@ -33,10 +33,12 @@ export interface Fitting {
   after: string;
 }
 
-// What proves a value pure past names, literals and arrows: a member read plain, an operand a primitive.
+// What proves a value pure past names, literals and arrows: a member read plain, an operand a primitive, an `in` or
+// `instanceof` looking into what runs nothing.
 export interface Purity {
   isPlain: (read: MemberRead) => boolean;
   isPrimitive: (operand: ts.Expression) => boolean;
+  isPlainLook: (look: ts.BinaryExpression) => boolean;
 }
 
 // TSX for every module, so one parser reads a base and its option modules alike.
@@ -373,9 +375,9 @@ export const isConverting = (node: ts.Node, isPrimitive: (operand: ts.Expression
   return coerced !== undefined && !coerced.every(isPrimitive);
 };
 
-// An operator that runs nothing of its operands but what converting them runs: `in` and `instanceof` look inside one.
-export const isQuietOperator = (operator: ts.SyntaxKind): boolean => {
-  return BINARY_LEVELS.has(operator) && !LOOKING_OPERATORS.has(operator);
+// Whether `in` or `instanceof` looks into an operand not proven to run nothing, which may run its code or throw.
+export const isLooking = (node: ts.Node, isPlainLook: (look: ts.BinaryExpression) => boolean): boolean => {
+  return ts.isBinaryExpression(node) && LOOKING_OPERATORS.has(node.operatorToken.kind) && !isPlainLook(node);
 };
 
 // A literal a conversion takes as it is.
@@ -391,22 +393,27 @@ const provenBy = (purity: Purity | undefined): Purity => {
   const none: Purity = {
     isPlain: isUnproven,
     isPrimitive: isPrimitiveLiteral,
+    isPlainLook: isUnproven,
   };
 
   return purity ?? none;
 };
 
-// Evaluating it twice, or not at all, changes nothing. A name is read with no effect; a member read or a conversion
-// only when `purity` proves it, so with none no member read is, and only a conversion of literals.
+// Evaluating it twice, or not at all, changes nothing. A name is read with no effect; a member read, a conversion or
+// a look only when `purity` proves it, so with none no member read or look is, and only a conversion of literals.
 export const isPure = (node: ts.Expression, purity: Purity | undefined): boolean => {
   const value = unwrapped(node);
-  const { isPlain, isPrimitive } = provenBy(purity);
+  const {
+    isPlain,
+    isPrimitive,
+    isPlainLook,
+  } = provenBy(purity);
 
   const isPureIn = (inner: ts.Expression): boolean => {
     return isPure(inner, purity);
   };
 
-  if (isConverting(value, isPrimitive)) {
+  if (isConverting(value, isPrimitive) || isLooking(value, isPlainLook)) {
     return false;
   }
 
@@ -433,7 +440,7 @@ export const isPure = (node: ts.Expression, purity: Purity | undefined): boolean
   }
 
   if (ts.isBinaryExpression(value)) {
-    return isQuietOperator(value.operatorToken.kind) && isPureIn(value.left) && isPureIn(value.right);
+    return BINARY_LEVELS.has(value.operatorToken.kind) && isPureIn(value.left) && isPureIn(value.right);
   }
 
   if (ts.isTemplateExpression(value)) {

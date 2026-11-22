@@ -308,6 +308,14 @@ export const BOOLEAN_OPERATORS = new Set([
   ts.SyntaxKind.InstanceOfKeyword,
 ]);
 
+// The primitives that are no key as they stand, so `in` converts them.
+export const NON_KEY_KINDS = new Set([
+  ts.SyntaxKind.TrueKeyword,
+  ts.SyntaxKind.FalseKeyword,
+  ts.SyntaxKind.NullKeyword,
+  ts.SyntaxKind.VoidExpression,
+]);
+
 // Expressions whose answer is a string or a boolean whatever they are given: `typeof`, `void`, a template.
 export const PRIMITIVE_ANSWERS = new Set([
   ts.SyntaxKind.TypeOfExpression,

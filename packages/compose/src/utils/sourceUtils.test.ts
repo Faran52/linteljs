@@ -14,11 +14,11 @@ import {
   indentOf,
   isAsync,
   isConverting,
+  isLooking,
   isPlainElement,
   isPrimitiveLiteral,
   isPrototype,
   isPure,
-  isQuietOperator,
   isReference,
   isValueMember,
   isWithin,
@@ -519,17 +519,39 @@ describe('isPrimitiveLiteral', () => {
   });
 });
 
-describe('isQuietOperator', () => {
+describe('isLooking', () => {
   it.each([
-    [ts.SyntaxKind.PlusToken, true],
-    [ts.SyntaxKind.LessThanToken, true],
-    [ts.SyntaxKind.InKeyword, false],
-    [ts.SyntaxKind.InstanceOfKeyword, false],
-    [ts.SyntaxKind.EqualsToken, false],
-  ])('answers for operator %i', (operator, expected) => {
-    const quiet = isQuietOperator(operator);
+    ['a in b', true],
+    ['a instanceof B', true],
+    ['a + b', false],
+    ['a === b', false],
+    ['a = b', false],
+    ['f(a, b)', false],
+  ])('answers for %s with no look proven', (source, expected) => {
+    const expression = expressionOf(source);
+    const looking = isLooking(expression, isNever);
 
-    expect(quiet).toBe(expected);
+    expect(looking).toBe(expected);
+  });
+
+  it.each(['a in b', 'a instanceof B'])('answers false for %s when the test proves the look', (source) => {
+    const expression = expressionOf(source);
+    const looking = isLooking(expression, isProven);
+
+    expect(looking).toBe(false);
+  });
+
+  it('shows the test the look itself', () => {
+    const expression = expressionOf('k in t');
+    const shown: string[] = [];
+
+    isLooking(expression, (look) => {
+      shown.push(textOf(look));
+
+      return true;
+    });
+
+    expect(shown).toEqual(['k in t']);
   });
 });
 
@@ -572,13 +594,16 @@ describe('isPure', () => {
     ['{ ...a }', false],
     ['[a]', false],
     ['a++', false],
-    ['a in b', false],
-    ['a instanceof B', false],
-  ])('answers for %s, every member read and converted operand proven', (source, expected) => {
+    ['a in b', true],
+    ['a instanceof B', true],
+    ['f() in b', false],
+    ['a in f()', false],
+  ])('answers for %s, every member read, converted operand and look proven', (source, expected) => {
     const expression = expressionOf(source);
     const purity: Purity = {
       isPlain: isProven,
       isPrimitive: isProven,
+      isPlainLook: isProven,
     };
     const pure = isPure(expression, purity);
 
@@ -661,6 +686,7 @@ describe('isPure', () => {
 
         return primitives.includes(shown);
       },
+      isPlainLook: isProven,
     };
     const pure = isPure(expression, purity);
 
@@ -695,10 +721,29 @@ describe('isPure', () => {
         return textOf(read) === proven;
       },
       isPrimitive: isProven,
+      isPlainLook: isProven,
     };
     const pure = isPure(expression, purity);
 
     expect(pure).toBe(expected);
+  });
+
+  it.each([
+    'a in b',
+    'a instanceof B',
+    '1 in { 1: 1 }',
+  ])('takes %s as pure only when the test proves the look', (source) => {
+    const expression = expressionOf(source);
+    const purity: Purity = {
+      isPlain: isProven,
+      isPrimitive: isProven,
+      isPlainLook: isNever,
+    };
+    const pure = isPure(expression, purity);
+    const unproven = isPure(expression, undefined);
+
+    expect(pure).toBe(false);
+    expect(unproven).toBe(false);
   });
 
   it.each([

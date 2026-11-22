@@ -593,6 +593,8 @@ describe('plainCheck', () => {
   });
 });
 
+const TABLE = 'const t = { a: 1 };\n';
+
 describe('pureCheck', () => {
   it('passes a value that is pure on proof', () => {
     const { proof, value } = subjectOf('const t = { a: 1 };\ny = t.a + 1;', NONE);
@@ -627,6 +629,16 @@ describe('pureCheck', () => {
     };
 
     expect(run).not.toThrow();
+  });
+
+  it('says which read stands in the way of a look when only reads do', () => {
+    const { proof, value } = subjectOf(`${TABLE}y = u.b in t;`, NONE);
+
+    const run = (): void => {
+      pureCheck(proof, value, new Error('refused'));
+    };
+
+    expect(run).toThrow('"b" of "u"');
   });
 
   it('says which read stands in the way when only reads do', () => {
@@ -742,7 +754,7 @@ describe('actsIn', () => {
     [
       'const k = \'a\';\nconst t = { a: 1 };\ny = [k in t, t instanceof k];',
       NONE,
-      ['k in t', 't instanceof k'],
+      ['t instanceof k'],
     ],
     [
       'const a = b + 1;\nconst b = a + 1;\ny = `${a}`;',
@@ -916,6 +928,234 @@ describe('actsIn', () => {
       .map((node) => {
         return node.getText();
       });
+
+    expect(acting).toStrictEqual(expected);
+  });
+});
+
+const HELD: Given = {
+  ...NONE,
+  held: { './q': 'export const t = { a: 1 };\n' },
+};
+
+const PICKED = 'import { f } from \'./p\';\n\ny = f({ a: 1 });';
+
+const TABLES = 'export const g = (c: boolean) => {\n  if (c) {\n    return { a: 1 };\n  }\n\n  return { b: 2 };\n};\n';
+
+const LOOKED = 'import { g } from \'./p\';\n\ny = \'a\' in g(c);';
+
+// Each `in` or `instanceof` the base assigns to `y`, and whether its look is proven to run nothing.
+const LOOKS: [string, Given, boolean][] = [
+  [
+    `${TABLE}const k = 'a';\ny = k in t;`,
+    NONE,
+    true,
+  ],
+  [
+    'y = \'a\' in { a: 1, \'d\': 2, 1: 4, q };',
+    NONE,
+    true,
+  ],
+  [
+    'const t = { [\'e\']: 3, [\'__proto__\']: p };\ny = \'e\' in t;',
+    NONE,
+    true,
+  ],
+  [
+    'const t = { b() {}, get c() {\n  return 1;\n} };\ny = \'b\' in t;',
+    NONE,
+    true,
+  ],
+  [
+    `${TABLE}y = \`\${1}\` in t;`,
+    NONE,
+    true,
+  ],
+  [
+    `${TABLE}y = -1 in t;`,
+    NONE,
+    true,
+  ],
+  [
+    `${TABLE}y = 1 + 2 in t;`,
+    NONE,
+    true,
+  ],
+  [
+    `${TABLE}y = \`a\` in t;`,
+    NONE,
+    true,
+  ],
+  [
+    'import { t } from \'./p\';\n\ny = \'a\' in t;',
+    optionOf('export const t = { a: 1 };\n'),
+    true,
+  ],
+  [
+    'import { t } from \'./q\';\n\ny = \'a\' in t;',
+    HELD,
+    true,
+  ],
+  [
+    `${TABLE}y = k in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = true in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = null in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = void 0 in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = !a in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = (a === b) in t;`,
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = 1n in t;`,
+    NONE,
+    false,
+  ],
+  [
+    'const t = { ...u };\ny = \'a\' in t;',
+    NONE,
+    false,
+  ],
+  [
+    'const t = { [k]: 1 };\ny = \'a\' in t;',
+    NONE,
+    false,
+  ],
+  [
+    'y = \'a\' in { __proto__: p };',
+    NONE,
+    false,
+  ],
+  [
+    'y = \'a\' in u;',
+    NONE,
+    false,
+  ],
+  [
+    'y = \'a\' in \'b\';',
+    NONE,
+    false,
+  ],
+  [
+    'y = \'a\' in [1];',
+    NONE,
+    false,
+  ],
+  [
+    'let t = { a: 1 };\ny = \'a\' in t;',
+    NONE,
+    false,
+  ],
+  [
+    'import { s } from \'./t.styles\';\n\ny = \'a\' in s;',
+    STYLES_PLAIN,
+    false,
+  ],
+  [
+    'class C {}\ny = a instanceof C;',
+    NONE,
+    false,
+  ],
+  [
+    `${TABLE}y = 'a' instanceof t;`,
+    NONE,
+    false,
+  ],
+  [
+    'y = a instanceof u;',
+    NONE,
+    false,
+  ],
+];
+
+const PROVEN_LOOKS = LOOKS
+  .filter(([
+    ,
+    ,
+    isProven,
+  ]) => {
+    return isProven;
+  });
+
+const REFUSED_LOOKS = LOOKS
+  .filter(([
+    ,
+    ,
+    isProven,
+  ]) => {
+    return !isProven;
+  });
+
+const actedOf = (base: string, given: Given): string[] => {
+  const { proof, value } = subjectOf(base, given);
+
+  return actsIn(proof, value)
+    .map((node) => {
+      return node.getText();
+    });
+};
+
+const pureRun = (base: string, given: Given): () => void => {
+  const { proof, value } = subjectOf(base, given);
+
+  return () => {
+    pureCheck(proof, value, new Error('refused'));
+  };
+};
+
+describe('actsIn and pureCheck, on in and instanceof', () => {
+  it.each(PROVEN_LOOKS)('take %s with %j as running nothing', (base, given) => {
+    const acting = actedOf(base, given);
+    const run = pureRun(base, given);
+
+    expect(acting).toStrictEqual([]);
+    expect(run).not.toThrow();
+  });
+
+  it.each(REFUSED_LOOKS)('take %s with %j as acting', (base, given) => {
+    const acting = actedOf(base, given);
+    const run = pureRun(base, given);
+    const look = base.slice(base.lastIndexOf('y = ') + 4, -1);
+
+    expect(acting).toStrictEqual([look]);
+    expect(run).toThrow('refused');
+  });
+
+  it.each([
+    [optionOf('export const f = (t: object) => \'a\' in t;\n'), []],
+    [optionOf('export const f = (c: boolean) => typeof u in t;\nconst t = { a: 1 };\n'), []],
+  ])('follow the right operand of an option arrow\'s look, with %j', (given, expected) => {
+    const acting = actedOf(PICKED, given);
+
+    expect(acting).toStrictEqual(expected);
+  });
+
+  it.each([
+    [TABLES, ['g(c)']],
+    [TABLES.replace('{ b: 2 }', 'u'), ['\'a\' in g(c)', 'g(c)']],
+  ])('take a look into what an option call answers as proven when every answer is, from %j', (option, expected) => {
+    const given = optionOf(option);
+    const acting = actedOf(LOOKED, given);
 
     expect(acting).toStrictEqual(expected);
   });
