@@ -12,6 +12,7 @@ import {
   functionExpressionCase,
   hookOrderCase,
   namespaceDestructureCase,
+  optionHookOrderCase,
   PROBE_HANDLER,
   propertyFunctionCase,
   strictAwaitedHandlerCase,
@@ -193,7 +194,7 @@ export const SHAPES: Record<string, Shape[]> = {
       shape: 'dependencies sorted ascending under order: desc',
     },
     {
-      build: hookOrderCase(EXTRA_HOOKS, 'desc'),
+      build: optionHookOrderCase(EXTRA_HOOKS, 'useLayoutEffect'),
       options: { hooks: EXTRA_HOOKS },
       shape: 'dependencies of a hook named by the hooks option',
     },

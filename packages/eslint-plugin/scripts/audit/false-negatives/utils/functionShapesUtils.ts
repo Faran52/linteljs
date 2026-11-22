@@ -539,6 +539,53 @@ export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build =>
   };
 };
 
+const STAND_IN_HOOK = 'useEffect';
+
+// The corpus holds too few sorted multi-dependency calls to these hooks, so a sorted `useEffect` stands in, renamed.
+const renamedHookCase = (hook: string): Build => {
+  return (state) => {
+    const calls = nodesOf(state, 'CallExpression');
+
+    return pickFirst(calls, (node) => {
+      const found = dependencyNames(node, [STAND_IN_HOOK]);
+      const { callee } = node;
+
+      if (!found || !callee) {
+        return undefined;
+      }
+
+      const sorted = found.names.toSorted(compareNames);
+      const target = sorted.toReversed();
+      const isSorted = sorted.join() === found.names.join();
+
+      if (!isSorted || target.join() === found.names.join()) {
+        return undefined;
+      }
+
+      const [arrayStart, arrayEnd] = found.array.range;
+      const unsafe = unsafeToReflow(state, arrayStart, arrayEnd);
+
+      if (skipped(state, unsafe)) {
+        return undefined;
+      }
+
+      const between = state.source.slice(callee.range[1], arrayStart);
+
+      return replaced(state, callee.range[0], arrayEnd, `${hook}${between}[${target.join(', ')}]`);
+    });
+  };
+};
+
+// A real call to one of the hooks comes first; the renamed stand-in only when a file has none to break.
+export const optionHookOrderCase = (hooks: string[], renameTo: string): Build => {
+  const real = hookOrderCase(hooks, 'desc');
+  const standIn = renamedHookCase(renameTo);
+
+  return (state) => {
+    return real(state) ?? standIn(state);
+  };
+};
+
 const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined => {
   const properties = pattern?.type === 'ObjectPattern' ? listOf(pattern.properties) : [];
   const names = properties
