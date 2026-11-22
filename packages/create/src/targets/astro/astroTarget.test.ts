@@ -190,6 +190,23 @@ describe('the hosted framework axis', () => {
     expect(devDependencies).toContain('oxc-transform-react');
   });
 
+  it('names vite as a yarn peer under a react host alone, for the peer yarn gives `@astrojs/react`', () => {
+    const peers = HOSTS
+      .map((hostedFramework) => {
+        return recordFor({ hostedFramework }).yarnPeers;
+      });
+
+    expect(peers).toEqual([
+      ['vite'],
+      undefined,
+      undefined,
+      undefined,
+    ]);
+
+    const { yarnPeers } = recordFor();
+    expect(yarnPeers).toBeUndefined();
+  });
+
   it.each(HOSTS)('overrides nothing for a %s host', (hostedFramework) => {
     const { overrides } = recordFor({ hostedFramework });
 

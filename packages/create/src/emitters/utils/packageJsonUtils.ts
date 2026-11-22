@@ -349,6 +349,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...SHARED_DEV_DEPENDENCIES,
     ...(target.sfcExtension === undefined ? [] : ['postcss-html', 'postcss']),
     ...target.devDependencies,
+    ...(answers.packageManager === 'yarn' ? target.yarnPeers ?? [] : []),
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
     ...runnerDevDependencies(answers, target),

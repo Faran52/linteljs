@@ -235,6 +235,8 @@ export interface TargetRecord {
   dependencies?: string[];
   devDependencies: string[];
   testDevDependencies?: string[];
+  // Yarn installs no peers, so a peer only its dependencies have is named on yarn alone.
+  yarnPeers?: string[];
   // pnpm aborts with `ERR_PNPM_IGNORED_BUILDS` when one is missing.
   allowBuilds: string[];
   // For a target whose platform pins a release every other target has moved past.

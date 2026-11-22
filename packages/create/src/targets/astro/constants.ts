@@ -91,8 +91,10 @@ export const INTEGRATIONS: Record<HostedFramework, string> = {
 // What one hosted framework alone changes in the record.
 export const FRAMEWORK_RECORD: Record<HostedFramework, Pick<TargetRecord, 'packageImports'
   | 'testInline'
-  | 'vitestFactory'>> = {
-  react: {},
+  | 'vitestFactory'
+  | 'yarnPeers'>> = {
+  // The vite peer yarn's extension gives `@astrojs/react`, which yarn leaves to the project.
+  react: { yarnPeers: ['vite'] },
   vue: {},
   // Svelte's island reads SvelteKit's own spelling of `src/lib`.
   svelte: { packageImports: { '#lib/*': './src/lib/*' } },

@@ -789,6 +789,29 @@ describe('buildDevDependencies', () => {
     expect(vitestNames).toEqual([]);
   });
 
+  it('names vite for an astro react island on yarn whatever the runner, at the one version vitest takes', () => {
+    const island: Partial<Answers> = {
+      target: 'astro',
+      hostedFramework: 'react',
+    };
+    const { vite } = VERSIONS;
+
+    const untested = buildDevDependencies(answersFor({
+      ...island,
+      packageManager: 'yarn',
+      testing: 'none',
+    }));
+    expect(untested).toHaveProperty('vite', vite);
+    const tested = buildDevDependencies(answersFor({ ...island, packageManager: 'yarn' }));
+    expect(tested).toHaveProperty('vite', vite);
+    const pnpm = buildDevDependencies(answersFor({
+      ...island,
+      packageManager: 'pnpm',
+      testing: 'none',
+    }));
+    expect(pnpm).not.toHaveProperty('vite');
+  });
+
   it('names no vite for yarn on jest, whose runner peers none', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'react-native',
