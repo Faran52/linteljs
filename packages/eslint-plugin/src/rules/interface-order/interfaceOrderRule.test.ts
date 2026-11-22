@@ -87,6 +87,26 @@ const value = thing;`,
       errors: [{ messageId: 'moveAfterImports' }],
     },
     {
+      code: '@Injectable({ root: true })\nexport class Service {}\n\nexport interface Post {\n  id: number;\n}',
+      output: 'export interface Post {\n  id: number;\n}\n\n@Injectable({ root: true })\nexport class Service {}',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: '/** the panel */\n@Component({})\n@Other()\nexport default class Panel {}\n\ntype Alpha = string;',
+      output: 'type Alpha = string;\n\n/** the panel */\n@Component({})\n@Other()\nexport default class Panel {}',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: '@Component({})\nclass Panel {}\n\ntype Alpha = string;',
+      output: 'type Alpha = string;\n\n@Component({})\nclass Panel {}',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: 'export @Component({}) class Panel {}\n\ntype Alpha = string;',
+      output: 'type Alpha = string;\n\nexport @Component({}) class Panel {}',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
       code: 'run();\n\ntype Alpha = string;',
       output: 'type Alpha = string;\n\nrun();',
       errors: [{ messageId: 'moveAfterImports' }],

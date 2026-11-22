@@ -738,6 +738,24 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join('\n'),
     filename: 'Panel.vue',
   },
+  {
+    // interface-order once inserted the types between a decorator and the `export` it belongs to.
+    name: 'decorated exported class ahead of an interface',
+    code: [
+      '// Fetches posts.',
+      "@Injectable({ providedIn: 'root' })",
+      'export class PostsService {',
+      '  @Input() limit?: number;',
+      '}',
+      '',
+      'export interface Post {',
+      '  id: number;',
+      '}',
+      '',
+    ].join('\n'),
+    typescript: true,
+    filename: 'posts.service.ts',
+  },
   // interface-order's move stays inside the block it came from.
   {
     name: 'vue <script setup> with a type after runtime code',

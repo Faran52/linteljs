@@ -10,6 +10,7 @@ import {
   isDirective,
   mustFind,
   optionsOf,
+  type Ranged,
   rangeOf,
   type RuleNode,
   type SourceCode,
@@ -33,6 +34,11 @@ interface TypeCut {
   startLine: number;
   text: string;
   removeRange: [number, number];
+}
+
+// `ClassDeclaration.decorators` is absent from ESLint's ESTree types.
+interface Decorated {
+  decorators: Ranged[];
 }
 
 interface InterfaceOrderOptions {
@@ -60,6 +66,28 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
   }
 
   return false;
+};
+
+const hasDecorators = (node: object): node is Decorated => {
+  return 'decorators' in node;
+};
+
+// A decorator written before `export` sits outside the export's range, and text inserted there detaches it.
+const decoratorsOf = (statement: ProgramEntry): Ranged[] => {
+  if (!('declaration' in statement) || !statement.declaration || !hasDecorators(statement.declaration)) {
+    return [];
+  }
+
+  return statement.declaration.decorators;
+};
+
+const statementStartOf = (statement: ProgramEntry): number => {
+  const starts = [statement, ...decoratorsOf(statement)]
+    .map((located) => {
+      return rangeOf(located)[0];
+    });
+
+  return Math.min(...starts);
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
@@ -260,11 +288,13 @@ export const interfaceOrder = createRule('interface-order', {
               : fixer.insertTextAfter(insertAfterNode, block);
           }
           else {
-            // Inserting at the node would detach a JSDoc from it.
-            const leading = sourceCode.getCommentsBefore(first);
-            const anchor = leading[0] ?? first;
+            // Inserting at the node would detach a JSDoc or a decorator from it.
+            const firstStart = statementStartOf(first);
+            const firstToken = mustFind(sourceCode.getTokenByRangeStart(firstStart));
+            const [leading] = sourceCode.getCommentsBefore(firstToken);
+            const [anchorStart] = rangeOf(leading ?? firstToken);
 
-            yield fixer.insertTextBefore(anchor, joinedTypes + `${eol}${eol}${indent}`);
+            yield fixer.insertTextBeforeRange([anchorStart, anchorStart], joinedTypes + `${eol}${eol}${indent}`);
           }
 
           for (const { removeRange } of cuts) {
