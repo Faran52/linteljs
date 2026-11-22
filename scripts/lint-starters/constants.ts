@@ -8,6 +8,8 @@ export const LOCK = `${CACHE_ROOT}.lock`;
 
 export const LOCK_POLL_MS = 5000;
 
+export const CORE_SHARE = 4;
+
 export const TARBALLS = join(CACHE_ROOT, 'tarballs');
 
 export const PACKING = join(CACHE_ROOT, 'packing');

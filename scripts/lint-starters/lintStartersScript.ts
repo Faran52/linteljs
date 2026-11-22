@@ -28,6 +28,7 @@ import { run } from '../utils/processUtils.ts';
 import {
   CACHE_ROOT,
   CONFIG_PACKAGE,
+  CORE_SHARE,
   DURATIONS,
   MS_PER_SECOND,
   PLUGIN_PACKAGE,
@@ -314,7 +315,8 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
   return 'linted';
 };
 
-const concurrency = Math.max(1, Math.floor(availableParallelism() / 2));
+// A quarter of the cores: a project runs its checks at once, and at half a cold jest render passed its 15 s limit.
+const concurrency = Math.max(1, Math.floor(availableParallelism() / CORE_SHARE));
 const semaphore = new Semaphore(concurrency);
 const labelled = starterCases(STARTER_CASES);
 const [first] = labelled;
