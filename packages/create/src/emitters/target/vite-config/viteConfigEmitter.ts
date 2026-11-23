@@ -21,7 +21,7 @@ interface ViteParts {
   framework: Framework | undefined;
   inputs?: Record<string, string> | undefined;
   serveMocks: boolean;
-  hmrPort: boolean;
+  wsPort: boolean;
 }
 
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
@@ -49,7 +49,7 @@ const viteConfigSource = (parts: ViteParts): string => {
 
   const inputs = rollupInputs(parts.inputs);
   const fs = parts.serveMocks ? ", fs: { allow: ['__mocks__'] }" : '';
-  const hmr = parts.hmrPort ? ', hmr: { port: 3000 }' : '';
+  const ws = parts.wsPort ? ', ws: { port: 3000 }' : '';
   const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
 
   return `${imports}
@@ -58,7 +58,7 @@ ${declarations}export default defineConfig({
   plugins: [
 ${plugins}  ],
 ${inputs}  resolve: { tsconfigPaths: true },
-  server: { port: 3000${hmr}${fs} },
+  server: { port: 3000${ws}${fs} },
 });
 `;
 };
@@ -84,7 +84,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
     framework: record.framework,
     inputs: record.viteInputs,
     serveMocks: record.serveMocks === true && answers.mocking === 'msw',
-    hmrPort: record.hmrPort === true,
+    wsPort: record.wsPort === true,
   });
 
   return source;

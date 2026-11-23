@@ -356,7 +356,7 @@ when a version's change lives in a sibling it is described there instead:
   now loads the extension's stylesheet and lays out as the popup does.
 - **A web extension's pages no longer log a refused WebSocket under `vite`.** A `chrome-extension://` URL has
   no port, so Vite's client dialed `ws://localhost/` before falling back. The `vite.config.ts` it writes now
-  sets `server.hmr.port` to the dev server's, and the popup and panel connect on the first try.
+  sets `server.ws.port` to the dev server's, and the popup and panel connect on the first try.
 - **A SvelteKit app with languages in an npm, yarn or bun monorepo rendered nothing.** Those managers hoist the
   inlang plugin to the root `node_modules`, where `project.inlang/settings.json` did not look, so Paraglide
   compiled no messages and every page failed. A monorepo now installs the plugin at the root and reads it there.

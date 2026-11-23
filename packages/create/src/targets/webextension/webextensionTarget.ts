@@ -166,7 +166,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     coverageExclude: surfaceCoverageExclude(answers),
     // crx builds only pages the manifest names; the panel is opened at runtime.
     ...(devtools ? { viteInputs: { panel: 'panel.html' } } : {}),
-    hmrPort: true,
+    wsPort: true,
     typecheck: 'tsc --noEmit',
     build: 'vite build',
     extraScripts: {

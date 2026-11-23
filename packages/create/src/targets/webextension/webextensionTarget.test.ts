@@ -128,10 +128,10 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toBeUndefined();
   });
 
-  it('pins the HMR port, which an extension page cannot read off its own URL', () => {
+  it('pins the socket port, which an extension page cannot read off its own URL', () => {
     const record = recordFor();
 
-    expect(record.hmrPort).toBe(true);
+    expect(record.wsPort).toBe(true);
   });
 
   it.each<[Surface]>([
