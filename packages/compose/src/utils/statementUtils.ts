@@ -317,7 +317,10 @@ const isDecorated = (node: ts.Node): boolean => {
 const isInstanceMember = (member: ts.ClassElement): boolean => {
   const isOther = ts.isConstructorDeclaration(member) || ts.isClassStaticBlockDeclaration(member);
 
-  return !isOther && !hasModifier(member, ts.SyntaxKind.StaticKeyword);
+  const isStatic = hasModifier(member, ts.SyntaxKind.StaticKeyword);
+  const isAbstract = hasModifier(member, ts.SyntaxKind.AbstractKeyword);
+
+  return !isOther && !isStatic && !isAbstract;
 };
 
 // The members an option's class gives another: instance members, with nothing else to the class.
@@ -339,11 +342,14 @@ const givenMembers = (
     throw refusal(clause, 'A class a base extends takes no type arguments here');
   }
 
-  const isPlainClass = exported.heritageClauses === undefined && clause.types.length === 1;
+  const isAbstract = hasModifier(exported, ts.SyntaxKind.AbstractKeyword);
+  const isDeclared = hasModifier(exported, ts.SyntaxKind.DeclareKeyword);
+  const isConcrete = !isAbstract && !isDeclared;
+  const isPlainClass = isConcrete && exported.heritageClauses === undefined && clause.types.length === 1;
   const hasDecorator = [exported, ...exported.members].some(isDecorated);
 
   if (!isPlainClass || hasDecorator || !exported.members.every(isInstanceMember)) {
-    throw refusal(clause, 'A class a base extends holds instance members alone, with no heritage or decorator');
+    throw refusal(clause, 'A class a base extends is concrete and holds instance members, no heritage or decorator');
   }
 
   const { text } = exported.getSourceFile();

@@ -454,7 +454,7 @@ const FIELD_B = '  b = 1;';
 
 const FIELD = lines(OPTION_OPEN, FIELD_A, '}');
 
-const NOT_PLAIN = 'A class a base extends holds instance members alone, with no heritage or decorator: extends x';
+const NOT_PLAIN = 'A class a base extends is concrete and holds instance members, no heritage or decorator: extends x';
 
 const LOST = 'A class a base extends holds a comment no member carries, which would be lost: extends x';
 
@@ -548,6 +548,12 @@ describe('flattenClass', () => {
       lines('class C {', '  [j] = 1;', '', '  [k] = class extends D { m() { super.m(); } };', '}'),
     ],
     [
+      'a declared field',
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  declare a: number;', '}'),
+      lines('class C {', '  declare a: number;', '}'),
+    ],
+    [
       'an index signature before another',
       lines(CLASS_OPEN, '  [k: string]: unknown;', '}'),
       lines(OPTION_OPEN, '  [j: number]: unknown;', '}'),
@@ -613,6 +619,21 @@ describe('flattenClass', () => {
     [
       EMPTY_CLASS,
       lines(OPTION_OPEN, FIELD_A, '  static {}', '}'),
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      'export abstract class x {}\n',
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      'export declare class x {}\n',
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  abstract a: number;', '}'),
       NOT_PLAIN,
     ],
     [
