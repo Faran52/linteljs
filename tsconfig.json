@@ -64,8 +64,6 @@
       "@e2e/*": ["./packages/create/e2e/*"],
       "@emitters": ["./packages/create/src/emitters/index.ts"],
       "@emitters/*": ["./packages/create/src/emitters/*"],
-      "@frameworks/*": ["./packages/create/src/frameworks/*"],
-      "@io/*": ["./packages/create/src/io/*"],
       "@pipeline": ["./packages/create/src/pipeline/index.ts"],
       "@pipeline/*": ["./packages/create/src/pipeline/*"],
       "@prompt/*": ["./packages/create/src/prompt/*"],

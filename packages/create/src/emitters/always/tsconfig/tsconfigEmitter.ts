@@ -56,7 +56,7 @@ export interface CompilerOptions {
   paths?: Record<string, string[]>;
 }
 
-export interface TsconfigParts {
+interface TsconfigParts {
   delta: TsconfigDelta;
   browser: boolean;
   types: string[];
@@ -186,7 +186,7 @@ const tsconfigOf = (parts: TsconfigParts): TsconfigFile => {
   return tsconfig;
 };
 
-export const tsconfigSource = (parts: TsconfigParts): string => {
+const tsconfigSource = (parts: TsconfigParts): string => {
   const tsconfig = tsconfigOf(parts);
 
   return `${JSON.stringify(tsconfig, null, 2)}\n`;

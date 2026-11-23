@@ -69,7 +69,7 @@ export const FRAMEWORK_MODE_VITE_PLUGIN: PluginSpec = {
   calls: [WELL_KNOWN_404, `...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
 };
 
-export const REACT_I18N_SETUP = 'fragments/test-setup/setupTests.i18n.ts';
+const REACT_I18N_SETUP = 'fragments/test-setup/setupTests.i18n.ts';
 
 // i18next is the most used React i18n, and react-i18next is its own.
 export const REACT_I18N: I18nParts = {

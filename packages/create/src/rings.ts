@@ -28,10 +28,8 @@ export const OUTER_RINGS = [
 // The 2.0 rewrite, beside the old pipeline until it replaces it.
 export const REWRITE_RINGS = [
   'choices',
-  'io',
   'prompt',
   'assemble',
-  'frameworks',
 ] as const;
 
 export const RINGS = [

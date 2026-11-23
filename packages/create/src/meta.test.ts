@@ -56,12 +56,10 @@ const srcDir = join(import.meta.dirname);
 
 const SHARED = new Set(['utils']);
 
-// Only the rewrite and `src/cli.ts` read these, by file, so they hold no barrel.
+// Only the rewrite reads these, by file, so they hold no barrel.
 const BARRELLESS = new Set<Ring>([
   'assemble',
   'choices',
-  'frameworks',
-  'io',
   'prompt',
 ]);
 
@@ -91,8 +89,6 @@ const SHAPES: RingShape[] = [
   {
     name: 'assemble',
     suffixes: {
-      assemble: 'Assemble',
-      errors: 'Error',
       merge: 'Merge',
       read: 'Reader',
       write: 'Writer',
@@ -141,14 +137,6 @@ const SHAPES: RingShape[] = [
       ];
       return emitterKeys;
     },
-  },
-  {
-    name: 'frameworks',
-    suffixes: { '': 'Framework' },
-  },
-  {
-    name: 'io',
-    suffixes: { write: 'Writer' },
   },
   {
     name: 'pipeline',

@@ -15,7 +15,7 @@ import { stylingPlugin } from '../../utils/stylingUtils';
 
 import { rollupInputs } from './utils/inputUtils';
 
-export interface ViteParts {
+interface ViteParts {
   plugin: PluginSpec;
   styling: Styling | undefined;
   framework: Framework | undefined;
@@ -25,7 +25,7 @@ export interface ViteParts {
 }
 
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
-export const viteConfigSource = (parts: ViteParts): string => {
+const viteConfigSource = (parts: ViteParts): string => {
   const { plugin } = parts;
   const styling = stylingPlugin(parts.styling);
   const imports = sortedImports([

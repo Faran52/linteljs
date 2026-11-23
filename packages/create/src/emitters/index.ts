@@ -1,40 +1,21 @@
 export { hasProjectsBlock } from './agents/utils/adapterUtils';
-export { bannedPatternsOf } from './always/banned-patterns/bannedPatternsEmitter';
-export { commitGateOf } from './always/commit-gate/commitGateEmitter';
 export {
   arrayLiteral,
   configSource,
   emitEslintConfig,
   objectLiteral,
 } from './always/eslint-config/eslintConfigEmitter';
-export { gitignoreEntries, mergeGitignore } from './always/gitignore/gitignoreEmitter';
-export { huskyHooksOf } from './always/husky/huskyEmitter';
 export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
-export {
-  checkScriptOf,
-  installScriptOf,
-  lintScriptsOf,
-  styleGlob,
-} from './always/utils/scriptUtils';
-export {
-  GATE_SCRIPTS,
-  HOOK_DEV_DEPENDENCIES,
-  SHARED_DEV_DEPENDENCIES,
-  STYLE_GLOB,
-  TEST_RUNNERS,
-} from './constants';
-export { rootAnswersOf, workspaceRootOf } from './layout/workspace-root/workspaceRootEmitter';
+export { styleGlob } from './always/utils/scriptUtils';
+export { TEST_RUNNERS } from './constants';
+export { rootAnswersOf } from './layout/workspace-root/workspaceRootEmitter';
 export { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 export {
   buildArtifacts,
   projectArtifacts,
   seedArtifacts,
 } from './registry';
-export {
-  atRoot,
-  packageAnswersOf,
-  workspaceOf,
-} from './utils/layoutUtils';
+export { packageAnswersOf, workspaceOf } from './utils/layoutUtils';
 export {
   buildDevDependencies,
   type DependencyDrift,
@@ -43,7 +24,6 @@ export {
   serializedPackageJson,
   type Upgrade,
   upgradedPackageJson,
-  versioned,
 } from './utils/packageJsonUtils';
 export { testRunnerOf } from './utils/runnerUtils';
 export {

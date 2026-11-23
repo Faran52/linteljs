@@ -19,7 +19,7 @@ interface CheckScript {
 }
 
 // Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
-export const installScriptOf = (packageManager: PackageManager, steps: readonly string[]): Record<string, string> => {
+const installScriptOf = (packageManager: PackageManager, steps: readonly string[]): Record<string, string> => {
   if (steps.length === 0) {
     return {};
   }
@@ -37,7 +37,7 @@ export const styleGlob = (answers: Answers): string => {
   return sfcExtension === undefined ? STYLE_GLOB : `src/**/*.{css,${sfcExtension}}`;
 };
 
-export const lintScriptsOf = (monorepo: boolean, glob: string): Record<string, string> => {
+const lintScriptsOf = (monorepo: boolean, glob: string): Record<string, string> => {
   const scripts = {
     'lint': 'eslint . --concurrency auto',
     'lint:fix': 'eslint . --fix --concurrency auto',
@@ -51,7 +51,7 @@ export const lintScriptsOf = (monorepo: boolean, glob: string): Record<string, s
   return scripts;
 };
 
-export const checkScriptOf = (run: string, gates: readonly string[]): string => {
+const checkScriptOf = (run: string, gates: readonly string[]): string => {
   return gates
     .map((gate) => {
       return `${run} ${gate}`;

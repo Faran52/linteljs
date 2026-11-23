@@ -1,2 +1,2 @@
-// The user left a prompt; `cli.ts` prints its message and exits 130.
+// The user left a prompt.
 export class Cancelled extends Error {}

@@ -15,7 +15,6 @@ import {
   manifestReader,
   type Question,
 } from '@choices/read/manifest/manifestReader';
-import { directoriesIn, TEMPLATES_ROOT } from '@disk';
 
 import { drawerReader, type Drawn } from '../../read/drawer/drawerReader';
 
@@ -128,19 +127,9 @@ describe('drawersMerge', () => {
     expect(merging).toThrow('x.ts is in both a and b');
   });
 
-  it('meets no clash in any legal combination of any framework', async () => {
-    const shipped = await directoriesIn(join(TEMPLATES_ROOT, 'frameworks'));
-    const checks = [
-      clashesIn(DRAWERS_ROOT, 'react'),
-      ...shipped
-        .map(async (framework) => {
-          return await clashesIn(TEMPLATES_ROOT, framework);
-        }),
-    ];
+  it('meets no clash in any legal combination', async () => {
+    const clashes = await clashesIn(DRAWERS_ROOT, 'react');
 
-    const clashes = await Promise.all(checks);
-    const flat = clashes.flat();
-
-    expect(flat).toEqual([]);
+    expect(clashes).toEqual([]);
   });
 });

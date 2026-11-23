@@ -97,7 +97,7 @@ const withoutStylelint = (source: string): string => {
 };
 
 // The manifest, .gitignore and lint-staged config; the root's fields and dev dependencies are what `projects` need.
-export const workspaceRootOf = (name: string, root: Answers, projects: readonly Answers[]): RootFiles => {
+const workspaceRootOf = (name: string, root: Answers, projects: readonly Answers[]): RootFiles => {
   const manifest = rootManifest(name, root, projects);
   const lintStaged = copied('lint-staged.config.js');
   const files: RootFiles = [

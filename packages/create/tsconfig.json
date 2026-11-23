@@ -22,8 +22,6 @@
       "@disk/*": ["./src/disk/*"],
       "@emitters": ["./src/emitters/index.ts"],
       "@emitters/*": ["./src/emitters/*"],
-      "@frameworks/*": ["./src/frameworks/*"],
-      "@io/*":["./src/io/*"],
       "@pipeline": ["./src/pipeline/index.ts"],
       "@pipeline/*": ["./src/pipeline/*"],
       "@prompt/*": ["./src/prompt/*"],

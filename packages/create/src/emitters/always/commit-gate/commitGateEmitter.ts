@@ -3,7 +3,7 @@ import { type Answers, type Artifact } from '@config/types';
 import { copied } from '../../utils/artifactUtils';
 
 // What the pre-commit and commit-msg hooks run, and the logger the shipped scripts report through.
-export const commitGateOf = (monorepo: boolean): Artifact[] => {
+const commitGateOf = (monorepo: boolean): Artifact[] => {
   const lintStaged = copied('lint-staged.config.js');
   // A monorepo's app runs the scripts at the git root.
   const appLintStaged: Artifact = {

@@ -22,7 +22,7 @@ const MEASURABLE = [
   'mjs',
 ];
 
-export const measuredGlob = (sfcExtension?: string): string => {
+const measuredGlob = (sfcExtension?: string): string => {
   const extensions = sfcExtension === undefined ? MEASURABLE : [...MEASURABLE, sfcExtension];
 
   return `src/**/*.{${extensions.join(',')}}`;
@@ -32,7 +32,7 @@ export const coverageInclude = (answers: Answers): string => {
   return measuredGlob(targetFor(answers).sfcExtension);
 };
 
-export const excludedWith = (own: string[]): string[] => {
+const excludedWith = (own: string[]): string[] => {
   const exclude = [...SHARED_COVERAGE_EXCLUDE, ...own];
 
   return exclude;

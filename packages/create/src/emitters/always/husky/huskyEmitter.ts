@@ -18,7 +18,7 @@ const hookText = (packageManager: PackageManager, monorepo: boolean) => {
 };
 
 // Husky and Claude Code invoke these directly, so the mode bit is part of the artifact.
-export const huskyHooksOf = (packageManager: PackageManager, monorepo: boolean): Artifact[] => {
+const huskyHooksOf = (packageManager: PackageManager, monorepo: boolean): Artifact[] => {
   const hooks = ['pre-commit', 'commit-msg'];
 
   return hooks

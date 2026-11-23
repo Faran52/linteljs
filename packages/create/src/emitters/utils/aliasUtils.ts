@@ -14,10 +14,10 @@ import {
   type TargetRecord,
 } from '@targets';
 
-export type AliasLayers = Pick<TargetRecord, 'routeAlias' | 'hooksAlias' | 'extraAliases'>;
+type AliasLayers = Pick<TargetRecord, 'routeAlias' | 'hooksAlias' | 'extraAliases'>;
 
 // The directories a project may not have, aliased only when it does.
-export interface AliasedDirectories {
+interface AliasedDirectories {
   apis: boolean;
   i18n: boolean;
   mocks: boolean;
@@ -44,7 +44,7 @@ const writesApis = (answers: Answers, starters: string[]): boolean => {
 };
 
 // The order is the dependency direction, so a sorted import block reads as the architecture.
-export const standardAliases = (layers: AliasLayers, has: AliasedDirectories): AliasMap => {
+const standardAliases = (layers: AliasLayers, has: AliasedDirectories): AliasMap => {
   const aliases: AliasMap = {
     ...layers.routeAlias,
     '@components/*': './src/components/*',
@@ -67,7 +67,7 @@ export const standardAliases = (layers: AliasLayers, has: AliasedDirectories): A
 };
 
 // An exact key beside a `/*` one only where the project writes that directory's barrel, so it imports as `@ui`.
-export const withBarrels = (aliases: AliasMap, files: string[]): AliasMap => {
+const withBarrels = (aliases: AliasMap, files: string[]): AliasMap => {
   const paired = Object.entries(aliases)
     .flatMap(([alias, directory]) => {
       const root = directory.slice(0, -WILDCARD.length);

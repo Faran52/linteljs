@@ -42,7 +42,7 @@ export const checkerArtifact = (answers: Answers): Artifact => {
   return checkerOf(answers.typeSafety === 'relaxed');
 };
 
-export const bannedPatternsOf = (relaxed: boolean): Artifact[] => {
+const bannedPatternsOf = (relaxed: boolean): Artifact[] => {
   const artifacts = [
     checkerOf(relaxed),
     copied('scripts/utils/bannedPatternsUtils.ts'),

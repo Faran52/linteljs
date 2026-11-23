@@ -37,7 +37,7 @@ const overridesFor = (overrides: StyleOverride[]): string => {
   return `\n  overrides: [\n${blocks.join('\n')}\n  ],`;
 };
 
-export const stylelintSource = (tailwind: boolean, sfcExtension?: string): string => {
+const stylelintSource = (tailwind: boolean, sfcExtension?: string): string => {
   const extended = [
     'stylelint-config-standard',
     'stylelint-config-recess-order',

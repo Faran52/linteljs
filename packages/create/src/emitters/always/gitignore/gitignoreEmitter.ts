@@ -51,7 +51,7 @@ export const mergeGitignore = (existing: string | null, entries: string[]): stri
   return `${terminated}\n${block}`;
 };
 
-export const gitignoreEntries = (packageManager: PackageManager, own: readonly string[]): string[] => {
+const gitignoreEntries = (packageManager: PackageManager, own: readonly string[]): string[] => {
   const entries = [
     ...BASE_IGNORED,
     ...packageManager === 'yarn' ? YARN_IGNORED : [],

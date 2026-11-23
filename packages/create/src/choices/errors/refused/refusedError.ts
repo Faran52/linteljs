@@ -1,2 +1,2 @@
-// An answer the framework or another answer rules out; `cli.ts` prints its message and exits 1.
+// An answer the framework or another answer rules out.
 export class Refused extends Error {}

@@ -20,7 +20,7 @@ import {
   stackRows,
 } from './utils/recordUtils';
 
-export interface RecordParts {
+interface RecordParts {
   name: string;
   packageManager: PackageManager;
   gate: [string, string][];
@@ -47,7 +47,7 @@ const rowsOf = (entries: [string, string][]): string => {
     .join('\n');
 };
 
-export const linteljsRecordSource = (parts: RecordParts): string => {
+const linteljsRecordSource = (parts: RecordParts): string => {
   const source = [
     '// Written once by @linteljs/create. Yours from here; only the starter pages read it.',
     nameDeclaration(parts.name),
@@ -73,14 +73,7 @@ export const linteljsRecordSource = (parts: RecordParts): string => {
   return source;
 };
 
-export const RECORD_MODULE = 'src/config/linteljs.ts';
-
-export {
-  type AnswerEntry,
-  answerRowsOf,
-  gateRowsOf,
-  stackRowsOf,
-} from './utils/recordUtils';
+const RECORD_MODULE = 'src/config/linteljs.ts';
 
 export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
   if (targetFor(answers).packageProject === true) {

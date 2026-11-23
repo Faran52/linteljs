@@ -18,13 +18,13 @@ import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 import { coverageExclude, coverageInclude } from '../utils/coverageUtils';
 
-export type TestTarget = Pick<TargetRecord, 'testPool'
+type TestTarget = Pick<TargetRecord, 'testPool'
   | 'packageProject'
   | 'testEnvironment'
   | 'testInline'
   | 'testConditions'>;
 
-export interface VitestParts {
+interface VitestParts {
   include: string;
   exclude: string[];
   setup: string;
@@ -99,7 +99,7 @@ const conditionsLine = (testConditions: string[] | undefined, indent: string): s
 };
 
 // Over a project's own `vite.config.ts`.
-export const mergedVitestSource = (parts: VitestParts): string => {
+const mergedVitestSource = (parts: VitestParts): string => {
   const block = testBlock(parts.include, parts.exclude, parts.setup, '    ', parts.target, parts.stylex);
   const conditions = conditionsLine(parts.target.testConditions, '    ');
 

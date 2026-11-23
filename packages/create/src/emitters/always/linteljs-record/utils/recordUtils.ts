@@ -23,10 +23,9 @@ import type {
 
 type StackFacts = Pick<Answers, 'packageManager' | 'packageManagerVersion' | 'nodeVersion'>;
 
-// A checked answer from the rewrite is a plain string or list, wider than the old pipeline's unions.
-type AnswerValue = Answers[AnswerKey] | string | string[];
+type AnswerValue = Answers[AnswerKey];
 
-export type AnswerEntry = [key: AnswerKey, prompt: string | undefined, value: AnswerValue];
+type AnswerEntry = [key: AnswerKey, prompt: string | undefined, value: AnswerValue];
 
 // A long command breaks at its spaces into joined literals, inside the base layer's 120 columns.
 const RUNS_WIDTH = 100;
@@ -105,7 +104,7 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
   return stackRowsOf(targetFor(answers).framework, answers, versions);
 };
 
-export const stackRowsOf = (
+const stackRowsOf = (
   framework: Framework | undefined,
   facts: StackFacts,
   versions: Record<string, string>,
@@ -167,7 +166,7 @@ export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRe
 };
 
 // An entry with no prompt is one its target does not ask.
-export const answerRowsOf = (entries: readonly AnswerEntry[], translated: boolean): [string, string][] => {
+const answerRowsOf = (entries: readonly AnswerEntry[], translated: boolean): [string, string][] => {
   return entries
     .flatMap(([
       key,

@@ -29,19 +29,13 @@ The 2.0 rewrite grows beside them, in `REWRITE_RINGS` with no zones yet:
 ```
 choices/    the question manifest, the drawer catalog, what each question offers, the checked answers, the
             drawers they pick, and the recorded config. Reads @answers and @disk.
-io/         writing a project's files through artifactWriter.
 prompt/     asking the questions; throws Cancelled.
-assemble/   reads each picked drawer, merges files and shares (a path or a share key twice is an authoring error),
+assemble/   reads drawers and layers, merges files and shares (a path or a share key twice is an authoring error),
             writes package.json, eslint.config.ts, locales, routes and the CSS entry from the merged share, and
-            places each unit (monorepo: apps/<n>, packages/<n>) once. Reads @choices, @disk, @emitters and @io.
-frameworks/ <name>/<name>Framework.ts per framework (a FrameworkModule, types.ts): the files it builds in code and
-            its share over its picked drawers. registry.ts: FRAMEWORKS, the --target values the rewrite serves,
-            and FRAMEWORK_MODULES, which workspaceAssemble runs per target.
+            places layer files. Reads @disk and @emitters; a suite reads @choices. No entry runs it yet.
 ```
 
-None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`. `src/cli.ts`, beside
-`index.ts` and `rings.ts`, holds `main`: a `--target` in `FRAMEWORKS` (one positional, not `sync`, every flag one
-the manifest declares) runs the rewrite and maps its errors to exit codes; anything else goes to `@terminal`'s `main`.
+None has a barrel until an outer ring imports it; `meta.test.ts` lists them in `BARRELLESS`.
 
 The compose engine is no ring: it is the private `packages/compose`, run by the gate's `compose` step, and nothing
 in `src/` imports it.

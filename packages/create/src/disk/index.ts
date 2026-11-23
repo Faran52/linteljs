@@ -16,7 +16,6 @@ export {
   globPaths,
   globSnapshot,
   isExecutableFile,
-  readFile,
   readIfPresent,
   rename,
   rm,
