@@ -452,6 +452,15 @@ const MOCKING_PAIRS = CONTACT_SHELLS
 const PAIRS: Pair[] = [
   ...MOCKING_PAIRS,
   {
+    base: 'angular-cli/home/home.ts',
+    specifier: './store',
+    groups: groupsWith(ANGULAR, []),
+    options: [
+      ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/src/app/home/home.ts'],
+      ['store.ts', 'angular-cli/store/signals/src/app/home/home.ts'],
+    ],
+  },
+  {
     base: 'astro/contact-island/ContactIsland.test.tsx',
     specifier: './hostedFramework',
     groups: groupsWith(REACT, []),

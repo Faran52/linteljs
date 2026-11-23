@@ -41,4 +41,14 @@ export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
   },
+  {
+    shell: 'angular-cli',
+    path: 'src/app/home/home.ts',
+    base: 'angular-cli/home/home.ts',
+    parameters: { './store': { question: 'store', files: { signals: 'store.ts' } } },
+    groups: ANGULAR_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+  },
 ];
