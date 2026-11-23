@@ -394,10 +394,92 @@ describe('simplifiedOnce', () => {
       'x = <a\n{...{}} b />;',
       'x = <a\n b />;',
     ],
+    [
+      'a spread of one element',
+      'x = [...[a], b];',
+      'x = [a, b];',
+    ],
+    [
+      'a spread in parentheses',
+      'x = [...([a]), b];',
+      'x = [a, b];',
+    ],
+    [
+      'a spread of no element',
+      'x = [...[], a];',
+      'x = [a];',
+    ],
+    [
+      'a spread of no element after another',
+      'x = [a, ...[]];',
+      'x = [a];',
+    ],
+    [
+      'a spread of one element, the only one',
+      'x = [...[a]];',
+      'x = [a];',
+    ],
+    [
+      'a spread array of three elements, one per line',
+      'x = {\n  y: [...[f()], b, ...c],\n};',
+      'x = {\n  y: [\n    f(),\n    b,\n    ...c,\n  ],\n};',
+    ],
+    [
+      'a spread array written over lines, two elements on one',
+      'x = [\n  ...[],\n  a,\n  b,\n];',
+      'x = [a, b];',
+    ],
+    [
+      'a spread inside a spread',
+      'x = [...[...[a]], b];',
+      'x = [a, b];',
+    ],
+    [
+      'two spreads',
+      'x = [...[a], ...[b]];',
+      'x = [a, b];',
+    ],
+    [
+      'a spread of a spread not known, left alone',
+      'x = [...[...a], b];',
+      'x = [...[...a], b];',
+    ],
+    [
+      'a spread of a hole, left alone',
+      'x = [...[, a], b];',
+      'x = [...[, a], b];',
+    ],
+    [
+      'a spread beside a hole, left alone',
+      'x = [, ...[a]];',
+      'x = [, ...[a]];',
+    ],
+    [
+      'a spread pattern written into, left alone',
+      '[...[a]] = xs;',
+      '[...[a]] = xs;',
+    ],
+    [
+      'an array with no spread, its comment and lines kept',
+      'x = [\n  a, // why\n];',
+      'x = [\n  a, // why\n];',
+    ],
   ])('rewrites %s', (_name, text, expected) => {
     const written = simplified(text);
 
     expect(written).toBe(expected);
+  });
+
+  it.each([
+    ['x = [...[/* why */ a], b];'],
+    ['x = [\n  // why\n  ...[a],\n];'],
+    ['x = [...[a], b /* why */];'],
+  ])('refuses to write %j from what it spreads, which would lose its comment', (text) => {
+    const run = (): string => {
+      return simplified(text);
+    };
+
+    expect(run).toThrow('An array written from what it spreads may hold no comment, which would be lost: [');
   });
 
   it('refuses to remove an undefined attribute after a spread, which decides which value wins', () => {
@@ -418,6 +500,7 @@ describe('simplifiedOnce', () => {
     ['an undefined attribute after a spread, not refused', 'x = <a {...r} b={undefined} />;'],
     ['a spread of properties', 'x = { ...{ a: 1 } };'],
     ['a fragment', 'x = <a><><b /></></a>;'],
+    ['a spread of elements', 'x = [...[a]];'],
   ])('leaves %s no option touched as written', (_name, text) => {
     const file = parse(text);
 

@@ -6,7 +6,10 @@ import { declarationOf, scopeOf } from './scopeUtils';
 import { collect, isReference } from './sourceUtils';
 import {
   caseOf,
+  extendingOf,
+  flattenClass,
   flattenHeritage,
+  inlineAlias,
   spliceStatements,
 } from './statementUtils';
 import { batched, type Candidate } from './stepUtils';
@@ -59,7 +62,17 @@ const filled = (text: string, sources: Sources, local: ts.Identifier, checker: t
     return spliceStatements(text, sources, local, parent, checker);
   }
 
-  if (ts.isExpressionWithTypeArguments(parent) || ts.isTypeReferenceNode(parent)) {
+  if (ts.isTypeReferenceNode(parent)) {
+    return inlineAlias(text, sources, local, parent, checker);
+  }
+
+  const extending = extendingOf(local);
+
+  if (extending !== undefined) {
+    return flattenClass(text, sources, local, extending, checker);
+  }
+
+  if (ts.isExpressionWithTypeArguments(parent)) {
     return flattenHeritage(text, sources, local, checker);
   }
 

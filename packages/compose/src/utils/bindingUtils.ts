@@ -2,7 +2,11 @@ import ts from 'typescript';
 
 import { BESIDE_BASE } from '../constants';
 
-import { parse, textOf } from './sourceUtils';
+import {
+  hasModifier,
+  parse,
+  textOf,
+} from './sourceUtils';
 
 // A local name that stands for one export of a parameter module.
 export interface Binding {
@@ -23,6 +27,8 @@ export interface ImportEntry {
   names: Map<string, string>;
   // The local names imported as `type X` inside a value import.
   typeNames: Set<string>;
+  // The comment an option module writes above a side-effect import.
+  comment: string | undefined;
 }
 
 export interface Sources {
@@ -48,20 +54,24 @@ export interface Trust {
   pureCalls: readonly string[];
 }
 
-export type Exported = ts.VariableDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
+interface NamedClass extends ts.ClassDeclaration {
+  readonly name: ts.Identifier;
+}
+
+export type Exported = ts.VariableDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration | NamedClass;
 
 type Parts = Pick<Sources, 'body' | 'header'>;
 
 type Module = [string, ts.SourceFile];
 
 const isExported = (statement: ts.Statement): boolean => {
-  const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined;
-  const isMarked = modifiers
-    ?.some((modifier) => {
-      return modifier.kind === ts.SyntaxKind.ExportKeyword;
-    });
+  const isDefault = hasModifier(statement, ts.SyntaxKind.DefaultKeyword);
 
-  return isMarked === true;
+  return hasModifier(statement, ts.SyntaxKind.ExportKeyword) && !isDefault;
+};
+
+const isNamedClass = (statement: ts.Statement): statement is NamedClass => {
+  return ts.isClassDeclaration(statement) && statement.name !== undefined;
 };
 
 const declarationsOf = (statement: ts.Statement): Exported[] => {
@@ -71,14 +81,16 @@ const declarationsOf = (statement: ts.Statement): Exported[] => {
     return declarations;
   }
 
-  const isType = ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement);
+  const isType = ts.isInterfaceDeclaration(statement)
+    || ts.isTypeAliasDeclaration(statement)
+    || isNamedClass(statement);
 
   const own: Exported[] = isType ? [statement] : [];
 
   return own;
 };
 
-// Every declaration a module exports, values and types.
+// Every declaration a module exports by name: values, types and classes.
 export const exportsOf = (module: ts.SourceFile): Exported[] => {
   return module.statements
     .filter(isExported)
@@ -120,6 +132,7 @@ export const entryOf = (declaration: ts.ImportDeclaration): ImportEntry => {
     specifier: specifierOf(declaration),
     isType: clause?.phaseModifier === ts.SyntaxKind.TypeKeyword,
     isBare: clause === undefined,
+    comment: undefined,
     names: new Map(pairs),
     typeNames: new Set(typed),
   };
@@ -178,6 +191,24 @@ const bind = (bindings: Map<string, Binding>, entry: ImportEntry): void => {
       exported,
     });
   }
+};
+
+// The entries of a module's imports; an option's side-effect import brings the comment above it.
+const entriesOf = (file: ts.SourceFile, isOption: boolean): ImportEntry[] => {
+  return file.statements
+    .filter(ts.isImportDeclaration)
+    .map((declaration) => {
+      const entry = entryOf(declaration);
+      const ranges = ts.getLeadingCommentRanges(file.text, declaration.getFullStart());
+      const first = ranges?.at(0);
+      const last = ranges?.at(-1);
+
+      if (isOption && entry.isBare && first !== undefined && last !== undefined) {
+        entry.comment = file.text.slice(first.pos, last.end);
+      }
+
+      return entry;
+    });
 };
 
 const isDirective = (statement: ts.Statement): boolean => {
@@ -321,11 +352,17 @@ export const sourcesOf = (
   const bindings = new Map<string, Binding>();
   const imports: ImportEntry[] = [];
   const owners = new Map<string, string>();
-  const entries = [baseFile, ...modules.values()]
+  // A base may import a parameter module bare, for the side-effect imports its option brings: it binds nothing.
+  const named = entriesOf(baseFile, false)
+    .filter((entry) => {
+      return !entry.isBare || !modules.has(entry.specifier);
+    });
+  const moved = [...modules.values()]
     .flatMap((file) => {
-      return file.statements.filter(ts.isImportDeclaration);
-    })
-    .map(entryOf);
+      return entriesOf(file, true);
+    });
+
+  const entries = [...named, ...moved];
 
   for (const entry of entries) {
     for (const local of localsOf(entry)) {

@@ -502,6 +502,8 @@ const landingOf = (base: string, option: string): Landing => {
   return landingAmong(base, { './p': option });
 };
 
+const READ_V = 'import { v } from \'./p\';\n\nexport const y = v;\n';
+
 describe('landedCheck', () => {
   it.each([
     ['a global nothing binds', 'export const v = location.pathname;\n'],
@@ -509,6 +511,11 @@ describe('landedCheck', () => {
     ['an export the base binds', 'export const a = 1;\nexport const v = a + 1;\n'],
     ['a binding of the moved code', 'export const v = (n: number) => n;\n'],
     ['a parameter of the arrow it returns from', 'export const v = (n: number) => n * 2;\n'],
+    ['a variable of the build', 'export const v = import.meta.env.DEV;\n'],
+    ['a member of a variable of the build', 'export const v = () => import.meta.env.BASE_URL.length;\n'],
+    ['a variable of the build spread', 'export const v = () => f(...import.meta.env.LIST);\n'],
+    ['a variable of the build negated', 'export const v = () => -import.meta.env.N;\n'],
+    ['a variable of the build as a default', 'export const v = () => ({ b = import.meta.env.DEV } = {});\n'],
   ])('lets option code land that reads %s', (_name, option) => {
     const base = 'import { a, v } from \'./p\';\n\nexport const y = [a, v];\n';
     const {
@@ -524,6 +531,64 @@ describe('landedCheck', () => {
     };
 
     expect(run).not.toThrow();
+  });
+
+  it.each([
+    'import.meta',
+    'import.meta.url',
+    'import.meta.env',
+    'import.meta.env[name]',
+    'import.meta.env?.DEV',
+    'import.meta?.env.DEV',
+    'import.meta[\'env\'].DEV',
+    'import.meta.url.env',
+    'import.meta.hot.env.DEV',
+    '({ ...import.meta.env })',
+    'import.meta.env.DEV = 1',
+    'import.meta.env.DEV += 1',
+    'import.meta.env.DEV ??= 1',
+    'import.meta.env.DEV++',
+    '--import.meta.env.DEV',
+    '(import.meta.env.DEV)++',
+    'import.meta.env.DEV! = 1',
+    '((import.meta.env.DEV as T) = 1)',
+    'delete import.meta.env.DEV',
+    'delete (import.meta.env.DEV)',
+    '[import.meta.env.DEV] = xs',
+    '[...import.meta.env.DEV] = xs',
+    '[import.meta.env.DEV = 1] = xs',
+    '({ a: import.meta.env.DEV } = o)',
+    '({ ...import.meta.env.DEV } = o)',
+  ])('refuses option code that lands with %s, not a read of a build variable', (code) => {
+    const {
+      checker,
+      sources,
+      owner,
+      moved,
+      landing,
+    } = landingOf(READ_V, `export const v = () => ${code};\n`);
+
+    const run = (): void => {
+      landedCheck(checker, sources, owner, moved, landing);
+    };
+
+    expect(run).toThrow('The option\'s code reads "import.meta", which names another thing where it lands: v');
+  });
+
+  it.each(['for (import.meta.env.DEV of xs) {}', 'for (import.meta.env.DEV in xs) {}'])('refuses %s', (loop) => {
+    const {
+      checker,
+      sources,
+      owner,
+      moved,
+      landing,
+    } = landingOf(READ_V, `export const v = () => () => {\n  ${loop}\n};\n`);
+
+    const run = (): void => {
+      landedCheck(checker, sources, owner, moved, landing);
+    };
+
+    expect(run).toThrow('The option\'s code reads "import.meta", which names another thing where it lands: v');
   });
 
   it('refuses a private option helper named as another option\'s export the base binds', () => {
@@ -669,7 +734,12 @@ describe('landedCheck', () => {
       'The option\'s code reads "new.target", which names another thing where it lands: v',
     ],
     [
-      'import { v } from \'./p\';\n\nexport const y = v;\n',
+      READ_V,
+      'export const v = () => new.target.env.DEV;\n',
+      'The option\'s code reads "new.target", which names another thing where it lands: v',
+    ],
+    [
+      READ_V,
       'export const v = import.meta.url;\n',
       'The option\'s code reads "import.meta", which names another thing where it lands: v',
     ],

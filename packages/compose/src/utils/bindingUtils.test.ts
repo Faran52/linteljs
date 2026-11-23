@@ -27,6 +27,9 @@ const MODULE = [
   'export const shown = 1;',
   'export interface Shape {}',
   'export type Alias = number;',
+  'export class Made {}',
+  'export default class Whole {}',
+  'class Own {}',
   '',
 ].join('\n');
 
@@ -35,6 +38,9 @@ describe('exportOf', () => {
     ['shown', true],
     ['Shape', true],
     ['Alias', true],
+    ['Made', true],
+    ['Whole', false],
+    ['Own', false],
     ['hidden', false],
     ['made', false],
     ['absent', false],
@@ -47,7 +53,7 @@ describe('exportOf', () => {
 });
 
 describe('exportsOf', () => {
-  it('answers every value and type a module exports, in order', () => {
+  it('answers every value, type and class a module exports by name, in order', () => {
     const module = parse(MODULE);
     const names = exportsOf(module)
       .map((declaration) => {
@@ -58,6 +64,7 @@ describe('exportsOf', () => {
       'shown',
       'Shape',
       'Alias',
+      'Made',
     ]);
   });
 });
@@ -99,13 +106,62 @@ describe('sourcesOf', () => {
 
   it.each([
     ['import * as p from \'./p\';\n'],
-    ['import \'./p\';\n'],
+    ['import p from \'./p\';\n'],
   ])('refuses %s of a parameter module', (base) => {
     const run = (): Sources => {
       return sourcesOf(base, { './p': 'export const x = 1;\n' }, {}, NO_TRUST);
     };
 
     expect(run).toThrow(/import its exports by name/u);
+  });
+});
+
+describe('sourcesOf, on side-effect imports', () => {
+  it('takes a bare import of a parameter module from the base, which binds nothing and is not printed', () => {
+    const option = 'import \'./side.css\';\n';
+    const { bindings, imports } = sourcesOf('import \'./p\';\n\nlog();\n', { './p': option }, {}, NO_TRUST);
+    const specifiers = imports
+      .map((entry) => {
+        return entry.specifier;
+      });
+
+    expect(bindings.size).toBe(0);
+    expect(specifiers).toStrictEqual(['./side.css']);
+  });
+
+  it('refuses a bare import of a parameter module from an option', () => {
+    const options = {
+      './p': 'import \'./q\';\n',
+      './q': '',
+    };
+
+    const run = (): Sources => {
+      return sourcesOf('import \'./p\';\n', options, {}, NO_TRUST);
+    };
+
+    expect(run).toThrow('./q is a parameter module; import its exports by name.');
+  });
+
+  it.each([
+    ['// Why.\nimport \'./side.css\';\n', '// Why.'],
+    ['import \'./side.css\';\n', undefined],
+    ['import \'./side.css\'; // Not above.\n', undefined],
+    ['import { a } from \'pkg\'; // Its own.\n// Why.\n/* And. */\nimport \'./side.css\';\n', '// Why.\n/* And. */'],
+    ['// Why.\nimport { a } from \'./side.css\';\n', undefined],
+  ])('keeps the comment above a side-effect import of the option %j', (option, expected) => {
+    const { imports } = sourcesOf('import \'./p\';\n', { './p': option }, {}, NO_TRUST);
+    const entry = imports.at(-1);
+
+    expect(entry?.specifier).toBe('./side.css');
+    expect(entry?.comment).toBe(expected);
+  });
+
+  it('takes a comment above a base\'s side-effect import as the header alone', () => {
+    const { header, imports } = sourcesOf('// Why.\nimport \'./side.css\';\n', {}, {}, NO_TRUST);
+    const [entry] = imports;
+
+    expect(header).toBe('// Why.\n');
+    expect(entry?.comment).toBeUndefined();
   });
 });
 

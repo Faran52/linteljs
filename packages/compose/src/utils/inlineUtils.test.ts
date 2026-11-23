@@ -125,6 +125,32 @@ describe('filledOnce', () => {
     expect(text).toBe('interface P {\n  a: 1;\n}\ny = [1, f(1)];\n{\n  log();\n}\nq = 5;\nz = 2;\nw = <hr />;\n');
   });
 
+  it.each([
+    [
+      'a type read as a type',
+      'let y: T;\n',
+      'export type T = 1;\n',
+      'let y: 1;\n',
+    ],
+    [
+      'an interface an interface extends',
+      'interface P extends T {}\n',
+      'export interface T {}\n',
+      'interface P {}\n',
+    ],
+    [
+      'a class a class extends',
+      'class P extends T {}\n',
+      'export class T {}\n',
+      'class P {}\n',
+    ],
+  ])('fills %s', (_name, body, option, expected) => {
+    const sources = sourcesOf(`import { T } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
+    const next = stepOf(sources.body, sources);
+
+    expect(next).toBe(expected);
+  });
+
   it('answers undefined when no parameter binding is read', () => {
     const sources = sourcesFor('import { v } from \'./p\';\n\ny = { v: 1 }.v;\n');
     const next = stepOf(sources.body, sources);

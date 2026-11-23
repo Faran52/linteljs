@@ -1,8 +1,14 @@
 import ts from 'typescript';
 
-import { SEMICOLON_STATEMENTS } from '../constants';
+import {
+  SEMICOLON_STATEMENTS,
+  TYPE_LEVEL,
+  TYPE_LEVELS,
+  TYPE_ROOMS,
+} from '../constants';
 
 import {
+  type Exported,
   exportsOf,
   localsOf,
   resolved,
@@ -22,6 +28,7 @@ import {
   plain,
   refusal,
   separated,
+  takenOut,
 } from './editUtils';
 import {
   bindingNamesOf,
@@ -32,6 +39,7 @@ import {
 } from './scopeUtils';
 import {
   collect,
+  hasModifier,
   indentOf,
   isAsync,
   isPlainElement,
@@ -65,11 +73,19 @@ interface Case {
   kept: readonly ts.Statement[];
 }
 
+// The class a base declares, and the clause that extends an option's class.
+interface Extending {
+  target: ts.ClassDeclaration;
+  clause: ts.HeritageClause;
+}
+
 // The statement that binds a call's result, and the binding.
 interface Holder extends Landing {
   declaration: ts.VariableDeclaration;
 }
 
+const LEADING_OPERATOR = /^[&|]/u;
+const BLANK_LINE = /^[\t ]*\n[\t ]*\n/u;
 const EMPTY_OBJECT = /^Record<never,\s*never>$/u;
 const LEADING_BLANK_LINES = /^(?:[\t ]*\n)+/u;
 const PLAIN_ANSWER = 'Statements spliced into the base must answer an object of plain names';
@@ -99,8 +115,27 @@ const membersOf = (exported: ts.Node, use: ts.Node): readonly ts.TypeElement[] =
   throw refusal(use, NOT_MEMBERS);
 };
 
-const nameOf = (member: ts.TypeElement): string | undefined => {
-  return member.name === undefined ? undefined : textOf(member.name);
+// The name a member is read by; a key written as a name or as a literal is one member.
+const nameOf = ({ name }: ts.ClassElement | ts.TypeElement): string | undefined => {
+  if (name === undefined || ts.isComputedPropertyName(name)) {
+    return name === undefined ? undefined : textOf(name);
+  }
+
+  return name.text;
+};
+
+// The member both declare, or undefined.
+const sharedName = (
+  base: readonly (ts.ClassElement | ts.TypeElement)[],
+  option: readonly (ts.ClassElement | ts.TypeElement)[],
+): string | undefined => {
+  const own = new Set(base.map(nameOf));
+
+  return option
+    .map(nameOf)
+    .find((name) => {
+      return own.has(name);
+    });
 };
 
 // Where a member ends with the comments after it on its own line.
@@ -113,14 +148,74 @@ const commentedEnd = (node: ts.Node): number => {
 };
 
 // A member with its comments: those on the lines above it, and those after it on its own line.
-const commentedOf = (member: ts.TypeElement): string => {
-  const source = member.getSourceFile().text;
-  const leading = ts.getLeadingCommentRanges(source, member.getFullStart());
+const commentedSpan = (member: ts.Node): Span => {
+  const leading = ts.getLeadingCommentRanges(member.getSourceFile().text, member.getFullStart());
   const first = leading?.at(0);
-  const start = first === undefined ? member.getStart() : first.pos;
-  const end = commentedEnd(member);
+  const span: Span = {
+    start: first === undefined ? member.getStart() : first.pos,
+    end: commentedEnd(member),
+  };
 
-  return source.slice(start, end);
+  return span;
+};
+
+const commentedOf = (member: ts.TypeElement): string => {
+  const { start, end } = commentedSpan(member);
+
+  return member
+    .getSourceFile()
+    .text
+    .slice(start, end);
+};
+
+// The loosest type that can stand where a reference stands without parentheses.
+const typeRoomAt = (reference: ts.TypeReferenceNode): number => {
+  const { parent } = reference;
+
+  if (ts.isIndexedAccessTypeNode(parent)) {
+    return parent.objectType === reference ? TYPE_LEVEL.whole : TYPE_LEVEL.loose;
+  }
+
+  if (ts.isConditionalTypeNode(parent)) {
+    const isCompared = parent.checkType === reference || parent.extendsType === reference;
+
+    return isCompared ? TYPE_LEVEL.union : TYPE_LEVEL.loose;
+  }
+
+  return TYPE_ROOMS.get(parent.kind) ?? TYPE_LEVEL.loose;
+};
+
+// `x: X` of an option `type X = T` is `x: T`.
+export const inlineAlias = (
+  text: string,
+  sources: Sources,
+  local: ts.Identifier,
+  reference: ts.TypeReferenceNode,
+  checker: ts.TypeChecker,
+): Edit[] => {
+  const exported = resolved(sources, local.text);
+
+  if (!ts.isTypeAliasDeclaration(exported)) {
+    throw refusal(local, 'An option type read as a type must be a type alias');
+  }
+
+  if (exported.typeParameters !== undefined || reference.typeArguments !== undefined) {
+    throw refusal(reference, 'An option type read as a type takes no type arguments here');
+  }
+
+  const { type } = exported;
+
+  landedCheck(checker, sources, type, type, reference);
+
+  const from = indentOf(exported.getSourceFile().text, exported);
+  const to = indentOf(text, reference);
+  const own = reindent(textOf(type), from, to);
+  // `A | | B` does not parse, so a type that opens with its operator is never a bare part of another.
+  const level = LEADING_OPERATOR.test(own) ? TYPE_LEVEL.loose : TYPE_LEVELS.get(type.kind) ?? TYPE_LEVEL.whole;
+  const written = plain(level < typeRoomAt(reference) ? `(${own})` : own);
+  const edits = [editOver(reference, written)];
+
+  return edits;
 };
 
 // `interface I extends X`: the option's members join I's own, and the clause goes.
@@ -153,12 +248,7 @@ export const flattenHeritage = (
   }
 
   const joining = membersOf(exported, local);
-  const own = new Set(target.members.map(nameOf));
-  const twice = joining
-    .map(nameOf)
-    .find((name) => {
-      return own.has(name);
-    });
+  const twice = sharedName(target.members, joining);
 
   if (twice !== undefined) {
     throw refusal(target.name, `Both the base and the option declare the member "${twice}" of`);
@@ -196,6 +286,176 @@ export const flattenHeritage = (
 
   const appended = plain(members.join(''));
   const edits = [editOf(added, appended), editOf(clauseSpan, kept)];
+
+  return edits;
+};
+
+// The class a base declares as `class C extends x`, or undefined where the name is read otherwise.
+export const extendingOf = (local: ts.Identifier): Extending | undefined => {
+  const clause = local.parent.parent;
+
+  if (!ts.isHeritageClause(clause) || !ts.isClassDeclaration(clause.parent)) {
+    return undefined;
+  }
+
+  const extending: Extending = {
+    target: clause.parent,
+    clause,
+  };
+
+  return clause.token === ts.SyntaxKind.ExtendsKeyword ? extending : undefined;
+};
+
+const isSuper = (node: ts.Node): node is ts.Node => {
+  return node.kind === ts.SyntaxKind.SuperKeyword;
+};
+
+const isDecorated = (node: ts.Node): boolean => {
+  return ts.canHaveDecorators(node) && ts.getDecorators(node) !== undefined;
+};
+
+const isInstanceMember = (member: ts.ClassElement): boolean => {
+  const isOther = ts.isConstructorDeclaration(member) || ts.isClassStaticBlockDeclaration(member);
+
+  return !isOther && !hasModifier(member, ts.SyntaxKind.StaticKeyword);
+};
+
+// The members an option's class gives another: instance members, with nothing else to the class.
+const givenMembers = (
+  exported: Exported,
+  local: ts.Identifier,
+  clause: ts.HeritageClause,
+): readonly ts.ClassElement[] => {
+  if (!ts.isClassDeclaration(exported)) {
+    throw refusal(local, 'What a class extends must be a class its option exports');
+  }
+
+  const isTyped = exported.typeParameters !== undefined || clause.types
+    .some((type) => {
+      return type.typeArguments !== undefined;
+    });
+
+  if (isTyped) {
+    throw refusal(clause, 'A class a base extends takes no type arguments here');
+  }
+
+  const isPlainClass = exported.heritageClauses === undefined && clause.types.length === 1;
+  const hasDecorator = [exported, ...exported.members].some(isDecorated);
+
+  if (!isPlainClass || hasDecorator || !exported.members.every(isInstanceMember)) {
+    throw refusal(clause, 'A class a base extends holds instance members alone, with no heritage or decorator');
+  }
+
+  const { text } = exported.getSourceFile();
+  const end = exported.getEnd();
+  const closing: Span = {
+    start: end - 1,
+    end,
+  };
+  const spans = [...exported.members.map(commentedSpan), closing];
+  let at = exported.members.pos;
+
+  for (const span of spans) {
+    if (text
+      .slice(at, span.start)
+      .trim() !== '') {
+      throw refusal(clause, 'A class a base extends holds a comment no member carries, which would be lost');
+    }
+
+    at = span.end;
+  }
+
+  return exported.members;
+};
+
+// A member as it lands; a field's semicolon is written, since what follows it there is another's.
+const memberText = (member: ts.ClassElement, indent: string): string => {
+  const source = member.getSourceFile().text;
+  const { start, end } = commentedSpan(member);
+  const at = member.getEnd();
+  const written = source.slice(start, at);
+  const isOpen = ts.isPropertyDeclaration(member) && !written.endsWith(';');
+  const closing = isOpen ? ';' : '';
+  const from = indentOf(source, member);
+  const moved = reindent(written + closing + source.slice(at, end), from, indent);
+
+  return `${indent}${moved}`;
+};
+
+// What follows the landed members: a blank line before the base's own first member.
+const followingOf = (rest: string, hasMember: boolean, indent: string): string => {
+  const isBroken = rest.includes('\n');
+
+  if (!hasMember) {
+    return isBroken ? rest : `\n${indent}`;
+  }
+
+  if (!isBroken) {
+    return `\n\n${indent}`;
+  }
+
+  return BLANK_LINE.test(rest) ? rest : `\n${rest}`;
+};
+
+// `class C extends X`: the members of the option's class land first in C, and the clause goes.
+export const flattenClass = (
+  text: string,
+  sources: Sources,
+  local: ts.Identifier,
+  { target, clause }: Extending,
+  checker: ts.TypeChecker,
+): Edit[] => {
+  const given = givenMembers(resolved(sources, local.text), local, clause);
+  const twice = sharedName(target.members, given);
+  const parent = collect(target, isSuper)
+    .find((found) => {
+      return ts.findAncestor(found, ts.isClassLike) === target;
+    });
+
+  if (twice !== undefined) {
+    throw refusal(target, `Both the base and the option declare the member "${twice}" of`);
+  }
+
+  if (parent !== undefined) {
+    throw refusal(parent.parent, 'A class that loses the option class it extends may not read "super"');
+  }
+
+  for (const member of given) {
+    landedCheck(checker, sources, member, member, target);
+  }
+
+  const clauseSpan: Span = {
+    start: clause.getFullStart(),
+    end: clause.getEnd(),
+  };
+  const gone = takenOut(clauseSpan);
+
+  if (given.length === 0) {
+    const alone = [gone];
+
+    return alone;
+  }
+
+  const open = target.members.pos;
+  const first = target.members.at(0);
+  const start = ts.getTrailingCommentRanges(text, open)?.at(-1)?.end ?? open;
+  const end = first === undefined ? target.getEnd() - 1 : commentedSpan(first).start;
+  const rest = text.slice(start, end);
+  const classIndent = indentOf(text, target);
+  const isFirstLed = first !== undefined && rest.includes('\n');
+  const indent = isFirstLed ? indentOf(text, first) : `${classIndent}  `;
+  const members = given
+    .map((member) => {
+      return memberText(member, indent);
+    })
+    .join('\n\n');
+  const following = followingOf(rest, first !== undefined, first === undefined ? classIndent : indent);
+  const landing: Span = {
+    start,
+    end,
+  };
+  const landed = plain(`\n${members}${following}`);
+  const edits = [gone, editOf(landing, landed)];
 
   return edits;
 };

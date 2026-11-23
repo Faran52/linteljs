@@ -7,6 +7,7 @@ import {
 
 import {
   applied,
+  arrayOf,
   copied,
   copyOf,
   type Edit,
@@ -365,5 +366,47 @@ describe('refusal', () => {
     const { message } = refusal(statement ?? parse(''), 'Not allowed');
 
     expect(message).toBe(`Not allowed: call(${'a'.repeat(75)}`);
+  });
+});
+
+// The elements of a text's first array, as `arrayOf` writes them.
+const arrayIn = (text: string, indent: string): Written => {
+  const file = parse(text);
+  const [array] = collect(file, ts.isArrayLiteralExpression);
+
+  if (array === undefined) {
+    throw new Error(`No array in ${text}`);
+  }
+
+  return arrayOf(array.elements, indent);
+};
+
+describe('arrayOf', () => {
+  it.each([
+    ['y = [];', '[]'],
+    ['y = [a];', '[a]'],
+    ['y = [\n  a,\n  b,\n];', '[a, b]'],
+    ['y = [a, b, c];', '[\n      a,\n      b,\n      c,\n    ]'],
+    ['y = [\n  {\n    a: 1,\n  },\n];', '[{\n      a: 1,\n    }]'],
+    [
+      'y = [\n  {\n    a: 1,\n  },\n  b,\n  c,\n];',
+      '[\n      {\n        a: 1,\n      },\n      b,\n      c,\n    ]',
+    ],
+  ])('writes the elements of %j', (text, expected) => {
+    const { insert } = arrayIn(text, '    ');
+
+    expect(insert).toBe(expected);
+  });
+
+  it('carries each element', () => {
+    const text = 'y = [a, b, c];';
+    const written = arrayIn(text, '');
+    const carried = carriedIn(text, written);
+
+    expect(carried).toStrictEqual([
+      'a',
+      'b',
+      'c',
+    ]);
   });
 });

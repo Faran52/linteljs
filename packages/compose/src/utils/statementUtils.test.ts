@@ -10,7 +10,13 @@ import { applied } from './editUtils';
 import { filledOnce } from './inlineUtils';
 import { scopeOf } from './scopeUtils';
 import { parse, referencesIn } from './sourceUtils';
-import { flattenHeritage, spliceStatements } from './statementUtils';
+import {
+  extendingOf,
+  flattenClass,
+  flattenHeritage,
+  inlineAlias,
+  spliceStatements,
+} from './statementUtils';
 import { settled } from './stepUtils';
 
 const NO_TRUST: Trust = {
@@ -32,6 +38,39 @@ const filled = (body: string, option: string): string => {
   const edits = ts.isCallExpression(local.parent)
     ? spliceStatements(sources.body, sources, local, local.parent, checker)
     : flattenHeritage(sources.body, sources, local, checker);
+
+  return applied(sources.body, edits);
+};
+
+// The first type `x` of a body, read as a type, from an option module.
+const aliased = (body: string, option: string): string => {
+  const sources = sourcesOf(`import type { x } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
+  const file = parse(sources.body);
+  const checker = scopeOf(file, sources.modules, sources.held);
+  const [local] = referencesIn(file, 'x');
+
+  if (local === undefined || !ts.isTypeReferenceNode(local.parent)) {
+    throw new Error(`No type x in ${body}`);
+  }
+
+  const edits = inlineAlias(sources.body, sources, local, local.parent, checker);
+
+  return applied(sources.body, edits);
+};
+
+// The class of a body that extends `x`, from an option module.
+const extended = (body: string, option: string): string => {
+  const sources = sourcesOf(`import { x } from './p';\n\n${body}`, { './p': option }, {}, NO_TRUST);
+  const file = parse(sources.body);
+  const checker = scopeOf(file, sources.modules, sources.held);
+  const [local] = referencesIn(file, 'x');
+  const extending = local === undefined ? undefined : extendingOf(local);
+
+  if (local === undefined || extending === undefined) {
+    throw new Error(`No class extends x in ${body}`);
+  }
+
+  const edits = flattenClass(sources.body, sources, local, extending, checker);
 
   return applied(sources.body, edits);
 };
@@ -148,22 +187,12 @@ describe('flattenHeritage', () => {
 
   it.each([
     [
-      'type Props = Own & x;\n',
-      MEMBER,
-      /can only be used as a type an interface extends/u,
-    ],
-    [
       'class Props implements x {}\n',
       MEMBER,
       /can only be used as a type an interface extends/u,
     ],
     [
       'y = x;\n',
-      MEMBER,
-      /can only be used as a type an interface extends/u,
-    ],
-    [
-      lines('interface Props {', '  readonly more: x;', '}'),
       MEMBER,
       /can only be used as a type an interface extends/u,
     ],
@@ -218,6 +247,436 @@ describe('flattenHeritage', () => {
     };
 
     expect(run).toThrow(message);
+  });
+});
+
+const NOT_ALIAS = 'An option type read as a type must be a type alias: x';
+
+const NO_ARGUMENTS = 'An option type read as a type takes no type arguments here: x';
+
+describe('inlineAlias', () => {
+  it.each([
+    [
+      'const f = (a: x) => a;\n',
+      'A.B',
+      'const f = (a: A.B) => a;\n',
+    ],
+    [
+      'const f = (a: A): x => a;\n',
+      'A | B',
+      'const f = (a: A): A | B => a;\n',
+    ],
+    [
+      'type Y = Own & x;\n',
+      'A & B',
+      'type Y = Own & A & B;\n',
+    ],
+    [
+      'type Y = Own & x;\n',
+      'A | B',
+      'type Y = Own & (A | B);\n',
+    ],
+    [
+      'type Y = Own | x;\n',
+      'A | B',
+      'type Y = Own | A | B;\n',
+    ],
+    [
+      'type Y = Own | x;\n',
+      '| A\n  | B',
+      'type Y = Own | (| A\n  | B);\n',
+    ],
+    [
+      'type Y = x;\n',
+      '& A\n  & B',
+      'type Y = & A\n  & B;\n',
+    ],
+    [
+      'type Y = Own | x;\n',
+      '() => A',
+      'type Y = Own | (() => A);\n',
+    ],
+    [
+      'type Y = Own & x;\n',
+      'new () => A',
+      'type Y = Own & (new () => A);\n',
+    ],
+    [
+      'type Y = Own | x;\n',
+      'A extends B ? C : D',
+      'type Y = Own | (A extends B ? C : D);\n',
+    ],
+    [
+      'type Y = Own & x;\n',
+      'keyof A',
+      'type Y = Own & keyof A;\n',
+    ],
+    [
+      'type Y = keyof x;\n',
+      'A | B',
+      'type Y = keyof (A | B);\n',
+    ],
+    [
+      'type Y = keyof x;\n',
+      'A & B',
+      'type Y = keyof (A & B);\n',
+    ],
+    [
+      'type Y = keyof x;\n',
+      'keyof A',
+      'type Y = keyof keyof A;\n',
+    ],
+    [
+      'type Y = readonly x[];\n',
+      'keyof A',
+      'type Y = readonly (keyof A)[];\n',
+    ],
+    [
+      'type Y = x[];\n',
+      'A[]',
+      'type Y = A[][];\n',
+    ],
+    [
+      'type Y = [x?];\n',
+      'A | B',
+      'type Y = [(A | B)?];\n',
+    ],
+    [
+      'type Y = [...x];\n',
+      'A | B',
+      'type Y = [...A | B];\n',
+    ],
+    [
+      'type Y = x[\'a\'];\n',
+      'A & B',
+      'type Y = (A & B)[\'a\'];\n',
+    ],
+    [
+      'type Y = A[x];\n',
+      '\'a\' | \'b\'',
+      'type Y = A[\'a\' | \'b\'];\n',
+    ],
+    [
+      'type Y = x extends A ? B : C;\n',
+      '() => D',
+      'type Y = (() => D) extends A ? B : C;\n',
+    ],
+    [
+      'type Y = A extends x ? B : C;\n',
+      'D extends E ? F : G',
+      'type Y = A extends (D extends E ? F : G) ? B : C;\n',
+    ],
+    [
+      'type Y = A extends B ? x : C;\n',
+      '() => D',
+      'type Y = A extends B ? () => D : C;\n',
+    ],
+    [
+      'type Y = A<x>;\n',
+      '() => D',
+      'type Y = A<() => D>;\n',
+    ],
+    [
+      '{\n  type Y = x;\n}\n',
+      '{\n  a: 1;\n}',
+      '{\n  type Y = {\n    a: 1;\n  };\n}\n',
+    ],
+  ])('writes into %j the alias of %j', (body, type, expected) => {
+    const written = aliased(body, `export type x = ${type};\n`);
+
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    [
+      'type Props = Own & x;\n',
+      MEMBER,
+      NOT_ALIAS,
+    ],
+    [
+      lines('interface Props {', '  readonly more: x;', '}'),
+      MEMBER,
+      NOT_ALIAS,
+    ],
+    [
+      'type Y = x;\n',
+      'export const x = 1;\n',
+      NOT_ALIAS,
+    ],
+    [
+      'type Y = x;\n',
+      'export class x {}\n',
+      NOT_ALIAS,
+    ],
+    [
+      'type Y = x<A>;\n',
+      'export type x<T> = T;\n',
+      NO_ARGUMENTS,
+    ],
+    [
+      'type Y = x;\n',
+      'export type x<T = 1> = T;\n',
+      NO_ARGUMENTS,
+    ],
+    [
+      'type Y = x<A>;\n',
+      'export type x = 1;\n',
+      NO_ARGUMENTS,
+    ],
+    [
+      'type Y = x;\n',
+      'type X = number;\n\nexport type x = X;\n',
+      '"X" is declared in an option module and read by code that left it behind: x',
+    ],
+    [
+      'type A = 1;\ntype Y = x;\n',
+      'export type x = A;\n',
+      '"A" would read the base\'s own binding of that name where the option\'s code lands: x',
+    ],
+  ])('refuses %j from %j', (body, option, message) => {
+    const run = (): string => {
+      return aliased(body, option);
+    };
+
+    expect(run).toThrow(message);
+  });
+});
+
+const CLASS_OPEN = 'class C extends x {';
+
+const EMPTY_CLASS = `${CLASS_OPEN}}\n`;
+
+const OPTION_OPEN = 'export class x {';
+
+const FIELD_A = '  readonly a = f();';
+
+const FIELD_B = '  b = 1;';
+
+const FIELD = lines(OPTION_OPEN, FIELD_A, '}');
+
+const NOT_PLAIN = 'A class a base extends holds instance members alone, with no heritage or decorator: extends x';
+
+const LOST = 'A class a base extends holds a comment no member carries, which would be lost: extends x';
+
+const NO_CLASS_ARGUMENTS = 'A class a base extends takes no type arguments here: extends x';
+
+describe('flattenClass', () => {
+  it.each([
+    [
+      'a field before the base\'s own',
+      lines(`export ${CLASS_OPEN}`, FIELD_B, '}'),
+      FIELD,
+      lines('export class C {', FIELD_A, '', FIELD_B, '}'),
+    ],
+    [
+      'a field before a blank line the base opens with, and beside what it implements',
+      lines('class C extends x implements I<{ a: 1 }> {', '', FIELD_B, '}'),
+      FIELD,
+      lines('class C implements I<{ a: 1 }> {', FIELD_A, '', FIELD_B, '}'),
+    ],
+    [
+      'a field before the comment above the base\'s own',
+      lines(CLASS_OPEN, '  // why', FIELD_B, '}'),
+      FIELD,
+      lines('class C {', FIELD_A, '', '  // why', FIELD_B, '}'),
+    ],
+    [
+      'a field under a comment on the brace\'s line',
+      lines(`${CLASS_OPEN} // why`, FIELD_B, '}'),
+      FIELD,
+      lines('class C { // why', FIELD_A, '', FIELD_B, '}'),
+    ],
+    [
+      'a field into a class on one line',
+      'class C extends x { b = 1; }\n',
+      FIELD,
+      lines('class C {', FIELD_A, '', '  b = 1; }'),
+    ],
+    [
+      'a field into a class with no member',
+      EMPTY_CLASS,
+      FIELD,
+      lines('class C {', FIELD_A, '}'),
+    ],
+    [
+      'a field into a class with no member, over two lines',
+      lines(CLASS_OPEN, '}'),
+      FIELD,
+      lines('class C {', FIELD_A, '}'),
+    ],
+    [
+      'a field into an indented class with no member',
+      lines('{', `  ${CLASS_OPEN}}`, '}'),
+      FIELD,
+      lines('{', '  class C {', `  ${FIELD_A}`, '  }', '}'),
+    ],
+    [
+      'members in order with their comments, moved to the base\'s indentation',
+      lines('{', `  ${CLASS_OPEN}`, '      b = 1;', '  }', '}'),
+      lines(OPTION_OPEN, '  // first', '  a = 1; // tail', '  get g() {', '    return 1;', '  }', '}'),
+      lines(
+        '{',
+        '  class C {',
+        '      // first',
+        '      a = 1; // tail',
+        '',
+        '      get g() {',
+        '        return 1;',
+        '      }',
+        '',
+        '      b = 1;',
+        '  }',
+        '}',
+      ),
+    ],
+    [
+      'a field written with no semicolon, before what would join it',
+      lines(CLASS_OPEN, '  [k] = 1;', '}'),
+      lines(OPTION_OPEN, '  a = 1 // tail', '}'),
+      lines('class C {', '  a = 1; // tail', '', '  [k] = 1;', '}'),
+    ],
+    [
+      'nothing from a class with no member',
+      lines(CLASS_OPEN, '', FIELD_B, '}'),
+      'export class x {}\n',
+      lines('class C {', '', FIELD_B, '}'),
+    ],
+    [
+      'a computed member before another and a nested class that reads super',
+      lines(CLASS_OPEN, '  [k] = class extends D { m() { super.m(); } };', '}'),
+      lines(OPTION_OPEN, '  [j] = 1;', '}'),
+      lines('class C {', '  [j] = 1;', '', '  [k] = class extends D { m() { super.m(); } };', '}'),
+    ],
+    [
+      'an index signature before another',
+      lines(CLASS_OPEN, '  [k: string]: unknown;', '}'),
+      lines(OPTION_OPEN, '  [j: number]: unknown;', '}'),
+      lines('class C {', '  [j: number]: unknown;', '', '  [k: string]: unknown;', '}'),
+    ],
+  ])('lands %s', (_name, body, option, expected) => {
+    const written = extended(body, option);
+
+    expect(written).toBe(expected);
+  });
+
+  it.each([
+    [
+      EMPTY_CLASS,
+      'export const x = class {};\n',
+      'What a class extends must be a class its option exports: x',
+    ],
+    [
+      'class C extends x<A> {}\n',
+      FIELD,
+      NO_CLASS_ARGUMENTS,
+    ],
+    [
+      EMPTY_CLASS,
+      'export class x<T> {}\n',
+      NO_CLASS_ARGUMENTS,
+    ],
+    [
+      'class C extends x, D {}\n',
+      FIELD,
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      'export class x extends D {}\n',
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      'export class x implements D {}\n',
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      '@d\nexport class x {}\n',
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  @d a = 1;', '}'),
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  constructor() {}', '}'),
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  static a = 1;', '}'),
+      NOT_PLAIN,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, FIELD_A, '  static {}', '}'),
+      NOT_PLAIN,
+    ],
+    [
+      lines(CLASS_OPEN, '  \'a\'() {}', '}'),
+      FIELD,
+      'Both the base and the option declare the member "a" of: class C',
+    ],
+    [
+      lines(CLASS_OPEN, '  [k] = 1;', '}'),
+      lines(OPTION_OPEN, '  [k] = 1;', '}'),
+      'Both the base and the option declare the member "[k]" of: class C',
+    ],
+    [
+      lines(CLASS_OPEN, '  b = super.a;', '}'),
+      FIELD,
+      'A class that loses the option class it extends may not read "super": super.a',
+    ],
+    [
+      EMPTY_CLASS,
+      lines(`${OPTION_OPEN} // why`, FIELD_A, '}'),
+      LOST,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, FIELD_A, '  // why', '}'),
+      LOST,
+    ],
+    [
+      EMPTY_CLASS,
+      'export class x { /* why */ }\n',
+      LOST,
+    ],
+    [
+      EMPTY_CLASS,
+      lines(OPTION_OPEN, '  b = this.a;', '}'),
+      'The option\'s code reads "this", which names another thing where it lands',
+    ],
+    [
+      EMPTY_CLASS,
+      lines('const own = 1;', OPTION_OPEN, '  a = own;', '}'),
+      '"own" is declared in an option module and read by code that left it behind',
+    ],
+  ])('refuses %j from %j', (body, option, message) => {
+    const run = (): string => {
+      return extended(body, option);
+    };
+
+    expect(run).toThrow(message);
+  });
+});
+
+describe('extendingOf', () => {
+  it.each([
+    [EMPTY_CLASS, true],
+    ['class C implements x {}\n', false],
+    ['interface C extends x {}\n', false],
+    ['y = class extends x {};\n', false],
+    ['y = x;\n', false],
+  ])('answers for %j', (body, expected) => {
+    const file = parse(body);
+    const [local] = referencesIn(file, 'x');
+    const found = local === undefined ? undefined : extendingOf(local);
+
+    expect(found !== undefined).toBe(expected);
   });
 });
 

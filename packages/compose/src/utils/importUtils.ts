@@ -1,5 +1,6 @@
 import {
   IMPORT_STYLES,
+  MAX_INLINE,
   SORT_COLLATION,
   SORT_MARK,
   SORT_SWAPPED,
@@ -92,6 +93,7 @@ const emptyLike = (entry: ImportEntry): ImportEntry => {
     specifier: entry.specifier,
     isType: entry.isType,
     isBare: entry.isBare,
+    comment: undefined,
     names: new Map(),
     typeNames: new Set(),
   };
@@ -132,6 +134,15 @@ const wholeOf = (specifier: string, known: string | undefined, local: string): s
   }
 
   return local;
+};
+
+// The comments two imports of one module bring, one under the other.
+const noteOf = (known: string | undefined, comment: string | undefined): string | undefined => {
+  if (known === undefined || comment === undefined || known === comment) {
+    return known ?? comment;
+  }
+
+  return `${known}\n${comment}`;
 };
 
 // One entry per module and kind, holding only the names the composed body reads: a local imported as a value
@@ -176,6 +187,8 @@ const merged = (entries: readonly ImportEntry[], read: ReadonlySet<string>): Imp
       known.namespaceName = wholeOf(entry.specifier, known.namespaceName, namespaceName);
     }
 
+    known.comment = noteOf(known.comment, entry.comment);
+
     byKey.set(key, known);
   }
 
@@ -183,8 +196,6 @@ const merged = (entries: readonly ImportEntry[], read: ReadonlySet<string>): Imp
 
   return all.filter(isWritten);
 };
-
-const MAX_INLINE = 2;
 
 // The named imports: up to two on the line, more than two broken, one per line.
 const namedOf = (entry: ImportEntry): string[] => {
@@ -213,7 +224,9 @@ const lineOf = (entry: ImportEntry): string => {
   const attributes = entry.attributes === undefined ? '' : ` ${entry.attributes}`;
 
   if (entry.isBare) {
-    return `import '${entry.specifier}'${attributes};`;
+    const comment = entry.comment === undefined ? '' : `${entry.comment}\n`;
+
+    return `${comment}import '${entry.specifier}'${attributes};`;
   }
 
   const namespace = entry.namespaceName === undefined ? [] : [`* as ${entry.namespaceName}`];

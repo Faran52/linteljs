@@ -1455,10 +1455,10 @@ const REFUSALS: Refusal[] = [
     message: /must be a constant with no effect/u,
   },
   {
-    name: 'an option type used outside an extends clause',
+    name: 'an option interface read as a type',
     base: 'import type { Extra } from \'./p\';\n\nexport type Props = Own & Extra;\n',
     option: 'export interface Extra {\n  readonly more: number;\n}\n',
-    message: /only be used as a type an interface extends/u,
+    message: /An option type read as a type must be a type alias/u,
   },
   {
     name: 'an option type an interface cannot take the members of',
@@ -2286,6 +2286,107 @@ const MORE_REFUSALS: Refusal[] = [
 
 describe('moduleCompose, one rule at a time', () => {
   it.each([...CASES, ...MORE_CASES])('fills $name', ({
+    base,
+    option,
+    expected,
+  }) => {
+    const composed = moduleCompose({
+      base,
+      options: { './p': option },
+      modules: {},
+      plainData: [],
+      pureCalls: [],
+    });
+
+    expect(composed).toBe(expected);
+  });
+});
+
+const GIVEN: Case[] = [
+  {
+    name: 'a type alias read twice, its import with it',
+    base: 'import type { X } from \'./p\';\n\nexport const f = (a: X): X => a;\n',
+    option: 'import type { A } from \'lib\';\n\nexport type X = A[];\n',
+    expected: 'import type { A } from \'lib\';\n\nexport const f = (a: A[]): A[] => a;\n',
+  },
+  {
+    name: 'a side-effect import under its comment, for a bare import of the option',
+    base: 'import { a } from \'lib\';\n\nimport \'./p\';\n\nlog(a);\n',
+    option: '// Why.\nimport \'./side.css\';\n',
+    expected: 'import { a } from \'lib\';\n\n// Why.\nimport \'./side.css\';\n\nlog(a);\n',
+  },
+  {
+    name: 'nothing, for a bare import of an option with nothing in it',
+    base: 'import { a } from \'lib\';\n\nimport \'./p\';\n\nlog(a);\n',
+    option: 'export {};\n',
+    expected: 'import { a } from \'lib\';\n\nlog(a);\n',
+  },
+  {
+    name: 'a read of a variable of the build',
+    base: 'import { isDev } from \'./p\';\n\nexport const y = isDev();\n',
+    option: 'export const isDev = () => import.meta.env.DEV;\n',
+    expected: 'export const y = import.meta.env.DEV;\n',
+  },
+  {
+    name: 'array items and a class member',
+    base: [
+      'import { b } from \'lib\';',
+      '',
+      'import { items, Members } from \'./p\';',
+      '',
+      'log([...items, b]);',
+      '',
+      'export class C extends Members {',
+      '  c = 1;',
+      '}',
+      '',
+    ].join('\n'),
+    option: [
+      'import { a } from \'lib\';',
+      '',
+      'export const items: A[] = [a, a];',
+      '',
+      'export class Members {',
+      '  d = a();',
+      '}',
+      '',
+    ].join('\n'),
+    expected: [
+      'import { a, b } from \'lib\';',
+      '',
+      'log([',
+      '  a,',
+      '  a,',
+      '  b,',
+      ']);',
+      '',
+      'export class C {',
+      '  d = a();',
+      '',
+      '  c = 1;',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'no array item and no class member',
+    base: [
+      'import { items, Members } from \'./p\';',
+      '',
+      'log([...items, 1]);',
+      '',
+      'export class C extends Members {',
+      '  c = 1;',
+      '}',
+      '',
+    ].join('\n'),
+    option: 'export const items: A[] = [];\n\nexport class Members {}\n',
+    expected: 'log([1]);\n\nexport class C {\n  c = 1;\n}\n',
+  },
+];
+
+describe('moduleCompose, on the types, side effects, arrays and classes an option gives', () => {
+  it.each(GIVEN)('writes $name', ({
     base,
     option,
     expected,

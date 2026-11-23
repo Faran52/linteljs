@@ -19,6 +19,7 @@ import {
   collect,
   isReference,
   isWithin,
+  isWritten,
   ownsLines,
   parse,
   spanOf,
@@ -173,12 +174,24 @@ const faultOf = (
   return isBound ? undefined : `"${read.text}" is declared in an option module and read by code that left it behind`;
 };
 
-// `this`, `arguments`, `super`, `new.target` and `import.meta` name what surrounds code, so they change as it moves.
+// A read of `import.meta.env.NAME`, the same in every module of a build.
+const isBuildRead = (node: ts.MetaProperty): boolean => {
+  const env = node.parent;
+  const named = env.parent;
+  const isEnv = node.keywordToken === ts.SyntaxKind.ImportKeyword
+    && ts.isPropertyAccessExpression(env)
+    && env.name.text === 'env';
+
+  return isEnv && ts.isPropertyAccessExpression(named) && !ts.isOptionalChain(named) && !isWritten(named);
+};
+
+// `this`, `arguments`, `super`, `new.target` and the rest of `import.meta` name what surrounds code, so they change as
+// it moves.
 const isContextRead = (node: ts.Node): node is ts.Node => {
   const isNamed = ts.isIdentifier(node) && node.text === 'arguments' && isReference(node);
   const isKeyword = node.kind === ts.SyntaxKind.ThisKeyword || node.kind === ts.SyntaxKind.SuperKeyword;
 
-  return isNamed || isKeyword || ts.isMetaProperty(node);
+  return isNamed || isKeyword || (ts.isMetaProperty(node) && !isBuildRead(node));
 };
 
 // The reads in moved option code of a name declared outside `owner`: a global, an import or an export the base binds.

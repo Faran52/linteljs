@@ -1,7 +1,10 @@
 import ts from 'typescript';
 
+import { MAX_INLINE } from '../constants';
+
 import {
   fittingOf,
+  indentOf,
   movedLines,
   type Span,
   textOf,
@@ -264,27 +267,22 @@ export const separated = (parts: readonly Written[], gap: string): Written => {
   return joined(spaced);
 };
 
-// Up to two names on one line, more than two broken, one per line.
-export const patternOf = (names: readonly Written[], indent: string): Written => {
-  if (names.length === 0) {
-    return plain('{}');
-  }
+const rowOf = (items: readonly Written[], open: string, close: string): Written => {
+  const row = separated(items, ', ');
 
-  if (names.length <= 2) {
-    const inline = separated(names, ', ');
+  return joined([
+    plain(open),
+    row,
+    plain(close),
+  ]);
+};
 
-    return joined([
-      plain('{ '),
-      inline,
-      plain(' }'),
-    ]);
-  }
-
-  const lines = names
-    .flatMap((name) => {
+const columnOf = (items: readonly Written[], indent: string, open: string, close: string): Written => {
+  const lines = items
+    .flatMap((item) => {
       const line = [
         plain(`\n${indent}  `),
-        name,
+        item,
         plain(','),
       ];
 
@@ -292,10 +290,35 @@ export const patternOf = (names: readonly Written[], indent: string): Written =>
     });
 
   return joined([
-    plain('{'),
+    plain(open),
     ...lines,
-    plain(`\n${indent}}`),
+    plain(`\n${indent}${close}`),
   ]);
+};
+
+// Up to two names on one line, more than two broken, one per line.
+export const patternOf = (names: readonly Written[], indent: string): Written => {
+  if (names.length === 0) {
+    return plain('{}');
+  }
+
+  return names.length <= MAX_INLINE ? rowOf(names, '{ ', ' }') : columnOf(names, indent, '{', '}');
+};
+
+// Nodes of the edited text as an array's elements, up to two on one line, more than two broken, one per line.
+export const arrayOf = (elements: readonly ts.Expression[], indent: string): Written => {
+  const isRow = elements.length <= MAX_INLINE;
+  const to = isRow ? indent : `${indent}  `;
+  const items = elements
+    .map((element) => {
+      const { text } = element.getSourceFile();
+      const from = indentOf(text, element);
+      const own = copyOf(element);
+
+      return reindented(own, from, to);
+    });
+
+  return isRow ? rowOf(items, '[', ']') : columnOf(items, indent, '[', ']');
 };
 
 // A refusal that shows the code it is about.

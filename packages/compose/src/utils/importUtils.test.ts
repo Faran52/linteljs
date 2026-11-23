@@ -38,6 +38,52 @@ const blockOf = (imports: readonly string[], read: readonly string[]): string =>
   return importBlock(entries, names, GROUPS);
 };
 
+const SIDE = 'import \'./side.css\';';
+
+const NOTED_SIDE = `// Why.\n${SIDE}`;
+
+describe('importBlock, on the comments of side-effect imports', () => {
+  it.each([
+    [
+      'one option\'s comment, above its line',
+      [NOTED_SIDE],
+      NOTED_SIDE,
+    ],
+    [
+      'the comment of the second of two options',
+      [SIDE, NOTED_SIDE],
+      NOTED_SIDE,
+    ],
+    [
+      'the comment of the first of two options',
+      [NOTED_SIDE, SIDE],
+      NOTED_SIDE,
+    ],
+    [
+      'one comment two options share, once',
+      [NOTED_SIDE, NOTED_SIDE],
+      NOTED_SIDE,
+    ],
+    [
+      'two comments of one import, one under the other',
+      [NOTED_SIDE, `// And.\n${SIDE}`],
+      `// Why.\n// And.\n${SIDE}`,
+    ],
+  ])('writes %s', (_name, written, expected) => {
+    const named = written
+      .map((option, index) => {
+        const pair: [string, string] = [`./p${String(index)}`, option];
+
+        return pair;
+      });
+    const options = Object.fromEntries(named);
+    const { imports } = sourcesOf('export const a = 1;\n', options, {}, NO_TRUST);
+    const block = importBlock(imports, new Set(), GROUPS);
+
+    expect(block).toBe(expected);
+  });
+});
+
 describe('importBlock', () => {
   it('answers nothing when nothing is read', () => {
     const block = blockOf(['import fs, * as all from \'node:fs\';', 'import { a } from \'pkg\';'], []);

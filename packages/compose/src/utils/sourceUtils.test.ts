@@ -10,6 +10,8 @@ import {
   collect,
   expressionOf,
   fittingOf,
+  hasComment,
+  hasModifier,
   indentAt,
   indentOf,
   isAsync,
@@ -592,7 +594,12 @@ describe('isPure', () => {
     ['{ a() {} }', false],
     ['{ a: f() }', false],
     ['{ ...a }', false],
-    ['[a]', false],
+    ['[a, 1]', true],
+    ['[]', true],
+    ['[[a], { b: 1 }]', true],
+    ['[a, ...b]', false],
+    ['[, a]', false],
+    ['[a, f()]', false],
     ['a++', false],
     ['a in b', true],
     ['a instanceof B', true],
@@ -759,6 +766,57 @@ describe('isPure', () => {
   });
 });
 
+describe('hasModifier', () => {
+  it.each([
+    [
+      'export default class A {}',
+      ts.SyntaxKind.DefaultKeyword,
+      true,
+    ],
+    [
+      'export class A {}',
+      ts.SyntaxKind.DefaultKeyword,
+      false,
+    ],
+    [
+      'class A {}',
+      ts.SyntaxKind.ExportKeyword,
+      false,
+    ],
+    [
+      'log();',
+      ts.SyntaxKind.ExportKeyword,
+      false,
+    ],
+  ])('answers for %s', (text, kind, expected) => {
+    const [statement] = parse(text).statements;
+    const found = statement !== undefined && hasModifier(statement, kind);
+
+    expect(found).toBe(expected);
+  });
+});
+
+describe('hasComment', () => {
+  it.each([
+    ['[a, b]', false],
+    ['[\n  a,\n\n  b,\n]', false],
+    ['[\'// a\', `/* b */`]', false],
+    ['[<p>// a</p>]', false],
+    ['/* before */ [a] /* after */', false],
+    ['[/* a */ a]', true],
+    ['[a, // a\n  b]', true],
+    ['[a /* a */]', true],
+    ['[() => {\n  // a\n}]', true],
+    ['[/** a */ a]', true],
+  ])('answers for %j', (text, expected) => {
+    const file = parse(`y = ${text};`);
+    const [array] = collect(file, ts.isArrayLiteralExpression);
+    const found = array !== undefined && hasComment(array);
+
+    expect(found).toBe(expected);
+  });
+});
+
 describe('isWritten', () => {
   it.each([
     ['A = 1;', true],
@@ -792,6 +850,19 @@ describe('isWritten', () => {
     ['f([A]);', false],
     ['A in o;', false],
     ['A instanceof C;', false],
+    ['(A)++;', true],
+    ['--A!;', true],
+    ['delete (A);', true],
+    ['(A as T) = 1;', true],
+    ['(A satisfies T) += 1;', true],
+    ['A! = 1;', true],
+    ['[A!] = xs;', true],
+    ['({ a: (A as T) } = o);', true],
+    ['x = (A as T);', false],
+    ['x = -(A);', false],
+    ['([A] as T) = xs;', true],
+    ['([A] satisfies T) = xs;', true],
+    ['[A]! = xs;', true],
   ])('answers for A in %s', (host, expected) => {
     const node = nodeIn(host, 'A');
     const written = ts.isIdentifier(node) && isWritten(node);

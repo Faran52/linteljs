@@ -28,6 +28,8 @@ export type ValueMember = ts.PropertyAssignment | ts.ShorthandPropertyAssignment
 
 export type MemberRead = ts.PropertyAccessExpression | ts.ElementAccessExpression;
 
+type Wrapper = ts.ParenthesizedExpression | ts.AsExpression | ts.SatisfiesExpression | ts.NonNullExpression;
+
 export interface Fitting {
   before: string;
   after: string;
@@ -189,14 +191,18 @@ export const reindent = (block: string, from: string, to: string): string => {
     .join('\n');
 };
 
-export const isAsync = (node: ts.Node): boolean => {
+export const hasModifier = (node: ts.Node, kind: ts.SyntaxKind): boolean => {
   const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   const found = modifiers
     ?.some((modifier) => {
-      return modifier.kind === ts.SyntaxKind.AsyncKeyword;
+      return modifier.kind === kind;
     });
 
   return found === true;
+};
+
+export const isAsync = (node: ts.Node): boolean => {
+  return hasModifier(node, ts.SyntaxKind.AsyncKeyword);
 };
 
 export const unparen = (node: ts.Expression): ts.Expression => {
@@ -270,6 +276,24 @@ export const isReference = (node: ts.Identifier): boolean => {
   return !('name' in parent) || parent.name !== node;
 };
 
+// Whether a comment stands between a node's first token and its last.
+export const hasComment = (node: ts.Node): boolean => {
+  const { text } = node.getSourceFile();
+
+  const isCommented = (inner: ts.Node): boolean => {
+    const start = inner.getStart();
+    const isInside = start > node.getStart() && text
+      .slice(inner.pos, start)
+      .trim() !== '';
+
+    return isInside || inner
+      .getChildren()
+      .some(isCommented);
+  };
+
+  return isCommented(node);
+};
+
 export const referencesIn = (root: ts.Node, name: string): ts.Identifier[] => {
   return collect(root, ts.isIdentifier)
     .filter((identifier) => {
@@ -322,14 +346,21 @@ export const isPrototype = (property: ts.ObjectLiteralElementLike): boolean => {
   return isSetter && keyOf(property) === '__proto__';
 };
 
-// Through the wrappers that only speak to the type checker.
-export const unwrapped = (node: ts.Expression): ts.Expression => {
-  const isWrapper = ts.isParenthesizedExpression(node)
+const isWrapper = (node: ts.Node): node is Wrapper => {
+  return ts.isParenthesizedExpression(node)
     || ts.isAsExpression(node)
     || ts.isSatisfiesExpression(node)
     || ts.isNonNullExpression(node);
+};
 
-  return isWrapper ? unwrapped(node.expression) : node;
+// Through the wrappers that only speak to the type checker.
+export const unwrapped = (node: ts.Expression): ts.Expression => {
+  return isWrapper(node) ? unwrapped(node.expression) : node;
+};
+
+// Out through those wrappers.
+const wrappedOf = (node: ts.Expression): ts.Expression => {
+  return isWrapper(node.parent) ? wrappedOf(node.parent) : node;
 };
 
 // The operands a node converts, or undefined when it converts none.
@@ -450,6 +481,10 @@ export const isPure = (node: ts.Expression, purity: Purity | undefined): boolean
       });
   }
 
+  if (ts.isArrayLiteralExpression(value)) {
+    return value.elements.every(isPureIn);
+  }
+
   return ts.isObjectLiteralExpression(value) && value.properties
     .every((property) => {
       const isPlainValue = ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name);
@@ -477,10 +512,11 @@ const isTarget = (node: ts.Node): boolean => {
 
 // Assigned to, destructured into, updated or deleted rather than read.
 export const isWritten = (node: ts.Expression): boolean => {
-  const { parent } = node;
+  const whole = wrappedOf(node);
+  const { parent } = whole;
   const isUpdate = ts.isPrefixUnaryExpression(parent) || ts.isPostfixUnaryExpression(parent);
 
-  return isTarget(node) || ts.isDeleteExpression(parent) || (isUpdate && UPDATES.has(parent.operator));
+  return isTarget(whole) || ts.isDeleteExpression(parent) || (isUpdate && UPDATES.has(parent.operator));
 };
 
 // What a read, a non-null assertion or a tag continues: the chain before it.

@@ -81,6 +81,9 @@ export const PATTERN_PARTS = new Set([
   ts.SyntaxKind.SpreadElement,
   ts.SyntaxKind.SpreadAssignment,
   ts.SyntaxKind.ParenthesizedExpression,
+  ts.SyntaxKind.AsExpression,
+  ts.SyntaxKind.SatisfiesExpression,
+  ts.SyntaxKind.NonNullExpression,
 ]);
 
 // The operators that may skip their right side.
@@ -251,6 +254,37 @@ export const SIMPLIFIED_KINDS = new Set([
   ts.SyntaxKind.JsxAttribute,
   ts.SyntaxKind.SpreadAssignment,
   ts.SyntaxKind.JsxFragment,
+  ts.SyntaxKind.ArrayLiteralExpression,
+]);
+
+// The most items a list holds on one line, as the lint's newline rules write it.
+export const MAX_INLINE = 2;
+
+// How tightly each kind of type holds together; a kind not named is whole.
+export const TYPE_LEVEL = {
+  loose: 0,
+  union: 1,
+  intersection: 2,
+  operator: 3,
+  whole: 4,
+};
+
+export const TYPE_LEVELS = new Map<ts.SyntaxKind, number>([
+  [ts.SyntaxKind.FunctionType, TYPE_LEVEL.loose],
+  [ts.SyntaxKind.ConstructorType, TYPE_LEVEL.loose],
+  [ts.SyntaxKind.ConditionalType, TYPE_LEVEL.loose],
+  [ts.SyntaxKind.UnionType, TYPE_LEVEL.union],
+  [ts.SyntaxKind.IntersectionType, TYPE_LEVEL.intersection],
+  [ts.SyntaxKind.TypeOperator, TYPE_LEVEL.operator],
+]);
+
+// The loosest type each kind of type takes as a part without parentheses; a kind not named takes any.
+export const TYPE_ROOMS = new Map<ts.SyntaxKind, number>([
+  [ts.SyntaxKind.UnionType, TYPE_LEVEL.union],
+  [ts.SyntaxKind.IntersectionType, TYPE_LEVEL.intersection],
+  [ts.SyntaxKind.TypeOperator, TYPE_LEVEL.operator],
+  [ts.SyntaxKind.ArrayType, TYPE_LEVEL.whole],
+  [ts.SyntaxKind.OptionalType, TYPE_LEVEL.whole],
 ]);
 
 // The binary operators that convert an operand, which may run its `valueOf`, `toString` or `Symbol.toPrimitive`.

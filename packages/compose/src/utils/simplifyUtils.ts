@@ -13,6 +13,7 @@ import {
 
 import {
   applied,
+  arrayOf,
   copied,
   copyOf,
   type Edit,
@@ -30,7 +31,9 @@ import {
 } from './editUtils';
 import {
   collect,
+  hasComment,
   indentAt,
+  indentOf,
   isPrototype,
   isPure,
   isValueMember,
@@ -338,6 +341,51 @@ const spreadPropertyRule: Rule = (text, node) => {
   return editOver(node, properties);
 };
 
+// The elements of a spread array literal, or undefined when the element is no such spread or one of them is not plain.
+const spreadOf = (element: ts.Expression): readonly ts.Expression[] | undefined => {
+  const value = ts.isSpreadElement(element) ? unparen(element.expression) : undefined;
+
+  if (value === undefined || !ts.isArrayLiteralExpression(value)) {
+    return undefined;
+  }
+
+  const isPlain = value.elements
+    .every((inner) => {
+      return !ts.isSpreadElement(inner) && !ts.isOmittedExpression(inner);
+    });
+
+  return isPlain ? value.elements : undefined;
+};
+
+// `[...[a], b]` is `[a, b]`.
+const spreadElementRule: Rule = (text, node) => {
+  if (!ts.isArrayLiteralExpression(node) || node.elements.some(ts.isOmittedExpression) || isWritten(node)) {
+    return undefined;
+  }
+
+  const elements = node.elements
+    .flatMap((element) => {
+      return spreadOf(element) ?? element;
+    });
+  const isSame = elements
+    .every((element, index) => {
+      return element === node.elements[index];
+    });
+
+  if (isSame && elements.length === node.elements.length) {
+    return undefined;
+  }
+
+  if (hasComment(node)) {
+    throw refusal(node, 'An array written from what it spreads may hold no comment, which would be lost');
+  }
+
+  const indent = indentOf(text, node);
+  const flat = arrayOf(elements, indent);
+
+  return editOver(node, flat);
+};
+
 const isJsxParent = (node: ts.Node): node is JsxParent => {
   return ts.isJsxElement(node) || ts.isJsxFragment(node);
 };
@@ -472,6 +520,7 @@ const RULES: readonly Rule[] = [
   undefinedAttributeRule,
   spreadPropertyRule,
   fragmentRule,
+  spreadElementRule,
 ];
 
 const isSimplified = (node: ts.Node): node is ts.Node => {
