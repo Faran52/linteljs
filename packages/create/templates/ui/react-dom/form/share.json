@@ -1,9 +1,0 @@
-{
-  "$schema": "../../../schemas/share.schema.json",
-  "groups": {
-    "libraries": [
-      "react-hook-form",
-      "tanstack-form"
-    ]
-  }
-}

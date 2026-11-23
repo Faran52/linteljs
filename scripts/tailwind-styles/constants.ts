@@ -46,7 +46,7 @@ export const TARGETS: readonly Target[] = [
       { table: statusPage, path: 'styling/tailwind/src/components/features/status-page/StatusPage.styles.ts' },
       { table: aboutPage, path: 'styling/tailwind/src/pages/about/AboutPage.styles.ts' },
       { table: versionPage, path: 'styling/tailwind/src/pages/version/VersionPage.styles.ts' },
-      { table: contactPage, path: `${FORM_DRAWER}/pages/contact/ContactPage.styles.ts` },
+      { table: contactPage, path: 'styling/tailwind/src/pages/contact/ContactPage.styles.ts' },
       {
         table: homePage,
         path: `${DATA_DRAWER}/pages/home/HomePage.styles.ts`,

@@ -13,5 +13,14 @@
     "happy-dom",
     "oxc-transform-react",
     "vitest"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@mocks/*": [
+          "./__mocks__/*"
+        ]
+      }
+    }
+  }
 }

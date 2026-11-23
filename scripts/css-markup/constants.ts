@@ -30,6 +30,7 @@ export const TARGETS: readonly Target[] = [
       { map: aboutPage, markup: 'styling/atomic/src/pages/about/AboutPage.tsx' },
       { map: versionPage, markup: 'styling/atomic/src/pages/version/VersionPage.tsx' },
       { map: contactPage, markup: `${FORM_DRAWER}/pages/contact/ContactPage.tsx` },
+      { map: contactPage, markup: 'form/react-actions/styling/atomic/src/pages/contact/ContactPage.tsx' },
     ],
   },
   {

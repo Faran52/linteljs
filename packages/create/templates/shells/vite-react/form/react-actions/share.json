@@ -7,5 +7,14 @@
     "@html-eslint/eslint-plugin",
     "@html-eslint/parser",
     "oxc-transform-react"
-  ]
+  ],
+  "tsconfig": {
+    "compilerOptions": {
+      "paths": {
+        "@apis/*": [
+          "./src/lib/apis/*"
+        ]
+      }
+    }
+  }
 }
