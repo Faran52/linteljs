@@ -1,20 +1,12 @@
 import sveltePlugin from 'eslint-plugin-svelte';
 import tseslint from 'typescript-eslint';
 
+import { SVELTE_GROUP, SVELTE_VIRTUAL_MODULES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-// No file behind it, so the resolver has nothing to find.
-const VIRTUAL_MODULES = [String.raw`^\$app/`];
-
-export const svelteGroup: string[] = [
-  '^svelte$',
-  '^svelte/',
-  '^@sveltejs/',
-  ...VIRTUAL_MODULES,
-  '^#lib(?:/|$)',
-];
+export const svelteGroup: string[] = SVELTE_GROUP;
 
 const SVELTEKIT_ROUTE_FILES = [
   '**/routes/**/+*.svelte',
@@ -33,7 +25,7 @@ export const svelte = (): Layer => {
     {
       name: 'linteljs/svelte/framework-specifiers',
       rules: {
-        'import-x/no-unresolved': ['error', { ignore: VIRTUAL_MODULES }],
+        'import-x/no-unresolved': ['error', { ignore: SVELTE_VIRTUAL_MODULES }],
       },
     },
 

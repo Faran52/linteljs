@@ -4,9 +4,9 @@ import {
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
   SVELTE_GROUPS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const SVELTEKIT_SUBJECTS: readonly Subject[] = [
   {
@@ -23,7 +23,7 @@ export const SVELTEKIT_SUBJECTS: readonly Subject[] = [
     shell: 'sveltekit',
     path: 'src/routes/page.test.ts',
     base: 'sveltekit/routes/page.test.ts',
-    parameters: { './store': { question: 'store', files: { runes: 'store.ts' } } },
+    parameters: { './store': { question: 'store', default: 'runes' } },
     groups: SVELTE_GROUPS,
     plainData: [],
     pureCalls: [],

@@ -1,10 +1,10 @@
 import {
-  REACT_GROUPS,
+  NEXT_GROUPS,
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const NEXT_SUBJECTS: readonly Subject[] = [
   {
@@ -12,7 +12,7 @@ export const NEXT_SUBJECTS: readonly Subject[] = [
     path: 'src/app/page.test.tsx',
     base: 'next/home-page/page.test.tsx',
     parameters: { './store': { question: 'store' } },
-    groups: REACT_GROUPS,
+    groups: NEXT_GROUPS,
     plainData: [],
     pureCalls: [],
     modules: {},
@@ -28,7 +28,7 @@ export const NEXT_SUBJECTS: readonly Subject[] = [
         files: { 'libraries': 'store.counter.ts', 'react-state': 'store.ts' },
       },
     },
-    groups: REACT_GROUPS,
+    groups: NEXT_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
@@ -39,9 +39,9 @@ export const NEXT_SUBJECTS: readonly Subject[] = [
     where: { styling: 'atomic' },
     base: 'next/page/page.tsx',
     parameters: { './store': { question: 'store' } },
-    groups: REACT_GROUPS,
-    plainData: STYLEX_PLAIN_DATA,
-    pureCalls: STYLEX_PURE_CALLS,
+    groups: NEXT_GROUPS,
+    plainData: [],
+    pureCalls: [],
     modules: {},
   },
 ];

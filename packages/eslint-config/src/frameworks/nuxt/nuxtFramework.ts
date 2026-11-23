@@ -1,14 +1,8 @@
-import { vueGroup } from '../vue/vueFramework';
+import { NUXT_GROUP } from '../../config/constants';
 
 import type { Layer } from '../../types';
 
-export const nuxtGroup: string[] = [
-  ...vueGroup,
-  '^nuxt$',
-  '^nuxt/',
-  // Nuxt's own virtual modules, which resolve only inside its build.
-  '^#',
-];
+export const nuxtGroup: string[] = NUXT_GROUP;
 
 const ROUTE_FILES = [
   '**/pages/**/*.vue',

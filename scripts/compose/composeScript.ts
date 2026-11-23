@@ -2,23 +2,29 @@
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { SUBJECTS } from '../../packages/compose/src/shipped/constants.ts';
+import { shippedCompose } from '../../packages/compose/src/shipped/shippedCompose.ts';
+import { subjectVariants } from '../../packages/compose/src/shipped/utils/variantUtils.ts';
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 import { writeChanged } from '../utils/codegenUtils.ts';
 
+import { SHELLS_DIR } from './constants.ts';
 import {
-  SHELLS_DIR,
-  SOURCES_DIR,
-  SUBJECTS,
-} from './constants.ts';
-import { composedText } from './utils/composeUtils.ts';
-import { subjectVariants } from './utils/subjectUtils.ts';
+  namesBeside,
+  readSource,
+  shippedPaths,
+} from './utils/treeUtils.ts';
 
 const stale: string[] = [];
 
+const paths = shippedPaths();
+
 for (const subject of SUBJECTS) {
-  for (const variant of subjectVariants(subject, SHELLS_DIR, SOURCES_DIR)) {
+  const sourceNames = namesBeside(subject.base);
+
+  for (const variant of subjectVariants(subject, paths, sourceNames)) {
     const path = join(SHELLS_DIR, variant.shipped);
-    const text = composedText(subject, variant, SOURCES_DIR);
+    const text = shippedCompose(subject, variant, readSource);
 
     if (writeChanged(path, text)) {
       stale.push(path);

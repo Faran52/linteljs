@@ -2,10 +2,9 @@ import {
   ROUTER_GROUPS,
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
-  VITE_REACT_GROUPS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const VITE_REACT_SUBJECTS: readonly Subject[] = [
   {
@@ -13,10 +12,10 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     path: 'src/components/features/app-header/AppHeader.tsx',
     base: 'vite-react/app-header/AppHeader.tsx',
     parameters: {
-      './router': { question: 'router', files: { 'react-routers': 'router.tsx' } },
+      './router': { question: 'router', default: 'react-routers' },
       './styling': { question: 'styling' },
     },
-    groups: VITE_REACT_GROUPS,
+    groups: ROUTER_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
@@ -26,10 +25,10 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     path: 'src/pages/home/HomePage.tsx',
     base: 'vite-react/home-page/HomePage.tsx',
     parameters: {
-      './store': { question: 'store', files: { 'react-state': 'store.tsx' } },
+      './store': { question: 'store', default: 'react-state' },
       './styling': { question: 'styling' },
     },
-    groups: VITE_REACT_GROUPS,
+    groups: ROUTER_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
@@ -45,7 +44,7 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
         files: { 'libraries': 'store.counter.ts', 'react-state': 'store.ts' },
       },
     },
-    groups: VITE_REACT_GROUPS,
+    groups: ROUTER_GROUPS,
     plainData: STYLEX_PLAIN_DATA,
     pureCalls: STYLEX_PURE_CALLS,
     modules: {},
@@ -84,7 +83,7 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     shell: 'vite-react',
     path: 'src/root.tsx',
     base: 'vite-react/root/root.tsx',
-    parameters: { './styling': { question: 'styling', files: { classes: 'styling.tsx' } } },
+    parameters: { './styling': { question: 'styling', default: 'classes' } },
     groups: ROUTER_GROUPS,
     plainData: [],
     pureCalls: [],

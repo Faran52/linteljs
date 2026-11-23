@@ -3,9 +3,9 @@ import {
   MOCKING_BASE,
   PLAIN_GROUPS,
   REACT_GROUPS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const ASTRO_SUBJECTS: readonly Subject[] = [
   {

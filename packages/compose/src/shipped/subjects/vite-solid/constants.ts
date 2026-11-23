@@ -4,9 +4,9 @@ import {
   SOLID_GROUPS,
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const VITE_SOLID_SUBJECTS: readonly Subject[] = [
   {
@@ -23,7 +23,7 @@ export const VITE_SOLID_SUBJECTS: readonly Subject[] = [
     shell: 'vite-solid',
     path: 'src/pages/home/HomePage.test.tsx',
     base: 'vite-solid/home-page/HomePage.test.tsx',
-    parameters: { './store': { question: 'store', files: { signals: 'store.tsx' } } },
+    parameters: { './store': { question: 'store', default: 'signals' } },
     groups: SOLID_GROUPS,
     plainData: [],
     pureCalls: [],
@@ -33,7 +33,7 @@ export const VITE_SOLID_SUBJECTS: readonly Subject[] = [
     shell: 'vite-solid',
     path: 'src/pages/home/HomePage.tsx',
     base: 'vite-solid/home-page/HomePage.tsx',
-    parameters: { './store': { question: 'store', files: { signals: 'store.tsx' } } },
+    parameters: { './store': { question: 'store', default: 'signals' } },
     groups: SOLID_GROUPS,
     plainData: [],
     pureCalls: [],

@@ -12,7 +12,8 @@ paths:
 - **`linteljs/linteljs.ts`** composes the layers and owns their order, which is load-bearing. It takes
   no suffix, since nothing names a kind for it. Its loader tables are functions, so they sit in
   `linteljs/utils/loaderUtils.ts`, not a `constants.ts`.
-- **Shared code**: `config/constants.ts` holds the glob and extension tables several layers read;
+- **Shared code**: `config/constants.ts` holds the glob and extension tables several layers read and
+  each framework's import group, which `packages/compose` also reads;
   `frameworks/utils/reactCoreUtils.ts` what several frameworks read; `layers/base/utils/` the naming and
   import-sort builders only `base` reads; `utils/presetUtils.ts` what the whole package reads. A shared table is
   data, so it never goes in `utils/`.

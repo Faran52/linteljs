@@ -1,8 +1,6 @@
-import {
-  ANGULAR_GROUPS,
-} from '../constants.ts';
+import { ANGULAR_GROUPS } from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
   {
@@ -19,7 +17,7 @@ export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
     shell: 'angular-cli',
     path: 'src/app/home/home.spec.ts',
     base: 'angular-cli/home/home.spec.ts',
-    parameters: { './store': { question: 'store', files: { signals: 'store.ts' } } },
+    parameters: { './store': { question: 'store', default: 'signals' } },
     groups: ANGULAR_GROUPS,
     plainData: [],
     pureCalls: [],
@@ -45,7 +43,7 @@ export const ANGULAR_CLI_SUBJECTS: readonly Subject[] = [
     shell: 'angular-cli',
     path: 'src/app/home/home.ts',
     base: 'angular-cli/home/home.ts',
-    parameters: { './store': { question: 'store', files: { signals: 'store.ts' } } },
+    parameters: { './store': { question: 'store', default: 'signals' } },
     groups: ANGULAR_GROUPS,
     plainData: [],
     pureCalls: [],

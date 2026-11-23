@@ -9,12 +9,13 @@ import { fileURLToPath } from 'node:url';
 
 import { STRYKER_BASE, strykerPart } from '../../stryker.parts.mjs';
 
-// Two below the root, with `create` linked beside the sandbox: the suites read its templates at `../create`.
+// Two below the root, with the siblings linked beside the sandbox: the suites read `create`'s templates and
+// `eslint-config`'s import groups by relative path.
 const TEMP_DIR = fileURLToPath(new URL('../../.stryker-tmp', import.meta.url));
 
 mkdirSync(TEMP_DIR, { recursive: true });
 
-const SIBLINGS = ['create'];
+const SIBLINGS = ['create', 'eslint-config'];
 
 for (const sibling of SIBLINGS) {
   const isLinked = existsSync(join(TEMP_DIR, sibling));
@@ -29,6 +30,7 @@ const PARTS = {
   'utils-a': ['src/utils/{effectUtils,elementUtils}.ts'],
   'utils-b': ['src/utils/{statementUtils,sourceUtils}.ts'],
   'utils-c': ['src/utils/{callUtils,simplifyUtils,bindingUtils}.ts'],
+  'shipped': ['src/shipped/**/*.ts'],
   'rest': ['src/**/*.ts'],
 };
 const {

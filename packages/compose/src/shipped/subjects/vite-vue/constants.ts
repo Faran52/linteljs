@@ -4,9 +4,9 @@ import {
   STYLEX_PLAIN_DATA,
   STYLEX_PURE_CALLS,
   VUE_GROUPS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const VITE_VUE_SUBJECTS: readonly Subject[] = [
   {

@@ -66,4 +66,57 @@ export const JSX_STYLE_RULES = {
   '@stylistic/jsx-pascal-case': 'error',
 } satisfies Linter.RulesRecord;
 
+// Each framework's import group, which its layer exports and `packages/compose` holds its group tables to.
+export const REACT_GROUP: string[] = [
+  '^react$',
+  '^react-dom$',
+  '^react/',
+  '^react-',
+  '^@react',
+];
+
+export const NEXT_GROUP: string[] = [
+  ...REACT_GROUP,
+  '^next$',
+  '^next/',
+];
+
+export const VUE_GROUP: string[] = [
+  '^vue$',
+  '^vue-router$',
+  '^pinia$',
+  '^@vue/',
+];
+
+export const NUXT_GROUP: string[] = [
+  ...VUE_GROUP,
+  '^nuxt$',
+  '^nuxt/',
+  // Nuxt's own virtual modules, which resolve only inside its build.
+  '^#',
+];
+
+// No file behind it, so the resolver has nothing to find.
+export const SVELTE_VIRTUAL_MODULES = [String.raw`^\$app/`];
+
+export const SVELTE_GROUP: string[] = [
+  '^svelte$',
+  '^svelte/',
+  '^@sveltejs/',
+  ...SVELTE_VIRTUAL_MODULES,
+  '^#lib(?:/|$)',
+];
+
+export const SOLID_GROUP: string[] = [
+  '^solid-js$',
+  '^solid-js/',
+  '^@solidjs/',
+];
+
+export const ANGULAR_GROUP: string[] = [
+  '^@angular/',
+  '^rxjs$',
+  '^rxjs/',
+];
+
 export const ERROR_PREFIX = '@linteljs/eslint-config:';

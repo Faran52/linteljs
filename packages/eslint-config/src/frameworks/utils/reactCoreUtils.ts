@@ -6,6 +6,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import {
   JS_MARKUP_FILES,
   JSX_STYLE_RULES,
+  REACT_GROUP,
   SCRIPT_FILES,
 } from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
@@ -13,13 +14,7 @@ import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
-export const reactGroup: string[] = [
-  '^react$',
-  '^react-dom$',
-  '^react/',
-  '^react-',
-  '^@react',
-];
+export const reactGroup: string[] = REACT_GROUP;
 
 // `sonarjs/recommended`'s React rules, which `base` turns off.
 const REACT_SONARJS_RULES = {

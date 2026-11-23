@@ -1,16 +1,13 @@
 import angularEslint from 'angular-eslint';
 import tseslint from 'typescript-eslint';
 
+import { ANGULAR_GROUP } from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
-export const angularGroup: string[] = [
-  '^@angular/',
-  '^rxjs$',
-  '^rxjs/',
-];
+export const angularGroup: string[] = ANGULAR_GROUP;
 
 const TS_FILES = ['**/*.ts'];
 

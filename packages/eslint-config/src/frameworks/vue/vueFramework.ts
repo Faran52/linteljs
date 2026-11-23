@@ -2,18 +2,13 @@ import vuePlugin from 'eslint-plugin-vue';
 import vueA11y from 'eslint-plugin-vuejs-accessibility';
 import tseslint from 'typescript-eslint';
 
-import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
+import { SCRIPT_AND_SFC_FILES, VUE_GROUP } from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
-export const vueGroup: string[] = [
-  '^vue$',
-  '^vue-router$',
-  '^pinia$',
-  '^@vue/',
-];
+export const vueGroup: string[] = VUE_GROUP;
 
 const VUE_EXTENSION = '.vue';
 

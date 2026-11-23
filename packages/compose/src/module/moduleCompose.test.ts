@@ -1,6 +1,11 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
+import {
+  readShipped,
+  readSource,
+  shippedVariants,
+} from '@mocks/shippedTree';
+import { mapValues, pick } from 'es-toolkit';
 import {
   afterEach,
   describe,
@@ -9,9 +14,11 @@ import {
   vi,
 } from 'vitest';
 
+import { SUBJECTS } from '../shipped/constants';
+
 import { moduleCompose } from './moduleCompose';
 
-import type { ImportGroups } from '../utils/importUtils';
+import type { Subject, Variant } from '../shipped/utils/variantUtils';
 import type { Candidate } from '../utils/stepUtils';
 
 interface Case {
@@ -28,15 +35,9 @@ interface Refusal {
   message: RegExp;
 }
 
-interface Composition {
-  base: string;
-  options: Record<string, string>;
-  expected: string;
-  groups: ImportGroups;
-}
-
-interface RefusedComposition extends Composition {
-  message: RegExp | string;
+interface Trust {
+  plainData: readonly string[];
+  pureCalls: readonly string[];
 }
 
 interface Ordered {
@@ -53,14 +54,6 @@ interface OrderedCase extends Ordered {
 
 interface DisorderedCase extends Ordered {
   message: string;
-}
-
-// One file composed per option: its base and option modules under compose-sources, each beside its shipped copy.
-interface Pair {
-  base: string;
-  specifier: string;
-  groups: ImportGroups;
-  options: [string, string][];
 }
 
 const rewrites = vi.hoisted(() => {
@@ -97,710 +90,75 @@ vi.mock('../utils/stepUtils', async (importOriginal) => {
   return mocked;
 });
 
-// The sibling package's tree by relative path, which Stryker's sandbox keeps through the `create` link it plants.
-const templates = join(import.meta.dirname, '../../../create/templates');
-const fixtures = join(templates, 'codegen/compose-sources');
-const shells = join(templates, 'shells');
+const LF = '\n';
 
-const readFixture = (name: string): string => {
-  const path = join(fixtures, name);
+// A composition with every line of its inputs ended by `end`, trusting only what `trust` names.
+const composedFrom = (subject: Subject, variant: Variant, trust: Trust, end: string): string => {
+  const ended = (name: string): string => {
+    return readSource(name).replaceAll(LF, end);
+  };
 
-  return readFileSync(path, 'utf8');
-};
+  const folder = dirname(subject.base);
+  const options = mapValues(variant.options, (name) => {
+    const path = join(folder, name);
 
-const readShipped = (name: string): string => {
-  const path = join(shells, name);
-
-  return readFileSync(path, 'utf8');
-};
-
-const aliasGroup = (alias: string): string[] => {
-  const group = [`^${alias}(?:/|$)`];
-
-  return group;
-};
-
-// The base layer's groups for a React project with these aliases, as `buildGroups` orders them.
-const GROUPS = [
-  ['^node:'],
-  [
-    '^react$',
-    '^react-dom$',
-    '^react/',
-    '^react-',
-    '^@react',
-  ],
-  [String.raw`^@?\w`],
-  aliasGroup('@config'),
-  aliasGroup('@styles'),
-  aliasGroup('@store'),
-  aliasGroup('@ui'),
-  aliasGroup('@router'),
-  [String.raw`^\.\.(?!/?$)`, String.raw`^\.\./?$`],
-  [String.raw`^\./`],
-  [String.raw`^(?!.*[.](?:css|json)$)[^.].*\u0000$`, String.raw`^[.].*\u0000$`],
-  [String.raw`^.+\.s?css$`],
-];
-
-// The modules the fixtures read styles and tokens from, which the engine is not given.
-const PLAIN_DATA = ['./*.styles', '@styles/tokens.stylex'];
-
-// The modules whose functions the fixtures call, the stylex sheets.
-const PURE_CALLS = ['./*.styles'];
-
-// The default value's option is the default module itself.
-const routerFile = (router: string): string => {
-  return router === 'react-routers' ? 'router.tsx' : `router.${router}.tsx`;
-};
-
-const storeFile = (store: string): string => {
-  return store === 'react-state' ? 'store.tsx' : `store.${store}.tsx`;
-};
-
-const HEADERS: [string, string][] = [
-  ['react-routers', 'atomic'],
-  ['react-routers', 'css'],
-  ['single-page', 'atomic'],
-  ['single-page', 'css'],
-  ['tanstack-router', 'atomic'],
-  ['tanstack-router', 'css'],
-];
-
-describe('moduleCompose, on the shipped app header', () => {
-  it.each(HEADERS)('writes the shipped file for %s with %s', (router, styling) => {
-    const base = readFixture('vite-react/app-header/AppHeader.tsx');
-    const routerOption = readFixture(`vite-react/app-header/${routerFile(router)}`);
-    const stylingOption = readFixture(`vite-react/app-header/styling.${styling}.ts`);
-    const composed = moduleCompose({
-      base,
-      options: {
-        './router': routerOption,
-        './styling': stylingOption,
-      },
-      modules: {},
-      plainData: PLAIN_DATA,
-      pureCalls: PURE_CALLS,
-      importGroups: GROUPS,
-    });
-    const folder = `vite-react/router/${router}/styling/${styling}`;
-    const expected = readShipped(`${folder}/src/components/features/app-header/AppHeader.tsx`);
-
-    expect(composed).toBe(expected);
+    return ended(path);
   });
-});
+  const modules = mapValues(subject.modules, ended);
 
-const HOMES: [string, string, string][] = [
-  [
-    'libraries',
-    'atomic',
-    'store/libraries',
-  ],
-  [
-    'libraries',
-    'css',
-    'store/libraries',
-  ],
-  [
-    'react-state',
-    'atomic',
-    'data/redux-free/store/react-state',
-  ],
-  [
-    'react-state',
-    'css',
-    'data/redux-free/store/react-state',
-  ],
-];
-
-describe('moduleCompose, on the shipped home page', () => {
-  it.each(HOMES)('writes the shipped file for %s with %s', (store, styling, folder) => {
-    const base = readFixture('vite-react/home-page/HomePage.tsx');
-    const storeOption = readFixture(`vite-react/home-page/${storeFile(store)}`);
-    const stylingOption = readFixture(`vite-react/home-page/styling.${styling}.ts`);
-    const composed = moduleCompose({
-      base,
-      options: {
-        './store': storeOption,
-        './styling': stylingOption,
-      },
-      modules: {},
-      plainData: PLAIN_DATA,
-      pureCalls: PURE_CALLS,
-      importGroups: GROUPS,
-    });
-    const expected = readShipped(`vite-react/${folder}/styling/${styling}/src/pages/home/HomePage.tsx`);
-
-    expect(composed).toBe(expected);
+  return moduleCompose({
+    base: ended(subject.base),
+    options,
+    modules,
+    plainData: trust.plainData,
+    pureCalls: trust.pureCalls,
+    importGroups: subject.groups,
   });
-});
-
-const SHEETS: [string, string][] = [
-  ['store.counter.ts', 'store/libraries'],
-  ['store.ts', 'data/redux-free/store/react-state'],
-];
-
-describe('moduleCompose, on the shipped home page style table', () => {
-  it.each(SHEETS)('writes the shipped file for %s', (store, folder) => {
-    const base = readFixture('shared/home-stylex/home.styles.ts');
-    const storeOption = readFixture(`shared/home-stylex/${store}`);
-    const composed = moduleCompose({
-      base,
-      options: { './store': storeOption },
-      modules: {},
-      plainData: PLAIN_DATA,
-      pureCalls: PURE_CALLS,
-      importGroups: GROUPS,
-    });
-    const expected = readShipped(`vite-react/${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`);
-
-    expect(composed).toBe(expected);
-  });
-});
-
-const REACT_COMPOSITIONS: Composition[] = [
-  ...HEADERS
-    .map(([router, styling]): Composition => {
-      const composition: Composition = {
-        base: 'vite-react/app-header/AppHeader.tsx',
-        options: {
-          './router': `vite-react/app-header/${routerFile(router)}`,
-          './styling': `vite-react/app-header/styling.${styling}.ts`,
-        },
-        expected: `vite-react/router/${router}/styling/${styling}/src/components/features/app-header/AppHeader.tsx`,
-        groups: GROUPS,
-      };
-
-      return composition;
-    }),
-  ...HOMES
-    .map(([
-      store,
-      styling,
-      folder,
-    ]): Composition => {
-      const composition: Composition = {
-        base: 'vite-react/home-page/HomePage.tsx',
-        options: {
-          './store': `vite-react/home-page/${storeFile(store)}`,
-          './styling': `vite-react/home-page/styling.${styling}.ts`,
-        },
-        expected: `vite-react/${folder}/styling/${styling}/src/pages/home/HomePage.tsx`,
-        groups: GROUPS,
-      };
-
-      return composition;
-    }),
-  ...SHEETS
-    .map(([store, folder]): Composition => {
-      const composition: Composition = {
-        base: 'shared/home-stylex/home.styles.ts',
-        options: { './store': `shared/home-stylex/${store}` },
-        expected: `vite-react/${folder}/styling/stylex/src/pages/home/HomePage.styles.ts`,
-        groups: GROUPS,
-      };
-
-      return composition;
-    }),
-];
-
-// The base layer's alias buckets, in the order `buildGroups` writes them.
-const ALIAS_BUCKETS = [
-  [
-    '@config',
-    '@typings',
-    '@styles',
-  ],
-  [
-    '@lib',
-    '@store',
-    '@services',
-    '@providers',
-    '@apis',
-    '@utils',
-    '@i18n',
-  ],
-  [
-    '@hooks',
-    '@composables',
-    '@primitives',
-  ],
-  [
-    '@ui',
-    '@features',
-    '@components',
-  ],
-  ['@mocks'],
-];
-
-// The base layer's groups with a framework's group and the aliases it does not know, as `buildGroups` orders them.
-const groupsWith = (framework: string[][], unknown: string[][]): ImportGroups => {
-  const aliases = ALIAS_BUCKETS
-    .map((bucket) => {
-      return bucket.flatMap(aliasGroup);
-    });
-  const groups = [
-    [
-      '^node:',
-      '^fs$',
-      '^path$',
-    ],
-    ...framework,
-    [String.raw`^@?\w`],
-    ...aliases,
-    ...unknown,
-    [String.raw`^\.\.(?!/?$)`, String.raw`^\.\./?$`],
-    [String.raw`^\./`],
-    [String.raw`^(?!.*[.](?:css|json)$)[^.].*\u0000$`, String.raw`^[.].*\u0000$`],
-    [String.raw`^.+\.s?css$`],
-  ];
-
-  return groups;
 };
 
-const ANGULAR = [
-  [
-    '^@angular/',
-    '^rxjs$',
-    '^rxjs/',
-  ],
-];
+// What `read` answers for each variant of the subject, by the shipped file the variant writes.
+const textsOf = (subject: Subject, read: (variant: Variant) => string): Record<string, string> => {
+  const texts = shippedVariants(subject)
+    .map((variant) => {
+      const text: [string, string] = [variant.shipped, read(variant)];
 
-const SVELTE = [
-  [
-    '^svelte$',
-    '^svelte/',
-    '^@sveltejs/',
-    String.raw`^\$app/`,
-    '^#lib(?:/|$)',
-  ],
-];
-
-const VUE_GROUP = [
-  '^vue$',
-  '^vue-router$',
-  '^pinia$',
-  '^@vue/',
-];
-
-const SOLID = [
-  [
-    '^solid-js$',
-    '^solid-js/',
-    '^@solidjs/',
-  ],
-];
-
-const REACT = [
-  [
-    '^react$',
-    '^react-dom$',
-    '^react/',
-    '^react-',
-    '^@react',
-  ],
-];
-
-const CONTACT = 'testing/vitest/src/lib/apis/contact';
-
-const CONTACT_PAGE_TEST = 'testing/vitest/src/views/contact/ContactPage.test.tsx';
-
-const CONTACT_ISLAND_TEST = 'testing/vitest/src/views/contact/ContactIsland.test.tsx';
-
-const APP_HEADER = 'testing/vitest/src/components/features/app-header/AppHeader.test.tsx';
-
-const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteError.test.tsx';
-
-const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
-
-const INSTALLED = 'surfaces/background/src/background/onInstalled.ts';
-
-const DEVTOOLS = 'surfaces/devtools-panel/src/devtools/devtools.ts';
-
-const HOME_VIEW_STYLES = 'src/views/home/HomeView.styles.ts';
-
-const HOME_PAGE_STYLES = 'src/pages/home/HomePage.styles.ts';
-
-// The five shells whose contact suite is one file, by where each keeps the mocking option.
-const CONTACT_SHELLS: [string, string[][]][] = [
-  ['astro/form/libraries', []],
-  ['nuxt/form/tanstack-form', [[
-    ...VUE_GROUP,
-    '^nuxt$',
-    '^nuxt/',
-    '^#',
-  ]]],
-  ['sveltekit/form/tanstack-form', SVELTE],
-  ['vite-solid/form/tanstack-form', SOLID],
-  ['vite-vue/form/tanstack-form', [VUE_GROUP]],
-];
-
-const MOCKING_PAIRS = CONTACT_SHELLS
-  .map(([shell, framework]): Pair => {
-    const pair: Pair = {
-      base: 'shared/contact-endpoints/contactEndpoints.test.ts',
-      specifier: './mocking',
-      groups: groupsWith(framework, []),
-      options: [
-        ['mocking.local.ts', `${shell}/mocking/local/${CONTACT}/contactEndpoints.test.ts`],
-        ['mocking.msw.ts', `${shell}/mocking/msw/${CONTACT}/contactEndpoints.test.ts`],
-      ],
-    };
-
-    return pair;
-  });
-
-const PAIRS: Pair[] = [
-  ...MOCKING_PAIRS,
-  {
-    base: 'angular-cli/home/home.ts',
-    specifier: './store',
-    groups: groupsWith(ANGULAR, []),
-    options: [
-      ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/src/app/home/home.ts'],
-      ['store.ts', 'angular-cli/store/signals/src/app/home/home.ts'],
-    ],
-  },
-  {
-    base: 'astro/contact-island/ContactIsland.test.tsx',
-    specifier: './hostedFramework',
-    groups: groupsWith(REACT, []),
-    options: [
-      ['hostedFramework.react.tsx', `astro/form/libraries/hostedFramework/react/${CONTACT_ISLAND_TEST}`],
-      ['hostedFramework.solid.tsx', `astro/form/tanstack-form/hostedFramework/solid/${CONTACT_ISLAND_TEST}`],
-    ],
-  },
-  {
-    base: 'expo/app-layout/_layout.tsx',
-    specifier: './globalStyles',
-    groups: groupsWith(REACT, [aliasGroup('@')]),
-    options: [
-      ['globalStyles.ts', 'expo/styling/css/src/app/_layout.tsx'],
-      ['globalStyles.tailwind.ts', 'expo/styling/tailwind/src/app/_layout.tsx'],
-    ],
-  },
-  {
-    base: 'vite-react/root/root.tsx',
-    specifier: './styling',
-    groups: groupsWith(REACT, [aliasGroup('@router')]),
-    options: [
-      ['styling.tsx', 'vite-react/router/react-router-framework/styling/classes/src/root.tsx'],
-      ['styling.stylex.tsx', 'vite-react/router/react-router-framework/styling/stylex/src/root.tsx'],
-    ],
-  },
-  {
-    base: 'wxt/background/onInstalled.ts',
-    specifier: './browser',
-    groups: groupsWith([], []),
-    options: [
-      ['browser.chrome.ts', `wxt/browser/chrome/${INSTALLED}`],
-      ['browser.firefox.ts', `wxt/browser/firefox/${INSTALLED}`],
-    ],
-  },
-  {
-    base: 'astro/contact-page/ContactPage.test.tsx',
-    specifier: './hostedFramework',
-    groups: groupsWith([], []),
-    options: [
-      ['hostedFramework.react.tsx', `astro/form/libraries/hostedFramework/react/${CONTACT_PAGE_TEST}`],
-      ['hostedFramework.solid.tsx', `astro/form/tanstack-form/hostedFramework/solid/${CONTACT_PAGE_TEST}`],
-    ],
-  },
-  {
-    base: 'shared/contact-endpoints/contact-endpoints.spec.ts',
-    specifier: './mocking',
-    groups: groupsWith(ANGULAR, []),
-    options: [
-      ['mocking.local.ts', `angular-cli/mocking/local/${CONTACT}/contact-endpoints.spec.ts`],
-      ['mocking.msw.ts', `angular-cli/mocking/msw/${CONTACT}/contact-endpoints.spec.ts`],
-    ],
-  },
-  {
-    base: 'angular-cli/home/home.spec.ts',
-    specifier: './store',
-    groups: groupsWith(ANGULAR, []),
-    options: [
-      ['store.ngrx-signals.ts', 'angular-cli/store/ngrx-signals/testing/vitest/src/app/home/home.spec.ts'],
-      ['store.ts', 'angular-cli/store/signals/testing/vitest/src/app/home/home.spec.ts'],
-    ],
-  },
-  {
-    base: 'next/home-page/page.test.tsx',
-    specifier: './store',
-    groups: groupsWith(REACT, []),
-    options: [
-      ['store.libraries.tsx', 'next/store/libraries/testing/vitest/src/app/page.test.tsx'],
-      ['store.react-state.tsx', 'next/data/redux-free/store/react-state/testing/vitest/src/app/page.test.tsx'],
-    ],
-  },
-  {
-    base: 'sveltekit/routes/page.test.ts',
-    specifier: './store',
-    groups: groupsWith(SVELTE, []),
-    options: [
-      ['store.ts', 'sveltekit/store/runes/testing/vitest/src/routes/page.test.ts'],
-      ['store.tanstack-store.ts', 'sveltekit/store/tanstack-store/testing/vitest/src/routes/page.test.ts'],
-    ],
-  },
-  {
-    base: 'vite-solid/home-page/HomePage.test.tsx',
-    specifier: './store',
-    groups: groupsWith(SOLID, []),
-    options: [
-      ['store.tsx', 'vite-solid/store/signals/testing/vitest/src/pages/home/HomePage.test.tsx'],
-      ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/testing/vitest/src/pages/home/HomePage.test.tsx'],
-    ],
-  },
-  {
-    base: 'vite-vue/home-view/HomeView.test.ts',
-    specifier: './store',
-    groups: groupsWith([VUE_GROUP], []),
-    options: [
-      ['store.libraries.ts', 'vite-vue/store/libraries/testing/vitest/src/views/home/HomeView.test.ts'],
-      ['store.vue-reactivity.ts', 'vite-vue/store/vue-reactivity/testing/vitest/src/views/home/HomeView.test.ts'],
-    ],
-  },
-  {
-    base: 'expo/app-layout/app-layout.test.tsx',
-    specifier: './styling',
-    groups: groupsWith(REACT, [aliasGroup('@')]),
-    options: [
-      ['styling.ts', 'expo/testing/jest/styling/css/src/app-layout.test.tsx'],
-      ['styling.tailwind.ts', 'expo/testing/jest/styling/tailwind/src/app-layout.test.tsx'],
-    ],
-  },
-  {
-    base: 'vite-react/app/App.test.tsx',
-    specifier: './router',
-    groups: groupsWith(REACT, [aliasGroup('@router')]),
-    options: [
-      ['router.single-page.tsx', 'vite-react/router/single-page/testing/vitest/src/App.test.tsx'],
-      ['router.libraries.tsx', 'vite-react/router/libraries/testing/vitest/src/App.test.tsx'],
-    ],
-  },
-  {
-    base: 'vite-react/app-header-test/AppHeader.test.tsx',
-    specifier: './router',
-    groups: groupsWith(REACT, [aliasGroup('@router')]),
-    options: [
-      ['router.react-routers.tsx', `vite-react/router/react-routers/${APP_HEADER}`],
-      ['router.single-page.tsx', `vite-react/router/single-page/${APP_HEADER}`],
-      ['router.tanstack-router.tsx', `vite-react/router/tanstack-router/${APP_HEADER}`],
-    ],
-  },
-  {
-    base: 'vite-react/route-error/RouteError.test.tsx',
-    specifier: './router',
-    groups: groupsWith(REACT, [aliasGroup('@router')]),
-    options: [
-      ['router.react-routers.tsx', `vite-react/router/react-routers/${ROUTE_ERROR}`],
-      ['router.tanstack-router.tsx', `vite-react/router/tanstack-router/${ROUTE_ERROR}`],
-    ],
-  },
-  {
-    base: 'wxt/background/onInstalled.test.ts',
-    specifier: './browser',
-    groups: groupsWith([], []),
-    options: [
-      ['browser.chrome.ts', `wxt/browser/chrome/${BACKGROUND}`],
-      ['browser.firefox.ts', `wxt/browser/firefox/${BACKGROUND}`],
-    ],
-  },
-  {
-    base: 'wxt/devtools/devtools.ts',
-    specifier: './browser',
-    groups: groupsWith([], []),
-    options: [
-      ['browser.chrome.ts', `wxt/browser/chrome/${DEVTOOLS}`],
-      ['browser.firefox.ts', `wxt/browser/firefox/${DEVTOOLS}`],
-    ],
-  },
-  {
-    base: 'vite-solid/home-page/HomePage.tsx',
-    specifier: './store',
-    groups: groupsWith(SOLID, []),
-    options: [
-      ['store.tsx', 'vite-solid/store/signals/src/pages/home/HomePage.tsx'],
-      ['store.tanstack-store.tsx', 'vite-solid/store/tanstack-store/src/pages/home/HomePage.tsx'],
-    ],
-  },
-  {
-    base: 'shared/home-css/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(SVELTE, []),
-    options: [
-      ['store.ts', `sveltekit/store/runes/styling/css/${HOME_VIEW_STYLES}`],
-      ['store.counter.ts', `sveltekit/store/tanstack-store/styling/css/${HOME_VIEW_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-css/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith([VUE_GROUP], []),
-    options: [
-      ['store.counter.ts', `vite-vue/store/libraries/styling/css/${HOME_VIEW_STYLES}`],
-      ['store.ts', `vite-vue/store/vue-reactivity/styling/css/${HOME_VIEW_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-css/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(SOLID, []),
-    options: [
-      ['store.ts', `vite-solid/store/signals/styling/css/${HOME_PAGE_STYLES}`],
-      ['store.counter.ts', `vite-solid/store/tanstack-store/styling/css/${HOME_PAGE_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-css/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(ANGULAR, []),
-    options: [
-      ['store.counter.ts', 'angular-cli/store/ngrx-signals/styling/css/src/app/home/home.styles.ts'],
-      ['store.ts', 'angular-cli/store/signals/styling/css/src/app/home/home.styles.ts'],
-    ],
-  },
-];
-
-// The single-question files whose options read the stylex sheets or tokens.
-const STYLEX_PAIRS: Pair[] = [
-  {
-    base: 'shared/home-stylex/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(SVELTE, []),
-    options: [
-      ['store.ts', `sveltekit/store/runes/styling/stylex/${HOME_VIEW_STYLES}`],
-      ['store.counter.ts', `sveltekit/store/tanstack-store/styling/stylex/${HOME_VIEW_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-stylex/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith([VUE_GROUP], []),
-    options: [
-      ['store.counter.ts', `vite-vue/store/libraries/styling/stylex/${HOME_VIEW_STYLES}`],
-      ['store.ts', `vite-vue/store/vue-reactivity/styling/stylex/${HOME_VIEW_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-stylex/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(SOLID, []),
-    options: [
-      ['store.ts', `vite-solid/store/signals/styling/stylex/${HOME_PAGE_STYLES}`],
-      ['store.counter.ts', `vite-solid/store/tanstack-store/styling/stylex/${HOME_PAGE_STYLES}`],
-    ],
-  },
-  {
-    base: 'shared/home-stylex/home.styles.ts',
-    specifier: './store',
-    groups: groupsWith(REACT, []),
-    options: [
-      ['store.counter.ts', 'next/store/libraries/styling/stylex/src/app/page.styles.ts'],
-      ['store.ts', 'next/data/redux-free/store/react-state/styling/stylex/src/app/page.styles.ts'],
-    ],
-  },
-  {
-    base: 'next/page/page.tsx',
-    specifier: './store',
-    groups: groupsWith(REACT, []),
-    options: [
-      ['store.libraries.tsx', 'next/store/libraries/styling/atomic/src/app/page.tsx'],
-      ['store.react-state.tsx', 'next/data/redux-free/store/react-state/styling/atomic/src/app/page.tsx'],
-    ],
-  },
-];
-
-const compositionsOf = (pairs: Pair[]): Composition[] => {
-  return pairs
-    .flatMap(({
-      base,
-      specifier,
-      groups,
-      options,
-    }) => {
-      const folder = base.slice(0, base.lastIndexOf('/') + 1);
-
-      return options
-        .map(([option, expected]): Composition => {
-          const composition: Composition = {
-            base,
-            options: { [specifier]: folder + option },
-            expected,
-            groups,
-          };
-
-          return composition;
-        });
+      return text;
     });
+
+  return Object.fromEntries(texts);
 };
 
-const PAIR_COMPOSITIONS = compositionsOf(PAIRS);
-
-const STYLEX_COMPOSITIONS = compositionsOf(STYLEX_PAIRS);
-
-const COMPOSITIONS = [
-  ...REACT_COMPOSITIONS,
-  ...PAIR_COMPOSITIONS,
-  ...STYLEX_COMPOSITIONS,
-];
-
-describe('moduleCompose, on the shipped single-question files', () => {
-  it.each(PAIR_COMPOSITIONS)('writes $expected', (composition) => {
-    const composed = composedFrom(composition, [], []);
-    const shipped = readShipped(composition.expected);
-
-    expect(composed).toBe(shipped);
+const shippedTexts = (subject: Subject): Record<string, string> => {
+  return textsOf(subject, ({ shipped }) => {
+    return readShipped(shipped);
   });
+};
 
-  it.each(STYLEX_COMPOSITIONS)('writes $expected, trusting the stylex sheets and tokens', (composition) => {
-    const composed = composedFrom(composition, PLAIN_DATA, PURE_CALLS);
-    const shipped = readShipped(composition.expected);
+describe('moduleCompose, on the shipped compositions', () => {
+  it.each(SUBJECTS)('writes every variant of $shell $path from $base', (subject) => {
+    const composed = textsOf(subject, (variant) => {
+      return composedFrom(subject, variant, subject, LF);
+    });
+    const shipped = shippedTexts(subject);
 
-    expect(composed).toBe(shipped);
+    expect(composed).toEqual(shipped);
   });
 });
 
 const LINE_ENDS = [['CRLF', '\r\n'], ['a lone CR', '\r']];
 
-// A composition with every line of its inputs ended by `end`.
-const endedFrom = ({
-  base,
-  options,
-  groups,
-}: Composition, end: string): string => {
-  const ended = (text: string): string => {
-    return text.replaceAll('\n', end);
-  };
-
-  const read = Object.entries(options)
-    .map(([specifier, name]) => {
-      const option = readFixture(name);
-      const pair: [string, string] = [specifier, ended(option)];
-
-      return pair;
-    });
-  const baseText = readFixture(base);
-
-  return moduleCompose({
-    base: ended(baseText),
-    options: Object.fromEntries(read),
-    modules: {},
-    plainData: PLAIN_DATA,
-    pureCalls: PURE_CALLS,
-    importGroups: groups,
-  });
-};
-
 describe.each(LINE_ENDS)('moduleCompose, on inputs that end their lines with %s', (_name, end) => {
-  it.each(COMPOSITIONS)('writes the shipped file, with LF, from $base', (composition) => {
-    const composed = endedFrom(composition, end);
-    const shipped = readShipped(composition.expected);
+  it.each(SUBJECTS)('writes every variant of $shell $path, with LF, from $base', (subject) => {
+    const composed = textsOf(subject, (variant) => {
+      return composedFrom(subject, variant, subject, end);
+    });
+    const shipped = shippedTexts(subject);
 
-    expect(composed).toBe(shipped);
+    expect(composed).toEqual(shipped);
   });
 });
 
-const EVERY_LINE_END = [['LF', '\n'], ...LINE_ENDS];
+const EVERY_LINE_END = [['LF', LF], ...LINE_ENDS];
 
 // Top-level statements answer the same whichever is rewritten first, so batching them changes no byte.
 describe.each(EVERY_LINE_END)('moduleCompose, one rewrite at a time, on inputs that end their lines with %s', (
@@ -811,94 +169,106 @@ describe.each(EVERY_LINE_END)('moduleCompose, one rewrite at a time, on inputs t
     rewrites.isOneAtATime = false;
   });
 
-  it.each(COMPOSITIONS)('writes what the batched passes write from $base', (composition) => {
-    const batched = endedFrom(composition, end);
+  it.each(SUBJECTS)('writes what the batched passes write for $shell $path from $base', (subject) => {
+    const compose = (variant: Variant): string => {
+      return composedFrom(subject, variant, subject, end);
+    };
+
+    const batched = textsOf(subject, compose);
 
     rewrites.isOneAtATime = true;
 
-    const alone = endedFrom(composition, end);
+    const alone = textsOf(subject, compose);
 
-    expect(alone).toBe(batched);
+    expect(alone).toEqual(batched);
   });
 });
 
-// The six whose options read the stylex sheets or tokens, which the engine is not given.
-const READS_PLAIN_DATA = REACT_COMPOSITIONS
-  .filter(({ options }) => {
-    return Object.values(options)
-      .some((name) => {
-        return name.includes('atomic') || name.endsWith('home-stylex/store.counter.ts');
-      });
-  });
+// The message the engine refuses the composition with, or undefined where it writes it.
+const refusalOf = (subject: Subject, variant: Variant, trust: Trust): string | undefined => {
+  try {
+    composedFrom(subject, variant, trust, LF);
+  }
+  catch (error) {
+    return String(error);
+  }
+
+  return undefined;
+};
+
+// What the engine refuses the subject's variants with, by the shipped file each would write.
+const refusalsOf = (subject: Subject, trust: Trust): Record<string, string> => {
+  const refusals = shippedVariants(subject)
+    .flatMap((variant) => {
+      const message = refusalOf(subject, variant, trust);
+      const refusal: [string, string][] = message === undefined ? [] : [[variant.shipped, message]];
+
+      return refusal;
+    });
+
+  return Object.fromEntries(refusals);
+};
+
+const refusedAmong = (refused: Record<string, string>, subject: Subject): Record<string, string> => {
+  const shipped = shippedVariants(subject)
+    .map((variant) => {
+      return variant.shipped;
+    });
+
+  return pick(refused, shipped);
+};
+
+const readRefusal = (member: string, from: string, read: string): string => {
+  return `Error: "${member}" of ${from} is not shown to be a plain property, so reading it may run code: `
+    + `give the engine that module, or declare it plain data: ${read}`;
+};
+
+const HEADER_READ = readRefusal('header', './AppHeader.styles', 'styles.header');
+
+const HERO_READ = readRefusal('hero', './HomePage.styles', 'styles.hero');
+
+const TOKEN_READ = readRefusal('fontMono', '@styles/tokens.stylex', 'tokens.fontMono');
+
+const TAB_ORDER = 'Error: An argument with an effect must run first, and "children" is read after this, '
+  + 'which may act: ';
+
+const HEADER = 'styling/atomic/src/components/features/app-header/AppHeader.tsx';
 
 // The two whose router spreads what `styles.tab` answers before it renders the children.
-const CALLS_TAB = REACT_COMPOSITIONS
-  .filter(({ options }) => {
-    const isAtomic = options['./styling'] === 'vite-react/app-header/styling.atomic.ts';
+const CALLS_TAB = {
+  [`vite-react/router/single-page/${HEADER}`]: `${TAB_ORDER}{...sx.tab(id === current)}`,
+  [`vite-react/router/tanstack-router/${HEADER}`]: `${TAB_ORDER}{...sx.tab(false)}`,
+};
 
-    return isAtomic && options['./router'] !== 'vite-react/app-header/router.tsx';
-  });
-
-const READ_REFUSAL = /is not shown to be a plain property, so reading it may run code: give the engine/u;
-
-const ORDER_REFUSAL = 'An argument with an effect must run first, and "children" is read after this, which may act: '
-  + '{...sx.tab(';
-
-const NO_PLAIN_DATA = READS_PLAIN_DATA
-  .map((composition): RefusedComposition => {
-    const refused: RefusedComposition = {
-      ...composition,
-      message: CALLS_TAB.includes(composition) ? ORDER_REFUSAL : READ_REFUSAL,
-    };
-
-    return refused;
-  });
-
-const composedFrom = ({
-  base,
-  options,
-  groups,
-}: Composition, plainData: string[], pureCalls: string[]): string => {
-  const read = Object.entries(options)
-    .map(([specifier, name]) => {
-      const pair: [string, string] = [specifier, readFixture(name)];
-
-      return pair;
-    });
-  const baseText = readFixture(base);
-
-  return moduleCompose({
-    base: baseText,
-    options: Object.fromEntries(read),
-    modules: {},
-    plainData,
-    pureCalls,
-    importGroups: groups,
-  });
+const READS_PLAIN_DATA = {
+  ...CALLS_TAB,
+  [`vite-react/router/react-routers/${HEADER}`]: HEADER_READ,
+  'vite-react/data/redux-free/store/react-state/styling/atomic/src/pages/home/HomePage.tsx': HERO_READ,
+  'vite-react/store/libraries/styling/atomic/src/pages/home/HomePage.tsx': HERO_READ,
+  'vite-react/store/libraries/styling/stylex/src/pages/home/HomePage.styles.ts': TOKEN_READ,
+  'next/store/libraries/styling/stylex/src/app/page.styles.ts': TOKEN_READ,
+  'sveltekit/store/tanstack-store/styling/stylex/src/views/home/HomeView.styles.ts': TOKEN_READ,
+  'vite-solid/store/tanstack-store/styling/stylex/src/pages/home/HomePage.styles.ts': TOKEN_READ,
+  'vite-vue/store/libraries/styling/stylex/src/views/home/HomeView.styles.ts': TOKEN_READ,
 };
 
 describe('moduleCompose, on the shipped compositions with no module declared plain data', () => {
-  it('finds six that read one, two of them spreading what a stylex call answers', () => {
-    expect(READS_PLAIN_DATA).toHaveLength(6);
-    expect(CALLS_TAB).toHaveLength(2);
-  });
+  it.each(SUBJECTS)('refuses what reads one, and no other, for $shell $path from $base', (subject) => {
+    const refusals = refusalsOf(subject, { plainData: [], pureCalls: [] });
+    const expected = refusedAmong(READS_PLAIN_DATA, subject);
 
-  it.each(NO_PLAIN_DATA)('refuses $options', (refused) => {
-    const run = (): string => {
-      return composedFrom(refused, [], []);
-    };
-
-    expect(run).toThrow(refused.message);
+    expect(refusals).toEqual(expected);
   });
 });
 
 describe('moduleCompose, on the shipped compositions with no module declared pure calls', () => {
-  it.each(CALLS_TAB)('refuses to render the children of $options after a stylex call', (composition) => {
-    const run = (): string => {
-      return composedFrom(composition, PLAIN_DATA, []);
-    };
+  it.each(SUBJECTS)('refuses what renders children after one, and no other, for $shell $path from $base', (
+    subject,
+  ) => {
+    const refusals = refusalsOf(subject, { plainData: subject.plainData, pureCalls: [] });
+    const expected = refusedAmong(CALLS_TAB, subject);
 
-    expect(run).toThrow(ORDER_REFUSAL);
+    expect(refusals).toEqual(expected);
   });
 });
 

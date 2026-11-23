@@ -1144,14 +1144,19 @@ and `typescript` stays out of its runtime path.
 **The engine is a private package.** `packages/compose` (`"private": true`) is never published and no package
 depends on it; only the step imports it. It is not part of `create`, whose tarball would carry it, and not
 `@linteljs/core`, which generated projects install. It keeps its own suites, the 100% coverage bar and a
-mutation job in `audit.yml`. Its suites read the shipped files and sources from `../create/templates/` by
-relative path; `stryker.config.mjs` links `create` beside the sandbox so that path holds there too.
+mutation job in `audit.yml`. Its suites read the shipped files and sources from `../create/templates/`, and
+`buildGroups` and the framework groups from `../eslint-config/src/`, by relative path; `stryker.config.mjs` links both packages beside the
+sandbox so those paths hold there too.
+
+**One table, read twice.** The step and the suites both read `SUBJECTS`, with the variants derived from the files
+under `shells/`, so a composition cannot be written and not tested. Deriving them could also lose one in silence, so
+one test pins each subject's variant count as a literal.
 
 **Trust is declared, never inferred.** The engine moves an option's code into the base only where it proves the
 move keeps the meaning: a member read is plain only when the engine sees the member written, in the option or
 a source the step hands it in `modules`, or the module is named in `plainData`; a call may be moved past other code only when its module is named
 in `pureCalls`; the members a trusted call returns are plain only when its module is in both. The two lists are
-plain data per composition in the step's table, kept in the repo, and the engine refuses anything else.
+plain data per composition in the package's `SUBJECTS` table, kept in the repo, and the engine refuses anything else.
 
 ## How `check` runs
 

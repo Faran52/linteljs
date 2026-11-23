@@ -7,16 +7,13 @@ import {
   JS_MARKUP_FILES,
   JSX_STYLE_RULES,
   SCRIPT_FILES,
+  SOLID_GROUP,
 } from '../../config/constants';
 import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-export const solidGroup: string[] = [
-  '^solid-js$',
-  '^solid-js/',
-  '^@solidjs/',
-];
+export const solidGroup: string[] = SOLID_GROUP;
 
 // Scoped, since the preset carries no `files` glob.
 const BUILD_OUTPUT = ['dist/**'];

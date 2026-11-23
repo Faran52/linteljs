@@ -1,4 +1,4 @@
-import type { ImportGroups } from '../utils/composeUtils.ts';
+import type { ImportGroups } from '../../utils/importUtils';
 
 const REACT_GROUP = [
   '^react$',
@@ -16,19 +16,6 @@ const RELATIVE_GROUPS = [
   [String.raw`^\./`],
   [String.raw`^(?!.*[.](?:css|json)$)[^.].*\u0000$`, String.raw`^[.].*\u0000$`],
   [String.raw`^.+\.s?css$`],
-];
-
-// The base layer's groups for the vite-react starter, with the aliases it declares.
-export const VITE_REACT_GROUPS: ImportGroups = [
-  ['^node:'],
-  REACT_GROUP,
-  PACKAGES_GROUP,
-  ['^@config(?:/|$)'],
-  ['^@styles(?:/|$)'],
-  ['^@store(?:/|$)'],
-  ['^@ui(?:/|$)'],
-  ['^@router(?:/|$)'],
-  ...RELATIVE_GROUPS,
 ];
 
 const NODE_GROUP = [
@@ -142,6 +129,18 @@ export const VUE_GROUPS: ImportGroups = [
 export const REACT_GROUPS: ImportGroups = [
   NODE_GROUP,
   REACT_GROUP,
+  PACKAGES_GROUP,
+  ...ALIAS_GROUPS,
+  ...RELATIVE_GROUPS,
+];
+
+export const NEXT_GROUPS: ImportGroups = [
+  NODE_GROUP,
+  [
+    ...REACT_GROUP,
+    '^next$',
+    '^next/',
+  ],
   PACKAGES_GROUP,
   ...ALIAS_GROUPS,
   ...RELATIVE_GROUPS,

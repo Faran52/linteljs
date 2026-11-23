@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -45,7 +45,7 @@ it('holds its subjects, the shared utils and constants, and this suite', () => {
 });
 
 describe.each(subjects)('%s', (subject) => {
-  it('holds its entry and suite, and nothing but a constants.ts and a utils directory beside them', () => {
+  it('holds its entry and suite, and nothing but a constants.ts, a utils and the shipped subjects beside them', () => {
     const entry = entryNameOf(subject);
     const files = readdirSync(join(srcDir, subject));
     const allowed = [
@@ -53,6 +53,7 @@ describe.each(subjects)('%s', (subject) => {
       `${entry}.test.ts`,
       'constants.ts',
       'utils',
+      ...(subject === 'shipped' ? ['subjects'] : []),
     ];
     const strays = files
       .filter((file) => {
@@ -64,8 +65,20 @@ describe.each(subjects)('%s', (subject) => {
   });
 });
 
-it('pairs every helper under utils with its suite', () => {
-  const files = readdirSync(join(srcDir, 'utils'));
+const subjectUtils = subjects
+  .map((subject) => {
+    return join(subject, 'utils');
+  });
+
+const utilsDirs = ['utils', ...subjectUtils]
+  .filter((dir) => {
+    const path = join(srcDir, dir);
+
+    return existsSync(path);
+  });
+
+it.each(utilsDirs)('pairs every helper under %s with its suite', (dir) => {
+  const files = readdirSync(join(srcDir, dir));
   const sources = files
     .filter((file) => {
       return !file.endsWith('.test.ts');
@@ -79,4 +92,32 @@ it('pairs every helper under utils with its suite', () => {
 
   expect(sources.length).toBeGreaterThan(0);
   expect(unpaired).toEqual([]);
+});
+
+it('holds one data-only constants.ts per shell under shipped/subjects, and the shared one beside them', () => {
+  const subjectsDir = join(srcDir, 'shipped/subjects');
+  const entries = readdirSync(subjectsDir, { withFileTypes: true });
+  const shells = entries
+    .filter((entry) => {
+      return entry.isDirectory();
+    })
+    .map((entry) => {
+      return entry.name;
+    });
+  const loose = entries
+    .filter((entry) => {
+      return !entry.isDirectory();
+    })
+    .map((entry) => {
+      return entry.name;
+    });
+  const held = new Set(shells
+    .map((shell) => {
+      const names = readdirSync(join(subjectsDir, shell));
+
+      return names.join();
+    }));
+
+  expect(loose).toEqual(['constants.ts']);
+  expect([...held]).toEqual(['constants.ts']);
 });

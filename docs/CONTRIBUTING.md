@@ -80,12 +80,12 @@ answer, under `packages/create/templates/codegen/compose-sources/<shell>/<subjec
 shipped file's name, `<param>.ts` the stand-in it imports, and `<param>.<option>.ts` per option, all in one
 directory.
 
-1. Add a row to the shell's table in `scripts/compose/subjects/<shell>/constants.ts`, which `SUBJECTS` in
-   `scripts/compose/constants.ts` joins: the base, its import groups, the `plainData` and
-   `pureCalls` modules it may trust, any `modules` it reads, and one variant per option with the shipped path
-   under `shells/` it writes.
-2. Add the same composition to `packages/compose/src/module/moduleCompose.test.ts`, which holds every shipped
-   composition byte-equal.
+1. Add a row to the shell's table in `packages/compose/src/shipped/subjects/<shell>/constants.ts`, which `SUBJECTS`
+   in `packages/compose/src/shipped/constants.ts` joins: the composed path below its question folders, the base,
+   its import groups, the `plainData` and `pureCalls` modules it may trust, any `modules` it reads, and the question
+   each option follows. The variants are the files under `shells/` that end in that path.
+2. Add the subject's variant count to `packages/compose/src/shipped/utils/variantUtils.test.ts`.
+   `moduleCompose.test.ts` then holds every variant byte-equal.
 3. Run `pnpm compose`. It writes each shipped file and fails while one changed; commit what it wrote.
 
 The engine refuses what it cannot prove keeps the meaning; the message quotes the code it refused. Change the sources, not

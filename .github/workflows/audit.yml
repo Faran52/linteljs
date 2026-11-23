@@ -232,7 +232,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [utils-a, utils-b, utils-c, rest]
+        part: [utils-a, utils-b, utils-c, shipped, rest]
     env:
       STRYKER_PART: ${{ matrix.part }}
     steps:

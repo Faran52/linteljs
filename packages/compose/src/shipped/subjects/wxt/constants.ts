@@ -1,8 +1,6 @@
-import {
-  PLAIN_GROUPS,
-} from '../constants.ts';
+import { PLAIN_GROUPS } from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const WXT_SUBJECTS: readonly Subject[] = [
   {

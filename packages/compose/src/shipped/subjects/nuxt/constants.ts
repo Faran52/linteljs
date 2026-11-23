@@ -2,9 +2,9 @@ import {
   CONTACT,
   MOCKING_BASE,
   NUXT_GROUPS,
-} from '../constants.ts';
+} from '../constants';
 
-import type { Subject } from '../../utils/composeUtils.ts';
+import type { Subject } from '../../utils/variantUtils';
 
 export const NUXT_SUBJECTS: readonly Subject[] = [
   {

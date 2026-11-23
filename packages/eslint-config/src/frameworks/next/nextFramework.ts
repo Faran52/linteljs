@@ -1,17 +1,12 @@
 import nextPlugin from '@next/eslint-plugin-next';
 
-import { SCRIPT_FILES } from '../../config/constants';
-import { reactGroup } from '../react/reactFramework';
+import { NEXT_GROUP, SCRIPT_FILES } from '../../config/constants';
 
 import type { Layer } from '../../types';
 
 // Not `eslint-config-next`: its bundled `eslint-plugin-react` throws on ESLint 10.
 
-export const nextGroup: string[] = [
-  ...reactGroup,
-  '^next$',
-  '^next/',
-];
+export const nextGroup: string[] = NEXT_GROUP;
 
 const BUILD_OUTPUT = [
   '.next/**',

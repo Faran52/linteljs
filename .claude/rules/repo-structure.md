@@ -27,8 +27,12 @@ before that package publishes. The types it redeclares are held equal by `packag
 
 `packages/compose` (`@linteljs/compose`, `"private": true`) is the compose engine, run only at build time by the
 gate's `compose` step. No package depends on it and it never publishes. It reads nothing from disk: its suites read
-their fixtures from `../create/templates/`, and its `src/` has the subject `module/` (`moduleCompose.ts`), a
-`utils/` and a `constants.ts`, held by its `src/meta.test.ts`.
+their fixtures from `../create/templates/` (`__mocks__/shippedTree.ts`), and its `src/` has the subjects `module/`
+(`moduleCompose.ts`) and `shipped/`, a `utils/` and a `constants.ts`, held by its `src/meta.test.ts`. In `shipped/`,
+`shippedCompose.ts` composes one variant through the reader it is handed, `utils/variantUtils.ts` derives a
+subject's variants from the paths and names it is handed, and `SUBJECTS` in its `constants.ts` joins one data-only `subjects/<shell>/constants.ts` per shell over the import
+groups in `subjects/constants.ts`. The suites read the same table, pin each subject's
+variant count, and hold each group table equal to `eslint-config`'s `buildGroups`.
 
 ## Files, everywhere
 
@@ -74,12 +78,11 @@ tailwind group, to `[<drawer>/]styling/css/src/X.tsx`) from the class maps in `t
 one tree per `TARGETS` entry; the copy imports its `X.css` and carries plain classes. A file `compose` writes, and
 the markup it would copy, is never a `TARGETS` entry: each file has one writer. The gate's `css-markup` step
 fails when that changed a committed file. `scripts/compose/` writes each composed file under `shells/` from its
-base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in the
-`SUBJECTS` table of its `constants.ts` (the shell, the composed path below the question folders, the question values
-it needs, the question each option follows, `plainData`, `pureCalls`, `modules`, import groups), whose variants
-`utils/subjectUtils.ts` derives from the files under `shells/<shell>`; the table joins one data-only `subjects/<shell>/constants.ts` per shell over the import groups in
-`subjects/constants.ts`; the gate's `compose` step fails when that changed a committed file. The engine's suites keep
-their own copy of the table, since shipped code never imports repo tooling. `scripts/utils/codegenUtils.ts` holds
+base and option modules in `templates/codegen/compose-sources/` through `packages/compose`, one row per base in that
+package's `SUBJECTS` table (the shell, the composed path below the question folders, the question values it needs,
+the question each option follows, `plainData`, `pureCalls`, `modules`, import groups). A parameter's option is
+`<param>.<value>.<ext>` beside the base; `default` names the one value the default module `<param>.<ext>` serves, or
+`files` maps every value to its file. `utils/treeUtils.ts` lists and reads the tree for it. The gate's `compose` step fails when that changed a committed file. `scripts/utils/codegenUtils.ts` holds
 what the three share.
 
 ## `packages/create/templates/`
