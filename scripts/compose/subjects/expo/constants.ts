@@ -15,4 +15,14 @@ export const EXPO_SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
   },
+  {
+    shell: 'expo',
+    path: 'src/app/_layout.tsx',
+    base: 'expo/app-layout/_layout.tsx',
+    parameters: { './globalStyles': { question: 'styling', files: { css: 'globalStyles.ts' } } },
+    groups: EXPO_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+  },
 ];

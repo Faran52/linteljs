@@ -25,4 +25,14 @@ export const WXT_SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
   },
+  {
+    shell: 'wxt',
+    path: 'src/background/onInstalled.ts',
+    base: 'wxt/background/onInstalled.ts',
+    parameters: { './browser': { question: 'browser' } },
+    groups: PLAIN_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+  },
 ];

@@ -1,6 +1,8 @@
 import type { Browser } from 'wxt/browser';
 
-export const installed: Record<'first' | 'update', Browser.runtime.InstalledDetails> = {
+export type InstalledDetails = Browser.runtime.InstalledDetails;
+
+export const installed: Record<'first' | 'update', InstalledDetails> = {
   first: { reason: 'install' },
   update: { reason: 'update' },
 };

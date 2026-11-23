@@ -404,11 +404,15 @@ const CONTACT = 'testing/vitest/src/lib/apis/contact';
 
 const CONTACT_PAGE_TEST = 'testing/vitest/src/views/contact/ContactPage.test.tsx';
 
+const CONTACT_ISLAND_TEST = 'testing/vitest/src/views/contact/ContactIsland.test.tsx';
+
 const APP_HEADER = 'testing/vitest/src/components/features/app-header/AppHeader.test.tsx';
 
 const ROUTE_ERROR = 'testing/vitest/src/components/features/route-error/RouteError.test.tsx';
 
 const BACKGROUND = 'surfaces/background/testing/vitest/src/background/onInstalled.test.ts';
+
+const INSTALLED = 'surfaces/background/src/background/onInstalled.ts';
 
 const DEVTOOLS = 'surfaces/devtools-panel/src/devtools/devtools.ts';
 
@@ -447,6 +451,42 @@ const MOCKING_PAIRS = CONTACT_SHELLS
 
 const PAIRS: Pair[] = [
   ...MOCKING_PAIRS,
+  {
+    base: 'astro/contact-island/ContactIsland.test.tsx',
+    specifier: './hostedFramework',
+    groups: groupsWith(REACT, []),
+    options: [
+      ['hostedFramework.react.tsx', `astro/form/libraries/hostedFramework/react/${CONTACT_ISLAND_TEST}`],
+      ['hostedFramework.solid.tsx', `astro/form/tanstack-form/hostedFramework/solid/${CONTACT_ISLAND_TEST}`],
+    ],
+  },
+  {
+    base: 'expo/app-layout/_layout.tsx',
+    specifier: './globalStyles',
+    groups: groupsWith(REACT, [aliasGroup('@')]),
+    options: [
+      ['globalStyles.ts', 'expo/styling/css/src/app/_layout.tsx'],
+      ['globalStyles.tailwind.ts', 'expo/styling/tailwind/src/app/_layout.tsx'],
+    ],
+  },
+  {
+    base: 'vite-react/root/root.tsx',
+    specifier: './styling',
+    groups: groupsWith(REACT, [aliasGroup('@router')]),
+    options: [
+      ['styling.tsx', 'vite-react/router/react-router-framework/styling/classes/src/root.tsx'],
+      ['styling.stylex.tsx', 'vite-react/router/react-router-framework/styling/stylex/src/root.tsx'],
+    ],
+  },
+  {
+    base: 'wxt/background/onInstalled.ts',
+    specifier: './browser',
+    groups: groupsWith([], []),
+    options: [
+      ['browser.chrome.ts', `wxt/browser/chrome/${INSTALLED}`],
+      ['browser.firefox.ts', `wxt/browser/firefox/${INSTALLED}`],
+    ],
+  },
   {
     base: 'astro/contact-page/ContactPage.test.tsx',
     specifier: './hostedFramework',

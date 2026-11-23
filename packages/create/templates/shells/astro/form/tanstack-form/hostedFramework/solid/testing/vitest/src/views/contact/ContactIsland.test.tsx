@@ -7,6 +7,10 @@ const COPY = {
   ar: { contactSend: 'أرسل' },
 };
 
+const switchTo = (language: string): void => {
+  document.documentElement.lang = language;
+};
+
 const renderIsland = (): void => {
   render(() => {
     return <ContactIsland copy={COPY} />;
@@ -19,7 +23,7 @@ describe('ContactIsland', () => {
   });
 
   it('renders the language on the page once mounted', () => {
-    document.documentElement.lang = 'ar';
+    switchTo('ar');
     renderIsland();
 
     const button = screen.getByRole('button', { name: 'أرسل' });
@@ -29,7 +33,7 @@ describe('ContactIsland', () => {
 
   it('renders again when the switcher changes the language', async () => {
     renderIsland();
-    document.documentElement.lang = 'ar';
+    switchTo('ar');
 
     const button = await screen.findByRole('button', { name: 'أرسل' });
 
@@ -37,7 +41,7 @@ describe('ContactIsland', () => {
   });
 
   it('shows the key a language has no word for', () => {
-    document.documentElement.lang = 'ja';
+    switchTo('ja');
     renderIsland();
 
     const button = screen.getByRole('button', { name: 'contactSend' });

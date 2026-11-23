@@ -1,5 +1,9 @@
 import { onInstalled } from './onInstalled';
 
+export const installedComment = 'Firefox implements this surface under `browser.*`, promise-returning.';
+
+export type InstalledDetails = browser.runtime._OnInstalledDetails;
+
 export const installed = {
   first: {
     reason: 'install',

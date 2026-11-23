@@ -80,4 +80,14 @@ export const VITE_REACT_SUBJECTS: readonly Subject[] = [
     pureCalls: [],
     modules: {},
   },
+  {
+    shell: 'vite-react',
+    path: 'src/root.tsx',
+    base: 'vite-react/root/root.tsx',
+    parameters: { './styling': { question: 'styling', files: { classes: 'styling.tsx' } } },
+    groups: ROUTER_GROUPS,
+    plainData: [],
+    pureCalls: [],
+    modules: {},
+  },
 ];
